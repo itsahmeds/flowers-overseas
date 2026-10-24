@@ -8,16 +8,15 @@
  *   `pnpm test:consent-active` -> `consent-active` (tests/consent-active/**), against the
  *                         GA4-fixture build only (TASK-279)
  *
- * `baseURL` comes from `PLAYWRIGHT_BASE_URL`: the Vercel preview URL in CI (from the `preview`
- * job's output), `http://localhost:3000` locally against `pnpm build && pnpm start`. There is
- * deliberately no `webServer`: the target is a deployment, not a dev server, and a preview is
- * what AC-17 asks the suites to run against.
+ * `baseURL` comes from `PLAYWRIGHT_BASE_URL`: in CI, the `preview` job's `preview_url`, the pull
+ * request's Railway environment through Cloudflare (`https://pr-<n>.flowersoverseas.com`, spec 040
+ * AC-26, §14 A2; TASK-099); locally, `http://localhost:3000` against `pnpm build && pnpm start`.
+ * There is deliberately no `webServer`: the target is a deployment, not a dev server.
  *
- * Previews are behind Vercel Deployment Protection (AC-29), so every request carries
- * `x-vercel-protection-bypass` when `VERCEL_AUTOMATION_BYPASS_SECRET` is set, together with
- * `x-vercel-set-bypass-cookie: false` — without the latter Vercel answers with a `_vercel_jwt`
- * cookie and AC-15's "zero `Set-Cookie` on `/`" assertion would fail on the harness, not on the
- * application.
+ * A PR environment sits behind the staging wall (spec 040 AC-25), so when `STAGING_BASIC_AUTH`
+ * (`user:password`) is set, Playwright answers the wall's 401 with it, as HTTP credentials scoped to
+ * the `baseURL` origin: they are never sent to another host, and no header is added to a request
+ * that was not challenged. Unset (a local run), nothing is sent.
  */
 import { defineConfig, devices } from "@playwright/test";
 
@@ -48,7 +47,6 @@ function recordedLocaleChoice(target: string) {
     origins: [],
   };
 }
-const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const isCI = process.env.CI === "true" || process.env.CI === "1";
 
 /**
@@ -59,13 +57,27 @@ const isCI = process.env.CI === "true" || process.env.CI === "1";
  */
 export const PSEUDO_RTL_PROJECT = "pseudo-rtl";
 
-const protectionBypassHeaders: Record<string, string> =
-  bypassSecret === undefined || bypassSecret === ""
-    ? {}
-    : {
-        "x-vercel-protection-bypass": bypassSecret,
-        "x-vercel-set-bypass-cookie": "false",
-      };
+/** The wall's credential as Playwright's `httpCredentials`, or `undefined` when unset or malformed. */
+export function wallCredentials(
+  raw: string | undefined,
+  target: string,
+):
+  | { username: string; password: string; origin: string; send: "unauthorized" }
+  | undefined {
+  const match = /^([^\s:]+):(\S+)$/u.exec(raw?.trim() ?? "");
+  if (match?.[1] === undefined || match[2] === undefined) return undefined;
+  return {
+    username: match[1],
+    password: match[2],
+    origin: new URL(target).origin,
+    send: "unauthorized",
+  };
+}
+
+const httpCredentials = wallCredentials(
+  process.env.STAGING_BASIC_AUTH,
+  baseURL,
+);
 
 // The two screenshot projects photograph a still: the page as a reader sees it once every entrance
 // has played. Below the fold, motion 12 holds a section at opacity 0 until it is scrolled into view
@@ -118,8 +130,12 @@ export default defineConfig({
     // a first visit, and the popup's own suites opt back into a first visit with
     // `NO_LOCALE_CHOICE` (`tests/support/locale-choice.ts`).
     storageState: recordedLocaleChoice(baseURL),
-    extraHTTPHeaders: protectionBypassHeaders,
-    trace: "on-first-retry",
+    ...(httpCredentials === undefined ? {} : { httpCredentials }),
+    // A trace records the request headers Playwright sent, the wall's `authorization` among
+    // them, and CI uploads `test-results/` from a public repository. So with the credential in
+    // scope no trace is recorded at all; `scripts/artifact-credential-check.ts` then checks every
+    // uploaded file anyway (spec 040 AC-25; `/review 263` item 1, TASK-099).
+    trace: httpCredentials === undefined ? "on-first-retry" : "off",
     screenshot: "only-on-failure",
     ignoreHTTPSErrors: false,
   },

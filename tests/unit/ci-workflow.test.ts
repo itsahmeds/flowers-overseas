@@ -24,6 +24,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import { parse } from "yaml";
 
 import { GITLEAKS_VERSION } from "../../scripts/audit-secrets.ts";
+import { runWorkflowStep } from "../support/run-workflow-step.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const read = (relative: string): string =>
@@ -63,11 +64,6 @@ interface Workflow {
   defaults?: { run?: { shell?: string } };
   jobs: Record<string, Job>;
 }
-
-/** The origin the browser suites run against, served by CI itself (TASK-137). */
-const PREVIEW_ORIGIN_SCRIPT = ".github/actions/preview-origin/serve.sh";
-/** The build the `preview` job publishes and the three browser jobs re-serve (TASK-137). */
-const PREVIEW_ARTIFACT = "preview-build";
 
 const ci = parse(read(".github/workflows/ci.yml")) as Workflow;
 const jobs = Object.entries(ci.jobs);
@@ -494,8 +490,8 @@ describe("the lighthouse job's step summary (spec 004 §11, AC-24; TASK-056)", (
   });
 
   it("prints every measured run's LCP per URL, not only the representative run (TASK-235)", () => {
-    // Under `optimistic` a red LCP means all three runs were over, which the representative row
-    // cannot show; the per-run table is what tells a cold first run from a slow runner.
+    // Under `median` (TASK-103) a red LCP means two of the three runs were over, which the
+    // representative row cannot show; the per-run table is what tells a cold run from a slow runner.
     const run = summaryStep?.run ?? "";
     expect(run).toContain("LCP of every measured run");
     expect(run).toContain('.audits["largest-contentful-paint"].numericValue');
@@ -542,6 +538,7 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
   const indexOf = (predicate: (run: string) => boolean): number =>
     steps.findIndex((step) => predicate(step.run ?? ""));
   const serve = indexOf((run) => run.includes("pnpm lighthouse:origin"));
+  // The same step resolves the PR environment on a pull request (TASK-099).
   const warmup = indexOf((run) =>
     run.includes("node scripts/seo/lighthouse-urls.ts --warm"),
   );
@@ -553,11 +550,13 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
     expect(measured).toBeGreaterThan(warmup);
   });
 
-  it("warms through the Brotli origin, not `next start` directly", () => {
-    // The script reads `LHCI_BASE_URL`; the job pins it to the proxy on :3001.
-    expect(ci.jobs["lighthouse"]?.env?.["LHCI_BASE_URL"]).toBe(
-      "http://127.0.0.1:3001",
-    );
+  it("warms the measured origin: the proxy on :3001 on a push, the PR host on a pull request", () => {
+    // The script reads `LHCI_BASE_URL`; the origin step sets it for both paths (TASK-099), and
+    // never to `next start`'s own :3000.
+    const origin = steps.find((step) => step.id === "origin")?.run ?? "";
+    expect(origin).toContain('echo "LHCI_BASE_URL=http://127.0.0.1:3001"');
+    expect(origin).toContain('echo "LHCI_BASE_URL=$url"');
+    expect(origin).not.toContain("LHCI_BASE_URL=http://127.0.0.1:3000");
     expect(steps[warmup]?.run).not.toMatch(/--base\s/);
   });
 
@@ -569,9 +568,7 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
     );
     expect(discarded).toContain("--numberOfRuns=1");
     // Same settings as the measured runs, so it warms what they will fetch.
-    expect(discarded).toContain(
-      '--config="$GITHUB_WORKSPACE/lighthouserc.json"',
-    );
+    expect(discarded).toContain('--config="$LHCI_CONFIG"');
     // Never `autorun` or `assert`: a warm-up run must not be able to fail or pass a budget.
     expect(run).not.toMatch(/autorun|lhci\/cli@[\d.]+ assert/);
     // The same pinned version as the measured run.
@@ -691,107 +688,467 @@ describe("the unit project's test budget (TASK-134)", () => {
 });
 
 /**
- * TASK-137: the origin the Playwright suites run against is CI's own.
+ * Spec 040 AC-26, T-27 (preview half), §14 A2 (TASK-099): `preview` resolves the pull request's
+ * Railway environment behind Cloudflare and asserts its three properties, and the browser suites
+ * run against it.
  *
- * Measured on PRs 84, 85 and 87: `preview` polled the GitHub Deployments API for a Vercel
- * preview, and the deployment either never appeared or answered `/api/health` with 500 — the
- * cold fallback of ADR-0018 carries an empty environment store. `e2e`, `visual` and `a11y` are
- * each `needs: preview`, so **no Playwright suite had ever run in CI on this project**.
- *
- * The job now builds the app on the runner from the committed `.env.example` placeholders,
- * publishes that build as an artifact, serves it and gates on `/api/health` 200 before handing
- * the origin to the three browser jobs, which serve the same bytes through
- * `.github/actions/preview-origin`. No secret is a build input (spec 001 §14 A17, spec 040 §14
- * A1): the values are the ones `.env.example` publishes.
+ * TASK-137's interim (a CI-built origin served on each runner, with the Vercel probe beside it as
+ * `continue-on-error` evidence) is deleted, as §14 A2 clauses 1 and 2 require: the probe is
+ * blocking on the Railway environment, and `.github/actions/preview-origin` is retired.
  */
-describe("the preview job serves an origin CI owns (TASK-137)", () => {
+describe("the preview job resolves the Railway PR environment and asserts AC-26 on it (TASK-099)", () => {
   const preview = ci.jobs["preview"];
   const steps = preview?.steps ?? [];
   const script = steps.map((step) => step.run ?? "").join("\n");
   const BROWSER_JOBS = ["e2e", "visual", "a11y"] as const;
+  const resolveStep = steps.find((step) => step.id === "resolve");
+  const assertStep = steps.find((step) =>
+    (step.run ?? "").includes("scripts/railway-preview.ts --assert"),
+  );
 
-  it("builds the app on the runner rather than waiting for a third party to deploy it", () => {
-    expect(script).toContain("pnpm build");
-    // The 15-minute Deployments-API poll that produced no origin is gone from the critical path:
-    // no step of this job may block the browser suites on a deployment we do not control.
-    const blocking = steps.filter(
-      (step) =>
-        (step.run ?? "").includes("gh api") &&
-        step["continue-on-error"] !== true,
+  it("resolves (and provisions) the pull request's environment for its head SHA", () => {
+    expect(resolveStep?.run).toBe(
+      'node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA"',
     );
-    expect(blocking).toEqual([]);
-  });
-
-  it("gives the build only the committed placeholders — no secret is a build input", () => {
-    expect(script).toContain("cp .env.example .env.local");
-    const envValues = steps
-      .flatMap((step) => Object.values(step.env ?? {}))
-      .join("\n");
-    // `VERCEL_AUTOMATION_BYPASS_SECRET` may still reach the evidence step below; nothing else may.
-    const otherSecrets = envValues
-      .split("\n")
-      .filter(
-        (value) =>
-          value.includes("secrets.") &&
-          !value.includes("secrets.VERCEL_AUTOMATION_BYPASS_SECRET"),
-      );
-    expect(otherSecrets).toEqual([]);
-    expect(script).not.toMatch(/--build-arg/u);
-  });
-
-  it("gates on /api/health 200 before it can declare an origin healthy", () => {
-    const serve = steps.find((step) => step.id === "serve");
-    expect(serve).toBeDefined();
-    const serveScript = (serve?.run ?? "") + (serve?.uses ?? "");
-    expect(serveScript).toContain(PREVIEW_ORIGIN_SCRIPT);
-    const gate = read(PREVIEW_ORIGIN_SCRIPT);
-    expect(gate).toContain("/api/health");
-    expect(gate).toContain('"status":"ok"');
-    expect(gate).toMatch(/::error::[^\n]*\/api\/health/);
-  });
-
-  it("publishes the served origin as `preview_url`", () => {
+    expect(resolveStep?.env).toEqual({
+      RAILWAY_API_TOKEN: "${{ secrets.RAILWAY_API_TOKEN }}",
+      RAILWAY_PROJECT_ID: "${{ secrets.RAILWAY_PROJECT_ID }}",
+      CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+      CLOUDFLARE_ZONE_ID: "${{ secrets.CLOUDFLARE_ZONE_ID }}",
+      PR_NUMBER: "${{ github.event.pull_request.number }}",
+      HEAD_SHA: "${{ github.event.pull_request.head.sha }}",
+    });
     expect(preview?.outputs?.["preview_url"]).toBe(
-      "${{ steps.serve.outputs.preview_url }}",
-    );
-    expect(read(PREVIEW_ORIGIN_SCRIPT)).toContain(
-      'preview_url=$origin" >> "$GITHUB_OUTPUT',
+      "${{ steps.resolve.outputs.preview_url }}",
     );
   });
 
-  it("publishes the build so the browser jobs measure the same bytes, not three of their own", () => {
-    const upload = steps.find((step) =>
-      (step.uses ?? "").startsWith("actions/upload-artifact"),
+  it("waits 15 minutes at most inside a job that allows it", () => {
+    // 45 x 20 s in the script (pinned in tests/contract/railway-preview.test.ts), plus setup.
+    expect(preview?.["timeout-minutes"]).toBeGreaterThan(15);
+  });
+
+  it("asserts the three properties on it, blocking, behind the wall's credential", () => {
+    expect(assertStep).toBeDefined();
+    expect(assertStep?.env?.["STAGING_BASIC_AUTH"]).toBe(
+      "${{ secrets.STAGING_BASIC_AUTH }}",
     );
-    expect(upload?.with?.["name"]).toBe(PREVIEW_ARTIFACT);
-    const action = read(".github/actions/preview-origin/action.yml");
-    expect(action).toContain("actions/download-artifact");
-    expect(action).toContain(PREVIEW_ARTIFACT);
-    expect(action).toContain(PREVIEW_ORIGIN_SCRIPT);
+    expect(assertStep?.run).toMatch(/^\s*set -euo pipefail$/mu);
+    expect(assertStep?.run).toContain('exit "$status"');
+  });
+
+  it.each([
+    [0, 0],
+    [1, 1],
+    [3, 3],
+  ])(
+    "the assert step exits with the property check's own status: %i → %i (/break 263 hole 5)",
+    (nodeExit, stepExit) => {
+      const result = runWorkflowStep(
+        assertStep,
+        {
+          github: {
+            event_name: "pull_request",
+            event: {
+              pull_request: { number: 263, head: { sha: "a".repeat(40) } },
+            },
+          },
+          secrets: { STAGING_BASIC_AUTH: "ci-wall:aaaa?bbbb?cccc" },
+          steps: {
+            resolve: {
+              outputs: { preview_url: "https://pr-263.flowersoverseas.com" },
+            },
+          },
+        },
+        {
+          stubs: {
+            node: `echo "node $*" >> "$STUB_LOG"; echo "FAIL auth wall: stub"; exit ${String(nodeExit)}`,
+          },
+        },
+      );
+      try {
+        expect(result.status).toBe(stepExit);
+        expect(result.stubLog).toEqual([
+          `node scripts/railway-preview.ts --assert --pr 263 --sha ${"a".repeat(40)}`,
+        ]);
+        expect(result.summary).toContain("FAIL auth wall: stub");
+      } finally {
+        result.cleanup();
+      }
+    },
+  );
+
+  it("fails, never skips: no step is conditional or allowed to fail (AC-26)", () => {
+    for (const step of steps) {
+      expect(step.if, step.name).toBeUndefined();
+      expect(step["continue-on-error"], step.name).toBeUndefined();
+    }
+    expect(preview?.["continue-on-error"]).toBeUndefined();
+  });
+
+  it("deletes TASK-137's interim: no runner build, no artifact, no Vercel probe (§14 A2)", () => {
+    expect(script).not.toContain("pnpm build");
+    expect(script).not.toContain("gh api");
+    expect(script).not.toMatch(/vercel/iu);
+    expect(steps.map((step) => step.uses ?? "")).not.toContain(
+      "actions/upload-artifact@v4",
+    );
+    expect(preview?.permissions).toEqual({ contents: "read" });
+    expect(
+      existsSync(
+        resolve(repoRoot, ".github/actions/preview-origin/action.yml"),
+      ),
+    ).toBe(false);
   });
 
   it.each(BROWSER_JOBS)(
-    "%s starts that origin through the shared action and targets the job's output",
+    "%s runs against the resolved URL with the wall's credential, not a runner origin",
     (name) => {
       const job = ci.jobs[name];
       expect(job?.needs).toBe("preview");
       expect(job?.env?.["PLAYWRIGHT_BASE_URL"]).toBe(
         "${{ needs.preview.outputs.preview_url }}",
       );
-      expect((job?.steps ?? []).map((step) => step.uses)).toContain(
+      expect(job?.env?.["STAGING_BASIC_AUTH"]).toBe(
+        "${{ secrets.STAGING_BASIC_AUTH }}",
+      );
+      expect((job?.steps ?? []).map((step) => step.uses)).not.toContain(
         "./.github/actions/preview-origin",
       );
     },
   );
 
-  it("keeps the Vercel probe as evidence and never as a blocker (ADR-0018)", () => {
-    // The `Vercel` check stays on the pull request and keeps meaning what it says; what changed
-    // is that a host we are leaving can no longer deny four suites an origin. The probe still
-    // asserts Deployment Protection, `fra1` and `noindex` when a deployment exists, and its
-    // verdict is written to the step summary either way.
-    const probe = steps.find((step) => (step.run ?? "").includes("gh api"));
-    expect(probe?.["continue-on-error"]).toBe(true);
-    expect(script).toContain("GITHUB_STEP_SUMMARY");
+  it.each(BROWSER_JOBS)(
+    "%s scrubs and checks its report for the wall's credential before uploading it (/review 263 item 1)",
+    (name) => {
+      const jobSteps = ci.jobs[name]?.steps ?? [];
+      const scan = jobSteps.find((step) => step.id === "credscan");
+      const upload = jobSteps.find((step) =>
+        (step.uses ?? "").startsWith("actions/upload-artifact@"),
+      );
+      expect(scan?.if).toBe("failure()");
+      expect(upload?.if).toBe(
+        "failure() && steps.credscan.outcome == 'success'",
+      );
+      expect(jobSteps.indexOf(scan as Step)).toBeLessThan(
+        jobSteps.indexOf(upload as Step),
+      );
+      // Every path the upload names is one the scan covered.
+      const scanned = (scan?.run ?? "").split(/\s+/u);
+      for (const path of (upload?.with?.["path"] ?? "")
+        .split("\n")
+        .filter(Boolean)) {
+        expect(scanned, path).toContain(path.replace(/\/$/u, ""));
+      }
+      const credential = "ci-wall:aaaa?bbbb?cccc";
+      const basic = Buffer.from(credential).toString("base64");
+      const result = runWorkflowStep(
+        scan,
+        { secrets: { STAGING_BASIC_AUTH: credential } },
+        {
+          files: {
+            "test-results/a/error-context.md": `authorization: Basic ${basic}`,
+            "playwright-report/index.html": `<pre>${credential}</pre>`,
+          },
+        },
+      );
+      try {
+        expect(result.status).toBe(0);
+        for (const file of [
+          "test-results/a/error-context.md",
+          "playwright-report/index.html",
+        ]) {
+          const body = readFileSync(join(result.workspace, file), "utf8");
+          expect(body).not.toContain(basic);
+          expect(body).not.toContain(credential);
+        }
+      } finally {
+        result.cleanup();
+      }
+    },
+  );
+});
+
+describe("the nightly sweep of closed pull requests' records (spec 040 AC-12; TASK-099)", () => {
+  const steps = ci.jobs["cloudflare-check"]?.steps ?? [];
+  const sweep = steps.find((step) =>
+    (step.run ?? "").includes("scripts/railway-preview.ts --sweep"),
+  );
+
+  it("runs on the nightly schedule only, so a pull request run deletes nothing", () => {
+    expect(sweep?.if).toBe("github.event_name == 'schedule'");
+    expect(sweep?.["continue-on-error"]).toBeUndefined();
+    expect(Object.keys(sweep?.env ?? {}).sort()).toEqual([
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_ZONE_ID",
+      "RAILWAY_API_TOKEN",
+      "RAILWAY_PROJECT_ID",
+    ]);
+  });
+});
+
+/**
+ * Spec 040 AC-26, AC-27 (TASK-099, TASK-103): `lighthouse` measures the PR environment on a
+ * pull request and stays on `needs: build` with no `if:` (AC-38, `/review 104` round 3), so on a
+ * push it still runs, against the runner's Brotli origin. The credential it needs on a pull
+ * request must never reach the uploaded reports.
+ */
+describe("the lighthouse job's origin and credential (spec 040 AC-26, AC-27; TASK-099)", () => {
+  const job = ci.jobs["lighthouse"];
+  const steps = job?.steps ?? [];
+  const origin = steps.find((step) => step.id === "origin");
+  const scrub = steps.find((step) => step.id === "scrub");
+  const upload = steps.find((step) =>
+    (step.uses ?? "").startsWith("actions/upload-artifact@"),
+  );
+
+  it("chooses its origin in one unconditional step", () => {
+    expect(origin?.if).toBeUndefined();
+    expect(origin?.["continue-on-error"]).toBeUndefined();
+  });
+
+  const SHA = "abcdef0123456789abcdef0123456789abcdef01";
+  const CREDENTIAL = "ci-wall:aaaa?bbbb?cccc";
+  const BASIC = Buffer.from(CREDENTIAL).toString("base64");
+  const SECRETS = {
+    RAILWAY_API_TOKEN: "railway-token",
+    RAILWAY_PROJECT_ID: "project-0000",
+    CLOUDFLARE_API_TOKEN: "cloudflare-token",
+    CLOUDFLARE_ZONE_ID: "0123abcd",
+    STAGING_BASIC_AUTH: CREDENTIAL,
+  };
+  const pullRequest = (secrets: Record<string, string> = SECRETS) => ({
+    github: {
+      event_name: "pull_request",
+      event: {
+        action: "labeled",
+        pull_request: {
+          number: 263,
+          head: { sha: SHA },
+          base: { sha: "1".repeat(40) },
+        },
+      },
+    },
+    secrets,
+  });
+  const push = { github: { event_name: "push", event: {} }, secrets: SECRETS };
+  /** `node` that answers `railway-preview.ts` with the PR URL and logs every call. */
+  const stubs = {
+    node: 'echo "node $*" >> "$STUB_LOG"; case "$*" in *railway-preview.ts*) echo "https://pr-263.flowersoverseas.com";; *) exec "$REAL_NODE" "$@";; esac',
+    pnpm: 'echo "pnpm $*" >> "$STUB_LOG"',
+    npx: 'echo "npx $*" >> "$STUB_LOG"',
+  };
+
+  it("on a pull request, resolves the PR environment for the head SHA and measures it behind the wall (/break 263 hole 4)", () => {
+    const result = runWorkflowStep(origin, pullRequest(), { stubs });
+    try {
+      expect(result.status).toBe(0);
+      expect(result.stubLog).toContain(
+        `node scripts/railway-preview.ts --provision --pr 263 --sha ${SHA}`,
+      );
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBe(
+        "https://pr-263.flowersoverseas.com",
+      );
+      expect(result.githubEnv["LHCI_AUTHORIZATION"]).toBe(`Basic ${BASIC}`);
+      const config = result.githubEnv["LHCI_CONFIG"] ?? "";
+      expect(config.startsWith(result.runnerTemp)).toBe(true);
+      const rc = JSON.parse(readFileSync(config, "utf8")) as {
+        ci: {
+          collect: { settings: { extraHeaders?: Record<string, string> } };
+        };
+      };
+      expect(rc.ci.collect.settings.extraHeaders).toEqual({
+        Authorization: `Basic ${BASIC}`,
+      });
+      // Masked before anything else can print it; the raw secret never reaches GITHUB_ENV.
+      expect(result.stdout).toContain(`::add-mask::${BASIC}`);
+      expect(JSON.stringify(result.githubEnv)).not.toContain(CREDENTIAL);
+      expect(result.stubLog.some((line) => line.startsWith("pnpm"))).toBe(
+        false,
+      );
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it.each([
+    ["a trailing newline", "\n"],
+    ["a trailing space", " "],
+    ["a trailing CRLF", "\r\n"],
+  ])(
+    "with %s on the secret, the header Lighthouse records is one the scrub then removes (/review 263 round 2)",
+    (_, tail) => {
+      const secrets = { ...SECRETS, STAGING_BASIC_AUTH: CREDENTIAL + tail };
+      const resolved = runWorkflowStep(origin, pullRequest(secrets), { stubs });
+      try {
+        expect(resolved.status).toBe(0);
+        const header = resolved.githubEnv["LHCI_AUTHORIZATION"] ?? "";
+        // Built from the trimmed secret, by the helper the check uses.
+        expect(header).toBe(`Basic ${BASIC}`);
+        const rc = readFileSync(
+          resolved.githubEnv["LHCI_CONFIG"] ?? "",
+          "utf8",
+        );
+        expect(rc).toContain(header);
+        // What the old job sent: the untrimmed secret's base64. The scrub must remove it too.
+        const untrimmed = Buffer.from(CREDENTIAL + tail).toString("base64");
+        const scrubbed = runWorkflowStep(scrub, pullRequest(secrets), {
+          files: {
+            ".lighthouseci/lhr-1.json": `{"extraHeaders":{"Authorization":"${header}"}}`,
+            ".lighthouseci/lhr-2.json": `{"extraHeaders":{"Authorization":"Basic ${untrimmed}"}}`,
+          },
+        });
+        try {
+          expect(scrubbed.status).toBe(0);
+          for (const name of ["lhr-1.json", "lhr-2.json"]) {
+            const body = readFileSync(
+              join(scrubbed.workspace, ".lighthouseci", name),
+              "utf8",
+            );
+            expect(body).toBe(
+              '{"extraHeaders":{"Authorization":"Basic REDACTED"}}',
+            );
+          }
+        } finally {
+          scrubbed.cleanup();
+        }
+      } finally {
+        resolved.cleanup();
+      }
+    },
+  );
+
+  it("exits non-zero on a secret that is only whitespace, measuring nothing", () => {
+    const result = runWorkflowStep(
+      origin,
+      pullRequest({ ...SECRETS, STAGING_BASIC_AUTH: " \n" }),
+      { stubs },
+    );
+    try {
+      expect(result.status).not.toBe(0);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("on a pull request without the wall's secret, exits 2 instead of measuring anything", () => {
+    const result = runWorkflowStep(
+      origin,
+      pullRequest({ ...SECRETS, STAGING_BASIC_AUTH: "" }),
+      { stubs },
+    );
+    try {
+      expect(result.status).toBe(2);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
+      expect(result.stubLog).toEqual([]);
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("on a pull request whose PR environment never comes, fails rather than falling back", () => {
+    const result = runWorkflowStep(origin, pullRequest(), {
+      stubs: { ...stubs, node: 'echo "node $*" >> "$STUB_LOG"; exit 1' },
+    });
+    try {
+      expect(result.status).toBe(1);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
+      expect(result.stubLog.some((line) => line.startsWith("pnpm"))).toBe(
+        false,
+      );
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("on a push, builds and measures the runner's Brotli origin, with no credential", () => {
+    const result = runWorkflowStep(origin, push, {
+      stubs,
+      files: { ".env.example": "APP_ENV=\n" },
+    });
+    try {
+      expect(result.status).toBe(0);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBe("http://127.0.0.1:3001");
+      expect(result.githubEnv["LHCI_CONFIG"]).toBe(
+        join(result.workspace, "lighthouserc.json"),
+      );
+      expect(result.githubEnv["LHCI_AUTHORIZATION"]).toBeUndefined();
+      expect(result.stubLog).toContain("pnpm lighthouse:origin");
+      expect(
+        result.stubLog.some((line) => line.includes("railway-preview")),
+      ).toBe(false);
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("refuses the runner path whenever a pull request number is present, whatever the event reads", () => {
+    const context = pullRequest();
+    const result = runWorkflowStep(
+      origin,
+      { ...context, github: { ...context.github, event_name: "labeled" } },
+      { stubs, files: { ".env.example": "" } },
+    );
+    try {
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("reached the runner-origin path");
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("measures with that config: the discarded run and the measured run both read LHCI_CONFIG", () => {
+    const measured = steps.map((step) => step.run ?? "").join("\n");
+    expect(measured.match(/--config="\$LHCI_CONFIG"/gu)?.length).toBe(2);
+  });
+
+  it("uploads the reports only after the scrub step succeeded", () => {
+    expect(scrub?.if).toBe("always()");
+    expect(upload?.if).toBe("always() && steps.scrub.outcome == 'success'");
+    expect(steps.indexOf(scrub as Step)).toBeLessThan(
+      steps.indexOf(upload as Step),
+    );
+  });
+
+  it("scrubs every form of the credential, reading the secret itself, not a value handed on (/break 263 hole 3)", () => {
+    const escaped = BASIC.replaceAll("/", "\\/");
+    const result = runWorkflowStep(scrub, pullRequest(), {
+      files: {
+        ".lighthouseci/lhr-1.json": `{"extraHeaders":{"Authorization":"Basic ${BASIC}"}}`,
+        ".lighthouseci/reports/en.report.html": `<script>window.__LH={"a":"Basic ${escaped}"}</script>`,
+        ".lighthouseci/reports/manifest.json": "[]",
+      },
+    });
+    try {
+      expect(result.status).toBe(0);
+      for (const name of ["lhr-1.json", "reports/en.report.html"]) {
+        const body = readFileSync(
+          join(result.workspace, ".lighthouseci", name),
+          "utf8",
+        );
+        expect(body).toContain("Basic REDACTED");
+        expect(body).not.toContain(BASIC);
+        expect(body).not.toContain(escaped);
+      }
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("has nothing to scrub on a push run without the secret, and passes", () => {
+    const result = runWorkflowStep(
+      scrub,
+      { ...push, secrets: {} },
+      { files: { ".lighthouseci/lhr-1.json": "{}" } },
+    );
+    try {
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain("not in scope");
+    } finally {
+      result.cleanup();
+    }
   });
 });
 

@@ -1,0 +1,143 @@
+{
+  "_fixture": "Derived from preview-project-ready.json for /break 263 hole 8: the project as it will look once founder step W1 lands. A decoy environment `flowers-overseas-xpr-263` comes first; in the real PR environment a `worker` instance (no domain, no deployment) is listed before `web`, and `web` carries a second custom domain before the PR host. Selecting the environment, the service or the domain by anything but its exact name must change the outcome.",
+  "data": {
+    "project": {
+      "id": "project-0000",
+      "environments": {
+        "edges": [
+          {
+            "node": {
+              "id": "env-staging",
+              "name": "staging",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-web",
+                      "serviceName": "web",
+                      "latestDeployment": {
+                        "id": "dep-staging",
+                        "status": "SUCCESS",
+                        "createdAt": "2026-10-18T19:00:00.000Z",
+                        "meta": {
+                          "commitHash": "1111111111111111111111111111111111111111",
+                          "branch": "main"
+                        }
+                      },
+                      "domains": {
+                        "customDomains": [
+                          {
+                            "id": "cd-staging",
+                            "domain": "staging.flowersoverseas.com",
+                            "status": {
+                              "dnsRecords": []
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "env-decoy",
+              "name": "flowers-overseas-xpr-263",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-web",
+                      "serviceName": "web",
+                      "latestDeployment": {
+                        "id": "dep-pr-263",
+                        "status": "FAILED",
+                        "createdAt": "2026-10-18T20:00:00.000Z",
+                        "meta": {
+                          "commitHash": "ABCDEF0123456789ABCDEF0123456789ABCDEF01",
+                          "branch": "task/TASK-099-pr-environments"
+                        }
+                      },
+                      "domains": {
+                        "customDomains": []
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "env-pr-263",
+              "name": "flowers-overseas-pr-263",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-worker",
+                      "serviceName": "worker",
+                      "latestDeployment": null,
+                      "domains": {
+                        "customDomains": []
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "serviceId": "svc-web",
+                      "serviceName": "web",
+                      "latestDeployment": {
+                        "id": "dep-pr-263",
+                        "status": "SUCCESS",
+                        "createdAt": "2026-10-18T20:00:00.000Z",
+                        "meta": {
+                          "commitHash": "ABCDEF0123456789ABCDEF0123456789ABCDEF01",
+                          "branch": "task/TASK-099-pr-environments"
+                        }
+                      },
+                      "domains": {
+                        "customDomains": [
+                          {
+                            "id": "cd-other",
+                            "domain": "florists.flowersoverseas.com",
+                            "status": {
+                              "dnsRecords": [
+                                {
+                                  "fqdn": "florists.flowersoverseas.com",
+                                  "hostlabel": "florists",
+                                  "recordType": "DNS_RECORD_TYPE_CNAME",
+                                  "requiredValue": "zzz999.up.railway.app"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "id": "cd-pr-263",
+                            "domain": "pr-263.flowersoverseas.com",
+                            "status": {
+                              "dnsRecords": [
+                                {
+                                  "fqdn": "pr-263.flowersoverseas.com",
+                                  "hostlabel": "pr-263",
+                                  "recordType": "DNS_RECORD_TYPE_CNAME",
+                                  "requiredValue": "abc123.up.railway.app"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

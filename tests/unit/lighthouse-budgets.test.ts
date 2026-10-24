@@ -60,22 +60,62 @@ describe("lighthouserc.json budgets (AC-23)", () => {
     expect(rc.ci.assert.assertions).toBeUndefined();
     expect(rc.ci.assert.assertMatrix).toHaveLength(3);
     expect(everyUrl).toEqual({
-      "categories:performance": ["error", { minScore: 0.95 }],
+      "categories:performance": [
+        "error",
+        { minScore: 0.95, aggregationMethod: "median" },
+      ],
       // TASK-056: AC-24 names three categories, not one. `accessibility` and `best-practices`
       // were collected and never asserted, so a 404 favicon and an axe regression were both
       // invisible to the gate that publishes their scores.
-      "categories:accessibility": ["error", { minScore: 0.95 }],
-      "categories:best-practices": ["error", { minScore: 0.95 }],
-      "largest-contentful-paint": ["error", { maxNumericValue: 2000 }],
-      "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
+      "categories:accessibility": [
+        "error",
+        { minScore: 0.95, aggregationMethod: "median" },
+      ],
+      "categories:best-practices": [
+        "error",
+        { minScore: 0.95, aggregationMethod: "median" },
+      ],
+      "largest-contentful-paint": [
+        "error",
+        { maxNumericValue: 2000, aggregationMethod: "median" },
+      ],
+      "cumulative-layout-shift": [
+        "error",
+        { maxNumericValue: 0.05, aggregationMethod: "median" },
+      ],
       // 120 KB and 200 KB in bytes: **transfer** size, i.e. Brotli over the wire on Vercel
       // (spec 004 §13 Q13's restatement; the `//` note in the file spells it out).
       // 128 KB Brotli: spec 004 §13 Q13's restatement as corrected by §14 A1 (TASK-050 carried
       // the number here and into `scripts/client-js-budget.ts`; the job stays informational until
       // TASK-056 flips it). Per URL since spec 004 A-founder-2026-10-18a: 131 072 B on every URL
       // but a product address, 133 120 B there (`product-script-budget.test.ts`).
-      "resource-summary:image:size": ["error", { maxNumericValue: 204800 }],
+      "resource-summary:image:size": [
+        "error",
+        { maxNumericValue: 204800, aggregationMethod: "median" },
+      ],
     });
+  });
+
+  /**
+   * spec 040 AC-27 / T-28 (TASK-103), spec 004 §14 A18's ruling. `@lhci/cli` reads
+   * `aggregationMethod` from each assertion's own options and defaults it to `optimistic`, which
+   * for a `maxNumericValue` assertion takes the **fastest** run: one lucky run passed a page whose
+   * median was over budget, and one unlucky run could not fail it. `median` is set on every
+   * assertion of every `assertMatrix` entry (the per-URL script budgets included), so no budget is
+   * judged by its best run.
+   */
+  it("aggregates every assertion by the median of the runs (AC-27), never the optimistic default", () => {
+    const entries = rc.ci.assert.assertMatrix.flatMap((entry) =>
+      Object.entries(entry.assertions),
+    );
+    // 6 every-URL assertions + the 131 072 B and 133 120 B script budgets.
+    expect(entries.length).toBe(8);
+    for (const [name, assertion] of entries) {
+      expect(Array.isArray(assertion), name).toBe(true);
+      const [level, options] = assertion as [string, Record<string, unknown>];
+      expect(level, name).toBe("error");
+      expect(options["aggregationMethod"], name).toBe("median");
+    }
   });
 
   it("collects three mobile runs, so one noisy run cannot fail or pass the PR", () => {
@@ -227,16 +267,21 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(ci).toContain("pnpm seo:validate");
   });
 
-  it("measures this repository's own bytes, Brotli-encoded, not a preview (AC-24)", () => {
-    // TASK-056's answer to the question `lighthouserc.json` left open: `resource-summary:script:
-    // size` is transfer size, `next start` sends gzip and a protected preview sends Brotli plus
-    // tens of KB of `vercel.live` that is in no build output of ours. So the job builds, serves
-    // and measures itself.
+  it("measures the PR's Railway environment on a pull request and its own Brotli origin otherwise (spec 040 AC-26, AC-27; TASK-099)", () => {
+    // A pull request: `pr-<n>.flowersoverseas.com` through Cloudflare, which serves the Brotli
+    // the budget is written in. Any other event: TASK-056's own build behind the Brotli proxy,
+    // because there is no PR environment and staging waits for this very run (TASK-103 E-1).
     const job = ci.slice(ci.indexOf("  lighthouse:"));
     expect(job).toMatch(/needs: build/);
+    expect(job).toContain('if [ "$EVENT_NAME" = "pull_request" ]; then');
+    expect(job).toContain(
+      'node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA"',
+    );
     expect(job).toContain("pnpm lighthouse:origin");
-    expect(job).toContain("LHCI_BASE_URL: http://127.0.0.1:3001");
+    expect(job).toContain('echo "LHCI_BASE_URL=http://127.0.0.1:3001"');
+    expect(job).toContain('echo "LHCI_BASE_URL=$url"');
     expect(job).toContain("lighthouserc.json");
+    // It resolves the environment itself: `needs: preview` would skip it on every push (AC-38).
     expect(job).not.toContain("needs.preview.outputs.preview_url");
   });
 
@@ -266,7 +311,7 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(ci).not.toContain("honest verdict");
     const job = ci.slice(ci.indexOf("  lighthouse:"));
     const runIndex = job.indexOf(
-      "name: Run Lighthouse CI against the Brotli origin",
+      "name: Run Lighthouse CI against the measured origin",
     );
     const summaryIndex = job.indexOf(
       "name: Summarise what Lighthouse actually measured",
@@ -291,13 +336,16 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(job).not.toContain("if-no-files-found: warn");
   });
 
-  it("needs no deployment secret at all now that it serves what it measures", () => {
-    // The bypass header was how the job reached a protected preview. It measures a local origin
-    // since TASK-056, so the secret is neither needed nor present in this job — one fewer place a
-    // secret can leak into a log line. The Playwright jobs still carry it.
+  it("carries no Vercel secret, and the wall's credential only into the origin and scrub steps", () => {
+    // The bypass header was how the job reached a protected Vercel preview; that host is gone
+    // from CI (spec 040 §14 A2). The PR environment's wall takes `STAGING_BASIC_AUTH`, read in
+    // the origin step (masked in its Basic form) and by the scrub step, which reads the secret
+    // itself before the reports are uploaded (/break 263 hole 3).
     const job = ci.slice(ci.indexOf("  lighthouse:"));
     expect(job).not.toContain("VERCEL_AUTOMATION_BYPASS_SECRET");
     expect(job).not.toContain("x-vercel-protection-bypass");
-    expect(ci).toContain("x-vercel-protection-bypass");
+    expect(job.match(/secrets\.STAGING_BASIC_AUTH/gu)?.length).toBe(2);
+    expect(job).toContain('echo "::add-mask::$basic"');
+    expect(job).toContain("name: Scrub the wall's credential from the reports");
   });
 });

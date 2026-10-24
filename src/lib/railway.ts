@@ -76,6 +76,19 @@ export const railwayServiceInstanceSchema = z.object({
   restartPolicyType: z.string().nullable().optional(),
   restartPolicyMaxRetries: z.number().int().nullable().optional(),
   startCommand: z.string().nullable().optional(),
+  /**
+   * Spec 040 AC-10 (TASK-103): what `worker` must not have. Optional so a response recorded
+   * before the query asked for them still parses; `compareWorkerService` fails closed on their
+   * absence rather than reading it as "no domain".
+   */
+  domains: z
+    .object({
+      serviceDomains: z.array(z.object({ domain: z.string() })),
+      customDomains: z.array(z.object({ domain: z.string() })),
+    })
+    .nullable()
+    .optional(),
+  latestDeployment: z.object({ status: z.string() }).nullable().optional(),
 });
 export type RailwayServiceInstance = z.infer<
   typeof railwayServiceInstanceSchema
@@ -161,6 +174,65 @@ export function findServiceInstance(
     .find((node) => node.serviceName === serviceName);
 }
 
+/** The service spec 002 TASK-024 will run jobs on; until then a seat with nothing running. */
+export const WORKER_SERVICE_NAME = "worker";
+
+/** The environments AC-10 requires the `worker` seat in. */
+export const WORKER_ENVIRONMENTS: readonly string[] = ["production", "staging"];
+
+/**
+ * Deployment statuses that mean a replica is running or about to: AC-10 allows none of them on
+ * `worker` until spec 002 TASK-024. A failed, removed, crashed, skipped or sleeping deployment,
+ * or none at all, runs nothing.
+ */
+export const WORKER_RUNNING_STATUSES: readonly string[] = [
+  "SUCCESS",
+  "DEPLOYING",
+  "BUILDING",
+  "INITIALIZING",
+  "QUEUED",
+  "WAITING",
+  "NEEDS_APPROVAL",
+];
+
+/**
+ * Spec 040 AC-10 (TASK-103): the `worker` seat has no public domain and runs no replica. One line
+ * per failure, naming the field; empty when it holds. Missing `domains` fails: an answer that does
+ * not report them cannot prove there are none.
+ */
+export function compareWorkerService(live: RailwayServiceInstance): string[] {
+  const failures: string[] = [];
+  if (live.domains === undefined || live.domains === null) {
+    failures.push(
+      "domains not reported, so the absence of a public domain is unproven (spec 040 AC-10)",
+    );
+  } else {
+    const names = [
+      ...live.domains.serviceDomains,
+      ...live.domains.customDomains,
+    ].map((domain) => domain.domain);
+    if (names.length > 0) {
+      failures.push(
+        `public domain ${names.join(", ")}: none is allowed until spec 002 TASK-024 (spec 040 AC-10)`,
+      );
+    }
+  }
+  // `null` is Railway saying "no deployment"; a missing field is an answer that did not say, and
+  // fails closed like `domains` (`/break 263` hole 7).
+  if (live.latestDeployment === undefined) {
+    failures.push(
+      "latestDeployment not reported, so zero running replicas is unproven (spec 040 AC-10)",
+    );
+  }
+  const status = live.latestDeployment?.status;
+  if (status !== undefined && WORKER_RUNNING_STATUSES.includes(status)) {
+    failures.push(
+      `latestDeployment is ${status}: zero running replicas until spec 002 TASK-024 (spec 040 AC-10)`,
+    );
+  }
+  return failures;
+}
+
 /** The declared contract: AC-11's 29 keys, straight from the zod schemas. */
 export const CONTRACT_VARIABLE_KEYS: readonly string[] = [...ENV_KEYS].sort();
 
@@ -234,6 +306,20 @@ function isInjected(key: string): boolean {
 }
 
 /** `production`, `staging`, or `preview` for any PR environment (§5.3's environment table). */
+/**
+ * Keys an environment **must** carry beyond the contract (`/review 80` carry-forward, TASK-099):
+ * the access wall is absent-means-off (spec 040 §12), so on `staging` and on every PR environment
+ * a missing `STAGING_BASIC_AUTH` would open the site, and `railway:check --env` names it as
+ * missing. `production` must never carry it (AC-25), which `OPTIONAL_VARIABLE_KEYS` already holds.
+ */
+export const ENVIRONMENT_REQUIRED_KEYS: Readonly<
+  Record<"production" | "staging" | "preview", readonly string[]>
+> = Object.freeze({
+  production: [],
+  staging: [STAGING_BASIC_AUTH_KEY],
+  preview: [STAGING_BASIC_AUTH_KEY],
+});
+
 export function environmentKind(
   environmentName: string,
 ): "production" | "staging" | "preview" {
@@ -261,7 +347,12 @@ export function compareVariableKeys(
 ): VariableKeyReport {
   const optional = OPTIONAL_VARIABLE_KEYS[environmentKind(environmentName)];
   const live = new Set(liveKeys);
-  const missing = REQUIRED_VARIABLE_KEYS.filter((key) => !live.has(key)).sort();
+  const missing = [
+    ...REQUIRED_VARIABLE_KEYS,
+    ...ENVIRONMENT_REQUIRED_KEYS[environmentKind(environmentName)],
+  ]
+    .filter((key) => !live.has(key))
+    .sort();
   const unexpected = [...live]
     .filter(
       (key) =>
@@ -429,21 +520,17 @@ export interface TriggerReport {
    *  - `production-services` (AC-42, until TASK-104): a declared production service with status
    *    `absent`, while the production environment is in the response and its `web` row is
    *    `absent` too;
-   *  - `staging-worker` (AC-44, until TASK-103): staging's `worker` with status `absent`, no
-   *    instance and no live trigger. Staging's `web` is never this, so a response without the
-   *    staging environment (both of its rows absent) is never labelled.
+   * AC-44's second case, staging's missing `worker`, retired with TASK-103 (spec 040 §14 A4):
+   * a missing staging `worker` is now a plain failure, like any other missing service.
    * A service that exists with no trigger, a wrong branch, or a missing production `worker` while
    * production `web` exists is never expected. The CLI also withholds the label when another
-   * check failed (`failureVerdict`). TASK-103's PR deletes `staging-worker`.
+   * check failed (`failureVerdict`).
    */
   readonly expectedAbsences: readonly ExpectedAbsence[];
 }
 
-/** AC-44's two expected cases, in the order the label names them. */
-export const EXPECTED_ABSENCES = [
-  "production-services",
-  "staging-worker",
-] as const;
+/** AC-44's expected case still open: production's services, until TASK-104 (case (b) retired with TASK-103). */
+export const EXPECTED_ABSENCES = ["production-services"] as const;
 export type ExpectedAbsence = (typeof EXPECTED_ABSENCES)[number];
 
 /** `<environment> · <service> · triggers on <live>, declared <declared>` (AC-34's line). */
@@ -463,8 +550,6 @@ function expectedAbsenceOf(
   if (row.status !== "absent") return undefined;
   if (row.environment === "production" && productionWebAbsent)
     return "production-services";
-  if (row.environment === "staging" && row.service === "worker")
-    return "staging-worker";
   return undefined;
 }
 

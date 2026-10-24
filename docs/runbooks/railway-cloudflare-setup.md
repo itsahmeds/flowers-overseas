@@ -192,25 +192,26 @@ repository source is not checked. `RAILWAY_ENVIRONMENT_ID` is **optional**: it e
 check (AC-9), and `--env` needs it. A red run prints one line per difference, such as
 `production · web · triggers on main, declared release`, on stdout, and a verdict on stderr.
 
-**The expected red, until TASK-104 and TASK-103.** While production has no `web` service
-(TASK-104 creates it, on `release`), or staging has no `worker` service (TASK-103 creates it), a
-run with `RAILWAY_ENVIRONMENT_ID` unset exits **1** (spec 040 AC-42, AC-44). Its stdout is exactly
-the `production · <service> · triggers on none, declared release` lines for the production services
-that do not exist, and `staging · worker · triggers on none, declared main` while staging has no
-`worker`. Its stderr is exactly one of these three lines, depending on which of the two is missing:
+**The expected red, until TASK-104.** While production has no `web` service (TASK-104 creates
+it, on `release`), a run with `RAILWAY_ENVIRONMENT_ID` unset exits **1** (spec 040 AC-42, AC-44
+case (a)). Its stdout is exactly the `production · <service> · triggers on none, declared release`
+lines for the production services that do not exist, and its stderr is exactly:
 
 ```text
 railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` (spec 040 AC-42, T-44): every failure above is a declared production service that does not exist yet. Once production `web` exists, this output is a real failure.
-railway:check: EXPECTED RED until TASK-103 creates staging `worker` (spec 040 AC-44, T-45): every failure above is staging's `worker`, which does not exist yet. Once staging `worker` exists, this output is a real failure.
-railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure above is a declared production service or staging's `worker`, none of which exists yet. Once both exist, this output is a real failure.
 ```
 
-The first is for production missing, the second for staging's `worker` missing, and the third for
-both. A missing production service counts only while production's `web` is missing too. A label
-appears only when every failure is one of those cases and every other check on the run passed. Any
+A missing production service counts only while production's `web` is missing too. The label
+appears only when every failure is one of those and every other check on the run passed. Any
 other red carries no label and is a real failure, including a missing staging `web`, a staging
-`worker` that exists with no trigger or on another branch, and a missing production `worker` while
-production `web` exists. Once TASK-104 and TASK-103 have both run, every run must exit 0.
+`worker` that exists with no trigger or on another branch, a missing production `worker` while
+production `web` exists, and, **since TASK-103, a missing staging `worker`** (AC-44 case (b) is
+retired, spec 040 §14 A4): founder step W1 below creates it.
+
+**The `worker` seat (spec 040 AC-10, TASK-103).** With `RAILWAY_ENVIRONMENT_ID` set to production
+or staging, the service check also requires a `worker` service with **no** Railway or custom
+domain and **no** running deployment (`service worker: no public domain and no running deployment
+(spec 040 AC-10)`); a domain, a running deployment, or a missing `worker` fails, naming it.
 
 Otherwise every run must exit 0. `railway:check` prints key names and configuration values only; it
 never reads a variable value, which is why it is safe to paste its output into a PR.
@@ -423,36 +424,122 @@ It prints exactly `["deletion"]`. `[]` means the ruleset is not active or does n
 
 ### What the checks print today
 
-While production has no `web` service (until TASK-104), `pnpm railway:check` after F1–F3, with
-`RAILWAY_ENVIRONMENT_ID` unset, exits **1**, and that is the expected result. Its stdout has one
-line per production service that does not exist, the staging `worker` line while staging has no
-`worker` service (until TASK-103), and no other line:
+While production has no `web` service (until TASK-104), `pnpm railway:check` after F1–F3 and W1,
+with `RAILWAY_ENVIRONMENT_ID` unset, exits **1**, and that is the expected result. Its stdout has
+one line per production service that does not exist, and no other line:
 
 ```text
 production · web · triggers on none, declared release
 production · worker · triggers on none, declared release
-staging · worker · triggers on none, declared main
 ```
 
-(The production `worker` line is there only while production has no `worker` service at all, and
-the `staging · worker` line only while staging has none.) Its stderr is exactly one line. With the
-`staging · worker` line on stdout, it is:
-
-```text
-railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure above is a declared production service or staging's `worker`, none of which exists yet. Once both exist, this output is a real failure.
-```
-
-Without the `staging · worker` line, it is:
+(The production `worker` line is there only while production has no `worker` service at all.) Its
+stderr is exactly:
 
 ```text
 railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` (spec 040 AC-42, T-44): every failure above is a declared production service that does not exist yet. Once production `web` exists, this output is a real failure.
 ```
 
-TASK-164 taught the check to label the missing staging `worker` (spec 040 AC-44), so this run is
-labelled whether or not staging has a `worker` yet. Paste the output into `docs/tasks/TASK-157.md`.
-Once TASK-104 has created `web` on `release`, the same command must exit 0 (TASK-104 runs after
-TASK-103, so staging has its `worker` by then); that run is recorded in TASK-104's brief, before
-the DNS change.
+A `staging · worker · triggers on none, declared main` line means W1 has not been done: since
+TASK-103 that run is unlabelled, a real failure. Once TASK-104 has created `web` on `release`, the
+same command must exit 0; that run is recorded in TASK-104's brief, before the DNS change.
+
+## PR environments (spec 040 §5.5, AC-12, AC-26; TASK-099)
+
+Every pull request gets its own copy of staging on Railway, at
+`https://pr-<number>.flowersoverseas.com`, through Cloudflare, behind the staging wall. CI's
+`preview` job makes the copy its own: `scripts/railway-preview.ts --provision` adds the domain to
+its `web` service, writes the DNS record Railway asks for into the zone (proxied), and sets
+`APP_ENV=preview`, `NEXT_PUBLIC_APP_ENV=preview`, `NEXT_PUBLIC_SITE_URL=https://pr-<number>…`,
+`ENABLE_PSEUDO_LOCALES=true` and `ENABLE_DEV_UI=true` on it; Railway rebuilds it. Then `preview`
+asserts the 401 wall, the Amsterdam region and `noindex` on it, and `e2e`, `visual`, `a11y` and
+`lighthouse` run against it. Railway deletes the environment when the pull request closes, and the
+nightly `cloudflare-check` run deletes its DNS records (`--sweep`).
+
+**Until P1–P4 are done, `preview` and `lighthouse` are red on every pull request**, naming the
+missing step. That is deliberate: AC-26 says the job fails and never skips.
+
+`lighthouse` has no `ci:full` gate, so **every** ready pull request provisions its environment
+and may wait up to 15 minutes for it, and a pull request from a fork (which gets no secrets) is
+always red on `preview` and `lighthouse`. Both are accepted for a repository with one writer.
+Lighthouse sends the wall's credential (`extraHeaders`) to every origin the page loads, which
+today means the PR host and `media.flowersoverseas.com` (our own R2 bucket); Playwright scopes it
+to the PR host only. No artifact keeps it: every upload is checked by
+`scripts/artifact-credential-check.ts` first, and Playwright records no trace while it is set.
+
+### P1 — turn PR environments on, forked from `staging`
+
+1. Railway → the Flowers Overseas project → **Settings** (the project's) → **Environments**.
+2. Turn on **PR Environments**. Where it asks for the base environment, choose **staging**.
+3. Leave **Bot PR environments** off.
+
+**Proof:** open or update any ready pull request. Within a minute Railway lists a new environment
+whose name ends in `pr-<number>` in the environment switcher, and `preview`'s log says
+`railway-preview: attempt …` with something other than `no Railway environment named …`.
+
+### P2 — the five repository secrets
+
+GitHub → the repository → **Settings** → **Secrets and variables** → **Actions** → **New
+repository secret**, once for each name below. Paste each value yourself; nobody else sees it.
+
+| Name | Value | Where it comes from |
+|---|---|---|
+| `RAILWAY_API_TOKEN` | the workspace token of F5 (it must be able to change the project: add a domain, set variables) | Railway → account → **Tokens** |
+| `RAILWAY_PROJECT_ID` | the project id | Railway → project → **Settings** → **General** |
+| `STAGING_BASIC_AUTH` | the same `user:password` as staging's `STAGING_BASIC_AUTH` variable (step 3 above) | your password manager |
+| `CLOUDFLARE_API_TOKEN` | already set (Z4): its **DNS Edit** scope is what writes the `pr-<n>` records | — |
+| `CLOUDFLARE_ZONE_ID` | already set (Z4) | — |
+
+**Proof:** `gh secret list --repo itsahmeds/flowers-overseas` lists all five names. A missing one
+makes `preview` exit 2 with `railway-preview: missing <NAME>`.
+
+### P3 — "Wait for CI" must not hold PR environments
+
+`preview` waits for the PR environment, so a PR environment that waits for CI would wait for
+`preview`: neither finishes, and after 15 minutes `preview` fails. F4 turned **Wait for CI** on for
+staging's `web`, and a PR environment is a copy of staging.
+
+1. Open the PR environment of any open pull request (environment switcher → `…pr-<number>`) →
+   **web** → **Settings** → **Source**.
+2. If **Wait for CI** is on there, tell the orchestrator: the setting is copied from staging, and
+   the choice between keeping F4 and PR environments that build at once is the founder's (TASK-103
+   escalation E-2). Do not turn F4 off without that decision.
+
+**Proof:** `preview` never fails with `is held by Railway's "Wait for CI"`. That message is the
+script reading the deployment as `WAITING`.
+
+### P4 — no approval step for PR deploys
+
+If Railway asks for approval before deploying a PR environment (a deployment shown as **Needs
+approval**), approve it, or turn that requirement off in project **Settings** → **Environments**.
+`preview` fails at once on `NEEDS_APPROVAL`, naming this step.
+
+## The `worker` seat (spec 040 AC-10; TASK-103)
+
+### W1 — create `worker` in staging and production, with nothing to run
+
+Spec 002 TASK-024 will run background jobs on a `worker` service. Until then it is a seat: it exists
+in both environments, shares their variables, has **no** domain and runs **nothing**.
+
+1. Railway → environment switcher → **staging** → **+ Create** (or **New**) → **Empty Service**.
+2. Name it exactly `worker`. Do **not** connect a repository or an image, and do not deploy it.
+3. Open `worker` → **Settings** → **Networking**: there must be no domain. If Railway generated
+   one, delete it.
+4. Variables: staging's variables are **shared** variables, so `worker` already sees the same set
+   (spec 040 AC-10, "the same variable set"). If Railway shows a "share with this service" prompt,
+   accept it for all of them.
+5. Repeat 1–4 in **production**. If production has no services yet (TASK-104 creates `web`),
+   create `worker` there all the same: it has no source, so F1's trigger rule does not apply to it.
+
+**Proof:** with `RAILWAY_ENVIRONMENT_ID` set to staging's id, then to production's:
+
+```bash
+pnpm railway:check
+```
+
+prints `service worker: no public domain and no running deployment (spec 040 AC-10)`, and the
+trigger check prints `staging · worker · no repository source, not checked`. Paste both runs into
+`docs/tasks/TASK-103.md` `## Result`.
 
 ## Cloudflare zone settings (spec 040 §5.4, §12 step 4; TASK-100)
 

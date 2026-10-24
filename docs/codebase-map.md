@@ -155,6 +155,7 @@ task actually touches.
 | Script | `pnpm` | Purpose |
 |---|---|---|
 | `admin-grant.ts` | `admin:grant` | Create or update an admin (§2.2) |
+| `artifact-credential-check.ts` | — | CI artifact check: no upload carries the staging wall's… |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the… |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2… |
 | `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next build`… |
@@ -194,6 +195,7 @@ task actually touches.
 | `pages-index.ts` | `pages:index` | `pnpm pages:index` — regenerate the typed info-page… |
 | `pr-policy.ts` | `pr-policy` | PR policy |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift… |
+| `railway-preview.ts` | — | Railway PR environment for CI: provision the proxied… |
 | `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote` and `pnpm… |
 | `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in… |
 | `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts… |
@@ -213,14 +215,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 362 |
+| `tests/unit/` | 364 |
 | `tests/integration/` | 46 |
-| `tests/contract/` | 25 |
+| `tests/contract/` | 26 |
 | `tests/e2e/` | 71 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 351 |
+| `tests/fixtures/` | 357 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
