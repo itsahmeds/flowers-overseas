@@ -74,6 +74,8 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-25: started in worktree `/Users/ahmed/dev/fo-wt-184` on `task/TASK-184-de-pl-drafts-closeout`; TASK-182 and TASK-183 are merged. Next: the untranslated line and the hreflang filter, then the de/pl content drafts.
+- 2026-10-25: built and pushed. Drafts (20 files), the untranslated line, the hreflang filter, the pseudo fallback, T-22/T-23/T-27/T-28/T-29/T-30 tests, the runbook, the seo fixtures and holes 10/11/12 are in PR #432. Mutations M1 to M4 and the hole mutations were watched red. Local build in the slot: the 1280 and 390 screenshots of the de/pl drafts match the artboards. The trust and help phone docks are not built (TASK-182 E6), so those first-screen shots have no dock.
+- 2026-10-25: CI on 8226b3b4 failed in e2e (footer, links) and a11y (footer nav count) because de/pl footers now draw the trust and legal rows. Fixed in c7f31db/edc888e, with the de/pl `footer.link.deliveryAndPayment` drafted. Rebased on origin/main. Left: (1) re-run the `visual:baselines` label on the new head, then commit the linux PNGs and the manifest. Commit only the info-*, ar-XB, ar-XB-help, de.png, footer-de-* and home-de/pl-* files. Restore runner noise (home-en*, listing-*, occasion-hub-*, product-*-gallery-placeholder) to HEAD, with their hashes taken from HEAD's manifest, and check with `pnpm visual:baselines --verify`. (2) Toggle `ci:full` and get it green on the head. (3) Fill in the PR body; the draft is in the agent scratchpad pr-body.md. (4) Write `## Result` and set the row to `in_review`. The darwin PNGs from the local run are set aside, not committed.
 
 ## Result
 
