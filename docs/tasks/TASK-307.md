@@ -77,5 +77,6 @@ and 1280 x 800, T-8 eight cases, T-9 one). AC-1 row (idea 1): JS 375 B Brotli (c
 199 B Brotli (cap 400), cards 0 B, product page `<style>` 243 B raw (145 B Brotli). AC-9 LCP
 medians at 1440 x 900 by card click, local run in the build slot against CI's preview build (load
 average about 3): morph on 48 ms, off 44 ms, delta 4 ms (on 120, 48, 52, 48, 48; off 44, 56, 44,
-52, 44); CI's numbers are in the e2e job's log on the PR's head (`AC-9 LCP medians`). Local e2e on
+52, 44). CI, e2e job on 8d5bf264d (run 40153475709): morph on 152 ms, off 116 ms, delta 36 ms
+(on 152, 140, 156, 156, 140; off 116, 120, 116, 116, 116), within AC-9's 50 ms. Local e2e on
 that build: 10 of 10 green before the 1280 case was added, then T-7 2 of 2.
