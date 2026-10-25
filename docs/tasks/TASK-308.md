@@ -44,6 +44,7 @@ here.
 - 2026-10-23, implementer: `dev-components-desktop` Linux baseline from run 39843386160 committed after looking at it (Caveat on both checkout cards); PR ready with `ci:full`. Next: CI on head.
 - 2026-10-24, finisher: rebased on `origin/main`; main's `dev-components-desktop` baseline had moved, so the old one was dropped and re-rendered (visual-baselines run 40088159402, only that image taken after looking: Caveat on both checkout cards; `laptop-country-category` decode noise not taken). `pnpm gates:cheap` PASS on `0b8b98bd`. Note: PR 316 (TASK-311) also creates `src/config/interactions.ts`, `interactions-css.test.ts` and `interactions-budget.test.ts`; whichever merges second must be rebased and merge both ideas' rows.
 - 2026-10-24 evening (finisher 2): rebased onto `5a2e9f02` (map regenerated). Took only `dev-components-desktop.png` from visual-baselines run 40108714129 (Caveat card previews, page below +112 px); the nine other re-renders were within CI's tolerance on the old head and are not taken.
+- 2026-10-25 morning (finisher 3): replayed the eight non-baseline commits onto `7bb74808` (map regenerated), dropped the two old baseline commits, and took only `dev-components-desktop.png` from visual-baselines run 40174810346 (byte-identical to run 40108714129's render: Caveat on both card previews). The other re-rendered images were not taken: pages this diff does not touch. `pnpm gates:cheap` PASS on `a19cb2e9`.
 
 ## Result
 
