@@ -724,6 +724,9 @@
     },
     "comingUp": {
       "more": "and {count} more"
+    },
+    "price": {
+      "heading": "Shop by price"
     }
   },
   "infoPages": {

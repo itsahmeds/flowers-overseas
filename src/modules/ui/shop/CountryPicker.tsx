@@ -170,12 +170,12 @@ export function CountryPicker({
             autoComplete="off"
             placeholder={searchLabel}
             defaultValue={typed}
-            className={`rounded-field border-field-edge bg-card text-ui text-ink placeholder:text-ink-3 block min-h-(--field-height) w-full border-[1.5px] border-solid ps-[42px] pe-[14px]${home ? "max-md:min-h-[44px]" : ""}`}
+            className={`rounded-field border-field-edge bg-card text-ui text-ink placeholder:text-ink-3 block min-h-(--field-height) w-full border-[1.5px] border-solid ps-[42px] pe-[14px] ${home ? "max-md:min-h-[44px] max-md:[&::-webkit-calendar-picker-indicator]:hidden! max-md:[&::-webkit-search-cancel-button]:hidden" : ""}`}
           />
         </div>
         <button
           type="submit"
-          className={`${continueTo === undefined ? ACCENT : OUTLINE} min-h-[46px] px-[24px]${home ? "max-md:min-h-[44px]" : ""}`}
+          className={`${continueTo === undefined ? ACCENT : OUTLINE} min-h-[46px] px-[24px] ${home ? "flex-none max-md:min-h-[44px]" : ""}`}
           data-fo-pending=""
         >
           {submitLabel}
