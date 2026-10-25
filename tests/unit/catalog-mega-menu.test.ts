@@ -223,14 +223,17 @@ describe("megaMenuModel out of context (AC-100, spec 043 AC-3)", () => {
 });
 
 describe("megaMenuModel in context (spec 043 AC-50, T-50)", () => {
-  it("equals the pinned table for each shop country", async () => {
-    for (const iso2 of await shopCountries("en")) {
-      const model = await megaMenuModel("en", iso2, { now: NOW });
-      expect(model, iso2).toEqual(
-        pinned(`mega-menu-en-${iso2.toLowerCase()}`, model),
-      );
-    }
-  });
+  it.each(["en", "en-gb"] as const)(
+    "%s equals the pinned table for each shop country",
+    async (locale) => {
+      for (const iso2 of await shopCountries(locale)) {
+        const model = await megaMenuModel(locale, iso2, { now: NOW });
+        expect(model, iso2).toEqual(
+          pinned(`mega-menu-${locale}-${iso2.toLowerCase()}`, model),
+        );
+      }
+    },
+  );
 
   it("links the country's own pages, submits shop entries to its shop root, features its priced cards", async () => {
     const [iso2] = await shopCountries("en");

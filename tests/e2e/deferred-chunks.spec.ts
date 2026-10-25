@@ -305,7 +305,7 @@ test.describe("a tap before the islands load still works (clause 3)", () => {
       .toContain("fo:deferred:motions");
     // The module has run: it adds its `Esc` listener before it marks `<html>`.
     await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
-    await page.locator("[data-fo-menu-item]").first().focus();
+    await page.locator("[data-fo-menu-accordion] > summary").first().focus();
     await page.keyboard.press("Escape");
     await expect(page.locator("[data-fo-menu][open]")).toHaveCount(0);
   });

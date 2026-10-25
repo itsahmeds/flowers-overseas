@@ -1,22 +1,27 @@
 /**
- * The header in a destination's context (spec 043 §5.3 A, §5.4, §6, AC-1, AC-2, AC-3, AC-4, AC-6;
- * T-01 to T-04 and T-06's e2e halves; TASK-288), against the built site.
+ * The mega menu in and out of a destination's context against the built site (spec 043 §5.3 A,
+ * §5.4, §6, AC-2, AC-3 and AC-50 as spec 004 §14 A-founder-2026-10-24a amends them, AC-4, AC-6;
+ * T-01 to T-04, T-06 and T-50's e2e halves; TASK-288, TASK-383).
  *
- *  - **T-01 / AC-1.** On the five pages AC-1 names and their `en-gb` twins, with JavaScript off,
- *    the row at 1440 × 900 and the phone Menu at 390 × 844 link the destination's own pages, each
- *    href asserted as the one value of the design band's table
- *    (`docs/design/wireframes/country-shop-desktop.dc.html`, "Spec 043 · the header in context").
- *  - **T-02 / AC-2.** Every header and Menu href on the crawl set (the shown locales' homes plus
- *    `/`) and on every in-context page of `en` and `en-gb` answers 200.
- *  - **T-03 / AC-3.** Out of context the row and the Menu equal main's hrefs, captured before the
- *    change (`tests/fixtures/header/out-of-context-hrefs.json`), on a full load **and** after a
- *    client-side navigation (`router.push`, proved soft by a window marker that survives), and
- *    after a client-side navigation into Poland the row is AC-1's.
+ *  - **T-01, T-50 / AC-50.** On AC-1's pages and their `en-gb` twins, with JavaScript off, the
+ *    six panels at 1440 × 900 and the phone Menu's accordions at 390 × 844 hold exactly
+ *    `megaMenuModel(locale, iso2)`'s entries: the country's own pages as links, colour and price
+ *    as GET forms to its shop root.
+ *  - **T-02 / AC-2.** Every header and Menu href on the crawl set and on every in-context page of
+ *    `en` and `en-gb` answers 200 (the chooser's paths included: this PR merges after TASK-385).
+ *  - **T-03 / AC-3.** Out of context the row and the Menu equal `megaMenuModel(locale, null)`, on
+ *    a full load **and** after a client-side navigation (`router.push`, proved soft by a window
+ *    marker that survives), and after a client-side navigation into Poland they are Poland's.
  *  - **T-04 / AC-4.** No `Set-Cookie`, no `Vary` on a cookie, language or geo header, the body
  *    byte-identical across the cookie and header permutations, and each route prerendered in the
  *    build's manifest. `budget:client-js` is CI's own gate (`scripts/client-js-budget.ts`).
  *  - **T-06 / AC-6.** Every category and occasion hub answers 200, is at most three clicks from its
  *    locale home, and is linked from at least one out-of-context page that is not itself.
+ *
+ * The expected entries are the unit suite's pinned models (`tests/fixtures/header/mega-menu-*`,
+ * `tests/unit/catalog-mega-menu.test.ts`), built from the same committed data with a fixed clock;
+ * "Coming up" is the one column that moves with the build's date, so it is compared by shape (at
+ * most five entries, each with its date) rather than by value.
  *
  * The documents do not depend on the project's device, so the file runs once, in `e2e-desktop`,
  * and sets each viewport itself.
@@ -33,24 +38,61 @@ import {
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
-/** Main's out-of-context hrefs, captured before the change (never regenerated from a branch). */
-interface Baseline {
-  readonly row: Record<string, string>;
-  readonly menu: Record<string, string>;
-  readonly send: string;
-}
-const baseline = JSON.parse(
-  readFileSync(
-    join(ROOT, "tests", "fixtures", "header", "out-of-context-hrefs.json"),
-    "utf8",
-  ),
-) as Record<"en" | "en-gb", Baseline>;
 const LOCALES = ["en", "en-gb"] as const;
 type Locale = (typeof LOCALES)[number];
-type Hrefs = Record<string, string>;
+/** `[entry id, target]`: an href, or a facet form's `action?name=value`. */
+type Entries = [string, string][];
 
-const ROW = '[data-fo-header-band="categories"] a[data-fo-header-item]';
-const MENU_ITEM = "[data-fo-menu-item]";
+interface PinnedEntry {
+  readonly kind: "link" | "chooser" | "facet";
+  readonly id: string;
+  readonly href?: string;
+  readonly action?: string;
+  readonly name?: string;
+  readonly value?: string;
+}
+interface PinnedModel {
+  readonly context: string | null;
+  readonly panels: readonly {
+    readonly columns: readonly { readonly entries: readonly PinnedEntry[] }[];
+    readonly all: PinnedEntry | null;
+  }[];
+}
+
+/** The unit suite's pinned model for a locale, out of context or in one country's. */
+function pinned(locale: Locale, iso2?: string): Entries {
+  const model = JSON.parse(
+    readFileSync(
+      join(
+        ROOT,
+        "tests",
+        "fixtures",
+        "header",
+        `mega-menu-${locale}${iso2 === undefined ? "" : `-${iso2}`}.json`,
+      ),
+      "utf8",
+    ),
+  ) as PinnedModel;
+  return model.panels.flatMap((panel) =>
+    [
+      ...panel.columns.flatMap((column) => column.entries),
+      ...(panel.all === null ? [] : [panel.all]),
+    ].map((entry): [string, string] => [
+      entry.id,
+      entry.kind === "facet"
+        ? `${entry.action ?? ""}?${entry.name ?? ""}=${entry.value ?? ""}`
+        : (entry.href ?? ""),
+    ]),
+  );
+}
+
+/** Coming up moves with the build's clock: compared by shape, every other entry by value. */
+function settled(entries: Entries): Entries {
+  return entries.filter(([id]) => !id.startsWith("coming-up:"));
+}
+
+const ROW = '[data-fo-header-band="categories"]';
+const MENU = "[data-fo-mega-accordions]";
 const MENU_SUMMARY = "[data-fo-menu-summary]";
 
 test.beforeEach(({}, testInfo) => {
@@ -60,31 +102,14 @@ test.beforeEach(({}, testInfo) => {
   );
 });
 
-/** The design band's table: the six shop items in one destination, the rest unchanged. */
-function inContext(locale: Locale, country: "poland" | "france"): Hrefs {
-  const base = baseline[locale].row;
-  return {
-    "our-selection": `/${locale}/${country}/flowers`,
-    birthday: `/${locale}/${country}/flowers/birthday-flowers`,
-    sympathy: `/${locale}/${country}/flowers/sympathy-flowers`,
-    occasions: base["occasions"] ?? "",
-    bouquets: `/${locale}/${country}/flowers/hand-tied-bouquets`,
-    roses: `/${locale}/${country}/flowers/roses`,
-    plants: `/${locale}/${country}/flowers/plants`,
-    destinations: base["destinations"] ?? "",
-  };
-}
-
 /** AC-1's pages, per locale, with the destination each is in. */
-function ac1Pages(
-  locale: Locale,
-): { path: string; country: "poland" | "france" }[] {
+function ac1Pages(locale: Locale): { path: string; iso2: "pl" | "fr" }[] {
   return [
-    { path: `/${locale}/poland/flowers`, country: "poland" },
-    { path: `/${locale}/poland/flowers/roses`, country: "poland" },
-    { path: `/${locale}/poland/product/amber-hour`, country: "poland" },
-    { path: `/${locale}/send-flowers-to/poland`, country: "poland" },
-    { path: `/${locale}/france/flowers`, country: "france" },
+    { path: `/${locale}/poland/flowers`, iso2: "pl" },
+    { path: `/${locale}/poland/flowers/roses`, iso2: "pl" },
+    { path: `/${locale}/poland/product/amber-hour`, iso2: "pl" },
+    { path: `/${locale}/send-flowers-to/poland`, iso2: "pl" },
+    { path: `/${locale}/france/flowers`, iso2: "fr" },
   ];
 }
 
@@ -102,21 +127,34 @@ function ac3Pages(locale: Locale): string[] {
   ];
 }
 
-async function hrefsOf(
-  page: Page,
-  selector: string,
-  idAttribute: string,
-): Promise<[string, string][]> {
-  return page
-    .locator(selector)
-    .evaluateAll(
-      (anchors, attribute) =>
-        anchors.map((anchor) => [
-          anchor.getAttribute(attribute) ?? "",
-          anchor.getAttribute("href") ?? "",
-        ]),
-      idAttribute,
-    );
+/** The drawn entries under `scope`, each with its target, in document order. */
+async function entriesOf(page: Page, scope: string): Promise<Entries> {
+  return page.locator(`${scope} [data-fo-mega-entry]`).evaluateAll((nodes) =>
+    nodes.map((node): [string, string] => {
+      const id = node.getAttribute("data-fo-mega-entry") ?? "";
+      if (node.tagName === "A") return [id, node.getAttribute("href") ?? ""];
+      const form = node.closest("form");
+      const input = form?.querySelector('input[type="hidden"]');
+      return [
+        id,
+        `${form?.getAttribute("action") ?? ""}?${input?.getAttribute("name") ?? ""}=${input?.getAttribute("value") ?? ""}`,
+      ];
+    }),
+  );
+}
+
+/** Coming up's shape: at most five dated entries, each a link in this locale with its date. */
+async function expectComingUp(page: Page, locale: Locale): Promise<void> {
+  const dates = await page
+    .locator(`${ROW} [data-fo-mega-column="comingUp"] a small`)
+    .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ""));
+  expect(dates.length).toBeLessThanOrEqual(5);
+  for (const date of dates) expect(date).toMatch(/\d/u);
+  for (const href of await page
+    .locator(`${ROW} [data-fo-mega-column="comingUp"] a`)
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")))) {
+    expect(href).toMatch(new RegExp(`^/${locale}/`, "u"));
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -131,15 +169,15 @@ function anchorsIn(html: string): string[] {
   return [...html.matchAll(/<a\b[^>]*>/g)].map(([tag]) => tag);
 }
 
-/** The header row's and the Menu's hrefs in a served document. */
+/** The menu's hrefs and form actions in a served document (row and Menu alike). */
 function headerHrefsIn(html: string): string[] {
-  return anchorsIn(html)
-    .filter(
-      (tag) =>
-        attr(tag, "data-fo-header-item") !== undefined ||
-        attr(tag, "data-fo-menu-item") !== undefined,
-    )
+  const links = anchorsIn(html)
+    .filter((tag) => attr(tag, "data-fo-mega-entry") !== undefined)
     .map((tag) => attr(tag, "href") ?? "");
+  const actions = [
+    ...html.matchAll(/<form action="([^"]*)" method="get">/g),
+  ].map(([, action]) => action ?? "");
+  return [...links, ...actions];
 }
 
 /** Every internal path a served document links, without its fragment or query. */
@@ -170,24 +208,37 @@ async function statusOf(
 }
 
 /* -------------------------------------------------------------------------- */
-/* T-01 / AC-1                                                                 */
+/* T-01, T-50 / AC-50                                                          */
 /* -------------------------------------------------------------------------- */
 
-test.describe("in context, the row links the destination's own pages (AC-1, T-01)", () => {
+test.describe("in context, every entry is the destination's own (AC-50, T-01, T-50)", () => {
   test.use({ javaScriptEnabled: false });
 
   for (const locale of LOCALES) {
-    for (const { path, country } of ac1Pages(locale)) {
-      test(`${path}: the row at 1440 × 900`, async ({ page }) => {
+    for (const { path, iso2 } of ac1Pages(locale)) {
+      test(`${path}: the six panels at 1440 × 900`, async ({ page }) => {
         await page.setViewportSize({ width: 1440, height: 900 });
         expect((await page.goto(path))?.status()).toBe(200);
-        expect(await hrefsOf(page, ROW, "data-fo-header-item")).toEqual(
-          Object.entries(inContext(locale, country)),
+        expect(settled(await entriesOf(page, ROW))).toEqual(
+          settled(pinned(locale, iso2)),
         );
-        await expect(page.locator(ROW).first()).toBeVisible();
+        await expectComingUp(page, locale);
+        // Nothing in context goes through the chooser, and no Send pill (Q-24d).
+        expect(
+          (await entriesOf(page, ROW)).filter(([, target]) =>
+            target.includes("/choose-country"),
+          ),
+        ).toEqual([]);
         await expect(
-          page.locator('[data-fo-header] a[href$="#send"]').first(),
-        ).toHaveAttribute("href", baseline[locale].send);
+          page.locator('[data-fo-header] a[href$="#send"]'),
+        ).toHaveCount(0);
+        // A featured card in context carries the country's price, never the country-less box.
+        await page.locator('[data-fo-mega-summary="flowers"]').click();
+        await expect(
+          page.locator(
+            '[data-fo-mega-panel="flowers"] [data-fo-product-card-money="priced"]',
+          ),
+        ).toHaveCount(1);
       });
 
       test(`${path}: the Menu at 390 × 844`, async ({ page }) => {
@@ -195,9 +246,9 @@ test.describe("in context, the row links the destination's own pages (AC-1, T-01
         expect((await page.goto(path))?.status()).toBe(200);
         // A `<details>`: it opens with no script.
         await page.locator(MENU_SUMMARY).click();
-        await expect(page.locator(MENU_ITEM).first()).toBeVisible();
-        expect(await hrefsOf(page, MENU_ITEM, "data-fo-menu-item")).toEqual(
-          Object.entries(inContext(locale, country)),
+        await expect(page.locator(`${MENU} summary`).first()).toBeVisible();
+        expect(settled(await entriesOf(page, MENU))).toEqual(
+          settled(pinned(locale, iso2)),
         );
       });
     }
@@ -208,29 +259,33 @@ test.describe("in context, the row links the destination's own pages (AC-1, T-01
 /* T-03 / AC-3                                                                 */
 /* -------------------------------------------------------------------------- */
 
-test.describe("out of context, the row keeps main's hrefs (AC-3, T-03)", () => {
+test.describe("out of context, the row and the Menu equal megaMenuModel(locale, null) (AC-3, T-03)", () => {
   test.use({ javaScriptEnabled: false });
 
   for (const locale of LOCALES) {
     for (const path of ac3Pages(locale)) {
-      test(`${path}: row and Menu equal main's`, async ({ page }) => {
+      test(`${path}: row and Menu equal the model's`, async ({ page }) => {
         await page.setViewportSize({ width: 1440, height: 900 });
         expect((await page.goto(path))?.status()).toBe(200);
-        expect(await hrefsOf(page, ROW, "data-fo-header-item")).toEqual(
-          Object.entries(baseline[locale].row),
+        expect(settled(await entriesOf(page, ROW))).toEqual(
+          settled(pinned(locale)),
         );
-        expect(await hrefsOf(page, MENU_ITEM, "data-fo-menu-item")).toEqual(
-          Object.entries(baseline[locale].menu),
+        expect(settled(await entriesOf(page, MENU))).toEqual(
+          settled(pinned(locale)),
         );
+        await expectComingUp(page, locale);
       });
     }
   }
 
-  test("a 404 page draws no header row, as on main", async ({ page }) => {
+  test("a 404 page draws the out-of-context menu", async ({ page }) => {
     const response = await page.goto("/en/no-such-page-at-all");
     expect(response?.status()).toBe(404);
-    await expect(page.locator(ROW)).toHaveCount(0);
-    await expect(page.locator(MENU_ITEM)).toHaveCount(0);
+    const drawn = settled(await entriesOf(page, ROW));
+    // The not-found document has the slot's default header: out of context, or none at all.
+    expect(
+      drawn.length === 0 || drawn.length === settled(pinned("en")).length,
+    ).toBe(true);
   });
 });
 
@@ -263,33 +318,24 @@ test.describe("after a client-side navigation the row is the shown route's (AC-3
     await page.evaluate(() => {
       (window as unknown as { __foSoftNav?: number }).__foSoftNav = 288;
     });
-    expect(await hrefsOf(page, ROW, "data-fo-header-item")).toEqual(
-      Object.entries(inContext("en", "poland")),
-    );
+    const row = async () => settled(await entriesOf(page, ROW));
+    expect(await row()).toEqual(settled(pinned("en", "pl")));
 
     await softNavigate(page, "/en");
     expect(await markerSurvives(page)).toBe(true);
-    await expect
-      .poll(() => hrefsOf(page, ROW, "data-fo-header-item"))
-      .toEqual(Object.entries(baseline.en.row));
-    expect(await hrefsOf(page, MENU_ITEM, "data-fo-menu-item")).toEqual(
-      Object.entries(baseline.en.menu),
-    );
+    await expect.poll(row).toEqual(settled(pinned("en")));
+    expect(settled(await entriesOf(page, MENU))).toEqual(settled(pinned("en")));
 
     await softNavigate(page, "/en/occasions/birthday");
     expect(await markerSurvives(page)).toBe(true);
-    await expect
-      .poll(() => hrefsOf(page, ROW, "data-fo-header-item"))
-      .toEqual(Object.entries(baseline.en.row));
+    await expect.poll(row).toEqual(settled(pinned("en")));
 
     await softNavigate(page, "/en");
     await softNavigate(page, "/en/poland/flowers");
     expect(await markerSurvives(page)).toBe(true);
-    await expect
-      .poll(() => hrefsOf(page, ROW, "data-fo-header-item"))
-      .toEqual(Object.entries(inContext("en", "poland")));
-    expect(await hrefsOf(page, MENU_ITEM, "data-fo-menu-item")).toEqual(
-      Object.entries(inContext("en", "poland")),
+    await expect.poll(row).toEqual(settled(pinned("en", "pl")));
+    expect(settled(await entriesOf(page, MENU))).toEqual(
+      settled(pinned("en", "pl")),
     );
   });
 });
@@ -457,26 +503,20 @@ test.describe("the pages stay static and the same for everyone (AC-4, T-04)", ()
  * subset, not an equality: the day a later task links them, nothing here has to change.
  */
 const ORPHAN_CATEGORY_HUBS_ON_MAIN: ReadonlySet<string> = new Set([
+  // The mega menu (TASK-383) links every product-type and flower hub and every occasion hub out
+  // of context. Left: the ten category hubs of kind `occasion`, which item 5's table does not name
+  // (the menu's occasion entries are the occasion hubs). Escalated on TASK-383; pinned so any
+  // other hub that loses its link still turns this red.
   "anniversary-flowers",
-  "arrangements",
   "birthday-flowers",
   "congratulations-flowers",
-  "flowers-and-gift-sets",
-  "funeral-and-sympathy-flowers",
-  "gerberas",
   "get-well-flowers",
   "just-because-flowers",
-  "lilies",
-  "mixed-flowers",
   "new-baby-flowers",
-  "orchids",
-  "peonies",
   "romantic-flowers",
   "sorry-flowers",
-  "sunflowers",
   "sympathy-flowers",
   "thank-you-flowers",
-  "tulips",
 ]);
 
 function isKnownOrphan(locale: Locale, hub: string): boolean {
@@ -537,11 +577,11 @@ test.describe("every hub stays reachable and linked out of context (AC-6, T-06)"
       expect([...unseen].filter((hub) => !isKnownOrphan(locale, hub))).toEqual(
         [],
       );
-      // The five hubs the header names out of context: one click from the home, as on main.
-      const headerHubs = ["birthday", "sympathy", "bouquets", "roses", "plants"]
-        .map((id) => baseline[locale].row[id] ?? "")
+      // Every hub the menu names out of context: one click from the home.
+      const headerHubs = pinned(locale)
+        .map(([, href]) => href)
         .filter((href) => hubs.includes(href));
-      expect(headerHubs).toHaveLength(5);
+      expect(headerHubs.length).toBeGreaterThan(20);
       for (const hub of headerHubs) {
         expect((await linksOf(`/${locale}`)).includes(hub), hub).toBe(true);
       }

@@ -1,0 +1,531 @@
+{
+  "context": "NL",
+  "panels": [
+    {
+      "id": "flowers",
+      "labelKey": "nav.mega.flowers",
+      "columns": [
+        {
+          "id": "byType",
+          "headingKey": "nav.mega.byType",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "category:bouquet",
+              "labelKey": "catalog.facet.productType.bouquet",
+              "href": "/en-gb/netherlands/flowers/hand-tied-bouquets"
+            },
+            {
+              "kind": "link",
+              "id": "category:arrangement",
+              "labelKey": "catalog.facet.productType.arrangement",
+              "href": "/en-gb/netherlands/flowers/arrangements"
+            },
+            {
+              "kind": "link",
+              "id": "category:gift_set",
+              "labelKey": "catalog.facet.productType.giftSet",
+              "href": "/en-gb/netherlands/flowers/flowers-and-gift-sets"
+            }
+          ],
+          "wide": false
+        },
+        {
+          "id": "byFlower",
+          "headingKey": "nav.mega.byFlower",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "category:roses",
+              "labelKey": "catalog.facet.flowerType.roses",
+              "href": "/en-gb/netherlands/flowers/roses"
+            },
+            {
+              "kind": "link",
+              "id": "category:tulips",
+              "labelKey": "catalog.facet.flowerType.tulips",
+              "href": "/en-gb/netherlands/flowers/tulips"
+            },
+            {
+              "kind": "link",
+              "id": "category:lilies",
+              "labelKey": "catalog.facet.flowerType.lilies",
+              "href": "/en-gb/netherlands/flowers/lilies"
+            },
+            {
+              "kind": "link",
+              "id": "category:peonies",
+              "labelKey": "catalog.facet.flowerType.peonies",
+              "href": "/en-gb/netherlands/flowers/peonies"
+            },
+            {
+              "kind": "link",
+              "id": "category:mixed",
+              "labelKey": "catalog.facet.flowerType.mixed",
+              "href": "/en-gb/netherlands/flowers/mixed-flowers"
+            }
+          ],
+          "wide": false
+        },
+        {
+          "id": "byColour",
+          "headingKey": "nav.mega.byColour",
+          "entries": [
+            {
+              "kind": "facet",
+              "id": "colour:white",
+              "labelKey": "catalog.facet.colour.white",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "colour",
+              "value": "white"
+            },
+            {
+              "kind": "facet",
+              "id": "colour:pink",
+              "labelKey": "catalog.facet.colour.pink",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "colour",
+              "value": "pink"
+            },
+            {
+              "kind": "facet",
+              "id": "colour:orange",
+              "labelKey": "catalog.facet.colour.orange",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "colour",
+              "value": "orange"
+            },
+            {
+              "kind": "facet",
+              "id": "colour:pastel",
+              "labelKey": "catalog.facet.colour.pastel",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "colour",
+              "value": "pastel"
+            },
+            {
+              "kind": "facet",
+              "id": "colour:mixed",
+              "labelKey": "catalog.facet.colour.mixed",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "colour",
+              "value": "mixed"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": {
+        "kind": "link",
+        "id": "all-flowers",
+        "labelKey": "nav.mega.allFlowers",
+        "href": "/en-gb/netherlands/flowers"
+      },
+      "extras": null,
+      "featured": {
+        "card": {
+          "productId": "FO-BQ-034",
+          "name": "Season's Hand",
+          "href": "/en-gb/netherlands/product/seasons-hand",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-bq-034-hero",
+            "alt": "A hand-tied mixed bouquet of sunflowers, pink and red roses, pink lilies and purple filler flowers, wrapped in kraft paper",
+            "slot": "grid"
+          },
+          "price": {
+            "amountMinor": 5390,
+            "currency": "EUR"
+          },
+          "priceLabelKey": "catalog.price.inclusive",
+          "provenance": "ai",
+          "equivalents": null,
+          "slots": null,
+          "localSpecial": false
+        },
+        "href": "/en-gb/netherlands/product/seasons-hand",
+        "chooser": false
+      }
+    },
+    {
+      "id": "occasions",
+      "labelKey": "nav.category.occasions",
+      "columns": [
+        {
+          "id": "everyDay",
+          "headingKey": "nav.mega.everyDay",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "occasion:birthday",
+              "labelKey": "catalog.facet.occasion.birthday",
+              "href": "/en-gb/netherlands/flowers/birthday-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:anniversary",
+              "labelKey": "catalog.facet.occasion.anniversary",
+              "href": "/en-gb/netherlands/flowers/anniversary-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:romance",
+              "labelKey": "catalog.facet.occasion.romance",
+              "href": "/en-gb/netherlands/flowers/romantic-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:congratulations",
+              "labelKey": "catalog.facet.occasion.congratulations",
+              "href": "/en-gb/netherlands/flowers/congratulations-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:new_baby",
+              "labelKey": "catalog.facet.occasion.newBaby",
+              "href": "/en-gb/netherlands/flowers/new-baby-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:get_well",
+              "labelKey": "catalog.facet.occasion.getWell",
+              "href": "/en-gb/netherlands/flowers/get-well-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:thank_you",
+              "labelKey": "catalog.facet.occasion.thankYou",
+              "href": "/en-gb/netherlands/flowers/thank-you-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:apology",
+              "labelKey": "catalog.facet.occasion.apology",
+              "href": "/en-gb/netherlands/flowers/sorry-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:just_because",
+              "labelKey": "catalog.facet.occasion.justBecause",
+              "href": "/en-gb/netherlands/flowers/just-because-flowers"
+            }
+          ],
+          "wide": true
+        },
+        {
+          "id": "forWhom",
+          "headingKey": "nav.mega.forWhom",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "recipient:mum",
+              "labelKey": "nav.mega.recipient.mum",
+              "href": "/en-gb/netherlands/occasions/mothers-day"
+            },
+            {
+              "kind": "link",
+              "id": "recipient:newParents",
+              "labelKey": "nav.mega.recipient.newParents",
+              "href": "/en-gb/netherlands/flowers/new-baby-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "recipient:colleague",
+              "labelKey": "nav.mega.recipient.colleague",
+              "href": "/en-gb/netherlands/flowers/thank-you-flowers"
+            }
+          ],
+          "wide": false
+        },
+        {
+          "id": "comingUp",
+          "headingKey": "nav.mega.comingUp",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "coming-up:christmas",
+              "labelKey": "catalog.facet.occasion.christmas",
+              "href": "/en-gb/netherlands/occasions/christmas",
+              "date": "2026-12-25"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:new_year",
+              "labelKey": "catalog.facet.occasion.newYear",
+              "href": "/en-gb/netherlands/occasions/new-year",
+              "date": "2027-01-01"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:valentines",
+              "labelKey": "catalog.facet.occasion.valentines",
+              "href": "/en-gb/netherlands/occasions/valentines-day",
+              "date": "2027-02-14"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:easter",
+              "labelKey": "catalog.facet.occasion.easter",
+              "href": "/en-gb/netherlands/occasions/easter",
+              "date": "2027-03-28"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:mothers_day",
+              "labelKey": "catalog.facet.occasion.mothersDay",
+              "href": "/en-gb/netherlands/occasions/mothers-day",
+              "date": "2027-05-09"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": {
+        "kind": "link",
+        "id": "all-occasions",
+        "labelKey": "nav.mega.allOccasions",
+        "href": "/en-gb/occasions"
+      },
+      "extras": null,
+      "featured": {
+        "card": {
+          "productId": "FO-BQ-002",
+          "name": "Vistula Red",
+          "href": "/en-gb/netherlands/product/vistula-red",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-bq-002-hero",
+            "alt": "A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper",
+            "slot": "grid"
+          },
+          "price": {
+            "amountMinor": 7090,
+            "currency": "EUR"
+          },
+          "priceLabelKey": "catalog.price.inclusive",
+          "provenance": "ai",
+          "equivalents": null,
+          "slots": null,
+          "localSpecial": false
+        },
+        "href": "/en-gb/netherlands/product/vistula-red",
+        "chooser": false
+      }
+    },
+    {
+      "id": "sympathy",
+      "labelKey": "nav.category.sympathy",
+      "columns": [
+        {
+          "id": "sympathy",
+          "headingKey": "nav.category.sympathy",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "occasion:sympathy",
+              "labelKey": "catalog.facet.occasion.sympathy",
+              "href": "/en-gb/netherlands/flowers/sympathy-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "category:funeral",
+              "labelKey": "catalog.facet.productType.funeral",
+              "href": "/en-gb/netherlands/flowers/funeral-and-sympathy-flowers"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": null,
+      "extras": null,
+      "featured": {
+        "card": {
+          "productId": "FO-BQ-015",
+          "name": "White Linen",
+          "href": "/en-gb/netherlands/product/white-linen",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-bq-015-hero",
+            "alt": "A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper",
+            "slot": "grid"
+          },
+          "price": {
+            "amountMinor": 7090,
+            "currency": "EUR"
+          },
+          "priceLabelKey": "catalog.price.inclusive",
+          "provenance": "ai",
+          "equivalents": null,
+          "slots": null,
+          "localSpecial": false
+        },
+        "href": "/en-gb/netherlands/product/white-linen",
+        "chooser": false
+      }
+    },
+    {
+      "id": "plantsGifts",
+      "labelKey": "nav.mega.plantsGifts",
+      "columns": [
+        {
+          "id": "plantsGifts",
+          "headingKey": "nav.mega.plantsGifts",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "category:plant",
+              "labelKey": "catalog.facet.productType.plant",
+              "href": "/en-gb/netherlands/flowers/plants"
+            },
+            {
+              "kind": "link",
+              "id": "category:gift_set",
+              "labelKey": "catalog.facet.productType.giftSet",
+              "href": "/en-gb/netherlands/flowers/flowers-and-gift-sets"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": null,
+      "extras": {
+        "headingKey": "nav.mega.extras",
+        "labelKeys": [
+          "catalog.addon.chocolates.name",
+          "catalog.addon.vase.name",
+          "catalog.addon.balloon.name",
+          "catalog.addon.plush.name",
+          "catalog.addon.wine.name",
+          "catalog.addon.card.name"
+        ]
+      },
+      "featured": {
+        "card": {
+          "productId": "FO-PT-001",
+          "name": "Moth Orchid White",
+          "href": "/en-gb/netherlands/product/moth-orchid-white",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-pt-001-hero",
+            "alt": "A white moth orchid with two arching flowering stems in a plain white ceramic pot",
+            "slot": "grid"
+          },
+          "price": {
+            "amountMinor": 6190,
+            "currency": "EUR"
+          },
+          "priceLabelKey": "catalog.price.inclusive",
+          "provenance": "ai",
+          "equivalents": null,
+          "slots": null,
+          "localSpecial": false
+        },
+        "href": "/en-gb/netherlands/product/moth-orchid-white",
+        "chooser": false
+      }
+    },
+    {
+      "id": "byPrice",
+      "labelKey": "nav.mega.byPrice",
+      "columns": [
+        {
+          "id": "byPrice",
+          "headingKey": "nav.mega.byPrice",
+          "entries": [
+            {
+              "kind": "facet",
+              "id": "price:low",
+              "labelKey": "shop.price.bandWord.low",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "price",
+              "value": "low"
+            },
+            {
+              "kind": "facet",
+              "id": "price:mid",
+              "labelKey": "shop.price.bandWord.mid",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "price",
+              "value": "mid"
+            },
+            {
+              "kind": "facet",
+              "id": "price:high",
+              "labelKey": "shop.price.bandWord.high",
+              "action": "/en-gb/netherlands/flowers",
+              "name": "price",
+              "value": "high"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": null,
+      "extras": null,
+      "featured": null
+    },
+    {
+      "id": "destinations",
+      "labelKey": "nav.category.destinations",
+      "columns": [
+        {
+          "id": "soon",
+          "headingKey": "nav.mega.soon",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "destination:FR",
+              "labelKey": "destinations.fr.name",
+              "href": "/en-gb/send-flowers-to/france"
+            },
+            {
+              "kind": "link",
+              "id": "destination:DE",
+              "labelKey": "destinations.de.name",
+              "href": "/en-gb/send-flowers-to/germany"
+            },
+            {
+              "kind": "link",
+              "id": "destination:IT",
+              "labelKey": "destinations.it.name",
+              "href": "/en-gb/send-flowers-to/italy"
+            },
+            {
+              "kind": "link",
+              "id": "destination:NL",
+              "labelKey": "destinations.nl.name",
+              "href": "/en-gb/send-flowers-to/netherlands"
+            },
+            {
+              "kind": "link",
+              "id": "destination:PL",
+              "labelKey": "destinations.pl.name",
+              "href": "/en-gb/send-flowers-to/poland"
+            },
+            {
+              "kind": "link",
+              "id": "destination:RO",
+              "labelKey": "destinations.ro.name",
+              "href": "/en-gb/send-flowers-to/romania"
+            },
+            {
+              "kind": "link",
+              "id": "destination:ES",
+              "labelKey": "destinations.es.name",
+              "href": "/en-gb/send-flowers-to/spain"
+            }
+          ],
+          "wide": true
+        }
+      ],
+      "all": {
+        "kind": "link",
+        "id": "all-destinations",
+        "labelKey": "nav.mega.allDestinations",
+        "href": "/en-gb/send-flowers-to"
+      },
+      "extras": null,
+      "featured": null
+    }
+  ]
+}

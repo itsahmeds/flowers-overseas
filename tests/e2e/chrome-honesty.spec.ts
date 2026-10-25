@@ -220,10 +220,12 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
       "Fresh-flower promise",
       { useInnerText: true },
     );
-    await expect(page.locator('[data-fo-header-item="same-day-delivery"]')) //
-      .toHaveCount(0);
-    await expect(page.locator('[data-fo-header-item="our-selection"]')) //
-      .toHaveCount(1);
+    // The mega menu replaced the category row (spec 004 §14 A-founder-2026-10-24a item 5;
+    // TASK-383): six items, and no delivery-timing entry among them while no date is open.
+    await expect(page.locator("[data-fo-mega-summary]")).toHaveCount(6);
+    await expect(page.locator("[data-fo-header]")).not.toContainText(
+      "Same-day",
+    );
     await expect(page.locator("footer")).not.toContainText(
       "Delivery times and cutoffs",
     );
