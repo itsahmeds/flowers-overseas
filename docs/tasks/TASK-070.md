@@ -127,6 +127,7 @@ text and record the ruling, then continue"); none is about money, so none blocks
   merge; the follow-up (rebase, `db-migrate.test.ts` list, snapshot, `ci:full`) is unchanged.
 
 - 2026-10-24 finisher: restacked onto TASK-321 (PR 394) so `0025_product_facets` follows 0019 to 0024 in one tree; resolved `DATABASE_ADAPTER_DIRS` (geo, i18n, content/blog, catalog, with the pin in `no-db-imports.test.ts`) and the committed migration list in `db-migrate.test.ts` (0019 to 0025). On a local PG16 the tree migrates to 0025 and `db:check` passes with the merged snapshot (25 migrations, RLS 86/86). PR 324's base is now `task/TASK-321-blog-data`.
+- 2026-10-25: restacked on TASK-321's new head (main moved: TASK-381 and others). Main's `coreRank` on the product record broke AC-27 parity (CI run 40175530157, three cases): the db provider now overlays it from the static provider by SKU until TASK-395's `product.core_rank` (carry-forward in `docs/tasks/TASK-395.md`). `catalog-barrel.test.ts` merged with main's chooser and country-order entries.
 
 ## Result
 
