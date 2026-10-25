@@ -32,15 +32,8 @@ _None recorded._
 
 ## Progress
 
-One line per coherent step, newest last, written by the agent doing the work and pushed with
-the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
-here.
-
-_Not started._
+- 2026-10-24: founder commit 2d30d4b8 cherry-picked unchanged onto `task/TASK-379-framework-text-self-review`; case 3 rewritten as `selfReviewProblems` with six red-by-deletion cases; PR 401 (supersedes PR 373).
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR 401 carries the founder's CLAUDE.md self-review commit as it is plus `tests/unit/framework-text.test.ts` case 3, now "DoD §4 and Merging carry the implementer's self-review": four DoD §4 clauses (implementer its own reviewer and breaker, `## Self-review`, the mutation of each AC assertion and its red run, no assertion passes with its subject removed) and two Merging clauses (`## Self-review`, never merge without it). Unit layer: the three old `/break`/`HOLDS`/reviewer deletion cases replaced by six, one per clause. PR 373 can be closed once 401 merges.

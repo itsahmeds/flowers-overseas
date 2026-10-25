@@ -126,8 +126,12 @@ function templateProblems(root: string): string[] {
     : [`${TEMPLATE}: "## Progress" is not above "## Result"`];
 }
 
-/** Case 3: the breaker in DoD §4 and in the merge rule, and the reviewer as the only acceptor. */
-function breakerProblems(root: string): string[] {
+/**
+ * Case 3: DoD §4 and the merge rule carry the founder's self-review (W-25): the implementer is
+ * its own reviewer and breaker, proves each AC assertion by mutating its subject, and the
+ * orchestrator never merges without the `## Self-review`.
+ */
+function selfReviewProblems(root: string): string[] {
   const claude = read(root, "CLAUDE.md");
   const dod4 = numbered(section(claude, "Definition of done"), 4);
   const merging =
@@ -138,26 +142,33 @@ function breakerProblems(root: string): string[] {
     problems.push('CLAUDE.md: "Definition of done" has no item 4');
   if (merging === "")
     problems.push('CLAUDE.md: "Conventions" has no "Merging" bullet');
-  for (const word of ["`/break`", "`HOLDS`"]) {
-    if (dod4 !== "" && !dod4.includes(word))
-      problems.push(`CLAUDE.md DoD §4 does not name ${word}`);
-    if (merging !== "" && !merging.includes(word))
-      problems.push(`CLAUDE.md "Merging" does not name ${word}`);
+  if (dod4 !== "") {
+    if (!dod4.includes("The implementer is its own reviewer and breaker"))
+      problems.push(
+        "CLAUDE.md DoD §4 does not make the implementer its own reviewer and breaker",
+      );
+    if (!dod4.includes("`## Self-review`"))
+      problems.push("CLAUDE.md DoD §4 does not name `## Self-review`");
+    if (!/the mutation made to its subject and the red run/.test(dod4))
+      problems.push(
+        "CLAUDE.md DoD §4 does not ask for the mutation of each AC assertion and its red run",
+      );
+    if (!dod4.includes("No assertion may pass with its subject removed"))
+      problems.push(
+        "CLAUDE.md DoD §4 does not say no assertion may pass with its subject removed",
+      );
   }
-  if (dod4 !== "" && !/accepted\*{0,2} only by the reviewer/.test(dod4)) {
-    problems.push(
-      "CLAUDE.md DoD §4 does not say a hole is accepted only by the reviewer",
-    );
-  }
-  if (dod4 !== "" && !dod4.includes("The orchestrator never accepts a hole")) {
-    problems.push(
-      "CLAUDE.md DoD §4 does not say the orchestrator never accepts a hole",
-    );
-  }
-  if (merging !== "" && !/accepted by the reviewer/.test(merging)) {
-    problems.push(
-      'CLAUDE.md "Merging" does not name the reviewer as the one who accepts a hole',
-    );
+  if (merging !== "") {
+    if (!merging.includes("`## Self-review`"))
+      problems.push('CLAUDE.md "Merging" does not name `## Self-review`');
+    if (
+      !merging.includes(
+        "Never merge with a red gate or without the self-review",
+      )
+    )
+      problems.push(
+        'CLAUDE.md "Merging" does not forbid a merge without the self-review',
+      );
   }
   return problems;
 }
@@ -636,7 +647,8 @@ function holdMainProblems(root: string): string[] {
 const CHECKS = {
   "1 · skills that dispatch point at the work order": skillPointerProblems,
   "2 · the brief template has ## Progress above ## Result": templateProblems,
-  "3 · DoD §4 and Merging name /break, HOLDS and the reviewer": breakerProblems,
+  "3 · DoD §4 and Merging carry the implementer's self-review":
+    selfReviewProblems,
   "4 · the Agents table matches the agent and skill files": agentTableProblems,
   "5 · every (why: W-n) resolves": whyProblems,
   "AC-43 · DoD §2 names gates:cheap and its gates match the script":
@@ -763,32 +775,81 @@ describe("each case goes red when its subject is deleted in a scratch copy (T-46
     ]);
   });
 
-  it("3 · /break deleted from DoD §4 → red", () => {
-    const copy = scratchCopy();
-    mutate(copy, "CLAUDE.md", "**and** a `/break` verdict", "verdict");
-    expect(breakerProblems(copy)).toEqual([
-      "CLAUDE.md DoD §4 does not name `/break`",
-    ]);
-  });
-
-  it("3 · HOLDS deleted from Merging → red", () => {
-    const copy = scratchCopy();
-    mutate(copy, "CLAUDE.md", "is `HOLDS`, or", "is fine, or");
-    expect(breakerProblems(copy)).toEqual([
-      'CLAUDE.md "Merging" does not name `HOLDS`',
-    ]);
-  });
-
-  it("3 · the reviewer-only acceptance deleted from DoD §4 → red", () => {
+  it("3 · the implementer as its own reviewer and breaker deleted from DoD §4 → red", () => {
     const copy = scratchCopy();
     mutate(
       copy,
       "CLAUDE.md",
-      /accepted\*{0,2} only by the reviewer/,
-      "accepted by anyone",
+      "The implementer is its own reviewer and breaker; ",
+      "",
     );
-    expect(breakerProblems(copy)).toEqual([
-      "CLAUDE.md DoD §4 does not say a hole is accepted only by the reviewer",
+    expect(selfReviewProblems(copy)).toEqual([
+      "CLAUDE.md DoD §4 does not make the implementer its own reviewer and breaker",
+    ]);
+  });
+
+  it("3 · `## Self-review` deleted from DoD §4 → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      "CLAUDE.md",
+      "writes `## Self-review` into the PR description",
+      "writes a note into the PR description",
+    );
+    expect(selfReviewProblems(copy)).toEqual([
+      "CLAUDE.md DoD §4 does not name `## Self-review`",
+    ]);
+  });
+
+  it("3 · the mutation of each AC assertion deleted from DoD §4 → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      "CLAUDE.md",
+      "the mutation made to its subject and the red run that followed",
+      "a note",
+    );
+    expect(selfReviewProblems(copy)).toEqual([
+      "CLAUDE.md DoD §4 does not ask for the mutation of each AC assertion and its red run",
+    ]);
+  });
+
+  it("3 · 'no assertion may pass with its subject removed' deleted from DoD §4 → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      "CLAUDE.md",
+      "**No assertion may pass with its subject removed:** ",
+      "",
+    );
+    expect(selfReviewProblems(copy)).toEqual([
+      "CLAUDE.md DoD §4 does not say no assertion may pass with its subject removed",
+    ]);
+  });
+
+  it("3 · `## Self-review` deleted from Merging → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      "CLAUDE.md",
+      "carries the implementer's `## Self-review`",
+      "carries a description",
+    );
+    expect(selfReviewProblems(copy)).toEqual([
+      'CLAUDE.md "Merging" does not name `## Self-review`',
+    ]);
+  });
+
+  it("3 · 'without the self-review' deleted from Merging → red", () => {
+    const copy = scratchCopy();
+    mutate(
+      copy,
+      "CLAUDE.md",
+      "Never merge with a red gate or without the self-review.",
+      "Never merge with a red gate.",
+    );
+    expect(selfReviewProblems(copy)).toEqual([
+      'CLAUDE.md "Merging" does not forbid a merge without the self-review',
     ]);
   });
 
