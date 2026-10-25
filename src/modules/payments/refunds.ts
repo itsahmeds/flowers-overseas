@@ -600,7 +600,7 @@ type RequestDecision =
  *  - the order's `requested`, `pending` and `succeeded` refunds plus `amount` stay within its
  *    `buyer_total_minor` (`REFUND_EXCEEDS_ORDER`), and the purchase's within what was captured
  *    (`REFUND_EXCEEDS_CAPTURED`). The lock serialises two concurrent refunds on one purchase, so
- *    of two that fit alone but not together exactly one is written; `0028`'s
+ *    of two that fit alone but not together exactly one is written; `0026`'s
  *    `refund_order_ceiling` trigger is the database's second line.
  *
  * Then it inserts the `requested` row and appends `order.refund_requested` with the requester as
