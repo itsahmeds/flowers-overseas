@@ -17,12 +17,11 @@
  * guessed one. Still no redirects of any kind.
  *
  * **The country chooser** (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385) is the one address
- * the proxy routes: `/{locale}/{chooseSegment}/...` answers either a choice (a `303` with one
- * `Set-Cookie: fo_dest`) or a page, and only code that runs before the route can pick between a
- * route handler and a page. The proxy asks the catalogue's `decideChooser()` (the path and the
- * form's `to`, nothing else: no header, cookie or IP) and **rewrites** to the choice route or to the
- * chooser page (`src/lib/chooser-routes.ts`). It redirects nothing itself and sets no cookie; the
- * catalogue is imported only on a chooser address, so no other request loads it here.
+ * the proxy routes: `/{locale}/{chooseSegment}/...` is served by the chooser page, except the path
+ * form `/{locale}/{chooseSegment}/{iso2}/{next}`, which is a choice and is served by the choice
+ * route (its `303` and its `Set-Cookie: fo_dest`). The split reads the path and the country
+ * registry only (`src/lib/chooser-routes.ts`), and it is a **rewrite**: the proxy redirects
+ * nothing and sets no cookie.
  */
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -31,11 +30,7 @@ import {
   STAGING_BASIC_AUTH_KEY,
   basicAuthDecision,
 } from "@/lib/basic-auth";
-import {
-  chooserAddress,
-  chooserPagePath,
-  choiceRoutePath,
-} from "@/lib/chooser-routes";
+import { chooserAddress, chooserTargetPath } from "@/lib/chooser-routes";
 import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/request-id";
@@ -54,36 +49,14 @@ export const LOCALE_HEADER = "x-fo-locale";
 const environment = appEnvironment(process.env);
 const credential = process.env[STAGING_BASIC_AUTH_KEY];
 
-/**
- * Where a chooser address is served from: the choice route for a choice, the chooser page for
- * everything else, with the query kept for the page (it shows what was typed).
- */
-async function chooserTarget(
-  request: NextRequest,
-  path: string,
-): Promise<URL | undefined> {
-  const address = chooserAddress(path);
-  if (address === undefined) return undefined;
-  const { ChooserToSchema, chooserNextPath, decideChooser } =
-    await import("@/modules/catalog");
-  const to = ChooserToSchema.parse(request.nextUrl.searchParams);
-  const decision = await decideChooser(address.locale, address.segments, to);
-  if (decision.kind === "choice") {
-    return new URL(
-      choiceRoutePath(
-        address.locale,
-        decision.iso2,
-        chooserNextPath(decision.next),
-      ),
-      request.url,
-    );
-  }
-  const page = new URL(chooserPagePath(address), request.url);
-  page.search = request.nextUrl.search;
-  return page;
+/** The rewrite's URL: the target path with the request's own query (the form's `to`). */
+function chooserTarget(request: NextRequest, path: string): URL {
+  const target = new URL(path, request.url);
+  target.search = request.nextUrl.search;
+  return target;
 }
 
-export async function proxy(request: NextRequest): Promise<NextResponse> {
+export function proxy(request: NextRequest): NextResponse {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
   const started = Date.now();
   const method = request.method;
@@ -126,11 +99,16 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const headers = new Headers(request.headers);
   headers.set(REQUEST_ID_HEADER, requestId);
   if (locale !== undefined) headers.set(LOCALE_HEADER, locale);
-  const chooser = await chooserTarget(request, path);
+  const chooser = chooserAddress(path);
   const response =
     chooser === undefined
       ? NextResponse.next({ request: { headers } })
-      : NextResponse.rewrite(chooser, { request: { headers } });
+      : NextResponse.rewrite(
+          chooserTarget(request, chooserTargetPath(chooser)),
+          {
+            request: { headers },
+          },
+        );
   response.headers.set(REQUEST_ID_HEADER, requestId);
 
   // No `status` here (`/review 26` nit, TASK-058): `NextResponse.next()` is always 200, because

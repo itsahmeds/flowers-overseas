@@ -641,7 +641,7 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "keeps today's nine dynamic segments, none a PII key",
+    "keeps today's seven dynamic segments, none a PII key",
     () => {
       const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
         const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
@@ -652,12 +652,10 @@ describe("the real tree (T-59)", () => {
         "grandchild",
         // `/admin/orders/[id]` (TASK-222): an order's uuid.
         "id",
-        // `/api/choose/[locale]/[iso2]/[[...next]]` and `/[locale]/-choose/[[...rest]]` (TASK-385):
-        // a country code and the chooser's `next` path, slugs and fixed words only.
-        "iso2",
         "locale",
-        "next",
         "nextauth",
+        // `/api/choose/[locale]/[[...rest]]` and `/[locale]/-choose/-next/[[...rest]]` (TASK-385):
+        // the chooser's country code and `next` path, slugs and fixed words only.
         "rest",
         "segment",
       ]);

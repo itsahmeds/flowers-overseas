@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-import { RouteHeader } from "../../../route-header";
+import { RouteHeader } from "../../../../route-header";
 
 /**
  * The country chooser's header (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385): out of
