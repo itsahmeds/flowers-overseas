@@ -1,6 +1,6 @@
 /**
- * T-28 / AC-26 for the locale home's new surfaces (TASK-052): zero serious or critical axe
- * violations, with **no exception list**, on the hero, the finder and the proof row — in every
+ * T-28 / AC-26 for the locale home's surfaces (TASK-052; the v3 home of TASK-386): zero serious
+ * or critical axe violations, with **no exception list**, on the whole page, in every
  * launch locale, in the right-to-left pseudo-locale, and in the **state no other suite reaches**:
  * the type-ahead open, with a filtered list of buttons under the country field and a live region
  * carrying the count.
@@ -46,43 +46,42 @@ for (const path of AUDITED) {
 }
 
 /**
- * AC-49 on the home (TASK-284 item 5A): at the phone artboard's 390 × 844, Popular choices is a
- * sideways scroller, and axe finds nothing in it at any impact — in particular no
- * `scrollable-region-focusable`, which is what a scroller with no tab stop inside it would raise.
+ * The v3 home's interactive parts (spec 004 §14 A-founder-2026-10-24a, AC-92, AC-97; TASK-386,
+ * TASK-387): the picker card and the occasion tabs, a native radio group, audited at the phone
+ * artboard's 390 × 844 with a later tab checked, where a name or a focus ring actually breaks.
  */
-test("Popular choices at 390 is a scroller axe finds nothing in (AC-49)", async ({
+test("the picker and the occasion tabs at 390, a later tab checked, have no violation", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   expect((await page.goto("/en-gb"))?.status()).toBe(200);
-  const row = page.locator("[data-fo-trending] ul");
-  expect(await row.evaluate((node) => getComputedStyle(node).overflowX)).toBe(
-    "auto",
-  );
+  await page.locator('[data-fo-occasion-tab="2"]').check({ force: true });
+  await expect(page.locator('[data-fo-occasion-panel="2"]')).toBeVisible();
   const results = await new AxeBuilder({ page })
-    .include("[data-fo-trending]")
+    .include("[data-fo-home-picker]")
+    .include("[data-fo-occasion-tabs]")
     .analyze();
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
-  expect(
-    results.passes.map((pass) => pass.id),
-    "the scroller rule ran and passed",
-  ).toContain("scrollable-region-focusable");
 });
 
-test("every sentence-picker control clears the 44 px tap-target floor (§5.3)", async ({
+test("the picker's field and button clear the 44 px floor; its country buttons the board's 40 at 390", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/en");
-
   for (const selector of [
-    "#send-who",
-    "#send-country",
-    "#send-occasion",
-    '[data-fo-sentence] button[type="submit"]',
+    "[data-fo-home-picker] input[list]",
+    '[data-fo-home-picker] button[type="submit"]:not([name])',
   ]) {
-    const box = await page.locator(selector).boundingBox();
+    const box = await page.locator(selector).first().boundingBox();
     expect(box?.height ?? 0, selector).toBeGreaterThanOrEqual(44);
   }
+  const chips = page.locator('[data-fo-home-picker] button[name="to"]');
+  expect(await chips.count()).toBeGreaterThan(0);
+  for (const box of await chips.evaluateAll((nodes) =>
+    nodes.map((node) => node.getBoundingClientRect().height),
+  ))
+    expect(box).toBeGreaterThanOrEqual(40);
 });
 
 test("every section of the home is a named region with one heading", async ({
@@ -91,17 +90,13 @@ test("every section of the home is a named region with one heading", async ({
   await page.goto("/en");
 
   for (const selector of [
-    "[data-fo-occasion-dates]",
-    "[data-fo-occasions]",
+    "[data-fo-hero]",
+    '[data-fo-home-section="selection"]',
+    '[data-fo-home-section="occasions"]',
+    '[data-fo-home-section="price"]',
+    "[data-fo-destinations]",
     "[data-fo-how-it-works]",
     "[data-fo-faq]",
-    // v2: the promise band is AC-10's trust strip (TASK-177).
-    "[data-fo-trust-strip]",
-    "[data-fo-hero]",
-    // TASK-054's two rendered gated sections. (`ReviewsSection` renders nothing in Phase 0, so
-    // there is no region to name — `tests/e2e/home.spec.ts` asserts its absence.)
-    "[data-fo-trending]",
-    "[data-fo-destinations]",
   ]) {
     const section = page.locator(selector);
     await expect(section, selector).toHaveCount(1);
