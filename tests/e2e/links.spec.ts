@@ -33,6 +33,8 @@ import { SITE_LINKS, type SiteLink, isPublished } from "@/config/site-links";
 // build. `routing.ts` is the URL builder and imports only the registry.
 import { localePath, shownLocales } from "@/modules/i18n/routing";
 
+import { CORE_RANGE_TODAY } from "../support/home-today.ts";
+
 /**
  * The four launch locales, restated the way every other spec in this directory restates them
  * (`tests/e2e/footer.spec.ts`): a rename should show up as a diff here, not be absorbed.
@@ -301,7 +303,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       // Popular choices (v3, AC-95): the whole core range, each card a chooser link, then See all.
       await expect(
         page.locator('[data-fo-home-section="selection"] article a[href]'),
-      ).toHaveCount(10);
+      ).toHaveCount(CORE_RANGE_TODAY.length);
 
       // Every `<a>` in the four chrome regions has a target, and every internal one answers 200.
       const hrefs = new Set<string>();

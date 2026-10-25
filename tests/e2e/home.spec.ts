@@ -19,6 +19,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   HERO_COPY_REGION,
+  ITALIC_PHRASE_REGION,
   PICKER_REGION,
   recordLayoutShifts,
   shiftInside,
@@ -265,6 +266,7 @@ const SENTENCE_VIEWPORTS = [
  */
 const SWAP_REGIONS = [
   ["the picker", PICKER_REGION],
+  ["the headings' italic phrases", ITALIC_PHRASE_REGION],
   ["the hero copy", HERO_COPY_REGION],
 ] as const;
 
@@ -286,7 +288,7 @@ test.describe("the home's display-face swaps stay small", () => {
 
           const response = await page.goto(path);
           expect(response?.status()).toBe(200);
-          await expect(page.locator(region)).toBeVisible();
+          await expect(page.locator(region).first()).toBeVisible();
           // Every face the page asked for has arrived, so the swap has happened, then two frames
           // and a settle for the entries to be reported.
           await page.evaluate(async () => {

@@ -68,7 +68,7 @@ export function HomeSelection({
       />
       <div className="mt-[28px]">
         <a
-          className="text-link text-ui font-bold underline decoration-[1.5px] underline-offset-[5px]"
+          className="text-link text-ui inline-flex min-h-[24px] items-center font-bold underline decoration-[1.5px] underline-offset-[5px]"
           href={selection.seeAllHref}
           rel="nofollow"
           data-fo-see-all="selection"

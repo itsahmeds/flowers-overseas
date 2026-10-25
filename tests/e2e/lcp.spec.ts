@@ -40,7 +40,8 @@ interface LcpCandidate {
   readonly text: string;
   /**
    * Is the candidate the page's own above-the-fold content: inside the hero band, or (the v3
-   * home below `md`, TASK-386) the first product card of "Our selection"?
+   * home below `md`, TASK-386) a card of "Our selection"'s first row? The two cards of that row
+   * are the same size, so whichever paints first stays the candidate.
    */
   readonly inHero: boolean;
 }
@@ -49,7 +50,7 @@ test.describe("the largest contentful paint is the page's own main content", () 
   test.use({ viewport: LIGHTHOUSE_VIEWPORT });
 
   for (const locale of LOCALES) {
-    test(`/${locale}: the LCP element is the hero band or the first card, not an overlay`, async ({
+    test(`/${locale}: the LCP element is the hero band or a first-row card, not an overlay`, async ({
       page,
     }) => {
       await page.addInitScript(() => {
@@ -65,7 +66,7 @@ test.describe("the largest contentful paint is the page's own main content", () 
               text: (element?.textContent ?? "").slice(0, 80),
               inHero:
                 element?.closest(
-                  '[data-fo-hero], [data-fo-home-section="selection"] li:first-child',
+                  '[data-fo-hero], [data-fo-home-section="selection"]',
                 ) != null,
             });
           }
@@ -114,7 +115,7 @@ test.describe("the largest contentful paint is the page's own main content", () 
       // content**, not an `ssr: false` island that paints after hydration. So the assertion is
       // "inside `[data-fo-hero]`, and an image or the heading" rather than a fixed tag name. On the
       // v3 home below `md` no photograph is drawn above the first product (spec 004 item 4.2), so
-      // that card's photograph is the priority image and a fair winner too (AC-94).
+      // the first row's photographs are a fair winner too (AC-94).
       expect(winner.inHero, detail).toBe(true);
       expect(["IMG", "H1"], detail).toContain(winner.tag);
     });

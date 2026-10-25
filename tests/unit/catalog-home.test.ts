@@ -26,7 +26,11 @@ import {
   dedupeSection,
   homeView,
 } from "../../src/modules/catalog/home.ts";
-import { coreRange } from "../../src/modules/catalog/shop.ts";
+import { coreRange, shopCountries } from "../../src/modules/catalog/shop.ts";
+import {
+  CORE_RANGE_TODAY,
+  SHOP_COUNTRIES_TODAY,
+} from "../support/home-today.ts";
 
 const NOW = new Date("2026-10-25T09:00:00Z");
 
@@ -328,5 +332,18 @@ describe("no country in the home's code (AC-73's home half)", () => {
   it("has an occasion row for every tab key", () => {
     const keys = new Set(OCCASIONS.map((row) => row.key as string));
     for (const key of HOME_OCCASION_TABS) expect(keys, key).toContain(key);
+  });
+});
+
+describe("the browser suite's oracles are today's data (AC-92, AC-95)", () => {
+  it("pins `tests/support/home-today.ts` to coreRange() and shopCountries() for en and en-gb", async () => {
+    for (const locale of ["en", "en-gb"] as const) {
+      expect((await coreRange(locale)).map((entry) => entry.sku)).toStrictEqual(
+        [...CORE_RANGE_TODAY],
+      );
+      expect([...(await shopCountries(locale))]).toStrictEqual([
+        ...SHOP_COUNTRIES_TODAY,
+      ]);
+    }
   });
 });
