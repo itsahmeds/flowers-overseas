@@ -367,6 +367,9 @@ describe("the shipped catalogues and manifests", () => {
     "infoPages.legal.unreviewed",
     "infoPages.legal.version",
     "infoPages.status.notYetOpen",
+    // TASK-184, spec 041 Appendix A.1: the line every de/pl draft renders. Its `en` value is the
+    // source the drafts translate; it waits for the founder with the rest of the batch.
+    "infoPages.status.untranslated",
     // The header Basket link's name and count (spec 010 D10; TASK-349).
     "nav.basket",
     "nav.basketCount",
