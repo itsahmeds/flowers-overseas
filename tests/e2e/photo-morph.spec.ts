@@ -11,7 +11,9 @@
  *    one view transition; its only named group is that product's photograph (the hero's asset id),
  *    the root is not captured; the group runs 320 ms on `--ease-emphasised`, its width and height
  *    are the same at both ends (transform only), it starts on the card's box as the buyer saw it
- *    and ends on the hero's box, within 1 px. The same in `/ar-XB`, mirrored (AC-5's RTL half).
+ *    and ends on the hero's box, within 1 px. Not run on `/ar-XB`: no RTL locale has alt text in
+ *    `seed/data/alt/`, so its cards draw spec 006's placeholder (AC-18) and there is no photograph
+ *    to fly; the mirrored origin is read from the shipped CSS (`tests/unit/interactions-css.test.ts`).
  *    Red with the group at `--duration-base`, with the root crossfade left on (a second group),
  *    and with the card box left at its own size (the width keyframes then differ).
  *  - **T-8 (AC-8).** No view transition on a first load or a reload of the product page, on a
@@ -29,7 +31,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
 const LISTING = "/en-gb/poland/flowers";
-const LISTING_RTL = "/ar-XB/poland/flowers";
 const HOME = "/en-gb";
 const PDP = "/en-gb/poland/product/amber-hour";
 const DESKTOP = { width: 1440, height: 900 } as const;
@@ -203,9 +204,15 @@ async function readTransition(page: Page) {
       keyframes,
       hero: heroBox,
       heroAsset: hero?.dataset.foMediaAsset ?? "",
-      ease: getComputedStyle(document.documentElement)
-        .getPropertyValue("--ease-emphasised")
-        .trim(),
+      // The token as the browser computes it (`0.3`, not the authored `.3`), read off a probe.
+      ease: (() => {
+        const probe = document.createElement("i");
+        probe.style.animationTimingFunction = "var(--ease-emphasised)";
+        document.body.append(probe);
+        const value = getComputedStyle(probe).animationTimingFunction;
+        probe.remove();
+        return value;
+      })(),
       swap: JSON.parse(sessionStorage.getItem("fo-test-swap") ?? "null") as {
         count: number;
         name: string | null;
@@ -229,7 +236,7 @@ function expectBox(actual: Box, expected: Box, label: string): void {
 }
 
 test.describe("T-7 / AC-7: a card's photograph flies into the hero", () => {
-  for (const path of [LISTING, LISTING_RTL]) {
+  for (const path of [LISTING]) {
     test(`${path} at 1440 × 900: the third card`, async ({ page }) => {
       await page.setViewportSize(DESKTOP);
       await page.goto(path);
@@ -262,6 +269,8 @@ test.describe("T-7 / AC-7: a card's photograph flies into the hero", () => {
 
       // 320 ms on the emphasised curve.
       expect(read.end.duration).toBe("0.32s");
+      // The token resolved (an unset one would compute to the default `ease`, as the group's would).
+      expect(read.ease).toMatch(/^cubic-bezier\(/u);
       expect(read.end.easing.replaceAll(" ", "")).toBe(
         read.ease.replaceAll(" ", ""),
       );
