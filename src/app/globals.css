@@ -1400,6 +1400,9 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
  *    size, and the group's animation changes `transform` alone, over `--duration-slow` on
  *    `--ease-emphasised`.
  *  - The hero fades in over the card's photograph over `--duration-base`; the card's stays under.
+ *    The group clips both to `--radius-photo` (the artboard's "Corners"): each snapshot is rounded
+ *    alone, but the pair paints square corners and a 2 px ink edge over each other. The group is
+ *    hero-sized at both ends, so the corner is 18 px on the hero and scales with the flight.
  *    A photograph with no partner (a pair that does not match) shows at rest, with no animation.
  */
 @keyframes fo-morph-in {
@@ -1438,6 +1441,8 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
   ::view-transition-group(*) {
     animation-duration: var(--duration-slow);
     animation-timing-function: var(--ease-emphasised);
+    border-radius: var(--radius-photo);
+    overflow: clip;
   }
 
   ::view-transition-old(*),

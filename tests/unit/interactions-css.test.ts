@@ -93,6 +93,9 @@ describe("idea 1, the morph: the values (AC-7, AC-3)", () => {
     expect(group.get("animation-timing-function")).toBe(
       "var(--ease-emphasised)",
     );
+    // The artboard's "Corners": the pair is clipped to the photograph's radius, hero-sized.
+    expect(group.get("border-radius")).toBe("var(--radius-photo)");
+    expect(group.get("overflow")).toBe("clip");
     // The UA's keyframes stay; only their timing is set, so no `width` keyframe is added here.
     expect(group.has("animation")).toBe(false);
     expect(group.has("animation-name")).toBe(false);
