@@ -47,6 +47,12 @@ export const MegaEntrySchema = z.discriminatedUnion("kind", [
       kind: z.literal("link"),
       id: NonEmpty,
       labelKey: LabelKey,
+      /**
+       * A category hub's own name in this locale, as its page and the chip rows print it
+       * ("Hand-tied bouquets"); the board names a hub this way, and the facet key (`labelKey`,
+       * singular) is the fallback. Catalogue copy, not a message: it is reviewed with the hub.
+       */
+      label: NonEmpty.optional(),
       href: PathOnly,
       /** A dated occasion's earliest date (Coming up), formatted by the template. */
       date: z.iso.date().optional(),

@@ -781,13 +781,15 @@
  * holds both is lifted to the overlay layer so the scrim dims the docked action bar too (the bar is
  * `--layer-banner`, above the header's own layer). The consent sheet shares that layer and comes
  * later in the document, so it still paints above the Menu. Without the module the scrim stays
- * `display: none` (`MenuSheet`), because only the module can close the Menu on a tap on it.
+ * `display: none` (`MenuSheet`), because only the module can close the Menu on a tap on it; the
+ * lift does not wait for the module (TASK-383): with JavaScript off the six accordions run to the
+ * sheet's foot, and a docked bar painted over them would leave the last ones out of reach.
  */
 html[data-fo-motion] details[data-fo-menu][open] [data-fo-menu-scrim] {
   display: block;
 }
 
-html[data-fo-motion] [data-fo-header]:has(details[data-fo-menu][open]) {
+[data-fo-header]:has(details[data-fo-menu][open]) {
   z-index: var(--layer-overlay);
 }
 
