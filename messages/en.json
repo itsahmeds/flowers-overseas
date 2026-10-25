@@ -109,6 +109,9 @@
       },
       "gaContainer": {
         "purpose": "Google Analytics: the same, for our own measurement id. Not set unless you accept analytics."
+      },
+      "dest": {
+        "purpose": "Remembers the country you chose to send flowers to, so we can show that country's prices."
       }
     },
     "privacyLink": "How we use your personal data"
@@ -488,6 +491,11 @@
       "who": "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} partner {my partner} friend {a friend} other {someone I love}}",
       "occasion": "{occasion, select, birthday {{pronoun, select, her {her birthday} his {his birthday} other {their birthday}}} nameDay {{pronoun, select, her {her name day} his {his name day} other {their name day}}} anniversary {{pronoun, select, her {her anniversary} his {his anniversary} other {their anniversary}}} sympathy {a loss} justBecause {no reason at all} newBaby {a new baby} other {an occasion}}",
       "heading": "Start with who it's for"
+    },
+    "picker": {
+      "label": "Where should the flowers go?",
+      "search": "Search all countries",
+      "submit": "Show prices"
     }
   },
   "finder": {
@@ -770,6 +778,13 @@
     },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."
+    },
+    "choose": {
+      "continue": "Continue to {country}",
+      "remember": "We will remember this country on this device. Change it any time under Sending to.",
+      "noMatch": "We could not find “{query}”.",
+      "closest": "Did you mean <countries></countries>?",
+      "all": "Every country we send to"
     }
   },
   "categoryHub": {

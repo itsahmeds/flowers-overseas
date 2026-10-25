@@ -442,6 +442,27 @@ export {
   parseChooserNext,
   parseChooserPath,
 } from "./chooser";
+// The chooser's answer (spec 004 §14 A-founder-2026-10-24a item 3, AC-77, AC-78; TASK-385): the
+// one decision `src/proxy.ts`, the choice route and the chooser page share, and the page's view.
+export {
+  type ChooserCountryView,
+  type ChooserDecision,
+  type ChooserPageState,
+  type ChooserPageView,
+  type ChooserRegionView,
+  CHOOSER_RESPONSE_HEADERS,
+  CLOSEST_COUNTRIES_MAX,
+  chooserChoiceResponse,
+  chooserPageView,
+  chosenInput,
+  closestCountries,
+  decideChooser,
+  destCookieHeader,
+  isShopCountry,
+  normaliseCountryInput,
+  resolveCountryInput,
+} from "./chooser-choice";
+export { ChooserPage, type ChooserPageProps } from "./ui/ChooserPage";
 
 // The corridor page's shop entry (spec 007 §2 "Internal links", spec 008 §2 "Links", AC-20;
 // TASK-113). `src/modules/geo` cannot read the catalogue — the dependency runs catalog → geo — so

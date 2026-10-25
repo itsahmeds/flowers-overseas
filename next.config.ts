@@ -5,6 +5,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import { adminHeaderRules } from "./src/lib/admin-headers";
+import { chooserHeaderRules } from "./src/lib/chooser-routes";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
@@ -108,6 +109,10 @@ const headerRules = [
   // a product address rewritten there keeps the address it was asked for, which this source does
   // not match (`src/lib/product-rewrites.ts`; spec 009 AC-37, TASK-228).
   ...productRouteHeaderRules(),
+  // `X-Robots-Tag: noindex, nofollow` on every country chooser address and on its internal page
+  // route (spec 004 §14 A-founder-2026-10-24a item 3; `src/lib/chooser-routes.ts`; TASK-385). The
+  // page's own metadata says the same, and its responses are uncached (it reads `fo_dest`).
+  ...chooserHeaderRules(),
   // `X-Robots-Tag: noindex, follow` on a hub address that carries a listing key: the hubs honour
   // no parameter and are served their prebuilt document, so the header supplies AC-15's
   // `noindex` half that document cannot (`src/lib/listing-rewrites.ts`; TASK-146).
