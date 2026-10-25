@@ -94,3 +94,27 @@ export const HomeViewSchema = z
   })
   .strict();
 export type HomeView = z.infer<typeof HomeViewSchema>;
+
+/** One `ItemList` entry: the name a card prints and the link it carries, nothing else. */
+export interface HomeItemListEntry {
+  readonly name: string;
+  readonly href: string;
+}
+
+/**
+ * Each product section's `ItemList` entries (AC-107): "Our selection", the checked (first)
+ * occasion panel, and "Coming up", each equal to the cards that section displays by default, by
+ * count, order, name and URL. The entry type has no field for a price, so none can be emitted.
+ * A section with no cards gives an empty list, which the builder turns into no node.
+ */
+export function homeItemListEntries(
+  view: HomeView,
+): readonly (readonly HomeItemListEntry[])[] {
+  const entries = (cards: readonly HomeCardView[]): HomeItemListEntry[] =>
+    cards.map((card) => ({ name: card.name, href: card.href }));
+  return [
+    entries(view.selection.cards),
+    entries(view.occasions[0]?.cards ?? []),
+    entries(view.comingUp.flatMap((occasion) => occasion.cards)),
+  ];
+}
