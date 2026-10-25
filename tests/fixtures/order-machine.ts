@@ -76,7 +76,7 @@ export const A6_STATES: readonly StateRow[] = PROJECTIONS.flatMap(
     keys.map((key) => ({ key, isTerminal, buyerProjection })),
 );
 
-/** The two states spec 002 §14 A9.1 moves from `with_florist` to `confirmed` (`0030_set_c_a9`). */
+/** The two states spec 002 §14 A9.1 moves from `with_florist` to `confirmed` (`0028_set_c_a9`). */
 export const A9_CONFIRMED = ["accepted", "paid"] as const;
 
 /** The table after every migration: A6.4's 26 states with A9.1's projection (no `with_florist`). */
@@ -119,7 +119,7 @@ export const SET_C = [
 
 /**
  * Set C as spec 002 §14 A9.7 amends it (16): A6.3's 13 plus the three states a charged order
- * waits in for its florist. `0030_set_c_a9` adds their row-34 rows.
+ * waits in for its florist. `0028_set_c_a9` adds their row-34 rows.
  */
 export const A9_SET_C_ADDED = [
   "routed",
@@ -297,7 +297,7 @@ const ROWS_A10: typeof ROWS = [
   [40, ["paid"], "order.cancelled", "cancelled", ["buyer", "admin"]],
 ];
 
-/** Spec 002 §14 A9.7: row 34 from the three routing states (`0030_set_c_a9`, TASK-261). */
+/** Spec 002 §14 A9.7: row 34 from the three routing states (`0028_set_c_a9`, TASK-261). */
 const ROWS_A9: typeof ROWS = [
   [
     34,
@@ -327,7 +327,7 @@ export const A8_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A8);
 /** A10's two rows, as `0027_cancel_window_a10` inserts them. */
 export const A10_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A10);
 
-/** A9.7's three rows, as `0030_set_c_a9` inserts them. */
+/** A9.7's three rows, as `0028_set_c_a9` inserts them. */
 export const A9_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A9);
 
 /** The table after every migration: A6.3's 73 rows, A8.1's 2, A10's 2 and A9.7's 3, 80 in all. */
