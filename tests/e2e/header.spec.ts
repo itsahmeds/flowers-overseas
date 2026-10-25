@@ -76,7 +76,12 @@ const inChrome = (selector: string): string =>
  * server-rendered with no island, so they are the same before and after hydration (AC-7).
  */
 const UTILITY_HEIGHTS = { mobile: 60, desktop: 62 } as const;
-const STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
+/**
+ * The sticky banner: from `md` to `xl` the 64 px row, a rule, the six items' 48 px row and the
+ * rule (114); from `xl` the mega menu board's 76 px row and the rule (77). `HEADER_STICKY_HEIGHTS`
+ * in `src/modules/ui/layout/header-model.ts` holds the same numbers (TASK-383).
+ */
+const STICKY_HEIGHTS = { mobile: 114, desktop: 77 } as const;
 /** Below `md`: the logo and the Menu, 64 px and the rule (AC-47: 65 ± 1). */
 const PHONE_STICKY_HEIGHT = 65;
 const HEADER_HEIGHTS = {
@@ -315,12 +320,18 @@ test.describe("the site header (AC-7)", () => {
   }) => {
     await page.goto("/en");
 
-    // Every keyed entry is a link (spec 004 §14 A20; TASK-173): not one `<span>` dressed as one.
-    const items = page.locator("[data-fo-header-item]");
-    await expect(items).toHaveCount(8);
-    for (const handle of await items.all()) {
-      expect(await handle.evaluate((node) => node.tagName)).toBe("A");
+    // The mega menu's six items (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383), each a
+    // native disclosure, and every entry inside them a link: not one `<span>` dressed as one.
+    await expect(page.locator("[data-fo-mega-summary]")).toHaveCount(6);
+    const entries = page.locator(`${HEADER} [data-fo-mega-entry]`);
+    expect(await entries.count()).toBeGreaterThan(40);
+    for (const tag of await entries.evaluateAll((nodes) =>
+      nodes.map((node) => node.tagName),
+    )) {
+      expect(tag).toBe("A");
     }
+    // No end item has a page yet, so none carries `data-fo-header-item`.
+    await expect(page.locator("[data-fo-header-item]")).toHaveCount(0);
     // And the targets with no page are absent, not text.
     for (const id of [
       "sign-in",
@@ -401,12 +412,25 @@ test.describe("the site header (AC-7)", () => {
         )
       ).filter((link) => link.rendered);
 
-      // At 1 440 px the logo, the eight category links, the Send pill, the help line and the
-      // switcher's one sibling shown locale (§14 A4; spec 003 §14 A-founder-2026-10-14c). At 390 px only the logo is a rendered link: the Menu
-      // is closed, and its summary is measured below (§14 A24 clause 3).
+      // At 1 440 px the logo, the help line and the switcher's one sibling shown locale (§14 A4;
+      // spec 003 §14 A-founder-2026-10-14c): the mega menu's entries are inside closed
+      // `<details>`, and its six summaries are measured below. At 390 px only the logo is a
+      // rendered link: the Menu is closed, and its summary is measured below (§14 A24 clause 3).
       expect(measured.length, String(viewport.width)).toBe(
-        viewport.width >= XL_BREAKPOINT ? 12 : 1,
+        viewport.width >= XL_BREAKPOINT ? 3 : 1,
       );
+      if (viewport.width >= MD_BREAKPOINT) {
+        for (const box of await page
+          .locator("[data-fo-mega-summary]")
+          .evaluateAll((nodes) =>
+            nodes.map((node) => node.getBoundingClientRect().height),
+          )) {
+          expect(
+            Math.round(box),
+            String(viewport.width),
+          ).toBeGreaterThanOrEqual(MIN_TARGET);
+        }
+      }
       if (viewport.width < MD_BREAKPOINT) {
         const summary = await page.locator(MENU_SUMMARY).boundingBox();
         expect(Math.round(summary?.height ?? 0)).toBeGreaterThanOrEqual(
@@ -422,7 +446,7 @@ test.describe("the site header (AC-7)", () => {
     }
   });
 
-  test("nothing in the chrome overflows the viewport at 390 px, and the phone draws no chip row, no pill and no strip", async ({
+  test("nothing in the chrome overflows the viewport at 390 px, and the phone draws no item row, no pill and no strip", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -442,7 +466,8 @@ test.describe("the site header (AC-7)", () => {
           (document.querySelector("[data-fo-header]")?.clientWidth ?? -1),
         row: shown('[data-fo-header-band="categories"]'),
         strip: shown("[data-fo-utility]"),
-        send: shown('[data-fo-header] > div > a[href$="#send"]'),
+        send:
+          document.querySelector('[data-fo-header] a[href$="#send"]') !== null,
         summaryInside:
           summary !== undefined && summary.right <= window.innerWidth,
       };
@@ -457,7 +482,7 @@ test.describe("the site header (AC-7)", () => {
     });
   });
 
-  test("from `md` up nothing in the chrome overflows the viewport; only the chip row scrolls", async ({
+  test("from `md` up nothing in the chrome overflows the viewport, and the six items' row does not scroll", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -471,30 +496,26 @@ test.describe("the site header (AC-7)", () => {
       const row = document.querySelector(
         '[data-fo-header-band="categories"] ul',
       );
-      const send = document
-        .querySelector('[data-fo-header] a[href$="#send"]')
+      const last = [...document.querySelectorAll("[data-fo-mega-summary]")]
+        .at(-1)
         ?.getBoundingClientRect();
       return {
         document: document.documentElement.scrollWidth <= window.innerWidth,
         utility: fits("[data-fo-utility]"),
         header: fits("[data-fo-header]"),
         footer: fits("footer"),
-        // The eight chips are one horizontally scrolling row (the artboard's), inside the banner.
-        rowScrolls:
-          row !== null &&
-          row.scrollWidth > row.clientWidth &&
-          getComputedStyle(row).overflowX === "auto",
-        sendInside: send !== undefined && send.right <= window.innerWidth,
+        // The six items sit on one row that does not scroll (`.cm-row2`), inside the banner.
+        rowFits: row !== null && row.scrollWidth <= row.clientWidth,
+        lastInside: last !== undefined && last.right <= window.innerWidth,
       };
     });
-    // 768 px: the strip's own languages row and the chip row, side by side with nothing else.
     expect(boxes).toEqual({
       document: true,
       utility: true,
       header: true,
       footer: true,
-      rowScrolls: true,
-      sendInside: true,
+      rowFits: true,
+      lastInside: true,
     });
   });
 
