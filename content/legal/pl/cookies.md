@@ -1,6 +1,6 @@
 ---
 seoTitle: "Pliki cookie"
-seoDescription: "Pliki cookie, które ta strona zapisuje lub planuje zapisywać, do czego służy każdy z nich, jak długo jest przechowywany i jak zmienić swój wybór."
+seoDescription: "Pliki cookie, które ta strona zapisuje lub planuje zapisywać, do czego służy każdy z nich, jak długo jest przechowywany i jak zmienić wybór."
 h1: "Pliki cookie"
 version: "0.1.0"
 effectiveFrom: "2026-10-24"
@@ -34,7 +34,7 @@ interim:
   sections:
     - who-is-responsible
     - what-else-this-website-records
-  heading: "Twoje dane osobowe"
+  heading: "Państwa dane osobowe"
 source: machine
 reviewed: false
 updatedAt: "2026-10-25"
@@ -42,7 +42,7 @@ updatedAt: "2026-10-25"
 
 ## Czym jest plik cookie {#what-a-cookie-is}
 
-Plik cookie to mały fragment tekstu, który strona internetowa prosi Twoją przeglądarkę o zachowanie, aby po powrocie pamiętać dokonany przez Ciebie wybór. Pamięć własna przeglądarki działa tak samo i traktujemy ją dokładnie jak plik cookie: wszystko na tej stronie dotyczy obu.
+Plik cookie to mały fragment tekstu, który strona internetowa prosi przeglądarkę o zachowanie, aby po Państwa powrocie pamiętać dokonany wybór. Pamięć własna przeglądarki działa tak samo i traktujemy ją dokładnie jak plik cookie: wszystko na tej stronie dotyczy obu.
 
 ## Pliki cookie, których używamy {#the-cookies-we-use}
 
@@ -52,21 +52,21 @@ Plik cookie to mały fragment tekstu, który strona internetowa prosi Twoją prz
 
 ## Trzy grupy {#the-three-groups}
 
-- **Niezbędne:** to, bez czego strona nie działa, na przykład wybrany przez Ciebie język. Są zapisywane bez pytania.
-- **Analityczne:** ile osób odwiedza stronę i które podstrony pomagają im wysłać kwiaty. Zapisywane tylko wtedy, gdy się zgodzisz.
-- **Marketingowe:** mierzenie, która reklama Cię tu przyprowadziła. Zapisywane tylko wtedy, gdy się zgodzisz.
+- **Niezbędne:** to, bez czego strona nie działa, na przykład wybrany przez Państwa język. Są zapisywane bez pytania.
+- **Analityczne:** ile osób odwiedza stronę i które podstrony pomagają im wysłać kwiaty. Zapisywane tylko za Państwa zgodą.
+- **Marketingowe:** mierzenie, która reklama Państwa tu przyprowadziła. Zapisywane tylko za Państwa zgodą.
 
-Bez Twojego wyboru zapisywane są tylko niezbędne pliki cookie. Tabela powyżej pokazuje, które pliki cookie są zapisywane dziś.
+Bez Państwa wyboru zapisywane są tylko niezbędne pliki cookie. Tabela powyżej pokazuje, które pliki cookie są zapisywane dziś.
 
-## Zapis Twojej zgody {#your-consent-record}
+## Zapis Państwa zgody {#your-consent-record}
 
-Gdy wybierasz „Zaakceptuj wszystkie”, „Odrzuć wszystkie” lub „Zapisz wybór”, Twoja przeglądarka zachowuje odpowiedź w pliku cookie fo_consent, a nasz serwer zapisuje tę samą odpowiedź, abyśmy mogli pokazać, co zostało wybrane.
+Gdy wybierają Państwo „Zaakceptuj wszystkie”, „Odrzuć wszystkie” lub „Zapisz wybór”, przeglądarka zachowuje odpowiedź w pliku cookie fo_consent, a nasz serwer zapisuje tę samą odpowiedź, abyśmy mogli pokazać, co zostało wybrane.
 
-Zapis zawiera cztery rzeczy: losowy kod tworzony przez Twoją przeglądarkę, który Cię nie identyfikuje; datę i godzinę; Twoją odpowiedź dotyczącą analityki i marketingu; oraz wersję tych zasad, na którą odpowiadasz. Nie zawiera adresu IP, danych przeglądarki ani adresu strony.
+Zapis zawiera cztery rzeczy: losowy kod tworzony przez przeglądarkę, który nie pozwala Państwa zidentyfikować; datę i godzinę; odpowiedź dotyczącą analityki i marketingu; oraz wersję tych zasad, której dotyczyła odpowiedź. Nie zawiera adresu IP, danych przeglądarki ani adresu strony.
 
 ## Zmiana decyzji {#changing-your-mind}
 
-Możesz zmienić odpowiedź w każdej chwili, tutaj lub przez „Ustawienia cookies” u dołu każdej strony. Nowa odpowiedź zastępuje poprzednią od tej chwili.
+Odpowiedź można zmienić w każdej chwili, tutaj lub przez „Ustawienia cookies” u dołu każdej strony. Nowa odpowiedź zastępuje poprzednią od tej chwili.
 
 [[reopen]]
 
@@ -80,7 +80,7 @@ Poza plikami cookie ta strona zapisuje trzy rodzaje informacji o odwiedzinach.
 
 ### Logi hostingu i sieci brzegowej
 
-Gdy otwierasz stronę, usługi, które ją hostują i dostarczają, zapisują techniczne szczegóły żądania: Twój adres IP, identyfikator przeglądarki (user agent), godzinę, adres strony i odpowiedź serwera.
+Gdy otwierają Państwo stronę, usługi, które ją hostują i dostarczają, zapisują techniczne szczegóły żądania: adres IP, identyfikator przeglądarki (user agent), godzinę, adres strony i odpowiedź serwera.
 
 - **Po co:** aby udostępniać stronę i chronić ją, na przykład przed nadużyciami.
 - **Podstawa prawna:** nasz prawnie uzasadniony interes w prowadzeniu strony, która działa i jest bezpieczna (art. 6 ust. 1 lit. f RODO).
@@ -98,15 +98,15 @@ Gdy na naszym serwerze coś pójdzie nie tak, raport o błędzie może zostać w
 
 ### Zapisy zgód
 
-Twój wybór dotyczący plików cookie, opisany powyżej w części „Zapis Twojej zgody”.
+Państwa wybór dotyczący plików cookie, opisany powyżej w części „Zapis Państwa zgody”.
 
-- **Po co:** aby móc pokazać, co wybrałeś lub wybrałaś.
+- **Po co:** aby móc pokazać, co Państwo wybrali.
 - **Podstawa prawna:** nasz obowiązek prawny wykazania zgody (art. 6 ust. 1 lit. c RODO w związku z art. 7 ust. 1).
 - **Kto je przetwarza:** dziś zapis trafia do naszych logów hostingu, więc przetwarzają go usługi wymienione w części „Logi hostingu i sieci brzegowej”.
 - **Jak długo:** nasze zasady przewidują pięć lat. Dziś zapis znajduje się w logach hostingu i jest usuwany razem z nimi, czyli wcześniej.
 
 **Dokąd trafiają te informacje.** Logi hostingu i sieci brzegowej mogą być przekazywane do Stanów Zjednoczonych na podstawie warunków przetwarzania danych dostawców, które opierają się na ramach ochrony danych UE-USA (EU-US Data Privacy Framework) lub standardowych klauzulach umownych Komisji Europejskiej. Dziś zapisy zgód są przechowywane w tych samych logach, więc podlegają temu samemu przekazaniu. Raporty o błędach pozostają w regionie Sentry w Unii Europejskiej.
 
-**Twoje prawa.** Możesz poprosić nas o kopię tego, co o Tobie przechowujemy, o usunięcie tych danych lub wnieść sprzeciw wobec ich wykorzystywania. Zadzwoń do nas lub napisz na WhatsAppie pod numer {phone}.
+**Państwa prawa.** Mogą Państwo poprosić nas o kopię tego, co o Państwu przechowujemy, o usunięcie tych danych lub wnieść sprzeciw wobec ich wykorzystywania. Prosimy zadzwonić do nas lub napisać na WhatsAppie pod numer {phone}.
 
-**Skargi.** Jeśli uważasz, że niewłaściwie potraktowaliśmy Twoje dane osobowe, możesz złożyć skargę do organu ochrony danych w miejscu, w którym mieszkasz lub pracujesz: na przykład do UODO w Polsce lub, w Wielkiej Brytanii, do ICO.
+**Skargi.** Jeśli uważają Państwo, że niewłaściwie potraktowaliśmy Państwa dane osobowe, mogą Państwo złożyć skargę do organu ochrony danych w miejscu, w którym Państwo mieszkają lub pracują: na przykład do UODO w Polsce lub, w Wielkiej Brytanii, do ICO.
