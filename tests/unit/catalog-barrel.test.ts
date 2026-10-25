@@ -310,12 +310,14 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // `PRODUCT_COUNT_FLOOR`'s reason.
         "ProductPageIdentitySchema",
         "ProductParamsSchema",
+        "ProductSearchParamsSchema",
         "listProductPages",
         "localeProductParams",
         "productExistenceCounts",
         "productExistenceSummaryMarkdown",
         "productPageExists",
         "productPrebuildPages",
+        "productSearchParams",
         // The language popup's per-locale paths of one product page (TASK-197).
         "productAlternatePaths",
         "writeProductExistenceSummary",

@@ -15,7 +15,11 @@
  */
 import { revalidatePath } from "next/cache";
 
-import { type CountryIso2, isCountryIso2 } from "@/config/countries";
+import {
+  COUNTRY_CODES,
+  type CountryIso2,
+  isCountryIso2,
+} from "@/config/countries";
 import {
   CacheEntitySchema,
   cacheTagsFor,
@@ -214,8 +218,34 @@ export async function pathsForTag(tag: string): Promise<string[]> {
     ),
   ];
   const site = carrying(taggedDocuments());
-  if (site.length > 0) return site;
+  if (site.length > 0 || !isCatalogueTag(tag)) return site;
   return carrying(await catalogueDocuments());
+}
+
+/**
+ * Whether `tag` is one the catalogue's documents can carry, decided by the builders themselves
+ * rather than by spelling a prefix: a destination's `catalog:{iso2}`, its `catalog:{iso2}:{…}` and
+ * its `cutoff:{iso2}`, or a `product:{sku}` that `cacheTagsFor()` rebuilds from its own suffix.
+ * Cheap, so a corridor, hub or home tag that no document carries never enumerates the catalogue.
+ */
+function isCatalogueTag(tag: string): boolean {
+  for (const code of COUNTRY_CODES) {
+    if (!isCountryIso2(code)) continue;
+    const catalog = catalogTag(code);
+    if (
+      tag === catalog ||
+      tag.startsWith(`${catalog}:`) ||
+      tag === cutoffCacheTag(code)
+    ) {
+      return true;
+    }
+  }
+  const sku = tag.slice(tag.indexOf(":") + 1);
+  const entity = CacheEntitySchema.safeParse({
+    kind: "product",
+    productId: sku,
+  });
+  return entity.success && cacheTagsFor(entity.data).includes(tag);
 }
 
 /**
