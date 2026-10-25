@@ -37,6 +37,11 @@ export const MODULES = [
   // its view model. A recorded `plan/01` §5 deviation: no listed module owns company and legal
   // content; registered here and in `docs/architecture.md` §3 in the same PR.
   "content",
+  // spec 045 §5.2 (TASK-400, TASK-401): site search, `plan/01` §2's "search row". Its text core,
+  // its in-process index and its engine belong to no listed module (it reads the catalogue, geo
+  // and i18n through their barrels); registered here and in `docs/architecture.md` §3 in the same
+  // PR, as the rule above requires.
+  "search",
 ] as const;
 
 export const REQUIRED_DIRS = [

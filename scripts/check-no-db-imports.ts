@@ -133,6 +133,10 @@ export const SCANNED_PATHS = [
   "src/modules/checkout/address.ts",
   "src/modules/checkout/phone.ts",
   "src/modules/checkout/currency.ts",
+  // spec 045 AC-31 (TASK-400, TASK-401): site search's text core and in-process engine. The index
+  // is built from the catalogue read API, so search works with `DATABASE_URL` unset exactly as the
+  // listings do; `src/config/search.ts` is covered by `src/config`.
+  "src/modules/search",
 ] as const;
 
 /**

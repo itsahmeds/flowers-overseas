@@ -455,6 +455,13 @@ export { corridorShopEntry } from "./shop-entry";
 export type { ShopNavLinks } from "./shop-nav";
 export { destinationShopLinks, pageDestination } from "./shop-nav";
 
+// Site search's catalogue reads (spec 045 §5.2; TASK-401): the copy a locale shows for an entity,
+// the card's photograph test and the margin band per product (all 0 on the static catalogue;
+// TASK-405 adds the database read). `src/modules/search` composes its source from these and the
+// listing functions above, never from the dataset.
+export type { EntityCopy, MarginBand } from "./search-reads";
+export { entityCopy, hasCardPhoto, rankBandsFor } from "./search-reads";
+
 // The shared per-depth route resolver (spec 008 §14 **A5**, spec 007 §14 **A8**; TASK-109).
 //
 // Next.js allows one dynamic slug name per (depth, position) across `app/`, so spec 007's corridor

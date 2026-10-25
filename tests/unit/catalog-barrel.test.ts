@@ -377,6 +377,11 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "countryVersionOf",
         "parseChooserNext",
         "parseChooserPath",
+        // site search's catalogue reads (spec 045 §5.2; TASK-401): an entity's copy in a locale,
+        // the card's photograph test, and the margin band per product (all 0 until TASK-405).
+        "entityCopy",
+        "hasCardPhoto",
+        "rankBandsFor",
       ].sort(),
     );
   });
@@ -415,6 +420,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/read.ts`,
       `${moduleDir}/routes.ts`,
       `${moduleDir}/schemas.ts`,
+      // Site search's catalogue reads (spec 045 §5.2; TASK-401).
+      `${moduleDir}/search-reads.ts`,
       `${moduleDir}/shop-entry.ts`,
       // The header in a destination's context (spec 043 §5.2; TASK-288).
       `${moduleDir}/shop-nav.ts`,

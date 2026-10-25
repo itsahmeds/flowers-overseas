@@ -50,6 +50,12 @@ export const HealthResponse = z.object({
   // (`/review 196` round 2 nit 4): any page's own response headers already show whether an
   // enforcing `Content-Security-Policy` is present, so `degraded` discloses nothing new.
   cspEnforce: z.enum(CSP_ENFORCE_STATES).optional(),
+  // Spec 045 §11 (TASK-401): site search's in-process index, numbers only — its age in seconds
+  // (`null` until the first search builds it) and its document count. Process-local, like the
+  // rest of the body: reading them never builds the index and never touches a database. Optional
+  // so a body from a deployment before TASK-401 still parses; the route always sends both.
+  searchIndexAgeSeconds: z.number().int().nonnegative().nullable().optional(),
+  searchIndexDocuments: z.number().int().nonnegative().optional(),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
@@ -85,6 +91,13 @@ export interface HealthInput {
   };
   /** `cspEnforceState(process.env)` from `./csp-state.ts` (TASK-058). */
   readonly cspEnforce?: CspEnforceState | undefined;
+  /** `searchIndexStats()` from `@/modules/search` (spec 045 §11; TASK-401). */
+  readonly search?:
+    | {
+        readonly ageSeconds: number | null;
+        readonly documents: number;
+      }
+    | undefined;
 }
 
 /**
@@ -111,6 +124,12 @@ export function buildHealthResponse(input: HealthInput): HealthResponse {
     fxAsOf: input.fx.fxAsOf,
     fxSource: input.fx.fxSource,
     ...(input.cspEnforce === undefined ? {} : { cspEnforce: input.cspEnforce }),
+    ...(input.search === undefined
+      ? {}
+      : {
+          searchIndexAgeSeconds: input.search.ageSeconds,
+          searchIndexDocuments: input.search.documents,
+        }),
   });
 }
 

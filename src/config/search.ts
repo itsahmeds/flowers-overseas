@@ -54,13 +54,17 @@ export const SearchConfigSchema = z
     pagesBlockMax: PositiveInt,
     /**
      * Damerau-Levenshtein tolerance (§2.3): `short` for tokens of `minLength` to `longFrom - 1`
-     * letters, `long` from `longFrom`, none below `minLength`.
+     * letters, `long` from `longFrom`, none below `minLength`. `fixedPrefix` letters at the start
+     * of a word are never the typo: a typo target begins as the typed word does. Without it the
+     * Polish `róże` (roses) is one edit from `Boże` (`Boże Narodzenie`, Christmas) and a search
+     * for roses lists the Christmas bouquets, which spec 045 AC-6 forbids; see TASK-401's brief.
      */
     typoDistance: z.strictObject({
       short: PositiveInt,
       long: PositiveInt,
       longFrom: PositiveInt,
       minLength: PositiveInt,
+      fixedPrefix: NonNegativeInt,
     }),
     /** The last token prefix-matches from this many letters (§2.3). */
     prefixMinLetters: PositiveInt,
@@ -116,7 +120,13 @@ export const SEARCH_CONFIG: SearchConfig = SearchConfigSchema.parse({
   pageSize: 12,
   maxPages: 10,
   pagesBlockMax: 3,
-  typoDistance: { short: 1, long: 2, longFrom: 8, minLength: 4 },
+  typoDistance: {
+    short: 1,
+    long: 2,
+    longFrom: 8,
+    minLength: 4,
+    fixedPrefix: 1,
+  },
   prefixMinLetters: 3,
   stemMinLetters: 3,
   // §2.3's closed lists, verbatim.

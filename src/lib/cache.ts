@@ -218,6 +218,38 @@ export async function urlsForTag(
   return [...urls];
 }
 
+/**
+ * An in-process listener told about every `invalidate()` call, with its tags, after the edge purge
+ * (spec 045 §5.2 "`src/lib/cache.ts`", §5.4; TASK-401). Site search's in-process index registers
+ * one so a `catalog:*`, `product:*` or `country:*` change marks it stale, and the next search
+ * rebuilds it: a price change reaches search when it reaches the listings.
+ */
+export type InvalidateListener = (tags: readonly string[]) => void;
+
+const invalidateListeners = new Set<InvalidateListener>();
+
+/**
+ * Register `listener` for every later `invalidate()` call in this process; the return value
+ * removes it. A listener that throws is skipped, never fatal: the change that called
+ * `invalidate()` is already saved, and a listener cannot turn its purge into a failure.
+ */
+export function onInvalidate(listener: InvalidateListener): () => void {
+  invalidateListeners.add(listener);
+  return () => {
+    invalidateListeners.delete(listener);
+  };
+}
+
+function notifyInvalidateListeners(tags: readonly string[]): void {
+  for (const listener of invalidateListeners) {
+    try {
+      listener(tags);
+    } catch {
+      // Deliberately silent: see `onInvalidate()`. The listener owns its own logging.
+    }
+  }
+}
+
 /** The Sentry signal of a toggle whose change is saved but not yet visible (spec 012 §11). */
 export const CACHE_INVALIDATE_FAILED_SIGNAL = "cache.invalidate.failed";
 
@@ -296,6 +328,8 @@ export async function invalidate(
   } catch {
     edge = "failed";
   }
+  // After the edge purge, in-process listeners (spec 045 §5.2): site search's index.
+  notifyInvalidateListeners(names);
 
   const fields = {
     event: "cache.invalidate",
