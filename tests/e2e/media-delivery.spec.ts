@@ -47,7 +47,12 @@ async function urlsByAsset(page: Page): Promise<Map<string, string[]>> {
           element.getAttribute("src") ?? "",
         ],
       );
-      return [asset, urls.filter((url) => url !== "")] as const;
+      // A blank `data:` source fetches nothing: the width where the picture is not displayed
+      // (the v3 home's photograph below `md`, the first card's from `md`; TASK-386).
+      return [
+        asset,
+        urls.filter((url) => url !== "" && !url.startsWith("data:")),
+      ] as const;
     }),
   );
   const byAsset = new Map<string, string[]>();
