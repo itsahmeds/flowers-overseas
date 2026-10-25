@@ -50,6 +50,7 @@ import {
 
 import {
   A6_TRANSITIONS,
+  A8_TRANSITIONS,
   A10_TRANSITIONS,
   SET_E,
 } from "../fixtures/order-machine.ts";
@@ -850,7 +851,7 @@ describe.skipIf(server.url === undefined)(
     // -----------------------------------------------------------------------------------------
 
     describe("rows 39 and 40 (spec 002 AC-52, T-52)", () => {
-      it("both rows carry exactly allowed_actors = {buyer,admin}, and the table holds A6's rows plus these two", async () => {
+      it("both rows carry exactly allowed_actors = {buyer,admin}, and the table holds A6's and A8.1's rows plus these two", async () => {
         const rows = plain(
           await scratch.sql<
             { from_status: string; allowed_actors: string[] }[]
@@ -865,7 +866,11 @@ describe.skipIf(server.url === undefined)(
         ]);
         const [count] = await scratch.sql<{ n: number }[]>`
           SELECT count(*)::int AS n FROM order_transition`;
-        expect(count?.n).toBe(A6_TRANSITIONS.length + A10_TRANSITIONS.length);
+        expect(count?.n).toBe(
+          A6_TRANSITIONS.length +
+            A8_TRANSITIONS.length +
+            A10_TRANSITIONS.length,
+        );
       });
 
       for (const state of ["accepted", "paid"] as const) {
@@ -1152,7 +1157,7 @@ describe.skipIf(server.url === undefined)(
     it(
       "a fresh database: down succeeds, order_transition is back to A6's rows, the snapshot equals the one before A10; migrate again",
       async () => {
-        expect(A10_VERSION > "0028").toBe(true);
+        expect(A10_VERSION > "0026").toBe(true);
         const later = FORWARD.filter((name) => name.slice(0, 4) >= A10_VERSION);
         await fresh.sql.unsafe(
           `CREATE TABLE public.schema_migrations (
@@ -1167,7 +1172,8 @@ describe.skipIf(server.url === undefined)(
         const beforeA10 = await readCatalogue(fresh.sql);
         const [pre] = await fresh.sql<{ n: number }[]>`
           SELECT count(*)::int AS n FROM order_transition`;
-        expect(pre?.n).toBe(A6_TRANSITIONS.length);
+        // Every migration below A10 has run: A6.3's rows and A8.1's two (`0021`, TASK-337).
+        expect(pre?.n).toBe(A6_TRANSITIONS.length + A8_TRANSITIONS.length);
         await fresh.sql`DELETE FROM public.schema_migrations WHERE version >= ${A10_VERSION}`;
         await locked(() => runner(fresh.url));
         const withA10 = await readCatalogue(fresh.sql);
@@ -1176,7 +1182,7 @@ describe.skipIf(server.url === undefined)(
         expect(await down(fresh)).toBe("rolled back");
         const [count] = await fresh.sql<{ n: number }[]>`
           SELECT count(*)::int AS n FROM order_transition`;
-        expect(count?.n).toBe(A6_TRANSITIONS.length);
+        expect(count?.n).toBe(A6_TRANSITIONS.length + A8_TRANSITIONS.length);
         expect(await readCatalogue(fresh.sql)).toEqual(beforeA10);
 
         await locked(() => runner(fresh.url));
