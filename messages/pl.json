@@ -849,6 +849,29 @@
       "cutoffShort": "Order by 14:00 in Warsaw · today",
       "guarantee": "Obietnica świeżych kwiatów",
       "pricesInclude": "Ceny zawierają dostawę i VAT"
+    },
+    "mega": {
+      "allDestinations": "All destinations",
+      "allFlowers": "All flowers",
+      "allOccasions": "All occasions",
+      "byColour": "By colour",
+      "byFlower": "By flower",
+      "byPrice": "By price",
+      "byType": "By type",
+      "comingUp": "Coming up",
+      "everyDay": "Every day",
+      "extras": "Extras you can add",
+      "flowers": "Flowers",
+      "forWhom": "For whom",
+      "open": "Ordering open",
+      "plantsGifts": "Plants & gifts",
+      "recipient": {
+        "colleague": "For a colleague",
+        "grandparents": "For grandparents",
+        "mum": "For mum",
+        "newParents": "For new parents"
+      },
+      "soon": "Opening soon"
     }
   },
   "occasionHub": {
@@ -1097,6 +1120,17 @@
       "sortLabel": "Sort by",
       "submit": "Sort",
       "summary": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}} · strona {page} z {pageCount}"
+    },
+    "cta": {
+      "chooseCountry": "Choose where to send"
+    },
+    "price": {
+      "bandWord": {
+        "high": "Higher prices",
+        "low": "Lower prices",
+        "mid": "Middle prices"
+      },
+      "choose": "Choose a country to see the price"
     }
   },
   "trust": {
