@@ -90,6 +90,11 @@ const PARTS = [
 ] as const;
 
 /** Takes the dated "Coming up" out of the layout (`./home-dates.css`). */
+/** Unsticks the header, so it never paints over a part (`./static-header.css`). */
+const HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
+);
+
 const HOME_DATES_STYLE = fileURLToPath(
   new URL("./home-dates.css", import.meta.url),
 );
@@ -123,7 +128,12 @@ for (const { name, path, viewport } of CASES) {
     for (const { suffix, selector, belowDates } of PARTS) {
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
-        belowDates ? { stylePath: HOME_DATES_STYLE } : {},
+        // The sticky header would paint over a part Playwright scrolls to (`./static-header.css`).
+        {
+          stylePath: belowDates
+            ? [HEADER_STYLE, HOME_DATES_STYLE]
+            : [HEADER_STYLE],
+        },
       );
     }
   });
