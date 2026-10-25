@@ -18,8 +18,9 @@
  * visitor is owed is about what the site does, and the settings panel has to name the analytics
  * and marketing cookies *before* the tag exists, or the first accept is consent to a list nobody
  * showed. So `status: "declared"` rows carry the GA4 and Stripe names, and the schema refuses to
- * let one of them be marked `set` while it is written by anything but the browser (Phase 0
- * invariant: no `Set-Cookie` on a cached response — spec 001 AC-15, spec 003 AC-12).
+ * let a server-written row be marked `set` unless it is set only on uncached responses (the
+ * invariant: no `Set-Cookie` on a cached response, spec 001 AC-15, spec 003 AC-12; the one such
+ * row is `fo_dest`, written by the chooser's choice response, spec 004 §14 A-founder-2026-10-24a).
  *
  * ## Names, and the one wildcard
  *
@@ -52,8 +53,11 @@ export type CookieParty = (typeof cookieParties)[number];
 
 /**
  * Who writes it. `browser` means our own client code on an explicit user action;
- * `third-party-script` means a vendor tag we embed; `server` means a `Set-Cookie` header, which
- * nothing in Phase 0 does and which the schema refuses to combine with `status: "set"`.
+ * `third-party-script` means a vendor tag we embed; `server` means a `Set-Cookie` header. A row
+ * the server sets **today** must also say `serverScope: "uncached"`: the header is written only on
+ * an uncached response to the visitor's own action, never on a cached document (spec 004 §14
+ * A-founder-2026-10-24a item 3 and "Rendering": "no `Set-Cookie` on any cached response (only the
+ * chooser's choice response sets the cookie)"). The schema refuses a set server row without it.
  */
 export const cookieWriters = [
   "browser",
@@ -61,6 +65,14 @@ export const cookieWriters = [
   "third-party-script",
 ] as const;
 export type CookieWriter = (typeof cookieWriters)[number];
+
+/**
+ * Where a server-written cookie may be set: `uncached`, only on a response that is never stored by
+ * a cache (`Cache-Control: private, no-store`) and answers the visitor's own action. The one
+ * value; a cached response sets nothing (spec 001 AC-15, spec 003 AC-12, spec 004 AC-91).
+ */
+export const serverScopes = ["uncached"] as const;
+export type ServerScope = (typeof serverScopes)[number];
 
 /** `set` — written by the app today. `declared` — disclosed now, written by a later spec. */
 export const cookieStatuses = ["set", "declared"] as const;
@@ -101,6 +113,8 @@ export const CookieRegistryEntrySchema = z
     consentRequired: z.boolean(),
     party: z.enum(cookieParties),
     writer: z.enum(cookieWriters),
+    /** `writer: "server"` only: the responses that may carry its `Set-Cookie` (see above). */
+    serverScope: z.enum(serverScopes).optional(),
     status: z.enum(cookieStatuses),
     lifetime: CookieLifetimeSchema,
     /** `consent.cookies.<id>.purpose`; the catalogue entry itself is TASK-051's. */
@@ -124,11 +138,22 @@ export const CookieRegistryEntrySchema = z
         message: `\`${entry.name}\`: consentRequired must be ${String(entry.category !== "essential")} for category \`${entry.category}\``,
       });
     }
-    if (entry.status === "set" && entry.writer === "server") {
+    if (
+      entry.status === "set" &&
+      entry.writer === "server" &&
+      entry.serverScope !== "uncached"
+    ) {
       ctx.addIssue({
         code: "custom",
-        path: ["writer"],
-        message: `\`${entry.name}\`: nothing is set by the server in Phase 0 — a cached response must carry no \`Set-Cookie\` (spec 001 AC-15, spec 003 AC-12)`,
+        path: ["serverScope"],
+        message: `\`${entry.name}\`: a cookie the server sets today must be set only on uncached responses (\`serverScope: "uncached"\`): a cached response carries no \`Set-Cookie\` (spec 001 AC-15, spec 003 AC-12, spec 004 AC-91)`,
+      });
+    }
+    if (entry.serverScope !== undefined && entry.writer !== "server") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["serverScope"],
+        message: `\`${entry.name}\`: \`serverScope\` describes a \`Set-Cookie\`, so it belongs only on a \`writer: "server"\` row`,
       });
     }
     if (entry.kind !== "cookie" && entry.party !== "first") {
@@ -195,6 +220,26 @@ const REGISTER: readonly unknown[] = [
     purposeKey: "consent.cookies.consent.purpose",
     spec: "004",
     scope: "Path=/; SameSite=Lax; Secure outside development",
+  },
+  // The remembered country (spec 004 §14 A-founder-2026-10-24a item 3, "Compliance", AC-90;
+  // TASK-385). Set by the chooser's choice response, the one uncached `303` that answers the
+  // visitor's click on a country, and by nothing else on the server; the island's URL rule
+  // (TASK-391) only rewrites an existing one. Essential: storage strictly necessary for the service
+  // the visitor asked for, prices for the country they chose (ePrivacy Art. 5(3) second
+  // subparagraph; PECR reg. 6(4)(b)). Not `HttpOnly`, because the island reads it.
+  {
+    name: "fo_dest",
+    kind: "cookie",
+    category: "essential",
+    consentRequired: false,
+    party: "first",
+    writer: "server",
+    serverScope: "uncached",
+    status: "set",
+    lifetime: { kind: "maxAge", seconds: 180 * DAY },
+    purposeKey: "consent.cookies.dest.purpose",
+    spec: "004",
+    scope: "Path=/; SameSite=Lax; Secure",
   },
   {
     name: "fo_session",
@@ -334,6 +379,20 @@ function consentLifetime(): { seconds: number; secondsOnReject: number } {
 export const CONSENT_ACCEPT_MAX_AGE_SECONDS = consentLifetime().seconds;
 /** 6 months on reject: shorter, so a refusal is revisited sooner than an acceptance (§8). */
 export const CONSENT_REJECT_MAX_AGE_SECONDS = consentLifetime().secondsOnReject;
+
+/** The remembered country's cookie (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385). */
+export const DEST_COOKIE_NAME = "fo_dest";
+
+/** 180 days, read from the register row so the header and the disclosure cannot disagree. */
+export const DEST_COOKIE_MAX_AGE_SECONDS = ((): number => {
+  const entry = COOKIE_REGISTRY.find((row) => row.name === DEST_COOKIE_NAME);
+  if (entry?.lifetime.kind !== "maxAge") {
+    throw new Error(
+      "`fo_dest` must declare a `maxAge` lifetime (spec 004 §14 A-founder-2026-10-24a item 3)",
+    );
+  }
+  return entry.lifetime.seconds;
+})();
 
 /** Every declared name, wildcards included, in register order. */
 export function registeredCookieNames(): readonly string[] {

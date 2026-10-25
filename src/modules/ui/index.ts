@@ -485,6 +485,13 @@ export type { TrustStripProps } from "./trust/TrustStrip.tsx";
 // whole set adds **zero** bytes of client JavaScript (§5.4). `ProductCardViewSchema` is the place
 // the honesty rules of §8 are enforced: it has no field for a badge, a rating, a review count, an
 // old price or an add-to-basket, so a projection cannot carry one to a renderer.
+// The chooser's form (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385): server-rendered,
+// native GET, zero client JavaScript of its own.
+export { CountryPicker } from "./shop/CountryPicker.tsx";
+export type {
+  CountryPickerChoice,
+  CountryPickerProps,
+} from "./shop/CountryPicker.tsx";
 export { ProductCard } from "./shop/ProductCard.tsx";
 export type { ProductCardProps } from "./shop/ProductCard.tsx";
 export { ListingGrid } from "./shop/ListingGrid.tsx";

@@ -28,7 +28,7 @@ afterEach(() => {
 async function load(
   environment: Partial<Record<(typeof KEYS)[number], string>>,
 ): Promise<{
-  call: (path: string, headers?: Record<string, string>) => Response;
+  call: (path: string, headers?: Record<string, string>) => Promise<Response>;
   lines: string[];
 }> {
   for (const key of KEYS) {
@@ -60,7 +60,7 @@ describe("the 401 gate in src/proxy.ts (AC-25)", () => {
       APP_ENV: "staging",
       STAGING_BASIC_AUTH: CREDENTIAL,
     });
-    const response = call("/en");
+    const response = await call("/en");
     expect(response.status).toBe(401);
     expect(response.headers.get("www-authenticate")).toMatch(/^Basic realm=/u);
     expect(response.headers.get("cache-control")).toBe("no-store");
@@ -73,7 +73,7 @@ describe("the 401 gate in src/proxy.ts (AC-25)", () => {
       APP_ENV: "staging",
       STAGING_BASIC_AUTH: CREDENTIAL,
     });
-    expect(call("/en", { authorization: HEADER }).status).toBe(200);
+    expect((await call("/en", { authorization: HEADER })).status).toBe(200);
   });
 
   it("leaves /api/health open for the healthcheck and the uptime monitor", async () => {
@@ -81,7 +81,7 @@ describe("the 401 gate in src/proxy.ts (AC-25)", () => {
       APP_ENV: "staging",
       STAGING_BASIC_AUTH: CREDENTIAL,
     });
-    expect(call("/api/health").status).toBe(200);
+    expect((await call("/api/health")).status).toBe(200);
   });
 
   it("never gates production, even with the variable set", async () => {
@@ -89,12 +89,12 @@ describe("the 401 gate in src/proxy.ts (AC-25)", () => {
       APP_ENV: "production",
       STAGING_BASIC_AUTH: CREDENTIAL,
     });
-    expect(call("/en").status).toBe(200);
+    expect((await call("/en")).status).toBe(200);
   });
 
   it("is off entirely when the variable is absent", async () => {
     const { call } = await load({ APP_ENV: "staging" });
-    expect(call("/en").status).toBe(200);
+    expect((await call("/en")).status).toBe(200);
   });
 
   it("logs the 401 without the credential, the header or the query string", async () => {
@@ -103,7 +103,7 @@ describe("the 401 gate in src/proxy.ts (AC-25)", () => {
       STAGING_BASIC_AUTH: CREDENTIAL,
     });
     const wrong = `Basic ${Buffer.from("florist:wrong").toString("base64")}`;
-    call("/en?utm_source=newsletter", { authorization: wrong });
+    await call("/en?utm_source=newsletter", { authorization: wrong });
     const logged = lines.join("");
     expect(logged).toContain('"status":401');
     expect(logged).not.toContain(CREDENTIAL);

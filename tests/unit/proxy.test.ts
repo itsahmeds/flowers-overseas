@@ -40,25 +40,25 @@ afterEach(() => {
 });
 
 describe("request-id proxy", () => {
-  it("sets a UUID v4 x-request-id on the response when the request has none", () => {
+  it("sets a UUID v4 x-request-id on the response when the request has none", async () => {
     const capture = captureLogs();
-    const response = proxy(request("https://example.com/"));
+    const response = await proxy(request("https://example.com/"));
     capture.restore();
     expect(response.headers.get(REQUEST_ID_HEADER)).toMatch(UUID_V4);
   });
 
-  it("echoes a client-supplied UUID v4", () => {
+  it("echoes a client-supplied UUID v4", async () => {
     const capture = captureLogs();
-    const response = proxy(
+    const response = await proxy(
       request("https://example.com/", { [REQUEST_ID_HEADER]: INCOMING }),
     );
     capture.restore();
     expect(response.headers.get(REQUEST_ID_HEADER)).toBe(INCOMING);
   });
 
-  it("propagates the id to the downstream request headers", () => {
+  it("propagates the id to the downstream request headers", async () => {
     const capture = captureLogs();
-    const response = proxy(
+    const response = await proxy(
       request("https://example.com/", { [REQUEST_ID_HEADER]: INCOMING }),
     );
     capture.restore();
@@ -71,9 +71,9 @@ describe("request-id proxy", () => {
     ).toBe(INCOMING);
   });
 
-  it("logs exactly one start and one end info line with only the §11 fields", () => {
+  it("logs exactly one start and one end info line with only the §11 fields", async () => {
     const capture = captureLogs();
-    proxy(
+    await proxy(
       request("https://example.com/api/health?email=a@b.c", {
         [REQUEST_ID_HEADER]: INCOMING,
       }),
@@ -126,22 +126,22 @@ describe("request-id proxy", () => {
 
 describe("the locale attached from the path (spec 003 §11, TASK-034)", () => {
   /** The downstream request header Next encodes on the proxy response. */
-  function downstreamLocale(url: string): string | null {
+  async function downstreamLocale(url: string): Promise<string | null> {
     const capture = captureLogs();
-    const response = proxy(request(url));
+    const response = await proxy(request(url));
     capture.restore();
     return response.headers.get(`x-middleware-request-${LOCALE_HEADER}`);
   }
 
-  it("attaches x-fo-locale for a launch-locale prefix", () => {
-    expect(downstreamLocale("https://example.com/en")).toBe("en");
-    expect(downstreamLocale("https://example.com/en-gb/checkout")).toBe(
+  it("attaches x-fo-locale for a launch-locale prefix", async () => {
+    expect(await downstreamLocale("https://example.com/en")).toBe("en");
+    expect(await downstreamLocale("https://example.com/en-gb/checkout")).toBe(
       "en-gb",
     );
-    expect(downstreamLocale("https://example.com/pl/okazje")).toBe("pl");
+    expect(await downstreamLocale("https://example.com/pl/okazje")).toBe("pl");
   });
 
-  it("attaches nothing for a path with no launch-locale prefix: no guess, no redirect", () => {
+  it("attaches nothing for a path with no launch-locale prefix: no guess, no redirect", async () => {
     for (const url of [
       "https://example.com/",
       "https://example.com/robots.txt",
@@ -150,13 +150,13 @@ describe("the locale attached from the path (spec 003 §11, TASK-034)", () => {
       "https://example.com/EN",
       "https://example.com/fr/x",
     ]) {
-      expect(downstreamLocale(url), url).toBeNull();
+      expect(await downstreamLocale(url), url).toBeNull();
     }
   });
 
-  it("reads the path only: Accept-Language, a cookie and a geo header change nothing (AC-9)", () => {
+  it("reads the path only: Accept-Language, a cookie and a geo header change nothing (AC-9)", async () => {
     const capture = captureLogs();
-    const response = proxy(
+    const response = await proxy(
       request("https://example.com/en/x", {
         "accept-language": "de-DE,de;q=0.9",
         cookie: "fo_locale=de",
@@ -172,9 +172,9 @@ describe("the locale attached from the path (spec 003 §11, TASK-034)", () => {
     expect(response.headers.get("vary")).toBeNull();
   });
 
-  it("logs the locale as a §11 field and logs no header or cookie value", () => {
+  it("logs the locale as a §11 field and logs no header or cookie value", async () => {
     const capture = captureLogs();
-    proxy(
+    await proxy(
       request("https://example.com/de/anlaesse", {
         "accept-language": "de-DE",
         cookie: "fo_locale=pl",
@@ -202,7 +202,7 @@ describe("the locale attached from the path (spec 003 §11, TASK-034)", () => {
 });
 
 describe("the Next 16 proxy file convention (AC-11)", () => {
-  it("leaves no middleware.ts behind, so no build prints the deprecation warning", () => {
+  it("leaves no middleware.ts behind, so no build prints the deprecation warning", async () => {
     for (const candidate of [
       "src/middleware.ts",
       "src/middleware.js",
@@ -214,7 +214,7 @@ describe("the Next 16 proxy file convention (AC-11)", () => {
     expect(existsSync(resolve(repoRoot, "src/proxy.ts"))).toBe(true);
   });
 
-  it("keeps the spec 001 matcher", () => {
+  it("keeps the spec 001 matcher", async () => {
     expect(config.matcher).toEqual([
       "/((?!_next/static|_next/image|favicon.ico).*)",
     ]);

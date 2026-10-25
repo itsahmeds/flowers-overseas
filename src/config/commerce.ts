@@ -46,3 +46,10 @@ export const CHOOSER_NEXT_WORDS = { price: "price", search: "search" } as const;
 
 /** At most this many characters of `next` (item 3's validation); a longer one falls back. */
 export const CHOOSER_NEXT_MAX_CHARS = 256;
+
+/**
+ * At most this many characters of the chooser's typed country (`to`), spec 004 §14
+ * A-founder-2026-10-24a item 3: no country name in any launch locale comes close, and a longer
+ * value is a no match without being compared (TASK-385).
+ */
+export const CHOOSER_INPUT_MAX_CHARS = 64;

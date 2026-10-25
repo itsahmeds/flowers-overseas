@@ -71,7 +71,9 @@ function row(entry: CookieRegistryEntry): string {
       ? "**required**"
       : "not required (Art. 5(3) exemption)",
     entry.party,
-    entry.writer,
+    entry.serverScope === "uncached"
+      ? `${entry.writer} (uncached responses only)`
+      : entry.writer,
     entry.status === "set" ? "set today" : "declared, not set",
     humanLifetime(entry),
     `\`${entry.purposeKey}\``,

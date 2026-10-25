@@ -22,6 +22,11 @@
  *    through takes `aria-busy="true"` and `aria-disabled="true"` (a link has no `disabled`), and
  *    plays instead of motion 1's header bloom, one flourish at a time. All of it comes off on
  *    `pageshow`, when the back/forward cache brings the page back.
+ *  - **The chooser's history replace** (spec 004 §14 A-founder-2026-10-24a item 3, AC-79;
+ *    TASK-385). A `form[data-fo-choose]` submit becomes `location.replace()` of the same GET, its
+ *    submitter's `to` included, so the chooser leaves the history. The pending button is the
+ *    submitter when it carries `data-fo-pending`. With the module not loaded the GET is native and
+ *    Back shows the chooser again, which never forwards on its own.
  *  - **Motion 4, the sentence's shimmer.** 800 ms after load, once, unless the form was touched.
  *  - **The open phone Menu** (spec 004 §14 A-founder-2026-10-19c clause 3, AC-47; TASK-282). A tap
  *    on its scrim closes it; `Tab` and `Shift+Tab` keep focus inside it and its summary. On the
@@ -151,14 +156,25 @@ export function MotionIsland(): null {
     });
 
     d.addEventListener("submit", (event) => {
-      const button = (event.target as Element).querySelector(
-        `button${pending}`,
-      );
-      if (button && !event.defaultPrevented) {
+      const form = event.target as HTMLFormElement;
+      const { submitter } = event;
+      const button = submitter?.matches(pending)
+        ? submitter
+        : form.querySelector(`button${pending}`);
+      if (event.defaultPrevented) return;
+      if (button) {
         setTimeout(() => {
           button.setAttribute(busy, "true");
           button.setAttribute("disabled", "");
         });
+      }
+      // The chooser's GET replaces the chooser in the history (spec 004 §14 A-founder-2026-10-24a
+      // item 3, AC-79): Back from the page it answers returns to the page the visitor came from.
+      if (form.matches("[data-fo-choose]")) {
+        event.preventDefault();
+        here.replace(
+          `${form.action}?${new URLSearchParams(new FormData(form, submitter) as unknown as string[][]).toString()}`,
+        );
       }
     });
 
