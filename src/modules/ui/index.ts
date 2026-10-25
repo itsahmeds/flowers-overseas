@@ -353,26 +353,37 @@ export {
 } from "./media/loader.ts";
 export type { VariantLoader, VariantRef } from "./media/loader.ts";
 
-// The locale home's first band and the sentence picker (spec 004 §14 A21 clause 4, AC-10,
-// AC-11; TASK-177, superseding TASK-052's finder card and its island). All are Server Components:
-// the home ships no island of its own, and the picker is a `GET` form to `/api/send/{locale}`,
-// whose landing rule (`sentenceTarget`) and option rule (`sentenceDestinations`) are exported
-// because the route and AC-11's tests read them from here.
+// The locale home, products first (spec 004 §14 A-founder-2026-10-24a item 4; TASK-386,
+// TASK-387): the first screen with the inline picker, "Our selection", the occasion tabs (a native
+// radio group, no script), the price words and "Coming up". All are Server Components fed by the
+// catalogue's `homeView()`, whose shape is `HomeViewSchema`: no field for money exists in it.
 export {
   HOME_BLEED,
   HOME_HERO_ASSET,
   HOME_SECTION,
+  HOME_V3_SECTION,
   HomeHero,
 } from "./home/HomeHero.tsx";
 export type { HomeHeroProps } from "./home/HomeHero.tsx";
-// The locale home's one honesty label (spec 006 AC-17; TASK-080): the page mounts it, the
-// component collects the asset ids the page displays, and `MediaProvenanceNote` decides whether
-// anything is owed. No prop can suppress it at either level.
 export {
-  HomeProvenanceNote,
-  homeMediaAssetIds,
-} from "./home/HomeProvenanceNote.tsx";
-export type { HomeProvenanceNoteProps } from "./home/HomeProvenanceNote.tsx";
+  HomeCardViewSchema,
+  HomePickerViewSchema,
+  HomeViewSchema,
+} from "./home/home-view.ts";
+export type { HomeCardView, HomeView } from "./home/home-view.ts";
+export { HomeSelection } from "./home/HomeSelection.tsx";
+export type { HomeSelectionProps } from "./home/HomeSelection.tsx";
+export {
+  HOME_OCCASION_GROUP,
+  HomeOccasionTabs,
+} from "./home/HomeOccasionTabs.tsx";
+export type { HomeOccasionTabsProps } from "./home/HomeOccasionTabs.tsx";
+export { HomePriceWords } from "./home/HomePriceWords.tsx";
+export type { HomePriceWordsProps } from "./home/HomePriceWords.tsx";
+export { HomeComingUp } from "./home/HomeComingUp.tsx";
+export type { HomeComingUpProps } from "./home/HomeComingUp.tsx";
+// The sentence picker left the home with the commerce structure (Q-24c); its form, island and
+// `/api/send` route stay until their own clean-up (`docs/tasks/TASK-386.md`, carry-forwards).
 export { SentencePicker } from "./home/SentencePicker.tsx";
 export type { SentencePickerProps } from "./home/SentencePicker.tsx";
 export {
@@ -403,11 +414,6 @@ export type { ProofRowProps } from "./home/ProofRow.tsx";
 // injection hooks are deliberately **not** exported (spec 003's rule: a caller that could swap a
 // provider at runtime would turn the seam into global mutable configuration); the populated
 // branch reaches the gallery through each section's optional `provider` prop.
-export { TRENDING_ANCHOR, TrendingRow } from "./home/TrendingRow.tsx";
-export type {
-  TrendingProductPage,
-  TrendingRowProps,
-} from "./home/TrendingRow.tsx";
 export {
   TRENDING_BASES,
   emptyTrendingProvider,
@@ -457,8 +463,6 @@ export type {
 export { OccasionTiles } from "./home/OccasionTiles.tsx";
 export { occasionAssetId } from "./home/occasion-model.ts";
 export type { OccasionTilesProps } from "./home/OccasionTiles.tsx";
-export { OccasionDates } from "./home/OccasionDates.tsx";
-export type { OccasionDatesProps } from "./home/OccasionDates.tsx";
 export { HOW_IT_WORKS_STEPS, HowItWorks } from "./home/HowItWorks.tsx";
 export type { HowItWorksProps } from "./home/HowItWorks.tsx";
 export { FAQ_ENTRIES, HomeFaq } from "./home/HomeFaq.tsx";

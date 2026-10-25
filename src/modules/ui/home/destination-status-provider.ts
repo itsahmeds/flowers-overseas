@@ -20,9 +20,9 @@
  *    through unchanged rather than deciding again, so the honesty rule (`plan/10` §3) lives in
  *    one place.
  *
- * Ordering is the artboard's: the featured (`live`) destination first, then the guide destinations in
- * `collator(locale)` order over their **translated** names, which is why `nameOf` is a parameter
- * — this module reads no catalogue, exactly like `./finder-model.ts`.
+ * Ordering is the one country order (TASK-387): the registry's `sortWeight`, then
+ * `collator(locale)` order over the **translated** names, which is why `nameOf` is a parameter —
+ * this module reads no catalogue, exactly like `./finder-model.ts`.
  */
 import {
   COUNTRIES,
@@ -133,13 +133,16 @@ export function destinationStatusProviderOf(
       const named = countries.map((country) => ({
         country,
         name: nameOf(country.nameKey),
-        featured: country.status === "live",
       }));
+      // The one country order (spec 004 §14 A-founder-2026-10-24a items 1 and 13; TASK-387): the
+      // registry's `sortWeight`, then the name in the reader's collation. No destination is
+      // special-cased: "Poland first" left the code with the commerce structure (AC-73).
       const collated = sortBy(named, localeCode(locale), (entry) => entry.name);
-      return [
-        ...collated.filter((entry) => entry.featured),
-        ...collated.filter((entry) => !entry.featured),
-      ].map(({ country }) => project(country, locale, hrefOf));
+      return [...collated]
+        .sort(
+          (left, right) => left.country.sortWeight - right.country.sortWeight,
+        )
+        .map(({ country }) => project(country, locale, hrefOf));
     },
   };
 }

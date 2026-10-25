@@ -16,14 +16,13 @@ import { describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import en from "../../messages/en.json";
-import { listProductPages } from "../../src/modules/catalog";
 import { ListingSubsection } from "../../src/modules/catalog/ui/ListingChrome.tsx";
 import { type MessageNamespace, loadMessages } from "../../src/modules/i18n";
 import { Button, StickyActionBar } from "../../src/modules/ui";
 import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import { MenuSheet } from "../../src/modules/ui/layout/MenuSheet.tsx";
 import { NoticeDocument } from "../../src/modules/ui/layout/NoticeDocument.tsx";
-import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
+import { HomeSelection } from "../../src/modules/ui/home/HomeSelection.tsx";
 import { ProductCard } from "../../src/modules/ui/shop/ProductCard.tsx";
 import type { ProductCardView } from "../../src/modules/ui/shop/viewModel.ts";
 
@@ -215,7 +214,11 @@ describe("motion 5's markup: the underline in the home H1 (TASK-283)", () => {
       messages={loadMessages("en", NAMESPACES)}
       timeZone="UTC"
     >
-      <HomeHero locale="en" shopCountries={["PL"]} />
+      <HomeHero
+        locale="en"
+        picker={{ action: "/api/choose/en", chips: [], datalist: [] }}
+        notOpen
+      />
     </NextIntlClientProvider>,
   );
   const heading = /<h1[^>]*id="hero-heading"[^>]*>([\s\S]*?)<\/h1>/.exec(
@@ -423,38 +426,26 @@ describe("motion 6's card layers (A-founder-2026-10-19e (c), (d); T-48 unit)", (
     expect(html).toContain("group-hover:underline");
   });
 
-  it("the home's trending cards move when they link, and only then (TASK-277)", async () => {
-    const pages = await listProductPages("en");
-    const render = (node: React.ReactElement): string =>
-      renderToStaticMarkup(
-        <NextIntlClientProvider
-          locale="en"
-          messages={loadMessages("en", NAMESPACES)}
-          timeZone="UTC"
-        >
-          {node}
-        </NextIntlClientProvider>,
-      );
-    const linked = cardParts(
-      render(<TrendingRow locale="en" productPages={pages} />),
+  it("the home's selection cards move, all but the priority one (TASK-277, TASK-386)", async () => {
+    const { homeView } = await import("../../src/modules/catalog/home.ts");
+    const view = await homeView("en");
+    const html = renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale="en"
+        messages={loadMessages("en", NAMESPACES)}
+        timeZone="UTC"
+      >
+        <HomeSelection selection={view.selection} />
+      </NextIntlClientProvider>,
     );
-    expect(linked).toEqual({
-      motion: 5,
-      shadows: 5,
-      lines: 5,
+    const moving = view.selection.cards.length - 1;
+    expect(moving).toBeGreaterThan(0);
+    expect(cardParts(html)).toEqual({
+      motion: moving,
+      shadows: moving,
+      lines: moving,
       anyShadow: true,
       anyLine: true,
-    });
-    const linkedHtml = render(<TrendingRow locale="en" productPages={pages} />);
-    expect(
-      linkedHtml.match(/<h3 class="[^"]*\brelative w-fit\b[^"]*">/g),
-    ).toHaveLength(5);
-    expect(cardParts(render(<TrendingRow locale="en" />))).toEqual({
-      motion: 0,
-      shadows: 0,
-      lines: 0,
-      anyShadow: false,
-      anyLine: false,
     });
   });
 });

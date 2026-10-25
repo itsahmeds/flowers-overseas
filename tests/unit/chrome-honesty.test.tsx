@@ -44,7 +44,6 @@ import {
 } from "../../src/modules/i18n/messages.ts";
 import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
 import { HowItWorks } from "../../src/modules/ui/home/HowItWorks.tsx";
-import { OccasionDates } from "../../src/modules/ui/home/OccasionDates.tsx";
 import { ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
 import { SiteFooter } from "../../src/modules/ui/layout/SiteFooter.tsx";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
@@ -104,8 +103,6 @@ const GATED_PROMISE_KEYS: readonly string[] = [
   "nav.category.sameDayShort",
   // Home FAQ's appended second sentence — `anyDeliveryDatesOpen()` in `HomeFaq`.
   "faq.whoDelivers.answerCutoff",
-  // Home occasion strip's third line — `anyDeliveryDatesOpen()` in `OccasionDates`.
-  "home.dates.orderBy",
   // Corridor guide, **live** state only: `corridor:check`'s `live-operations` rule refuses a
   // `live` content file for a destination with no `operations`; Poland has one since TASK-124, but
   // no `live` file exists (TASK-142) and no florist is signed, so no corridor is `live`.
@@ -196,7 +193,6 @@ const SURFACES: readonly {
   { name: "HomeFaq", of: () => <HomeFaq /> },
   { name: "HowItWorks", of: () => <HowItWorks /> },
   { name: "ProofRow", of: () => <ProofRow /> },
-  { name: "OccasionDates", of: (locale) => <OccasionDates locale={locale} /> },
 ];
 
 describe("the rendered chrome promises nothing (A19, AC-6)", () => {

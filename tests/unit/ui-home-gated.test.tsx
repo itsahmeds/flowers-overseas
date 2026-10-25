@@ -14,21 +14,15 @@
  * thing a later spec has to touch.
  */
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
 import { COUNTRIES } from "../../src/config/countries.ts";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
-import { TRENDING_PICKS } from "../../src/config/trending.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { ReviewsSection } from "../../src/modules/ui/home/ReviewsSection.tsx";
-import {
-  TrendingRow,
-  trendingPickHref,
-} from "../../src/modules/ui/home/TrendingRow.tsx";
-import { listProductPages } from "../../src/modules/catalog";
 import {
   destinationStatusProviderOf,
   staticDestinationStatusProvider,
@@ -39,12 +33,6 @@ import {
   staticReviewsProvider,
   withReviewsProvider,
 } from "../../src/modules/ui/home/reviews-provider.ts";
-import {
-  emptyTrendingProvider,
-  staticTrendingProvider,
-  trendingProviderOf,
-  withTrendingProvider,
-} from "../../src/modules/ui/home/trending-provider.ts";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
@@ -85,282 +73,6 @@ function text(html: string): string {
 function hrefs(html: string): string[] {
   return [...html.matchAll(/href="([^"]*)"/g)].map((match) => match[1] ?? "");
 }
-
-/**
- * The row's two honesty lines, one exact value per locale (TASK-140). The founder chose the `en`
- * wording on 2026-10-03 (`docs/decisions-log.md`, "The trending row reads Popular choices"): the
- * heading no longer claims a sales ranking on a site with no orders ("Most sent this week"), and
- * the basis line no longer claims picks by florists who have picked nothing yet. `en-gb` inherits
- * `en` through the fallback chain; `de` and `pl` are unreviewed drafts (`reviewed: false`).
- */
-const TRENDING_COPY = {
-  en: {
-    heading: "Popular choices",
-    basis: "Our picks until real orders start.",
-  },
-  "en-gb": {
-    heading: "Popular choices",
-    basis: "Our picks until real orders start.",
-  },
-  de: {
-    heading: "Beliebte Auswahl",
-    basis: "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",
-  },
-  pl: {
-    heading: "Popularne wybory",
-    basis: "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",
-  },
-} as const satisfies Record<
-  (typeof LOCALES)[number],
-  { heading: string; basis: string }
->;
-
-/**
- * The row's `<h2 id="trending-heading">` text, exactly as rendered — the italic phrase's `<em>`
- * included in the text (TASK-231), so the words are pinned whole.
- */
-function trendingHeading(html: string): string | undefined {
-  const inner = /id="trending-heading"[^>]*>(.*?)<\/h[23]>/u.exec(html)?.[1];
-  return inner === undefined ? undefined : text(inner).trim();
-}
-
-/** The heading's poppy italic phrase (spec 004 §14 A21 clauses 2–3; TASK-231). */
-const TRENDING_EM = {
-  en: "choices",
-  "en-gb": "choices",
-  de: "Auswahl",
-  pl: "wybory",
-} as const satisfies Record<(typeof LOCALES)[number], string>;
-
-/** The basis line after the picks' list, or `undefined` when the row renders none. */
-function trendingBasis(html: string): string | undefined {
-  // v2 (TASK-177): the basis line sits under the heading, as the artboard draws it.
-  const inner = /<p[^>]*data-fo-trending-basis-line[^>]*>([^<]*)<\/p>/u.exec(
-    html,
-  )?.[1];
-  return inner === undefined ? undefined : text(inner).trim();
-}
-
-describe("the trending row is gated on real orders", () => {
-  it("renders the five florists' picks by name, with no price element of any kind", () => {
-    const html = render(<TrendingRow locale="en" />, "en");
-    const rendered = text(html);
-
-    expect([...html.matchAll(/<li/g)]).toHaveLength(TRENDING_PICKS.length);
-    // v2 (TASK-177): the eyebrow is the destination, in the catalogue's own word ("For Poland").
-    expect(html).toMatch(/<p class="eyebrow[^"]*">Poland<\/p>/);
-    // Spec §3/§8: nothing here knows what a product is and no price is rendered — not a figure,
-    // not a "starting at", not a currency symbol, not the canvas's grey price bar.
-    expect(rendered).not.toMatch(/starting at|from\s*€|€|zł|£|\bfrom \d/iu);
-    expect(html).not.toContain("data-fo-price");
-  });
-
-  it("heads the row with its own locale's heading and basis line while the basis is picks (TASK-140)", () => {
-    for (const locale of LOCALES) {
-      const html = render(<TrendingRow locale={locale} />, locale);
-
-      expect(html, locale).toContain('data-fo-trending-basis="picks"');
-      expect(trendingHeading(html), locale).toBe(TRENDING_COPY[locale].heading);
-      // TASK-231: the one italic phrase, the last word of the reviewed heading, in `<em>`.
-      expect(html, locale).toMatch(
-        new RegExp(
-          `id="trending-heading"[^>]*>[^<]*<em data-fo-em="">${TRENDING_EM[locale]}</em></h2>`,
-          "u",
-        ),
-      );
-      expect(trendingBasis(html), locale).toBe(TRENDING_COPY[locale].basis);
-    }
-  });
-
-  it("drops the label the moment the ranking is real, with no call-site change", () => {
-    const ranked = trendingProviderOf(
-      [{ id: "one", name: "Amber Hour", assetId: "fo-bq-001-hero" }],
-      "orders",
-    );
-    const html = render(<TrendingRow locale="en" provider={ranked} />, "en");
-
-    expect(html).toContain('data-fo-trending-basis="orders"');
-    // The sentence is only true while the row is picks; a ranked row must not keep claiming it.
-    expect(trendingBasis(html)).toBeUndefined();
-    expect(text(html)).not.toContain(TRENDING_COPY.en.basis);
-    expect(text(html)).toContain("Amber Hour");
-  });
-
-  it("renders no section at all when the provider answers with nothing", () => {
-    expect(
-      render(
-        <TrendingRow locale="en" provider={emptyTrendingProvider} />,
-        "en",
-      ),
-    ).toBe("");
-  });
-
-  it("links nothing without the product existence set, and gives every pick one `trending` box (AC-14)", () => {
-    const html = render(<TrendingRow locale="en" />, "en");
-
-    expect(hrefs(html)).toEqual([]);
-    expect([...html.matchAll(/data-fo-media-slot="trending"/g)]).toHaveLength(
-      TRENDING_PICKS.length,
-    );
-    expect(html).not.toContain('data-fo-media-slot="grid"');
-    // A pick shows its photograph or the captioned placeholder and **no `<img>`** — never a
-    // broken image and never a picture of something else (`plan/10` §3, spec 006 AC-18). Since
-    // TASK-168 approved photo batch 2 every pick has its photograph: five of five.
-    const images = [...html.matchAll(/<img/g)].length;
-    const placeholders = [...html.matchAll(/data-fo-media-placeholder="/g)]
-      .length;
-    expect(TRENDING_PICKS).toHaveLength(5);
-    expect(images).toBe(5);
-    expect(placeholders).toBe(0);
-  });
-
-  it("captions a pick with no photograph as a product, in its `trending` box, with no <img> (TASK-168)", () => {
-    // Every shipped pick is photographed since batch 2, so the placeholder branch needs its own
-    // subject: a pick whose asset the manifest does not hold. Its caption is the product one —
-    // the box holds a bouquet, not an occasion or a hero band (`MediaAsset`'s `PLACEHOLDER_KEY`).
-    const unphotographed = trendingProviderOf([
-      { id: "missing", name: "Quiet Blush", assetId: "fo-no-such-asset-hero" },
-    ]);
-    const html = render(
-      <TrendingRow locale="en" provider={unphotographed} />,
-      "en",
-    );
-
-    expect(html).not.toContain("<img");
-    expect(html).toContain('data-fo-media-slot="trending"');
-    expect(html).toContain('data-fo-media-placeholder="unknownAsset"');
-    // The wordless, `aria-hidden` box (spec 043 AC-14; TASK-290); the pick's name stays.
-    expect(text(html)).not.toContain("Photography to supply");
-    expect(html).toMatch(
-      /<div[^>]*data-fo-media-placeholder="unknownAsset"[^>]*aria-hidden="true"[^>]*><\/div>/u,
-    );
-    expect(text(html)).toContain("Quiet Blush");
-  });
-
-  it("tells the browser the card's rendered width, not the listing grid's (TASK-168, AC-15)", () => {
-    // `MEDIA_SLOT_SPECS.trending`, written out: below `md` the row scrolls sideways, each card
-    // 44 % of the screen less its 20 px gutters (TASK-284, item 5A: 154 px at 390), and it is
-    // 5-up from `md`, inside `HOME_BLEED`, so the browser picks the rung that fits the phone card
-    // rather than the 640 w one the listing grid's 50vw asked for.
-    const TRENDING_SIZES =
-      "(min-width: 768px) calc(20vw - 41.6px), calc(44vw - 17.6px)";
-    const html = render(<TrendingRow locale="en" />, "en");
-    const sizes = [...html.matchAll(/\bsizes="([^"]*)"/g)].map(
-      (match) => match[1],
-    );
-    // Every `<source>` and the `<img>` of each of the five pictures carry it, and nothing else.
-    expect(sizes.length).toBeGreaterThanOrEqual(5);
-    expect(new Set(sizes)).toEqual(new Set([TRENDING_SIZES]));
-  });
-
-  it("links every card to its product page in the demo destination, in every locale (TASK-173)", async () => {
-    // Spec 008 §14 A14 (e): the founder clicked five bouquets on the live home and none went
-    // anywhere while their pages answered 200. The home hands the row the catalogue's product
-    // existence set; each card is then an `<a>` to the **Polish** page of its own SKU.
-    for (const locale of LOCALES) {
-      const pages = await listProductPages(locale);
-      const html = render(
-        <TrendingRow locale={locale} productPages={pages} />,
-        locale,
-      );
-      const expected = TRENDING_PICKS.map(
-        (pick) =>
-          pages.find(
-            (page) => page.sku === pick.sku && page.countryIso === "PL",
-          )?.path,
-      );
-      expect(
-        expected.every((path) => path !== undefined),
-        locale,
-      ).toBe(true);
-      expect(hrefs(html), locale).toEqual(expected);
-      // Exactly one link per card, and the card's name and photo box are inside it.
-      for (const pick of TRENDING_PICKS) {
-        const card = html.slice(
-          html.indexOf(`data-fo-trending-pick="${pick.id}"`),
-        );
-        expect(card.slice(0, card.indexOf("</li>")), pick.id).toMatch(
-          /<a class="block no-underline[^"]*" href="[^"]+" data-fo-card-motion="">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
-        );
-      }
-    }
-    // The one value, pinned: the first pick's English page, in Poland.
-    const english = render(
-      <TrendingRow locale="en" productPages={await listProductPages("en")} />,
-      "en",
-    );
-    expect(hrefs(english)[0]).toMatch(/^\/en\/poland\/product\/[a-z0-9-]+$/u);
-  });
-
-  it("does not link a card whose page does not exist, nor one in another destination", () => {
-    const pages = [
-      { sku: "FO-BQ-001", countryIso: "PL", path: "/en/poland/product/a" },
-      { sku: "FO-BQ-002", countryIso: "DE", path: "/en/germany/product/b" },
-    ];
-    expect(trendingPickHref("FO-BQ-001", pages)).toBe("/en/poland/product/a");
-    expect(trendingPickHref("FO-BQ-002", pages)).toBeUndefined();
-    expect(trendingPickHref("FO-BQ-003", pages)).toBeUndefined();
-    expect(trendingPickHref(undefined, pages)).toBeUndefined();
-    const html = render(<TrendingRow locale="en" productPages={pages} />, "en");
-    expect(hrefs(html)).toEqual(["/en/poland/product/a"]);
-  });
-
-  it("links no card while the `product` link id is unpublished, whatever pages exist (`/break 162` hole 1)", async () => {
-    // Permission and existence are both required: a full product existence set must not turn
-    // a card into a link if the registry withdraws the product page. The registry is flipped in
-    // a mocked module, and the row re-imported so it reads the mock.
-    const pages = await listProductPages("en");
-    vi.resetModules();
-    const actual = await vi.importActual<
-      typeof import("../../src/config/site-links.ts")
-    >("../../src/config/site-links.ts");
-    vi.doMock("../../src/config/site-links.ts", () => ({
-      ...actual,
-      isPublished: (id: Parameters<typeof actual.isPublished>[0]) =>
-        id !== "product" && actual.isPublished(id),
-    }));
-    try {
-      const row = await import("../../src/modules/ui/home/TrendingRow.tsx");
-      const html = render(
-        <row.TrendingRow locale="en" productPages={pages} />,
-        "en",
-      );
-      expect(html).toContain("data-fo-trending-pick");
-      expect([...html.matchAll(/<a\s/g)]).toHaveLength(0);
-      expect(row.trendingPickHref("FO-BQ-001", pages)).toBeUndefined();
-    } finally {
-      vi.doUnmock("../../src/config/site-links.ts");
-      vi.resetModules();
-    }
-    // …and the same pages with the committed registry link all five, so the case above is not
-    // vacuous.
-    const linked = render(
-      <TrendingRow locale="en" productPages={pages} />,
-      "en",
-    );
-    expect([...linked.matchAll(/<a\s/g)]).toHaveLength(5);
-  });
-
-  it("takes its names from the committed catalogue, so none of them is invented", () => {
-    const rendered = text(render(<TrendingRow locale="en" />, "en"));
-    for (const pick of staticTrendingProvider.list()) {
-      expect(rendered, pick.name).toContain(pick.name);
-    }
-    expect(staticTrendingProvider.basis()).toBe("picks");
-  });
-
-  it("swaps at the composition root: the module-level provider changes the output", async () => {
-    const before = render(<TrendingRow locale="en" />, "en");
-    const after = await withTrendingProvider(emptyTrendingProvider, () =>
-      render(<TrendingRow locale="en" />, "en"),
-    );
-    const restored = render(<TrendingRow locale="en" />, "en");
-
-    expect(before).not.toBe("");
-    expect(after).toBe("");
-    expect(restored).toBe(before);
-  });
-});
 
 describe("the verified-reviews section renders nothing until a review exists", () => {
   it("renders nothing in every locale with the shipped provider (AC-15)", () => {
@@ -482,24 +194,19 @@ describe("the destinations grid", () => {
     }
   });
 
-  it("puts the featured (`live`) destination first and collates the rest per locale", () => {
+  it("lists every destination in the one country order, no destination first (AC-73; TASK-387)", () => {
     const order = (locale: string): string[] =>
       [...grid(locale).matchAll(/data-fo-destination="([A-Z]{2})"/g)].map(
         (match) => match[1] ?? "",
       );
 
-    expect(order("en")[0]).toBe("PL");
-    expect(order("pl")[0]).toBe("PL");
-    // The six guides are collated, not registry-ordered (which is DE, FR, ES, IT, RO, NL).
-    expect(order("en").slice(1)).toEqual(["FR", "DE", "IT", "NL", "RO", "ES"]);
+    // Every `sortWeight` is 0 today, so the names' collation decides: no "Poland first".
+    expect(order("en")).toEqual(["FR", "DE", "IT", "NL", "PL", "RO", "ES"]);
     expect(order("en")).toHaveLength(COUNTRIES.length);
   });
 
-  it("links Poland's chip to its guide, even when the page hands in a shop root (R2)", () => {
-    const html = render(
-      <DestinationsGrid locale="en" shopHref="/en/poland/flowers" />,
-      "en",
-    );
+  it("links Poland's chip to its guide, like every other (R2)", () => {
+    const html = render(<DestinationsGrid locale="en" />, "en");
     const poland = html.slice(html.indexOf('data-fo-destination="PL"'));
 
     // plan/02 §11, spec 004 Q11/A2: the chip feeds the guide, which links the shop root.
@@ -517,13 +224,10 @@ describe("the destinations grid", () => {
     }
   });
 
-  it("links the featured chip to its shop root only where its guide does not exist in the locale", () => {
-    const html = render(
-      <DestinationsGrid locale="de" shopHref="/de/polen/blumen" />,
-      "de",
-    );
-    // `/de` has no guides (spec 007 §13 Q1): Poland's chip is the one link, to the shop root.
-    expect(hrefs(html)).toEqual(["/de/polen/blumen"]);
+  it("links no chip where no guide exists in the locale: no destination's shop root stands in (AC-73)", () => {
+    const html = render(<DestinationsGrid locale="de" />, "de");
+    // `/de` has no guides (spec 007 §13 Q1), and the Poland special case left with TASK-387.
+    expect(hrefs(html)).toEqual([]);
   });
 
   /**
