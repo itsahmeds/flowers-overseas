@@ -1979,6 +1979,11 @@
     "reviewed": false,
     "sourceHash": "e35a0c19dda80d64b3e68e418dc86821740e92c4dc8eae616a99acede6f17f3f"
   },
+  "home.comingUp.more": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1a2612705dd797842beda42948a2979b5b6c763ee71acf4f87868f5c2c254420"
+  },
   "home.dates.heading": {
     "source": "machine",
     "reviewed": false,
@@ -2428,6 +2433,16 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "63498ce3c657370f343b45577d1c521c3256ce9eb23f2ae1e1e5d22b91eefffb"
+  },
+  "nav.mega.byPrice": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3420262f5408a67bcc831d965147408859347e7310ea7d8301868d2b98263d1c"
+  },
+  "nav.mega.comingUp": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b743c760826caba48d0c09a19ad8167fa992491b9951fb94b916adc529a9154f"
   },
   "nav.menu.label": {
     "source": "machine",
@@ -2979,6 +2994,11 @@
     "reviewed": false,
     "sourceHash": "7a7c4571d5958cd1023edfab190d73c802b1ada675966dad19696a534e22f728"
   },
+  "shop.cta.chooseCountry": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f9ffb731106f959a7f57d6b3226e201d29b8935406a91271e66601feeb9c8a4c"
+  },
   "shop.empty.body": {
     "source": "machine",
     "reviewed": false,
@@ -3114,6 +3134,26 @@
     "reviewed": false,
     "sourceHash": "522ac70d90f79ffacb459beabbc4b5d4704d18f0d28c6145395215b38d773fe1"
   },
+  "shop.price.bandWord.high": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "dfb38a11fff7bc6264ec646a6dc5e2d0c6c52b5dd8e3e55584ab63f9c7ab8c92"
+  },
+  "shop.price.bandWord.low": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e5f80d066124fc1ee0f59ea0ec707f690a857c06c2a0ca605c32d0328a54f65e"
+  },
+  "shop.price.bandWord.mid": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "14f5861d3d2935ea142b98b5bbbdb029fc22b230e9dde2ec64aae7928c73cf9d"
+  },
+  "shop.price.choose": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a2feaa6a63a393f179a03353b1f1379faebd8e98148cf8f326142ad0a85e1ab3"
+  },
   "shop.root.dateColumn": {
     "source": "machine",
     "reviewed": false,
@@ -3199,6 +3239,11 @@
     "reviewed": false,
     "sourceHash": "28c6eb010087608ec5c11c85135cbd1fe0c988442effa0f96650c65e5a34fd6f"
   },
+  "shop.seeAll": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "835b97b7a0e86a2bb4b845bec6ad5677ebc67049f4c2a8eee6f61218a2043012"
+  },
   "shop.sort.default": {
     "source": "machine",
     "reviewed": false,
@@ -3223,6 +3268,11 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "cc44e3bd92f25ddd462eeaec8a88579c0fe468ac7f22fa4439c2e067655eb0ef"
+  },
+  "shop.toolbar.howWeSort": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1241da881d5855ace937d3b972f8993746b00e74aee278b4b87d32ed044d2b0d"
   },
   "shop.toolbar.reorderLabel": {
     "source": "machine",
@@ -3278,55 +3328,5 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
-  },
-  "shop.price.choose": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "a2feaa6a63a393f179a03353b1f1379faebd8e98148cf8f326142ad0a85e1ab3"
-  },
-  "shop.cta.chooseCountry": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "f9ffb731106f959a7f57d6b3226e201d29b8935406a91271e66601feeb9c8a4c"
-  },
-  "shop.seeAll": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "835b97b7a0e86a2bb4b845bec6ad5677ebc67049f4c2a8eee6f61218a2043012"
-  },
-  "shop.price.bandWord.low": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "e5f80d066124fc1ee0f59ea0ec707f690a857c06c2a0ca605c32d0328a54f65e"
-  },
-  "shop.price.bandWord.mid": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "14f5861d3d2935ea142b98b5bbbdb029fc22b230e9dde2ec64aae7928c73cf9d"
-  },
-  "shop.price.bandWord.high": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "dfb38a11fff7bc6264ec646a6dc5e2d0c6c52b5dd8e3e55584ab63f9c7ab8c92"
-  },
-  "shop.toolbar.howWeSort": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "1241da881d5855ace937d3b972f8993746b00e74aee278b4b87d32ed044d2b0d"
-  },
-  "nav.mega.byPrice": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "3420262f5408a67bcc831d965147408859347e7310ea7d8301868d2b98263d1c"
-  },
-  "nav.mega.comingUp": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "b743c760826caba48d0c09a19ad8167fa992491b9951fb94b916adc529a9154f"
-  },
-  "home.comingUp.more": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "1a2612705dd797842beda42948a2979b5b6c763ee71acf4f87868f5c2c254420"
   }
 }

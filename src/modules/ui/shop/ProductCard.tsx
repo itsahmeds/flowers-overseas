@@ -51,6 +51,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import { type LocaleCode } from "@/config/locales";
 import { formatMoney } from "@/modules/i18n";
+import { CHOOSER_LINK_REL } from "@/modules/seo";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
 import type { MediaManifest } from "../media/manifest.ts";
@@ -321,7 +322,7 @@ export function ProductCard({
           className="group flex flex-col"
           href={card.href}
           // The chooser is `noindex` and robots-disallowed; every link to it says so (AC-76).
-          {...(asks ? { rel: "nofollow" } : {})}
+          {...(asks ? { rel: CHOOSER_LINK_REL } : {})}
           // Motion 6 (spec 004 §14 A-founder-2026-10-19e; TASK-277): the card lifts 4 px and its
           // photograph zooms 6 % inside its clipped box on a fine pointer's hover (`globals.css`).
           {...(moving ? CARD_MOTION_ATTRIBUTE : {})}
