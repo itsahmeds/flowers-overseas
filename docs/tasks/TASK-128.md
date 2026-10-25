@@ -38,15 +38,25 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From TASK-240 (2026-10-15):** tier keys change to odd counts; an old `?tier=stems_18` must fall back to the default tier with 200 and no redirect. Cover it in the unknown-tier case.
 - **Never concurrent** with TASK-228, TASK-229, TASK-230, TASK-129, TASK-197 follow-ups or TASK-240: they edit the same PDP form and test files. If the product feature (TASK-228 to TASK-230) is in flight, wait, or give both to one agent.
 
+- **From the implementer (2026-10-25, PR 431), left deliberately:**
+  - **An empty value** (`?tier=` or `?date=` with nothing after `=`) is served the prebuilt page: Next's `has: query` treats an empty string as absent, in the rewrite and in the header rule alike (`matchHas()`). Its canonical is the bare URL; after the indexing flip its robots is the bare page's own. The JS-off form never submits an empty value (a radio carries its value or is not sent), so only a hand-typed URL reaches it. The listing rules share the residual.
+  - **The live route's 300 s and the cutoff purge** stay with the task that takes the first country live (A10): `productCachePolicy()` answers 300 + `cutoff:{iso2}` for `live`, and the route exports the literal 3600 that is its answer for every Phase 0 destination (`tests/unit/cache-product-tags.test.ts` holds the two equal and fails once a destination is live).
+  - **`urlsForTag("catalog:{iso2}:{locale}")`** resolves to the destination's listings **and** product pages in that locale, because spec 008 §5.4 declares the tag on the listings too; spec 012b's tag table may widen or narrow it.
+  - **`tier` and `date` are not in `QUERY_KEYS`** (that list feeds the listing rewrites): they are `PRODUCT_QUERY_KEYS` in `src/config/url-keys.ts`, held to `isRedactedKey()` by `tests/unit/product-params.test.ts`. `tests/unit/url-pii.test.ts`'s (b) and (d) lists do not read them; adding `ProductSearchParamsSchema` to its `QUERY_SCHEMAS` needs a `honoured` field the schema does not have.
+  - **The parameter route's language links** are the locale homes (`@switcher` has no mirror under `_query`), as on the listing parameter routes; the header is in the destination's context.
+  - The `/dev/components` stand-in `GET` form the TASK-126 carry-forward names no longer exists; nothing to replace.
+  - **The latest product artboards** (`product-desktop.dc.html`, spec 004 §14 A-founder-2026-10-24a: the header selector, the trust points) are ahead of the shipped page; the parameterised page renders exactly as the bare page (screenshots in the PR), and those gaps belong to the spec 004 A-founder-2026-10-24a tasks.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 _None recorded._
 
+## Progress
+
+- 2026-10-25: TASK-273's comments, the parser, the rewrite and header rules, the parameter route, the shared `product-route.tsx`, the form and the cache policy committed; unit tests and `tests/e2e/product-params.spec.ts` green locally against a build-slot build. Next: ready, `ci:full`.
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#431](https://github.com/itsahmeds/flowers-overseas/pull/431) (with TASK-273). The product route `src/app/[locale]/-product/…/page.tsx` reads no query string and stays prebuilt (build route table: `● /[locale]/-product/…`, 3 528 pages at six locales, `initialRevalidateSeconds` 3600); a product address with `?tier=` or `?date=` is rewritten (`productParameterRewriteRules()`, before the unconditional product rule) to `src/app/[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` (`ƒ`, per request), the one reader of `ProductSearchParamsSchema` through `productSearchParams()`. Both render through `src/app/[locale]/product-route.tsx` (one `productView()`, `parameterised` false/true). The page's `<form method="get" action="{bare path}" class="contents">` wraps the sizes and the dates; no visual change. `productParameterCacheHeaderRules()` puts spec 008 §5.4's shared-cache header on exactly the rewritten addresses. `productCachePolicy()` in `src/lib/cache.ts` (3600 + four tags; `live` 300 + `cutoff:{iso2}`), and `urlsForTag()` learns `product:{sku}`, `catalog:{iso2}:{locale}`, `cutoff:{iso2}`. robots.txt: no `Disallow` for `tier`/`date`; the fixture pins two allowed shapes, the combined form, and `?tier=x&sort=price-asc` still blocked. Tests: unit `product-params.test.ts` (25), `product-params-route.test.tsx` (10), `cache-product-tags.test.ts` (9), `product-page.test.tsx` (+4), `seo-robots.test.ts` (+1); e2e `product-params.spec.ts` (12). One build-slot run (route table, the e2e spec and 1280/390 screenshots), 2 min 48 s at load 9 (1-minute average after the build). Mutations, each red then restored: `searchParams` in the product route; `parameterised: false` in the parameter route; a canonical carrying the query; the shared-cache header removed; `cutoff:{iso2}` dropped from `live`; `.strict()` to `.looseObject()`; a rewrite condition matching a utm-only URL; the parameter rules after the product rule; an uppercase path answering 200; a parameterised `<a href>`; the form's bare `action` removed; the parser ignoring `date`; the no-key 404 removed; `product:{sku}` unresolved. `Vary`/`Set-Cookie` and the cookie body hash are asserted in e2e only (no local mutation run).
