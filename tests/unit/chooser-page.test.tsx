@@ -67,7 +67,7 @@ describe("the chooser page (AC-77)", () => {
     expect(
       has(
         form,
-        'action="/en/choose-country/product/vistula-red"',
+        'action="/api/choose/en/product/vistula-red"',
         'method="get"',
         'aria-labelledby="ch-l"',
         'data-fo-choose=""',

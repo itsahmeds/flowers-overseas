@@ -1,8 +1,8 @@
 /**
  * `/{locale}/{chooseSegment}/{next}`: the country chooser page (spec 004 §14 A-founder-2026-10-24a
  * item 3, AC-77, AC-78; TASK-385). Served here through `src/proxy.ts`'s rewrite
- * (`src/lib/chooser-routes.ts`); a choice never reaches this file (the proxy sends it to the
- * choice route's `303`).
+ * (`src/lib/chooser-routes.ts`); its form posts (GET) to the choice route, which answers the `303`
+ * and sends a no match, a country not live yet or a product not sold there back here in `to`.
  *
  * Rendered per request, never cached: it reads the form's `to` (to show a no match) and the
  * remembered `fo_dest` (to lead with "Continue to {country}"), and it never forwards on its own.
@@ -23,8 +23,8 @@ import { DEST_COOKIE_NAME } from "@/config/cookies";
 import { isLocaleCode } from "@/config/locales";
 import {
   ChooserPage,
-  type ChooserPageState,
   ChooserSearchParamsSchema,
+  chooserPageState,
   chooserPageView,
   decideChooser,
 } from "@/modules/catalog";
@@ -32,6 +32,13 @@ import { routableLocale } from "@/modules/i18n";
 
 /** Per request: the page reads `to` and `fo_dest`, so no response of it is ever stored. */
 export const dynamic = "force-dynamic";
+
+/**
+ * `next` is any path (item 3's shapes, and anything else, which falls back to the shop root), so no
+ * list of it is prebuilt: the `[locale]` layout's `dynamicParams = false` would answer every one
+ * 404. The locale keeps its gate here, in `chooserLocale()` (the `boom` route's check).
+ */
+export const dynamicParams = true;
 
 interface ChooserParams {
   params: Promise<{ locale: string; rest?: string[] }>;
@@ -66,13 +73,16 @@ export default async function ChooserRoute({
   setRequestLocale(locale);
   const to = ChooserSearchParamsSchema.parse(await searchParams);
   const decision = await decideChooser(locale, rest, to);
-  // A choice is the proxy's to answer; one that reaches the page (a request typed at the internal
-  // route) is shown the question again, never a redirect or a cookie from here.
-  const state: ChooserPageState =
-    decision.kind === "page" ? decision.state : { kind: "ask" };
-  const view = await chooserPageView(locale, decision.next, state, {
-    remembered: (await cookies()).get(DEST_COOKIE_NAME)?.value,
-    chips: PICKER_CHIPS,
-  });
+  // The choice route sends a choice it cannot land back here with `to`; the page shows that
+  // state and never answers a choice itself (no redirect, no cookie from here).
+  const view = await chooserPageView(
+    locale,
+    decision.next,
+    chooserPageState(decision),
+    {
+      remembered: (await cookies()).get(DEST_COOKIE_NAME)?.value,
+      chips: PICKER_CHIPS,
+    },
+  );
   return <ChooserPage view={view} />;
 }

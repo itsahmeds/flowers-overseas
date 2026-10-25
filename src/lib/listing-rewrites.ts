@@ -48,7 +48,7 @@
  */
 import { FACET_PARAMETERS } from "../config/catalogue/schemas.ts";
 import { LOCALES } from "../config/locales";
-import { QUERY_KEYS } from "../config/url-keys.ts";
+import { QUERY_KEY, QUERY_KEYS } from "../config/url-keys.ts";
 
 import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
 
@@ -66,9 +66,13 @@ export interface RewriteRule {
  */
 export const PARAMETER_ROUTE_SEGMENT = "_query";
 
-/** The query keys that send a listing request to the parameter route. */
+/**
+ * The query keys that send a listing request to the parameter route. Not `to`: it is the country
+ * chooser's form field (TASK-385), read only on a chooser address, so on a listing it is a stray
+ * key like any other and the static listing serves.
+ */
 export const LISTING_REWRITE_KEYS: readonly string[] = [
-  ...QUERY_KEYS,
+  ...QUERY_KEYS.filter((key) => key !== QUERY_KEY.to),
   ...Object.values(FACET_PARAMETERS),
 ];
 

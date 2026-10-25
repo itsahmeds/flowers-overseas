@@ -3,9 +3,9 @@
  * item 3, AC-78; TASK-385). Every product is sold in every demo shop country today, so the product
  * page's existence rule is replaced here: Amber Hour is not sold in Romania.
  *
- * A choice by the form answers `303` to the path form, which the chooser renders (status 200, no
- * cookie) as the not-available page; TASK-392 draws that page. The path form itself is therefore
- * not a choice for such a product: answering it with a `303` would send it to itself.
+ * A choice of that country (by the form or by the path form) answers `303` with the cookie to the
+ * chooser page with the country in `to`, which renders the not-available state (status 200, no
+ * cookie); TASK-392 draws that state.
  */
 import { describe, expect, it, vi } from "vitest";
 
@@ -21,45 +21,52 @@ vi.mock("../../src/modules/catalog/product", async (importOriginal) => {
   };
 });
 
-const { chooserChoiceResponse, decideChooser } =
+const { chooserChoiceResponse, chooserPageState, decideChooser } =
   await import("../../src/modules/catalog");
 
 describe("a product not sold in the chosen country (AC-78)", () => {
-  it("answers the form's choice with a 303 to the path form and the cookie", async () => {
-    expect(
-      await decideChooser("en", ["product", "amber-hour"], ["ro"]),
-    ).toEqual({
-      kind: "choice",
-      iso2: "RO",
-      next: { locale: "en", kind: "product", sku: "FO-BQ-001" },
-    });
+  it("answers the form's choice with a 303 to the chooser's not-available state and the cookie", async () => {
     const response = await chooserChoiceResponse({
       locale: "en",
-      iso2: "ro",
-      next: ["product", "amber-hour"],
+      segments: ["product", "amber-hour"],
+      to: ["ro"],
     });
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe(
-      "/en/choose-country/ro/product/amber-hour",
+      "/en/choose-country/product/amber-hour?to=ro",
     );
     expect(response.headers.getSetCookie()).toEqual([
       "fo_dest=ro; Max-Age=15552000; Path=/; SameSite=Lax; Secure",
     ]);
   });
 
-  it("renders the path form as a page, never a 303 to itself", async () => {
-    expect(
-      await decideChooser("en", ["ro", "product", "amber-hour"], []),
-    ).toEqual({
-      kind: "page",
-      next: { locale: "en", kind: "product", sku: "FO-BQ-001" },
-      state: { kind: "unavailable", iso2: "RO", sku: "FO-BQ-001" },
+  it("answers the path form the same way, never a 303 to itself", async () => {
+    const response = await chooserChoiceResponse({
+      locale: "en",
+      segments: ["ro", "product", "amber-hour"],
+      to: [],
     });
+    expect(response.headers.get("location")).toBe(
+      "/en/choose-country/product/amber-hour?to=ro",
+    );
   });
 
-  it("still chooses the country where the product is sold", async () => {
+  it("shows the not-available state on the page that 303 lands on", async () => {
     expect(
-      await decideChooser("en", ["pl", "product", "amber-hour"], []),
-    ).toMatchObject({ kind: "choice", iso2: "PL" });
+      chooserPageState(
+        await decideChooser("en", ["product", "amber-hour"], ["ro"]),
+      ),
+    ).toEqual({ kind: "unavailable", iso2: "RO", sku: "FO-BQ-001" });
+  });
+
+  it("still lands on the product page where it is sold", async () => {
+    const response = await chooserChoiceResponse({
+      locale: "en",
+      segments: ["pl", "product", "amber-hour"],
+      to: [],
+    });
+    expect(response.headers.get("location")).toBe(
+      "/en/poland/product/amber-hour",
+    );
   });
 });

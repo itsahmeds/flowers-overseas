@@ -24,6 +24,7 @@ import { DEST_COOKIE_MAX_AGE_SECONDS } from "../../src/config/cookies";
 import {
   type ShopData,
   chooserChoiceResponse,
+  chooserPageState,
   chooserPageView,
   chosenInput,
   closestCountries,
@@ -35,7 +36,7 @@ import {
   resolveCountryInput,
   shopCountries,
 } from "../../src/modules/catalog";
-import { GET } from "../../src/app/api/choose/[locale]/[iso2]/[[...next]]/route";
+import { GET } from "../../src/app/api/choose/[locale]/[[...rest]]/route";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 
@@ -99,11 +100,14 @@ describe("the typed country (AC-78)", () => {
 });
 
 describe("decideChooser(): what one request gets (AC-77, AC-78)", () => {
-  it("asks on a plain chooser address, with or without a remembered country", async () => {
+  it("asks on a plain chooser address", async () => {
     for (const next of SHAPES) {
       const decision = await decideChooser("en", segmentsOf(next), []);
-      expect(decision.kind, next).toBe("page");
-      expect(decision.kind === "page" && decision.state.kind, next).toBe("ask");
+      expect(decision, next).toEqual({
+        kind: "page",
+        next: parseChooserNext("en", next),
+        state: { kind: "ask" },
+      });
     }
   });
 
@@ -111,6 +115,12 @@ describe("decideChooser(): what one request gets (AC-77, AC-78)", () => {
     for (const iso2 of (await shopCountries("en")).filter(isCountryIso2)) {
       const code = iso2.toLowerCase();
       for (const next of SHAPES) {
+        const expected = {
+          kind: "choice",
+          iso2,
+          next: parseChooserNext("en", next),
+          version: await countryVersionOf(parseChooserNext("en", next), iso2),
+        };
         for (const decision of [
           await decideChooser("en", segmentsOf(next), [code, ""]),
           // The name in another launch locale, typed, after the default button's code.
@@ -120,11 +130,7 @@ describe("decideChooser(): what one request gets (AC-77, AC-78)", () => {
           ]),
           await decideChooser("en", [code, ...segmentsOf(next)], []),
         ]) {
-          expect(decision, `${iso2} ${next}`).toEqual({
-            kind: "choice",
-            iso2,
-            next: parseChooserNext("en", next),
-          });
+          expect(decision, `${iso2} ${next}`).toEqual(expected);
         }
       }
     }
@@ -137,6 +143,7 @@ describe("decideChooser(): what one request gets (AC-77, AC-78)", () => {
       kind: "choice",
       iso2: "PL",
       next: { locale: "en", kind: "category", key: "roses" },
+      version: { kind: "page", path: "/en/poland/flowers/roses" },
     });
   });
 
@@ -151,16 +158,20 @@ describe("decideChooser(): what one request gets (AC-77, AC-78)", () => {
   });
 
   it("answers the not-live state for a registry country outside the shop set, typed or in the path", async () => {
-    expect(await decideChooser("en", [], ["Spain"], WITHOUT_SPAIN)).toEqual({
-      kind: "page",
-      next: { locale: "en", kind: "home" },
-      state: { kind: "notLive", iso2: "ES" },
-    });
-    expect(await decideChooser("en", ["es"], [], WITHOUT_SPAIN)).toEqual({
-      kind: "page",
-      next: { locale: "en", kind: "home" },
-      state: { kind: "notLive", iso2: "ES" },
-    });
+    for (const decision of [
+      await decideChooser("en", [], ["Spain"], WITHOUT_SPAIN),
+      await decideChooser("en", ["es"], [], WITHOUT_SPAIN),
+    ]) {
+      expect(decision).toEqual({
+        kind: "page",
+        next: { locale: "en", kind: "home" },
+        state: { kind: "notLive", iso2: "ES" },
+      });
+      expect(chooserPageState(decision)).toEqual({
+        kind: "notLive",
+        iso2: "ES",
+      });
+    }
   });
 
   it("drops an unsafe `next` to the shop root and keeps the choice", async () => {
@@ -179,18 +190,30 @@ describe("decideChooser(): what one request gets (AC-77, AC-78)", () => {
         kind: "choice",
         iso2: "PL",
         next: { locale: "en", kind: "home" },
+        version: { kind: "page", path: "/en/poland/flowers" },
       });
     }
+  });
+
+  it("asks again on the page when a choice reaches it (a hand-typed `?to=pl`)", async () => {
+    expect(
+      chooserPageState(
+        await decideChooser("en", ["product", "vistula-red"], ["pl"]),
+      ),
+    ).toEqual({ kind: "ask" });
   });
 });
 
 describe("chooserChoiceResponse(): the 303 and the one cookie (AC-78, AC-90)", () => {
+  const choose = (
+    segments: readonly string[],
+    to: readonly string[] = [],
+    data?: ShopData,
+  ): Promise<Response> =>
+    chooserChoiceResponse({ locale: "en", segments, to }, data);
+
   it("answers 303 to the country version with exactly one fo_dest, uncached", async () => {
-    const response = await chooserChoiceResponse({
-      locale: "en",
-      iso2: "pl",
-      next: ["product", "vistula-red"],
-    });
+    const response = await choose(["product", "vistula-red"], ["pl", ""]);
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe(
       "/en/poland/product/vistula-red",
@@ -202,7 +225,7 @@ describe("chooserChoiceResponse(): the 303 and the one cookie (AC-78, AC-90)", (
     expect(response.headers.get("vary")).toBeNull();
   });
 
-  it("lands each shape where item 3's table says, in Poland", async () => {
+  it("lands each shape where item 3's table says, in Poland, by the form and by the path form", async () => {
     const expected: Record<(typeof SHAPES)[number], string> = {
       "": "/en/poland/flowers",
       "flowers/roses": "/en/poland/flowers/roses",
@@ -214,12 +237,13 @@ describe("chooserChoiceResponse(): the 303 and the one cookie (AC-78, AC-90)", (
       search: "/en/poland/flowers",
     };
     for (const next of SHAPES) {
-      const response = await chooserChoiceResponse({
-        locale: "en",
-        iso2: "pl",
-        next: segmentsOf(next),
-      });
-      expect(response.headers.get("location"), next).toBe(expected[next]);
+      for (const response of [
+        await choose(segmentsOf(next), ["Poland"]),
+        await choose(["pl", ...segmentsOf(next)]),
+      ]) {
+        expect(response.status, next).toBe(303);
+        expect(response.headers.get("location"), next).toBe(expected[next]);
+      }
     }
   });
 
@@ -235,8 +259,8 @@ describe("chooserChoiceResponse(): the 303 and the one cookie (AC-78, AC-90)", (
       ]) {
         const response = await chooserChoiceResponse({
           locale: "en-gb",
-          iso2: iso2.toLowerCase(),
-          next: segmentsOf(next),
+          segments: segmentsOf(next),
+          to: [iso2.toLowerCase()],
         });
         expect(response.status, `${iso2} ${next}`).toBe(303);
         expect(response.headers.get("location"), `${iso2} ${next}`).toBe(
@@ -249,34 +273,56 @@ describe("chooserChoiceResponse(): the 303 and the one cookie (AC-78, AC-90)", (
     }
   });
 
-  it("sets nothing for a country outside the shop set, an unknown code, a mis-cased one or a hidden locale", async () => {
-    for (const params of [
-      { locale: "en", iso2: "es", next: [] },
-      { locale: "en", iso2: "se", next: [] },
-      { locale: "en", iso2: "PL", next: [] },
-      { locale: "fr", iso2: "pl", next: [] },
-      { locale: "en-XA", iso2: "pl", next: [] },
-    ]) {
-      const response = await chooserChoiceResponse(
-        params,
-        params.iso2 === "es" ? WITHOUT_SPAIN : undefined,
-      );
-      expect(response.status, JSON.stringify(params)).toBe(404);
-      expect(response.headers.getSetCookie(), JSON.stringify(params)).toEqual(
-        [],
-      );
-      expect(response.headers.get("location")).toBeNull();
+  it("sends a no match, a country not live yet and an empty choice back to the page, with no cookie", async () => {
+    const cases: readonly [Response, string][] = [
+      [
+        await choose(["product", "vistula-red"], ["Swedn"]),
+        "/en/choose-country/product/vistula-red?to=Swedn",
+      ],
+      [
+        await choose(["product", "vistula-red"], ["Spain"], WITHOUT_SPAIN),
+        "/en/choose-country/product/vistula-red?to=es",
+      ],
+      [await choose(["es"], [], WITHOUT_SPAIN), "/en/choose-country?to=es"],
+      [
+        await choose(["flowers", "roses"], [""]),
+        "/en/choose-country/flowers/roses",
+      ],
+      // A mis-cased path form is no path form: nothing was chosen.
+      [await choose(["PL"]), "/en/choose-country"],
+      // What was typed goes back encoded, never as raw markup.
+      [
+        await choose([], ['<b>"x"</b>']),
+        "/en/choose-country?to=%3Cb%3E%22x%22%3C%2Fb%3E",
+      ],
+    ];
+    for (const [response, location] of cases) {
+      expect(response.status, location).toBe(303);
+      expect(response.headers.get("location"), location).toBe(location);
+      expect(response.headers.getSetCookie(), location).toEqual([]);
     }
   });
 
-  it("is what the route file answers", async () => {
-    const response = await GET(new Request("https://x.test/api/choose/en/de"), {
-      params: Promise.resolve({
-        locale: "en",
-        iso2: "de",
-        next: ["price", "mid"],
-      }),
-    });
+  it("answers 404 for a locale that is not a launch locale", async () => {
+    for (const locale of ["fr", "en-XA", "EN"]) {
+      const response = await chooserChoiceResponse({
+        locale,
+        segments: [],
+        to: ["pl"],
+      });
+      expect(response.status, locale).toBe(404);
+      expect(response.headers.getSetCookie(), locale).toEqual([]);
+      expect(response.headers.get("location"), locale).toBeNull();
+    }
+  });
+
+  it("is what the route file answers, `to` read from the query", async () => {
+    const response = await GET(
+      new Request("https://x.test/api/choose/en/price/mid?to=fr&to=de&q=x"),
+      {
+        params: Promise.resolve({ locale: "en", rest: ["price", "mid"] }),
+      },
+    );
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe(
       "/en/germany/flowers?price=mid",
@@ -304,7 +350,7 @@ describe("chooserPageView(): what the page draws (AC-77)", () => {
         chips: 6,
       },
     );
-    expect(view.action).toBe("/en/choose-country/product/vistula-red");
+    expect(view.action).toBe("/api/choose/en/product/vistula-red");
     expect(view.chips.map((chip) => chip.name)).toEqual([
       "France",
       "Germany",
@@ -434,9 +480,9 @@ describe("no guessing (AC-89, T-95): the chooser reads no geography or language 
     "src/lib/chooser-routes.ts",
     "src/modules/catalog/ui/ChooserPage.tsx",
     "src/modules/ui/shop/CountryPicker.tsx",
-    "src/app/api/choose/[locale]/[iso2]/[[...next]]/route.ts",
-    "src/app/[locale]/-choose/[[...rest]]/page.tsx",
-    "src/app/[locale]/@header/-choose/[[...rest]]/page.tsx",
+    "src/app/api/choose/[locale]/[[...rest]]/route.ts",
+    "src/app/[locale]/-choose/-next/[[...rest]]/page.tsx",
+    "src/app/[locale]/@header/-choose/-next/[[...rest]]/page.tsx",
   ];
   const FORBIDDEN =
     /cf-ipcountry|x-forwarded-for|x-real-ip|x-vercel-ip|accept-language|geolocation|\.geo\b|navigator\.language|user-agent|headers\(\)/iu;
@@ -453,7 +499,7 @@ describe("no guessing (AC-89, T-95): the chooser reads no geography or language 
   });
 
   it("reads only the remembered country among the cookies", () => {
-    const page = code("src/app/[locale]/-choose/[[...rest]]/page.tsx");
+    const page = code("src/app/[locale]/-choose/-next/[[...rest]]/page.tsx");
     expect(page.match(/cookies\(\)/gu)).toHaveLength(1);
     expect(page).toContain(".get(DEST_COOKIE_NAME)");
   });

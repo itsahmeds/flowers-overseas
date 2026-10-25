@@ -1,36 +1,38 @@
 /**
  * The country chooser's answer (spec 004 §14 A-founder-2026-10-24a item 3, AC-77, AC-78, AC-89;
- * TASK-385): what one request to `/{locale}/{chooseSegment}/...` gets, decided from the path and
- * the form's `to` and from nothing else.
+ * TASK-385): what a request to the chooser gets, decided from the path and the form's `to` and from
+ * nothing else.
  *
- * Three readers ask the same question, so it is answered once, here:
+ * Two routes ask the same question, so it is answered once, here (`src/lib/chooser-routes.ts` says
+ * which route serves which address):
  *
- *  - `src/proxy.ts` sends a **choice** to the choice route (`/api/choose/...`, which answers the
- *    `303` and the one `Set-Cookie: fo_dest`) and everything else to the chooser page;
- *  - the choice route re-checks the country and computes the `303`'s target;
- *  - the chooser page renders its state (first visit, no match, not live, not available).
+ *  - **the choice route** (`/api/choose/{locale}/{next}`: the form's GET, and the path form
+ *    `/{locale}/{chooseSegment}/{iso2}/{next}` by `src/proxy.ts`'s rewrite) answers every request
+ *    with a `303`: a shop country to its version of `next` with one `Set-Cookie: fo_dest`
+ *    (`chooserChoiceResponse()`); anything else back to the chooser page, with what was typed in
+ *    `to`, and no cookie;
+ *  - **the chooser page** (`/{locale}/{chooseSegment}/{next}`, `?to=` as the choice route sends it
+ *    back) renders the state the same decision gives: it asks; it lists the closest names when `to`
+ *    names no registry country; it lists every shop country when `to` names one outside the shop set
+ *    (the not-live page, until TASK-395 builds it); it asks again for a product the chosen country
+ *    does not sell (the not-available page, TASK-392). It never forwards and sets no cookie.
  *
- * **What counts as a choice.** The form's GET with a `to` that names a shop country (an ISO code or
- * a country's name in any launch locale, normalised), or the path form
- * `/{locale}/{chooseSegment}/{iso2}/{next}` with a shop country whose version of `next` is a page.
- * A `to` wins over the path form's country (the form is the visitor's latest act). Every button of
+ * **What counts as a choice.** A `to` that names a shop country (an ISO code or a country's name in
+ * any launch locale, normalised), or, with no `to`, the path form's shop country. Every button of
  * the form and its search field share the name `to`; the field is the form's **last** control, so
  * the last non-empty value is what the visitor typed when they typed something (pressing Enter in
  * the field submits the form's first button too, which would otherwise win) and the button's code
  * when they did not.
- *
- * **Not a choice:** an empty `to` with no path-form country (the page asks), a `to` that names no
- * registry country (the page lists the closest names and every shop country), a registry country
- * outside the shop set (the not-live page; until TASK-395 builds it, the chooser's list), and the
- * path form of a product that country does not sell (the not-available page, TASK-392; until then
- * the chooser asks again). None of those sets a cookie.
  *
  * No header, cookie, IP or user agent is read here (AC-89's source scan,
  * `tests/unit/chooser-choice.test.ts`); the remembered country reaches the page as an argument.
  */
 import { z } from "zod";
 
-import { CHOOSER_INPUT_MAX_CHARS } from "@/config/commerce";
+import {
+  CHOICE_ROUTE_PREFIX,
+  CHOOSER_INPUT_MAX_CHARS,
+} from "@/config/commerce";
 import {
   DEST_COOKIE_MAX_AGE_SECONDS,
   DEST_COOKIE_NAME,
@@ -50,9 +52,10 @@ import { launchLocaleCodes } from "@/modules/i18n";
 
 import {
   type ChooserNext,
+  type CountryVersion,
+  chooserNextPath,
   chooserPath,
   countryVersionOf,
-  parseChooserNext,
   parseChooserPath,
 } from "./chooser";
 import { countryDisplayName, orderCountries } from "./country-order";
@@ -177,8 +180,8 @@ export function chosenInput(values: readonly string[]): string | undefined {
 }
 
 /**
- * A chooser request's query as the proxy reads it: every `to`, in order, and nothing else (the
- * boundary schema of `request.nextUrl.searchParams`). Anything else is no value.
+ * The choice route's query (`new URL(request.url).searchParams`): every `to`, in order, and nothing
+ * else. Anything else is no value.
  */
 export const ChooserToSchema = z
   .instanceof(URLSearchParams)
@@ -224,6 +227,8 @@ export type ChooserDecision =
       readonly kind: "choice";
       readonly iso2: CountryIso2;
       readonly next: ChooserNext;
+      /** `countryVersionOf(next, iso2)`: the page, or the product not sold there. */
+      readonly version: CountryVersion;
     }
   | {
       readonly kind: "page";
@@ -241,8 +246,9 @@ export async function isShopCountry(
 }
 
 /**
- * Decide one chooser request. `segments` is the path after `/{locale}/{chooseSegment}/`, `to`
- * every value of the query's `to` (in order). Pure over registry and catalogue data.
+ * Decide one chooser request. `segments` is the path after the chooser's segment (or after the
+ * choice route's locale), `to` every value of the query's `to`, in order. Pure over registry and
+ * catalogue data. A `to` wins over the path form's country: the form is the visitor's latest act.
  */
 export async function decideChooser(
   locale: LocaleCode,
@@ -253,8 +259,9 @@ export async function decideChooser(
   const parsed = parseChooserPath(locale, segments);
   const { next } = parsed;
   const input = chosenInput(to);
+  let iso2: CountryIso2 | undefined = parsed.iso2;
   if (input !== undefined) {
-    const iso2 = resolveCountryInput(input);
+    iso2 = resolveCountryInput(input);
     if (iso2 === undefined) {
       return {
         kind: "page",
@@ -266,25 +273,47 @@ export async function decideChooser(
         },
       };
     }
-    if (!(await isShopCountry(locale, iso2, data))) {
-      return { kind: "page", next, state: { kind: "notLive", iso2 } };
-    }
-    return { kind: "choice", iso2, next };
   }
-  const { iso2 } = parsed;
   if (iso2 === undefined) return { kind: "page", next, state: { kind: "ask" } };
   if (!(await isShopCountry(locale, iso2, data))) {
     return { kind: "page", next, state: { kind: "notLive", iso2 } };
   }
-  const version = await countryVersionOf(next, iso2);
-  if (version.kind === "unavailable") {
-    return {
-      kind: "page",
-      next,
-      state: { kind: "unavailable", iso2, sku: version.sku },
-    };
-  }
-  return { kind: "choice", iso2, next };
+  return {
+    kind: "choice",
+    iso2,
+    next,
+    version: await countryVersionOf(next, iso2),
+  };
+}
+
+/**
+ * The state the chooser page shows for a decision: a page decision's own, the not-available state
+ * for a product the chosen country does not sell, and otherwise the question (a choice that reaches
+ * the page, a hand-typed `?to=pl`, is asked again rather than forwarded).
+ */
+export function chooserPageState(decision: ChooserDecision): ChooserPageState {
+  if (decision.kind === "page") return decision.state;
+  return decision.version.kind === "unavailable"
+    ? { kind: "unavailable", iso2: decision.iso2, sku: decision.version.sku }
+    : { kind: "ask" };
+}
+
+/** The choice route's path for a `next`: the chooser form's `action`. */
+export function choiceRoutePath(next: ChooserNext): string {
+  const tail = chooserNextPath(next);
+  return [
+    CHOICE_ROUTE_PREFIX,
+    next.locale,
+    ...(tail === "" ? [] : [tail]),
+  ].join("/");
+}
+
+/** The chooser page's address for `next`, with `to` when the page must show what was typed. */
+function chooserPageHref(next: ChooserNext, to?: string): string {
+  const path = chooserPath(next.locale, next);
+  return to === undefined
+    ? path
+    : `${path}?${new URLSearchParams({ [QUERY_KEY.to]: to }).toString()}`;
 }
 
 /** A country as the chooser page prints it. */
@@ -305,7 +334,7 @@ export interface ChooserRegionView {
 
 /** Everything the chooser page renders, resolved but for message keys. */
 export interface ChooserPageView {
-  /** The form's action: the chooser path of `next`, with no country and no query. */
+  /** The form's action: the choice route of `next` (`/api/choose/{locale}/{next}`), no query. */
   readonly action: string;
   /** "Continue to {country}": the remembered shop country, first in the form. */
   readonly remembered: ChooserCountryView | undefined;
@@ -352,7 +381,7 @@ export async function chooserPageView(
       : undefined;
   const listed = state.kind === "noMatch" || state.kind === "notLive";
   return {
-    action: chooserPath(locale, next),
+    action: choiceRoutePath(next),
     remembered,
     chips: shopCodes.slice(0, options.chips).map(view),
     datalist: orderCountries(COUNTRIES, locale).map((country) =>
@@ -404,43 +433,65 @@ export function destCookieHeader(iso2: CountryIso2): string {
 }
 
 /**
- * The choice route's answer (`/api/choose/{locale}/{iso2}/{next}`, reached by `src/proxy.ts`'s
- * rewrite of a choice, AC-78): a `303` to `countryVersionOf(next, country)` with exactly one
- * `Set-Cookie: fo_dest`, uncached. The country is checked again here, so a request typed at the
- * route itself can set nothing but a shop country: anything else is a `404` with no cookie. The
- * `Location` is a path on this site, never a full URL built from a request header.
+ * The choice route's answer (`/api/choose/{locale}/{next}`, AC-78): always a `303`, uncached.
+ *
+ *  - A shop country: to `countryVersionOf(next, country)` with exactly one `Set-Cookie: fo_dest`;
+ *    for a product that country does not sell, to the chooser page with that country in `to`
+ *    (the not-available state; TASK-392 draws it), the cookie set all the same: it is the choice.
+ *  - No match, a country outside the shop set, or nothing chosen: back to the chooser page for the
+ *    same `next`, with what was typed in `to` (none for nothing), and no cookie.
+ *
+ * An unknown or hidden locale is a `404`. The `Location` is a path on this site, never a full URL
+ * built from a request header.
  */
 export async function chooserChoiceResponse(
   params: {
     readonly locale: string;
-    readonly iso2: string;
-    readonly next: readonly string[];
+    readonly segments: readonly string[];
+    readonly to: readonly string[];
   },
   data: ShopData = committedShopData,
 ): Promise<Response> {
-  const notFound = (): Response =>
-    new Response(null, { status: 404, headers: CHOOSER_RESPONSE_HEADERS });
   const { locale } = params;
   if (!isLocaleCode(locale) || !launchLocaleCodes().includes(locale)) {
-    return notFound();
+    return new Response(null, {
+      status: 404,
+      headers: CHOOSER_RESPONSE_HEADERS,
+    });
   }
-  const code = params.iso2.toUpperCase();
-  if (
-    params.iso2 !== params.iso2.toLowerCase() ||
-    !/^[A-Z]{2}$/u.test(code) ||
-    !isCountryIso2(code) ||
-    !(await isShopCountry(locale, code, data))
-  ) {
-    return notFound();
+  const decision = await decideChooser(
+    locale,
+    params.segments,
+    params.to,
+    data,
+  );
+  const answer = (location: string, cookie?: string): Response =>
+    new Response(null, {
+      status: 303,
+      headers: {
+        ...CHOOSER_RESPONSE_HEADERS,
+        Location: location,
+        ...(cookie === undefined ? {} : { "Set-Cookie": cookie }),
+      },
+    });
+  if (decision.kind === "page") {
+    const { state } = decision;
+    return answer(
+      chooserPageHref(
+        decision.next,
+        state.kind === "noMatch"
+          ? state.query
+          : state.kind === "ask"
+            ? undefined
+            : state.iso2.toLowerCase(),
+      ),
+    );
   }
-  const next = parseChooserNext(locale, params.next);
-  const version = await countryVersionOf(next, code);
-  return new Response(null, {
-    status: 303,
-    headers: {
-      ...CHOOSER_RESPONSE_HEADERS,
-      Location: version.path,
-      "Set-Cookie": destCookieHeader(code),
-    },
-  });
+  const cookie = destCookieHeader(decision.iso2);
+  return decision.version.kind === "page"
+    ? answer(decision.version.path, cookie)
+    : answer(
+        chooserPageHref(decision.next, decision.iso2.toLowerCase()),
+        cookie,
+      );
 }
