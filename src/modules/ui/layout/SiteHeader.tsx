@@ -48,28 +48,28 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
-import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY, whatsappHref } from "../../../config/company.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
+import { MEGA_MENU_NAV_LABEL_KEY } from "../../../config/mega-menu.ts";
 import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
 import { AfterPaint } from "../deferred/AfterPaint.tsx";
 import { MotionLoader } from "../deferred/MotionLoader.tsx";
 import { Icon } from "../icons/Icon.tsx";
 import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
-import { Button } from "../primitives/Button.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
+import { MegaMenuAccordions, MegaMenuNav } from "./MegaMenu.tsx";
 import { MenuSheet } from "./MenuSheet.tsx";
 import {
-  type HeaderItem,
-  type HeaderListingHrefs,
   headerAccountItems,
-  headerCategoryItems,
   headerCurrencyCode,
   headerEndClusterItems,
-  headerSendHref,
 } from "./header-model.ts";
+import type { MegaMenuModel } from "./mega-model.ts";
+
+/** No menu: a header with no route behind it draws none rather than a wrong one. */
+const EMPTY_MEGA_MENU: MegaMenuModel = { context: null, panels: [] };
 
 /**
  * next-intl's translator, deliberately **unnamespaced**: the registries carry fully-qualified keys
@@ -104,39 +104,6 @@ export const CHROME_WRAP = PAGE_FRAME;
  */
 
 /**
- * One category link. A plain text link in the desktop row (17 px, muted ink, padded to 44 px) and
- * a chip in the mobile row (`--text-sm`, card fill with a rule edge, 44 px, fully rounded) — one
- * DOM node, two looks, so the two artboards cannot list different entries.
- */
-const CATEGORY_LINK = [
-  // Mobile: the chip.
-  "inline-flex flex-none items-center whitespace-nowrap min-h-(--target-min) px-[16px] rounded-full bg-card text-sm text-ink-muted shadow-[inset_0_0_0_1px_var(--color-rule)]",
-  // Desktop: the text link.
-  "xl:px-0 xl:rounded-none xl:bg-transparent xl:shadow-none xl:text-[17px]",
-  "hover:text-ink",
-].join(" ");
-
-function CategoryEntry({
-  item,
-  t,
-}: {
-  readonly item: HeaderItem;
-  readonly t: Translator;
-}): ReactElement {
-  return (
-    <li className="flex-none">
-      <a
-        className={CATEGORY_LINK}
-        data-fo-header-item={item.id}
-        href={item.href}
-      >
-        {registryLabel(t, item.labelKey)}
-      </a>
-    </li>
-  );
-}
-
-/**
  * A decorative `·` or `|` between two claims or controls. `data-fo-sep` lets the notice line hide
  * one that would open the line (see the claims span below).
  */
@@ -152,12 +119,12 @@ export interface SiteHeaderProps {
   /** The locale of the document the header is rendered on; it drives every URL and the currency. */
   readonly locale: string;
   /**
-   * The URLs of the listing pages the category row may link to **that exist in this locale**, by
-   * link id (`./header-model.ts` `headerListingTargets()`; spec 008 §14 A14; TASK-173). The
-   * document layout resolves them, because only the catalogue knows which hub exists in German
-   * and `src/modules/ui` may not import it. Absent → those entries are not drawn.
+   * The mega menu as this route draws it (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383):
+   * `megaMenuModel(locale, iso2 | null)` from the catalogue, composed by the `@header` slot in
+   * `app/` because `src/modules/ui` may not read the catalogue. Absent → no menu (a unit render,
+   * the gallery), never a stale one.
    */
-  readonly listingHrefs?: HeaderListingHrefs;
+  readonly megaMenu?: MegaMenuModel;
   /**
    * The notice bar's "Prices include delivery and VAT" claim, decided **by the route** (founder,
    * 2026-10-04: "Every price includes VAT and delivery. dont write this on home"). The `@header`
@@ -195,7 +162,7 @@ export function NoticePriceClaim(): ReactElement {
 
 export function SiteHeader({
   locale,
-  listingHrefs = {},
+  megaMenu = EMPTY_MEGA_MENU,
   priceClaim = <NoticePriceClaim />,
   switcher = <LocaleSwitcher locale={locale} />,
 }: SiteHeaderProps): ReactElement {
@@ -207,8 +174,7 @@ export function SiteHeader({
   const currency = headerCurrencyCode(locale);
   // The category row, then whatever the registry publishes after it (account, for florists): each
   // is an entry with a page, or it is not an item at all.
-  const entries = [
-    ...headerCategoryItems(locale, listingHrefs),
+  const endItems = [
     ...headerEndClusterItems(locale),
     ...headerAccountItems(locale),
   ];
@@ -322,53 +288,61 @@ export function SiteHeader({
           <MotionLoader />
         </AfterPaint>
         <div
-          className={`grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:grid-rows-[82px] xl:gap-x-(--space-lg2) ${CHROME_WRAP}`}
+          className={`grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:grid-rows-[76px] xl:gap-x-[18px] ${CHROME_WRAP}`}
           data-fo-header-band="masthead"
         >
           {/* The logo: the mark and the outlined wordmark; the wordmark's name (the trading name)
-              names the link. */}
+              names the link. The mega menu board draws them at 34 and 22 px from `xl` (the row is
+              76 px), 28 and 19 below it. */}
           <a
             className="text-logo-ink inline-flex min-h-(--target-min) max-w-full min-w-0 items-center gap-[10px] justify-self-start"
             data-fo-header-logo
             href={home}
           >
-            <Mark className="h-[28px] w-[28px] flex-none xl:h-[38px] xl:w-[38px]" />
+            <Mark className="h-[28px] w-[28px] flex-none xl:h-[34px] xl:w-[34px]" />
             {/* `min-w-0`: on a phone narrower than the artboard the wordmark scales down inside
-                its column rather than running under the Send pill (it keeps its aspect ratio). */}
+                its column rather than running under the Menu (it keeps its aspect ratio). */}
             <Wordmark
-              className="h-[19px] min-w-0 shrink xl:h-[25px]"
+              className="h-[19px] min-w-0 shrink xl:h-[22px]"
               label={tradingName}
             />
           </a>
 
-          {/* The eight links: a scrolling chip row under the logo on mobile, one row of text links
-              between the logo and the pill on desktop. */}
-          <nav
-            aria-label={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
-            className={`col-span-2 row-start-2 -mx-(--gutter-s) min-w-0 max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0`}
-            data-fo-header-band="categories"
-          >
+          {/* The six mega menu items (spec 004 §14 A-founder-2026-10-24a item 5): from `xl` in the
+              row, 24 px after the logo; from `md` to `xl` on a second 48 px row under a rule,
+              which does not scroll; below `md` in the Menu. The panels hang from the header, the
+              sticky frame, so opening one moves nothing below it (AC-102). */}
+          <MegaMenuNav
+            className="border-rule col-span-2 row-start-2 -mx-(--gutter-s) flex min-h-[48px] items-center border-t px-[calc(var(--gutter)-11px)] max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0 xl:ms-[6px] xl:min-h-0 xl:border-t-0 xl:px-0"
+            locale={locale}
+            model={megaMenu}
+            navLabel={registryLabel(t, MEGA_MENU_NAV_LABEL_KEY)}
+          />
+
+          {/* The row's end: the selector (TASK-384), then search, account and basket once their
+              pages are published (A20: an entry with no page is absent). */}
+          {endItems.length === 0 ? null : (
             <ul
-              className={`m-0 flex list-none gap-(--space-sm) overflow-x-auto px-(--gutter-s) pb-(--space-sm2) md:px-(--gutter) xl:justify-end xl:gap-[26px] xl:overflow-visible xl:px-0 xl:pb-0`}
+              className="col-start-2 row-start-1 m-0 flex list-none items-center gap-[18px] p-0 max-md:hidden xl:col-start-3"
+              data-fo-header-end=""
             >
-              {entries.map((item) => (
-                <CategoryEntry item={item} key={item.id} t={t} />
+              {endItems.map((item) => (
+                <li key={item.id}>
+                  <a
+                    className="text-ink-muted hover:text-ink inline-flex min-h-(--target-min) items-center text-sm"
+                    data-fo-header-item={item.id}
+                    href={item.href}
+                  >
+                    {registryLabel(t, item.labelKey)}
+                  </a>
+                </li>
               ))}
             </ul>
-          </nav>
+          )}
 
-          {/* The one action: to the home's sentence (`#send`, TASK-177's form). */}
-          <Button
-            className={`col-start-2 row-start-1 max-md:hidden xl:col-start-3`}
-            href={headerSendHref(locale)}
-            size="sm"
-          >
-            {t("nav.send")}
-          </Button>
-
-          {/* Below `md`: the Menu, the header's second and last control (§14 A24 clause 3). It
-              holds the same entries, Send flowers, the switcher, the currency and the help line;
-              from `md` up it is `display: none` and the row, the pill and the strip draw them. */}
+          {/* Below `md`: the Menu, the header's last control (§14 A24 clause 3). It holds the
+              selector (TASK-384), the six items as accordions with the desktop panels' entries,
+              the switcher, the currency and the help line; from `md` up it is `display: none`. */}
           <MenuSheet
             className="col-start-2 row-start-1 justify-self-end md:hidden"
             currency={{
@@ -382,13 +356,13 @@ export function SiteHeader({
             label={t("nav.menu.label")}
             // The reviewed "Close", reused (spec 004 §14 A-founder-2026-10-19c clause 3; no new key).
             closeLabel={t("consent.close")}
-            links={entries.map((item) => ({
+            links={endItems.map((item) => ({
               id: item.id,
               href: item.href,
               label: registryLabel(t, item.labelKey),
             }))}
-            navLabel={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
-            send={{ href: headerSendHref(locale), label: t("nav.send") }}
+            menu={<MegaMenuAccordions locale={locale} model={megaMenu} />}
+            navLabel={registryLabel(t, MEGA_MENU_NAV_LABEL_KEY)}
             switcher={switcher}
           />
         </div>

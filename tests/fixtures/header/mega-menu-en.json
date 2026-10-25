@@ -1,0 +1,542 @@
+{
+  "context": null,
+  "panels": [
+    {
+      "id": "flowers",
+      "labelKey": "nav.mega.flowers",
+      "columns": [
+        {
+          "id": "byType",
+          "headingKey": "nav.mega.byType",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "category:bouquet",
+              "labelKey": "catalog.facet.productType.bouquet",
+              "label": "Hand-tied bouquets",
+              "href": "/en/flowers/hand-tied-bouquets"
+            },
+            {
+              "kind": "link",
+              "id": "category:arrangement",
+              "labelKey": "catalog.facet.productType.arrangement",
+              "label": "Arrangements",
+              "href": "/en/flowers/arrangements"
+            },
+            {
+              "kind": "link",
+              "id": "category:gift_set",
+              "labelKey": "catalog.facet.productType.giftSet",
+              "label": "Flowers and gift sets",
+              "href": "/en/flowers/flowers-and-gift-sets"
+            }
+          ],
+          "wide": false
+        },
+        {
+          "id": "byFlower",
+          "headingKey": "nav.mega.byFlower",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "category:roses",
+              "labelKey": "catalog.facet.flowerType.roses",
+              "label": "Roses",
+              "href": "/en/flowers/roses"
+            },
+            {
+              "kind": "link",
+              "id": "category:tulips",
+              "labelKey": "catalog.facet.flowerType.tulips",
+              "label": "Tulips",
+              "href": "/en/flowers/tulips"
+            },
+            {
+              "kind": "link",
+              "id": "category:lilies",
+              "labelKey": "catalog.facet.flowerType.lilies",
+              "label": "Lilies",
+              "href": "/en/flowers/lilies"
+            },
+            {
+              "kind": "link",
+              "id": "category:orchids",
+              "labelKey": "catalog.facet.flowerType.orchids",
+              "label": "Orchids",
+              "href": "/en/flowers/orchids"
+            },
+            {
+              "kind": "link",
+              "id": "category:sunflowers",
+              "labelKey": "catalog.facet.flowerType.sunflowers",
+              "label": "Sunflowers",
+              "href": "/en/flowers/sunflowers"
+            },
+            {
+              "kind": "link",
+              "id": "category:peonies",
+              "labelKey": "catalog.facet.flowerType.peonies",
+              "label": "Peonies",
+              "href": "/en/flowers/peonies"
+            },
+            {
+              "kind": "link",
+              "id": "category:gerberas",
+              "labelKey": "catalog.facet.flowerType.gerberas",
+              "label": "Gerberas",
+              "href": "/en/flowers/gerberas"
+            },
+            {
+              "kind": "link",
+              "id": "category:mixed",
+              "labelKey": "catalog.facet.flowerType.mixed",
+              "label": "Mixed flowers",
+              "href": "/en/flowers/mixed-flowers"
+            }
+          ],
+          "wide": true
+        },
+        {
+          "id": "byColour",
+          "headingKey": "nav.mega.byColour",
+          "entries": [
+            {
+              "kind": "chooser",
+              "id": "colour:white",
+              "labelKey": "catalog.facet.colour.white",
+              "href": "/en/choose-country"
+            },
+            {
+              "kind": "chooser",
+              "id": "colour:pink",
+              "labelKey": "catalog.facet.colour.pink",
+              "href": "/en/choose-country"
+            },
+            {
+              "kind": "chooser",
+              "id": "colour:orange",
+              "labelKey": "catalog.facet.colour.orange",
+              "href": "/en/choose-country"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": {
+        "kind": "chooser",
+        "id": "all-flowers",
+        "labelKey": "nav.mega.allFlowers",
+        "href": "/en/choose-country"
+      },
+      "extras": null,
+      "featured": {
+        "card": {
+          "productId": "FO-BQ-034",
+          "name": "Season's Hand",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-bq-034-hero",
+            "alt": "A hand-tied mixed bouquet of sunflowers, pink and red roses, pink lilies and purple filler flowers, wrapped in kraft paper",
+            "slot": "grid"
+          },
+          "provenance": "ai"
+        },
+        "href": "/en/choose-country/product/seasons-hand",
+        "chooser": true
+      }
+    },
+    {
+      "id": "occasions",
+      "labelKey": "nav.category.occasions",
+      "columns": [
+        {
+          "id": "everyDay",
+          "headingKey": "nav.mega.everyDay",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "occasion:birthday",
+              "labelKey": "catalog.facet.occasion.birthday",
+              "href": "/en/occasions/birthday"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:anniversary",
+              "labelKey": "catalog.facet.occasion.anniversary",
+              "href": "/en/occasions/anniversary"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:romance",
+              "labelKey": "catalog.facet.occasion.romance",
+              "href": "/en/occasions/love-and-romance"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:congratulations",
+              "labelKey": "catalog.facet.occasion.congratulations",
+              "href": "/en/occasions/congratulations"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:new_baby",
+              "labelKey": "catalog.facet.occasion.newBaby",
+              "href": "/en/occasions/new-baby"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:get_well",
+              "labelKey": "catalog.facet.occasion.getWell",
+              "href": "/en/occasions/get-well"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:thank_you",
+              "labelKey": "catalog.facet.occasion.thankYou",
+              "href": "/en/occasions/thank-you"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:apology",
+              "labelKey": "catalog.facet.occasion.apology",
+              "href": "/en/occasions/i-am-sorry"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:just_because",
+              "labelKey": "catalog.facet.occasion.justBecause",
+              "href": "/en/occasions/just-because"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:wedding",
+              "labelKey": "catalog.facet.occasion.wedding",
+              "href": "/en/occasions/wedding"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:graduation",
+              "labelKey": "catalog.facet.occasion.graduation",
+              "href": "/en/occasions/graduation"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:housewarming",
+              "labelKey": "catalog.facet.occasion.housewarming",
+              "href": "/en/occasions/housewarming"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:retirement",
+              "labelKey": "catalog.facet.occasion.retirement",
+              "href": "/en/occasions/retirement"
+            }
+          ],
+          "wide": true
+        },
+        {
+          "id": "forWhom",
+          "headingKey": "nav.mega.forWhom",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "recipient:mum",
+              "labelKey": "nav.mega.recipient.mum",
+              "href": "/en/occasions/mothers-day"
+            },
+            {
+              "kind": "link",
+              "id": "recipient:grandparents",
+              "labelKey": "nav.mega.recipient.grandparents",
+              "href": "/en/occasions/grandparents-day"
+            },
+            {
+              "kind": "link",
+              "id": "recipient:newParents",
+              "labelKey": "nav.mega.recipient.newParents",
+              "href": "/en/occasions/new-baby"
+            },
+            {
+              "kind": "link",
+              "id": "recipient:colleague",
+              "labelKey": "nav.mega.recipient.colleague",
+              "href": "/en/occasions/thank-you"
+            }
+          ],
+          "wide": false
+        },
+        {
+          "id": "comingUp",
+          "headingKey": "nav.mega.comingUp",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "coming-up:all_saints",
+              "labelKey": "catalog.facet.occasion.allSaints",
+              "href": "/en/occasions/all-saints-day",
+              "date": "2026-11-01"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:christmas",
+              "labelKey": "catalog.facet.occasion.christmas",
+              "href": "/en/occasions/christmas",
+              "date": "2026-12-25"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:new_year",
+              "labelKey": "catalog.facet.occasion.newYear",
+              "href": "/en/occasions/new-year",
+              "date": "2027-01-01"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:grandparents_day",
+              "labelKey": "catalog.facet.occasion.grandparentsDay",
+              "href": "/en/occasions/grandparents-day",
+              "date": "2027-01-21"
+            },
+            {
+              "kind": "link",
+              "id": "coming-up:valentines",
+              "labelKey": "catalog.facet.occasion.valentines",
+              "href": "/en/occasions/valentines-day",
+              "date": "2027-02-14"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": {
+        "kind": "link",
+        "id": "all-occasions",
+        "labelKey": "nav.mega.allOccasions",
+        "href": "/en/occasions"
+      },
+      "extras": null,
+      "featured": {
+        "card": {
+          "productId": "FO-BQ-002",
+          "name": "Vistula Red",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-bq-002-hero",
+            "alt": "A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper",
+            "slot": "grid"
+          },
+          "provenance": "ai"
+        },
+        "href": "/en/choose-country/product/vistula-red",
+        "chooser": true
+      }
+    },
+    {
+      "id": "sympathy",
+      "labelKey": "nav.category.sympathy",
+      "columns": [
+        {
+          "id": "sympathy",
+          "headingKey": "nav.category.sympathy",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "occasion:sympathy",
+              "labelKey": "catalog.facet.occasion.sympathy",
+              "href": "/en/occasions/sympathy"
+            },
+            {
+              "kind": "link",
+              "id": "category:funeral",
+              "labelKey": "catalog.facet.productType.funeral",
+              "label": "Funeral and sympathy flowers",
+              "href": "/en/flowers/funeral-and-sympathy-flowers"
+            },
+            {
+              "kind": "link",
+              "id": "occasion:all_saints",
+              "labelKey": "catalog.facet.occasion.allSaints",
+              "href": "/en/occasions/all-saints-day"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": null,
+      "extras": null,
+      "featured": {
+        "card": {
+          "productId": "FO-BQ-015",
+          "name": "White Linen",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-bq-015-hero",
+            "alt": "A hand-tied bouquet of white oriental lilies with dark green foliage, wrapped in white paper",
+            "slot": "grid"
+          },
+          "provenance": "ai"
+        },
+        "href": "/en/choose-country/product/white-linen",
+        "chooser": true
+      }
+    },
+    {
+      "id": "plantsGifts",
+      "labelKey": "nav.mega.plantsGifts",
+      "columns": [
+        {
+          "id": "plantsGifts",
+          "headingKey": "nav.mega.plantsGifts",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "category:plant",
+              "labelKey": "catalog.facet.productType.plant",
+              "label": "Plants",
+              "href": "/en/flowers/plants"
+            },
+            {
+              "kind": "link",
+              "id": "category:orchids",
+              "labelKey": "catalog.facet.flowerType.orchids",
+              "label": "Orchids",
+              "href": "/en/flowers/orchids"
+            },
+            {
+              "kind": "link",
+              "id": "category:gift_set",
+              "labelKey": "catalog.facet.productType.giftSet",
+              "label": "Flowers and gift sets",
+              "href": "/en/flowers/flowers-and-gift-sets"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": null,
+      "extras": {
+        "headingKey": "nav.mega.extras",
+        "labelKeys": [
+          "catalog.addon.chocolates.name",
+          "catalog.addon.vase.name",
+          "catalog.addon.balloon.name",
+          "catalog.addon.plush.name",
+          "catalog.addon.wine.name",
+          "catalog.addon.card.name"
+        ]
+      },
+      "featured": {
+        "card": {
+          "productId": "FO-PT-001",
+          "name": "Moth Orchid White",
+          "photo": {
+            "kind": "asset",
+            "assetId": "fo-pt-001-hero",
+            "alt": "A white moth orchid with two arching flowering stems in a plain white ceramic pot",
+            "slot": "grid"
+          },
+          "provenance": "ai"
+        },
+        "href": "/en/choose-country/product/moth-orchid-white",
+        "chooser": true
+      }
+    },
+    {
+      "id": "byPrice",
+      "labelKey": "nav.mega.byPrice",
+      "columns": [
+        {
+          "id": "byPrice",
+          "headingKey": "nav.mega.byPrice",
+          "entries": [
+            {
+              "kind": "chooser",
+              "id": "price:low",
+              "labelKey": "shop.price.bandWord.low",
+              "href": "/en/choose-country/price/low"
+            },
+            {
+              "kind": "chooser",
+              "id": "price:mid",
+              "labelKey": "shop.price.bandWord.mid",
+              "href": "/en/choose-country/price/mid"
+            },
+            {
+              "kind": "chooser",
+              "id": "price:high",
+              "labelKey": "shop.price.bandWord.high",
+              "href": "/en/choose-country/price/high"
+            }
+          ],
+          "wide": false
+        }
+      ],
+      "all": null,
+      "extras": null,
+      "featured": null
+    },
+    {
+      "id": "destinations",
+      "labelKey": "nav.category.destinations",
+      "columns": [
+        {
+          "id": "soon",
+          "headingKey": "nav.mega.soon",
+          "entries": [
+            {
+              "kind": "link",
+              "id": "destination:FR",
+              "labelKey": "destinations.fr.name",
+              "href": "/en/send-flowers-to/france"
+            },
+            {
+              "kind": "link",
+              "id": "destination:DE",
+              "labelKey": "destinations.de.name",
+              "href": "/en/send-flowers-to/germany"
+            },
+            {
+              "kind": "link",
+              "id": "destination:IT",
+              "labelKey": "destinations.it.name",
+              "href": "/en/send-flowers-to/italy"
+            },
+            {
+              "kind": "link",
+              "id": "destination:NL",
+              "labelKey": "destinations.nl.name",
+              "href": "/en/send-flowers-to/netherlands"
+            },
+            {
+              "kind": "link",
+              "id": "destination:PL",
+              "labelKey": "destinations.pl.name",
+              "href": "/en/send-flowers-to/poland"
+            },
+            {
+              "kind": "link",
+              "id": "destination:RO",
+              "labelKey": "destinations.ro.name",
+              "href": "/en/send-flowers-to/romania"
+            },
+            {
+              "kind": "link",
+              "id": "destination:ES",
+              "labelKey": "destinations.es.name",
+              "href": "/en/send-flowers-to/spain"
+            }
+          ],
+          "wide": true
+        }
+      ],
+      "all": {
+        "kind": "link",
+        "id": "all-destinations",
+        "labelKey": "nav.mega.allDestinations",
+        "href": "/en/send-flowers-to"
+      },
+      "extras": null,
+      "featured": null
+    }
+  ]
+}
