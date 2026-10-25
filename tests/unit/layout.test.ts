@@ -52,6 +52,8 @@ describe("plan/01 §5 layout manifest (T-03)", () => {
         "orders",
         "partners",
         "payments",
+        // spec 045 §5.2 (TASK-400, TASK-401): site search's text core and engine.
+        "search",
         "seo",
         "ui",
       ].sort(),

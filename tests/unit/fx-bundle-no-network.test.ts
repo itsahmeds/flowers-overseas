@@ -175,6 +175,9 @@ describe("GET /api/health reports the bundled FX snapshot (AC-33, T-33)", () => 
         "fxAsOf",
         "fxSource",
         "region",
+        // Spec 045 §11 (TASK-401): the search index's age (null before the first search) and size.
+        "searchIndexAgeSeconds",
+        "searchIndexDocuments",
         "status",
         "version",
       ]);
