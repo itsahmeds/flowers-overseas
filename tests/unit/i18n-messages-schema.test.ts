@@ -346,6 +346,9 @@ describe("the shipped catalogues and manifests", () => {
     "infoPages.legal.unreviewed",
     "infoPages.legal.version",
     "infoPages.status.notYetOpen",
+    // TASK-184, spec 041 Appendix A.1: the line every de/pl draft renders. Its `en` value is the
+    // source the drafts translate; it waits for the founder with the rest of the batch.
+    "infoPages.status.untranslated",
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;

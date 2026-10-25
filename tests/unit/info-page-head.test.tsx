@@ -92,7 +92,9 @@ describe("T-18 / AC-18: the info page's <head>", () => {
     expect(infoPageMetadata("help", "en", PREVIEW)?.alternates?.canonical).toBe(
       "https://fo-preview.up.railway.app/en/help",
     );
-    for (const locale of ["de", "pl"]) {
+    // `fr` and `en-us` are no routable locale, so the page does not exist there (the de/pl
+    // drafts exist since TASK-184 and have their own cases in `info-pages-drafts.test.tsx`).
+    for (const locale of ["fr", "en-us"]) {
       expect(
         infoPageMetadata("help", locale, INDEXING),
         locale,

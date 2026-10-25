@@ -188,15 +188,16 @@ describe("the generated index (spec 041 §2; pages:index)", () => {
 });
 
 describe("T-02 / AC-2: infoPageExists is the one existence predicate", () => {
-  it("the five trust pages exist in en and en-gb, and in no other locale yet", () => {
+  it("the five trust pages exist in the four launch locales (the de/pl drafts are TASK-184's), and nowhere else", () => {
     for (const pageId of TRUST_PAGE_IDS) {
-      for (const locale of ENGLISH) {
+      for (const locale of [...ENGLISH, "de", "pl"]) {
         expect(infoPageExists(pageId, locale), `${pageId} ${locale}`).toBe(
           true,
         );
       }
-      expect(infoPageExists(pageId, "de")).toBe(false);
-      expect(infoPageExists(pageId, "pl")).toBe(false);
+      // A code that is no routable locale has no page, whatever files exist.
+      expect(infoPageExists(pageId, "fr")).toBe(false);
+      expect(infoPageExists(pageId, "en-us")).toBe(false);
     }
   });
 
@@ -208,9 +209,13 @@ describe("T-02 / AC-2: infoPageExists is the one existence predicate", () => {
       }),
     );
     expect(infoPageExists("about", "en", { provider })).toBe(false);
-    expect(
-      listInfoPages({ provider }).some((page) => page.pageId === "about"),
-    ).toBe(false);
+    const about = listInfoPages({ provider })
+      .filter((page) => page.pageId === "about")
+      .map((page) => page.locale);
+    // Only the two deleted locales lose the page; the de/pl drafts keep their own files.
+    expect(about).not.toContain("en");
+    expect(about).not.toContain("en-gb");
+    expect(about).toEqual(expect.arrayContaining(["de", "pl"]));
     const links = infoPageView("how-it-works", "en", { provider })?.links ?? [];
     expect(links.map((link) => link.to)).not.toContain("about");
     // The control: with the file, the link is there.
@@ -686,7 +691,36 @@ describe("T-21 / AC-21: the infoPage link kind and the footer", () => {
   });
 
   it("the footer draws each trust page where it exists, and no imprint, terms or privacy", () => {
-    for (const locale of ["en", "en-gb", "de", "pl"]) {
+    // Spec 041 §2's table: one URL per page and locale. The de/pl drafts exist (TASK-184), so the
+    // footer links them in their own locale, at their own localised path.
+    const expected: Readonly<Record<string, Readonly<Record<string, string>>>> =
+      {
+        en: {
+          "help-and-contact": "/en/help",
+          guarantee: "/en/guarantee",
+          "how-it-works": "/en/how-it-works",
+          "delivery-times": "/en/delivery",
+        },
+        "en-gb": {
+          "help-and-contact": "/en-gb/help",
+          guarantee: "/en-gb/guarantee",
+          "how-it-works": "/en-gb/how-it-works",
+          "delivery-times": "/en-gb/delivery",
+        },
+        de: {
+          "help-and-contact": "/de/hilfe",
+          guarantee: "/de/garantie",
+          "how-it-works": "/de/so-funktioniert-es",
+          "delivery-times": "/de/lieferung-und-zahlung",
+        },
+        pl: {
+          "help-and-contact": "/pl/pomoc",
+          guarantee: "/pl/gwarancja",
+          "how-it-works": "/pl/jak-to-dziala",
+          "delivery-times": "/pl/dostawa-i-platnosc",
+        },
+      };
+    for (const [locale, links] of Object.entries(expected)) {
       const view = footerView(locale, {
         unavailable: missingInfoPageLinkIds(locale),
       });
@@ -695,22 +729,25 @@ describe("T-21 / AC-21: the infoPage link kind and the footer", () => {
           .flatMap((group) => group.links)
           .map((link) => [link.id, link.href]),
       );
-      const english = locale === "en" || locale === "en-gb";
-      expect(hrefs.get("help-and-contact"), locale).toBe(
-        english ? `/${locale}/help` : undefined,
-      );
-      expect(hrefs.get("guarantee"), locale).toBe(
-        english ? `/${locale}/guarantee` : undefined,
-      );
-      expect(hrefs.get("how-it-works"), locale).toBe(
-        english ? `/${locale}/how-it-works` : undefined,
-      );
-      expect(hrefs.get("delivery-times"), locale).toBe(
-        english ? `/${locale}/delivery` : undefined,
-      );
+      for (const [id, href] of Object.entries(links)) {
+        expect(hrefs.get(id), `${locale} ${id}`).toBe(href);
+      }
       for (const id of ["imprint", "terms", "privacy"])
         expect(hrefs.get(id), `${locale} ${id}`).toBeUndefined();
     }
+  });
+
+  it("a locale with no draft of a page draws no footer link to it (the de help file removed)", () => {
+    // Mutation guard for the case above: the link follows the file, not the locale.
+    const provider = fixtureInfoContentProvider(
+      overlay({ "pages/de/help.md": undefined }),
+    );
+    expect(missingInfoPageLinkIds("de", { provider })).toContain(
+      "help-and-contact",
+    );
+    expect(missingInfoPageLinkIds("pl", { provider })).not.toContain(
+      "help-and-contact",
+    );
   });
 });
 
