@@ -134,7 +134,10 @@ describe("an immutable asset is encoded once, a document every time (TASK-427)",
   const DOCUMENT = "s-maxage=31536000";
 
   /** A Brotli encoder that counts its own calls. */
-  function counted(): { encode: ReturnType<typeof createEncoder>; calls: () => number } {
+  function counted(): {
+    encode: ReturnType<typeof createEncoder>;
+    calls: () => number;
+  } {
     let calls = 0;
     const encode = createEncoder((body) => {
       calls += 1;
@@ -145,7 +148,9 @@ describe("an immutable asset is encoded once, a document every time (TASK-427)",
 
   it("serves the stored bytes for a second request of the same immutable body", () => {
     const { encode, calls } = counted();
-    const chunk = Buffer.from("(globalThis.TURBOPACK||=[]).push(1);".repeat(200));
+    const chunk = Buffer.from(
+      "(globalThis.TURBOPACK||=[]).push(1);".repeat(200),
+    );
     const first = encode(chunk, STATIC);
     const second = encode(Buffer.from(chunk), STATIC);
     expect(calls()).toBe(1);
@@ -157,7 +162,9 @@ describe("an immutable asset is encoded once, a document every time (TASK-427)",
 
   it("encodes a document on every request, at quality 11", () => {
     const { encode, calls } = counted();
-    const html = Buffer.from("<!DOCTYPE html><html><body>x</body></html>".repeat(50));
+    const html = Buffer.from(
+      "<!DOCTYPE html><html><body>x</body></html>".repeat(50),
+    );
     encode(html, DOCUMENT);
     encode(html, DOCUMENT);
     encode(html, undefined);
