@@ -67,6 +67,15 @@ export const SCANNED_PATHS = [
   // (TASK-083) will live beside `seed/index.ts`, which is deliberately outside this set.
   "seed/diff.ts",
   "seed/target.ts",
+  // spec 006 AC-1, the whole-seam close (TASK-081): the two §2.2–§2.5 files the entries above
+  // did not reach. The demo watermark and its pixel check (§2.5, TASK-080) and the prompt
+  // records' generator for the remaining imagery (§2.4, §14 A7, TASK-144) read committed data and
+  // `sharp` only. `seed/index.ts` (the importer), `seed/plan.ts` (spec 002's seed plan, which it
+  // feeds) and `scripts/media-upload.ts` (§2.6, the bucket) stay outside the set by design;
+  // `tests/unit/seed-no-db-seam.test.ts` names every spec 006 file and fails one that is in
+  // neither list.
+  "seed/watermark.ts",
+  "scripts/imagery-prompts-remaining.ts",
   // spec 004 AC-2 (TASK-056): **the whole of `src/modules/ui`**, which is the rest of what spec
   // 004 added — tokens, primitives, icons, fonts, chrome, the home sections, the consent sheet and
   // the notice shell. TASK-079 could only name `media/` because the module was still being
