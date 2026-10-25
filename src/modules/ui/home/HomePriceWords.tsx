@@ -14,6 +14,8 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { CHOOSER_LINK_REL } from "@/modules/seo";
+
 import { Display } from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_V3_SECTION } from "./HomeHero.tsx";
@@ -49,7 +51,7 @@ export function HomePriceWords({ bands }: HomePriceWordsProps): ReactElement {
             <a
               className="text-ink text-ui inline-flex min-h-(--control-sm) items-center rounded-full px-[20px] font-bold whitespace-nowrap underline shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
               href={band.href}
-              rel="nofollow"
+              rel={CHOOSER_LINK_REL}
               data-fo-price-band={band.band}
             >
               {t(BAND_WORD_KEYS[band.band])}
