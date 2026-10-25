@@ -217,6 +217,17 @@ describe("AC-7 (T-07): stems and the last token's prefix", () => {
   });
 });
 
+describe("AC-7: the prefix is the last token's alone", () => {
+  it("`yellow sunfl` finds the yellow sunflower products; `sunfl yellow` finds nothing", async () => {
+    expect(await skus("en", "yellow sunfl")).toEqual([
+      "FO-BQ-023",
+      "FO-GS-007",
+      "FO-BQ-024",
+    ]);
+    expect(await skus("en", "sunfl yellow")).toEqual([]);
+  });
+});
+
 describe("AC-8 (T-08): typo tolerance and its tier", () => {
   it("`sunflwers` returns the sunflower products, every one at tier 2", async () => {
     expect(await skus("en", "sunflwers")).toEqual(SUNFLOWERS);
