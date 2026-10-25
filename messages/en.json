@@ -997,7 +997,8 @@
   },
   "infoPages": {
     "status": {
-      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
+      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open.",
+      "untranslated": "This translation has not been checked yet. If it differs from the English version, the English version applies."
     },
     "company": {
       "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
