@@ -615,7 +615,7 @@ export const payoutLine = pgTable(
 );
 
 /* -------------------------------------------------------------------------- */
-/* payout_adjustment (spec 002 §14 A10.3, `0029_cancel_window_a10`)            */
+/* payout_adjustment (spec 002 §14 A10.3, `0027_cancel_window_a10`)            */
 /* -------------------------------------------------------------------------- */
 
 /** `payout_adjustment.kind`: the one case A10 records. */

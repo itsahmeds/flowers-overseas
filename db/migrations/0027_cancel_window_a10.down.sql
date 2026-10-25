@@ -1,4 +1,4 @@
--- Rollback of 0029_cancel_window_a10 (spec 002 §14 A10.4, AC-54; TASK-258).
+-- Rollback of 0027_cancel_window_a10 (spec 002 §14 A10.4, AC-54; TASK-258).
 --
 -- Guard first. If any `order_event` records `order.cancelled` from `accepted` or `paid`, the
 -- history would hold a transition the table no longer allows; if any `payout_adjustment` row
@@ -17,7 +17,7 @@ BEGIN
     SELECT 1 FROM public.order_event
     WHERE type = 'order.cancelled' AND from_status IN ('accepted', 'paid')
   ) OR EXISTS (SELECT 1 FROM public.payout_adjustment) THEN
-    RAISE EXCEPTION 'A10_ROLLBACK_ROWS_IN_USE: a cancel after acceptance or a payout adjustment exists; 0029_cancel_window_a10 is not rolled back'
+    RAISE EXCEPTION 'A10_ROLLBACK_ROWS_IN_USE: a cancel after acceptance or a payout adjustment exists; 0027_cancel_window_a10 is not rolled back'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END

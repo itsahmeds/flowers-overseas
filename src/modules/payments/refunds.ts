@@ -14,7 +14,7 @@
  *  1. `refundCancelledOrder`: under the `payment` row lock, then the order's (the lock order of
  *     every money write on a purchase), insert one `requested` refund row and append
  *     `order.refund_requested`. A row already `requested` or `pending` for the order is resumed,
- *     not duplicated; an order with nothing left to refund gets nothing. `0028`'s
+ *     not duplicated; an order with nothing left to refund gets nothing. `0026`'s
  *     `refund_order_ceiling` is the database's second line for the per-order ceiling.
  *  2. `submitRefund`: the provider call, keyed by the refund row's id, so a retry (the outbox's,
  *     or `payments.sweep` (d)'s) is the same refund at the provider.
