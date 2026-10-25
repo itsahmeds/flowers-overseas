@@ -77,6 +77,7 @@ import {
   PINNED_LIBVIPS_VERSION,
   PINNED_SHARP_VERSION,
   type MediaVariantPipeline,
+  avifOptionsFor,
   variantDimensions,
   variantPipeline,
 } from "./schema/variants.ts";
@@ -313,7 +314,7 @@ export async function deriveVariants(
       job.format === "avif"
         ? await pipe
             .avif({
-              ...pipeline.encoders.avif,
+              ...avifOptionsFor(pipeline, asset.slot, job.width),
               // The schema types the pinned options as plain numbers (it is a JSON header, and a
               // hand-edited `bitdepth: 9` must fail the gate with a message rather than fail to
               // compile); `sharp` types this one as the 8 | 10 | 12 union, so the narrowing
