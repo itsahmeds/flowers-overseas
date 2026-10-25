@@ -794,16 +794,10 @@
       "label": "Categories"
     },
     "category": {
-      "addOns": "Add-ons",
-      "birthday": "Birthday",
-      "bouquets": "Bouquets",
       "destinations": "Destinations",
       "occasions": "Occasions",
       "ourSelection": "Our selection",
-      "plants": "Plants",
       "roses": "Roses",
-      "sameDayDelivery": "Same-day delivery",
-      "sameDayShort": "Same-day",
       "sympathy": "Sympathy"
     },
     "currency": {

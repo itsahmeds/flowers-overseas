@@ -34,13 +34,10 @@ describe("src/modules/ui barrel", () => {
         "MIRRORED_IN_RTL",
         "Mark",
         "Wordmark",
-        // chrome (TASK-048), and the header's listing targets the `@header` slot resolves
-        // (TASK-173, TASK-288); the notice bar's price claim, which that slot passes everywhere
-        // but the locale home (TASK-176); the in-context hrefs of spec 043 §5.3 A (TASK-288)
+        // chrome (TASK-048); the notice bar's price claim, which the `@header` slot passes
+        // everywhere but the locale home (TASK-176)
         "NoticePriceClaim",
         "SiteHeader",
-        "headerListingTargets",
-        "inContextListingHrefs",
         // the mega menu's model, which the catalogue builds and the header draws (TASK-383)
         "MegaColumnSchema",
         "MegaEntrySchema",

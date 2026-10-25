@@ -69,9 +69,8 @@ function unpublishedPaths(): ReadonlySet<string> {
     if (isPublished(link.id)) continue;
     // A `pending` target has no route shape at all, so there is no path it could occupy; a
     // `route` target has one, and that is the path nothing may link to while it is unpublished.
-    // An unpublished `listingPage` target (spec 008 §14 A14) is never even resolved: the layout
-    // asks the catalogue only about published ones (`headerListingTargets()`, pinned by
-    // `tests/unit/ui-site-header.test.tsx`), so no URL for it reaches a document.
+    // A `listingPage` target is never resolved from the registry at all: the header's listing
+    // entries are the mega menu's (TASK-383), so no URL for one reaches a document from here.
     if (link.target.kind !== "route") continue;
     for (const locale of LAUNCH_LOCALES) {
       paths.add(localePath(locale, link.target.pageType));
