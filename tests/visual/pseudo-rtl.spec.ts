@@ -16,8 +16,6 @@ import { fileURLToPath } from "node:url";
 
 import { type BrowserContext, expect, test } from "@playwright/test";
 
-import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
-
 /**
  * The home's occasion-dates band leaves the layout in every home shot here (`./home-dates.css`
  * says why): the band prints a calendar, and a calendar edit must not move the rest of the page.
@@ -83,34 +81,5 @@ test(`${PSEUDO_RTL_PATH} matches the committed right-to-left baseline`, async ({
   });
 });
 
-/**
- * The language popup open on `/ar-XB` (spec 003 §14 A16 clause 4, "`/ar-XB` with the popup open is
- * in the visual set"; T-30; TASK-119): a first visit at the project's 1280 px, so the centred card,
- * its close button at the inline end and the two-column list are drawn right to left from logical
- * properties alone. The page's locale is not a launch locale, so no option is marked current and
- * English keeps the default mark.
- */
-test.describe(`${PSEUDO_RTL_PATH} with the language popup open`, () => {
-  test.use({ storageState: NO_LOCALE_CHOICE });
-
-  test("matches the committed right-to-left baseline", async ({ page }) => {
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, "languages", {
-        configurable: true,
-        get: () => [],
-      });
-    });
-    const response = await page.goto(PSEUDO_RTL_PATH);
-    expect(response?.status()).toBe(200);
-    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    const popup = page.locator("dialog[data-fo-language-popup][open]");
-    await expect(popup).toBeVisible();
-    await page.waitForLoadState("networkidle");
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-    });
-    await expect(page.locator('[data-fo-consent="shown"]')).toHaveCount(0);
-
-    await expect(page).toHaveScreenshot("ar-XB-language-popup.png");
-  });
-});
+// The `/ar-XB` popup baseline is deleted (spec 003 §14 A-founder-2026-10-19d, AC-30; TASK-280):
+// no page offers another language, so the popup never opens; the slim bar's task adds its own.

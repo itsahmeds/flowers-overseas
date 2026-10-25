@@ -103,7 +103,9 @@ import {
   lazyChunksNamedIn,
   ON_INPUT_CHUNK_MARKERS,
   CONSENT_ISLAND_MARKER,
+  LANGUAGE_POPUP_MARKER,
   onInputChunkMarkers,
+  pageLocaleOf,
   measurePages,
   messagesPayloadSizes,
   parseClientReferences,
@@ -121,6 +123,11 @@ import {
   readBaseline,
   regressions,
 } from "../../scripts/client-js-budget.ts";
+import { LOCALES } from "../../src/config/locales.ts";
+import {
+  localeRegistryOf,
+  withLocaleRegistry,
+} from "../../src/modules/i18n/registry.ts";
 import { namespacesFor } from "../../src/modules/i18n";
 import { loadMessages } from "../../src/modules/i18n/messages.ts";
 
@@ -838,6 +845,12 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
   let dist = "";
   /** The id CI's `consent-active` build carries (`tests/support/consent-active.ts`). */
   const GA4_FIXTURE = "G-FIXTURE00";
+  /** `de` shown, `pl` still hidden: the registry the day German is reviewed (TASK-280). */
+  const deShown = localeRegistryOf(
+    LOCALES.map((locale) =>
+      locale.code === "de" ? { ...locale, shown: true } : locale,
+    ),
+  );
 
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -928,6 +941,36 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     ).toEqual(["fo:deferred:home-sentence", "data-fo-consent-panel"]);
   });
 
+  it("adds the language popup's marker exactly on a page with nothing to offer (TASK-280)", async () => {
+    expect(LANGUAGE_POPUP_MARKER).toBe("data-fo-language-popup");
+    const active = { NEXT_PUBLIC_GA4_MEASUREMENT_ID: GA4_FIXTURE };
+    // Committed registry: `en` and `en-gb` are one language, so no page offers another.
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      expect(onInputChunkMarkers(active, locale), locale).toEqual([
+        "fo:deferred:home-sentence",
+        "data-fo-consent-panel",
+        "data-fo-language-popup",
+      ]);
+    }
+    // No locale to judge by: the popup stays charged (an over-count, never an under-count).
+    expect(onInputChunkMarkers(active)).toEqual([
+      "fo:deferred:home-sentence",
+      "data-fo-consent-panel",
+    ]);
+    // `de` shown: every page offers a language, so the popup's loader mounts and it is page-load.
+    await withLocaleRegistry(deShown, () => {
+      for (const locale of ["en", "de"]) {
+        expect(onInputChunkMarkers(active, locale), locale).toEqual([
+          "fo:deferred:home-sentence",
+          "data-fo-consent-panel",
+        ]);
+      }
+    });
+    expect(pageLocaleOf("/en-gb/poland/flowers")).toBe("en-gb");
+    expect(pageLocaleOf("/de")).toBe("de");
+    expect(pageLocaleOf("/")).toBeUndefined();
+  });
+
   it("finds the consent island by a mark only the island's module carries (TASK-279)", () => {
     // The chunk is found by the literal, so it must ship in the island's code and in no other
     // module: one more carrier would hide that module's chunk from the page load too.
@@ -949,26 +992,31 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     expect(island).toContain(`performance.mark("${CONSENT_ISLAND_MARKER}")`);
   });
 
-  it("offers every stub-named chunk but the on-input ones as a candidate", () => {
+  it("offers every stub-named chunk but the on-input ones as a candidate", async () => {
     // `under-sentence.js` is a candidate (nothing marks it), but only an on-input chunk names it,
-    // so no page reaches it: the next case.
-    expect(
-      lazyCandidatesFor(dist, "/en", {
-        NEXT_PUBLIC_GA4_MEASUREMENT_ID: GA4_FIXTURE,
-      }).map((tag) => tag.asset),
-    ).toEqual([
-      "static/chunks/consent.js",
-      "static/chunks/popup.js",
-      "static/chunks/under-sentence.js",
-    ]);
-    // Nothing needs consent: the island is fetched only on a press, so it is no candidate.
+    // so no page reaches it: the next case. `de` shown, so `/en` mounts the popup's loader.
+    await withLocaleRegistry(deShown, () => {
+      expect(
+        lazyCandidatesFor(dist, "/en", {
+          NEXT_PUBLIC_GA4_MEASUREMENT_ID: GA4_FIXTURE,
+        }).map((tag) => tag.asset),
+      ).toEqual([
+        "static/chunks/consent.js",
+        "static/chunks/popup.js",
+        "static/chunks/under-sentence.js",
+      ]);
+      // Nothing needs consent: the island is fetched only on a press, so it is no candidate.
+      expect(
+        lazyCandidatesFor(dist, "/en", {}).map((tag) => tag.asset),
+      ).toEqual(["static/chunks/popup.js", "static/chunks/under-sentence.js"]);
+    });
+    // Committed registry: `/en` offers no language, so the popup is no candidate either.
     expect(lazyCandidatesFor(dist, "/en", {}).map((tag) => tag.asset)).toEqual([
-      "static/chunks/popup.js",
       "static/chunks/under-sentence.js",
     ]);
   });
 
-  it("charges a page that mounts the loaders the page-load chunks, and none of the on-input ones", () => {
+  it("charges a page that mounts the loaders the page-load chunks, and none of the on-input ones", async () => {
     mkdirSync(join(dist, "server/app"), { recursive: true });
     writeFileSync(
       join(dist, "server/app/en.html"),
@@ -976,7 +1024,9 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
         '<script>self.__next_f.push([1,"3:I[7,[\\"/_next/static/chunks/loaders.js\\"],\\"Loaders\\"]\\n"])</script>',
     );
     vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", GA4_FIXTURE);
-    const [page] = measurePages(dist, ["/en"]);
+    const [page] = await withLocaleRegistry(deShown, () =>
+      measurePages(dist, ["/en"]),
+    );
     expect(
       (page?.assets ?? []).map((asset) => [asset.asset, asset.kind]).sort(),
     ).toEqual([
@@ -987,15 +1037,30 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     ]);
   });
 
-  it("charges no consent island to a page load while nothing needs consent (TASK-279)", () => {
+  it("charges no consent island to a page load while nothing needs consent (TASK-279)", async () => {
     // `server/app/en.html` from the previous case; the build's environment carries no GA4 id.
     vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", "");
-    const [page] = measurePages(dist, ["/en"]);
+    const [page] = await withLocaleRegistry(deShown, () =>
+      measurePages(dist, ["/en"]),
+    );
     expect(
       (page?.assets ?? []).map((asset) => [asset.asset, asset.kind]).sort(),
     ).toEqual([
       ["static/chunks/loaders.js", "lazy"],
       ["static/chunks/popup.js", "lazy"],
+      ["static/chunks/runtime.js", "document"],
+    ]);
+  });
+
+  it("charges no language popup to a page that offers no other language (TASK-280)", () => {
+    // Committed registry, consent-active environment: the island is charged, the popup is not.
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", GA4_FIXTURE);
+    const [page] = measurePages(dist, ["/en"]);
+    expect(
+      (page?.assets ?? []).map((asset) => [asset.asset, asset.kind]).sort(),
+    ).toEqual([
+      ["static/chunks/consent.js", "lazy"],
+      ["static/chunks/loaders.js", "lazy"],
       ["static/chunks/runtime.js", "document"],
     ]);
   });

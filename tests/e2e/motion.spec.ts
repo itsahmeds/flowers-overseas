@@ -32,7 +32,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { openConsentSettings } from "../support/consent.ts";
-import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 const HOME = "/en";
 const SHOP = "/en/poland/flowers";
@@ -239,25 +238,9 @@ test.describe("1c. the bloom clears, and never starts for another tab (motion 1)
   });
 });
 
-test.describe("1d. a click the page handles itself never starts the bloom (motion 1)", () => {
-  test.use({ storageState: NO_LOCALE_CHOICE });
-
-  test("choosing the page's own language in the popup only closes it", async ({
-    page,
-  }) => {
-    await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto(HOME);
-    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
-    const popup = page.locator("dialog[data-fo-language-popup][open]");
-    await expect(popup).toBeVisible();
-    // The island calls `preventDefault()` on its own locale's link (it closes, nothing loads);
-    // the module must read that and not arm a bloom no navigation will ever clear.
-    await popup.locator('[data-fo-language-option="en"]').click();
-    await expect(popup).toHaveCount(0);
-    await page.waitForTimeout(400);
-    expect(await loaderState(page)).toEqual(IDLE);
-  });
-});
+// "1d", choosing the page's own language in the popup, is withdrawn: the popup never opens on the
+// committed registry (spec 003 §14 A-founder-2026-10-19d; TASK-280). The slim bar's task restates
+// it for the bar.
 
 test.describe("1b. a jump inside the page is not a navigation", () => {
   test("clicking the header's #send on the home shows no loader", async ({

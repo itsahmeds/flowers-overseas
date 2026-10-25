@@ -59,6 +59,37 @@ export function shownLocales(): readonly LocaleConfig[] {
   return launchLocales().filter((locale) => locale.shown);
 }
 
+/** A BCP 47 tag's primary language subtag, lowercased: `en-GB` → `en`, `ar-XB` → `ar`. */
+function primaryLanguageOf(tag: string): string {
+  return (tag.split("-")[0] ?? tag).toLowerCase();
+}
+
+/**
+ * The locales the language popup can offer on a page (spec 003 §14 A-founder-2026-10-19d clause
+ * 1, AC-3, AC-28; TASK-280): the shown locales whose **primary language** (from `bcp47`) differs
+ * from the page locale's, in registry order — and nothing at all while every shown locale has the
+ * same primary language (*Reading 1*: `en` and `en-gb` are one language, so on today's registry
+ * the answer is `[]` on every page, `/de`, `/pl` and the pseudo-locales included).
+ *
+ * Decided on the server from the registry alone, so it is the same for every visitor of a URL and
+ * the document stays one cache entry. Where it is empty the popup's server half renders nothing
+ * and `<html>` carries no `data-fo-locale-gate`; showing `de` or `pl` again (the `shown` flag)
+ * makes it non-empty with no file changed here.
+ */
+export function languageOffer(pageLocale: string): readonly string[] {
+  const shown = shownLocales();
+  const languages = new Set(
+    shown.map((locale) => primaryLanguageOf(locale.bcp47)),
+  );
+  if (languages.size < 2) return [];
+  const page = primaryLanguageOf(
+    getLocaleRegistry().get(pageLocale)?.bcp47 ?? pageLocale,
+  );
+  return shown
+    .filter((locale) => primaryLanguageOf(locale.bcp47) !== page)
+    .map((locale) => locale.code);
+}
+
 export function launchLocaleCodes(): readonly string[] {
   return launchLocales().map((locale) => locale.code);
 }
