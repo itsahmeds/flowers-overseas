@@ -84,11 +84,11 @@ task actually touches.
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today… | 004 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the parameter… | 008 |
-| `[locale]/-choose/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
+| `[locale]/-choose/-next/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` —… | 009 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
-| `[locale]/@header/-choose/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
+| `[locale]/@header/-choose/-next/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot from the… | 043 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{child}/{gra… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{child}`: a | 043 |
@@ -138,7 +138,7 @@ task actually touches.
 | `admin/sign-in/page.tsx` | GET /admin/sign-in: form and its states | 012 |
 | `admin/unauthorized.tsx` | Admin 401, noindex (AC-1) | 012 |
 | `api/checkout/start/route.ts` | `POST /api/checkout/start`: the product page's entry… | 010 |
-| `api/choose/[locale]/[iso2]/[[...next]]/route.ts` | The chooser's 303 and its one fo_dest cookie | 004 |
+| `api/choose/[locale]/[[...rest]]/route.ts` | The chooser's 303 and its one fo_dest cookie | 004 |
 | `api/consent/route.ts` | `POST /api/consent` | 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` | 004 |
 | `api/health/route.ts` | `GET /api/health` | 001 |

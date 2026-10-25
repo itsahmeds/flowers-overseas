@@ -14,6 +14,8 @@ import {
 } from "@playwright/test";
 
 const CHOOSER = "/en/choose-country";
+/** The chooser form's action: the choice route (`src/lib/chooser-routes.ts`). */
+const CHOICE = "/api/choose/en";
 const PRODUCT_NEXT = "/product/vistula-red";
 
 /** Every `next` shape of item 3 in `en`, and where a choice of Poland lands. */
@@ -144,7 +146,7 @@ test.describe("the choice (AC-78, T-84)", () => {
     test(`choosing ${code} by button answers 303 to its shop root with one fo_dest`, async ({
       request,
     }) => {
-      const answer = await get(request, `${CHOOSER}?to=${code}&to=`);
+      const answer = await get(request, `${CHOICE}?to=${code}&to=`);
       expect(answer.status).toBe(303);
       expect(pathOf(answer.location)).toBe(root);
       expect(answer.setCookies).toEqual([cookieLine(code)]);
@@ -157,9 +159,9 @@ test.describe("the choice (AC-78, T-84)", () => {
       request,
     }) => {
       for (const url of [
-        `${CHOOSER}${next}?to=fr&to=Polska`,
-        `${CHOOSER}${next}?to=Poland`,
-        `${CHOOSER}${next}?to=pl`,
+        `${CHOICE}${next}?to=fr&to=Polska`,
+        `${CHOICE}${next}?to=Poland`,
+        `${CHOICE}${next}?to=pl`,
         `${CHOOSER}/pl${next}`,
       ]) {
         const answer = await get(request, url);
@@ -173,6 +175,10 @@ test.describe("the choice (AC-78, T-84)", () => {
   test("an unknown name lists the closest names and every shop country, with no cookie", async ({
     request,
   }) => {
+    const back = await get(request, `${CHOICE}${PRODUCT_NEXT}?to=Swedn`);
+    expect(back.status).toBe(303);
+    expect(pathOf(back.location)).toBe(`${CHOOSER}${PRODUCT_NEXT}?to=Swedn`);
+    expect(back.setCookies).toEqual([]);
     const page = await get(request, `${CHOOSER}${PRODUCT_NEXT}?to=Swedn`);
     expect(page.status).toBe(200);
     expect(page.setCookies).toEqual([]);
@@ -186,7 +192,7 @@ test.describe("the choice (AC-78, T-84)", () => {
   });
 
   test("choosing Germany on /pl keeps /pl (AC-89)", async ({ request }) => {
-    const answer = await get(request, "/pl/wybierz-kraj?to=de");
+    const answer = await get(request, "/api/choose/pl?to=de");
     expect(answer.status).toBe(303);
     expect(pathOf(answer.location)).toBe("/pl/niemcy/kwiaty");
   });
@@ -204,7 +210,7 @@ test.describe("no guessing (AC-89, T-95)", () => {
     request,
   }) => {
     for (const url of [
-      `${CHOOSER}${PRODUCT_NEXT}?to=pl`,
+      `${CHOICE}${PRODUCT_NEXT}?to=pl`,
       `${CHOOSER}/de/flowers/roses`,
     ]) {
       const plain = await get(request, url);
@@ -239,7 +245,8 @@ test.describe("the cookie (AC-90, T-96)", () => {
       "/en/occasions",
       `${CHOOSER}${PRODUCT_NEXT}`,
       `${CHOOSER}${PRODUCT_NEXT}?to=Swedn`,
-      `${CHOOSER}${PRODUCT_NEXT}?to=`,
+      `${CHOOSER}${PRODUCT_NEXT}?to=pl`,
+      `${CHOICE}${PRODUCT_NEXT}?to=Swedn`,
     ]) {
       const answer = await get(request, url);
       expect(

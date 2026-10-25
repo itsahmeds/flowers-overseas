@@ -109,10 +109,6 @@ const headerRules = [
   // a product address rewritten there keeps the address it was asked for, which this source does
   // not match (`src/lib/product-rewrites.ts`; spec 009 AC-37, TASK-228).
   ...productRouteHeaderRules(),
-  // `X-Robots-Tag: noindex, nofollow` on every country chooser address and on its internal page
-  // route (spec 004 §14 A-founder-2026-10-24a item 3; `src/lib/chooser-routes.ts`; TASK-385). The
-  // page's own metadata says the same, and its responses are uncached (it reads `fo_dest`).
-  ...chooserHeaderRules(),
   // `X-Robots-Tag: noindex, follow` on a hub address that carries a listing key: the hubs honour
   // no parameter and are served their prebuilt document, so the header supplies AC-15's
   // `noindex` half that document cannot (`src/lib/listing-rewrites.ts`; TASK-146).
@@ -120,6 +116,11 @@ const headerRules = [
   // Every `/admin` response: `noindex, nofollow` and `no-store, private` (spec 012 §2.2, AC-5;
   // TASK-217). After the environment-wide `noindex` rule above, so its value wins on `/admin`.
   ...adminHeaderRules(),
+  // `X-Robots-Tag: noindex, nofollow` and `Cache-Control: private, no-store` on every country
+  // chooser address, its internal page route and its choice route (spec 004 §14
+  // A-founder-2026-10-24a item 3; `src/lib/chooser-routes.ts`; TASK-385). After the listing rules,
+  // whose sources a chooser address also matches, so these values are the ones served.
+  ...chooserHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,
