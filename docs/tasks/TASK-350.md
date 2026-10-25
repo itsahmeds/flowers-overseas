@@ -43,6 +43,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-24: migration numbered `0028_payment_purchase` per the orchestrator (0019..0027 claimed by PRs 383 (merged), 384, 326, 320, 394, 324, 349, 398). On this branch alone `0028` is a gap after main's `0020`, so CI's `db-check`, every job that runs `db:migrate` and the gap-sensitive unit files are red until `0021`..`0027` merge; proven locally with uncommitted empty placeholders for `0021`..`0027`. When the predecessors land: rebase, re-run `pnpm db:check --write-snapshot` on a freshly migrated scratch database, re-fire `ci:full`.
+- 2026-10-25: restacked on TASK-070 (PR 324, `0025`), PR 403's base moved to that branch. PRs 349 (TASK-082) and 398 (TASK-357) ship no migration, so the file is renumbered `0026_payment_purchase` (db:check refuses a gap). TASK-222's admin `orderDetail` (merged meanwhile) read `payment.order_id`; it now joins through the order's purchase. Snapshot regenerated on a fresh PG16 (unchanged from the merged union); 12 touched integration files and 5 unit files green locally.
 - 2026-10-24: migration, Drizzle mirror, `paymentForOrder`/`paymentForPurchase`, `tests/integration/payment-purchase.test.ts` (16 cases) and the existing suites moved to the purchase shape; pushed, draft PR open.
 
 ## Result
