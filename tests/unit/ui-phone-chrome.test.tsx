@@ -336,12 +336,14 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
     expect(menu.indexOf("data-fo-menu-scrim")).toBeLessThan(
       menu.indexOf("data-fo-menu-panel"),
     );
-    // Drawn only with the module's mark on `<html>`, and the header lifted over the docked bar.
+    // Drawn only with the module's mark on `<html>`. The header is lifted over the docked bar
+    // whenever the Menu is open, module or not (TASK-383): with JavaScript off the accordions run
+    // to the sheet's foot, under the bar.
     expect(CSS).toMatch(
       /html\[data-fo-motion\] details\[data-fo-menu\]\[open\] \[data-fo-menu-scrim\] \{\s*display: block;\s*\}/u,
     );
     expect(CSS).toMatch(
-      /html\[data-fo-motion\] \[data-fo-header\]:has\(details\[data-fo-menu\]\[open\]\) \{\s*z-index: var\(--layer-overlay\);\s*\}/u,
+      /(?:^|\n)\[data-fo-header\]:has\(details\[data-fo-menu\]\[open\]\) \{\s*z-index: var\(--layer-overlay\);\s*\}/u,
     );
   });
 

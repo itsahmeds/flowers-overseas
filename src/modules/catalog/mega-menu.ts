@@ -66,6 +66,7 @@ import {
 } from "@/modules/ui";
 
 import { chooserPath } from "./chooser";
+import { copyRow } from "./copy";
 import { orderCountries } from "./country-order";
 import {
   PRODUCT_COUNT_FLOOR,
@@ -128,6 +129,8 @@ export interface MegaMenuData {
     key: string,
     iso2: CountryIso2,
   ) => Promise<string | undefined>;
+  /** A category hub's own name in this locale (its copy row), or `undefined`. */
+  readonly hubName: (locale: LocaleCode, key: string) => string | undefined;
   /** X's shop root in this locale, or `undefined` (then the page is out of context). */
   readonly shopRoot: (
     locale: LocaleCode,
@@ -179,6 +182,7 @@ export const committedMegaMenuData: MegaMenuData = {
     )[locale],
   countryHubPath: (locale, kind, key, iso2) =>
     hubDestinationHref(locale, { kind, entityKey: key }, iso2),
+  hubName: (locale, key) => copyRow("category", key, locale)?.name,
   shopRoot: async (locale, iso2) =>
     (await corridorShopEntry(locale, iso2)).shopEntryHref,
   occasionsIndex: (locale) => occasionsIndexHref(locale),
@@ -229,10 +233,16 @@ function link(
   labelKey: string,
   href: string,
   date?: string,
+  name?: string,
 ): MegaEntry {
-  return date === undefined
-    ? { kind: "link", id, labelKey, href }
-    : { kind: "link", id, labelKey, href, date };
+  return {
+    kind: "link",
+    id,
+    labelKey,
+    ...(name === undefined ? {} : { label: name }),
+    href,
+    ...(date === undefined ? {} : { date }),
+  };
 }
 
 function column(
@@ -266,7 +276,12 @@ async function hubEntry(
     context === null
       ? await data.hubPath(locale, hub.kind, hub.key)
       : await data.countryHubPath(locale, hub.kind, hub.key, context.iso2);
-  return href === undefined ? undefined : link(id, labelKey, href, date);
+  if (href === undefined) return undefined;
+  // A category hub is named as its own page names it (the board: "Hand-tied bouquets"); an
+  // occasion hub keeps its occasion label ("Birthday"), which is what the board prints.
+  const name =
+    hub.kind === "category" ? data.hubName(locale, hub.key) : undefined;
+  return link(id, labelKey, href, date, name);
 }
 
 function present<T>(value: T | undefined): value is T {

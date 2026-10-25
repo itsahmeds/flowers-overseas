@@ -73,7 +73,10 @@ function Entry({
   readonly locale: LocaleCode;
   readonly className: string;
 }): ReactElement {
-  const text = label(t, entry.labelKey);
+  const text =
+    entry.kind === "link" && entry.label !== undefined
+      ? entry.label
+      : label(t, entry.labelKey);
   if (entry.kind === "facet") {
     return (
       <form action={entry.action} method="get">
@@ -262,14 +265,18 @@ function PanelColumns({
           <h3 className={COLUMN_HEADING}>
             {label(t, panel.extras.headingKey)}
           </h3>
-          <ul className="text-ink-muted m-0 flex list-none flex-wrap gap-x-[8px] p-0 py-[6px] text-sm leading-[1.5]">
+          {/* One sentence, as the board sets it: a no-break space keeps each dot on the line of
+              the word before it, so a wrapped line never starts with a separator. */}
+          <p className="text-ink-muted m-0 py-[6px] text-sm leading-[1.5]">
             {panel.extras.labelKeys.map((key, index) => (
-              <li className="inline-flex gap-x-[8px]" key={key}>
-                {index === 0 ? null : <span aria-hidden="true">·</span>}
+              <span key={key}>
+                {index === 0 ? null : (
+                  <span aria-hidden="true">{"\u00a0· "}</span>
+                )}
                 {label(t, key)}
-              </li>
+              </span>
             ))}
-          </ul>
+          </p>
         </div>
       )}
       {panel.all === null ? null : (

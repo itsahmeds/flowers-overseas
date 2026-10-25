@@ -77,6 +77,33 @@ describe("megaMenuModel out of context (AC-100, spec 043 AC-3)", () => {
     expect(model.context).toBeNull();
   });
 
+  it("names a category hub as its own page does, an occasion hub by its occasion (the board)", async () => {
+    const model = await megaMenuModel("en", null, { now: NOW });
+    const labels = (panelId: string, columnId: string) =>
+      model.panels
+        .find((panel) => panel.id === panelId)
+        ?.columns.find((column) => column.id === columnId)
+        ?.entries.map((entry) =>
+          entry.kind === "link"
+            ? (entry.label ?? entry.labelKey)
+            : entry.labelKey,
+        );
+    expect(labels("flowers", "byType")).toEqual([
+      "Hand-tied bouquets",
+      "Arrangements",
+      "Flowers and gift sets",
+    ]);
+    expect(labels("plantsGifts", "plantsGifts")).toEqual([
+      "Plants",
+      "Orchids",
+      "Flowers and gift sets",
+    ]);
+    // Occasion hubs carry no copy name: their label is the occasion's message key.
+    expect(labels("occasions", "everyDay")?.[0]).toBe(
+      "catalog.facet.occasion.birthday",
+    );
+  });
+
   it("links hubs plainly and shop entries through the chooser, path only (item 3, AC-76)", async () => {
     const model = await megaMenuModel("en", null, { now: NOW });
     const segment = chooseSegment("en");

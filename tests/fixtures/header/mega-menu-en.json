@@ -13,18 +13,21 @@
               "kind": "link",
               "id": "category:bouquet",
               "labelKey": "catalog.facet.productType.bouquet",
+              "label": "Hand-tied bouquets",
               "href": "/en/flowers/hand-tied-bouquets"
             },
             {
               "kind": "link",
               "id": "category:arrangement",
               "labelKey": "catalog.facet.productType.arrangement",
+              "label": "Arrangements",
               "href": "/en/flowers/arrangements"
             },
             {
               "kind": "link",
               "id": "category:gift_set",
               "labelKey": "catalog.facet.productType.giftSet",
+              "label": "Flowers and gift sets",
               "href": "/en/flowers/flowers-and-gift-sets"
             }
           ],
@@ -38,48 +41,56 @@
               "kind": "link",
               "id": "category:roses",
               "labelKey": "catalog.facet.flowerType.roses",
+              "label": "Roses",
               "href": "/en/flowers/roses"
             },
             {
               "kind": "link",
               "id": "category:tulips",
               "labelKey": "catalog.facet.flowerType.tulips",
+              "label": "Tulips",
               "href": "/en/flowers/tulips"
             },
             {
               "kind": "link",
               "id": "category:lilies",
               "labelKey": "catalog.facet.flowerType.lilies",
+              "label": "Lilies",
               "href": "/en/flowers/lilies"
             },
             {
               "kind": "link",
               "id": "category:orchids",
               "labelKey": "catalog.facet.flowerType.orchids",
+              "label": "Orchids",
               "href": "/en/flowers/orchids"
             },
             {
               "kind": "link",
               "id": "category:sunflowers",
               "labelKey": "catalog.facet.flowerType.sunflowers",
+              "label": "Sunflowers",
               "href": "/en/flowers/sunflowers"
             },
             {
               "kind": "link",
               "id": "category:peonies",
               "labelKey": "catalog.facet.flowerType.peonies",
+              "label": "Peonies",
               "href": "/en/flowers/peonies"
             },
             {
               "kind": "link",
               "id": "category:gerberas",
               "labelKey": "catalog.facet.flowerType.gerberas",
+              "label": "Gerberas",
               "href": "/en/flowers/gerberas"
             },
             {
               "kind": "link",
               "id": "category:mixed",
               "labelKey": "catalog.facet.flowerType.mixed",
+              "label": "Mixed flowers",
               "href": "/en/flowers/mixed-flowers"
             }
           ],
@@ -338,6 +349,7 @@
               "kind": "link",
               "id": "category:funeral",
               "labelKey": "catalog.facet.productType.funeral",
+              "label": "Funeral and sympathy flowers",
               "href": "/en/flowers/funeral-and-sympathy-flowers"
             },
             {
@@ -380,18 +392,21 @@
               "kind": "link",
               "id": "category:plant",
               "labelKey": "catalog.facet.productType.plant",
+              "label": "Plants",
               "href": "/en/flowers/plants"
             },
             {
               "kind": "link",
               "id": "category:orchids",
               "labelKey": "catalog.facet.flowerType.orchids",
+              "label": "Orchids",
               "href": "/en/flowers/orchids"
             },
             {
               "kind": "link",
               "id": "category:gift_set",
               "labelKey": "catalog.facet.productType.giftSet",
+              "label": "Flowers and gift sets",
               "href": "/en/flowers/flowers-and-gift-sets"
             }
           ],
