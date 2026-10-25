@@ -40,7 +40,7 @@ export const TABLE_SEPARATOR = "|---|---|---|---|";
  * correction of an old row, made in the same PR as this constant.
  */
 export const FROZEN_LOG_SHA256 =
-  "8b8c152f70bcb0b97b84ce4be07de6dce96fc3121751193141bb48548ac2d882";
+  "63e935576a904686500dc1e20e66841576b8e0b2dd9863bb66678a222c5d1875";
 
 const FILE_NAME = /^(\d{4}-\d{2}-\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)\.md$/;
 
