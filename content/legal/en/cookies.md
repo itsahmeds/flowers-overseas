@@ -2,13 +2,16 @@
 seoTitle: "Cookies"
 seoDescription: "The cookies this website sets or plans to set, what each one is for, how long it is kept, and how to change your choice."
 h1: "Cookies"
-version: "0.1.0"
+version: "0.2.0"
 effectiveFrom: "2026-10-24"
 inForce: true
 lawyerReviewed: false
 lawyerReviewedAt: null
 regime: eu
 changeLog:
+  - version: "0.2.0"
+    date: "2026-10-25"
+    summary: "Added the fo_dest cookie, which remembers the country you choose to send flowers to."
   - version: "0.1.0"
     date: "2026-10-24"
     summary: "First version, published before a lawyer has reviewed it."
@@ -37,7 +40,7 @@ interim:
   heading: "Your personal data"
 source: human
 reviewed: false
-updatedAt: "2026-10-24"
+updatedAt: "2026-10-25"
 ---
 
 ## What a cookie is {#what-a-cookie-is}
@@ -49,6 +52,8 @@ A cookie is a small piece of text a website asks your browser to keep, so that i
 [[register]]
 
 "Set today" means this website writes it now. "Planned" means a later part of the website will write it. We list it now so that nothing is ever set that this page has not named first.
+
+**The country you choose.** When you choose a country to send flowers to, we keep that choice in the fo_dest cookie for 180 days, so that we can show you that country's prices and offer it first next time. It is set only when you choose a country, never just because you opened a page, and it contains nothing but the country's two-letter code. We do not ask for your consent for it, because it is strictly necessary to give you the service you asked for: prices for the country you chose (ePrivacy Directive, Article 5(3); in the UK, regulation 6(4)(b) of the Privacy and Electronic Communications Regulations 2003). You can choose another country at any time.
 
 ## The three groups {#the-three-groups}
 

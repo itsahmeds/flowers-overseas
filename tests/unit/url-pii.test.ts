@@ -641,7 +641,7 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "keeps today's six dynamic segments, none a PII key",
+    "keeps today's nine dynamic segments, none a PII key",
     () => {
       const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
         const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
@@ -652,8 +652,13 @@ describe("the real tree (T-59)", () => {
         "grandchild",
         // `/admin/orders/[id]` (TASK-222): an order's uuid.
         "id",
+        // `/api/choose/[locale]/[iso2]/[[...next]]` and `/[locale]/-choose/[[...rest]]` (TASK-385):
+        // a country code and the chooser's `next` path, slugs and fixed words only.
+        "iso2",
         "locale",
+        "next",
         "nextauth",
+        "rest",
         "segment",
       ]);
     },
@@ -661,11 +666,13 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "reads QUERY_KEYS = page, sort, price from src/config/url-keys.ts",
+    "reads QUERY_KEYS = page, sort, price, to from src/config/url-keys.ts",
     () => {
       // `price`: the chooser's 303 to a country page's band (spec 004 §14 A-founder-2026-10-24a
       // item 3; TASK-381), honoured by TASK-390's band facet.
-      expect(readQueryKeys(repoRoot)).toEqual(["page", "sort", "price"]);
+      // `to`: the country chooser's form field (spec 004 §14 A-founder-2026-10-24a item 3;
+      // TASK-385), a country's code or name, read only on a chooser address.
+      expect(readQueryKeys(repoRoot)).toEqual(["page", "sort", "price", "to"]);
     },
     REAL_TREE_MS,
   );

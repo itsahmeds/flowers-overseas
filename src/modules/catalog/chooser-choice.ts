@@ -28,6 +28,8 @@
  * No header, cookie, IP or user agent is read here (AC-89's source scan,
  * `tests/unit/chooser-choice.test.ts`); the remembered country reaches the page as an argument.
  */
+import { z } from "zod";
+
 import { CHOOSER_INPUT_MAX_CHARS } from "@/config/commerce";
 import {
   DEST_COOKIE_MAX_AGE_SECONDS,
@@ -43,6 +45,7 @@ import {
   regionHeadingKey,
 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
+import { QUERY_KEY } from "@/config/url-keys";
 import { launchLocaleCodes } from "@/modules/i18n";
 
 import {
@@ -123,9 +126,10 @@ export const CLOSEST_COUNTRIES_MAX = 3;
 
 /**
  * The registry countries whose name is closest to what was typed (the no-match state, AC-78):
- * each country scored by its nearest name in any launch locale, a name's beginning counting as a
- * whole match (so "germ" finds Germany), kept when the score is at most 60 % of the typed length,
- * nearest first, then in the one country order of `locale`. At most `CLOSEST_COUNTRIES_MAX`.
+ * each country scored by the edit distance to its nearest name in any launch locale, a name that
+ * begins with what was typed scoring 0 (so "germ" finds Germany), kept when the score is at most
+ * 60 % of the typed length, nearest first, then in the one country order of `locale`. At most
+ * `CLOSEST_COUNTRIES_MAX`. "Swedn" finds Spain (3 edits) and nothing else.
  */
 export function closestCountries(
   value: string,
@@ -139,10 +143,7 @@ export function closestCountries(
   for (const [iso2, names] of namesByCountry()) {
     const score = Math.min(
       ...names.map((name) =>
-        Math.min(
-          distance(typed, name),
-          distance(typed, name.slice(0, typed.length)),
-        ),
+        name.startsWith(typed) ? 0 : distance(typed, name),
       ),
     );
     if (score <= limit) scored.push({ iso2, score });
@@ -174,6 +175,31 @@ export function chosenInput(values: readonly string[]): string | undefined {
   }
   return undefined;
 }
+
+/**
+ * A chooser request's query as the proxy reads it: every `to`, in order, and nothing else (the
+ * boundary schema of `request.nextUrl.searchParams`). Anything else is no value.
+ */
+export const ChooserToSchema = z
+  .instanceof(URLSearchParams)
+  .transform((params) => params.getAll(QUERY_KEY.to))
+  .catch([]);
+
+/**
+ * The chooser page's query (Next's `searchParams`): `to` once, several times or not at all, as the
+ * list `decideChooser()` reads. Every other key is dropped; a malformed `to` is no value.
+ */
+export const ChooserSearchParamsSchema = z
+  .object({
+    [QUERY_KEY.to]: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .catch(undefined),
+  })
+  .transform((query): string[] => {
+    const value = query[QUERY_KEY.to];
+    return value === undefined ? [] : Array.isArray(value) ? value : [value];
+  });
 
 /** What the chooser page shows when it is not answering a choice. */
 export type ChooserPageState =
@@ -353,10 +379,13 @@ export async function chooserPageView(
   };
 }
 
-/** Headers every chooser answer carries: never stored by a cache, never indexed. */
+/**
+ * Headers every choice answer carries: never stored by a cache. Its robots header comes from the
+ * chooser address's header rule (`src/lib/chooser-routes.ts`, applied by `next.config.ts` to the
+ * address the visitor asked for), and the route lives under `/api/`, which `robots.txt` disallows.
+ */
 export const CHOOSER_RESPONSE_HEADERS: Readonly<Record<string, string>> = {
   "Cache-Control": "private, no-store",
-  "X-Robots-Tag": "noindex, nofollow",
 };
 
 /**
