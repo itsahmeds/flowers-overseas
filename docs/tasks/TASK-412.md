@@ -40,4 +40,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR #419. `e2e` is now `e2e-shard` (three Playwright shards, 25 min each, `fail-fast: false`) plus an aggregate `e2e` that fails unless every shard succeeded and sums the three reports; `scripts/branch-protection.ts` excludes matrix jobs, so `e2e` stays the required check name. On the first `ci:full` run (40150791384, head 6c6977060) the shard jobs took **8 min 17 s, 8 min 34 s and 11 min 16 s** wall time (setup, origin and browser install included), against 18 to 24 minutes for the single job before; the aggregate took 3 s. `tests/unit/lint-fixtures.test.ts`'s whole-tree lint case now has 240 s (was 120 s; 121 s observed on PR 418). Tests: unit only, 9 new cases in `ci-workflow.test.ts`, 1 in `branch-protection.test.ts`, existing job-set cases updated there and in `vercel-config.test.ts`. No expensive gate run locally. `frame-laptop-band`: no change, see Progress (an expected failure, not a flake).
