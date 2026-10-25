@@ -87,6 +87,22 @@
       "y": 14786,
       "w": 1440,
       "h": 1793
+    },
+    {
+      "file": "monthly-flowers.dc.html",
+      "title": "Monthly flowers journey · choose, pay once, monthly orders, stop (spec 049)",
+      "x": 0,
+      "y": 16873,
+      "w": 1440,
+      "h": 1804
+    },
+    {
+      "file": "business-enquiry.dc.html",
+      "title": "Business enquiry journey · page, form, sent, the founder answers (spec 048)",
+      "x": 1520,
+      "y": 16873,
+      "w": 1440,
+      "h": 917
     }
   ],
   "annotations": [
@@ -103,6 +119,13 @@
       "y": 14692,
       "w": 1400,
       "text": "Discount codes and referrals (specs 047, 050; 2026-10-24): admin codes and referrals, store credit, the saved-offer note and the referral journey. Checkout step 4, confirmation, basket and B1 carry their 2026-10-24 sections at the foot of their own artboards."
+    },
+    {
+      "id": "growth-048-049",
+      "x": 0,
+      "y": 16779,
+      "w": 1400,
+      "text": "Business gifting and monthly flowers (specs 048, 049; 2026-10-25): the business enquiry journey and the monthly flowers journey."
     }
   ],
   "launch": {

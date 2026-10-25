@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
+  --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; padding-block-end: 72px; }
+.fo.M { font-size: var(--text-body-s); padding-block-end: 48px; }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote, h1, h2, h3, h4) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .spec code, .slot code, .page-label code, .stub code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; overflow-wrap: anywhere; }
+.note ul { display: grid; gap: 2px; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+.pending, .prop, .verb { display: inline-block; font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); border-radius: var(--radius-full); padding: 1px 8px; white-space: nowrap; }
+.pending, .prop { background: var(--color-butter); box-shadow: inset 0 0 0 1px var(--color-warning); }
+.verb { background: var(--color-leaf-wash); box-shadow: inset 0 0 0 1px var(--color-stem); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); font-size: 0.86em; }
+
+/* a whole drawn email for one template: a label, then the email */
+.page-label { margin-block-start: 72px; padding: 14px var(--gutter); background: var(--color-paper-3); border-block: 1px dashed var(--color-ink-3); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+.M .page-label { margin-block-start: 48px; padding-inline: var(--gutter-s); }
+.row { display: grid; grid-template-columns: 680px minmax(0, 1fr); gap: 48px; align-items: start; padding: 40px var(--gutter) 0; }
+.M .row { display: block; padding: 24px 0 0; }
+.side { display: grid; gap: 24px; min-inline-size: 0; }
+.M .side { padding: 20px var(--gutter-s) 0; }
+.side h3 { font-family: var(--font-body); font-variation-settings: normal; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: 8px; }
+.pt { padding: 16px 20px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.6; color: var(--color-ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.spec { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 8px 14px; font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .spec { grid-template-columns: minmax(0, 1fr); gap: 2px; font-size: var(--text-xs); }
+.M .spec dd { margin-block-end: 8px; }
+.spec dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.spec dd b { color: var(--color-ink); }
+.spec ul { display: grid; gap: 4px; }
+.states { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.M .states { grid-template-columns: minmax(0, 1fr); }
+.state { display: grid; gap: 10px; align-content: start; padding: 16px; border-radius: var(--radius-field); background: var(--color-paper); box-shadow: inset 0 0 0 1px var(--color-rule); min-inline-size: 0; }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+
+/* ---------- the mail client frame (drawing only; not part of the email) ---------- */
+.mx { inline-size: 680px; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); overflow: hidden; }
+.M .mx { inline-size: 375px; margin-inline: auto; border-radius: 0; box-shadow: inset 0 0 0 1px var(--color-rule); }
+.mail-h { display: grid; gap: 4px; padding: 16px 20px; background: var(--color-paper-3); border-block-end: var(--rule); font-size: var(--text-sm); }
+.mail-h div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; }
+.mail-h dt { color: var(--color-ink-3); }
+.mail-h dd { color: var(--color-ink); overflow-wrap: anywhere; }
+.mail-h .subj { font-weight: var(--font-weight-bold); }
+.mail-h .pre { color: var(--color-ink-2); }
+.M .mail-h { padding: 12px 16px; font-size: var(--text-fine); }
+.M .mail-h div { grid-template-columns: 58px minmax(0, 1fr); }
+
+/* ---------- the email itself: React Email under emails/, 600 px max, 375 on a phone ---------- */
+.em { padding: 32px 40px 40px; background: var(--color-paper-2); }
+.M .em { padding: 0; background: var(--color-card); }
+.em-card { inline-size: 600px; margin-inline: auto; background: var(--color-card); border-radius: var(--radius-photo-s); box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; }
+.M .em-card { inline-size: 100%; border-radius: 0; box-shadow: none; }
+.em-top { display: flex; align-items: center; gap: 10px; padding: 28px 48px 20px; border-block-end: var(--rule); }
+.M .em-top { padding: 20px 20px 16px; }
+.em-top svg { inline-size: 28px; block-size: 28px; flex: none; }
+.em-top .wm { font-family: var(--font-logo); font-size: 20px; color: var(--color-logo-ink); letter-spacing: var(--tracking-wordmark); }
+.em-top .aud { margin-inline-start: auto; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.em-body { display: grid; gap: 20px; padding: 32px 48px 36px; }
+.M .em-body { gap: 18px; padding: 24px 20px 28px; }
+.em-eyebrow { font-size: 13px; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); margin-block-end: -8px; }
+.em h1 { font-size: 32px; line-height: 1.15; letter-spacing: -0.01em; color: var(--color-ink); }
+.M .em h1 { font-size: 26px; }
+.em p { font-size: 17px; line-height: 1.55; color: var(--color-ink); }
+.M .em p { font-size: 16px; }
+.em p.sub { color: var(--color-ink-2); }
+.em-facts { display: grid; border-block-start: var(--rule); }
+.em-facts > div { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 2px 16px; padding-block: 11px; border-block-end: var(--rule); align-items: baseline; }
+.M .em-facts > div { grid-template-columns: minmax(0, 1fr); }
+.em-facts dt { font-size: 13px; font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+.em-facts dd { font-size: 17px; color: var(--color-ink); }
+.M .em-facts dd { font-size: 16px; }
+.em-facts dd .name { font-family: var(--font-display); font-size: 19px; }
+.em-total { display: grid; gap: 4px; padding: 16px 18px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.em-total .l { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-weight: var(--font-weight-bold); }
+.em-total strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 26px; font-variant-numeric: lining-nums tabular-nums; }
+.em-total small { font-size: 14px; color: var(--color-ink-3); }
+.em-box { padding: 14px 18px; border-radius: var(--radius-field); background: var(--color-sage-wash); font-size: 16px; line-height: 1.5; color: var(--color-ink); }
+.em-box.leaf { background: var(--color-leaf-wash); }
+.em-box.blush { background: var(--color-blush); }
+.em-box.butter { background: var(--color-butter); }
+.em-refund { display: block; font-weight: var(--font-weight-bold); color: var(--color-stem); font-variant-numeric: lining-nums tabular-nums; }
+.em-btn { justify-self: start; display: inline-flex; align-items: center; justify-content: center; min-block-size: 52px; padding-inline: 30px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--color-accent-ink); font-weight: var(--font-weight-bold); font-size: 17px; text-decoration: none; }
+.M .em-btn { justify-self: stretch; }
+.em-link { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.em-note { font-size: 14px !important; line-height: 1.45 !important; color: var(--color-ink-3) !important; margin-block-start: -8px !important; }
+.em-due { justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 10px; border-radius: var(--radius-full); background: var(--color-blush); color: var(--color-accent-strong); font-weight: var(--font-weight-bold); font-size: 17px; font-variant-numeric: lining-nums tabular-nums; }
+.em-due svg { inline-size: 18px; block-size: 18px; }
+.em-pay { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 18px; border-radius: var(--radius-field); background: var(--color-leaf-wash); font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.em-pay strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 24px; font-variant-numeric: lining-nums; }
+.em-photo { aspect-ratio: 4 / 5; inline-size: 100%; max-inline-size: 504px; border-radius: var(--radius-photo-s); background: var(--color-photo); display: grid; place-items: center; padding: 24px; text-align: center; font-size: 14px; color: var(--color-photo-ink); }
+.em-attach { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 15px; color: var(--color-ink); }
+.em-attach svg { inline-size: 20px; block-size: 20px; color: var(--color-ink-3); flex: none; }
+.em-attach small { margin-inline-start: auto; color: var(--color-ink-3); font-size: 13px; }
+.em-legal { display: grid; gap: 10px; padding-block-start: 18px; border-block-start: var(--rule); }
+.em-legal p { font-size: 14px !important; line-height: 1.5 !important; color: var(--color-ink-2) !important; }
+.em-table { display: grid; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; font-size: 15px; }
+.em-table > div { display: grid; grid-template-columns: 28px 120px minmax(0, 1fr); gap: 10px; padding: 10px 14px; border-block-end: var(--rule); align-items: baseline; }
+.M .em-table > div { grid-template-columns: 22px minmax(0, 1fr); }
+.M .em-table > div > :last-child { grid-column: 2; }
+.em-table > div:last-child { border-block-end: 0; }
+.em-table .h { background: var(--color-paper-2); font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+.em-paste { padding: 18px 20px; border-radius: var(--radius-field); background: var(--color-paper-2); border-inline-start: 4px solid var(--color-stem); font-size: 16px; line-height: 1.55; white-space: pre-wrap; color: var(--color-ink); }
+.em-band { padding: 12px 48px; background: var(--color-butter); font-weight: var(--font-weight-bold); font-size: 16px; color: var(--color-ink); border-block-end: var(--rule); }
+.M .em-band { padding: 12px 20px; }
+.em-foot { display: grid; gap: 8px; padding: 24px 48px 32px; background: var(--color-paper-2); border-block-start: var(--rule); }
+.M .em-foot { padding: 20px 20px 28px; }
+.em-foot p { font-size: 14px !important; line-height: 1.5 !important; color: var(--color-ink-2) !important; }
+.em-foot b { color: var(--color-ink); }
+.em-foot .help { color: var(--color-ink) !important; }
+
+  
+/* ---------- specs 030a and 022a: the statement's line list and the five star links ---------- */
+.em-lines { display: grid; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; font-size: 15px; }
+.em-lines > div { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 14px; border-block-end: var(--rule); align-items: baseline; }
+.em-lines > div:last-child { border-block-end: 0; }
+.M .em-lines > div { grid-template-columns: minmax(0, 1fr) auto; }
+.M .em-lines .ref { grid-column: 1 / -1; }
+.em-lines .h { background: var(--color-paper-2); font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+.M .em-lines .h .ref { display: none; }
+.em-lines .ref { font-variant-numeric: lining-nums tabular-nums; }
+.em-lines small { display: block; font-size: 13px; color: var(--color-ink-3); }
+.em-lines .a { text-align: end; white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
+.em-stars { display: flex; gap: 8px; }
+.em-star { display: grid; justify-items: center; gap: 4px; inline-size: 72px; padding-block: 12px 10px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-rule); text-decoration: none; color: var(--color-ink-2); font-size: 14px; font-weight: var(--font-weight-bold); font-variant-numeric: lining-nums tabular-nums; }
+.em-star b { font-size: 34px; line-height: 1; font-weight: 400; color: var(--color-ink); }
+.M .em-stars { gap: 6px; }
+.M .em-star { inline-size: auto; flex: 1 1 0; }
+
+
+
+/* ===== monthly flowers, 2026-10-25 (spec 049) =====
+   mf- the plan page, the plan review, the plan status and cancel pages, the plan emails and admin.
+   The plan page is the product page's template: same grid, same buy column, one action. */
+.mf-ph { display: grid; place-items: center; align-content: center; gap: 10px; background: var(--color-paper-3); box-shadow: inset 0 0 0 1px var(--color-rule); color: var(--color-ink-3); text-align: center; padding: 24px; }
+.mf-ph svg { inline-size: 56px; block-size: 56px; stroke: var(--color-ink-3); fill: none; }
+.mf-ph .slot { font-size: var(--text-sm); white-space: normal; }
+.mf-ph { min-inline-size: 0; max-inline-size: 100%; }
+.mf-lens { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mf-lens label { display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-field-edge, var(--color-rule)); font-size: var(--text-sm); color: var(--color-ink-2); }
+.mf-lens label b { font-size: var(--text-ui); color: var(--color-ink); }
+.mf-lens label.on { box-shadow: inset 0 0 0 2px var(--color-ink); }
+.M .mf-lens label { padding: 10px; text-align: center; }
+.mf-price { font-size: var(--text-sm); line-height: 1.5; color: var(--color-ink-2); }
+.mf-price strong { color: var(--color-ink); }
+.mf-once { display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-included); }
+.mf-once::before { content: ""; inline-size: 5px; block-size: 10px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); }
+.mf-sched { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; counter-reset: mf; font-size: var(--text-sm); }
+.mf-sched li { counter-increment: mf; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding-block: 8px; border-block-start: var(--rule); color: var(--color-ink); }
+.mf-sched li::before { content: counter(mf); font-size: var(--text-xs); font-weight: var(--font-weight-bold); color: var(--color-mark); }
+.mf-sched li small { color: var(--color-ink-3); font-size: var(--text-xs); }
+.mf-sched li .st { font-size: var(--text-xs); font-weight: var(--font-weight-bold); color: var(--color-ink-2); }
+.mf-sched li.done .st { color: var(--color-included); }
+.mf-sched li.gone { color: var(--color-ink-3); text-decoration: line-through; }
+.mf-sched li a { font-size: var(--text-xs); }
+.mf-sched.big { font-size: var(--text-ui); }
+.mf-sched.big li { padding-block: 14px; grid-template-columns: 32px minmax(0, 1fr) auto; }
+.mf-sh { font-size: var(--text-ui); font-weight: var(--font-weight-bold); margin-block-end: 6px; }
+.mf-why { font-size: var(--text-xs); color: var(--color-ink-3); line-height: 1.45; }
+.mf-off { opacity: 0.45; }
+.M .p2-sheet fieldset { min-inline-size: 0; border: 0; margin: 0; padding: 0; display: grid; gap: 10px; }
+.M .p2-sheet fieldset > legend { font-weight: var(--font-weight-bold); margin-block-end: 10px; }
+.M .p2-sheet { display: grid; gap: 20px; }
+.M .p2-photo.mf-ph { aspect-ratio: auto; block-size: 300px; min-block-size: 0; margin: 0; }
+.pv-day.mf-x { opacity: 0.4; text-decoration: line-through; }
+.mf-more { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(24px, 2.22vw, 32px); padding-block: 64px 24px; }
+.mf-more > * { grid-column: 1 / span 7; }
+.M .mf-more { padding-block: 32px 16px; }
+.M .mf-more > * { grid-column: 1 / -1; }
+.mf-faq > div { padding-block: 16px; border-block-start: var(--rule); display: grid; gap: 6px; }
+.mf-faq h3 { font-size: var(--text-h3); }
+.mf-card { display: grid; gap: 10px; padding: 20px 22px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.mf-card h3 { font-size: var(--text-h3); }
+.mf-bar { display: block; block-size: 10px; border-radius: var(--radius-sm); background: var(--color-paper-3); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.mf-sl { display: block; font-size: 13px; font-style: italic; color: var(--color-ink-3); }
+.mf-sl::before { content: "[slot] "; color: var(--color-warning); font-style: normal; font-weight: var(--font-weight-bold); }
+/* status and cancel */
+.mf-grid2 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(24px, 2.22vw, 32px); padding-block: 40px 64px; align-items: start; }
+.mf-grid2 > .a { grid-column: 1 / span 7; }
+.mf-grid2 > .b { grid-column: 9 / span 4; display: grid; gap: 16px; }
+.M .mf-grid2 { padding-block: 24px 40px; }
+.M .mf-grid2 > * { grid-column: 1 / -1 !important; }
+.M .mf-grid2 > .b { margin-block-start: 28px; }
+.mf-money { display: grid; gap: 6px; padding-block: 14px; border-block: var(--rule); margin-block: 18px 22px; font-size: var(--text-sm); }
+.mf-money p { display: flex; justify-content: space-between; gap: 12px; }
+.mf-money .rf { color: var(--color-included); }
+.mf-cancel { display: grid; gap: 14px; padding: 22px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.mf-cancel h2 { font-size: var(--text-h3); }
+.mf-cancel .btn { justify-self: start; }
+.M .mf-cancel .btn { justify-self: stretch; }
+.mf-cancel ul { margin: 0; padding-inline-start: 18px; display: grid; gap: 4px; font-size: var(--text-sm); }
+.mf-cancel .sum { display: flex; justify-content: space-between; padding-block-start: 10px; border-block-start: var(--rule); font-weight: var(--font-weight-bold); }
+.mf-rcpt { display: grid; gap: 14px; padding-block: 48px 80px; max-inline-size: 640px; }
+.mf-rcpt h1 { font-size: var(--text-xl); }
+.mf-form { display: grid; gap: 18px; max-inline-size: 560px; padding-block: 8px 64px; }
+.mf-form .btn { justify-self: start; min-block-size: 52px; }
+.M .mf-form .btn { justify-self: stretch; }
+/* plan review */
+.mf-pcb dl { display: grid; gap: 0; }
+.mf-lines { display: grid; gap: 6px; font-size: var(--text-sm); }
+.mf-lines p { display: flex; justify-content: space-between; gap: 12px; }
+/* admin */
+.sl { text-decoration-line: underline; text-decoration-style: dotted; text-decoration-color: var(--color-warning); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.mf-flt { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-block: 4px 18px; }
+.mf-flt label { display: grid; gap: 6px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); }
+.mf-flt .fm-in { min-block-size: 40px; inline-size: 190px; font-size: var(--text-sm); text-transform: none; letter-spacing: 0; font-weight: var(--font-weight-body); color: var(--color-ink); }
+.M .mf-flt { display: grid; grid-template-columns: minmax(0, 1fr); }
+.M .mf-flt .fm-in { inline-size: 100%; }
+.mf-test { display: inline-block; margin-inline-start: 6px; padding: 1px 7px; border-radius: var(--radius-full); background: var(--color-butter); font-size: var(--text-xs); font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.mf-acts { display: grid; gap: 12px; }
+.mf-acts form { display: grid; gap: 8px; }
+.mf-acts .ad-btn { justify-self: start; }
+.mf-ev { margin: 0; padding: 0; list-style: none; font-size: var(--text-sm); }
+.mf-ev li { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 12px; padding-block: 8px; border-block-start: var(--rule); }
+.M .mf-ev li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.mf-ev time { color: var(--color-ink-3); }
+.em-body { grid-template-columns: minmax(0, 1fr); }
+.em-total small { white-space: normal; }
+.em-legal { grid-template-columns: minmax(0, 1fr); min-inline-size: 0; }
+.em-legal p, .em-legal .slot { white-space: normal; min-inline-size: 0; }
+.bz-empty { padding: 48px 24px; text-align: center; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); color: var(--color-ink-2); }
+.bz-reason { display: grid; gap: 6px; font-size: var(--text-sm); }
+.bz-reason .fm-in { min-block-size: 44px; }
+.bz-foot { padding-block: 18px; border-block-start: var(--rule); }
+
+  </style>
+</helmet>
+<div class="fo M" style="inline-size: 390px;">
+<section class="note"><span class="nl">Monthly flowers · the plan emails S1, S2, S3 and the B2 to B4 line · mobile 390 (emails at 390) · spec 049 with spec 016, 2026-10-25 · [internal]</span><dl><dt>Purpose</dt><dd>S1 confirms the plan and is its contract on a durable medium; S2 says a date moved; S3 confirms a cancellation and the refund; B2 to B4 of each plan order carry “Delivery {k} of {n}”.</dd><dt>Sent</dt><dd>Spec 016’s notifications target and one <code>Mailer</code>; <code>live</code> plans only; rendered by React Email at send time. B1 is skipped for plan orders.</dd><dt>URL</dt><dd>None. Links: the plan page <code>/{locale}/plan/{token}</code> and the cancel page.</dd><dt>Index</dt><dd>Not a page; no tracking parameters.</dd><dt>States</dt><dd>S1 (first screen) · S2 (holiday and closure reasons) · S3 · the B3 line (B2 and B4 alike).</dd><dt>Copy</dt><dd>Verbatim from spec 049 Appendix A: S1 hero, S2 sentence, S3 sentence, the delivery line; the plan terms sentence (lawyer-gated, <span class="prop">proposed</span>); “Plan” before the reference (<span class="prop">proposed</span>); footer keys as <code>email-buyer-*</code>. Subjects, previews, headings and the button: <span class="slot">[slot]</span>s (<code>email.plan.*</code>). No buyer message mentions an offer, acceptance or a florist being found; only S3 speaks of a refund.</dd><dt>Example data</dt><dd>Anna, the plan and dates of <code>plan-status-*</code>; examples.</dd><dt>AC</dt><dd>spec 049 AC-11, AC-16, AC-17, AC-23</dd><dt>Owning spec</dt><dd>049 gift subscriptions, task 4; spec 016 owns the layout</dd></dl></section>
+<p class="page-label" aria-hidden="true">S1 <code>plan-confirmed</code> · the plan is paid: every date, the total, the plan terms; terms and invoice attached</p>
+<div class="row"><div class="mx"><dl class="mail-h"><div><dt>From</dt><dd>Flowers Overseas &lt;<code>EMAIL_FROM</code>&gt;</dd></div><div><dt>To</dt><dd>a•••@example.com (the buyer)</dd></div><div><dt>Subject</dt><dd class="subj"><span class="slot">[slot] S1 subject</span></dd></div><div><dt>Preview</dt><dd class="pre"><span class="slot">[slot] S1 preview line</span></dd></div></dl><div class="em"><div class="em-card" lang="en-GB" dir="ltr"><div class="em-top"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wm">Flowers Overseas</span><span class="aud"></span></div><div class="em-body"><p class="em-eyebrow">Plan <span class="num">FP-4K7Q-2M9D</span></p><h1>Thank you, Anna.</h1><p class="em-box">Monthly flowers arrive in Warszawa from Friday 6 November.</p><dl class="em-facts"><div><dt>1</dt><dd>Friday 6 November</dd></div><div><dt>2</dt><dd>Monday 7 December</dd></div><div><dt>3</dt><dd>Thursday 7 January 2027</dd></div><div><dt>4</dt><dd>Saturday 6 February 2027</dd></div><div><dt>5</dt><dd>Saturday 6 March 2027</dd></div><div><dt>6</dt><dd>Tuesday 6 April 2027</dd></div></dl><div class="em-total"><div class="l"><span>You paid</span><strong class="num">£281.40</strong></div><small>6 deliveries of £46.90 · delivery included · VAT 8% included · Paid once. No automatic renewal.</small></div><div class="em-attach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.5 8.5a5 5 0 0 1-7-7L14 4.5a3.3 3.3 0 0 1 4.7 4.7L10.2 17.7a1.7 1.7 0 0 1-2.4-2.4L15.5 7.6"/></svg><span><span class="slot">[slot] terms PDF filename</span></span><small>PDF</small></div><div class="em-attach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.5 8.5a5 5 0 0 1-7-7L14 4.5a3.3 3.3 0 0 1 4.7 4.7L10.2 17.7a1.7 1.7 0 0 1-2.4-2.4L15.5 7.6"/></svg><span><span class="slot">[slot] invoice PDF filename</span></span><small>PDF</small></div><a class="em-btn" href="#"><span class="slot">[slot] see your plan</span></a><div class="em-legal"><p><b><span class="slot">[slot] “Your plan terms” heading</span></b></p><p>You can cancel at any time. We refund every delivery we have not started preparing. Flowers are fresh, so a delivery cannot be cancelled once we start preparing it.</p><p><span class="slot">[slot] duration and no renewal, trader identity, the cancel page link · <code>checkout.legal.plan.*</code>, lawyer</span></p></div></div><div class="em-foot"><p>We send flowers across Europe. You order from us; our florist in the recipient’s town makes the bouquet and hands it over in person.</p><p class="help"><b>Help &amp; WhatsApp</b> <span class="num">+1 (213) 592-5150</span>. Message us any time, 24/7. We reply within a few hours.</p><p>Operated by <span class="slot">[legalName]</span>, <span class="slot">[address]</span>, <span class="slot">[registrationNumber]</span>.</p></div></div></div></div><div class="side"><div><h3>Plain-text part</h3><p class="pt">Plan FP-4K7Q-2M9D
+
+Thank you, Anna.
+Monthly flowers arrive in Warszawa from Friday 6 November.
+
+1. Friday 6 November
+2. Monday 7 December
+3. Thursday 7 January 2027
+4. Saturday 6 February 2027
+5. Saturday 6 March 2027
+6. Tuesday 6 April 2027
+
+You paid: £281.40 (6 deliveries of £46.90, delivery and VAT 8% included). Paid once. No automatic renewal.
+
+[plan link]
+[Your plan terms, lawyer-gated]
+
+--
+Flowers Overseas
+Help &amp; WhatsApp: +1 (213) 592-5150.</p></div><div><h3>Build</h3><dl class="spec"><dt>Template</dt><dd><code>emails/plan-confirmed.tsx</code> · key <code>S1</code></dd><dt>Trigger</dt><dd><code>subscription.paid</code>, once; waits for the invoice PDF as B1 does</dd><dt>Mode</dt><dd><code>live</code> only (spec 016’s mode rule)</dd><dt>Carries</dt><dd>the contract confirmation on a durable medium (CRD Art. 8(7)): every date, the total and the per-delivery price, duration and no renewal, how to cancel, trader identity; terms PDF and invoice PDF attached. No refund wording (AC-23). B1 is not sent for plan orders.</dd></dl></div></div></div>
+<p class="page-label" aria-hidden="true">S2 <code>plan-delivery-moved</code> · one delivery moved forward</p>
+<div class="row"><div class="mx"><dl class="mail-h"><div><dt>From</dt><dd>Flowers Overseas &lt;<code>EMAIL_FROM</code>&gt;</dd></div><div><dt>To</dt><dd>a•••@example.com (the buyer)</dd></div><div><dt>Subject</dt><dd class="subj"><span class="slot">[slot] S2 subject</span></dd></div><div><dt>Preview</dt><dd class="pre"><span class="slot">[slot] S2 preview line</span></dd></div></dl><div class="em"><div class="em-card" lang="en-GB" dir="ltr"><div class="em-top"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wm">Flowers Overseas</span><span class="aud"></span></div><div class="em-body"><p class="em-eyebrow">Plan <span class="num">FP-4K7Q-2M9D</span></p><h1><span class="slot">[slot] S2 heading</span></h1><p class="em-box">Your March delivery now arrives on Tuesday 9 March, the nearest delivery day.</p><a class="em-btn" href="#"><span class="slot">[slot] see your plan</span></a></div><div class="em-foot"><p>We send flowers across Europe. You order from us; our florist in the recipient’s town makes the bouquet and hands it over in person.</p><p class="help"><b>Help &amp; WhatsApp</b> <span class="num">+1 (213) 592-5150</span>. Message us any time, 24/7. We reply within a few hours.</p><p>Operated by <span class="slot">[legalName]</span>, <span class="slot">[address]</span>, <span class="slot">[registrationNumber]</span>.</p></div></div></div></div><div class="side"><div><h3>Build</h3><dl class="spec"><dt>Template</dt><dd><code>emails/plan-delivery-moved.tsx</code> · <code>S2</code></dd><dt>Trigger</dt><dd><code>delivery.rescheduled</code>, once per move (AC-16). When the reason is a public holiday the line “The planned day is a public holiday in {country}.” follows. No refund wording.</dd></dl></div></div></div>
+<p class="page-label" aria-hidden="true">S3 <code>plan-cancelled</code> · cancelled, with the amount refunded</p>
+<div class="row"><div class="mx"><dl class="mail-h"><div><dt>From</dt><dd>Flowers Overseas &lt;<code>EMAIL_FROM</code>&gt;</dd></div><div><dt>To</dt><dd>a•••@example.com (the buyer)</dd></div><div><dt>Subject</dt><dd class="subj"><span class="slot">[slot] S3 subject</span></dd></div><div><dt>Preview</dt><dd class="pre"><span class="slot">[slot] S3 preview line</span></dd></div></dl><div class="em"><div class="em-card" lang="en-GB" dir="ltr"><div class="em-top"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wm">Flowers Overseas</span><span class="aud"></span></div><div class="em-body"><p class="em-eyebrow">Plan <span class="num">FP-4K7Q-2M9D</span></p><h1><span class="slot">[slot] S3 heading</span></h1><p class="em-box">You cancelled your monthly flowers. We have refunded £140.70.</p><dl class="em-facts"><div><dt>Cancelled</dt><dd>Saturday 6 February, Tuesday 9 March, Tuesday 6 April 2027</dd></div></dl><p class="sub"><span class="slot">[slot] when the refund reaches the card · spec 013</span></p></div><div class="em-foot"><p>We send flowers across Europe. You order from us; our florist in the recipient’s town makes the bouquet and hands it over in person.</p><p class="help"><b>Help &amp; WhatsApp</b> <span class="num">+1 (213) 592-5150</span>. Message us any time, 24/7. We reply within a few hours.</p><p>Operated by <span class="slot">[legalName]</span>, <span class="slot">[address]</span>, <span class="slot">[registrationNumber]</span>.</p></div></div></div></div><div class="side"><div><h3>Build</h3><dl class="spec"><dt>Template</dt><dd><code>emails/plan-cancelled.tsx</code> · <code>S3</code></dd><dt>Trigger</dt><dd><code>subscription.cancelled</code>, once, with the total refunded; the confirmation on a durable medium for the cancel page (§312k, Art. 11a).</dd></dl></div></div></div>
+<p class="page-label" aria-hidden="true">B3 for a plan order · the one added line (B2 and B4 alike)</p>
+<div class="row"><div class="mx"><dl class="mail-h"><div><dt>From</dt><dd>Flowers Overseas &lt;<code>EMAIL_FROM</code>&gt;</dd></div><div><dt>To</dt><dd>a•••@example.com (the buyer)</dd></div><div><dt>Subject</dt><dd class="subj"><span class="slot">[slot] B3 subject, unchanged</span></dd></div><div><dt>Preview</dt><dd class="pre"><span class="slot">[slot] B3 preview, unchanged</span></dd></div></dl><div class="em"><div class="em-card" lang="en-GB" dir="ltr"><div class="em-top"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wm">Flowers Overseas</span><span class="aud"></span></div><div class="em-body"><p class="em-eyebrow">Order <span class="num">FO-3H8N-6TZB</span></p><h1><span class="slot">[slot] B3 heading, unchanged</span></h1><p class="em-box">Delivery 4 of 6 of your monthly flowers.</p><p class="sub">The rest of B3 as <code>email-buyer-*</code> draws it.</p></div><div class="em-foot"><p>We send flowers across Europe. You order from us; our florist in the recipient’s town makes the bouquet and hands it over in person.</p><p class="help"><b>Help &amp; WhatsApp</b> <span class="num">+1 (213) 592-5150</span>. Message us any time, 24/7. We reply within a few hours.</p><p>Operated by <span class="slot">[legalName]</span>, <span class="slot">[address]</span>, <span class="slot">[registrationNumber]</span>.</p></div></div></div></div><div class="side"><div><h3>Build</h3><dl class="spec"><dt>Change</dt><dd>B2, B3 and B4 for a plan order (<code>order.funding = ’subscription’</code>) gain this line from the delivery’s <code>seq</code> and the plan’s <code>deliveries_total</code>, ICU plural (<code>pl</code> one, few, many, other). B4 for the last delivery reads “Delivery 6 of 6” (Q12).</dd></dl></div></div></div>
+</div>
+</x-dc>
+</body>
+</html>
