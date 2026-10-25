@@ -37,6 +37,7 @@ const LISTING = "/en-gb/poland/flowers";
 const HOME = "/en-gb";
 const PDP = "/en-gb/poland/product/amber-hour";
 const DESKTOP = { width: 1440, height: 900 } as const;
+const LAPTOP = { width: 1280, height: 800 } as const;
 const PHONE = { width: 390, height: 844 } as const;
 
 /** What the init script leaves on `window` for each document. */
@@ -239,10 +240,13 @@ function expectBox(actual: Box, expected: Box, label: string): void {
 }
 
 test.describe("T-7 / AC-7: a card's photograph flies into the hero", () => {
-  for (const path of [LISTING]) {
-    test(`${path} at 1440 × 900: the third card`, async ({ page }) => {
-      await page.setViewportSize(DESKTOP);
-      await page.goto(path);
+  // AC-7's 1440 × 900, and the laptop band's 1280 × 800, where the hero's width is computed anew.
+  for (const viewport of [DESKTOP, LAPTOP]) {
+    test(`${LISTING} at ${String(viewport.width)} × ${String(viewport.height)}: the third card`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(LISTING);
       await motionsReady(page);
       expect(await revealed(page)).toBe(false);
       await recordSwap(page);
