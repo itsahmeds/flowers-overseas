@@ -165,6 +165,8 @@ describe("the sections (AC-96's unit half)", () => {
       ["/en/choose-country/price/high", "Higher prices"],
     ]);
     expect(text(html)).not.toMatch(/\d/u);
+    // The board's eyebrow and heading: "By price", then "Shop by price" (`home.price.heading`).
+    expect(text(html).startsWith("By price Shop by price ")).toBe(true);
   });
 });
 

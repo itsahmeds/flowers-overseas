@@ -108,9 +108,9 @@ export function HomeHero({
       aria-labelledby="hero-heading"
       data-fo-hero=""
     >
-      <div className="grid grid-cols-1 items-start gap-y-[6px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-y-[6px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)]">
         <div
-          className="grid gap-[6px] md:col-span-7 md:gap-[14px]"
+          className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-[6px] md:col-span-7 md:gap-[14px]"
           data-fo-hero-copy=""
         >
           <Eyebrow className="m-0 max-md:hidden">

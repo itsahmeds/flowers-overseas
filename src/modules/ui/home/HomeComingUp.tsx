@@ -7,7 +7,9 @@
  * products carry, earliest first. Each: its name linking the occasion hub (a country-less page, a
  * plain link; text where no hub exists), its earliest date (`formatDate`), the shop countries that
  * keep it on that date (`Intl.ListFormat`, at most two names, then `home.comingUp.more`), and up to
- * three country-less cards. With no qualifying occasion the section is absent: no heading, no gap.
+ * three country-less cards, on the occasion panels' four-column grid (the board draws this layout
+ * only in a narrow state cell; the four columns keep its cards the size of the tabs' cards). With
+ * no qualifying occasion the section is absent: no heading, no gap.
  *
  * The eyebrow is `nav.mega.comingUp` ("Coming up"), the heading the reviewed `home.dates.heading`.
  */
@@ -93,7 +95,7 @@ export function HomeComingUp({
               cards={occasion.cards}
               locale={locale}
               name={{ label: name }}
-              columns="three"
+              columns="four"
               section={`coming-up-${occasion.key}`}
             />
           </div>

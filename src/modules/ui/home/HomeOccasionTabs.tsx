@@ -67,7 +67,7 @@ export function HomeOccasionTabs({
         {occasions.map((occasion, index) => (
           <label
             key={occasion.key}
-            className="bg-card text-ink text-ui has-checked:bg-selected has-checked:text-on-selected inline-flex min-h-(--target-min) flex-none cursor-pointer items-center gap-[8px] rounded-full px-[18px] font-bold shadow-[inset_0_0_0_1px_var(--color-rule)] has-checked:shadow-none has-focus-visible:[outline:var(--focus-ring)] has-focus-visible:outline-offset-2"
+            className="bg-card text-ink text-ui has-checked:bg-selected has-checked:text-on-selected relative inline-flex min-h-(--target-min) flex-none cursor-pointer items-center gap-[8px] rounded-full px-[18px] font-bold shadow-[inset_0_0_0_1px_var(--color-rule)] has-checked:shadow-none has-focus-visible:[outline:var(--focus-ring)] has-focus-visible:outline-offset-2"
           >
             <input
               className="sr-only"

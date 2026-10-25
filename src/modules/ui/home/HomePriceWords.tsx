@@ -6,14 +6,14 @@
  * amounts are a country's (`priceBands()`, spec 008's amendment), and no country is chosen here.
  * Each is a chooser link, `next=price/{band}`, `rel="nofollow"`. No cards in this section.
  *
- * The heading is `nav.mega.byPrice` ("By price"), the menu's own word for the same entry: the
- * board's "Shop by price" heading is a `[slot]` with no key, proposed to the founder's copy batch
- * (`docs/tasks/TASK-387.md`, "Escalations").
+ * The eyebrow is `nav.mega.byPrice` ("By price"), the menu's own word for the same entry; the
+ * heading, the board's keyless `[slot]` "Shop by price", is the new `home.price.heading`, shipped
+ * `reviewed: false` for the founder's copy batch (`docs/tasks/TASK-387.md`, "Escalations").
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Display } from "../primitives/typography.tsx";
+import { Display, Eyebrow } from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_V3_SECTION } from "./HomeHero.tsx";
 import type { HomeView } from "./home-view.ts";
@@ -39,14 +39,17 @@ export function HomePriceWords({ bands }: HomePriceWordsProps): ReactElement {
       aria-labelledby={HEADING_ID}
       data-fo-home-section="price"
     >
-      <Display as="h2" id={HEADING_ID} size="2xl" className="m-0 mb-[18px]">
-        {t("nav.mega.byPrice")}
-      </Display>
+      <div className="mb-[18px]">
+        <Eyebrow className="mb-[8px] text-xs">{t("nav.mega.byPrice")}</Eyebrow>
+        <Display as="h2" id={HEADING_ID} size="2xl" className="m-0">
+          {t("home.price.heading")}
+        </Display>
+      </div>
       <ul className="m-0 flex list-none flex-wrap gap-[12px] p-0">
         {bands.map((band) => (
           <li key={band.band}>
             <a
-              className="text-ink text-ui inline-flex min-h-(--control-sm) items-center rounded-full px-[20px] font-bold whitespace-nowrap no-underline shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
+              className="text-ink text-ui inline-flex min-h-(--control-sm) items-center rounded-full px-[20px] font-bold whitespace-nowrap underline shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
               href={band.href}
               rel="nofollow"
               data-fo-price-band={band.band}
