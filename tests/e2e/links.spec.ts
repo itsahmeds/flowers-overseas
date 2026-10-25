@@ -33,6 +33,8 @@ import { SITE_LINKS, type SiteLink, isPublished } from "@/config/site-links";
 // build. `routing.ts` is the URL builder and imports only the registry.
 import { localePath, shownLocales } from "@/modules/i18n/routing";
 
+import { CORE_RANGE_TODAY } from "../support/home-today.ts";
+
 /**
  * The four launch locales, restated the way every other spec in this directory restates them
  * (`tests/e2e/footer.spec.ts`): a rename should show up as a diff here, not be absorbed.
@@ -311,7 +313,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       // Popular choices (v3, AC-95): the whole core range, each card a chooser link, then See all.
       await expect(
         page.locator('[data-fo-home-section="selection"] article a[href]'),
-      ).toHaveCount(10);
+      ).toHaveCount(CORE_RANGE_TODAY.length);
 
       // Every `<a>` in the four chrome regions has a target, and every internal one answers 200.
       const hrefs = new Set<string>();
@@ -332,13 +334,20 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         }
       }
       // Exactly: the header's eight (the footer's two are among them), the header's Basket link
-      // (TASK-349), five products, the lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
+      // (TASK-349), Popular choices' ten chooser links and its See all (v3, TASK-386), the
+      // lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
       // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
       // four trust pages and two legal pages. A further control is a diff here.
       const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
       expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
       expect(hrefs.size).toBe(
-        8 + 1 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0),
+        8 +
+          1 +
+          CORE_RANGE_TODAY.length +
+          1 +
+          1 +
+          siblings +
+          (hasTrustPages ? 6 : 0),
       );
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);

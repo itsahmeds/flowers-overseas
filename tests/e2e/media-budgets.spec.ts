@@ -31,6 +31,14 @@ import { expect, test } from "@playwright/test";
 /** Spec 006 §2.5 and spec 004 AC-24: the whole-page image budget. */
 const PAGE_IMAGE_BUDGET_BYTES = 204_800;
 
+/**
+ * Spec 004 AC-94 (A-founder-2026-10-24a; TASK-386): the v3 home shows the whole core range, every
+ * occasion panel and "Coming up" as photographs, so its budget is the **first screen's** image
+ * transfer, 307,200 B, with everything below it lazy; spec 006 AC-15's whole-page 204,800 B after
+ * a full scroll cannot hold there (recorded in `docs/tasks/TASK-386.md`, "Escalations").
+ */
+const HOME_FIRST_SCREEN_BUDGET_BYTES = 307_200;
+
 /** Spec 006 §2.5: the hero LCP candidate at the mobile width. */
 const HERO_BUDGET_BYTES = 90_000;
 
@@ -51,6 +59,7 @@ interface ImageTransfer {
 async function measureImages(
   page: import("@playwright/test").Page,
   path: string,
+  { scroll = true }: { readonly scroll?: boolean } = {},
 ): Promise<ImageTransfer> {
   const byUrl = new Map<string, number>();
   page.on("response", (response) => {
@@ -67,11 +76,13 @@ async function measureImages(
   });
 
   await page.goto(path, { waitUntil: "networkidle" });
-  // Everything below the fold, then settle: the honest worst case (see the header).
-  await page.evaluate(() => {
-    window.scrollTo(0, document.body.scrollHeight);
-  });
-  await page.waitForLoadState("networkidle");
+  if (scroll) {
+    // Everything below the fold, then settle: the honest worst case (see the header).
+    await page.evaluate(() => {
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+    await page.waitForLoadState("networkidle");
+  }
 
   let total = 0;
   let largest = 0;
@@ -84,10 +95,10 @@ async function measureImages(
 
 test.describe("image transfer stays inside the page budget (AC-15)", () => {
   for (const path of PAGES) {
-    test(`${path} transfers no more than 204 800 B of images`, async ({
+    test(`${path} transfers no more than 307 200 B of images on its first screen (AC-94)`, async ({
       page,
     }) => {
-      const measured = await measureImages(page, path);
+      const measured = await measureImages(page, path, { scroll: false });
 
       // The page must actually be showing photographs, or the budget is trivially met by a page
       // that shows none — which is exactly the state this task replaced.
@@ -104,16 +115,17 @@ test.describe("image transfer stays inside the page budget (AC-15)", () => {
       expect(
         measured.total,
         `${path}: ${String(measured.total)} B of images\n${breakdown}`,
-      ).toBeLessThanOrEqual(PAGE_IMAGE_BUDGET_BYTES);
+      ).toBeLessThanOrEqual(HOME_FIRST_SCREEN_BUDGET_BYTES);
     });
   }
 
   test("the hero LCP candidate is inside its own share of the budget", async ({
     page,
   }) => {
-    const measured = await measureImages(page, "/en");
-    // The largest single image on the page is the hero band — the one eager, `fetchpriority=high`
-    // request — and §2.5 caps it at 90 000 B at the mobile width. Asserting the *largest* rather
+    const measured = await measureImages(page, "/en", { scroll: false });
+    // The largest single image on the first screen is the LCP candidate (the hero band from `md`,
+    // the first card below it, TASK-386): the one eager, `fetchpriority=high` request, and §2.5
+    // caps it at 90 000 B at the mobile width. Asserting the *largest* rather
     // than looking the hero up by URL keeps the assertion true when the loader origin changes.
     expect(
       measured.largest,

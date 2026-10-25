@@ -98,7 +98,7 @@ export function HomeOccasionTabs({
           {occasion.hubHref === undefined ? null : (
             <div className="mt-[24px]">
               <a
-                className="text-link text-ui font-bold underline decoration-[1.5px] underline-offset-[5px]"
+                className="text-link text-ui inline-flex min-h-[24px] items-center font-bold underline decoration-[1.5px] underline-offset-[5px]"
                 href={occasion.hubHref}
                 data-fo-see-all={`occasion-${occasion.key}`}
               >
