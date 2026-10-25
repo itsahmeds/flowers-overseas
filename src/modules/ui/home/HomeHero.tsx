@@ -19,6 +19,10 @@
  * The photograph is the page's `priority` image from `md` up only (`displayedAt="md-up"`, its
  * preload carrying that `media`); below `md` the first product card's photograph is
  * (`HomeSelection`), so the two preloads never overlap (AC-94).
+ *
+ * The phone H1 is the board's 32 px with `7.95vw` as its ceiling, 31 px at 390: the one-line H1 the
+ * board draws at 390 fills 345 of its 350 px on macOS and wrapped on the Linux runner, so the
+ * ceiling keeps it on one line on both.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
@@ -120,7 +124,7 @@ export function HomeHero({
             as={headingLevel}
             id="hero-heading"
             size="hero"
-            className="m-0 text-[32px] leading-[1.04] tracking-[-0.025em] [font-variation-settings:var(--font-variation-display-hero)] md:text-[56px] md:leading-none max-[390px]:[&_em]:block max-[390px]:[&_em]:w-fit"
+            className="m-0 text-[clamp(26px,7.95vw,32px)] leading-[1.04] tracking-[-0.025em] [font-variation-settings:var(--font-variation-display-hero)] md:text-[56px] md:leading-none max-[390px]:[&_em]:block max-[390px]:[&_em]:w-fit"
           >
             {t.rich("home.hero.heading", HERO_HEADING_EM)}
           </Display>
