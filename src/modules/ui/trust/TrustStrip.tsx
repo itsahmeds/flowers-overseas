@@ -3,11 +3,11 @@
  * "Trust strip", §5.3, §8, §14 **A5**, **AC-10**, **AC-15**; `plan/04` §3 §12, `plan/07` §4;
  * TASK-053).
  *
- * §2 fixes both the count and the content: *"server-rendered text, three claims only, each true
- * today — the guarantee (A6 default: '7-day freshness guarantee · redeliver or refund'),
- * 'Hand-made by a local florist', 'Price includes delivery and VAT'. No Trustpilot line, no
- * delivery-photo claim on a page with no photos, no florist count with no florists."* That is
- * exactly what renders, in the first person of §14 A5.
+ * §2 fixes both the count and the content: server-rendered text, three claims only, each true
+ * today: the guarantee (the fresh-flower promise, which names no number of days since spec 009
+ * §14 A11 retired A6's default), 'Hand-made by a local florist' and 'Price includes delivery and
+ * VAT'; no Trustpilot line, no delivery-photo claim on a page with no photos, no florist count
+ * with no florists. That is exactly what renders, in the first person of §14 A5.
  *
  * **The guarantee's name is its own key, `trust.guarantee.name`.** §13 Q4 leaves the name and its
  * terms open for the founder and the lawyer; keeping the *name* in one key means a rename is a
