@@ -21,11 +21,13 @@ import { describe, expect, it } from "vitest";
 import {
   type MegaMenuData,
   chooseSegment,
-  committedMegaMenuData,
   megaMenuModel,
   parseChooserPath,
   shopCountries,
 } from "../../src/modules/catalog/index.ts";
+// The committed inputs are not on the barrel (it exports no object that reads a provider, AC-2);
+// the test reads them where they live to build its fixtures from the real ones.
+import { committedMegaMenuData } from "../../src/modules/catalog/mega-menu.ts";
 import {
   type MegaMenuModel,
   panelEntries,

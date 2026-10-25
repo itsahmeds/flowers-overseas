@@ -27,12 +27,18 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
+- **From the implementer (2026-10-25), left for the finisher of this PR:** (1) the e2e and a11y specs that pin the old row (`tests/e2e/header.spec.ts`, `header-in-context.spec.ts`, `links.spec.ts`, `chrome-honesty.spec.ts`, `phone-chrome.spec.ts`, `deferred-chunks.spec.ts`, `frame-laptop-band.spec.ts`, `head-dash-scan.spec.ts`, `home.spec.ts`, `home-v3.spec.ts`, `motion.spec.ts`, `product-v3.spec.ts`, `tests/a11y/home.spec.ts`) still look for `data-fo-header-item`, `data-fo-menu-item` and the Send pill; rewrite each against `megaMenuModel()` (AC-99, AC-101's keyboard half, AC-102, AC-104) and then delete `tests/fixtures/header/out-of-context-hrefs.json`; (2) AC-103's Brotli byte test of header plus Menu (render `SiteHeader` with the `en` model and a country listing's, `brotliCompressSync`, at most 6,144 B) is not written; (3) the home's phone round links (item 4, AC-104's last clause) are not built: the media manifest has no 144 px variant (smallest is 384 px, 10 to 23 KB), so AC-104's 6,144 B per image needs a pipeline variant first (a new row for spec 006); (4) the dead header registry (the `category-row-*` site links, `src/config/categories.ts`, `headerCategoryItems`, `inContextListingHrefs`, `destinationShopLinks`) is no longer drawn and can be deleted with its tests; (5) `DEMO_DESTINATION_ISO2` stays in `src/config/site-links.ts` for its two remaining readers (`TrendingRow`, the home's shop link), which TASK-386 replaces; whoever removes the last reader deletes it; (6) the Destinations panel's "grouped by region past 12 entries" is not built (7 today); (7) in-context featured cards render the listing card's default-tier price, as country listings do today; "from" with the smallest size and the equivalents line arrive with TASK-389 for both; (8) screenshots at 1440, 1280 and 390 against the boards are not taken yet.
+
 - **From `/plan-tasks` (orchestrator, 2026-10-24), keyless strings:** the boards mark several strings `[slot]` with no message key. Do not invent a key or text: list each one this PR needs, with a proposed key and text, in the PR and here as an escalation for the founder's copy batch.
 - **From `/plan-tasks` (orchestrator, 2026-10-24), board escalations of PR 372:** the For whom label for "a loved one" fails the voice scan (it is a `[slot]`; use only the spec's `nav.mega.recipient.*` keys); the Destinations panel's "Ordering open" group keys on `deliveryDatesOpen`, never on a status string.
 
 ## Escalations
 
 - **2026-10-24, the colour shape** (`open`): see TASK-381; colour entries use the colour's category hub key where one exists, else the shop root, as the spec says.
+- **2026-10-25, copy headroom trips** (`open`, founder): the 24 new keys (`nav.mega.*` 19, `shop.price.choose`, `shop.cta.chooseCountry`, `shop.price.bandWord.low/mid/high`), all from the amendment's i18n table, ship `reviewed: false`. `i18n:check`'s share: `en` 4.4% and `en-gb` 4.6% before, 8.3% and 8.4% after, so English is `noindex` on this branch and about 70 unit/contract cases that pin English as indexable go red (sitemaps, hreflang, PDP schema, indexability). They turn green when the founder records approval of the 24 keys on the branch (`record-approval`); nothing else is needed for them. The PR cannot merge before that.
+- **2026-10-25, the partner label** (`open`, founder): `nav.mega.recipient.partner` ("For your partner") fails the voice scan (`src/config/voice.ts`); the board draws it as a `[slot]`. `RECIPIENT_GROUPS` holds the other four; the partner group (to `romance`) is one line once the founder gives wording. Proposed key `nav.mega.recipient.partner`, text for the founder to choose.
+- **2026-10-25, By price in context** (`open`, designer): the spec's table says By price has no featured card; the board's frame 12 draws one in context. Built as the spec says (none).
+- **2026-10-25, the stack** (`open`, orchestrator): the work order said "build on main", but `megaMenuModel()` needs TASK-381's `chooserPath`, `coreRange` and `shopCountries`, so the branch is stacked on PR 412 (`task/TASK-381-commerce-foundation`), as TASK-385 is; the PR's base is that branch until 412 merges.
 
 ## Progress
 
@@ -40,7 +46,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25 (implementer): branch stacked on PR 412. Done: `src/config/mega-menu.ts` (`RECIPIENT_GROUPS`, panel keys), `megaMenuModel()` in `src/modules/catalog/mega-menu.ts` with its data seam, the model schema in `src/modules/ui/layout/mega-model.ts`, `MegaMenu.tsx` (six `<details name="fo-mega">` panels, featured cards, phone accordions), `SiteHeader` and `MenuSheet` rewired (no Send pill, 76 px row from `xl`, 64 + 48 px rows from `md`), the `@header` slot passing the route's model, the panel image cap (`maxWidth` 384 in `resolveMedia`), 24 new keys `reviewed: false`, pinned model tables for `en`, `en-gb` and every shop country. Unit tests green for the files touched: `catalog-mega-menu`, `ui-site-header`, `ui-phone-chrome`, `header-slot`, `motion-markup`, both barrels. Next: the carry-forwards above (e2e rewrite, AC-103 bytes, round links, screenshots), then the founder's copy approval.
 
 ## Result
 

@@ -27,14 +27,12 @@ import { describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import { COMPANY } from "../../src/config/company.ts";
-import { listingAlternatePaths } from "../../src/modules/catalog";
+import { megaMenuModel } from "../../src/modules/catalog";
 import { loadMessages, localePath } from "../../src/modules/i18n";
 import {
-  type HeaderListingHrefs,
-  headerCategoryItems,
-  headerListingTargets,
-  headerSendHref,
-} from "../../src/modules/ui/layout/header-model.ts";
+  type MegaMenuModel,
+  panelEntries,
+} from "../../src/modules/ui/layout/mega-model.ts";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
 import {
   Breadcrumbs,
@@ -52,25 +50,17 @@ const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 /** The locales the Menu offers: `de` and `pl` are hidden (spec 003 §14 A-founder-2026-10-14c). */
 const SHOWN: readonly string[] = ["en", "en-gb"];
 
-async function listingHrefsFor(
-  locale: (typeof LOCALES)[number],
-): Promise<HeaderListingHrefs> {
-  const entries = await Promise.all(
-    headerListingTargets().map(
-      async ({ id, identity }) =>
-        [
-          id,
-          (await listingAlternatePaths({ ...identity, locale }))[locale],
-        ] as const,
-    ),
-  );
-  return Object.fromEntries(entries.filter(([, path]) => path !== undefined));
-}
-
-const HREFS: Record<string, HeaderListingHrefs> = Object.fromEntries(
+/** The mega menu each locale's header draws out of context, built once with a fixed clock. */
+const MENUS: Record<string, MegaMenuModel> = Object.fromEntries(
   await Promise.all(
     LOCALES.map(
-      async (locale) => [locale, await listingHrefsFor(locale)] as const,
+      async (locale) =>
+        [
+          locale,
+          await megaMenuModel(locale, null, {
+            now: new Date("2026-10-25T09:00:00Z"),
+          }),
+        ] as const,
     ),
   ),
 );
@@ -85,19 +75,33 @@ function renderHeader(locale: string): string {
         "a11y",
         "common",
         "consent",
+        "catalog",
+        "shop",
+        "destinations",
+        "media",
       ])}
       timeZone="UTC"
     >
-      <SiteHeader locale={locale} listingHrefs={HREFS[locale] ?? {}} />
+      <SiteHeader
+        locale={locale}
+        megaMenu={MENUS[locale] ?? { context: null, panels: [] }}
+      />
     </NextIntlClientProvider>,
   );
 }
 
-/** The `<details data-fo-menu>` element, whole. */
+/** The `<details data-fo-menu>` element, whole (it nests the six accordions, so by depth). */
 function menuOf(html: string): string {
-  const match = /<details[^>]*\sdata-fo-menu=""[\s\S]*?<\/details>/u.exec(html);
-  if (match === null) throw new Error("no Menu in the header");
-  return match[0];
+  const start = html.search(/<details[^>]*\sdata-fo-menu=""/u);
+  if (start === -1) throw new Error("no Menu in the header");
+  const tags = /<details\b|<\/details>/gu;
+  tags.lastIndex = start;
+  let depth = 0;
+  for (let match = tags.exec(html); match !== null; match = tags.exec(html)) {
+    depth += match[0] === "</details>" ? -1 : 1;
+    if (depth === 0) return html.slice(start, match.index + match[0].length);
+  }
+  throw new Error("the Menu's <details> never closes");
 }
 
 /** The opening tag that contains `marker`. */
@@ -135,13 +139,12 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
     );
   });
 
-  it("leaves the logo and the summary as the only controls below `md`: the strip, the row and the pill are `max-md:hidden`", () => {
+  it("leaves the logo and the summary as the only controls below `md`: the strip and the item row are `max-md:hidden`", () => {
     for (const locale of LOCALES) {
       const html = renderHeader(locale);
       for (const marker of [
         "data-fo-utility",
         'data-fo-header-band="categories"',
-        `href="${headerSendHref(locale)}"`,
       ]) {
         expect(
           classOf(tagWith(html, marker)).split(" "),
@@ -155,31 +158,52 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
     }
   });
 
-  it("holds the header's published links, in the row's order, each 52 px", () => {
+  it("holds the six items as accordions with the desktop panels' entries, in order, and no image (AC-104)", () => {
     for (const locale of LOCALES) {
-      const menu = menuOf(renderHeader(locale));
-      const items = [
-        ...menu.matchAll(/<a\s[^>]*data-fo-menu-item="([^"]*)"[^>]*>/g),
-      ];
-      expect(
-        items.map((match) => match[1]),
-        locale,
-      ).toEqual(
-        headerCategoryItems(locale, HREFS[locale] ?? {}).map(({ id }) => id),
+      const html = renderHeader(locale);
+      const menu = menuOf(html);
+      const model = MENUS[locale];
+      expect(model?.panels.length, locale).toBe(6);
+      const accordions = [
+        ...menu.matchAll(/<details[^>]*data-fo-menu-accordion="([^"]*)"/g),
+      ].map((match) => match[1]);
+      expect(accordions, locale).toEqual(
+        model?.panels.map((panel) => panel.id),
       );
-      for (const match of items) {
-        expect(match[0], `${locale} ${match[1] ?? ""}`).toContain(
-          "min-h-[52px]",
+      // Every accordion closed on the server; each opens with JavaScript off.
+      expect(menu, locale).not.toMatch(/<details[^>]*\sopen[\s=>]/u);
+      // The entries equal the desktop panels' on the same page, in the same order.
+      const entries = (markup: string): string[] =>
+        [...markup.matchAll(/data-fo-mega-entry="([^"]*)"/g)].map(
+          (match) => match[1] ?? "",
         );
-      }
+      const desktop = html.slice(
+        html.search(/<nav[^>]*data-fo-mega-context=/u),
+        html.search(/<details[^>]*\sdata-fo-menu=""/u),
+      );
+      expect(entries(menu), locale).toEqual(entries(desktop));
+      expect(entries(menu), locale).toEqual(
+        (model?.panels ?? []).flatMap((panel) =>
+          panelEntries(panel).map((entry) => entry.id),
+        ),
+      );
+      // No image in the Menu: no `<img>`, no `<picture>`, no featured card.
+      expect(menu, locale).not.toMatch(
+        /<img\b|<picture\b|data-fo-mega-featured/u,
+      );
+      // The accordions follow the summary and lead the panel, before the switcher.
+      expect(menu.indexOf("data-fo-mega-accordions"), locale).toBeLessThan(
+        menu.indexOf("data-fo-menu-switcher"),
+      );
     }
   });
 
-  it("holds Send flowers, the shown locales' switcher as spec 003 renders it, the currency chip and the help line", () => {
+  it("holds the shown locales' switcher as spec 003 renders it, the currency chip and the help line", () => {
     for (const locale of LOCALES) {
       const menu = menuOf(renderHeader(locale));
       const hrefs = hrefsOf(menu);
-      expect(hrefs, locale).toContain(headerSendHref(locale));
+      // Spec 004 §14 A-founder-2026-10-24a item 5 (Q-24d): no Send flowers in the Menu.
+      expect(hrefs, locale).not.toContain(`${localePath(locale, "home")}#send`);
       // Spec 041 §14 A-founder-2026-10-14d (AC-34): the help line opens WhatsApp, never `tel:`.
       expect(hrefs, locale).toContain(
         `https://wa.me/${COMPANY.contact.phoneE164.slice(1)}`,
@@ -229,8 +253,13 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
         /<(?:a\s[^>]*|[a-z]+\s[^>]*aria-current="[^"]*"[^>]*)>/gu,
       ),
     ].map((match) => ({ tag: match[0], at: match.index }));
-    // Eight links, Send, one sibling shown locale, the current locale, the help line.
-    expect(elements).toHaveLength(8 + 1 + 1 + 1 + 1);
+    // Every menu entry (all links out of context), one sibling shown locale, the current locale,
+    // the help line.
+    const entries = (MENUS.en?.panels ?? []).flatMap((item) =>
+      panelEntries(item),
+    );
+    expect(entries.every((entry) => entry.kind !== "facet")).toBe(true);
+    expect(elements).toHaveLength(entries.length + 1 + 1 + 1);
     expect(
       elements.filter(({ tag }) => tag.includes('href="https://wa.me/')),
     ).toHaveLength(1);

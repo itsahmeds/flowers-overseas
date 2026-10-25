@@ -154,7 +154,30 @@
       "label": "Prices shown in {currency}"
     },
     "send": "Send flowers",
-    "basketCount": "{count, plural, one {Basket, # bouquet} other {Basket, # bouquets}}"
+    "basketCount": "{count, plural, one {Basket, # bouquet} other {Basket, # bouquets}}",
+    "mega": {
+      "flowers": "Flowers",
+      "plantsGifts": "Plants & gifts",
+      "byPrice": "By price",
+      "byType": "By type",
+      "byFlower": "By flower",
+      "byColour": "By colour",
+      "everyDay": "Every day",
+      "forWhom": "For whom",
+      "comingUp": "Coming up",
+      "allFlowers": "All flowers",
+      "allOccasions": "All occasions",
+      "extras": "Extras you can add",
+      "open": "Ordering open",
+      "soon": "Opening soon",
+      "allDestinations": "All destinations",
+      "recipient": {
+        "mum": "For mum",
+        "grandparents": "For grandparents",
+        "newParents": "For new parents",
+        "colleague": "For a colleague"
+      }
+    }
   },
   "footer": {
     "group": {
@@ -771,6 +794,17 @@
     },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."
+    },
+    "price": {
+      "choose": "Choose a country to see the price",
+      "bandWord": {
+        "low": "Lower prices",
+        "mid": "Middle prices",
+        "high": "Higher prices"
+      }
+    },
+    "cta": {
+      "chooseCountry": "Choose where to send"
     }
   },
   "categoryHub": {

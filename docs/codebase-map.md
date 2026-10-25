@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +98 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +100 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +7 |
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
@@ -26,7 +26,7 @@ task actually touches.
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
 | `search` | The only import path into the search module: site… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +61 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +62 |
 
 ## Config (`src/config/`)
 
@@ -62,6 +62,7 @@ task actually touches.
 | `locales-client.data.ts` | The few locale values the browser needs, and nothing… | 003 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free… | 004 |
 | `locales.ts` | Locale registry | 003 |
+| `mega-menu.ts` | The mega menu's shape as config (spec 004 §14… | 004 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004 §2… | 004 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything… | 004 |
 | `search.ts` | Site search's numbers and word lists | 045 |
@@ -222,14 +223,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 387 |
+| `tests/unit/` | 388 |
 | `tests/integration/` | 48 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 71 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 354 |
+| `tests/fixtures/` | 363 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
