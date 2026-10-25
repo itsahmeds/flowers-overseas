@@ -381,7 +381,7 @@ describe.skipIf(server.url === undefined)(
             ),
           });
         const config = {
-          secretKey: "sk_test_placeholder",
+          secretKey: "sk_test_contract_emulated",
           webhookSecret: "fake_whsec_contract",
           livemode: false,
           enqueue: () => Promise.resolve(),
@@ -422,7 +422,7 @@ describe.skipIf(server.url === undefined)(
         const fake = newFake();
         await fake.simulateEvent("payment_intent.processing", "wh_pi_rp", T0);
         const config = {
-          secretKey: "sk_test_placeholder",
+          secretKey: "sk_test_contract_emulated",
           webhookSecret: "fake_whsec_contract",
           livemode: false,
           enqueue: () => Promise.resolve(),
