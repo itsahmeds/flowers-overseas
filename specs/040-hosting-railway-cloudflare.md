@@ -1385,6 +1385,9 @@ The probes are what make the case bite: with the bypass rule removed, the probes
 Merge note: PR 180 adds A7 after A6 in this section and this amendment sits after A6 too. Whichever merges second keeps both, A7 before this one; neither text changes.
 Raised by: TASK-101 E-7 (2026-10-14); ruled by the founder the same day.
 
+**A-orchestrator-2026-10-25 (pointer; spec 018 §14 A-founder-2026-10-25a S.12, approved 2026-10-25; §14 A7's rate limit; §9 AC-17, AC-21; no new AC or T id).**
+The two buyer sign-in provider callbacks, `GET /api/auth/buyer/callback/google` and `POST /api/auth/buyer/callback/apple`, are left out of the edge rate-limit rule (A7 E-2), whose expression becomes `starts_with(http.request.uri.path, "/api/") and not (http.request.uri.path in {"/api/auth/buyer/callback/google" "/api/auth/buyer/callback/apple"})`, and no Cloudflare feature may challenge or block them (Bot Fight Mode stays off, AC-17). Apple's callback is a cross-site form `POST` from the buyer's browser, and a challenge or a 429 there ends the sign-in with no way back; the routes' own protection is `state`, PKCE and `nonce`. They stay under the `/api/` cache bypass (AC-16). The start action, a server action on the page, keeps spec 018 C.4's app-level limit. AC-21 reads with the two paths excepted, and T-21 gains one case: 20 `POST`s to the Apple callback path from one IP within 10 s are never answered 429 by the edge.
+
 ## 15. Task estimate (input to `/plan-tasks`)
 
 Eight one-day tasks. Dependencies in brackets; tasks 3 and 4 are independent of each other, and 6

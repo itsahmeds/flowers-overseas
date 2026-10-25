@@ -317,6 +317,17 @@ Each has a recommended default; "048 defaults" accepts all of them.
 - Fleurop Switzerland B2B: team account, 5 % discount, corporate (branded) flowers, subscriptions, large orders. https://b2b.fleurop.ch/en/s/how-fleurop-works
 - Conclusion: the minimum all of them share is a business page plus a human contact route; invoicing, accounts and bulk tools are layered on for repeat customers, which is why this spec builds the first and specifies the second as slice B defaults.
 
+## 15. Amendments (post-approval corrections)
+
+**A-orchestrator-2026-10-25 (pointer and reading; no new AC or T id): the first-screen action's label, the order of the first blocks, the artboard names (§2 "Blocks, in this order" and "Gates, docs, artboards"; §5.3; Appendix A).**
+**Status: binding as a reading of the design** (PR 427: `wireframes/business-page-desktop.dc.html` and `-mobile`); on layout the design leads (the orchestrator's work order of 2026-10-25).
+
+1. **The first-screen action (design gap B2).** The H1's one call to action is a link to the form (`#enquiry`) whose label is Appendix A's form heading, "Tell us what you need", rendered from the same key as the form's heading; no new key. It is in the founder's copy batch with the rest of Appendix A.
+2. **The order of the first blocks (design gap B5).** In document order: the H1, the intro, the action, "how it works for a company today", "what companies send us for", where we deliver, what you can expect from us, the FAQ, the form, talk to us directly. On desktop "how it works" sits in the first screen, in the head's second column beside the H1, so a buyer with one or two gifts is answered first; on the phone it follows the action in one column. §2's list, which put "what companies send us for" before "how it works", is superseded on that point only.
+3. **Artboard names (design gap B3).** The artboards are desktop and mobile pairs, `business-page-*`, `business-sent-*` and `admin-business-enquiries-*`, under `docs/design/README.md`'s rule; §2 "Gates, docs, artboards" reads so.
+
+Raised by: the orchestrator's work order of 2026-10-25 (section J), from design PR 427's gaps; written by the spec writer. Cites §2, §5.3, Appendix A.
+
 ## Appendix A: English copy for the founder's batch (proposed, `reviewed: false`)
 
 - H1: "Flowers for your team and clients abroad"
