@@ -20,7 +20,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
-_None yet._
+- **From self-review (2026-10-25), for TASK-117 / the indexing flip (TASK-096):** the occasions index's `reviewed` term is its message-catalogue intro (no copy row of its own), so on a deployment where a locale is indexable it is `index,follow` even while that locale's occasion names are unreviewed machine drafts. `tests/unit/i18n-fifth-locale.test.tsx` now pins the consequence: showing a reviewed `de` announces `/de/anlaesse` in `occasions.xml`. Spec 008 §6-consistent (its intro is reviewed); the head already said so before this task. Decide at the flip whether the index should also require its rows' names reviewed.
+- **For TASK-117:** spec 008 §6's hub term "links to ≥1 existing page" is not gathered by `listingView()` (pre-existing, TASK-107); the sitemap inherits whatever the head says.
+- **For TASK-117 (AC-16):** the listing hreflang clusters are not yet written into `tests/fixtures/seo/hreflang/` for `validate-hreflang`; the corridor precedent is `corridor-clusters.json`. This task proves the `<head>` cluster equals each row's `xhtml:link` set in `tests/integration/sitemap.test.ts`.
+- **Performance note:** `/sitemap.xml` computes about 0.7 s uncached (load average 1.6 when measured), served with `Cache-Control: public, max-age=3600`. The two listing children each call `listingPages(locale)`; sharing one call per locale would halve it if it ever matters.
 
 ## Escalations
 
@@ -28,9 +31,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+## Progress
+
+- 2026-10-25: worktree, row `in_progress`, draft PR #433; builders, async tree, fixtures and tests pushed; gates and mutation checks run.
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#433](https://github.com/itsahmeds/flowers-overseas/pull/433). `/sitemaps/{loc}/categories.xml` (category hubs, country shop roots, country categories) and `/sitemaps/{loc}/occasions.xml` (occasion hubs, occasions index, country occasions) are served by the existing `[locale]/[child]` route through `SITEMAP_CHILD_BUILDERS` in `src/modules/seo/sitemap/index.ts`, built by `listings.ts` from `listingPages()` (the existence set) and `listingPageIndexability()`, the verdict `listingView()` now reads too, so a row exists iff its document says `index,follow`. `<lastmod>` = max(copy row `reviewedAt`, message catalogue, price data: retail row `activeFrom` and FX `fxAsOf` on country pages). The tree is `async` from the root down. Phase 0: both children empty on every non-indexing deployment (live `flowersoverseas.com` serves an empty index today); on the canonical production deployment `en` and `en-gb` announce 13 category hubs and 22 occasion hubs + the occasions index each (fixtures regenerated; `validate-sitemap` 11 fixtures ok; `noindex.json` now lists every noindex listing URL, 962 of them). Tests: unit `seo-sitemap-listings.test.ts` (17), route/tree/fixture suites updated; integration `sitemap.test.ts` +3 (every listing row against its route's `generateMetadata`: robots, canonical, hreflang cluster equal); contract `sitemap-validator.test.ts` green over the new fixtures. No build, e2e or Lighthouse run locally (CI's).
