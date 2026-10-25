@@ -25,6 +25,7 @@ import {
   FIXTURE_DIR,
   fixturePath,
   generateSitemapFixtures,
+  noindexInfoPageUrls,
   noindexUrlSet,
   writeSitemapFixtures,
 } from "../../scripts/seo/generate-sitemap-fixtures.ts";
@@ -86,6 +87,23 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
         ),
       );
     for (const url of noindex) expect(locs).not.toContain(url);
+  });
+
+  it("lists every info page the engine serves noindex: the 14 de/pl drafts among them (spec 041 AC-23; TASK-184)", () => {
+    const info = noindexInfoPageUrls();
+    // Seven pages exist per locale before registration, and none is reviewed yet.
+    expect(info).toHaveLength(28);
+    for (const url of [
+      "https://flowersoverseas.com/de/hilfe",
+      "https://flowersoverseas.com/de/rechtliches/widerruf",
+      "https://flowersoverseas.com/pl/pomoc",
+      "https://flowersoverseas.com/pl/informacje-prawne/cookies",
+      "https://flowersoverseas.com/en/help",
+    ]) {
+      expect(info, url).toContain(url);
+      // The committed file `validate-sitemap` reads carries it too.
+      expect(noindexUrlSet(), url).toContain(url);
+    }
   });
 
   it("lists the bare origin in no sitemap and as no noindex page (spec 003 §14 A16 clause 3)", () => {

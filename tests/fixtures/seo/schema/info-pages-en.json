@@ -1,0 +1,238 @@
+{
+  "jsonld": [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/en"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "How it works"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/en"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Our guarantee"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://flowersoverseas.com/en"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Help and contact"
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How does sending flowers abroad with you work?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You order from us in your language and currency. We send your flowers: our florist in the recipient's town makes the bouquet that morning and delivers it by hand. Nothing is shipped across a border."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I order now?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Not yet. We will open one country at a time. Until then you can look around, but nothing can be paid for."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is the price final?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. The price on the product page includes VAT and delivery, and the total when you pay will be the same number. Extras are separate lines you choose."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Which currency will I pay in?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The currency shown on the page you order from, for example pounds on our UK pages. We do not add a fee for exchanging it. Your bank may charge its own fee if your card is in a different currency."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Will the bouquet look exactly like the picture?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Close, but not identical. It is made by hand from what is fresh that morning. If a flower is not available, our florist uses one of the same or higher value, style and colour, and we tell you what changed."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What if nobody is home?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our florist calls the recipient first, which is why we ask for their phone number. If the flowers cannot be handed over, we will agree a second attempt with you at no charge."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I choose a time of day?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You choose the day. Where a morning or afternoon slot is available, you see it when you order; otherwise the flowers arrive during the day."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I send flowers to a hospital or a funeral?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, with care. Many hospitals do not allow flowers on wards, so check first and give the reception's address. For a funeral, put the name of the funeral home or church and the time of the service in the note to the florist."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I cancel?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, free of charge until we start preparing your order, and we refund you in full. We start preparing your flowers on the morning of the delivery day. Your card or wallet is charged when you order. After we start, the flowers are being made for you. Fresh flowers are an exception to the usual 14-day right to cancel; our guarantee explains what we do instead."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What if something goes wrong?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Tell us. If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full. If they arrive on the wrong day, we refund you in full. Our guarantee sets out each case."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Will the recipient know who sent them?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Your name and your card message go with the bouquet. Write the message in any language; our florist prints it on our card as you wrote it."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What do you do with the recipient's details?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "We use their name, address and phone number only to deliver your gift, share them only with our florist who delivers it, and delete them once they are no longer needed. Ask us if you want to know exactly what we keep."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://flowersoverseas.com/en"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "About us"
+            }
+          ]
+        },
+        {
+          "@type": "Organization",
+          "name": "Flowers Overseas",
+          "url": "https://flowersoverseas.com",
+          "logo": "https://flowersoverseas.com/icon.svg"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/en"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Delivery and payment"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/en"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Cookies"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/en"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Withdrawal and refunds"
+        }
+      ]
+    }
+  ]
+}

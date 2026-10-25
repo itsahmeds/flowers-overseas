@@ -138,7 +138,7 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     }
   });
 
-  it("measures four homes, both hubs, one corridor, one shop root and one occasion hub per English locale, and not `/`", () => {
+  it("measures four homes, both hubs, one corridor, one shop root and one occasion hub per English locale, spec 041's three templates, and not `/`", () => {
     // AC-27 words the budget as "`/` and `/en`"; `/de` is measured too because it is the locale
     // whose catalogue is an unreviewed echo — the one whose document could differ from `/en` by
     // accident rather than by design. Spec 004 §2 extends the list to all four launch locales,
@@ -183,6 +183,13 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
       // locale each: the template is the same in `en`, and the occasion hub already measures both.
       "/en-gb/flowers/roses",
       "/en-gb/occasions",
+      // …and spec 041's three templates (AC-27, T-29; TASK-184): a trust page, the help page
+      // (twelve questions, the longest text-only document) and a legal document (the cookie
+      // register's table and the contents). Text only, no image dependency (§6 "CWV"): their LCP
+      // is a heading or a paragraph, so a regression here is a font or a script, not a photograph.
+      "/en/how-it-works",
+      "/en/help",
+      "/en/legal/cookies",
     ]);
   });
 
