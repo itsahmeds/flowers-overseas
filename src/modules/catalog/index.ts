@@ -314,7 +314,11 @@ export { listingPageTypes, listingSorts, slugKinds } from "./types";
 // variant, a slash-bearing segment or a fourth parameter is a parse failure and therefore a 404.
 // `ProductPageIdentitySchema` is the same page named by (locale, destination, SKU) — what
 // `productPageExists()` answers for.
-export type { ListingParams, ProductParams } from "./schemas";
+export type {
+  ListingParams,
+  ProductParams,
+  ProductSearchParams,
+} from "./schemas";
 export {
   CatalogueSlugSchema,
   EntityKeySchema,
@@ -324,6 +328,7 @@ export {
   ListingSortSchema,
   ProductPageIdentitySchema,
   ProductParamsSchema,
+  ProductSearchParamsSchema,
   SlugKindSchema,
 } from "./schemas";
 export { hasSlug, resolveSlug, slugFor } from "./slugs";
@@ -536,6 +541,8 @@ export type {
   ProductGallery,
   ProductIndexabilityTerms,
   ProductPriceQuery,
+  ProductQuery,
+  ProductSearchRequest,
   ProductView,
   ProductViewOptions,
   TierOption,
@@ -551,6 +558,7 @@ export {
   fxStates,
   productDescriptor,
   productPageIndexability,
+  productSearchParams,
   productView,
   tierOptions,
   trustClaims,

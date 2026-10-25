@@ -29,3 +29,22 @@ export const QUERY_KEY: { readonly [K in QueryKey]: K } = {
   sort: QUERY_KEYS[1],
   price: QUERY_KEYS[2],
 };
+
+/**
+ * The product page's two query keys (spec 009 §5.2 `ProductSearchParamsSchema`, §14 A10, AC-15;
+ * TASK-128): the size and the delivery date its `GET` form submits (`TierSelector`'s and
+ * `DateChip`'s field names). Not in `QUERY_KEYS`, because that list is the listing's and the
+ * listing rewrites read it: a listing does not honour `?tier=` or `?date=`, and learning them
+ * would send a listing request that carries one to the listing's parameter route. Neither is
+ * personal data; `tests/unit/product-params.test.ts` holds both to `isRedactedKey()` as
+ * `tests/unit/url-pii.test.ts` holds `QUERY_KEYS`.
+ */
+export const PRODUCT_QUERY_KEYS = ["tier", "date"] as const;
+
+export type ProductQueryKey = (typeof PRODUCT_QUERY_KEYS)[number];
+
+/** Each product key by name. */
+export const PRODUCT_QUERY_KEY: { readonly [K in ProductQueryKey]: K } = {
+  tier: PRODUCT_QUERY_KEYS[0],
+  date: PRODUCT_QUERY_KEYS[1],
+};
