@@ -42,6 +42,10 @@ describe("didYouMean", () => {
     expect(suggest("en", "roses")).toBeNull();
   });
 
+  it("is null when a partial (tier-1) match already finds something, unmatched word or not", () => {
+    expect(suggest("en", "red roses tolaps")).toBeNull();
+  });
+
   it("is null when no vocabulary term is within the widened distance", () => {
     expect(suggest("en", "qqqqqq")).toBeNull();
   });
