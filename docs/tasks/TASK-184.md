@@ -73,7 +73,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: started in worktree `/Users/ahmed/dev/fo-wt-184` on `task/TASK-184-de-pl-drafts-closeout`; TASK-182 and TASK-183 are merged. Next: the untranslated line and the hreflang filter, then the de/pl content drafts.
 
 ## Result
 
