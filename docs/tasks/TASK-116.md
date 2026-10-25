@@ -6,21 +6,21 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- **Spec 008 AC-19** (§9) and **T-19** (§10): `/sitemaps/{loc}/categories.xml` and `/sitemaps/{loc}/occasions.xml` as route handlers with the spec 007 contract (valid XML, real `<lastmod>`, full `xhtml:link` set, ≤10 000 URLs, ≤10 MB, `Cache-Control: public, max-age=3600`), listed in the per-locale index **only when non-empty**; in Phase 0 (every non-indexing deployment) both are empty and absent; no `noindex` URL in either.
+- **§6 "Sitemap membership"**: `categories.xml` = category hubs + country shop roots + indexable country categories; `occasions.xml` = occasion hubs + the occasions index + indexable country occasions. `<lastmod>` is the real max date across the entity, its copy and its price data, never "now". Membership and the robots directive come from **one predicate** (spec 007 `pageIndexability()` through `listingIndexability()`), so nothing `noindex` can appear.
+- **§5.2**: `listingExists()` / `listingPages()` give the sitemap the same existence answer as `generateStaticParams`; the builders live at `src/modules/seo/sitemap/categories.ts` and `occasions.ts`; spec 007 TASK-094's `SITEMAP_CHILDREN` registry is the extension point ("add themselves … and inherit everything else").
+- Class: review-only per the work order (SEO markup); self-review in the PR. Ranking is priority 1: validated with the repo's sitemap validator (`pnpm seo:validate` over regenerated fixtures).
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/008-country-shop-category-occasion-pages.md` — `## 0. Index`, §5.2, §6, §9 AC-19, §10 T-19
+- `src/modules/seo/sitemap/{index,corridors,statics,xml}.ts`, `src/app/sitemaps/[locale]/[child]/route.ts`
+- `src/modules/catalog/listing.ts` (`listingPages`, `listingIndexability`, `listingAlternatePaths`, `listingView`)
+- `scripts/seo/generate-sitemap-fixtures.ts`, `tests/integration/sitemap.test.ts`, `tests/unit/seo-sitemap.test.ts`
 
 ## Carry-forwards
 
-One dated bullet per `/review`, newest last.
-
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+_None yet._
 
 ## Escalations
 
