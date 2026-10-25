@@ -264,10 +264,9 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       expect(row.at(-1)?.href).toBe(localePath(locale, "destinations"));
 
       // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
-      // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and
-      // the guarantee under Sending, and How it works and Help and contact under Company; `de`
-      // and `pl` have no content file, so those entries and the Company heading are not drawn.
-      const hasTrustPages = locale === "en" || locale === "en-gb";
+      // pages exist in English (TASK-182) and as the de/pl drafts (TASK-184), so every launch
+      // locale draws Delivery and payment and the guarantee under Sending, and How it works and
+      // Help and contact under Company, each at its own locale's path.
       const sending = await page
         .locator('footer nav[aria-labelledby$="-group-sending"] a')
         .evaluateAll((nodes) =>
@@ -276,35 +275,29 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       expect(sending).toEqual([
         localePath(locale, "destinations"),
         localePath(locale, "occasions"),
-        ...(hasTrustPages
-          ? [localePath(locale, "delivery"), localePath(locale, "guarantee")]
-          : []),
+        localePath(locale, "delivery"),
+        localePath(locale, "guarantee"),
       ]);
       const company = await page
         .locator('footer nav[aria-labelledby$="-group-company"] a')
         .evaluateAll((nodes) =>
           nodes.map((node) => node.getAttribute("href") ?? ""),
         );
-      expect(company).toEqual(
-        hasTrustPages
-          ? [localePath(locale, "howItWorks"), localePath(locale, "help")]
-          : [],
-      );
-      // Spec 041's legal row (TASK-183): cookies and withdrawal and refunds exist in English;
-      // imprint, terms and privacy wait for the company, so no locale draws them.
+      expect(company).toEqual([
+        localePath(locale, "howItWorks"),
+        localePath(locale, "help"),
+      ]);
+      // Spec 041's legal row: cookies and withdrawal and refunds exist in every launch locale
+      // (TASK-183, TASK-184); imprint, terms and privacy wait for the company, so none draws them.
       const legal = await page
         .locator('footer nav[aria-label="Legal"] a')
         .evaluateAll((nodes) =>
           nodes.map((node) => node.getAttribute("href") ?? ""),
         );
-      expect(legal).toEqual(
-        hasTrustPages
-          ? [
-              localePath(locale, "legal", "cookies"),
-              localePath(locale, "legal", "cancellation"),
-            ]
-          : [],
-      );
+      expect(legal).toEqual([
+        localePath(locale, "legal", "cookies"),
+        localePath(locale, "legal", "cancellation"),
+      ]);
 
       // The trending row: five cards, five product pages.
       await expect(page.locator("[data-fo-trending] li a[href]")).toHaveCount(
@@ -331,11 +324,11 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       }
       // Exactly: the header's eight (the footer's two are among them), five products, the
       // lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
-      // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
-      // four trust pages and two legal pages. A further control is a diff here.
+      // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in every launch locale,
+      // the footer's four trust pages and two legal pages. A further control is a diff here.
       const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
       expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
-      expect(hrefs.size).toBe(8 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0));
+      expect(hrefs.size).toBe(8 + 5 + 1 + siblings + 6);
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }

@@ -1,4 +1,4 @@
-# Runbook — info and legal pages: edit, approve, version, publish, and the trader-identity flip
+# Runbook: info and legal pages (edit, approve, version, publish, and the trader-identity flip)
 
 | Field | Value |
 |---|---|
