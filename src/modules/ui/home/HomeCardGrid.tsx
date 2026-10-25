@@ -25,8 +25,6 @@ import type { HomeCardView } from "./home-view.ts";
 export const HOME_GRID_COLUMNS = {
   five: "grid-cols-2 gap-x-[14px] gap-y-[28px] md:grid-cols-3 md:gap-x-[24px] md:gap-y-[40px] lg:grid-cols-5",
   four: "grid-cols-2 gap-x-[14px] gap-y-[28px] md:grid-cols-4 md:gap-x-[28px] md:gap-y-[44px]",
-  three:
-    "grid-cols-2 gap-x-[14px] gap-y-[28px] md:grid-cols-3 md:gap-x-[28px] md:gap-y-[44px]",
 } as const;
 
 /** The asset ids a grid displays: what decides whether its example label is printed. */
