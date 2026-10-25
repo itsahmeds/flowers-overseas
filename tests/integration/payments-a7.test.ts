@@ -899,7 +899,7 @@ describe.skipIf(server.url === undefined)(
         { n: number }[]
       >`SELECT count(*)::int AS n FROM order_transition`;
       // A7 adds no row; the rows after it are spec 002 §14 A8.1's two (`0021`, TASK-337), A10's two
-      // (`0029`, TASK-258) and A9.7's three (`0030`, TASK-261).
+      // (`0027`, TASK-258) and A9.7's three (`0028`, TASK-261).
       expect(count?.n).toBe(
         transitionsBefore +
           A8_TRANSITIONS.length +
