@@ -5,7 +5,7 @@
  * The same reads spec 008's listings make, so a search result and a listing card cannot disagree:
  * a destination's listing set is `listProducts({ countryIso })`, its curation order
  * `topProductsForPrebuild()`, its saleability `availability()`, a card `productCardView()`, and a
- * page link exists only when `listingPages()` lists it. Whichever catalogue provider is active
+ * page link is `listingHref()`'s answer, so it exists or is absent. Whichever catalogue provider is active
  * (the static dataset now, the database after spec 012b's cutover) answers through them, so
  * "static now, database later" needs no switch here (§2.9).
  *
@@ -13,7 +13,12 @@
  * names one from the catalogues (its name in each launch locale) and the registry (its slugs);
  * nothing here names a country (spec 004 AC-73).
  */
-import { facetLabelKey } from "@/config/catalogue/schemas";
+import {
+  facetLabelKey,
+  flowerTypes,
+  occasionKeys,
+  productTypes,
+} from "@/config/catalogue/schemas";
 import {
   COUNTRIES,
   type CountryIso2,
@@ -23,14 +28,15 @@ import {
 import type { LocaleCode } from "@/config/locales";
 import { isPublished } from "@/config/site-links";
 import {
-  type ListingPageRecord,
   type Product,
   availability,
   entityCopy,
+  getCategory,
+  getOccasion,
   getProduct,
   hasCardPhoto,
   listProducts,
-  listingPages,
+  listingHref,
   productCardView,
   rankBandsFor,
   topProductsForPrebuild,
@@ -62,7 +68,7 @@ interface Memo {
   readonly labels: Map<string, readonly string[]>;
   readonly listed: Map<string, Promise<readonly Product[]>>;
   readonly saleable: Map<string, Promise<boolean>>;
-  readonly pages: Map<string, Promise<readonly ListingPageRecord[]>>;
+  readonly hubs: Map<string, Promise<readonly SearchHub[]>>;
 }
 
 function newMemo(): Memo {
@@ -71,7 +77,7 @@ function newMemo(): Memo {
     labels: new Map(),
     listed: new Map(),
     saleable: new Map(),
-    pages: new Map(),
+    hubs: new Map(),
   };
 }
 
@@ -170,40 +176,40 @@ function destinationIso2(iso2: string): CountryIso2 {
   return iso2;
 }
 
-const ENTITY_PAGES = {
+const HUB_PAGES = {
   occasion: { country: "countryOccasion", hub: "occasionHub" },
   category: { country: "countryCategory", hub: "categoryHub" },
 } as const;
 
-function hubsFrom(
-  pages: readonly ListingPageRecord[],
-  locale: LocaleCode,
-  iso2: string,
-): SearchHub[] {
+/** The category keys the taxonomy allows: product types, occasions and flower types. */
+const CATEGORY_KEYS: readonly string[] = [
+  ...new Set<string>([...productTypes, ...occasionKeys, ...flowerTypes]),
+];
+
+/**
+ * Every occasion and category the catalogue has, with its label in every launch locale; only
+ * those with copy in the request locale (a link needs words to read).
+ */
+async function hubsFor(locale: LocaleCode): Promise<SearchHub[]> {
   const hubs: SearchHub[] = [];
-  for (const kind of ["occasion", "category"] as const) {
-    const types = ENTITY_PAGES[kind];
-    const hrefs = new Map<string, string>();
-    for (const page of pages) {
-      if (page.entityKey === undefined) continue;
-      if (page.pageType === types.country && page.countryIso === iso2) {
-        hrefs.set(page.entityKey, page.path);
-      }
+  const entities: { kind: SearchHub["kind"]; key: string }[] = [];
+  for (const key of occasionKeys) {
+    if ((await getOccasion(key)) !== null)
+      entities.push({ kind: "occasion", key });
+  }
+  for (const key of CATEGORY_KEYS) {
+    if ((await getCategory(key)) !== null)
+      entities.push({ kind: "category", key });
+  }
+  for (const { kind, key } of entities) {
+    const label = entityCopy(kind, key, locale)?.name;
+    if (label === undefined) continue;
+    const labels: SearchLabel[] = [];
+    for (const other of launchCodes()) {
+      const name = entityCopy(kind, key, other)?.name;
+      if (name !== undefined) labels.push({ locale: other, text: name });
     }
-    for (const page of pages) {
-      if (page.entityKey === undefined || page.pageType !== types.hub) continue;
-      if (!hrefs.has(page.entityKey)) hrefs.set(page.entityKey, page.path);
-    }
-    for (const [key, href] of hrefs) {
-      const label = entityCopy(kind, key, locale)?.name;
-      if (label === undefined) continue;
-      const labels: SearchLabel[] = [];
-      for (const other of launchCodes()) {
-        const name = entityCopy(kind, key, other)?.name;
-        if (name !== undefined) labels.push({ locale: other, text: name });
-      }
-      hubs.push({ kind, key, label, labels, href });
-    }
+    hubs.push({ kind, key, label, labels });
   }
   return hubs;
 }
@@ -217,8 +223,6 @@ export function catalogSearchSource(): SearchSource {
   const memo = newMemo();
   const listed = (iso2: CountryIso2): Promise<readonly Product[]> =>
     remember(memo.listed, iso2, () => listProducts({ countryIso: iso2 }));
-  const pagesOf = (locale: LocaleCode): Promise<readonly ListingPageRecord[]> =>
-    remember(memo.pages, locale, () => listingPages(locale));
   const saleable = (sku: string, iso2: CountryIso2): Promise<boolean> =>
     remember(memo.saleable, `${sku}|${iso2}`, () =>
       availability({ productId: sku, countryIso: iso2 }).then(
@@ -229,27 +233,28 @@ export function catalogSearchSource(): SearchSource {
   return {
     locales: launchCodes,
 
-    async destinations(locale) {
-      const pages = await pagesOf(locale);
-      return COUNTRIES.map((country): SearchDestination => {
-        const iso2 = country.iso2;
-        const words = new Set<string>();
-        for (const other of launchCodes()) {
-          const name = messageAt(memo, other, country.nameKey);
-          if (name !== undefined) words.add(name);
-          words.add(countrySlug(iso2, other));
-        }
-        const shop = pages.find(
-          (page) =>
-            page.pageType === "countryShopRoot" && page.countryIso === iso2,
-        );
-        return {
-          iso2,
-          words: [...words],
-          shopHref: shop?.path,
-          corridorHref: corridorLinkHref(iso2, locale),
-        };
-      });
+    destinations(locale) {
+      return Promise.all(
+        COUNTRIES.map(async (country): Promise<SearchDestination> => {
+          const iso2 = country.iso2;
+          const words = new Set<string>();
+          for (const other of launchCodes()) {
+            const name = messageAt(memo, other, country.nameKey);
+            if (name !== undefined) words.add(name);
+            words.add(countrySlug(iso2, other));
+          }
+          return {
+            iso2,
+            words: [...words],
+            shopHref: await listingHref({
+              pageType: "countryShopRoot",
+              locale,
+              countryIso: iso2,
+            }),
+            corridorHref: corridorLinkHref(iso2, locale),
+          };
+        }),
+      );
     },
 
     async products(locale, iso2) {
@@ -280,8 +285,22 @@ export function catalogSearchSource(): SearchSource {
       );
     },
 
-    async hubs(locale, iso2) {
-      return hubsFrom(await pagesOf(locale), locale, iso2);
+    hubs(locale) {
+      return remember(memo.hubs, locale, () => hubsFor(locale));
+    },
+
+    async hubHref(locale, iso2, hub) {
+      const pages = HUB_PAGES[hub.kind];
+      if (iso2 !== undefined && isCountryIso2(iso2)) {
+        const country = await listingHref({
+          pageType: pages.country,
+          locale,
+          countryIso: iso2,
+          entityKey: hub.key,
+        });
+        if (country !== undefined) return country;
+      }
+      return listingHref({ pageType: pages.hub, locale, entityKey: hub.key });
     },
 
     rankBands(iso2) {

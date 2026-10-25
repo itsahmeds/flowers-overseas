@@ -381,6 +381,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // the card's photograph test, and the margin band per product (all 0 until TASK-405).
         "entityCopy",
         "hasCardPhoto",
+        "listingHref",
         "rankBandsFor",
       ].sort(),
     );

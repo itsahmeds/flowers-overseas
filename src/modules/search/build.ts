@@ -28,11 +28,28 @@ import type {
   SearchSource,
 } from "./types";
 
+/**
+ * One build's field cache. A product's fields in one locale are the same in every destination
+ * (only its saleability, curation position and band differ), so each is tokenised and stemmed once
+ * per build, not once per destination.
+ */
+export type FieldCache = Map<string, IndexedField>;
+
 /** A field from one or more texts in one locale: their tokens (no cap) and the tokens' stems. */
 export function indexField(
   texts: readonly string[],
   locale: string,
+  cache?: FieldCache,
 ): IndexedField {
+  const key = `${locale}\u0001${texts.join("\u0000")}`;
+  const cached = cache?.get(key);
+  if (cached !== undefined) return cached;
+  const field = buildField(texts, locale);
+  cache?.set(key, field);
+  return field;
+}
+
+function buildField(texts: readonly string[], locale: string): IndexedField {
   const tokens: string[] = [];
   for (const text of texts) {
     tokens.push(...tokenise(normaliseForSearch(text), locale, Infinity));
@@ -49,6 +66,7 @@ export function indexField(
 function altFields(
   labels: readonly SearchLabel[],
   requestLocale: LocaleCode,
+  cache: FieldCache,
 ): IndexedField[] {
   const byLanguage = new Map<string, { locale: string; texts: string[] }>();
   const own = searchLanguage(requestLocale);
@@ -63,7 +81,7 @@ function altFields(
     byLanguage.set(language, group);
   }
   return [...byLanguage.values()].map((group) =>
-    indexField(group.texts, group.locale),
+    indexField(group.texts, group.locale, cache),
   );
 }
 
@@ -71,16 +89,17 @@ function toDocument(
   product: SearchProduct,
   locale: LocaleCode,
   bands: ReadonlyMap<string, number>,
+  cache: FieldCache,
 ): IndexedDocument {
-  const name = indexField([product.name], locale);
+  const name = indexField([product.name], locale, cache);
   return {
     sku: product.sku,
     nameKey: name.tokens.join(" "),
     skuKey: normaliseForSearch(product.sku),
     name,
-    facets: indexField(product.facetLabels, locale),
-    alt: altFields(product.altLabels, locale),
-    description: indexField([product.description], locale),
+    facets: indexField(product.facetLabels, locale, cache),
+    alt: altFields(product.altLabels, locale, cache),
+    description: indexField([product.description], locale, cache),
     hasPhoto: product.hasPhoto,
     curationIndex: product.curationIndex,
     saleable: product.saleable,
@@ -111,9 +130,10 @@ function destinationIndex(
   products: readonly SearchProduct[],
   hubs: readonly SearchHub[],
   bands: ReadonlyMap<string, number>,
+  cache: FieldCache,
 ): DestinationIndex {
   const documents = products.map((product) =>
-    toDocument(product, locale, bands),
+    toDocument(product, locale, bands, cache),
   );
 
   const vocabulary = new Map<string, number>();
@@ -162,7 +182,9 @@ function destinationIndex(
 
   const indexedHubs: IndexedHub[] = hubs.map((hub) => ({
     hub,
-    fields: hub.labels.map((label) => indexField([label.text], label.locale)),
+    fields: hub.labels.map((label) =>
+      indexField([label.text], label.locale, cache),
+    ),
   }));
 
   return { iso2, documents, vocabulary, suggestions, hubs: indexedHubs };
@@ -175,6 +197,7 @@ function destinationIndex(
  */
 export async function buildIndex(source: SearchSource): Promise<SearchIndex> {
   const bandCache = new Map<string, ReadonlyMap<string, number>>();
+  const fieldCache: FieldCache = new Map();
   const locales = new Map<LocaleCode, LocaleIndex>();
   let documents = 0;
 
@@ -198,6 +221,7 @@ export async function buildIndex(source: SearchSource): Promise<SearchIndex> {
         products,
         hubs,
         bands,
+        fieldCache,
       );
       shops.set(destination.iso2, index);
       documents += index.documents.length;

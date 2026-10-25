@@ -393,6 +393,7 @@ export {
   listingAlternatePaths,
   listingDescriptor,
   listingExists,
+  listingHref,
   listingIndexability,
   listingLocales,
   listingPages,

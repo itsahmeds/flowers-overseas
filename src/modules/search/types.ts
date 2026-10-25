@@ -35,7 +35,11 @@ export interface SearchProduct {
   readonly saleable: boolean;
 }
 
-/** An occasion or category page a query can link to from the Pages block (§2.3 "Pages"). */
+/**
+ * An occasion or category a query can link to from the Pages block (§2.3 "Pages"). Its URL is
+ * resolved only when a query names it (`SearchSource.hubHref`), so the index never holds a link to
+ * a page that has stopped existing since the build.
+ */
 export interface SearchHub {
   readonly kind: "occasion" | "category";
   readonly key: string;
@@ -43,8 +47,6 @@ export interface SearchHub {
   readonly label: string;
   /** The label in every launch locale, the request locale included. */
   readonly labels: readonly SearchLabel[];
-  /** The destination's country page when it exists, else the hub; only pages that answer 200. */
-  readonly href: string;
 }
 
 /** A destination as search knows it, in one request locale. */
@@ -64,6 +66,15 @@ export interface SearchSource {
   destinations(locale: LocaleCode): Promise<readonly SearchDestination[]>;
   products(locale: LocaleCode, iso2: string): Promise<readonly SearchProduct[]>;
   hubs(locale: LocaleCode, iso2: string): Promise<readonly SearchHub[]>;
+  /**
+   * The page a hub links to: the destination's country page when it exists, else the hub when it
+   * exists, else `undefined` (a link is drawn only to a page that answers 200).
+   */
+  hubHref(
+    locale: LocaleCode,
+    iso2: string | undefined,
+    hub: SearchHub,
+  ): Promise<string | undefined>;
   /** Margin band 0 to 4 per SKU (§2.5); absent means 0. */
   rankBands(iso2: string): Promise<ReadonlyMap<string, number>>;
   /** Spec 008's cards for these SKUs in this order, with the destination's all-in price. */

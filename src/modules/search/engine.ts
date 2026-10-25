@@ -177,9 +177,7 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
   async function build(trigger: IndexTrigger): Promise<BuiltIndex> {
     stale = false;
     const started = now();
-    const source =
-      typeof deps.source === "function" ? deps.source() : deps.source;
-    const index = await buildIndex(source);
+    const index = await buildIndex(sourceNow());
     const words = new Map<LocaleCode, readonly DestinationWords[]>();
     for (const [locale, entry] of index.locales)
       words.set(locale, wordsFor(entry));
@@ -230,35 +228,50 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
     return building;
   }
 
+  function sourceNow(): SearchSource {
+    return typeof deps.source === "function" ? deps.source() : deps.source;
+  }
+
   async function cards(
     locale: LocaleCode,
     iso2: string,
     documents: readonly IndexedDocument[],
   ): Promise<SearchResultView["cards"]> {
     if (documents.length === 0) return [];
-    const source =
-      typeof deps.source === "function" ? deps.source() : deps.source;
-    return source.cards(
+    return sourceNow().cards(
       locale,
       iso2,
       documents.map((document) => document.sku),
     );
   }
 
-  function hubLinks(
+  /**
+   * The Pages block's hub links (§2.3): matched hubs, occasions before categories, then by label in
+   * the locale's collation, each resolved to a page that exists, until the block is full.
+   */
+  async function addHubLinks(
+    pages: PageLink[],
     locale: LocaleCode,
+    iso2: string,
     shop: DestinationIndex,
     tokens: readonly string[],
-  ): PageLink[] {
+  ): Promise<void> {
     const compare = collator(locale);
-    return matchHubs(shop.hubs, tokens, config)
+    const ordered = matchHubs(shop.hubs, tokens, config)
       .map(({ hub }) => hub)
       .sort(
         (left, right) =>
           (left.kind === right.kind ? 0 : left.kind === "occasion" ? -1 : 1) ||
           compare.compare(left.label, right.label),
-      )
-      .map((hub) => ({ kind: hub.kind, label: hub.label, href: hub.href }));
+      );
+    const source = sourceNow();
+    for (const hub of ordered) {
+      if (pages.length >= config.pagesBlockMax) return;
+      const href = await source.hubHref(locale, iso2, hub);
+      if (href === undefined) continue;
+      if (pages.some((existing) => existing.href === href)) continue;
+      pages.push({ kind: hub.kind, label: hub.label, href });
+    }
   }
 
   async function search(request: SearchRequest): Promise<SearchOutcome> {
@@ -354,11 +367,7 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
       });
     }
 
-    for (const link of hubLinks(locale, shop, parsed.tokens)) {
-      if (!pages.some((existing) => existing.href === link.href)) {
-        pages.push(link);
-      }
-    }
+    await addHubLinks(pages, locale, destination, shop, parsed.tokens);
     const linked = pages.slice(0, config.pagesBlockMax);
 
     const ranked = rankMatches(matchDocuments(shop, parsed.tokens, config));
