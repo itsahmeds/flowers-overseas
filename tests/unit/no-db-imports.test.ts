@@ -72,6 +72,10 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       // `seed/index.ts`, which is deliberately outside this set.
       "seed/diff.ts",
       "seed/target.ts",
+      // spec 006 AC-1, the whole-seam close (TASK-081): the watermark check and the remaining
+      // imagery's prompt generator, the two §2.2–§2.5 files the entries above did not reach.
+      "seed/watermark.ts",
+      "scripts/imagery-prompts-remaining.ts",
       // spec 004 AC-2 (TASK-056): "`pnpm check:no-db` covers every file this spec adds". The
       // whole design module (TASK-079's `src/modules/ui/media` entry is folded into it — the walk
       // is recursive, and two entries would report every hit in it twice), the route tree spec
