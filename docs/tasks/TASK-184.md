@@ -79,7 +79,21 @@ here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR [#432](https://github.com/itsahmeds/flowers-overseas/pull/432). It ships the de and pl machine drafts of all ten pages: 20 files, all `reviewed: false`, Polish legal in Państwo. Every unreviewed de/pl page shows the untranslated line, is noindex and stays out of the sitemaps and every hreflang cluster (`infoPageHreflangPaths`). Pseudo-locales read the English file. The glossary entries are in place, and the runbook `info-and-legal-pages.md` carries the trader-identity flip checklist and the five ⚖️ items. `/break 270` holes 10, 11 and 12 are closed.
 
-_Pending._
+Tests added:
+- unit: drafts suite 72, runbook, 32 pages-check rows, hole 12, noindex sitemap pin;
+- contract: seo fixtures;
+- e2e: T-22 crawl, drafts block, footer/links/schema now four-locale;
+- a11y: T-27, footer navs 4;
+- visual: 10 info baselines plus `/ar-XB/help`, plus the de/pl/ar-XB home and footer baselines the new rows changed;
+- Lighthouse: three URLs.
+
+The unreviewed share is en 4.6 % and en-gb 4.7 %, so no record-approval script. The local build and Playwright ran in the build slot for darwin baselines and the 1280/390 design check; load average 5.4 at start.
+
+Carry-forwards:
+- English-only claim patterns;
+- the de/pl product page promise is English text;
+- the Estonia text in `infoPages.company.notRegistered`;
+- the TASK-182 E6 docks;
+- the em dash and "around the clock" message values (the orchestrator's new task).
