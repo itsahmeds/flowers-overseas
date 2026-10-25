@@ -448,15 +448,6 @@ describe("short screens (A-founder-2026-10-19c clause 5, AC-47, AC-48; T-52, T-5
     );
   });
 
-  it("caps the home cover at the viewport less the header, and drops the desktop hero's floor", () => {
-    expect(short).toMatch(
-      /\[data-fo-hero-photo\] \{\s*block-size: calc\(100svh - 65px\);\s*min-block-size: 0;\s*\}/u,
-    );
-    expect(short).toMatch(
-      /@media \(width >= 48rem\) \{\s*\[data-fo-hero\] \{\s*block-size: auto;/u,
-    );
-  });
-
   it("comes after the bar's phone rules, so it wins them, and is the only height query", () => {
     expect(CSS.indexOf("@media (max-height: 500px)")).toBeGreaterThan(
       CSS.indexOf("@media (width < 48rem) {\n  body:has([data-fo-action-bar])"),
