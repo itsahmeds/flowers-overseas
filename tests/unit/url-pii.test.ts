@@ -641,7 +641,7 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "keeps today's six dynamic segments, none a PII key",
+    "keeps today's seven dynamic segments, none a PII key",
     () => {
       const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
         const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
@@ -654,6 +654,9 @@ describe("the real tree (T-59)", () => {
         "id",
         "locale",
         "nextauth",
+        // `/api/choose/[locale]/[[...rest]]` and `/[locale]/-choose/-next/[[...rest]]` (TASK-385):
+        // the chooser's country code and `next` path, slugs and fixed words only.
+        "rest",
         "segment",
       ]);
     },
@@ -661,11 +664,13 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "reads QUERY_KEYS = page, sort, price from src/config/url-keys.ts",
+    "reads QUERY_KEYS = page, sort, price, to from src/config/url-keys.ts",
     () => {
       // `price`: the chooser's 303 to a country page's band (spec 004 §14 A-founder-2026-10-24a
       // item 3; TASK-381), honoured by TASK-390's band facet.
-      expect(readQueryKeys(repoRoot)).toEqual(["page", "sort", "price"]);
+      // `to`: the country chooser's form field (spec 004 §14 A-founder-2026-10-24a item 3;
+      // TASK-385), a country's code or name, read only on a chooser address.
+      expect(readQueryKeys(repoRoot)).toEqual(["page", "sort", "price", "to"]);
     },
     REAL_TREE_MS,
   );

@@ -377,6 +377,22 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "countryVersionOf",
         "parseChooserNext",
         "parseChooserPath",
+        // spec 004 §14 A-founder-2026-10-24a item 3 (TASK-385): the chooser's one decision, its
+        // `303` with the `fo_dest` cookie, its boundary schemas and its page.
+        "ChooserPage",
+        "ChooserSearchParamsSchema",
+        "ChooserToSchema",
+        "choiceRoutePath",
+        "chooserChoiceResponse",
+        "chooserPageState",
+        "chooserPageView",
+        "chosenInput",
+        "closestCountries",
+        "decideChooser",
+        "destCookieHeader",
+        "isShopCountry",
+        "normaliseCountryInput",
+        "resolveCountryInput",
       ].sort(),
     );
   });
@@ -387,6 +403,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/alternates.ts`,
       `${moduleDir}/availability.ts`,
       `${moduleDir}/cache.ts`,
+      // The chooser's answer: the decision, the 303 and the page's view (TASK-385).
+      `${moduleDir}/chooser-choice.ts`,
       // The chooser's paths (spec 004 §14 A-founder-2026-10-24a item 3; TASK-381).
       `${moduleDir}/chooser.ts`,
       `${moduleDir}/copy.ts`,
@@ -426,6 +444,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
       `${moduleDir}/ui/CategoryHubPage.tsx`,
+      `${moduleDir}/ui/ChooserPage.tsx`,
       `${moduleDir}/ui/CountryCategoryPage.tsx`,
       `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,

@@ -48,6 +48,7 @@ export {
 } from "./canonical.ts";
 
 export {
+  CHOOSER_LINK_REL,
   DISALLOWED_PATHS,
   SITEMAP_PATH,
   type RobotsPolicy,

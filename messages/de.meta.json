@@ -1154,6 +1154,11 @@
     "reviewed": false,
     "sourceHash": "6a8ee1244226dac078a99a28672c20209741a86b1f2b2eae42cc307795bff5e6"
   },
+  "consent.cookies.dest.purpose": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "29e6a6ad40afc0f2afe7e41e53fe8b93d844b2e493d1157671317554c3a2515e"
+  },
   "consent.cookies.ga.purpose": {
     "source": "machine",
     "reviewed": false,
@@ -2069,6 +2074,21 @@
     "reviewed": false,
     "sourceHash": "3b1260462b548a3e38acade0ffc8033fe18acbb8a7b43e0fc9ea2f852a0bc57c"
   },
+  "home.picker.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f4200dda549249a79fb7aef68b7ac225b449d0e2ea589cec2d62fc736bc0ee57"
+  },
+  "home.picker.search": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "15e3fc957044813806e7d5336b6fa4b7873c76174f32a6ea947f0387e7772537"
+  },
+  "home.picker.submit": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5133924f3c220d39ddabbe7ebb08ed1cfc78f11a9d5e765f28fa7b306e122ed7"
+  },
   "home.proof.guarantee.body": {
     "source": "machine",
     "reviewed": false,
@@ -2948,6 +2968,31 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "d00086da0fd5a058eace77458c77366ec836ca0010007bc0f368dc4423153435"
+  },
+  "shop.choose.all": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e29c9e47b677371bd5218403b4d12d751bab5c81eb7b27cdaf5f58b20cd31dcd"
+  },
+  "shop.choose.closest": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f9ff3292ae81a8480eb567222d2c01a9750145816713f3bfd58eea3332e5b15d"
+  },
+  "shop.choose.continue": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5872999fd06ee63681b4d0cd515d1b0a214aa59eaa68c954db6c8b5ff13ddbc4"
+  },
+  "shop.choose.noMatch": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9593661ed5042b11ce2bb2d62e8e02446a5283a7f83a3040ed293440fa635145"
+  },
+  "shop.choose.remember": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7a7c4571d5958cd1023edfab190d73c802b1ada675966dad19696a534e22f728"
   },
   "shop.empty.body": {
     "source": "machine",
