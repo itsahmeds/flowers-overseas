@@ -1,4 +1,4 @@
--- Rollback of 0028_payment_purchase (spec 013 §14 A-founder-2026-10-22 item 2 "Rollback",
+-- Rollback of 0026_payment_purchase (spec 013 §14 A-founder-2026-10-22 item 2 "Rollback",
 -- AC-48, T-48; TASK-350).
 --
 -- Guard first. A real payment is part of the accounting record (spec 013 §8), and a payment for a
@@ -20,14 +20,14 @@ SET LOCAL ROLE app_owner;
 DO $guard$
 BEGIN
   IF EXISTS (SELECT 1 FROM public.payment WHERE livemode) THEN
-    RAISE EXCEPTION 'PAYMENT_PURCHASE_ROLLBACK_BLOCKED: a live payment exists; 0028_payment_purchase is not rolled back (spec 013 §8)'
+    RAISE EXCEPTION 'PAYMENT_PURCHASE_ROLLBACK_BLOCKED: a live payment exists; 0026_payment_purchase is not rolled back (spec 013 §8)'
       USING ERRCODE = 'restrict_violation';
   END IF;
   IF EXISTS (
     SELECT 1 FROM public.payment p
     WHERE (SELECT count(*) FROM public."order" o WHERE o.purchase_id = p.purchase_id) > 1
   ) THEN
-    RAISE EXCEPTION 'PAYMENT_PURCHASE_ROLLBACK_BLOCKED: a payment pays for a purchase of more than one order; 0028_payment_purchase is not rolled back'
+    RAISE EXCEPTION 'PAYMENT_PURCHASE_ROLLBACK_BLOCKED: a payment pays for a purchase of more than one order; 0026_payment_purchase is not rolled back'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END

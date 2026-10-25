@@ -1,4 +1,4 @@
--- 0028_payment_purchase: one payment per purchase, and each refund names its order
+-- 0026_payment_purchase: one payment per purchase, and each refund names its order
 -- (spec 013 §14 A-founder-2026-10-22 item 2, AC-48, T-48; spec 010 §14 A-founder-2026-10-22
 -- item 13 (b), (e) and §13 Q19; TASK-350).
 --
@@ -39,7 +39,7 @@
 -- The backfills switch off `payment_set_updated_at` and `refund_set_updated_at` for their one
 -- `UPDATE` each, so every existing row keeps its `updated_at`. A DO block proves each backfill.
 --
--- Rollback: `0028_payment_purchase.down.sql`, guarded by `PAYMENT_PURCHASE_ROLLBACK_BLOCKED`.
+-- Rollback: `0026_payment_purchase.down.sql`, guarded by `PAYMENT_PURCHASE_ROLLBACK_BLOCKED`.
 
 SET LOCAL ROLE app_owner;
 

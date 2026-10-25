@@ -196,7 +196,7 @@ describe.skipIf(server.url === undefined)(
         const [payment] = await tx<{ id: string }[]>`
           INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
           VALUES ((SELECT purchase_id FROM "order" WHERE id = ${orderId}), 'stripe', 'pi_test_1', 'authorised', 'card', 18900, 'PLN', false) RETURNING id`;
-        // `failed`, so the one-live-payment-per-purchase index (0028) cannot be what refuses it.
+        // `failed`, so the one-live-payment-per-purchase index (0026) cannot be what refuses it.
         await by(
           "payment in another currency",
           () =>
