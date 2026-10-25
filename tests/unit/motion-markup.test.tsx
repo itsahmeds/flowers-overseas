@@ -186,7 +186,7 @@ describe('motion 3 on every primary action (TASK-283; A24 clause 9, sheet cell 3
     expect(small).not.toContain("ms-[4px]");
   });
 
-  it("reaches the Menu's Send, and not the action bar's in-page jump", () => {
+  it("draws no Send in the Menu (Q-24d), and leaves the action bar's in-page jump unmarked", () => {
     const menu = renderToStaticMarkup(
       <MenuSheet
         closeLabel="Close"
@@ -194,12 +194,14 @@ describe('motion 3 on every primary action (TASK-283; A24 clause 9, sheet cell 3
         help={{ href: "https://wa.me/1", label: "Help" }}
         label="Menu"
         links={[]}
+        menu={null}
         navLabel="Categories"
-        send={{ href: "/en#send", label: "Send flowers" }}
         switcher={null}
       />,
     );
-    expect(menu).toMatch(/<a [^>]*href="\/en#send"[^>]*data-fo-pending=""/);
+    // Spec 004 §14 A-founder-2026-10-24a item 5 (Q-24d): the Menu's Send flowers left with the
+    // header's pill; the six accordions take its place (TASK-383).
+    expect(menu).not.toContain("#send");
     const bar = renderToStaticMarkup(
       <StickyActionBar action={{ href: "#send", label: "Send flowers" }} />,
     );

@@ -35,13 +35,15 @@ import {
   linkLabelKey,
   siteLink,
 } from "../../src/config/site-links.ts";
-import { listingAlternatePaths } from "../../src/modules/catalog";
+import {
+  listingAlternatePaths,
+  megaMenuModel,
+} from "../../src/modules/catalog";
 import { loadMessages, localePath } from "../../src/modules/i18n";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   HEADER_BAND_HEIGHTS,
   HEADER_STICKY_HEIGHTS,
-  SEND_ANCHOR,
   type HeaderListingHrefs,
   headerAccountItems,
   headerCategoryItems,
@@ -49,8 +51,11 @@ import {
   headerEndClusterItems,
   headerListingTargets,
   headerSearchHref,
-  headerSendHref,
 } from "../../src/modules/ui/layout/header-model.ts";
+import {
+  type MegaMenuModel,
+  panelEntries,
+} from "../../src/modules/ui/layout/mega-model.ts";
 import { SiteFooter } from "../../src/modules/ui/layout/SiteFooter.tsx";
 import { dayCountIn } from "../support/day-count.ts";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
@@ -66,7 +71,7 @@ const headerLinkIds: readonly SiteLinkId[] = [
   SEARCH_LINK_ID,
 ];
 
-/** The layout's `headerListingHrefs()`, restated: the catalogue's answer per header target. */
+/** The catalogue's answer per header target, for the registry projection tests. */
 async function listingHrefsFor(
   locale: (typeof LOCALES)[number],
 ): Promise<HeaderListingHrefs> {
@@ -91,17 +96,48 @@ const HREFS: Record<string, HeaderListingHrefs> = Object.fromEntries(
   ),
 );
 
+/** The mega menu each locale's header draws out of context, built once with a fixed clock. */
+const MENUS: Record<string, MegaMenuModel> = Object.fromEntries(
+  await Promise.all(
+    LOCALES.map(
+      async (locale) =>
+        [
+          locale,
+          await megaMenuModel(locale, null, {
+            now: new Date("2026-10-25T09:00:00Z"),
+          }),
+        ] as const,
+    ),
+  ),
+);
+
+/** The namespaces the header and its menu read. */
+const HEADER_NAMESPACES = [
+  "nav",
+  "consent",
+  "company",
+  "a11y",
+  "common",
+  "catalog",
+  "shop",
+  "destinations",
+  "media",
+] as const;
+
 function render(
   locale: string,
-  listingHrefs: HeaderListingHrefs = HREFS[locale] ?? {},
+  megaMenu: MegaMenuModel | undefined = MENUS[locale],
 ): string {
   return renderToStaticMarkup(
     <NextIntlClientProvider
       locale={locale}
-      messages={loadMessages(locale, ["nav", "company", "a11y", "common"])}
+      messages={loadMessages(locale, [...HEADER_NAMESPACES])}
       timeZone="UTC"
     >
-      <SiteHeader locale={locale} listingHrefs={listingHrefs} />
+      <SiteHeader
+        locale={locale}
+        {...(megaMenu === undefined ? {} : { megaMenu })}
+      />
     </NextIntlClientProvider>,
   );
 }
@@ -139,12 +175,29 @@ const EXACT_CLAIM = {
  * `tests/unit/ui-phone-chrome.test.tsx` asserts it on its own.
  */
 function withoutMenu(html: string): string {
-  const out = html.replace(
-    /<details[^>]*\sdata-fo-menu=""[\s\S]*?<\/details>/u,
-    "",
-  );
-  if (out === html) throw new Error("the header drew no Menu");
-  return out;
+  const start = html.search(/<details[^>]*\sdata-fo-menu=""/u);
+  if (start === -1) throw new Error("the header drew no Menu");
+  // The Menu nests the six accordions, so its own `</details>` is found by depth, not by the
+  // first close tag.
+  const tags = /<details\b|<\/details>/gu;
+  tags.lastIndex = start;
+  let depth = 0;
+  for (let match = tags.exec(html); match !== null; match = tags.exec(html)) {
+    depth += match[0] === "</details>" ? -1 : 1;
+    if (depth === 0) {
+      return html.slice(0, start) + html.slice(match.index + match[0].length);
+    }
+  }
+  throw new Error("the Menu's <details> never closes");
+}
+
+/** The header without the mega menu's row (its own text is scanned entry by entry). */
+function withoutMega(html: string): string {
+  const start = html.search(/<nav[^>]*data-fo-mega-context=/u);
+  if (start === -1) return html;
+  const end = html.indexOf("</nav>", start);
+  // The row holds no nested `<nav>`, so its first close tag is its own.
+  return html.slice(0, start) + html.slice(end + "</nav>".length);
 }
 
 /** The opening tag of every element carrying `data-fo-header-item`, with its id. */
@@ -351,23 +404,29 @@ describe("the rendered header (AC-7, AC-14)", () => {
     }
   });
 
-  it("links every category row entry with a page, and draws no element for any target without one", () => {
+  it("links exactly the mega menu's entries, and draws no element for any target without one", () => {
     for (const locale of LOCALES) {
       const html = withoutMenu(render(locale));
       const internal = hrefs(html).filter((href) => href.startsWith("/"));
       const external = hrefs(html).filter((href) => !href.startsWith("/"));
+      const model = MENUS[locale];
+      expect(model?.panels.length, locale).toBe(6);
 
-      // Internal: the lockup, the Send pill, the switcher's sibling shown locales (`en`, `en-gb`;
-      // spec 003 §14 A-founder-2026-10-14c) and the category row — and nothing else: no account
-      // item, no `For florists`, no search (AC-14, §14 A20).
+      // Internal: the lockup, the switcher's sibling shown locales (`en`, `en-gb`; spec 003 §14
+      // A-founder-2026-10-14c), every link entry of the six panels and each featured card, and
+      // nothing else: no Send pill (Q-24d), no account item, no `For florists`, no search (A20).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
-          `${localePath(locale, "home")}#${SEND_ANCHOR}`,
           ...SHOWN.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
-          ...(EXPECTED_ROW[locale] ?? []).map(([, href]) => href),
+          ...(model?.panels ?? []).flatMap((panel) => [
+            ...panelEntries(panel).flatMap((entry) =>
+              entry.kind === "facet" ? [] : [entry.href],
+            ),
+            ...(panel.featured === null ? [] : [panel.featured.href]),
+          ]),
         ].toSorted(),
       );
       // External: the help line, opening WhatsApp on the one E.164 number in `company.ts`, with
@@ -375,16 +434,8 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(external).toEqual([
         `https://wa.me/${COMPANY.contact.phoneE164.slice(1)}`,
       ]);
-
-      // Every keyed item is an `<a>` to its page — not one `<span>` dressed as an entry.
-      const items = headerItems(html);
-      expect(
-        items.map(({ id }) => id),
-        locale,
-      ).toEqual((EXPECTED_ROW[locale] ?? []).map(([id]) => id));
-      for (const { id, tag } of items) {
-        expect(tag, `${locale}/${id}`).toMatch(/^<a\s/);
-      }
+      // No end item is published today, so nothing carries `data-fo-header-item`.
+      expect(headerItems(html), locale).toEqual([]);
     }
   });
 
@@ -471,17 +522,23 @@ describe("the rendered header (AC-7, AC-14)", () => {
     // opens a real panel (A24 clause 3 lifts A20's omission), never a `<button>` or a labelled icon.
     expect(html).not.toContain("data-fo-header-menu");
     expect(html).not.toContain('aria-label="Menu"');
-    expect([...html.matchAll(/<details\b/g)]).toHaveLength(1);
+    // The Menu, then the six mega menu items and their six accordions inside the Menu: every
+    // `<details>` opens a real panel.
+    expect([...html.matchAll(/<details\b/g)]).toHaveLength(
+      1 + 2 * (MENUS.en?.panels.length ?? 0),
+    );
   });
 
   it("hosts spec 003's `LocaleSwitcher` unchanged: one entry per shown locale, the current one not a link", () => {
-    const html = withoutMenu(render("en-gb"));
+    const strip = (markup: string): string =>
+      markup.slice(0, markup.indexOf("data-fo-header="));
+    const html = strip(withoutMenu(render("en-gb")));
     expect(html).toContain("data-fo-header-switcher");
     expect(html).toContain('aria-current="page"');
     expect([...html.matchAll(/<li>/g)]).toHaveLength(2);
     // On a hidden locale's page, reached by URL, the same two entries and neither is current
     // (spec 003 §14 A-founder-2026-10-14c clause 2).
-    const hidden = withoutMenu(render("de"));
+    const hidden = strip(withoutMenu(render("de")));
     expect([...hidden.matchAll(/<li>/g)]).toHaveLength(2);
     expect(hidden).not.toContain('aria-current="page"');
   });
@@ -497,7 +554,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
     const banner = html.slice(html.indexOf("data-fo-header="));
     expect(banner).not.toContain("data-fo-header-switcher");
     expect(banner).not.toContain("data-fo-header-currency");
-    expect(banner).toContain('data-fo-header-item="roses"');
+    expect(banner).toContain('data-fo-mega-entry="category:roses"');
   });
 
   it("draws no strip below `md`, and keeps the switcher and the currency as a second notice row from `md` to `lg` (§14 A4, A24 clause 3)", () => {
@@ -540,28 +597,20 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(wrapper).toContain('<nav aria-label="Change language">');
   });
 
-  it("draws one category list in one order for both artboards, with no `order` utility", () => {
+  it("draws one menu in one order for both rows, and no Send flowers pill (Q-24d)", () => {
     const html = render("en");
-    // The v2 mobile artboard draws the same eight links in the desktop order (a scrolling chip
-    // row), so there is one DOM list and no per-breakpoint re-ordering.
     expect(html).not.toMatch(/\border-\d+\b/u);
-    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(8);
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.
     expect(html).not.toMatch(/min-\[\d+px\]:/);
-  });
-
-  it("links the Send pill to the home's sentence, and draws it as the one pill", () => {
+    const en = loadMessages("en", ["nav"]) as { nav: { send: string } };
     for (const locale of LOCALES) {
-      const html = withoutMenu(render(locale));
-      expect(headerSendHref(locale)).toBe(`${localePath(locale, "home")}#send`);
-      const send = [...html.matchAll(/<a\s[^>]*>/g)]
-        .map((match) => match[0])
-        .filter((tag) => tag.includes(`href="${headerSendHref(locale)}"`));
-      expect(send, locale).toHaveLength(1);
-      expect(send[0], locale).toContain("rounded-full");
+      const rendered = render(locale);
+      expect(rendered, locale).not.toContain(
+        `${localePath(locale, "home")}#send`,
+      );
     }
-    expect(render("en")).toContain(">Send flowers<");
+    expect(textOf(html)).not.toContain(en.nav.send);
   });
 
   it("sets the logo as the mark and the outlined wordmark, named by the trading name (A21 clause 3)", () => {
@@ -668,12 +717,20 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(guarantee).not.toMatch(/\d/u);
       const html = render(locale);
       expect(html).toContain(guarantee);
-      // The rendered header and footer, as text (carry-forward b: the footer too).
+      // The rendered header and footer, as text (carry-forward b: the footer too). The mega menu
+      // is scanned one text at a time: its labels sit beside dates and other labels ("Fri 1 Jan",
+      // "Grandparents' Day") that are no promise, and joined they would read as one.
       for (const [part, markup] of [
-        ["header", html],
+        ["header", withoutMega(withoutMenu(html))],
         ["footer", renderFooter(locale)],
       ] as const) {
         expect(dayCountIn(textOf(markup)), `${locale} ${part}`).toBeUndefined();
+      }
+      for (const text of html.split(/<[^>]+>/u)) {
+        expect(
+          dayCountIn(textOf(text)),
+          `${locale} menu: ${text}`,
+        ).toBeUndefined();
       }
     });
   }
@@ -757,12 +814,12 @@ describe("the rendered header (AC-7, AC-14)", () => {
       const home = renderToStaticMarkup(
         <NextIntlClientProvider
           locale={locale}
-          messages={loadMessages(locale, ["nav", "company", "a11y", "common"])}
+          messages={loadMessages(locale, [...HEADER_NAMESPACES])}
           timeZone="UTC"
         >
           <SiteHeader
             locale={locale}
-            listingHrefs={HREFS[locale] ?? {}}
+            megaMenu={MENUS[locale] ?? { context: null, panels: [] }}
             priceClaim={null}
           />
         </NextIntlClientProvider>,
@@ -776,7 +833,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
     }
   });
 
-  it("reserves the v2 artboards' band heights as fixed grid rows (AC-7)", () => {
+  it("reserves the mega menu board's band heights as fixed rows (AC-7)", () => {
     const html = render("en");
     const { mastheadMobile, mastheadDesktop, categoryMobile } =
       HEADER_BAND_HEIGHTS;
@@ -785,33 +842,35 @@ describe("the rendered header (AC-7, AC-14)", () => {
     const band = tagAt(html, html.indexOf('data-fo-header-band="masthead"'));
     expect(band).toContain(`grid-rows-[${String(mastheadMobile)}px_auto]`);
     expect(band).toContain(`xl:grid-rows-[${String(mastheadDesktop)}px]`);
-    // The mobile chip row: 44 px chips plus the artboard's 12 px below them.
-    expect(categoryMobile).toBe(44 + 12);
-    const row = html.slice(html.indexOf('data-fo-header-band="categories"'));
-    expect(row).toContain("pb-(--space-sm2)");
+    // From `md` to `xl` the six items sit on a 48 px row under a 1 px rule (`.cm-row2`).
+    const row = tagAt(html, html.indexOf('data-fo-header-band="categories"'));
+    expect(row).toContain(`min-h-[${String(categoryMobile)}px]`);
+    expect(row).toContain("border-t");
+    expect(row).toContain("xl:border-t-0");
     expect(HEADER_BAND_HEIGHTS).toEqual({
       mastheadMobile: 64,
-      mastheadDesktop: 82,
-      categoryMobile: 56,
+      mastheadDesktop: 76,
+      categoryMobile: 48,
     });
-    // The sticky part: 64 + 56 + 1 rule on mobile, 82 + 1 rule on desktop.
+    // The sticky part: 64 + 1 + 48 + 1 from `md` to `xl`, 76 + 1 from `xl`, 64 + 1 on a phone.
     expect(HEADER_STICKY_HEIGHTS).toEqual({
       phone: 65,
-      mobile: 121,
-      desktop: 83,
+      mobile: 114,
+      desktop: 77,
     });
   });
 
-  it("gives every link the header draws itself the 44 px target", () => {
+  it("gives the logo and every menu summary the 44 px target", () => {
     const html = withoutMenu(render("en"));
     const banner = html.slice(html.indexOf("data-fo-header="));
-    const anchors = [...banner.matchAll(/<a\s[^>]*>/g)].map(
-      (match) => match[0],
-    );
-    // The logo, the eight category links and the Send pill.
-    expect(anchors).toHaveLength(1 + (EXPECTED_ROW.en ?? []).length + 1);
-    for (const anchor of anchors) {
-      expect(anchor, anchor).toMatch(/min-h-\(--(?:target-min|control-sm)\)/u);
+    const logo = tagAt(banner, banner.indexOf("data-fo-header-logo"));
+    expect(logo).toMatch(/min-h-\(--target-min\)/u);
+    const summaries = [
+      ...banner.matchAll(/<summary\s[^>]*data-fo-mega-summary="[^"]*"[^>]*>/g),
+    ].map((match) => match[0]);
+    expect(summaries).toHaveLength(6);
+    for (const summary of summaries) {
+      expect(summary, summary).toMatch(/min-h-\(--target-min\)/u);
     }
   });
 

@@ -94,6 +94,35 @@ export interface ResolveMediaOptions {
    * applies to whatever manifest arrives.
    */
   readonly manifest?: MediaManifest;
+  /**
+   * The widest variant this box may load, in pixels: every step above it is left out of the
+   * `srcset` and the fallback, so no screen density can fetch more (the mega menu's panel images,
+   * at most 384 px: spec 004 §14 A-founder-2026-10-24a AC-102). The smallest step stays when none
+   * fits, so a cap never turns a photograph into a placeholder.
+   */
+  readonly maxWidth?: number;
+}
+
+/** The steps a `maxWidth` allows, never empty while the set has a step at all. */
+function capped(
+  set: MediaVariantSet,
+  maxWidth: number | undefined,
+): MediaVariantSet {
+  if (maxWidth === undefined) return set;
+  const keep = (steps: MediaVariantSet["steps"]["avif"]) => {
+    const fit = steps.filter((variant) => variant.width <= maxWidth);
+    return fit.length > 0 ? fit : steps.slice(0, 1);
+  };
+  const steps = { avif: keep(set.steps.avif), webp: keep(set.steps.webp) };
+  const largest = steps.avif.at(-1);
+  return largest === undefined
+    ? { ...set, steps }
+    : {
+        ...set,
+        steps,
+        width: largest.width,
+        height: Math.round((set.height * largest.width) / set.width),
+      };
 }
 
 /** `"url 384w, url 640w, …"` for one format, ascending — the manifest's own width order. */
@@ -114,6 +143,7 @@ export function resolveMedia({
   slot,
   productName,
   manifest,
+  maxWidth,
 }: ResolveMediaOptions): ResolvedMedia {
   const asset =
     manifest === undefined ? assetById(assetId) : assetById(assetId, manifest);
@@ -132,11 +162,12 @@ export function resolveMedia({
     return { kind: "placeholder", reason: "unapproved" };
   }
 
-  const set =
+  const found =
     manifest === undefined
       ? variantsFor(assetId, box)
       : variantsFor(assetId, box, manifest);
-  if (set === undefined) return { kind: "placeholder", reason: "noVariants" };
+  if (found === undefined) return { kind: "placeholder", reason: "noVariants" };
+  const set = capped(found, maxWidth);
 
   const alt =
     manifest === undefined

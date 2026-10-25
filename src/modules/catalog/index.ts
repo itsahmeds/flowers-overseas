@@ -454,7 +454,6 @@ export {
   type MegaMenuData,
   type MegaMenuOptions,
   type MegaTaxonomyRow,
-  committedMegaMenuData,
   megaMenuModel,
 } from "./mega-menu";
 

@@ -377,6 +377,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "countryVersionOf",
         "parseChooserNext",
         "parseChooserPath",
+        // the mega menu's model (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383), from the
+        // existence functions, the taxonomy and the registries; its committed inputs stay inside.
+        "megaMenuModel",
       ].sort(),
     );
   });
@@ -397,6 +400,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/listing.ts`,
       // The listings' JSON-LD over their view (spec 008 AC-17, AC-18; TASK-115).
       `${moduleDir}/listingSchema.ts`,
+      // The mega menu's model (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383).
+      `${moduleDir}/mega-menu.ts`,
       `${moduleDir}/observability.ts`,
       `${moduleDir}/params.ts`,
       `${moduleDir}/pricing/equivalents.ts`,

@@ -13,7 +13,6 @@
  *    no `published` branch of its own and a go-live is a data flip in `src/config/site-links.ts`;
  *  - the header's reserved heights (AC-7), taken from the two v2 chrome artboards and exported as
  *    data so the CSS and the e2e assertion read the same numbers;
- *  - the Send pill's target, the home's sentence.
  *
  * No database, no `Intl` call, no clock (`pnpm check:no-db`, `fo/no-adhoc-intl`).
  */
@@ -53,15 +52,18 @@ import {
  * header against them at both artboard widths, which is why they are data and not a comment.
  */
 export const HEADER_BAND_HEIGHTS = {
-  /** The logo and the Send pill: the mobile artboard's 64 px row. */
+  /** The logo and the row's end (and the Menu below `md`): the 64 px row. */
   mastheadMobile: 64,
-  /** The logo, the eight links and the pill: the desktop artboard's 82 px row. */
-  mastheadDesktop: 82,
   /**
-   * The mobile chip row under the masthead: 44 px chips (the tap target, `--target-min`) plus the
-   * artboard's 12 px below them. On the desktop artboard the links sit in the masthead row.
+   * The logo, the six mega menu items and the row's end: the mega menu board's 76 px row (spec 004
+   * §14 A-founder-2026-10-24a item 5, `chrome-desktop.dc.html` `.cm-row`; TASK-383).
    */
-  categoryMobile: 56,
+  mastheadDesktop: 76,
+  /**
+   * From `md` to `xl`, the six items' second row under a 1 px rule (`.cm-row2`, 48 px; it does
+   * not scroll). On the desktop board the items sit in the masthead row.
+   */
+  categoryMobile: 48,
 } as const;
 
 /**
@@ -69,8 +71,8 @@ export const HEADER_BAND_HEIGHTS = {
  * A4's addendum, mechanism iii) — measured on the served document at the two artboard widths and
  * identical in the four launch locales:
  *
- *  - **mobile 121** = 64 masthead + 56 chip row + 1 rule;
- *  - **desktop 83** = 82 masthead (the links and the pill share it) + 1 rule.
+ *  - **mobile 114** = 64 masthead + 1 rule + 48 item row + 1 rule;
+ *  - **desktop 77** = 76 masthead (the logo, the six items and the row's end) + 1 rule.
  *
  * TASK-176 (v2) changed both, deliberately: v1 was 96 / 138 with the search band gone (TASK-173).
  * The notice bar above it is a sibling that scrolls away; its height is content-driven and asserted
@@ -84,22 +86,11 @@ export const HEADER_STICKY_HEIGHTS = {
    * row plus the 1 px rule. The chip row is not drawn there, and neither is the strip.
    */
   phone: 65,
-  /** From `md` to `xl`: the 64 px row, the 56 px chip row and the rule. */
-  mobile: 121,
-  /** From `xl`: the one 82 px row and the rule. */
-  desktop: 83,
+  /** From `md` to `xl`: the 64 px row, the rule and the 48 px item row, and the rule. */
+  mobile: 114,
+  /** From `xl`: the one 76 px row and the rule. */
+  desktop: 77,
 } as const;
-
-/**
- * The id of the home's sentence picker (spec 004 §14 A21 clause 4; TASK-177 renders the form), the
- * target of the header's one action, "Send flowers".
- */
-export const SEND_ANCHOR = "send";
-
-/** The Send pill's URL: the locale home's sentence (`/en#send`). */
-export function headerSendHref(locale: string): string {
-  return `${localePath(locale, "home")}#${SEND_ANCHOR}`;
-}
 
 /**
  * The currency code the chip prints for a locale (AC-8): `en`→EUR, `en-gb`→GBP, `de`→EUR,
