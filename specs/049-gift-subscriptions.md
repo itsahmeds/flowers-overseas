@@ -238,10 +238,10 @@ emails/plan-confirmed.tsx, plan-delivery-moved.tsx, plan-cancelled.tsx
 
 **Dates**
 - **AC-5** `planSchedule` returns, for fixtures covering a 31st start, a 29 February year, a Polish Easter, Christmas and a DST change, exactly the expected dates: same day of month clamped to month end, moved forward to the first standard date, strictly increasing, at least 14 days apart; it returns `{ ok: false, reason: 'coverage' }` when the holiday data ends before the last target plus 14 days, and that length is then absent from the page and refused by the start route.
-- **AC-6** At step 3 and at placement the first date is re-checked at `now`; a first date that is no longer a standard date at least 2 days ahead reopens step 1 with the reason and places nothing.
+- **AC-6** (amended by §15 A-orchestrator-2026-10-25 item 1: step 4) At step 3 and at placement the first date is re-checked at `now`; a first date that is no longer a standard date at least 2 days ahead reopens step 1 with the reason and places nothing.
 
 **Checkout and payment**
-- **AC-7** A subscription draft shows no add-on row at step 2; step 3 lists every delivery date with weekday and month, the per-delivery price, the one total, VAT by rate and the plan pre-contract block (duration, no renewal, cancellation, trader identity, links) directly above the pay button, whose label names the amount.
+- **AC-7** (amended by §15 A-orchestrator-2026-10-25 items 1 and 3: step 4, no express) A subscription draft shows no add-on row at step 2; step 3 lists every delivery date with weekday and month, the per-delivery price, the one total, VAT by rate and the plan pre-contract block (duration, no renewal, cancellation, trader identity, links) directly above the pay button, whose label names the amount.
 - **AC-8** For a subscription draft, `checkoutMode()` returns `closed` where it would return `demo`; it returns `live` only when `legalReadiness()` and `planReadiness()` both hold, and a fixture making each `planReadiness()` term false in turn (terms `covers` lacks `subscription`, cancellation `covers` lacks `subscription`, `checkout.legal.plan.*` unreviewed, flag off) yields `closed` each time.
 - **AC-9** Placing a plan creates exactly one `subscription` (`pending_payment`) and exactly `n` `subscription_delivery` rows whose dates equal `planSchedule`'s and whose amounts sum to `total_minor`, in one transaction; a double submit or a refresh creates no second plan; the deferred sum trigger rejects a fixture whose amounts do not sum.
 - **AC-10** The plan's PaymentIntent (contract test against the Stripe fake and recorded fixtures) is created once, for `subscription.total_minor` in the plan's currency, with automatic capture, with `metadata.subject = 'subscription'` and without `setup_future_usage` or an attached saved payment method; `grep` finds no `off_session` or `setup_future_usage` under `src/`.
@@ -359,6 +359,19 @@ Each has a recommended default; "049 defaults" accepts all of them.
 - CRD Art. 9(2)(b): withdrawal period for regular deliveries runs from the first good. https://www.legislation.gov.uk/eudr/2011/83/article/9. CRD Art. 16(d): perishable goods exemption (summarised in `plan/07` §2.1).
 - Directive (EU) 2023/2673 (new CRD Art. 11a, withdrawal function for online contracts, from 19 June 2026). https://www.iubenda.com/en/blog/online-withdrawal-function-eu-directive-2023-2673/ and https://www.lexgo.be/en/news-and-articles/14873-the-online-withdrawal-button-a-new-mandatory-obligation-for-online-traders
 - BGB §312k (cancellation button for continuing obligations concluded online) and BGB §309 Nr. 9 (term limits): statutory position as summarised here; the lawyer confirms its application to a prepaid fixed-term plan.
+
+## 15. Amendments (post-approval corrections)
+
+**A-orchestrator-2026-10-25 (pointer and reading; no new AC or T id): a plan on the four-step checkout, plans sold only on the plan page, no express checkout for a plan (§2 "Buying a plan"; §5.3; §9 AC-6, AC-7; Appendix A).**
+**Status: binding as a reading of approved text** (this spec, approved 2026-10-24; spec 010 and spec 013 §14 A-founder-2026-10-25a) **and of the design** (PR 427: `wireframes/plan-page-*`, `checkout-plan-*`).
+
+1. **Four steps (design gap P3).** A plan's checkout runs: step 1 "Who are the flowers for?" (unchanged, with spec 016's `canServe`), step 2 "Your card" with the card message and **no add-on row**, step 3 "Your details" (the buyer's fields, no express panel, item 3), step 4 "Check and pay" with the plan review. §2's "Step 2 has the card message and buyer details" reads "Step 2 has the card message and no add-on row; step 3 has the buyer's details"; "Step 3 shows the plan summary …" reads step 4. AC-6 and AC-7 read "step 4" for the review; AC-7's "no add-on row at step 2" stands. T-06, T-07, §5.3's checkout row and Appendix A's "Step 3 heading" ("Check your monthly flowers") follow.
+2. **Plans only on the plan page (design gap P1).** A plan is sold only on its plan page, `/{locale}/{country}/{planSegment}`, which is the plan product's product page. No single bouquet's product page offers a plan choice, as this spec says (§2, §3) and as drawn. A plan choice on every product page would need a founder decision and its own amendment.
+3. **No express checkout for a plan (design gap P2).** AC-7 puts every delivery date, the total, VAT by rate and the plan pre-contract block directly above the pay button on the review step; spec 013's checkout express on step 3 would place the plan without that review. So a subscription draft's step 3 renders no express panel and no divider (spec 013 §14 A-orchestrator-2026-10-25 item 5), and the plan page renders no product page express panel. Step 4's Payment Element, with Apple Pay, Google Pay and Link by their flags, is unchanged.
+
+`## 0. Index` is regenerated (`pnpm specs:index`).
+
+Raised by: the orchestrator's work order of 2026-10-25 (section J), from design PR 427's gaps; written by the spec writer. Cites §2, §3, §5.3, AC-6, AC-7, Appendix A; spec 010 §14 A-founder-2026-10-25a; spec 013 §14 A-founder-2026-10-25a (X.1, X.2), A-orchestrator-2026-10-25.
 
 ## Appendix A: English copy for the founder's batch (proposed, `reviewed: false`)
 
