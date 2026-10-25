@@ -156,7 +156,11 @@
     "currency": {
       "label": "Prices shown in {currency}"
     },
-    "send": "Send flowers"
+    "send": "Send flowers",
+    "mega": {
+      "byPrice": "By price",
+      "comingUp": "Coming up"
+    }
   },
   "footer": {
     "group": {
@@ -440,13 +444,10 @@
       }
     },
     "trending": {
-      "heading": "Popular <em>choices</em>",
-      "basis": "Our picks until real orders start."
+      "heading": "Popular <em>choices</em>"
     },
     "dates": {
-      "eyebrow": "Coming up in Poland",
-      "heading": "Dates worth <em>sending for</em>",
-      "orderBy": "Order by {date}, {time}"
+      "heading": "Dates worth <em>sending for</em>"
     },
     "occasions": {
       "eyebrow": "Shop by occasion",
@@ -496,6 +497,9 @@
       "label": "Where should the flowers go?",
       "search": "Search all countries",
       "submit": "Show prices"
+    },
+    "comingUp": {
+      "more": "and {count} more"
     }
   },
   "finder": {
@@ -704,7 +708,8 @@
       "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
       "sortLabel": "Sort by",
       "submit": "Sort",
-      "reorderLabel": "Change the order"
+      "reorderLabel": "Change the order",
+      "howWeSort": "How we sort"
     },
     "sort": {
       "default": "Our order",
@@ -785,7 +790,19 @@
       "noMatch": "We could not find “{query}”.",
       "closest": "Did you mean <countries></countries>?",
       "all": "Every country we send to"
-    }
+    },
+    "price": {
+      "choose": "Choose a country to see the price",
+      "bandWord": {
+        "low": "Lower prices",
+        "mid": "Middle prices",
+        "high": "Higher prices"
+      }
+    },
+    "cta": {
+      "chooseCountry": "Choose where to send"
+    },
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
   },
   "categoryHub": {
     "h1": "{entity} to send abroad",

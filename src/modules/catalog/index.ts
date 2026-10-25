@@ -465,6 +465,17 @@ export {
   resolveCountryInput,
 } from "./chooser-choice";
 export { ChooserPage, type ChooserPageProps } from "./ui/ChooserPage";
+// The locale home's model, products first (spec 004 §14 A-founder-2026-10-24a item 4; TASK-386,
+// TASK-387): the picker, the whole core range as country-less cards, the occasion tabs, the price
+// words and "Coming up", with the dedupe rule (AC-98). No price is read.
+export {
+  type HomeData,
+  type HomeOccasion,
+  type HomeProduct,
+  type HomeViewOptions,
+  dedupeSection,
+  homeView,
+} from "./home";
 
 // The corridor page's shop entry (spec 007 §2 "Internal links", spec 008 §2 "Links", AC-20;
 // TASK-113). `src/modules/geo` cannot read the catalogue — the dependency runs catalog → geo — so

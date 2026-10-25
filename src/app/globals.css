@@ -795,10 +795,9 @@ html[data-fo-motion] [data-fo-header]:has(details[data-fo-menu][open]) {
  * Short screens (spec 004 §14 A-founder-2026-10-19c clause 5, AC-47, AC-48; TASK-282): under
  * 500 CSS px tall, at any width — a laptop at 200 % zoom (640 × 400), a phone on its side
  * (844 × 390) — the header scrolls away with the page, the docked action bar is not drawn (every
- * action in it has a twin in the flow, AC-48), and the home cover gives the H1 the first screen:
- * on the phone layout the cover is the viewport less the 65 px header, and from `md` up the hero
- * drops its 560 px floor and takes the height of its card. CSS only, so the header's box is the
- * same before and after hydration (AC-7); at 500 px tall and above nothing here applies.
+ * action in it has a twin in the flow, AC-48). CSS only, so the header's box is the same before
+ * and after hydration (AC-7); at 500 px tall and above nothing here applies. (The v3 home has no
+ * full-screen cover to shorten, TASK-386.)
  */
 @media (max-height: 500px) {
   [data-fo-header] {
@@ -815,25 +814,6 @@ html[data-fo-motion] [data-fo-header]:has(details[data-fo-menu][open]) {
 
   body:has([data-fo-action-bar]) [data-fo-consent-sheet="fixed"] {
     inset-block-end: 0;
-  }
-
-  [data-fo-hero-photo] {
-    block-size: calc(100svh - 65px);
-    min-block-size: 0;
-  }
-
-  @media (width >= 48rem) {
-    [data-fo-hero] {
-      block-size: auto;
-    }
-
-    [data-fo-hero-photo] {
-      block-size: auto;
-    }
-
-    [data-fo-hero-frame] {
-      padding-block: 16px;
-    }
   }
 }
 
@@ -1504,4 +1484,29 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
       }
     }
   }
+}
+
+/*
+ * The home's occasion tabs (spec 004 §14 A-founder-2026-10-24a item 4.4, AC-97; TASK-387): one
+ * native radio group, no script. Every panel is in the server HTML; only the checked tab's panel
+ * displays, the others are `display: none`. One rule per position, up to the six keys of
+ * `HOME_OCCASION_TABS`.
+ */
+[data-fo-occasion-tabs] [data-fo-occasion-panel] {
+  display: none;
+}
+
+[data-fo-occasion-tabs]:has([data-fo-occasion-tab="0"]:checked)
+  [data-fo-occasion-panel="0"],
+[data-fo-occasion-tabs]:has([data-fo-occasion-tab="1"]:checked)
+  [data-fo-occasion-panel="1"],
+[data-fo-occasion-tabs]:has([data-fo-occasion-tab="2"]:checked)
+  [data-fo-occasion-panel="2"],
+[data-fo-occasion-tabs]:has([data-fo-occasion-tab="3"]:checked)
+  [data-fo-occasion-panel="3"],
+[data-fo-occasion-tabs]:has([data-fo-occasion-tab="4"]:checked)
+  [data-fo-occasion-panel="4"],
+[data-fo-occasion-tabs]:has([data-fo-occasion-tab="5"]:checked)
+  [data-fo-occasion-panel="5"] {
+  display: block;
 }

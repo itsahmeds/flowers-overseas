@@ -1,48 +1,37 @@
 /**
- * `HomeHero` — the locale home's first screen, round 2: **desktop option A** and **phone option 1**
- * (spec 004 §14 A23 clause 1 "Round-2 picks", A24 clauses 4 (f), 5 and 7, **AC-46**; TASK-196;
- * `docs/design/wireframes/home-desktop.dc.html` `.oa`, `home-mobile.dc.html` `.m1`).
+ * `HomeHero` — the locale home's first screen, v3, products first (spec 004 §14
+ * A-founder-2026-10-24a item 4.2, AC-92, AC-94; TASK-386;
+ * `docs/design/wireframes/home-desktop.dc.html` and `home-mobile.dc.html`, `.cm-hero`).
  *
- * The founder picked both on 2026-10-05 ("A homepage is good", "home 1"). One DOM serves both:
+ * A short first screen, so the first product card is in it: the eyebrow (from `md`), the H1, one
+ * promise line and **the picker**, the chooser's form inline (`CountryPicker` `variant="home"`):
+ * one button per shop country up to `PICKER_CHIPS`, the searchable field, "Show prices" and the
+ * remember line. It submits to the chooser with an empty `next` (the chosen country's shop root);
+ * native HTML, no script. TASK-394's trust row goes inside the card, under the remember line.
  *
- *  - **Desktop (`md` and up).** The flat-lay fills the first screen edge to edge under the chrome:
- *    its block size is `clamp(560px, 100svh − the chrome, 826px)`, so its block-start edge is the
- *    chrome's block-end edge and its block-end edge is at or above the viewport's foot at
- *    1280 × 800, 1440 × 900 and 1512 × 945. It crops with the window (`object-fit: cover`,
- *    `object-position: 64% 50%`, so the flowers stay right of centre); this image alone is exempt
- *    from `--hero-photo-max` (A24 clause 5). Over it, on the frame's 12-column grid, one white card
- *    on columns 1–5, vertically centred, holds the eyebrow, the H1, the one supporting line and,
- *    under a rule, the sentence and Continue. The card is the one overlap and its airmail edge the
- *    one device (A24 clause 7). The card's inline-start edge is the logo's (x 56 at 1440 and 1280,
- *    the frame's x above 1440), and its text is 36 px in (x 92).
- *  - **Phone (below `md`).** The flat-lay is the screen: the header (65 px), the cover at
- *    `min(703px, 100svh − 141px)` (at least 420 px) and the docked bar (76 px, mounted by the page)
- *    together equal the viewport at 390 × 844. The eyebrow, the H1 and its line sit at the cover's
- *    foot on the ink fade (`--color-cover-fade`, whose contrast over white is a unit test,
- *    `./cover-fade.ts`). The fade climbs from transparent over the copy's 96 px block-start padding
- *    (`COVER_FADE_RAMP_PX`), so every glyph sits on its full alpha. The sentence card follows
- *    directly below the fold, `#send`, which the bar's Send flowers links to; the airmail edge
- *    moves with the white card onto it.
+ * Beside it from `md`, on columns 8 to 12 of the frame's 12-column grid, the photograph at 370 px
+ * (41 % of a 900 px viewport, inside item 4.2's 45 % cap) and under it, while no destination takes
+ * orders, spec 043 AC-8's state line, then `shop.hub.noMoney` once ("beside the picker", item 2).
+ * **Below `md` there is no photograph above the first product** (item 4.2): its box is not drawn,
+ * and its `<picture>` selects a blank source there, so nothing downloads; the two lines follow the
+ * picker. One DOM for both: one `<h1>`, one form.
  *
- * Below `md` the frame and the card are `display: contents`, so the copy and the form become items
- * of the band's own two-row grid (cover, then the card) without a second copy of either in the
- * document: one `<h1>`, one form, one `<img>` (AC-10, A24 clause 5's single priority image).
+ * The photograph is the page's `priority` image from `md` up only (`displayedAt="md-up"`, its
+ * preload carrying that `media`); below `md` the first product card's photograph is
+ * (`HomeSelection`), so the two preloads never overlap (AC-94).
  *
- * The photograph is `MediaAsset` for `home-hero`, `priority`: the page's one `fetchpriority="high"`
- * image and its one preload, from the same lookup (spec 006 AC-19), `sizes="100vw"`. With no
- * displayable asset it is the captioned `--color-photo` box in the same box, with no `<img>`.
- *
- * Copy: shipped strings only (`home.hero.*`, `home.sentence.*`, `finder.submit`). The phone
- * artboard prints the proposition's first sentence alone; there is no such key, so the cover
- * carries the whole reviewed proposition (`docs/design/README.md`).
+ * The phone H1 is the board's 32 px with `7.95vw` as its ceiling, 31 px at 390: the one-line H1 the
+ * board draws at 390 fills 345 of its 350 px on macOS and wrapped on the Linux runner, so the
+ * ceiling keeps it on one line on both.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
+import { CountryPicker } from "../shop/CountryPicker.tsx";
 import { Display, Eyebrow } from "../primitives/typography.tsx";
 
-import { SentencePicker } from "./SentencePicker.tsx";
+import type { HomeView } from "./home-view.ts";
 
 /**
  * The home sections' inline padding: the page frame's edge on a full-bleed band. Each section
@@ -59,17 +48,27 @@ export const HOME_BLEED =
  */
 export const HOME_SECTION = "py-(--section-fluid)";
 
+/**
+ * The v3 home's tighter rhythm (`.cm-sec`): 32 px on a phone, 44 px from `md`, so the first
+ * product and every section after it come sooner (spec 004 §14 A-founder-2026-10-24a item 4).
+ */
+export const HOME_V3_SECTION = "py-[32px] md:py-[44px]";
+
 /** The band's photograph in `seed/data/media.json` (spec 006 §2.4; TASK-080). */
 export const HOME_HERO_ASSET = "home-hero";
 
 /**
+ * The photograph's rendered width: columns 8 to 12 of the 1,328 px frame (534 px at 1,440 and
+ * above), about 37 % of the window between `md` and that. Smaller than the old full-bleed cover's
+ * `100vw`, so the LCP image is lighter.
+ */
+const HERO_PHOTO_SIZES = "(min-width: 90rem) 534px, 37vw";
+
+/**
  * Motion 5 (spec 004 §14 A24 clause 9; `system/motion.dc.html` cell 5; TASK-283): the H1's one
- * phrase (`HEADING_EM`'s `<em data-fo-em>`, the same split of the same reviewed string) carries
- * the sunflower underline as an inline, `aria-hidden` SVG laid under its words.
- * `globals.css` (`#hero-heading [data-fo-em]`) places it out of flow, so the H1's text never
- * moves, and draws it once, 500 ms after load, with `stroke-dashoffset`; under reduced motion,
- * and with no CSS animation at all, it is drawn from the start. The path is the sheet's. Below
- * 390 px the phrase is its own line, as wide as its words (`w-fit`), so the line stays under them.
+ * phrase carries the sunflower underline as an inline, `aria-hidden` SVG laid under its words
+ * (`globals.css`, `#hero-heading [data-fo-em]`), drawn once after load; under reduced motion it is
+ * drawn from the start.
  */
 const HERO_HEADING_EM = {
   em: (chunks: ReactNode): ReactElement => (
@@ -87,96 +86,100 @@ const HERO_HEADING_EM = {
   ),
 } as const;
 
-/**
- * The chrome above the band, in px, per breakpoint: the utility strip and the sticky header with
- * its rule, measured on the built page (TASK-196): 62 + 83 = 145 from `xl` (the artboard's chrome
- * is 119; the shipped TASK-195 chrome is taller, and the band follows the code), 62 + 121 = 183
- * from `lg` (the header's second row) and 81.6 + 121 from `md` (the strip wraps). The band's block
- * size subtracts it, so the photograph ends at or above the viewport's foot (AC-46).
- */
-const CHROME_BLOCK =
-  "md:[--home-chrome:203px] lg:[--home-chrome:183px] xl:[--home-chrome:145px]";
-
 export interface HomeHeroProps {
   readonly locale: string;
+  readonly picker: HomeView["picker"];
+  /** No destination takes orders yet: spec 043 AC-8's state line is drawn. */
+  readonly notOpen: boolean;
   /** `h1` on the locale home; `h2` in `/dev/components`, which has its own `<h1>`. */
   readonly headingLevel?: "h1" | "h2";
-  /** Is this band the document's single LCP candidate? `false` in the gallery. */
+  /** Is the photograph the page's LCP candidate from `md` up? `false` in the gallery. */
   readonly priority?: boolean;
-  /** ISO codes whose shop root exists in this locale — handed to the sentence picker. */
-  readonly shopCountries?: readonly string[];
 }
 
 export function HomeHero({
   locale,
+  picker,
+  notOpen,
   headingLevel = "h1",
   priority = true,
-  shopCountries = [],
 }: HomeHeroProps): ReactElement {
-  const t = useTranslations("home");
+  const t = useTranslations();
 
   return (
     <section
-      className={`relative grid grid-cols-[minmax(0,1fr)] [grid-template-areas:'cover'_'send'] md:block md:h-[clamp(560px,calc(100svh-var(--home-chrome)),826px)] ${CHROME_BLOCK}`}
+      className={`pt-[8px] md:pt-[26px] ${HOME_BLEED}`}
       aria-labelledby="hero-heading"
-      data-fo-hero
+      data-fo-hero=""
     >
-      {/* The cover: the viewport minus the phone header (65) and the docked bar (76). */}
-      <div
-        className="relative h-[min(703px,calc(100svh-141px))] min-h-[420px] overflow-hidden max-md:[grid-area:cover] md:absolute md:inset-0 md:h-auto md:min-h-0 [&_img]:object-[58%_40%] max-md:[&_img]:origin-[58%_40%] max-md:[&_img]:scale-[1.12] md:[&_img]:object-[64%_50%] [&>[data-fo-media-asset]]:h-full [&>[data-fo-media-asset]]:rounded-none"
-        data-fo-hero-photo
-      >
-        <MediaAsset
-          assetId={HOME_HERO_ASSET}
-          locale={locale}
-          slot="hero"
-          priority={priority}
-        />
-      </div>
-      <div
-        className={`max-md:contents md:relative md:grid md:h-full md:grid-cols-12 md:items-center md:gap-x-[clamp(24px,2.22vw,32px)] ${HOME_BLEED}`}
-        data-fo-hero-frame
-      >
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-y-[6px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)]">
         <div
-          className="md:airmail-edge md:bg-surface-card md:rounded-letter md:shadow-letter max-md:contents md:col-span-8 md:grid md:gap-[18px] md:overflow-hidden md:px-[36px] md:pt-[34px] md:pb-[32px] lg:col-span-6 xl:col-span-5"
-          data-fo-hero-card
+          className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-[6px] md:col-span-7 md:gap-[14px]"
+          data-fo-hero-copy=""
         >
-          <div
-            className="relative grid gap-[12px] self-end px-(--gutter-s) pt-[96px] pb-[24px] max-md:bg-[linear-gradient(to_bottom,transparent,var(--color-cover-fade)_96px)] max-md:[grid-area:cover] md:gap-[18px] md:p-0"
-            data-fo-hero-copy
+          <Eyebrow className="m-0 max-md:hidden">
+            <span data-fo-hero-eyebrow="">{t("home.hero.eyebrow")}</span>
+          </Eyebrow>
+          <Display
+            as={headingLevel}
+            id="hero-heading"
+            size="hero"
+            className="m-0 text-[clamp(26px,7.95vw,32px)] leading-[1.04] tracking-[-0.025em] [font-variation-settings:var(--font-variation-display-hero)] md:text-[56px] md:leading-none max-[390px]:[&_em]:block max-[390px]:[&_em]:w-fit"
           >
-            <Eyebrow className="max-md:text-on-inverse-accent">
-              <span data-fo-hero-eyebrow>{t("hero.eyebrow")}</span>
-            </Eyebrow>
-            {/* The document's one `<h1>` (AC-10): the hero step on the phone cover, the title step
-                in the desktop card (the artboards' `.t-hero` and `.t-title`).
-                Below the phone artboard's 390 px the italic phrase starts its own line: at 50 px
-                (the hero's floor) "someone far away." is 318 of the 320 px a 360 screen leaves, so
-                whether it wrapped hung on sub-pixel advances, and Fraunces and its matched
-                fallback broke it differently on Linux. The cover's copy then rose a line when the
-                italic swapped in (CLS 0.158 at 360 × 640, AC-39). From 390 it follows "someone",
-                as drawn, with 30 px to spare (TASK-231). */}
-            <Display
-              as={headingLevel}
-              id="hero-heading"
-              size="hero"
-              className="md:text-title-fluid max-md:text-on-inverse max-md:[&_em]:text-on-inverse-accent leading-(--text-hero-fluid--line-height) tracking-(--text-hero-fluid--letter-spacing) [font-variation-settings:var(--font-variation-display-hero)] md:leading-(--text-title-fluid--line-height) md:tracking-(--text-title-fluid--letter-spacing) max-[390px]:[&_em]:block max-[390px]:[&_em]:w-fit"
-            >
-              {t.rich("hero.heading", HERO_HEADING_EM)}
-            </Display>
+            {t.rich("home.hero.heading", HERO_HEADING_EM)}
+          </Display>
+          <p
+            className="text-ink-muted m-0 max-w-[48ch] text-sm leading-[1.35] md:text-[19px] md:leading-[1.45]"
+            data-fo-hero-line=""
+          >
+            {t("home.hero.proposition")}
+          </p>
+          {/* `#send`: the header's "Send flowers" lands on the picker until the mega menu
+              retires the pill (TASK-383). */}
+          <div id="send">
+            <CountryPicker
+              action={picker.action}
+              variant="home"
+              idPrefix="pk"
+              label={t("home.picker.label")}
+              searchLabel={t("home.picker.search")}
+              submitLabel={t("home.picker.submit")}
+              rememberLine={t("shop.choose.remember")}
+              chips={picker.chips}
+              datalist={picker.datalist}
+            />
+          </div>
+        </div>
+        <div className="grid content-start gap-[16px] md:col-span-5">
+          <div
+            className="rounded-hero bg-paper-2 h-[370px] overflow-hidden max-md:hidden [&_img]:object-[60%_50%] [&>[data-fo-media-asset]]:h-full [&>[data-fo-media-asset]]:rounded-none"
+            data-fo-home-photo=""
+          >
+            <MediaAsset
+              assetId={HOME_HERO_ASSET}
+              locale={locale}
+              slot="hero"
+              priority={priority}
+              displayedAt="md-up"
+              sizes={HERO_PHOTO_SIZES}
+            />
+          </div>
+          <div className="grid gap-[4px] md:gap-[6px]" data-fo-hero-state="">
+            {notOpen ? (
+              <p
+                className="text-ink-muted m-0 text-xs leading-[1.35] md:text-sm md:leading-[1.45]"
+                data-fo-home-state=""
+              >
+                {t("destinations.state.guideNotDelivering")}
+              </p>
+            ) : null}
             <p
-              className="text-ui md:text-lede-fluid md:text-ink-muted max-md:text-on-inverse m-0 max-w-[32ch] leading-[1.5] md:max-w-[38ch]"
-              data-fo-hero-line
+              className="text-ink-muted m-0 max-w-[64ch] text-xs leading-[1.35] md:text-sm md:leading-[1.45]"
+              data-fo-no-money=""
             >
-              {t("hero.proposition")}
+              {t("shop.hub.noMoney")}
             </p>
           </div>
-          <hr className="border-rule mt-[4px] hidden border-0 border-t md:block" />
-          <SentencePicker
-            locale={locale}
-            shopCountries={shopCountries}
-            className="max-md:airmail-edge max-md:bg-surface-card max-md:rounded-letter max-md:shadow-letter max-md:mx-(--gutter-s) max-md:mt-[28px] max-md:px-[20px] max-md:pt-[16px] max-md:pb-[22px] max-md:[grid-area:send]"
-          />
         </div>
       </div>
     </section>

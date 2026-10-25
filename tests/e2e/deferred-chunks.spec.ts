@@ -184,16 +184,12 @@ test.describe("no deferred chunk starts before the LCP (AC-55, T-60)", () => {
           .toEqual([]);
       }
 
-      // The first interaction with its control loads each interaction island: the sentence's,
-      // on a home.
-      const interaction = LOCALE_HOMES.has(url)
-        ? (["home-sentence"] as const)
-        : ([] as const);
-      // Close the popup (its own Esc), then the first interaction with each control: on a home a
-      // focus on the sentence's first select.
+      // The first interaction with its control loads each interaction island. The sentence's was
+      // the home's; the v3 home draws no sentence (TASK-386), so no audited page has one today.
+      const interaction: readonly DeferredIslandId[] = [];
+      // Close the popup (its own Esc).
       await page.keyboard.press("Escape");
       await expect(page.locator("dialog[data-fo-language-popup]")).toBeHidden();
-      if (LOCALE_HOMES.has(url)) await page.locator("#send-who").focus();
       await page.waitForFunction(
         (marks) =>
           marks.every((mark) => performance.getEntriesByName(mark).length > 0),

@@ -19,7 +19,7 @@ import { type BrowserContext, expect, test } from "@playwright/test";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 /**
- * The home's occasion-dates band leaves the layout in every home shot here (`./home-dates.css`
+ * The home's dated band ("Coming up" since TASK-387) leaves the layout in every home shot here (`./home-dates.css`
  * says why): the band prints a calendar, and a calendar edit must not move the rest of the page.
  * The band keeps its own baselines in `./home.spec.ts`.
  */

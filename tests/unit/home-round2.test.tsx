@@ -28,21 +28,39 @@ import { describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import en from "../../messages/en.json";
-import { listProductPages } from "../../src/modules/catalog";
 import { type MessageNamespace, loadMessages } from "../../src/modules/i18n";
 import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
 import { HowItWorks } from "../../src/modules/ui/home/HowItWorks.tsx";
-import { OccasionDates } from "../../src/modules/ui/home/OccasionDates.tsx";
+import { HomeComingUp } from "../../src/modules/ui/home/HomeComingUp.tsx";
+import { HomeOccasionTabs } from "../../src/modules/ui/home/HomeOccasionTabs.tsx";
+import { HomeSelection } from "../../src/modules/ui/home/HomeSelection.tsx";
 import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
+import type {
+  HomeCardView,
+  HomeView,
+} from "../../src/modules/ui/home/home-view.ts";
 import { ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
 import {
   SELECT_INK_ROOM,
   SentencePicker,
 } from "../../src/modules/ui/home/SentencePicker.tsx";
-import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
-import { stampNames } from "../../src/modules/ui/home/OccasionDates.tsx";
+
+/** One country-less card, as `homeView()` builds them. */
+const CARD: HomeCardView = {
+  productId: "FO-BQ-001",
+  name: "Amber Hour",
+  href: "/en/choose-country/product/amber-hour",
+  photo: { kind: "placeholder", slot: "grid" },
+  provenance: "ai",
+};
+
+const PICKER: HomeView["picker"] = {
+  action: "/api/choose/en",
+  chips: [{ code: "pl", name: "Poland" }],
+  datalist: ["Poland"],
+};
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 type Locale = (typeof LOCALES)[number];
@@ -92,15 +110,21 @@ const HEADINGS: readonly {
   {
     name: "hero",
     render: (locale) =>
-      render(<HomeHero locale={locale} shopCountries={["PL"]} />, locale),
+      render(<HomeHero locale={locale} picker={PICKER} notOpen />, locale),
     id: "hero-heading",
     words: { en: "Flowers for someone far away." },
     em: { en: "far away." },
   },
   {
     name: "Popular choices",
-    render: (locale) => render(<TrendingRow locale={locale} />, locale),
-    id: "trending-heading",
+    render: (locale) =>
+      render(
+        <HomeSelection
+          selection={{ cards: [CARD], seeAllHref: "/en/choose-country" }}
+        />,
+        locale,
+      ),
+    id: "selection-heading",
     words: {
       en: "Popular choices",
       de: "Beliebte Auswahl",
@@ -110,14 +134,43 @@ const HEADINGS: readonly {
   },
   {
     name: "dates",
-    render: (locale) => render(<OccasionDates locale={locale} />, locale),
-    id: "occasion-dates-heading",
+    render: (locale) =>
+      render(
+        <HomeComingUp
+          comingUp={[
+            {
+              key: "christmas",
+              labelKey: "catalog.facet.occasion.christmas",
+              dateIso: "2026-12-25",
+              date: "Fri 25 Dec",
+              countries: "France, Germany",
+              more: 5,
+              cards: [CARD],
+            },
+          ]}
+        />,
+        locale,
+      ),
+    id: "coming-up-heading",
     words: { en: "Dates worth sending for" },
     em: { en: "sending for" },
   },
   {
     name: "occasions",
-    render: (locale) => render(<OccasionTiles locale={locale} />, locale),
+    render: (locale) =>
+      render(
+        <HomeOccasionTabs
+          occasions={[
+            {
+              key: "birthday",
+              labelKey: "catalog.facet.occasion.birthday",
+              cards: [CARD],
+              total: 1,
+            },
+          ]}
+        />,
+        locale,
+      ),
     id: "occasions-heading",
     words: { en: "What is the occasion?" },
     em: { en: "occasion?" },
@@ -168,17 +221,8 @@ describe("one poppy italic phrase in each drawn home heading (TASK-231; A21 clau
     });
   }
 
-  it("recolours the cover's phrase sunflower on the phone, poppy elsewhere", () => {
-    const html = render(<HomeHero locale="en" shopCountries={["PL"]} />, "en");
-    const h1 = (/<h1[^>]*class="([^"]*)"/u.exec(html)?.[1] ?? "").replaceAll(
-      "&amp;",
-      "&",
-    );
-    expect(h1.split(" ")).toContain("max-md:[&_em]:text-on-inverse-accent");
-  });
-
   it("puts the phrase on its own line from 360 to 389 px, the CLS fix (TASK-231)", () => {
-    const html = render(<HomeHero locale="en" shopCountries={["PL"]} />, "en");
+    const html = render(<HomeHero locale="en" picker={PICKER} notOpen />, "en");
     const h1 = (/<h1[^>]*class="([^"]*)"/u.exec(html)?.[1] ?? "").replaceAll(
       "&amp;",
       "&",
@@ -216,96 +260,6 @@ describe('"Continue →" and the country select (TASK-231)', () => {
   });
 });
 
-describe("the date stamps (TASK-232 item 2)", () => {
-  it("splits a reviewed name at its ` · ` and leaves a single name whole", () => {
-    expect(stampNames("Wigilia · Christmas Eve")).toEqual({
-      name: "Wigilia",
-      second: "Christmas Eve",
-    });
-    expect(stampNames("Andrzejki")).toEqual({
-      name: "Andrzejki",
-      second: undefined,
-    });
-  });
-
-  it("sets the second name on its own italic line, with no arrow, in four locales", () => {
-    for (const locale of LOCALES) {
-      const html = render(
-        <OccasionDates
-          locale={locale}
-          hubHrefs={{ all_saints: "/x", christmas: "/y", womens_day: "/z" }}
-        />,
-        locale,
-      );
-      const seconds = [
-        ...html.matchAll(
-          /<span class="([^"]*)" data-fo-stamp-second="true">([^<]*)<\/span>/gu,
-        ),
-      ];
-      expect(
-        seconds.map((match) => match[2]),
-        locale,
-      ).toEqual([
-        "Wszystkich Świętych",
-        "St Andrew&#x27;s Eve",
-        "Christmas Eve",
-        "Dzień Kobiet",
-      ]);
-      for (const match of seconds) {
-        expect(match[1]?.split(" "), locale).toEqual(
-          expect.arrayContaining([
-            "font-display",
-            "italic",
-            "font-(--font-weight-display-em)",
-          ]),
-        );
-      }
-      expect(html, locale).not.toContain(" · ");
-      expect(html, locale).not.toContain("→");
-      expect(html, locale).not.toContain("content-[");
-    }
-  });
-
-  it("gives a linked stamp its lift and a stamp with no page none, and no link", () => {
-    const html = render(
-      <OccasionDates
-        locale="en"
-        hubHrefs={{ all_saints: "/en/occasions/all-saints-day" }}
-      />,
-      "en",
-    );
-    const item = (id: string): string =>
-      new RegExp(
-        `<li[^>]*data-fo-occasion-date="${id}"[^>]*>.*?</li>`,
-        "u",
-      ).exec(html)?.[0] ?? "";
-    expect(item("allSaints")).toContain('href="/en/occasions/all-saints-day"');
-    expect(item("allSaints")).toMatch(/^<li class="drop-shadow-\[/u);
-    expect(item("allSaints")).toContain('data-fo-stamp-linked="true"');
-    for (const id of ["andrzejki", "wigilia", "womensDay"]) {
-      expect(item(id), id).not.toContain("href=");
-      expect(item(id), id).not.toContain("drop-shadow");
-      expect(item(id), id).toContain('data-fo-stamp-linked="false"');
-    }
-  });
-
-  it("lays the stamps two across from `md`, four from `lg`, the drawn five from `xl`", () => {
-    const list =
-      /<ul class="([^"]*)"/u.exec(
-        render(<OccasionDates locale="en" />, "en"),
-      )?.[1] ?? "";
-    const classes = list.split(" ");
-    expect(classes).toEqual(
-      expect.arrayContaining([
-        "md:grid-cols-2",
-        "lg:grid-cols-4",
-        "xl:grid-cols-5",
-      ]),
-    );
-    expect(classes).not.toContain("md:grid-cols-5");
-  });
-});
-
 describe('"Occasions →" (TASK-232 item 3; A20, AC-14)', () => {
   it("links the occasions index beside the heading when the page hands it in", () => {
     const html = render(
@@ -330,65 +284,6 @@ describe('"Occasions →" (TASK-232 item 3; A20, AC-14)', () => {
 });
 
 describe("the phone rows (TASK-232 items 5 and 6)", () => {
-  /**
-   * Item 5A (TASK-284; TASK-252 "all A", founder 2026-10-19; AC-49): below `md` Popular choices
-   * is one row that scrolls sideways, each card 44 % of the row with a 14 px gap, bled to the
-   * screen's edges by the gutter; from `md` one row of five, unchanged. The geometry is the e2e's.
-   */
-  it("lays Popular choices out as one sideways row below `md` and five across from `md`", async () => {
-    const pages = await listProductPages("en");
-    const html = render(<TrendingRow locale="en" productPages={pages} />, "en");
-    const list = /<ul([^>]*)>/u.exec(html)?.[1] ?? "";
-    const classes = (/class="([^"]*)"/u.exec(list)?.[1] ?? "").split(" ");
-    expect(classes).toEqual(
-      expect.arrayContaining([
-        "grid",
-        "max-md:grid-flow-col",
-        "max-md:auto-cols-[44%]",
-        "max-md:gap-x-[14px]",
-        "max-md:overflow-x-auto",
-        "max-md:snap-x",
-        "max-md:snap-mandatory",
-        "max-md:-mx-(--gutter-s)",
-        "max-md:px-(--gutter-s)",
-        "max-md:scroll-px-(--gutter-s)",
-        "md:grid-cols-5",
-        "md:gap-x-[24px]",
-      ]),
-    );
-    // No two-column grid left behind on the phone (the blank half row of five in two columns).
-    expect(classes).not.toContain("grid-cols-2");
-    // Named by the section's own heading; every card is a link, so the row takes no tab stop.
-    expect(list).toContain('aria-labelledby="trending-heading"');
-    expect(list).not.toContain("tabindex");
-    // Nothing is called a carousel (AC-36).
-    expect(html).not.toContain("aria-roledescription");
-    const items = [...html.matchAll(/<li class="([^"]*)"/gu)].map(
-      (match) => match[1] ?? "",
-    );
-    expect(items).toHaveLength(5);
-    for (const item of items)
-      expect(item.split(" ")).toContain("max-md:snap-start");
-    // The drawn name size in the scroller (`.M .grid5.scroll5 .card h3`, 19 px), `h3` from `md`.
-    const names = [...html.matchAll(/<h3 class="([^"]*)"/gu)].map((match) =>
-      (match[1] ?? "").split(" "),
-    );
-    expect(names).toHaveLength(5);
-    for (const name of names) {
-      expect(name).toEqual(
-        expect.arrayContaining(["text-[19px]", "md:text-h3"]),
-      );
-      expect(name).not.toContain("text-h3-s");
-    }
-  });
-
-  it("makes the row itself the keyboard's stop when no card is a link (AC-49)", () => {
-    const list =
-      /<ul([^>]*)>/u.exec(render(<TrendingRow locale="en" />, "en"))?.[1] ?? "";
-    expect(list).toContain('tabindex="0"');
-    expect(list).toContain('aria-labelledby="trending-heading"');
-  });
-
   it("scrolls the destination chips in one row below `md`, named by the heading", () => {
     const html = render(<DestinationsGrid locale="en" />, "en");
     const list =

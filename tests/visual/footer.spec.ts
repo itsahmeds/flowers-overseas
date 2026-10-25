@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import { type BrowserContext, expect, test } from "@playwright/test";
 
 /**
- * The footer is photographed on the locale home, below its occasion-dates band, so the band leaves
+ * The footer is photographed on the locale home, below its dated band ("Coming up" since TASK-387), so the band leaves
  * the layout (`./home-dates.css` says why): a calendar edit must not move the footer's pixels
  * (TASK-177).
  */

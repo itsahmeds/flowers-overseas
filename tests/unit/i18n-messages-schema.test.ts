@@ -259,6 +259,11 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // Spec 004 §14 A-founder-2026-10-24a, the commerce structure: TASK-385's chooser keys
+    // (`home.picker.*`, `shop.choose.*`) and TASK-386/387's home keys (`shop.price.choose`,
+    // `shop.cta.chooseCountry`, `shop.seeAll`, `shop.price.bandWord.*`, `shop.toolbar.howWeSort`,
+    // `nav.mega.byPrice`, `nav.mega.comingUp`, `home.comingUp.more`), each the amendment's i18n
+    // table's text, `reviewed: false` until the founder's own record-approval run attests it.
     // TASK-242/243 (spec 003 §14 A-founder-2026-10-15a): head copy without a dash. The approved
     // targets ("specs ok", 2026-10-15; the home title and description by the founder's own words,
     // 2026-10-18) ship `reviewed: false` until the founder's record run attests the exact values.
@@ -317,6 +322,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     "company.controller",
+    "consent.cookies.dest.purpose",
     "consent.privacyLink",
     // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide
     // calendar's Rule column in words, approved in the 2026-10-04 batch ("approve copy") and
@@ -328,6 +334,10 @@ describe("the shipped catalogues and manifests", () => {
     // "Status" label ship `reviewed: false` until the founder's own record-approval run.
     "footer.link.deliveryAndPayment",
     // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
+    "home.comingUp.more",
+    "home.picker.label",
+    "home.picker.search",
+    "home.picker.submit",
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
     "infoPages.contact.heading",
@@ -346,6 +356,8 @@ describe("the shipped catalogues and manifests", () => {
     "infoPages.legal.unreviewed",
     "infoPages.legal.version",
     "infoPages.status.notYetOpen",
+    "nav.mega.byPrice",
+    "nav.mega.comingUp",
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
@@ -404,6 +416,19 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+
+    "shop.choose.all",
+    "shop.choose.closest",
+    "shop.choose.continue",
+    "shop.choose.noMatch",
+    "shop.choose.remember",
+    "shop.cta.chooseCountry",
+    "shop.price.bandWord.high",
+    "shop.price.bandWord.low",
+    "shop.price.bandWord.mid",
+    "shop.price.choose",
+    "shop.seeAll",
+    "shop.toolbar.howWeSort",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

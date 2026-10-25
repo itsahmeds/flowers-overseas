@@ -711,13 +711,27 @@ test.describe("the notice bar's price claim follows the route", () => {
       await expect(notice).toBeVisible();
       expect(await headerShift(page)).toBe(0);
 
-      const product = await page
-        .locator("[data-fo-trending] li a[href]")
+      // v3 (TASK-386, AC-76): a home card leads through the chooser; one country button there
+      // lands on the product at that country's price.
+      const chooser = await page
+        .locator('[data-fo-home-section="selection"] article a[href]')
         .first()
         .getAttribute("href");
-      expect(product, "the home links a product page").toBeTruthy();
-      const response = await page.goto(product ?? "");
+      expect(
+        chooser,
+        "the home links a product through the chooser",
+      ).toBeTruthy();
+      const response = await page.goto(chooser ?? "");
       expect(response?.status()).toBe(200);
+      await Promise.all([
+        page.waitForURL(
+          (url) => url.pathname !== (chooser ?? "").split("?")[0],
+        ),
+        page.locator('main button[name="to"]').first().click(),
+      ]);
+      await expect(
+        page.locator("main [data-fo-pdp-price]").first(),
+      ).toBeVisible();
       await expect(notice.locator("[data-fo-price-claim]")).toHaveCount(1);
       await expect(notice.locator("[data-fo-price-claim]")).toBeVisible();
       // The bar is the same reserved box with or without the claim: its height is the 44 px
