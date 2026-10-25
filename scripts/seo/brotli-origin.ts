@@ -31,8 +31,8 @@
  * It forwards every request to the upstream unchanged, then re-encodes the response body with
  * Brotli at quality 11 (the CDN setting) whenever the client advertises `br` and the body is a
  * compressible type. It requests **identity** from the upstream so it never double-encodes, and
- * it drops `content-length` in favour of the encoded length. Nothing is cached and nothing is
- * rewritten. **Documents keep every header `next start` sent**, so a Lighthouse audit of
+ * it drops `content-length` in favour of the encoded length. Nothing is rewritten. **Documents keep
+ * every header `next start` sent**, so a Lighthouse audit of
  * `Content-Security-Policy-Report-Only`, `X-Robots-Tag` or `Cache-Control` — and Chrome's own CSP
  * enforcement — sees exactly the application's contract.
  *
@@ -53,11 +53,28 @@
  * The application's real header contract is asserted where it belongs and against the real server:
  * `tests/e2e/security-headers.spec.ts` and `tests/unit/csp.test.ts`, both against `next start`.
  *
+ * ## Why an immutable asset is encoded once (TASK-427)
+ *
+ * Quality 11 is slow (196 ms for the 222 783 B `/en` document, measured locally), and this process is one thread,
+ * so while it encodes a 250 KB chunk every other request waits behind it. Lighthouse reads those
+ * waits as the origin's server response time and its simulation charges that time to **every**
+ * request of the origin, the stylesheet, the preloaded fonts and the LCP image included: across
+ * the 48 runs of main's run 40176953074 the origin's estimated server latency (113 to 249 ms)
+ * tracks the home's LCP run for run. No deployment pays it: an edge encodes a content-hashed
+ * asset once and serves the stored bytes. So a response whose `Cache-Control` says `immutable`
+ * (every `/_next/static/` chunk and stylesheet) is encoded once per process and the stored
+ * bytes are served after that, keyed by the SHA-256 of the upstream body, so a changed body can
+ * never be answered with old bytes. The bytes, the encoding and the quality are exactly what they
+ * were (`tests/unit/brotli-origin.test.ts`); only the repeated encoding CPU is gone. **Documents
+ * are never stored**: every document is encoded per request, at quality 11, as before (the
+ * quality a document is measured at is the founder's open question in `docs/tasks/TASK-411.md`).
+ *
  * It is a measurement fixture, not a deployment: single-process, no TLS, no keep-alive tuning,
  * and it binds to localhost only.
  *
  * Usage: `node scripts/seo/brotli-origin.ts [--port 3001] [--upstream http://localhost:3000]`
  */
+import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { brotliCompressSync, constants } from "node:zlib";
@@ -94,6 +111,38 @@ export function brotli(body: Buffer): Buffer {
   });
 }
 
+/**
+ * Whether a response may be encoded once and served from the stored bytes after that: only when
+ * the application itself promised the body never changes at this address (`immutable`, which
+ * `next start` sends on every `/_next/static/` asset). A document is never `immutable`.
+ */
+export function isImmutable(cacheControl: string | null | undefined): boolean {
+  return (cacheControl ?? "")
+    .toLowerCase()
+    .split(",")
+    .some((directive) => directive.trim() === "immutable");
+}
+
+/**
+ * The encoder the proxy uses: Brotli per request, except that an `immutable` body is encoded once
+ * and its stored bytes served after that, keyed by the SHA-256 of the body (see the header).
+ * `compress` is injectable so a test can count the encodings.
+ */
+export function createEncoder(
+  compress: (body: Buffer) => Buffer = brotli,
+): (body: Buffer, cacheControl: string | null | undefined) => Buffer {
+  const stored = new Map<string, Buffer>();
+  return (body, cacheControl) => {
+    if (!isImmutable(cacheControl)) return compress(body);
+    const key = createHash("sha256").update(body).digest("hex");
+    const hit = stored.get(key);
+    if (hit !== undefined) return hit;
+    const encoded = compress(body);
+    stored.set(key, encoded);
+    return encoded;
+  };
+}
+
 export function acceptsBrotli(header: string | undefined): boolean {
   return (header ?? "").split(",").some((part) => part.trim().startsWith("br"));
 }
@@ -126,6 +175,7 @@ async function handle(
   request: IncomingMessage,
   response: ServerResponse,
   upstream: string,
+  encoder: ReturnType<typeof createEncoder>,
 ): Promise<void> {
   const target = new URL(request.url ?? "/", upstream);
   const headers = new Headers();
@@ -156,7 +206,9 @@ async function handle(
     acceptsBrotli(request.headers["accept-encoding"] as string | undefined) &&
     isCompressible(contentType) &&
     payload.length > 0;
-  const out = encode ? brotli(payload) : payload;
+  const out = encode
+    ? encoder(payload, upstreamResponse.headers.get("cache-control"))
+    : payload;
 
   for (const [name, value] of upstreamResponse.headers.entries()) {
     if (name === "content-length" || name === "content-encoding") continue;
@@ -186,8 +238,9 @@ export function main(argv: readonly string[]): void {
     argv.includes("--port") ? argValue(argv, "--port") : DEFAULT_PORT,
   );
   const upstream = argValue(argv, "--upstream") ?? DEFAULT_UPSTREAM;
+  const encoder = createEncoder();
   const server = createServer((request, response) => {
-    handle(request, response, upstream).catch((error: unknown) => {
+    handle(request, response, upstream, encoder).catch((error: unknown) => {
       response.statusCode = 502;
       response.end(`brotli-origin: ${(error as Error).message}`);
     });
