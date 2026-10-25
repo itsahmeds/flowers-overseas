@@ -16,6 +16,13 @@
  * and its `product_occasion` edges in their authored `sort`. One statement, with the occasion set
  * aggregated in a correlated subquery, so a read is one round trip whatever the catalogue's size.
  *
+ * **`coreRank` comes from the repository for now.** Main's core range (spec 004 §14
+ * A-founder-2026-10-24a item 1, TASK-381/382) put `coreRank` on the dataset's product record, but
+ * `product.core_rank` is TASK-395's migration (`NNNN_commerce_structure`), not yet written. Until
+ * it lands the rank is read from the static provider by SKU, so the two providers still give the
+ * same answers (AC-27); TASK-395 moves it to the column (carry-forward in its brief). A product the
+ * repository does not know has no rank, which is "not core".
+ *
  * Every row is parsed under the dataset's schema at this boundary (`CLAUDE.md`: zod at every
  * boundary). A row that does not parse throws, and the whole read with it: a product without its
  * `en` name, or with a facet value outside the closed taxonomy, is a data error to fix, never a
@@ -85,6 +92,14 @@ async function productRows(
     )
     .orderBy(asc(product.sku));
 
+  const ranks = new Map(
+    (await staticCatalogueProvider.products()).flatMap((repository) =>
+      repository.coreRank === undefined
+        ? []
+        : [[repository.sku, repository.coreRank] as const],
+    ),
+  );
+
   return rows.map(({ otherFlowers, otherColours, ...row }) =>
     ProductDataSchema.parse({
       sku: row.sku,
@@ -105,6 +120,7 @@ async function productRows(
       allergenNote: row.allergenNote,
       partnerOnly: row.partnerOnly,
       status: row.status,
+      ...(ranks.has(row.sku) ? { coreRank: ranks.get(row.sku) } : {}),
     }),
   );
 }
