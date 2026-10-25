@@ -912,6 +912,39 @@ export async function listingPages(
 }
 
 /**
+ * The path of one listing page **when it exists**, else `undefined` (spec 045 §2.3 "Pages": "a
+ * link is drawn only to a page that answers 200"; TASK-401). `listingExists()` asked once, then
+ * the same slug and path builders `listingPages()` uses, so the one page reads the same URL from
+ * both. For a reader that needs a handful of pages rather than the whole existence set, which
+ * costs a pass over every country, category and occasion.
+ */
+export async function listingHref(
+  identity: unknown,
+): Promise<string | undefined> {
+  const parsed = ListingIdentitySchema.parse(identity);
+  if (!isLocaleCode(parsed.locale)) return undefined;
+  if (!(await listingExists(parsed))) return undefined;
+  const locale = parsed.locale;
+  const country =
+    parsed.countryIso !== undefined && isCountryIso2(parsed.countryIso)
+      ? corridorSlug(parsed.countryIso, locale)
+      : undefined;
+  const kind =
+    parsed.pageType === "countryCategory" || parsed.pageType === "categoryHub"
+      ? "category"
+      : parsed.pageType === "countryOccasion" ||
+          parsed.pageType === "occasionHub"
+        ? "occasion"
+        : undefined;
+  const slug =
+    kind === undefined || parsed.entityKey === undefined
+      ? undefined
+      : slugFor(kind, parsed.entityKey, locale);
+  if (kind !== undefined && slug === undefined) return undefined;
+  return pathOf(locale, parsed.pageType, country, slug);
+}
+
+/**
  * The per-locale **paths** of one listing page, for `alternatesFor()`'s path target (spec 008 §6
  * "hreflang set", AC-16; spec 007's `corridorAlternatePaths()` precedent).
  *

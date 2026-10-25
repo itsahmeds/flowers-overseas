@@ -115,6 +115,7 @@ const FRENCH: LocaleConfig = {
     about: "a-propos",
     delivery: "livraison-et-paiement",
     imprint: "mentions",
+    search: "recherche",
   },
 };
 

@@ -39,11 +39,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25 (backend-implementer): built in one feature PR with TASK-401 (PR 421, branch `task/TASK-400-search-core`, not `task/TASK-400-site-search` as the binding line says: the work order named the branch, and TASK-402 and TASK-403 are not in this PR). `src/config/search.ts`, the `search`/`suche`/`szukaj` segment, `src/modules/search/text.ts` and `query.ts`, with their tests. Routing check for TASK-402: `src/app/[locale]/[segment]/page.tsx` is ISR with `dynamicParams = false` over `localeSegmentParams()`, so `/en/search` stays a 404 until TASK-402 adds a request-time route; the listing parameter route (`src/lib/listing-rewrites.ts`, `src/app/[locale]/%5Fquery/`) is the precedent for a rewrite from the localised segment.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 421 (with TASK-401). `SearchConfigSchema` holds every §5.1 constant plus what §7 and AC-6 need: `stemRules` (the suffix lists as data, so a new language is config), `stemMinLetters`, and `typoDistance.fixedPrefix: 1` (TASK-401's escalation record says why). `PATH_SEGMENT_KEYS` gains `search` (`search`, `suche`, `szukaj`; the pseudo-locales `search`), pinned in the `localePath` table and every registry fixture. `normaliseForSearch`, `tokenise` (the request locale's stop words, at most 8), `stem` (the first matching rule, applied once, at least 3 letters), `damerauLevenshtein` (optimal string alignment, bounded), `typoAllowance` and `parseQuery` (country words from the names in every launch locale and the slugs, exact runs, the first named wins, all consumed). Tests: `unit/search-config.test.ts`, `unit/search-text.test.ts` (normaliser table, stop words, stems per language, transposition), `unit/search-query.test.ts` (T-11 in three languages; words beat `to` in `unit/search-engine.test.ts`).

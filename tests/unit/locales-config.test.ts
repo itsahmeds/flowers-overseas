@@ -138,6 +138,7 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
       about: "about",
       delivery: "delivery",
       imprint: "imprint",
+      search: "search",
     });
     expect(localeConfig("de").pathSegments).toEqual({
       destinations: "blumen-verschicken",
@@ -153,6 +154,7 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
       about: "ueber-uns",
       delivery: "lieferung-und-zahlung",
       imprint: "impressum",
+      search: "suche",
     });
     expect(localeConfig("pl").pathSegments).toEqual({
       destinations: "wyslij-kwiaty",
@@ -168,6 +170,7 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
       about: "o-nas",
       delivery: "dostawa-i-platnosc",
       imprint: "dane-firmy",
+      search: "szukaj",
     });
     // `en-gb` is the English column of plan/02 §4.1, identical to `en`.
     expect(localeConfig("en-gb").pathSegments).toEqual(

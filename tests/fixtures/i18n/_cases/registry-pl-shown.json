@@ -32,7 +32,8 @@
       "help": "help",
       "about": "about",
       "delivery": "delivery",
-      "imprint": "imprint"
+      "imprint": "imprint",
+      "search": "search"
     }
   },
   {
@@ -63,7 +64,8 @@
       "help": "help",
       "about": "about",
       "delivery": "delivery",
-      "imprint": "imprint"
+      "imprint": "imprint",
+      "search": "search"
     },
     "formattingTag": "en-GB"
   },
@@ -97,7 +99,8 @@
       "help": "hilfe",
       "about": "ueber-uns",
       "delivery": "lieferung-und-zahlung",
-      "imprint": "impressum"
+      "imprint": "impressum",
+      "search": "suche"
     },
     "formattingTag": "de"
   },
@@ -130,7 +133,8 @@
       "help": "pomoc",
       "about": "o-nas",
       "delivery": "dostawa-i-platnosc",
-      "imprint": "dane-firmy"
+      "imprint": "dane-firmy",
+      "search": "szukaj"
     },
     "formattingTag": "pl"
   }

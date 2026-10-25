@@ -175,3 +175,37 @@ describe("buildHealthResponse", () => {
     expect(body.appEnv).toBe("staging");
   });
 });
+
+describe("the search index numbers (spec 045 §11; TASK-401)", () => {
+  it("reports the index's age and document count when the route passes them", () => {
+    const body = buildHealthResponse({
+      fx: FX,
+      environment: "production",
+      version: "x",
+      search: { ageSeconds: 42, documents: 2352 },
+    });
+    expect(body.searchIndexAgeSeconds).toBe(42);
+    expect(body.searchIndexDocuments).toBe(2352);
+  });
+
+  it("reports a null age before the first search builds the index", () => {
+    const body = buildHealthResponse({
+      fx: FX,
+      environment: "production",
+      version: "x",
+      search: { ageSeconds: null, documents: 0 },
+    });
+    expect(body.searchIndexAgeSeconds).toBeNull();
+    expect(body.searchIndexDocuments).toBe(0);
+  });
+
+  it("refuses a negative or fractional number", () => {
+    expect(
+      HealthResponse.safeParse({ ...BODY, searchIndexAgeSeconds: -1 }).success,
+    ).toBe(false);
+    expect(
+      HealthResponse.safeParse({ ...BODY, searchIndexDocuments: 1.5 }).success,
+    ).toBe(false);
+    expect(HealthResponse.safeParse(BODY).success).toBe(true);
+  });
+});
