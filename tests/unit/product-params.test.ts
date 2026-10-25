@@ -481,3 +481,21 @@ describe("the product route reads no query string (A10, T-15's source check)", (
     expect(read(PRODUCT_ROUTE)).toMatch(/export const revalidate = 3600;/u);
   });
 });
+
+describe("`src/lib/product-rewrites.ts` loads under plain `node` (CI's `pnpm budget:client-js`)", () => {
+  it("imports with Node's own resolver, so `scripts/client-js-budget.ts` can read `productRoutePathFor()`", async () => {
+    // Node's ESM resolver needs every relative specifier's extension; Vitest and Next do not, so
+    // only a real `node` process sees a missing one (PR 431's first CI run: `../config/locales`).
+    const { execFileSync } = await import("node:child_process");
+    const out = execFileSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "-e",
+        "const m = await import('./src/lib/product-rewrites.ts'); console.log(m.productParameterRewriteRules().length > 0);",
+      ],
+      { cwd: ROOT, encoding: "utf8" },
+    );
+    expect(out.trim()).toBe("true");
+  }, 30_000);
+});

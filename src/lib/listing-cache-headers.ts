@@ -61,7 +61,7 @@
  * (`generateStaticParams` + `dynamicParams = false`), so the 404 is as stable as the 200 beside
  * it and holding it for an hour saves an origin render per crawl of a dead URL.
  */
-import { launchLocales, localeConfig } from "../config/locales";
+import { launchLocales, localeConfig } from "../config/locales.ts";
 
 import type { HeaderRule } from "./robots-headers.ts";
 
