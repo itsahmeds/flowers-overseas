@@ -218,7 +218,15 @@ test.describe("AC-30: no buyer page relays, in en, en-gb, de or pl (T-32)", () =
     page,
   }) => {
     await page.goto("/en");
-    // The home renders the who option, and the read does not report it…
+    // The v3 home has no sentence (TASK-386), so the who option is planted as the sentence drew
+    // it, a whole `<option>`; the read does not report it…
+    await page.evaluate(() => {
+      const select = document.createElement("select");
+      const option = document.createElement("option");
+      option.textContent = "my partner";
+      select.append(option);
+      document.body.append(select);
+    });
     expect(
       await page.locator("option", { hasText: /^my partner$/u }).count(),
     ).toBeGreaterThan(0);

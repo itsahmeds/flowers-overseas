@@ -64,11 +64,19 @@ test.describe("the image state on a real page (AC-23)", () => {
         expect(alt.trim().length).toBeGreaterThan(0);
       }
 
-      // The honesty label is text in the page's own language, in the document before hydration.
-      // The page's own; each mega menu featured card carries its own label in its closed panel.
+      // The honesty label is text in the page's own language, in the document before hydration:
+      // since the v3 home (spec 004 AC-107, TASK-387) once per section grid, each the grid's label.
+      const labels = page.locator(
+        "main [data-fo-grid-label][data-fo-media-provenance='ai']",
+      );
+      expect(await labels.count()).toBeGreaterThanOrEqual(2);
+      // Inside `main`: each mega menu featured card carries its own label in its closed panel.
+      // Each card's own label stays in the HTML, hidden (A-founder-2026-10-19b clause 3).
       await expect(
-        page.locator("main [data-fo-media-provenance='ai']"),
-      ).toHaveCount(1);
+        page.locator(
+          "main [data-fo-media-provenance='ai']:not([data-fo-grid-label]):visible",
+        ),
+      ).toHaveCount(0);
 
       expect(await violations(page)).toEqual([]);
     });
