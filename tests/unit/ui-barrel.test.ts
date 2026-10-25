@@ -197,6 +197,7 @@ describe("src/modules/ui barrel", () => {
         "HomePriceWords",
         "HomeSelection",
         "HomeViewSchema",
+        "homeItemListEntries",
         "PROOF_FACTS",
         "ProofRow",
         // the locale home's lower sections and the trust strip (TASK-053)

@@ -369,8 +369,13 @@ export {
   HomeCardViewSchema,
   HomePickerViewSchema,
   HomeViewSchema,
+  homeItemListEntries,
 } from "./home/home-view.ts";
-export type { HomeCardView, HomeView } from "./home/home-view.ts";
+export type {
+  HomeCardView,
+  HomeItemListEntry,
+  HomeView,
+} from "./home/home-view.ts";
 export { HomeSelection } from "./home/HomeSelection.tsx";
 export type { HomeSelectionProps } from "./home/HomeSelection.tsx";
 export {

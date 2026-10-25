@@ -27,6 +27,7 @@ import {
   HomeSelection,
   HowItWorks,
   ReviewsSection,
+  homeItemListEntries,
 } from "@/modules/ui";
 
 /**
@@ -136,15 +137,8 @@ export default async function LocaleHomePage({
   const lists: JsonLdNode[] =
     options === undefined
       ? []
-      : [
-          view.selection.cards,
-          view.occasions[0]?.cards ?? [],
-          view.comingUp.flatMap((occasion) => occasion.cards),
-        ].flatMap((cards) => {
-          const node = itemList(
-            cards.map((card) => ({ name: card.name, href: card.href })),
-            options,
-          );
+      : homeItemListEntries(view).flatMap((entries) => {
+          const node = itemList(entries, options);
           return node === undefined ? [] : [node];
         });
 
