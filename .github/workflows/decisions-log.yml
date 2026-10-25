@@ -1,0 +1,69 @@
+# Collect the decision files into the decisions log (TASK-399; founder 2026-10-25 "log fix ok").
+#
+# A decision is one file, `docs/decisions/YYYY-MM-DD-<slug>.md`, holding one row of the log's
+# table (`docs/decisions/README.md`). Pull requests add files and never touch
+# `docs/decisions-log.md`, so they stop conflicting on it; their `lint` job runs
+# `pnpm decisions:log --lint`. After a merge to `main` this job appends the new rows to the log
+# (`scripts/decisions-log.ts`, tested in `tests/unit/decisions-log.test.ts`) and pushes that one
+# file back to `main` as `github-actions[bot]`.
+#
+#  - A push made with the workflow's own `GITHUB_TOKEN` starts no other workflow (GitHub's rule),
+#    so this cannot loop and fires no `ci.yml` run; the nightly `ci.yml` run on `main` covers it.
+#  - Production deploys from `release` only (spec 040 §14 A3), so this push deploys nothing there.
+#  - The script refuses to write when a file is malformed, the hand-written rows changed, or the
+#    collected table holds a row with no file: the run goes red and nothing is lost.
+#  - When `main` moves between the checkout and the push, the job starts again from the new `main`
+#    (three attempts). Runs queue one at a time.
+#
+# This is not the CI workflow, so CLAUDE.md's dispatch ban does not apply to it.
+name: decisions-log
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/decisions/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: decisions-log
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      # The script imports only Node built-ins, so Node alone is enough: no pnpm install.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Collect docs/decisions/ into docs/decisions-log.md and push it to main
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            node scripts/decisions-log.ts
+            node scripts/decisions-log.ts --check
+            if git diff --quiet -- docs/decisions-log.md; then
+              echo "decisions log already current on $(git rev-parse --short HEAD)"
+              exit 0
+            fi
+            git add docs/decisions-log.md
+            git commit -m "docs(decisions): collect the decisions log" -m "Rows from docs/decisions/ appended by .github/workflows/decisions-log.yml (TASK-399)."
+            if git push origin HEAD:main; then
+              echo "pushed $(git rev-parse --short HEAD)"
+              exit 0
+            fi
+            echo "main moved during attempt ${attempt}; starting again from the new main"
+          done
+          echo "could not push the collected log after 3 attempts" >&2
+          exit 1

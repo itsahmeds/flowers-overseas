@@ -39,7 +39,7 @@ Next.js App Router (TS strict) · Postgres on Neon EU (Drizzle; Auth.js for iden
 | Task briefs (binding clauses, files to read, carry-forwards, escalations, result) | `docs/tasks/TASK-NNN.md` (template `docs/tasks/_template.md`; `pnpm tasks:brief TASK-NNN`) |
 | Codebase map (what lives where, with purpose, owning spec and tests) | `docs/codebase-map.md` (generated: `pnpm codebase:map`, checked by `pnpm codebase:map --check`) |
 | Specs | `specs/NNN-<slug>.md` (template `specs/_template.md`); each opens with `## 0. Index` — `§section Lline` per `AC-n`/`T-n`, from `pnpm specs:index` |
-| Decisions | `docs/adr/ADR-NNNN-*.md` (immutable; supersede, never edit) + `docs/decisions-log.md` |
+| Decisions | `docs/adr/ADR-NNNN-*.md` (immutable; supersede, never edit) + one file per decision in `docs/decisions/`, collected into `docs/decisions-log.md` by `pnpm decisions:log` |
 | Why each rule exists | `docs/framework/why.md` |
 | Framework gaps (what is still wrong with this process, and which step fixes it) | `docs/framework/gaps.md` |
 | Work order (what every dispatched agent is told) | `.claude/templates/work-order.md` |

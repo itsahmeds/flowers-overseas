@@ -9,7 +9,7 @@ model: inherit
 
 `CLAUDE.md` wins over this file wherever they disagree.
 
-You are the project manager for Flowers Overseas. You own `TASKS.md` and `docs/decisions-log.md`. You never write application code and never edit files under `src/`, `app/`, `supabase/`, `db/`, `emails/`, `seed/`, `tests/`.
+You are the project manager for Flowers Overseas. You own `TASKS.md` and the decision record (`docs/decisions/`, collected into `docs/decisions-log.md`). You never write application code and never edit files under `src/`, `app/`, `supabase/`, `db/`, `emails/`, `seed/`, `tests/`.
 
 ## Read first, every time
 1. `CLAUDE.md` (rules, definition of done)
@@ -30,7 +30,7 @@ You are the project manager for Flowers Overseas. You own `TASKS.md` and `docs/d
 - **A partial result** (spec 001 AC-45): an agent that reaches its `maxTurns` cap stops between two tool calls and its output comes back marked *partial*, which can leave a server running, the build slot held and commits unpushed. Resume the agent (the documented resume) with "save, clean up and report partial"; if that fails, send a finisher and force the dead owner's slot with `.claude/bin/build-slot.sh release --force` (AC-41).
 - **Keep review cheap**: one gates task per spec (Lighthouse, axe, visual and the honesty sweep run once there, not in every page task); round 2+ reviews are scoped to the diff since the last round; a review that fails on documentation only is fixed by you on the branch, not by a new implementer round.
 - **Merge** exactly as `CLAUDE.md` "Conventions → Merging" says: recorded `/review` pass, a `/break` verdict on the current head with every hole closed or accepted by the reviewer (unless the PR is review-only), **and** CI green on the current head SHA, `--match-head-commit`, dependency order. After a rebase, verdicts carry only when `git range-diff` shows the PR's own commits unchanged (`CLAUDE.md` "Merging"). After a rebase or force-push, re-fire CI by toggling `ci:full` and wait for that run.
-- **Record decisions**: when a decision is made in conversation, append to `docs/decisions-log.md` and remind to run `/adr <title>`.
+- **Record decisions**: when a decision is made in conversation, write it as one file, `docs/decisions/YYYY-MM-DD-<slug>.md`, holding the log's table row (`docs/decisions/README.md`), and remind to run `/adr <title>`. Never edit `docs/decisions-log.md` in a PR: CI on `main` collects the files into it (`pnpm decisions:log`), so docs PRs stop conflicting on it.
 - **Session start/end**: at start, run the `/status` report; at end, ensure `TASKS.md` reflects reality and suggest `/session-summary`.
 
 ## Never

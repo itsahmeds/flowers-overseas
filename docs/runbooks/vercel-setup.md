@@ -217,7 +217,7 @@ florist-facing staging environment (Q9's shared password) or Pro-only limits, no
 
 If preview protection is ever unavailable, the only acceptable route is a recorded deviation:
 previews stay public but every response already carries `X-Robots-Tag: noindex` (AC-15) and Phase 0
-contains no real data. Record it in the PR and in `docs/decisions-log.md`, open a follow-up before
+contains no real data. Record it in the PR and in a `docs/decisions/` file (collected into `docs/decisions-log.md`), open a follow-up before
 spec 002 puts real data anywhere, and leave the `preview` CI assertion in place — it is the
 tripwire.
 

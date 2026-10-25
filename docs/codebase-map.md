@@ -179,6 +179,7 @@ task actually touches.
 | `db-check-live.ts` | — | `pnpm db:check`, connected half |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2… |
 | `db-migrate.ts` | `db:migrate` | `pnpm db:migrate` / `pnpm db:rollback` — the migration… |
+| `decisions-log.ts` | `decisions:log` | Decision files collected into `docs/decisions-log.md` —… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev… |
 | `env-check.ts` | `env:check` | `pnpm env:check` |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2… |
@@ -216,7 +217,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 375 |
+| `tests/unit/` | 376 |
 | `tests/integration/` | 46 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 71 |

@@ -1,0 +1,1 @@
+| 2026-10-25 | none | Decision files. Founder, verbatim: "log fix ok": each PR writes its decision row to its own file, `docs/decisions/YYYY-MM-DD-<slug>.md`, and CI on `main` collects the files into this log with `pnpm decisions:log`, so docs PRs stop conflicting on the log. The hand-written rows above stay as they are. | TASK-399 |

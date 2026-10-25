@@ -178,6 +178,12 @@ jobs:
         run: pnpm specs:index --check | tee specs-index.log
       - name: tasks:check — the TASKS.md ledger, notes cap and briefs (AC-31, AC-34)
         run: pnpm tasks:check | tee tasks-check.log
+      # TASK-399: a decision is one file in `docs/decisions/`, collected into `docs/decisions-log.md`
+      # on `main` by `.github/workflows/decisions-log.yml`. A pull request's own row is not collected
+      # yet, so this runs `--lint` (files well formed, hand-written rows unchanged, no collected row
+      # without a file), not `--check`.
+      - name: decisions:log --lint — decision files and the log's frozen rows (TASK-399)
+        run: pnpm decisions:log --lint | tee decisions-log.log
       # The visual gate's own orientation check (AC-17, TASK-139). `linux` is the authoritative
       # baseline set — it is the only platform the `visual` job compares against — and `darwin` is
       # a local convenience. A baseline that exists only for `darwin` is a `visual` failure waiting
@@ -213,6 +219,7 @@ jobs:
             echo "| codebase map (AC-33) | \`pnpm codebase:map --check\` | $( [ -f codebase-map.log ] && tr '\n' ' ' < codebase-map.log || echo 'did not run' ) |"
             echo "| spec indexes (AC-35) | \`pnpm specs:index --check\` | $( [ -f specs-index.log ] && tr '\n' ' ' < specs-index.log || echo 'did not run' ) |"
             echo "| ledger + briefs (AC-31, AC-34) | \`pnpm tasks:check\` | $( [ -f tasks-check.log ] && tr '\n' ' ' < tasks-check.log || echo 'did not run' ) |"
+            echo "| decision files (TASK-399) | \`pnpm decisions:log --lint\` | $( [ -f decisions-log.log ] && tr '\n' ' ' < decisions-log.log || echo 'did not run' ) |"
             echo "| visual baselines (AC-17) | \`pnpm visual:baselines --check\` | $( [ -f visual-baselines.log ] && head -1 visual-baselines.log || echo 'did not run' ) |"
           } >> "$GITHUB_STEP_SUMMARY"
 
