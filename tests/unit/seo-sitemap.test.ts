@@ -71,16 +71,16 @@ const locs = (entries: readonly SitemapEntry[]): string[] =>
   entries.map((entry) => entry.loc);
 
 describe("membership: the engine decides, nothing re-derives (AC-14)", () => {
-  it("announces nothing at all outside an indexing environment", () => {
+  it("announces nothing at all outside an indexing environment", async () => {
     for (const locale of ENGLISH_LOCALES) {
       expect(corridorSitemapEntries(locale, PREVIEW)).toEqual([]);
       expect(staticSitemapEntries(locale, PREVIEW)).toEqual([]);
     }
-    expect(sitemapLocales(PREVIEW)).toEqual([]);
-    expect(sitemapIndexEntries(PREVIEW)).toEqual([]);
+    expect(await sitemapLocales(PREVIEW)).toEqual([]);
+    expect(await sitemapIndexEntries(PREVIEW)).toEqual([]);
     // The index is still a valid, empty sitemap index — an empty announcement, not a 404.
-    expect(sitemapIndexDocument(PREVIEW)).toContain("<sitemapindex");
-    expect(sitemapIndexDocument(PREVIEW)).not.toContain("<loc>");
+    expect(await sitemapIndexDocument(PREVIEW)).toContain("<sitemapindex");
+    expect(await sitemapIndexDocument(PREVIEW)).not.toContain("<loc>");
   });
 
   it("lists every existing, indexable corridor URL in an indexing environment", () => {
@@ -99,11 +99,11 @@ describe("membership: the engine decides, nothing re-derives (AC-14)", () => {
     }
   });
 
-  it("has no corridor row for a locale nobody has authored a guide in (§13 Q1)", () => {
+  it("has no corridor row for a locale nobody has authored a guide in (§13 Q1)", async () => {
     for (const locale of ["de", "pl"]) {
       expect(corridorSitemapEntries(locale, INDEXING)).toEqual([]);
       // …and the locale is announced nowhere, because its catalogue is unreviewed.
-      expect(sitemapLocales(INDEXING)).not.toContain(locale);
+      expect(await sitemapLocales(INDEXING)).not.toContain(locale);
     }
   });
 
@@ -122,19 +122,20 @@ describe("membership: the engine decides, nothing re-derives (AC-14)", () => {
     }
   });
 
-  it("lists no URL twice across a locale's children", () => {
+  it("lists no URL twice across a locale's children", async () => {
     for (const locale of ENGLISH_LOCALES) {
-      const all = SITEMAP_CHILDREN.flatMap((child) =>
-        locs(sitemapChildEntries(locale, child, INDEXING)),
-      );
+      const all: string[] = [];
+      for (const child of SITEMAP_CHILDREN) {
+        all.push(...locs(await sitemapChildEntries(locale, child, INDEXING)));
+      }
       expect(new Set(all).size).toBe(all.length);
     }
   });
 });
 
 describe("the index and its children (AC-13)", () => {
-  it("lists one child index per announced locale and nothing else", () => {
-    const entries = sitemapIndexEntries(INDEXING);
+  it("lists one child index per announced locale and nothing else", async () => {
+    const entries = await sitemapIndexEntries(INDEXING);
     expect(entries.map((entry) => entry.loc)).toEqual(
       ENGLISH_LOCALES.map(
         (locale) => `${ORIGIN}${localeSitemapIndexPath(locale)}`,
@@ -144,22 +145,34 @@ describe("the index and its children (AC-13)", () => {
       expect(entry.lastmod).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
   });
 
-  it("lists exactly the children that have URLs — an absent child, never an empty one", () => {
+  it("lists exactly the children that have URLs — an absent child, never an empty one", async () => {
     for (const locale of ENGLISH_LOCALES) {
-      expect(localeSitemapChildren(locale, INDEXING)).toEqual([
+      expect(await localeSitemapChildren(locale, INDEXING)).toEqual([
         `${ORIGIN}${sitemapChildPath(locale, "static")}`,
         `${ORIGIN}${sitemapChildPath(locale, "corridors")}`,
+        // Spec 008 AC-19 (TASK-116): the reviewed hubs make both listing children non-empty on
+        // the indexing deployment; `tests/unit/seo-sitemap-listings.test.ts` owns their rows.
+        `${ORIGIN}${sitemapChildPath(locale, "categories")}`,
+        `${ORIGIN}${sitemapChildPath(locale, "occasions")}`,
       ]);
     }
-    expect(localeSitemapChildren("de", INDEXING)).toEqual([]);
+    expect(await localeSitemapChildren("de", INDEXING)).toEqual([]);
   });
 
-  it("serves no document for an unknown locale, an unknown child or an empty one", () => {
-    expect(sitemapChildDocument("de", "corridors", INDEXING)).toBeUndefined();
-    expect(sitemapChildDocument("fr", "corridors", INDEXING)).toBeUndefined();
-    expect(sitemapChildDocument("en", "products", INDEXING)).toBeUndefined();
-    expect(sitemapChildDocument("en", "corridors", PREVIEW)).toBeUndefined();
-    expect(sitemapChildDocument("en", "corridors", INDEXING)).toContain(
+  it("serves no document for an unknown locale, an unknown child or an empty one", async () => {
+    expect(
+      await sitemapChildDocument("de", "corridors", INDEXING),
+    ).toBeUndefined();
+    expect(
+      await sitemapChildDocument("fr", "corridors", INDEXING),
+    ).toBeUndefined();
+    expect(
+      await sitemapChildDocument("en", "products", INDEXING),
+    ).toBeUndefined();
+    expect(
+      await sitemapChildDocument("en", "corridors", PREVIEW),
+    ).toBeUndefined();
+    expect(await sitemapChildDocument("en", "corridors", INDEXING)).toContain(
       "<urlset",
     );
   });
@@ -303,14 +316,14 @@ describe("AC-7: a fixture flip of `guidePublished` moves the sitemap row", () =>
   const netherlands = (locale: string): string =>
     `${ORIGIN}/${locale}/send-flowers-to/${countrySlug(OFF, locale)}`;
 
-  it("announces the destination while its guide is published", () => {
+  it("announces the destination while its guide is published", async () => {
     for (const locale of ENGLISH_LOCALES) {
       expect(locs(corridorSitemapEntries(locale, INDEXING))).toContain(
         netherlands(locale),
       );
-      expect(sitemapChildDocument(locale, "corridors", INDEXING)).toContain(
-        `<loc>${netherlands(locale)}</loc>`,
-      );
+      expect(
+        await sitemapChildDocument(locale, "corridors", INDEXING),
+      ).toContain(`<loc>${netherlands(locale)}</loc>`);
     }
   });
 
@@ -350,7 +363,11 @@ describe("AC-7: a fixture flip of `guidePublished` moves the sitemap row", () =>
 
         // The served document says the same thing — six `<url>` elements, and the destination's
         // slug appears nowhere in the file, not in a `<loc>` and not in an `xhtml:link`.
-        const xml = flipped.sitemapChildDocument(locale, "corridors", INDEXING);
+        const xml = await flipped.sitemapChildDocument(
+          locale,
+          "corridors",
+          INDEXING,
+        );
         expect(xml?.match(/<url>/gu) ?? []).toHaveLength(6);
         expect(xml).not.toContain(countrySlug(OFF, locale));
 

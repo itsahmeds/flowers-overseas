@@ -19,20 +19,64 @@
  * makes shipping this before the §12 flip safe.
  */
 import { XMLParser } from "fast-xml-parser";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+/**
+ * The listing routes' `generateMetadata` asks `next-intl/server` for its translator, which only
+ * resolves inside Next's request scope. The translator here reads the real shipped catalogue and
+ * fills `{name}` arguments plainly: titles and descriptions are not what these cases compare (the
+ * robots directive, the canonical and the hreflang cluster are), but a missing key still throws.
+ */
+vi.mock("next-intl/server", async () => {
+  const { MESSAGE_NAMESPACES, loadMessages } =
+    await import("../../src/modules/i18n/messages.ts");
+  return {
+    setRequestLocale: (): void => undefined,
+    getLocale: (): Promise<string> => Promise.resolve("en"),
+    getTranslations: ({
+      locale,
+      namespace,
+    }: {
+      locale: string;
+      namespace?: (typeof MESSAGE_NAMESPACES)[number];
+    }): Promise<(key: string, values?: Record<string, unknown>) => string> => {
+      const messages: unknown =
+        namespace === undefined
+          ? loadMessages(locale, MESSAGE_NAMESPACES)
+          : loadMessages(locale, [namespace])[namespace];
+      return Promise.resolve((key, values = {}) => {
+        let value: unknown = messages;
+        for (const part of key.split(".")) {
+          value = (value as Record<string, unknown> | undefined)?.[part];
+        }
+        if (typeof value !== "string") {
+          throw new Error(`missing message key: ${namespace ?? ""}.${key}`);
+        }
+        return value.replace(/\{(\w+)\}/gu, (_match, name: string) =>
+          String(values[name] ?? ""),
+        );
+      });
+    },
+  };
+});
 
 // The corridor page shares its route file with spec 008's country shop root: one dynamic slug
 // name per depth (spec 007 §14 A8 / spec 008 §14 A5, TASK-109). `generateMetadata` resolves which
 // of the two a path is, so the corridor half is reached by passing a corridor's own segments.
 import { generateMetadata as childRouteMetadata } from "../../src/app/[locale]/[segment]/[child]/page.tsx";
+import { generateMetadata as grandchildRouteMetadata } from "../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx";
+import { generateMetadata as segmentRouteMetadata } from "../../src/app/[locale]/[segment]/page.tsx";
 import { localePath } from "../../src/modules/i18n";
 import {
   CANONICAL_HOST,
   type DeploymentDescriptor,
   SITEMAP_CHILDREN,
   SITEMAP_URL_CAP,
+  type SitemapEntry,
+  categorySitemapEntries,
   corridorSitemapEntries,
   localeSitemapDocument,
+  occasionSitemapEntries,
   sitemapChildDocument,
   sitemapIndexDocument,
   sitemapLocales,
@@ -115,16 +159,22 @@ function parseIndex(xml: string): readonly { loc: string; lastmod?: string }[] {
 }
 
 /** Every announced URL, by walking the tree the way a crawler does. */
-function crawl(deployment: DeploymentDescriptor): readonly ParsedUrl[] {
+async function crawl(
+  deployment: DeploymentDescriptor,
+): Promise<readonly ParsedUrl[]> {
   const urls: ParsedUrl[] = [];
-  for (const entry of parseIndex(sitemapIndexDocument(deployment))) {
+  for (const entry of parseIndex(await sitemapIndexDocument(deployment))) {
     const locale = entry.loc.replace(`${ORIGIN}/sitemaps/`, "").split("/")[0];
     expect(locale, entry.loc).toBeDefined();
-    const localeIndex = localeSitemapDocument(locale ?? "", deployment);
+    const localeIndex = await localeSitemapDocument(locale ?? "", deployment);
     expect(localeIndex, entry.loc).toBeDefined();
     for (const child of parseIndex(localeIndex ?? "")) {
       const name = child.loc.split("/").at(-1)?.replace(".xml", "") ?? "";
-      const document = sitemapChildDocument(locale ?? "", name, deployment);
+      const document = await sitemapChildDocument(
+        locale ?? "",
+        name,
+        deployment,
+      );
       expect(document, child.loc).toBeDefined();
       urls.push(...parseUrlSet(document ?? ""));
     }
@@ -132,31 +182,46 @@ function crawl(deployment: DeploymentDescriptor): readonly ParsedUrl[] {
   return urls;
 }
 
-describe("the tree a crawler walks (AC-13, T-14)", () => {
-  it("is index → two locale indexes → two children each → sixteen URLs", () => {
-    const index = parseIndex(sitemapIndexDocument(INDEXING));
+/** Every listing row (spec 008 AC-19) a locale announces, across both listing children. */
+async function listingRows(
+  locale: string,
+  deployment: DeploymentDescriptor,
+): Promise<readonly SitemapEntry[]> {
+  return [
+    ...(await categorySitemapEntries(locale, deployment)),
+    ...(await occasionSitemapEntries(locale, deployment)),
+  ];
+}
+
+describe("the tree a crawler walks (AC-13, T-14; spec 008 AC-19, T-19)", () => {
+  it("is index → two locale indexes → four children each → corridors, hubs and listings", async () => {
+    const index = parseIndex(await sitemapIndexDocument(INDEXING));
     expect(index.map((entry) => entry.loc)).toEqual([
       `${ORIGIN}/sitemaps/en/index.xml`,
       `${ORIGIN}/sitemaps/en-gb/index.xml`,
     ]);
 
-    for (const locale of sitemapLocales(INDEXING)) {
+    let listings = 0;
+    for (const locale of await sitemapLocales(INDEXING)) {
       const children = parseIndex(
-        localeSitemapDocument(locale, INDEXING) ?? "",
+        (await localeSitemapDocument(locale, INDEXING)) ?? "",
       );
       expect(children.map((child) => child.loc)).toEqual(
         SITEMAP_CHILDREN.map(
           (child) => `${ORIGIN}/sitemaps/${locale}/${child}.xml`,
         ),
       );
+      listings += (await listingRows(locale, INDEXING)).length;
     }
 
-    // Seven corridors + one hub, in each of the two authored locales.
-    expect(crawl(INDEXING)).toHaveLength(16);
+    // Seven corridors + one hub in each of the two authored locales, plus the listing rows: the
+    // control that the listing children are not vacuously empty here.
+    expect(listings).toBeGreaterThan(0);
+    expect(await crawl(INDEXING)).toHaveLength(16 + listings);
   });
 
-  it("lists the bare origin nowhere: `/` is a 308 to `/en` (spec 003 §14 A16 clause 3, T-07)", () => {
-    const urls = crawl(INDEXING);
+  it("lists the bare origin nowhere: `/` is a 308 to `/en` (spec 003 §14 A16 clause 3, T-07)", async () => {
+    const urls = await crawl(INDEXING);
     // The control: the crawl reached real URLs, so the absence below is not vacuous.
     expect(urls.length).toBeGreaterThan(0);
     const bare = new Set([ORIGIN, `${ORIGIN}/`]);
@@ -166,28 +231,29 @@ describe("the tree a crawler walks (AC-13, T-14)", () => {
         expect(bare.has(alternate.href), alternate.href).toBe(false);
       }
     }
-    for (const entry of parseIndex(sitemapIndexDocument(INDEXING))) {
+    for (const entry of parseIndex(await sitemapIndexDocument(INDEXING))) {
       expect(bare.has(entry.loc), entry.loc).toBe(false);
     }
   });
 
-  it("carries a real <lastmod> on every URL and every child, never the clock", () => {
+  it("carries a real <lastmod> on every URL and every child, never the clock", async () => {
     const today = new Date().toISOString().slice(0, 10);
-    for (const url of crawl(INDEXING)) {
+    for (const url of await crawl(INDEXING)) {
       expect(url.lastmod, url.loc).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
       // The authored corpus and the catalogue are older than the process running this test, so a
       // `<lastmod>` in the future is the one shape "now" could not produce either.
       expect(url.lastmod <= today, url.loc).toBe(true);
     }
-    for (const entry of parseIndex(sitemapIndexDocument(INDEXING))) {
+    for (const entry of parseIndex(await sitemapIndexDocument(INDEXING))) {
       expect(entry.lastmod, entry.loc).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
     }
   });
 
-  it("stays inside both caps", () => {
-    for (const locale of sitemapLocales(INDEXING)) {
+  it("stays inside both caps", async () => {
+    for (const locale of await sitemapLocales(INDEXING)) {
       for (const child of SITEMAP_CHILDREN) {
-        const document = sitemapChildDocument(locale, child, INDEXING) ?? "";
+        const document =
+          (await sitemapChildDocument(locale, child, INDEXING)) ?? "";
         expect(parseUrlSet(document).length).toBeLessThanOrEqual(
           SITEMAP_URL_CAP,
         );
@@ -198,15 +264,20 @@ describe("the tree a crawler walks (AC-13, T-14)", () => {
     }
   });
 
-  it("announces nothing at all before the indexing flip (§6, §12)", () => {
-    expect(crawl(PREVIEW)).toEqual([]);
-    expect(sitemapLocales(PREVIEW)).toEqual([]);
+  it("announces nothing at all before the indexing flip (§6, §12)", async () => {
+    expect(await crawl(PREVIEW)).toEqual([]);
+    expect(await sitemapLocales(PREVIEW)).toEqual([]);
+    // Spec 008 AC-19's Phase 0 clause: both listing children empty, so absent from every index.
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      expect(await listingRows(locale, PREVIEW)).toEqual([]);
+      expect(await localeSitemapDocument(locale, PREVIEW)).toBeUndefined();
+    }
   });
 });
 
 describe("the <head> cluster and the xhtml:link set are one call (AC-11, T-12)", () => {
   it("matches for every announced corridor URL, value for value and in order", async () => {
-    for (const locale of sitemapLocales(INDEXING)) {
+    for (const locale of await sitemapLocales(INDEXING)) {
       for (const entry of corridorSitemapEntries(locale, INDEXING)) {
         const slug = entry.loc.split("/").at(-1) ?? "";
         const metadata = await childRouteMetadata({
@@ -233,8 +304,8 @@ describe("the <head> cluster and the xhtml:link set are one call (AC-11, T-12)",
     }
   });
 
-  it("carries x-default → /en and never en-150, on every row of every child", () => {
-    for (const url of crawl(INDEXING)) {
+  it("carries x-default → /en and never en-150, on every row of every child", async () => {
+    for (const url of await crawl(INDEXING)) {
       const values = url.alternates.map((alternate) => alternate.hreflang);
       expect(values, url.loc).toContain("x-default");
       expect(values, url.loc).not.toContain("en-150");
@@ -255,8 +326,8 @@ describe("the <head> cluster and the xhtml:link set are one call (AC-11, T-12)",
 
 describe("sitemap ∩ noindex = ∅, at the module level (AC-14, T-15's unit twin)", () => {
   it("gives every announced URL an index,follow document", async () => {
-    const announced = new Set(crawl(INDEXING).map((url) => url.loc));
-    for (const locale of sitemapLocales(INDEXING)) {
+    const announced = new Set((await crawl(INDEXING)).map((url) => url.loc));
+    for (const locale of await sitemapLocales(INDEXING)) {
       for (const entry of corridorSitemapEntries(locale, INDEXING)) {
         expect(announced.has(entry.loc)).toBe(true);
       }
@@ -275,6 +346,74 @@ describe("sitemap ∩ noindex = ∅, at the module level (AC-14, T-15's unit twi
       }),
     });
     expect(metadata.robots).toBe("noindex,follow");
-    expect(crawl(PREVIEW)).toEqual([]);
+    expect(await crawl(PREVIEW)).toEqual([]);
+  });
+});
+
+/**
+ * Spec 008 AC-19 (and AC-16's sitemap half), T-19's integration half (TASK-116): every listing
+ * row against **the document it names**, as Next renders that document's `<head>`. The route is
+ * picked by path depth exactly as the App Router picks it, so the row's `<loc>`, its
+ * `xhtml:link` set and the page's canonical, robots and hreflang cluster are compared value for
+ * value, in order.
+ */
+async function listingMetadata(loc: string) {
+  const [locale = "", ...segments] = loc.slice(`${ORIGIN}/`.length).split("/");
+  const [segment = "", child = "", grandchild = ""] = segments;
+  switch (segments.length) {
+    case 1:
+      return segmentRouteMetadata({
+        params: Promise.resolve({ locale, segment }),
+      });
+    case 2:
+      return childRouteMetadata({
+        params: Promise.resolve({ locale, segment, child }),
+      });
+    default:
+      return grandchildRouteMetadata({
+        params: Promise.resolve({ locale, segment, child, grandchild }),
+      });
+  }
+}
+
+describe("listing rows and their documents are one answer (spec 008 AC-19, AC-16, T-19)", () => {
+  it("gives every listing row an index,follow document with the row's own canonical and cluster", async () => {
+    let checked = 0;
+    for (const locale of await sitemapLocales(INDEXING)) {
+      for (const entry of await listingRows(locale, INDEXING)) {
+        const metadata = await listingMetadata(entry.loc);
+        expect(metadata.robots, entry.loc).toBe("index,follow");
+        expect(metadata.alternates?.canonical, entry.loc).toBe(entry.loc);
+        expect(
+          Object.entries(metadata.alternates?.languages ?? {}).map(
+            ([hreflang, href]) => ({ hreflang, href: String(href) }),
+          ),
+          entry.loc,
+        ).toEqual(entry.alternates);
+        checked += 1;
+      }
+    }
+    // The control: the loop ran over real rows, so the agreement above is not vacuous.
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it("announces no listing URL whose document says noindex: an unreviewed hub is absent", async () => {
+    // `/en/flowers/roses` exists (a category hub with products) and its copy row is unreviewed,
+    // so its own document is `noindex,follow`, and it must be in no sitemap.
+    const roses = `${ORIGIN}/en/flowers/roses`;
+    const metadata = await listingMetadata(roses);
+    expect(metadata.robots).toBe("noindex,follow");
+    const announced = (await crawl(INDEXING)).map((url) => url.loc);
+    expect(announced).not.toContain(roses);
+  });
+
+  it("announces no country-scoped listing while no destination is operational (Phase 0)", async () => {
+    const shopRoot = `${ORIGIN}/en/poland/flowers`;
+    expect((await listingMetadata(shopRoot)).robots).toBe("noindex,follow");
+    for (const url of await crawl(INDEXING)) {
+      expect(url.loc, url.loc).not.toMatch(
+        /\/(?:en|en-gb)\/[a-z-]+\/(?:flowers|occasions)(?:\/|$)/u,
+      );
+    }
   });
 });
