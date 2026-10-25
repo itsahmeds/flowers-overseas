@@ -16,11 +16,11 @@ task actually touches.
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +2 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +125 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +13 |
-| `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
+| `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/discounts-admin.test.ts` +1 |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +47 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +142 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +144 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +18 |
@@ -28,7 +28,7 @@ task actually touches.
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +15 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +10 |
-| `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +40 |
+| `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +75 |
 
 ## Config (`src/config/`)
@@ -98,6 +98,7 @@ task actually touches.
 | `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders… | 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec… | 004 |
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six… | 009 |
+| `(dev)/dev/components/trader-identity/[doc]/page.tsx` | `/dev/components/trader-identity/{imprint\|terms… | 041 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group —… | 004 |
 | `[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/-product/{segment}/{child}/{gr… | 009 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}… | 008 |
@@ -368,14 +369,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 503 |
+| `tests/unit/` | 505 |
 | `tests/integration/` | 100 |
-| `tests/contract/` | 40 |
-| `tests/e2e/` | 79 |
-| `tests/a11y/` | 15 |
-| `tests/visual/` | 22 |
+| `tests/contract/` | 41 |
+| `tests/e2e/` | 80 |
+| `tests/a11y/` | 16 |
+| `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 375 |
+| `tests/fixtures/` | 380 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
