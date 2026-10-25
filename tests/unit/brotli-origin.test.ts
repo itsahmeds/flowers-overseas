@@ -18,7 +18,7 @@
  * The end-to-end behaviour (a real request through the proxy) is exercised by the Lighthouse run
  * itself; what a unit test can hold is the policy above.
  */
-import { brotliDecompressSync } from "node:zlib";
+import { brotliCompressSync, brotliDecompressSync, constants } from "node:zlib";
 
 import { describe, expect, it } from "vitest";
 
@@ -29,6 +29,7 @@ import {
   SUBRESOURCE_HEADERS,
   acceptsBrotli,
   brotli,
+  brotliQuality,
   forwardedHeaders,
   isCompressible,
 } from "../../scripts/seo/brotli-origin.ts";
@@ -65,6 +66,36 @@ describe("what the origin encodes", () => {
     expect(brotliDecompressSync(encoded).toString("utf8")).toBe(
       body.toString("utf8"),
     );
+  });
+
+  it("encodes a document at the edge's dynamic quality, 4, and every asset at 11 (TASK-411)", () => {
+    // Measured 2026-10-25 against production (Cloudflare in front of Railway): `/en`, 222 783 B of
+    // HTML, arrives as 28 248 B of Brotli, which is quality 4 (28 216 B), not quality 11
+    // (22 039 B, at 183 ms of CPU per request that production never spends).
+    expect(brotliQuality("text/html; charset=utf-8")).toBe(4);
+    expect(brotliQuality("TEXT/HTML")).toBe(4);
+    expect(brotliQuality("application/javascript; charset=UTF-8")).toBe(11);
+    expect(brotliQuality("text/css; charset=utf-8")).toBe(11);
+    expect(brotliQuality("application/json")).toBe(11);
+    expect(brotliQuality(undefined)).toBe(11);
+
+    // The quality reaches the encoder: one body, two different byte strings.
+    const body = Buffer.from(
+      Array.from(
+        { length: 400 },
+        (_, i) => `<li class="c${String(i % 37)}">${String(i * 7919)}</li>`,
+      ).join(""),
+      "utf8",
+    );
+    const at = (quality: number): Buffer =>
+      brotliCompressSync(body, {
+        params: { [constants.BROTLI_PARAM_QUALITY]: quality },
+      });
+    const document = brotli(body, brotliQuality("text/html"));
+    const script = brotli(body, brotliQuality("application/javascript"));
+    expect(document.equals(at(4))).toBe(true);
+    expect(script.equals(at(11))).toBe(true);
+    expect(document.equals(script)).toBe(false);
   });
 
   it("encodes only when the client advertises `br`", () => {

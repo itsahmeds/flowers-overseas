@@ -29,8 +29,9 @@
  * ## What it does and does not do
  *
  * It forwards every request to the upstream unchanged, then re-encodes the response body with
- * Brotli at quality 11 (the CDN setting) whenever the client advertises `br` and the body is a
- * compressible type. It requests **identity** from the upstream so it never double-encodes, and
+ * Brotli whenever the client advertises `br` and the body is a compressible type: an asset at
+ * quality 11 (the bytes the script budget is written in), a document at quality 4 (what the
+ * deployment's edge serves a dynamic page at; `DOCUMENT_QUALITY`, TASK-411). It requests **identity** from the upstream so it never double-encodes, and
  * it drops `content-length` in favour of the encoded length. Nothing is cached and nothing is
  * rewritten. **Documents keep every header `next start` sent**, so a Lighthouse audit of
  * `Content-Security-Policy-Report-Only`, `X-Robots-Tag` or `Cache-Control` — and Chrome's own CSP
@@ -87,10 +88,33 @@ export function isCompressible(contentType: string | undefined): boolean {
   return COMPRESSIBLE_TYPES.some((prefix) => value.startsWith(prefix));
 }
 
-/** Brotli at the quality an edge CDN uses, so the measured bytes are the deployed bytes. */
-export function brotli(body: Buffer): Buffer {
+/**
+ * The Brotli quality for an asset: 11, the quality the script budget is written in (§14 A1, A12),
+ * so the number asserted here and the number `pnpm budget:client-js` prints are the same number.
+ */
+export const ASSET_QUALITY = 11;
+
+/**
+ * The Brotli quality for a **document**: 4, the quality the deployment's edge applies to a dynamic
+ * response (TASK-411). Measured 2026-10-25 against production, Cloudflare in front of Railway:
+ * `/en` (222 783 B of HTML) arrives as 28 248 B and `/en/poland/flowers` (278 363 B) as 27 418 B;
+ * quality 4 gives 28 216 B and 27 355 B, quality 11 gives 22 039 B and 21 201 B. Quality 11 also
+ * costs 150 to 230 ms of synchronous CPU per document, which Lighthouse reads as server response
+ * time and which no request to the deployment ever pays. No byte budget is written against a
+ * document, so the only thing quality 11 changed was the LCP the fixture reported.
+ */
+export const DOCUMENT_QUALITY = 4;
+
+export function brotliQuality(contentType: string | undefined): number {
+  return (contentType ?? "").toLowerCase().startsWith("text/html")
+    ? DOCUMENT_QUALITY
+    : ASSET_QUALITY;
+}
+
+/** Brotli at `quality`; an asset's quality unless the caller names one. */
+export function brotli(body: Buffer, quality: number = ASSET_QUALITY): Buffer {
   return brotliCompressSync(body, {
-    params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+    params: { [constants.BROTLI_PARAM_QUALITY]: quality },
   });
 }
 
@@ -156,7 +180,7 @@ async function handle(
     acceptsBrotli(request.headers["accept-encoding"] as string | undefined) &&
     isCompressible(contentType) &&
     payload.length > 0;
-  const out = encode ? brotli(payload) : payload;
+  const out = encode ? brotli(payload, brotliQuality(contentType)) : payload;
 
   for (const [name, value] of upstreamResponse.headers.entries()) {
     if (name === "content-length" || name === "content-encoding") continue;
@@ -194,7 +218,7 @@ export function main(argv: readonly string[]): void {
   });
   server.listen(port, "127.0.0.1", () => {
     process.stdout.write(
-      `brotli-origin: http://127.0.0.1:${String(port)} -> ${upstream} (br, quality 11)\n`,
+      `brotli-origin: http://127.0.0.1:${String(port)} -> ${upstream} (br: documents quality ${String(DOCUMENT_QUALITY)}, assets ${String(ASSET_QUALITY)})\n`,
     );
   });
 }
