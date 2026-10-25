@@ -3,45 +3,30 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { COMPANY } from "@/config/company.ts";
-import { COUNTRY_CODES } from "@/config/countries";
 import { isLocaleCode } from "@/config/locales";
-import { OCCASION_TILES } from "@/config/occasions";
-import {
-  DEMO_DESTINATION_ISO2,
-  isPublished,
-  listingLinkId,
-} from "@/config/site-links";
-import {
-  corridorShopEntry,
-  listProductPages,
-  listingExists,
-  occasionsIndexHref,
-  slugFor,
-} from "@/modules/catalog";
+import { homeView } from "@/modules/catalog";
 import { infoPageExists, infoPagePath } from "@/modules/content";
-import { listingPath, localePath, routableLocale } from "@/modules/i18n";
+import { localePath, routableLocale } from "@/modules/i18n";
 import {
   JsonLd,
+  type JsonLdNode,
   canonicalFor,
   deploymentDescriptor,
+  itemList,
   organization,
   schemaOptions,
   webSite,
 } from "@/modules/seo";
 import {
-  DATE_OCCASION_KEYS,
   DestinationsGrid,
+  HomeComingUp,
   HomeFaq,
   HomeHero,
-  HomeProvenanceNote,
+  HomeOccasionTabs,
+  HomePriceWords,
+  HomeSelection,
   HowItWorks,
-  OccasionDates,
-  OccasionTiles,
-  ProofRow,
   ReviewsSection,
-  SENTENCE_IDS,
-  StickyActionBar,
-  TrendingRow,
 } from "@/modules/ui";
 
 /**
@@ -98,55 +83,6 @@ import {
  */
 export const revalidate = 3600;
 
-/**
- * The catalogue's answers the home's sections need and `src/modules/ui` may not ask for itself
- * (`plan/01` §5; TASK-173's precedent, extended by TASK-177): which destinations have a shop root
- * here, the demo destination's shop root, and the occasion hubs that exist and may be linked.
- * Each is the same predicate the router and the AC-21 crawl read, so no link can point at a 404.
- */
-async function homeCatalogueLinks(locale: string): Promise<{
-  readonly shopCountries: readonly string[];
-  readonly shopHref: string | undefined;
-  readonly hubHrefs: Readonly<Record<string, string>>;
-  readonly occasionsHref: string | undefined;
-}> {
-  const shops = await Promise.all(
-    COUNTRY_CODES.map(async (iso2) => {
-      const entry = await corridorShopEntry(locale, iso2);
-      return { iso2, href: entry.shopEntryHref };
-    }),
-  );
-  const hubHrefs: Record<string, string> = {};
-  if (isLocaleCode(locale) && isPublished(listingLinkId("occasionHub"))) {
-    const keys = new Set([
-      ...OCCASION_TILES.map((tile) => tile.catalogueKey as string),
-      ...Object.values(DATE_OCCASION_KEYS),
-    ]);
-    for (const key of keys) {
-      const slug = slugFor("occasion", key, locale);
-      if (slug === undefined) continue;
-      const exists = await listingExists({
-        pageType: "occasionHub",
-        locale,
-        entityKey: key,
-      });
-      if (exists) {
-        hubHrefs[key] = listingPath(locale, { pageType: "occasionHub", slug });
-      }
-    }
-  }
-  return {
-    shopCountries: shops
-      .filter((shop) => shop.href !== undefined)
-      .map((shop) => shop.iso2),
-    shopHref: shops.find((shop) => shop.iso2 === DEMO_DESTINATION_ISO2)?.href,
-    hubHrefs,
-    // "Occasions →" beside "What is the occasion?" (TASK-232): the published `occasions` link id
-    // paired with `listingExists()`, the footer's own gate, so `/pl/okazje` is never linked.
-    occasionsHref: await occasionsIndexHref(locale),
-  };
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -183,44 +119,51 @@ export default async function LocaleHomePage({
   setRequestLocale(locale.code);
 
   const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
+  // Products first (spec 004 §14 A-founder-2026-10-24a item 4; TASK-386, TASK-387): every
+  // decision is the catalogue's `homeView()`; the page mounts the sections in their DOM order.
+  // A locale the registry adds as data (spec 003 AC-31) reads the catalogue through its fallback
+  // chain until the catalogue knows it; every launch and pseudo locale is its own code.
+  const dataLocale = isLocaleCode(locale.code)
+    ? locale.code
+    : locale.fallbackCode !== null && isLocaleCode(locale.fallbackCode)
+      ? locale.fallbackCode
+      : undefined;
+  if (dataLocale === undefined) notFound();
+  const view = await homeView(dataLocale);
 
-  const links = await homeCatalogueLinks(locale.code);
-  const tNav = await getTranslations({ locale: locale.code, namespace: "nav" });
+  // One `ItemList` per product section, equal to its displayed cards by count, order, name and
+  // URL, and carrying no price (AC-107): "Our selection", the checked occasion panel, "Coming up".
+  const lists: JsonLdNode[] =
+    options === undefined
+      ? []
+      : [
+          view.selection.cards,
+          view.occasions[0]?.cards ?? [],
+          view.comingUp.flatMap((occasion) => occasion.cards),
+        ].flatMap((cards) => {
+          const node = itemList(
+            cards.map((card) => ({ name: card.name, href: card.href })),
+            options,
+          );
+          return node === undefined ? [] : [node];
+        });
 
   return (
     <>
       <main id="main">
-        {/* Home v3 (spec 004 §14 A23 clause 1, A24 clause 5; TASK-196): option A on desktop, the
-            cover on the phone, then the shipped sections in the round-2 artboard's order. The
-            page mounts the sections and hands in the catalogue's answers; every gate is the
-            module's. The hero is the copy, the photograph and the sentence (A21 clause 4). */}
-        <HomeHero locale={locale.code} shopCountries={links.shopCountries} />
-        {/* Popular choices: each card links to its product page where that page exists (spec 008
-            §14 A14 (e); TASK-173). */}
-        <TrendingRow
+        <HomeHero
           locale={locale.code}
-          productPages={
-            isLocaleCode(locale.code) ? await listProductPages(locale.code) : []
-          }
-          {...(links.shopHref === undefined
-            ? {}
-            : { shopHref: links.shopHref })}
+          picker={view.picker}
+          notOpen={view.notOpen}
         />
-        <OccasionDates locale={locale.code} hubHrefs={links.hubHrefs} />
-        <OccasionTiles
-          locale={locale.code}
-          hubHrefs={links.hubHrefs}
-          {...(links.occasionsHref === undefined
-            ? {}
-            : { indexHref: links.occasionsHref })}
-        />
-        {/* The honesty label (spec 006 AC-17, ADR-0014), under the last image-bearing section. */}
-        <HomeProvenanceNote locale={locale.code} />
+        <HomeSelection selection={view.selection} />
+        <HomeOccasionTabs occasions={view.occasions} />
+        <HomePriceWords bands={view.priceBands} />
+        <HomeComingUp comingUp={view.comingUp} />
         {/* Renders nothing until a completed order produces a real review (AC-15). */}
         <ReviewsSection locale={locale.code} />
-        <HowItWorks />
-        {/* The promise band: v2's form of AC-10's trust strip. */}
-        <ProofRow />
+        <DestinationsGrid locale={locale.code} />
+        <HowItWorks short />
         <HomeFaq
           allTopicsHref={
             infoPageExists("help", locale.code)
@@ -228,20 +171,7 @@ export default async function LocaleHomePage({
               : undefined
           }
         />
-        <DestinationsGrid
-          locale={locale.code}
-          {...(links.shopHref === undefined
-            ? {}
-            : { shopHref: links.shopHref })}
-        />
       </main>
-      {/* The phone's docked Send flowers (A24 clause 4 (a), AC-48; TASK-195's primitive). On the
-          cover it is part of the first screen by design (header 65 + cover + bar 76 = the
-          viewport), so it is shown from the start. It repeats, never replaces: an in-page link to
-          the sentence card directly below the fold, which works with JavaScript off. */}
-      <StickyActionBar
-        action={{ href: `#${SENTENCE_IDS.form}`, label: tNav("send") }}
-      />
       <JsonLd
         nodes={
           options === undefined
@@ -249,6 +179,7 @@ export default async function LocaleHomePage({
             : [
                 organization(COMPANY, options),
                 webSite(COMPANY.tradingName, options),
+                ...lists,
               ]
         }
       />

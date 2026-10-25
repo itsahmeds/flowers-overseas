@@ -9,7 +9,7 @@
  * `tests/unit/api-send-route.test.ts`; the JavaScript-off submission is `tests/e2e/home.spec.ts`.
  */
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
@@ -18,14 +18,15 @@ import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
 import { HOME_BLEED, HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
-import { HomeProvenanceNote } from "../../src/modules/ui/home/HomeProvenanceNote.tsx";
+import { HomeComingUp } from "../../src/modules/ui/home/HomeComingUp.tsx";
+import { HomeOccasionTabs } from "../../src/modules/ui/home/HomeOccasionTabs.tsx";
+import { HomePriceWords } from "../../src/modules/ui/home/HomePriceWords.tsx";
+import { HomeSelection } from "../../src/modules/ui/home/HomeSelection.tsx";
+import type { HomeView } from "../../src/modules/ui/home/home-view.ts";
 import { HowItWorks } from "../../src/modules/ui/home/HowItWorks.tsx";
-import { OccasionDates } from "../../src/modules/ui/home/OccasionDates.tsx";
-import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
 import { PROOF_FACTS, ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
 import { ReviewsSection } from "../../src/modules/ui/home/ReviewsSection.tsx";
 import { SentencePicker } from "../../src/modules/ui/home/SentencePicker.tsx";
-import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
 import {
   SENTENCE_FIELDS,
   SENTENCE_WHO,
@@ -54,6 +55,8 @@ const NAMESPACES = [
   "media",
   "a11y",
   "common",
+  "shop",
+  "catalog",
 ] as const;
 
 function render(node: React.ReactElement, locale: string): string {
@@ -71,8 +74,21 @@ function render(node: React.ReactElement, locale: string): string {
 /** Poland's shop root exists in every launch locale (the committed catalogue). */
 const SHOPS = ["PL"] as const;
 
-const hero = (locale: string): string =>
-  render(<HomeHero locale={locale} shopCountries={SHOPS} />, locale);
+/** The picker as `homeView()` hands it in: two buttons, two datalist names. */
+const PICKER: HomeView["picker"] = {
+  action: "/api/choose/en",
+  chips: [
+    { code: "fr", name: "France" },
+    { code: "pl", name: "Poland" },
+  ],
+  datalist: ["France", "Poland"],
+};
+
+const hero = (locale: string, notOpen = true): string =>
+  render(
+    <HomeHero locale={locale} picker={PICKER} notOpen={notOpen} />,
+    locale,
+  );
 
 const picker = (locale: string, shops: readonly string[] = SHOPS): string =>
   render(<SentencePicker locale={locale} shopCountries={shops} />, locale);
@@ -123,7 +139,7 @@ afterEach(() => {
   vi.doUnmock("../../src/config/countries.ts");
 });
 
-describe("the hero band (AC-10)", () => {
+describe("the hero band, v3 (spec 004 §14 A-founder-2026-10-24a item 4.2; TASK-386)", () => {
   it("renders exactly one `<h1>`, and it is the reviewed headline", () => {
     const html = hero("en");
 
@@ -147,53 +163,57 @@ describe("the hero band (AC-10)", () => {
     expect(rendered).not.toMatch(/\bwill make\b/u);
   });
 
-  it('carries the `#send` target the header\'s "Send flowers" link points at (TASK-176)', () => {
+  it("holds the picker: a GET form to the chooser with the shop buttons, the field and the remember line", () => {
     const html = hero("en");
+    const form = /<form [^>]*>/u.exec(html)?.[0] ?? "";
 
+    expect(form).toContain('action="/api/choose/en"');
+    expect(form).toContain('method="get"');
+    expect(form).toContain("data-fo-home-picker");
+    // No history hook on the home: Back from the shop root returns here.
+    expect(form).not.toContain("data-fo-choose=");
+    expect(
+      [...html.matchAll(/data-fo-choose-chip="([a-z]{2})"/gu)].map((m) => m[1]),
+    ).toStrictEqual(["fr", "pl"]);
+    const field = /<input [^>]*type="search"[^>]*>/u.exec(html)?.[0] ?? "";
+    expect(field).toContain('name="to"');
+    expect(field).toContain('list="fo-countries"');
+    expect(text(html)).toContain("Where should the flowers go?");
+    expect(text(html)).toContain("Show prices");
+    expect(text(html)).toContain(
+      "We will remember this country on this device. Change it any time under Sending to.",
+    );
+    // The header's "Send flowers" still lands on it.
     expect([...html.matchAll(/ id="send"/g)]).toHaveLength(1);
-    expect(html).toMatch(/<form id="send"[^>]* method="get"/);
   });
 
-  it("fills the photo slot eagerly, at high priority, with one preload (spec 006 AC-19)", () => {
+  it("states that ordering is not open, and the no-money line once, beside the picker", () => {
+    const html = hero("en");
+
+    expect([...html.matchAll(/data-fo-no-money=""/gu)]).toHaveLength(1);
+    expect(text(html)).toContain(
+      "We show no price on this page, because the price depends on where the flowers are going.",
+    );
+    expect(html).toContain("data-fo-home-state");
+    // With a destination open, the state line is data and leaves.
+    expect(hero("en", false)).not.toContain("data-fo-home-state");
+  });
+
+  it("makes the photograph the LCP candidate from `md` up only, with one preload carrying that `media`", () => {
     const html = hero("en");
 
     expect(html).toContain('data-fo-media-asset="home-hero"');
-    expect(html).toContain('loading="eager"');
     expect(html).toContain('fetchPriority="high"');
     expect([...html.matchAll(/rel="preload"/g)]).toHaveLength(1);
-    expect([...html.matchAll(/<img/g)]).toHaveLength(1);
-  });
-
-  it("is option A's full-bleed flat-lay on desktop and the phone cover below `md` (AC-46)", () => {
-    const html = hero("en");
-    const photo = /<div class="([^"]*)" data-fo-hero-photo=/u
-      .exec(html)?.[1]
-      ?.replaceAll("&amp;", "&");
-
-    expect(photo, "the photograph's box").toBeDefined();
-    const classes = (photo ?? "").split(/\s+/u);
-    // Desktop: the band's whole box, under the chrome, cropped with the window at 64% 50%.
-    expect(classes).toEqual(
-      expect.arrayContaining([
-        "md:absolute",
-        "md:inset-0",
-        "md:[&_img]:object-[64%_50%]",
-      ]),
+    expect(html).toMatch(
+      /rel="preload"[^>]*media="\(min-width: 48rem\)"|media="\(min-width: 48rem\)"[^>]*rel="preload"/u,
     );
-    // Phone: the viewport minus the header (65) and the bar (76), at least 420 px.
-    expect(classes).toEqual(
-      expect.arrayContaining([
-        "h-[min(703px,calc(100svh-141px))]",
-        "min-h-[420px]",
-      ]),
+    // Below `md` the box is not drawn: no photograph above the first product on a phone.
+    const box =
+      /<div class="([^"]*)" data-fo-home-photo=/u.exec(html)?.[1] ?? "";
+    expect(box.split(/\s+/u)).toEqual(
+      expect.arrayContaining(["max-md:hidden", "h-[370px]"]),
     );
-    // The band: at least 560 px, at most the viewport minus the chrome, and never capped by
-    // `--hero-photo-max` (A24 clause 5's exemption).
-    expect(html).toContain(
-      "md:h-[clamp(560px,calc(100svh-var(--home-chrome)),826px)]",
-    );
-    expect(html).not.toContain("--hero-photo-max");
-    expect(html).not.toContain("data-fo-lead-photo");
   });
 
   it("falls back to the captioned box and no `<img>` when the dataset has no photograph", () => {
@@ -209,35 +229,17 @@ describe("the hero band (AC-10)", () => {
     }
   });
 
-  it("draws one white card with the airmail edge, and no round-1 device (A24 clause 7, A23 clause 10)", () => {
+  it("draws one card with the airmail edge, the picker, and no round-1 device (A24 clause 7)", () => {
     const html = hero("en");
-    const card =
-      /<div class="([^"]*)" data-fo-hero-card=/u.exec(html)?.[1] ?? "";
 
-    expect(card.split(/\s+/u)).toEqual(
-      expect.arrayContaining([
-        "md:airmail-edge",
-        "md:bg-surface-card",
-        "md:col-span-8",
-        "lg:col-span-6",
-        "xl:col-span-5",
-      ]),
-    );
-    // Below `md` the edge moves with the white card onto the sentence; one per width.
-    expect(html).toMatch(
-      /<form id="send"[^>]*class="[^"]*max-md:airmail-edge/u,
-    );
-    expect([...html.matchAll(/airmail-edge/gu)]).toHaveLength(2);
+    expect([...html.matchAll(/airmail-edge/gu)]).toHaveLength(1);
+    expect(html).toMatch(/<form [^>]*class="airmail-edge[^"]*"/u);
     expect(html).not.toContain("data-fo-postmark");
     expect(html).not.toContain("--tilt-");
-    expect(html).not.toContain("--letter-lines");
   });
 
-  it("puts every home section on the page frame: the logo's edge at every width (AC-31)", async () => {
+  it("puts the hero on the page frame: the logo's edge at every width (AC-31)", async () => {
     const layout = await import("../../src/modules/ui/primitives/layout.tsx");
-    // `PAGE_FRAME`'s edge on a full-bleed band: the hero's card row and every section pad to it,
-    // 20 px below `md`, 56 px from `md` and the centred 1,328 px column above 1,440. The
-    // geometry is T-33's (`tests/e2e/frame-laptop-band.spec.ts`), at 390 to 1920 px.
     expect(layout.PAGE_FRAME).toContain(
       "max-w-[calc(var(--container-page)+2*var(--gutter))]",
     );
@@ -247,11 +249,11 @@ describe("the hero band (AC-10)", () => {
     );
   });
 
-  it("holds the sentence picker, in every launch locale", () => {
+  it("renders in every launch locale, with no sentence picker", () => {
     for (const locale of LOCALES) {
       const html = hero(locale);
       expect([...html.matchAll(/<h1/g)], locale).toHaveLength(1);
-      expect(html, locale).toContain("data-fo-sentence");
+      expect(html, locale).not.toContain("data-fo-sentence");
     }
   });
 });
@@ -743,24 +745,43 @@ describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
   });
 });
 
-describe("the home says nothing about VAT or delivery being included (founder, 2026-10-04)", () => {
+describe("the home says nothing about VAT or delivery being included, but the one no-money line (founder, 2026-10-04; spec 004 §14 A-founder-2026-10-24a item 2)", () => {
   // "Every price includes VAT and delivery. dont write this on home": the home shows no price,
-  // so no section of it may carry the inclusion sentence, in any locale. The header's utility
-  // strip is the chrome's (TASK-176) and is not rendered here.
-  const home = (locale: string): string =>
-    render(
+  // so no section of it may carry an inclusion claim, in any locale. One sentence is the later
+  // ruling's: item 2 puts the reviewed `shop.hub.noMoney` once on every country-less page, the
+  // home included ("Choose a destination and every price you see there includes VAT and
+  // delivery"), which explains the absence rather than claiming a price. It is the one
+  // `[data-fo-no-money]` element and is taken out before the sweep. The header's utility strip is
+  // the chrome's (TASK-176) and is not rendered here.
+  const views = new Map<string, HomeView>();
+  beforeAll(async () => {
+    const { homeView } = await import("../../src/modules/catalog/home.ts");
+    for (const locale of LOCALES) views.set(locale, await homeView(locale));
+  });
+  const viewOf = (locale: string): HomeView => {
+    const view = views.get(locale);
+    if (view === undefined) throw new Error(`no view for ${locale}`);
+    return view;
+  };
+  const withoutNoMoney = (html: string): string =>
+    html.replace(/<p [^>]*data-fo-no-money=""[^>]*>[^<]*<\/p>/u, "");
+  const home = (locale: string, withDates = true): string => {
+    const view = viewOf(locale);
+    return render(
       <>
-        <HomeHero locale={locale} shopCountries={SHOPS} />
-        <TrendingRow locale={locale} />
-        <OccasionDates locale={locale} />
-        <OccasionTiles locale={locale} />
-        <HowItWorks />
-        <ProofRow />
-        <HomeFaq />
+        <HomeHero locale={locale} picker={view.picker} notOpen={view.notOpen} />
+        <HomeSelection selection={view.selection} />
+        <HomeOccasionTabs occasions={view.occasions} />
+        <HomePriceWords bands={view.priceBands} />
+        {withDates ? <HomeComingUp comingUp={view.comingUp} /> : null}
+        <ReviewsSection locale={locale} />
         <DestinationsGrid locale={locale} />
+        <HowItWorks short />
+        <HomeFaq />
       </>,
       locale,
     );
+  };
 
   /**
    * A token denylist per locale, over the rendered text (PR 174 breaker H3): any word that taxes,
@@ -778,7 +799,11 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
 
   it("renders no tax, VAT or delivery-charge word in any of the four locales (H3)", () => {
     for (const locale of LOCALES) {
-      const rendered = text(home(locale));
+      const html = home(locale);
+      expect([...html.matchAll(/data-fo-no-money=""/gu)], locale).toHaveLength(
+        1,
+      );
+      const rendered = text(withoutNoMoney(html));
       expect(rendered, locale).not.toMatch(PRICE_TALK[locale]);
       // The sections are really there, so the absence is not an empty render.
       expect(rendered.length, locale).toBeGreaterThan(1500);
@@ -791,7 +816,7 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
         catalog: { price: Record<string, string> };
         nav: { utility: Record<string, string> };
       };
-      const rendered = text(home(locale));
+      const rendered = text(withoutNoMoney(home(locale)));
       const claims = [
         messages.nav.utility.pricesInclude ?? "",
         messages.catalog.price.inclusive ?? "",
@@ -804,47 +829,17 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
   });
 
   /**
-   * The whole home, in the page's order, less the dates band (PR 174 breaker round 2, hole 4):
-   * the band's stamps print real dates ("26 maja – Dzień Matki", "1 Nov · All Saints' Day"), which
-   * a day-count matcher reads as "26 … Dzień". Everything else a reader sees on the home — hero,
-   * sentence, Popular choices, tiles, the provenance note, reviews, how it works, the promise, the
-   * FAQ and the destinations — is swept.
+   * The whole home, in the page's order, less "Coming up" (PR 174 breaker round 2, hole 4): its
+   * occasions print real dates ("Fri 25 Dec"), which a day-count matcher reads as a count.
+   * Everything else a reader sees on the home is swept.
    */
-  const homeWithoutDates = (locale: string): string =>
-    render(
-      <>
-        <HomeHero locale={locale} shopCountries={SHOPS} />
-        <TrendingRow locale={locale} />
-        <OccasionTiles locale={locale} />
-        <HomeProvenanceNote locale={locale} />
-        <ReviewsSection locale={locale} />
-        <HowItWorks />
-        <ProofRow />
-        <HomeFaq />
-        <DestinationsGrid locale={locale} />
-      </>,
-      locale,
-    );
-
   it("promises no day count anywhere on the home, in any locale (hole 4)", () => {
     for (const locale of LOCALES) {
-      const rendered = text(homeWithoutDates(locale));
+      // Element by element: a card's "… each one" beside the "Birthday" tab is two elements, not
+      // a count of days, so a tag boundary breaks a match ("|" is no separator the matcher reads).
+      const rendered = text(home(locale, false).replaceAll(/<[^>]*>/gu, " | "));
       expect(rendered.length, locale).toBeGreaterThan(1500);
       expect(dayCountIn(rendered), locale).toBeUndefined();
-    }
-  });
-
-  /**
-   * The dates band is left out of the whole-home sweep because its stamps print real dates; its
-   * own copy is not (PR 174 breaker round 3, hole 2): the eyebrow and the heading are swept here.
-   */
-  it("promises no day count in the dates band's eyebrow and heading, in any locale", () => {
-    for (const locale of LOCALES) {
-      const html = render(<OccasionDates locale={locale} />, locale);
-      const head = html.slice(0, html.indexOf("<ul"));
-      const words = text(head);
-      expect(words.length, locale).toBeGreaterThan(10);
-      expect(dayCountIn(words), locale).toBeUndefined();
     }
   });
 
