@@ -735,9 +735,18 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
       new URL("../../src/modules/", import.meta.url),
     );
     // Joined, not a `URL`: a URL would decode the folder's `%5F` to `_`.
+    const app = fileURLToPath(new URL("../../src/app/", import.meta.url));
     const route = join(
-      fileURLToPath(new URL("../../src/app/", import.meta.url)),
+      app,
       "[locale]/-product/[segment]/[child]/[grandchild]/page.tsx",
+    );
+    // The head and body both product route files share, and the parameter route that renders the
+    // page with `?tier=` / `?date=` (spec 009 §14 A10; TASK-128): its `noindex` is the engine's
+    // `unparameterised` term, never a literal here.
+    const shared = join(app, "[locale]/product-route.tsx");
+    const parameterRoute = join(
+      app,
+      "[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx",
     );
     const seo = join(modules, "seo");
     const walk = (dir: string): string[] =>
@@ -746,7 +755,7 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
         if (statSync(path).isDirectory()) return path === seo ? [] : walk(path);
         return /\.(?:ts|tsx)$/.test(name) ? [path] : [];
       });
-    const files = [...walk(modules), route];
+    const files = [...walk(modules), route, shared, parameterRoute];
     // The walk reaches the files the AC names, and steps over the one module allowed to spell it.
     expect(files).toContain(join(modules, "catalog/product.ts"));
     expect(files).toContain(join(modules, "catalog/pricing/resolve.ts"));

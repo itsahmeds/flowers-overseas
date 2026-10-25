@@ -224,8 +224,10 @@ describe("AC-37: every product address is served by the product route", () => {
 
   it("mounts the product rules in `beforeFiles` beside the listing rules, and the robots header for a direct hit", () => {
     const config = read("next.config.ts");
+    // The product parameter rules (TASK-128) sit between the two, so a `?tier=` / `?date=`
+    // request reaches the parameter route before the unconditional product rule takes it.
     expect(config).toMatch(
-      /beforeFiles: \[\.\.\.listingRewriteRules\(\), \.\.\.productRewriteRules\(\)\]/u,
+      /beforeFiles: \[\s*\.\.\.listingRewriteRules\(\),\s*\.\.\.productParameterRewriteRules\(\),\s*\.\.\.productRewriteRules\(\),\s*\]/u,
     );
     expect(config).toContain("...productRouteHeaderRules(),");
     expect(productRouteHeaderRules()).toEqual([
