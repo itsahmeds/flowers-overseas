@@ -441,12 +441,12 @@ describe.skipIf(server.url === undefined)(
       const mine = randomUUID();
       const theirs = randomUUID();
       await scratch.sql`
-        INSERT INTO payment (id, order_id, provider, provider_ref, status, method,
+        INSERT INTO payment (id, purchase_id, provider, provider_ref, status, method,
                              amount_minor, currency_code, livemode)
-        VALUES (${mine}, ${live.orderId}, 'stripe', ${unique("pi_mine_")}, 'pending', 'card',
-                22400, 'PLN', false),
-               (${theirs}, ${other.orderId}, 'mollie', ${unique("tr_theirs_")}, 'pending',
-                NULL, 11100, 'PLN', false)`;
+        VALUES (${mine}, (SELECT purchase_id FROM "order" WHERE id = ${live.orderId}), 'stripe',
+                ${unique("pi_mine_")}, 'pending', 'card', 22400, 'PLN', false),
+               (${theirs}, (SELECT purchase_id FROM "order" WHERE id = ${other.orderId}), 'mollie',
+                ${unique("tr_theirs_")}, 'pending', NULL, 11100, 'PLN', false)`;
       const detail = await orders.orderDetail(live.orderId, {
         includeRecipient: false,
       });
