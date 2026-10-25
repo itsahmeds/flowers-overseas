@@ -101,6 +101,12 @@ export interface LastmodSources {
   readonly registry?: string | undefined;
   /** The locale message catalogue's newest `reviewedAt` (`catalogueUpdatedAt()`). */
   readonly catalogue?: string | undefined;
+  /**
+   * The price data a listing page prints (spec 008 §6: "its price data"; TASK-116): the newest
+   * retail row in force or FX snapshot behind the cards, from `listingDatedSources()`. Absent on
+   * every page that shows no money.
+   */
+  readonly prices?: string | undefined;
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}/u;
@@ -113,7 +119,7 @@ function day(value: string | undefined): string | undefined {
 }
 
 /**
- * The newest of the three sources, as `YYYY-MM-DD`.
+ * The newest of the sources, as `YYYY-MM-DD`.
  *
  * @throws TypeError when no source carries a date — see the header: the alternative is printing
  * today's date, which is the one value `plan/02` §10 forbids.
@@ -123,11 +129,12 @@ export function lastmodOf(sources: LastmodSources): string {
     day(sources.content),
     day(sources.registry),
     day(sources.catalogue),
+    day(sources.prices),
   ].filter((value): value is string => value !== undefined);
   const newest = days.sort().at(-1);
   if (newest === undefined) {
     throw new TypeError(
-      "a sitemap <lastmod> needs a real date from the content file, the registry entry or the message catalogue; `now` is not one (plan/02 §10, spec 007 AC-13)",
+      "a sitemap <lastmod> needs a real date from the content file, the registry entry, the message catalogue or the price data; `now` is not one (plan/02 §10, spec 007 AC-13)",
     );
   }
   return newest;

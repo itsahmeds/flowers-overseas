@@ -359,6 +359,7 @@ export { listingRequest } from "./params";
 export type {
   HubCardView,
   ListingCrumb,
+  ListingDatedSources,
   ListingHeading,
   ListingIdentity,
   ListingIndexabilityTerms,
@@ -391,11 +392,15 @@ export {
   // The per-locale paths of one listing page — spec 007's `corridorAlternatePaths()` precedent,
   // so a hreflang cluster is one call over the pages that genuinely exist (AC-16; TASK-109).
   listingAlternatePaths,
+  // The sitemap row's two reads (spec 008 §6, AC-19; TASK-116): the verdict `listingView()`
+  // itself carries, and the dated sources of the row's `<lastmod>`.
+  listingDatedSources,
   listingDescriptor,
   listingExists,
   listingHref,
   listingIndexability,
   listingLocales,
+  listingPageIndexability,
   listingPages,
   listingView,
   productCardView,

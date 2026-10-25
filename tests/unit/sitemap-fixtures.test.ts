@@ -29,10 +29,10 @@ import {
   writeSitemapFixtures,
 } from "../../scripts/seo/generate-sitemap-fixtures.ts";
 
-const fixtures = generateSitemapFixtures();
+const fixtures = await generateSitemapFixtures();
 
-beforeAll(() => {
-  if (process.env["UPDATE_SEO_FIXTURES"] === "1") writeSitemapFixtures();
+beforeAll(async () => {
+  if (process.env["UPDATE_SEO_FIXTURES"] === "1") await writeSitemapFixtures();
 });
 
 describe(`${FIXTURE_DIR} is generated, not written`, () => {
@@ -56,23 +56,28 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
     for (const name of found) expect(expected.has(name), name).toBe(true);
   });
 
-  it("announces the two English locales and their two children each", () => {
+  it("announces the two English locales and their four children each", () => {
     expect(fixtures.map((fixture) => fixture.file)).toEqual([
       "sitemap.xml",
       "en-index.xml",
       "en-static.xml",
       "en-corridors.xml",
+      // Spec 008 AC-19 (TASK-116): the reviewed hubs on the indexing deployment.
+      "en-categories.xml",
+      "en-occasions.xml",
       "en-gb-index.xml",
       "en-gb-static.xml",
       "en-gb-corridors.xml",
+      "en-gb-categories.xml",
+      "en-gb-occasions.xml",
       "noindex.json",
       // The hreflang validator's copy of the same clusters (AC-11's contract half).
       "corridor-clusters.json",
     ]);
   });
 
-  it("lists the unannounced hubs as noindex, and none of them as a <loc>", () => {
-    const noindex = noindexUrlSet();
+  it("lists the unannounced hubs as noindex, and none of them as a <loc>", async () => {
+    const noindex = await noindexUrlSet();
     expect(noindex).toContain(
       "https://flowersoverseas.com/de/blumen-verschicken",
     );
@@ -88,10 +93,10 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
     for (const url of noindex) expect(locs).not.toContain(url);
   });
 
-  it("lists the bare origin in no sitemap and as no noindex page (spec 003 §14 A16 clause 3)", () => {
+  it("lists the bare origin in no sitemap and as no noindex page (spec 003 §14 A16 clause 3)", async () => {
     // `/` is a 308 to `/en`: neither a `<loc>` nor a document with a robots answer.
     const origin = "https://flowersoverseas.com/";
-    expect(noindexUrlSet()).not.toContain(origin);
+    expect(await noindexUrlSet()).not.toContain(origin);
     for (const fixture of fixtures) {
       expect(fixture.contents, fixture.file).not.toContain(
         `<loc>${origin}</loc>`,

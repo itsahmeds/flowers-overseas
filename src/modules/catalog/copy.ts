@@ -69,6 +69,11 @@ export interface CopyRow {
   readonly translationStatus: string;
   /** The content record's own sign-off (`plan/02` §12) — the `reviewed` term of `indexability()`. */
   readonly reviewed: boolean;
+  /**
+   * When the founder signed the row off (an ISO datetime), present on a reviewed row. The dated
+   * source of a listing's sitemap `<lastmod>` (spec 008 §6; TASK-116): never a clock reading.
+   */
+  readonly reviewedAt?: string;
 }
 
 export interface CopyFile {
