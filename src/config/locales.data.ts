@@ -62,6 +62,10 @@ export const PATH_SEGMENT_KEYS = [
   "about",
   "delivery",
   "imprint",
+  // Spec 045 §2.2, §5.1 (TASK-400): the site search results page, `noindex` and never in a
+  // sitemap. Routed by spec 045's own route (TASK-402); until then the segment builds a URL and
+  // nothing answers it, exactly like a reserved site-link target.
+  "search",
 ] as const;
 export type PathSegmentKey = (typeof PATH_SEGMENT_KEYS)[number];
 
@@ -147,6 +151,7 @@ export const LAUNCH_LOCALE_DATA = [
       about: "about",
       delivery: "delivery",
       imprint: "imprint",
+      search: "search",
     },
   },
   {
@@ -178,6 +183,7 @@ export const LAUNCH_LOCALE_DATA = [
       about: "about",
       delivery: "delivery",
       imprint: "imprint",
+      search: "search",
     },
   },
   {
@@ -210,6 +216,7 @@ export const LAUNCH_LOCALE_DATA = [
       about: "ueber-uns",
       delivery: "lieferung-und-zahlung",
       imprint: "impressum",
+      search: "suche",
     },
   },
   {
@@ -242,6 +249,7 @@ export const LAUNCH_LOCALE_DATA = [
       about: "o-nas",
       delivery: "dostawa-i-platnosc",
       imprint: "dane-firmy",
+      search: "szukaj",
     },
   },
 ] as const satisfies readonly LocaleData[];
@@ -294,6 +302,7 @@ export const PSEUDO_LOCALE_DATA = [
       about: "about",
       delivery: "delivery",
       imprint: "imprint",
+      search: "search",
     },
   },
   {
@@ -327,6 +336,7 @@ export const PSEUDO_LOCALE_DATA = [
       about: "about",
       delivery: "delivery",
       imprint: "imprint",
+      search: "search",
     },
   },
 ] as const satisfies readonly LocaleData[];

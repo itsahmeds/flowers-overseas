@@ -150,6 +150,7 @@ function testLocale(code: string, bcp47: string): LocaleConfig {
       about: "about",
       delivery: "delivery",
       imprint: "imprint",
+      search: "search",
     },
   };
 }

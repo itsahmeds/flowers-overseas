@@ -474,6 +474,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       about: "/en/about",
       delivery: "/en/delivery",
       imprint: "/en/imprint",
+      search: "/en/search",
     },
     "en-gb": {
       home: "/en-gb",
@@ -490,6 +491,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       about: "/en-gb/about",
       delivery: "/en-gb/delivery",
       imprint: "/en-gb/imprint",
+      search: "/en-gb/search",
     },
     de: {
       home: "/de",
@@ -506,6 +508,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       about: "/de/ueber-uns",
       delivery: "/de/lieferung-und-zahlung",
       imprint: "/de/impressum",
+      search: "/de/suche",
     },
     pl: {
       home: "/pl",
@@ -522,6 +525,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       about: "/pl/o-nas",
       delivery: "/pl/dostawa-i-platnosc",
       imprint: "/pl/dane-firmy",
+      search: "/pl/szukaj",
     },
   };
 
