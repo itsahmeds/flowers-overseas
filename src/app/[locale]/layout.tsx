@@ -1,3 +1,8 @@
+// First, before any module that reaches `next/font` (TASK-411): the stylesheet the first paint
+// waits for is then the document's first `<link rel="stylesheet">`, ahead of the 1.2 KB font-face
+// sheet, so it is requested first and takes the document's already-open connection.
+import "../globals.css";
+
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
@@ -25,8 +30,6 @@ import {
   SiteFooter,
   SkipLink,
 } from "@/modules/ui";
-
-import "../globals.css";
 
 /**
  * The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6, AC-8, AC-9;
