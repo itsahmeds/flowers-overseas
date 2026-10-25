@@ -13,7 +13,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   COUNTRIES,
@@ -313,6 +313,28 @@ describe("chooserChoiceResponse(): the 303 and the one cookie (AC-78, AC-90)", (
       expect(response.status, locale).toBe(404);
       expect(response.headers.getSetCookie(), locale).toEqual([]);
       expect(response.headers.get("location"), locale).toBeNull();
+    }
+  });
+
+  it("answers 404 for a routed pseudo-locale, as in CI and on previews", async () => {
+    // The subject: with the pseudo-locales routed, `en-XA` is a configured locale code, so only
+    // the launch-locale check keeps a chooser in it from setting the cookie.
+    vi.stubEnv("ENABLE_PSEUDO_LOCALES", "true");
+    vi.resetModules();
+    try {
+      const locales = await import("../../src/config/locales");
+      const catalog = await import("../../src/modules/catalog");
+      expect(locales.isLocaleCode("en-XA")).toBe(true);
+      const response = await catalog.chooserChoiceResponse({
+        locale: "en-XA",
+        segments: [],
+        to: ["pl"],
+      });
+      expect(response.status).toBe(404);
+      expect(response.headers.getSetCookie()).toEqual([]);
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
     }
   });
 
