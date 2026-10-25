@@ -98,7 +98,7 @@ task actually touches.
 | `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders… | 004 |
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec… | 004 |
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six… | 009 |
-| `(dev)/dev/components/trader-identity/[doc]/page.tsx` | `/dev/components/trader-identity/{imprint\|terms… | 041 |
+| `(dev)/dev/components/trader-identity/[segment]/page.tsx` | `/dev/components/trader-identity/{imprint\|terms… | 041 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group —… | 004 |
 | `[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/-product/{segment}/{child}/{gr… | 009 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}… | 008 |
