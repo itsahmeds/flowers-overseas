@@ -34,7 +34,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-25 (backend-implementer; decided in the PR and flagged for the orchestrator, not blocking): **AC-6's lists cannot all hold under §2.3's typo rule read literally on the committed catalogue.** On `/pl/szukaj`, `róże` (normalised `roze`) is one edit from `boze` (`Boże Narodzenie`, Christmas, a Polish occasion label), so a per-document typo match lists three Christmas bouquets for `róże` and none for `róża` (distance 2), while AC-6 requires one ordered list for both. Two refinements make every AC-6 to AC-9 case hold; both are in the code, and a test goes red without each: (1) `typoDistance.fixedPrefix: 1` in `src/config/search.ts`: a typo target begins with the typed word's first letter (the Lucene "prefix length" convention); (2) "in this order" applied per document: where a token matches some field of a document firmly (exact, stem or prefix), its typo hits in that document's other fields are dropped, so `róże` cannot lift a "Rose…" name into relevance band 2 by a typo. Question for the founder or the spec writer, if they want it: is a wrong first letter acceptable as never corrected (`tulpis` and `sunflwers` still are; `bulips` is not)? Answer: open.
 
 ## Progress
 
@@ -42,11 +42,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25 (backend-implementer): built in feature PR 421 with TASK-400. `src/modules/search/` (build, match, rank, did-you-mean, engine, source, default-engine, schemas, types), catalog `entityCopy`, `hasCardPhoto`, `rankBandsFor`, `listingHref`, `onInvalidate` in `src/lib/cache.ts`, the two health numbers. Index build about 150 ms warm on the committed catalogue (2 352 documents) and query p95 about 4.5 ms, measured on the laptop at load about 3 (TASK-410 owns the CI measurement).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 421 (with TASK-400). `memoryEngine(deps)` builds the index lazily from `catalogSearchSource` (a fresh, memoised source per build), marks it stale on any `catalog:*`, `product:*` or `country:*` tag through `onInvalidate`, rebuilds after 300 s, shares one build between concurrent searches, and logs `search.index_built` (documents, locales, duration_ms, trigger `initial`, `invalidate` or `ttl`, generation; never a query). `search()` returns `{ view, tierCounts, generation }`: `view` is the strict `SearchResultViewSchema` (no band, margin, payout or tier field) in the states `empty`, `tooShort`, `results`, `noResults` (with `didYouMean` and "Our selection"), `noDestination` and `outOfRange`. Pages block: the named country's shop root (or corridor page) first, then the matched hubs (occasions, then categories, by collation), each resolved through `listingHref` only when it exists, at most 3 in all. `rankBandsFor` is all 0 on the static catalogue. `/api/health` adds `searchIndexAgeSeconds` (null before the first search) and `searchIndexDocuments`. Tests: `unit/search-engine.test.ts` (T-06 to T-09 and T-11 as exact ordered arrays), `unit/search-rank.test.ts` (T-16: the 12-input fixture, the step pairs, 2 000 seeded pairs), `unit/search-did-you-mean.test.ts`, `unit/search-freshness.test.ts` (T-31), `unit/search-default-engine.test.ts`, `unit/cache-on-invalidate.test.ts`, `unit/catalog-listing-href.test.ts`, and the health additions. Handed to TASK-402: see its brief.

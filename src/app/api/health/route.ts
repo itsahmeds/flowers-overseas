@@ -48,7 +48,7 @@ export function GET(request: Request): Response {
     // the module — no network call. What the weekday rebuild job and the founder read.
     fx: fxSnapshotStatus(),
     // Spec 045 §11 (TASK-401): the search index's age and size, read from the process's engine
-    // without building it — still no database call.
+    // without building it; still no database call.
     search: searchIndexStats(),
   });
 }
