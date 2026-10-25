@@ -24,8 +24,11 @@
  *    condition removed (the phone click transitions), with a static name per card (the duplicate
  *    aborts). The WebKit half is not run: the config has no WebKit project (brief carry-forward).
  *  - **T-9 (AC-9).** The product page's LCP render time at 1440 × 900 on arrival by a card click,
- *    five runs with the morph and five without (the product document's `<style data-fo-morph>`
- *    removed in flight, which is what the switch removes), medians within 50 ms. The medians are
+ *    five runs with the morph and five without, medians within 50 ms. The arm without skips the
+ *    transition in the listing's `pageswap`, so both arms fetch the same document by the same path:
+ *    a Playwright route on the product document (to strip its `<style data-fo-morph>`) stops
+ *    Chromium from starting any cross-document view transition, so the arm with would never morph.
+ *    The style left in the arm without is inert with no inbound transition. The medians are
  *    printed for the brief's `## Result`.
  */
 import { expect, type Page, test } from "@playwright/test";
@@ -436,33 +439,19 @@ test.describe("T-9 / AC-9: the product page's LCP with and without the morph", (
   test("five card arrivals each, medians within 50 ms", async ({ page }) => {
     test.setTimeout(180_000);
     await page.setViewportSize(DESKTOP);
-    let morph = true;
-    // Both arms go through the same handler, so the fetch path is the same; the arm without the
-    // morph removes the product document's opt-in, which is what the switch removes.
-    await page.route("**/product/**", async (route) => {
-      if (route.request().resourceType() !== "document") {
-        await route.fallback();
-        return;
-      }
-      const response = await route.fetch();
-      const body = await response.text();
-      // The body is re-sent decoded, so the encoding and length headers go with the old bytes.
-      const headers = Object.fromEntries(
-        Object.entries(response.headers()).filter(
-          ([name]) => !/^content-(encoding|length)$/iu.test(name),
-        ),
-      );
-      await route.fulfill({
-        response,
-        headers,
-        body: morph
-          ? body
-          : body.replace(/<style data-fo-morph="">[\s\S]*?<\/style>/u, ""),
-      });
-    });
-    const arrive = async (): Promise<{ lcp: number; morphed: boolean }> => {
+    const arrive = async (
+      morph: boolean,
+    ): Promise<{ lcp: number; morphed: boolean }> => {
       await page.goto(LISTING);
       await motionsReady(page);
+      if (!morph) {
+        // After the module's own listener: the card is named and sized as ever, then let go.
+        await page.evaluate(() => {
+          addEventListener("pageswap", (event) => {
+            event.viewTransition?.skipTransition();
+          });
+        });
+      }
       await page.locator("[data-fo-product-card] a").nth(2).click();
       await page.waitForURL(/\/product\//u);
       const morphed = await revealed(page);
@@ -473,8 +462,7 @@ test.describe("T-9 / AC-9: the product page's LCP with and without the morph", (
     const runs: Record<"on" | "off", number[]> = { on: [], off: [] };
     for (let run = 0; run < 5; run += 1) {
       for (const arm of ["on", "off"] as const) {
-        morph = arm === "on";
-        const { lcp, morphed } = await arrive();
+        const { lcp, morphed } = await arrive(arm === "on");
         expect(morphed, `${arm} run ${String(run + 1)}`).toBe(arm === "on");
         expect(lcp, `${arm} run ${String(run + 1)}`).toBeGreaterThan(0);
         runs[arm].push(lcp);
