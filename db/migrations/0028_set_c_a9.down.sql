@@ -1,4 +1,4 @@
--- Rollback of 0030_set_c_a9 (spec 002 §14 A9.3, AC-49; TASK-261).
+-- Rollback of 0028_set_c_a9 (spec 002 §14 A9.3, AC-49; TASK-261).
 --
 -- Guard first. If any `order_event` records `order.chargeback_opened` from `routed`,
 -- `no_partner_available` or `manual_reroute`, the history would hold a transition the table no
@@ -18,7 +18,7 @@ BEGIN
     WHERE type = 'order.chargeback_opened'
       AND from_status IN ('routed', 'no_partner_available', 'manual_reroute')
   ) THEN
-    RAISE EXCEPTION 'A9_ROLLBACK_ROWS_IN_USE: a chargeback opened from a routing state exists; 0030_set_c_a9 is not rolled back'
+    RAISE EXCEPTION 'A9_ROLLBACK_ROWS_IN_USE: a chargeback opened from a routing state exists; 0028_set_c_a9 is not rolled back'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END
