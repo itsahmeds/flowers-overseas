@@ -50,6 +50,7 @@ here.
 - 2026-10-25: screenshots at 1440 x 900, 1280 x 800 and 390 x 844 against `home-desktop.dc.html` and `home-mobile.dc.html`; fixed the phone picker's lost classes (field and button padding), the hidden search decorations, the 88 px sideways scroll the tab radios caused at 390, the price section and Coming up grid (d1f250bbd).
 - 2026-10-25: the v2 home's browser cases retired or moved to v3 (home, home-round2, a11y, language popup, phone chrome, links, header, laptop band, motion, LCP, media budgets, visual parts); new `tests/e2e/home-v3-products.spec.ts`; Show prices draws motion 3's bloom; remember line 13 px, See all 24 px targets (9fdf15444 to 6d2750c99).
 - 2026-10-25: `record-approval-386.py` written and run with `--check` only; rows `in_review`.
+- 2026-10-25: Linux baselines for the 14 home section shots from visual-baselines run 40162080984 (phone H1 kept on one line on Linux with a `7.95vw` ceiling, header unstuck in the shots); full-page home, header utility and popup shots left for after the copy record (they carry the BETA mark).
 
 ## Result
 
