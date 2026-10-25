@@ -67,8 +67,9 @@ const NonEmpty = z.string().min(1);
  * The approximate equivalents of a destination-specific price (spec 004 §14 A21 clause 6; TASK-178):
  * the rate's `as_of` and one to three amounts in the *other* currencies of {EUR, GBP, PLN, USD}.
  *
- * **The product page only** (spec 004 §14 A-founder-2026-10-19b clause 2; TASK-285): its price
- * and its summary carry the line; no card does, and `ProductCardViewSchema` has no field for one.
+ * Everywhere a price is (spec 004 §14 A-founder-2026-10-24a item 7, which reverses
+ * A-founder-2026-10-19b clause 2): the product page's price and summary, and since TASK-381 the
+ * country card's nullable `equivalents` field (rendered by TASK-389).
  * `catalog`'s `priceEquivalents()` computes it; the schema only checks the shape a renderer may
  * rely on: integer `Money`, at most three, no currency twice. Absent means **no line at all** (a
  * stale rate, the fallback).
@@ -141,36 +142,68 @@ const ProductCardFieldsSchema = z
   .strict();
 
 /**
- * **One price, and nothing to print a second from** (spec 004 §14 A-founder-2026-10-19b clause 2;
- * spec 008 AC-6 as amended; TASK-285). The card's shape has no `equivalents` field: the other
- * currencies live on the product page only, and a projection that hands a card an equivalents
- * object fails here, at the boundary, because the object is `.strict()`.
+ * The facts the delivery countdown is computed from in the browser (spec 004 §14
+ * A-founder-2026-10-24a item 10): the next two deliverable slots of this product in this country,
+ * each a delivery date in the country's zone and the instant its cutoff passes. The same for every
+ * visitor; the line itself is judged after paint against the visitor's clock.
  */
-export const ProductCardViewSchema = ProductCardFieldsSchema;
+export const DeliverySlotViewSchema = z
+  .object({
+    date: z.iso.date(),
+    cutoff: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+export const DeliverySlotsViewSchema = z
+  .array(DeliverySlotViewSchema)
+  .min(1)
+  .max(2);
+export type DeliverySlotsView = z.infer<typeof DeliverySlotsViewSchema>;
+
+/**
+ * **The country-scoped card** (spec 008 AC-6 as amended by §14 A-founder-2026-10-24a; spec 004
+ * §14 A-founder-2026-10-24a items 7, 8 and 10; TASK-381): the card in a country, with that
+ * country's exact all-in price. Its equivalents line is back (item 7 reverses
+ * A-founder-2026-10-19b clause 2): `equivalents` is `null` where no line shows (a stale rate, the
+ * FX fallback, a price with `fxReasonKey`). `slots` is the countdown's facts, `null` while the
+ * country takes no orders or has no cutoff data (AC-34: no cutoff text while nothing is open).
+ * `localSpecial` is true on a non-core product saleable in this shop country only ("Only in
+ * {country}", the one badge AC-6 allows). Still closed and strict: no rating, star, review count,
+ * strike-through, old price or add-to-basket field exists to fill.
+ */
+export const ProductCardViewSchema = ProductCardFieldsSchema.extend({
+  equivalents: PriceEquivalentsViewSchema.nullable(),
+  slots: DeliverySlotsViewSchema.nullable(),
+  localSpecial: z.boolean(),
+}).strict();
 export type ProductCardView = z.infer<typeof ProductCardViewSchema>;
 
 /**
- * **A hub's card: the same card with the money removed** (spec 008 §14 **A3**; §2, §8; TASK-112).
+ * **The country-less card** (spec 008 AC-6's first form; spec 004 §14 A-founder-2026-10-24a
+ * item 2, the founder's "b"; spec 008 §14 **A3**; TASK-112, TASK-381): the photograph, the name and
+ * a link, and **no field a price, a currency, an equivalent or a delivery slot could arrive in**.
+ * A page before a country is chosen shows `shop.price.choose` in the reserved price box and
+ * `shop.cta.chooseCountry` as the action, and links through the chooser; a price there would be
+ * wrong for every country but one (005 §13 Q10, binding). It is the country card's fields with the
+ * money removed, so the two forms cannot drift, and `ProductCard` takes either through
+ * `hasCardPrice()`: there is no second card component and no second grid.
  *
- * A destination-less category or occasion hub shows product names and photographs and **no price
- * at all**, because a price without a destination would be wrong for every destination but one
- * (005 §13 Q10, binding). `ProductCardViewSchema` makes `price` and `priceLabelKey` *required*
- * precisely so no country-scoped card can ship priceless, so the hub's card is that schema with
- * the two money fields omitted — "hubs show no money" as a fact about the type rather than a rule
- * a renderer is asked to remember. `ProductCard` takes either, and renders a price only where the
- * shape carries one; there is no second card component and no second grid (§5.2's one-source rule).
- *
- * It lives here, beside the schema it is derived from, so the two cannot drift and so
- * `modules/catalog` (which re-exports it) keeps importing one direction only.
+ * `HubCardViewSchema` is its earlier name (the hubs were its first page) and stays as an alias
+ * while the hubs, the home and the menu move onto the chooser (TASK-386, TASK-388, TASK-383).
  */
-export const HubCardViewSchema = ProductCardFieldsSchema.omit({
+export const CountryLessCardViewSchema = ProductCardFieldsSchema.omit({
   price: true,
   priceLabelKey: true,
 });
-export type HubCardView = z.infer<typeof HubCardViewSchema>;
+export type CountryLessCardView = z.infer<typeof CountryLessCardViewSchema>;
+export const HubCardViewSchema = CountryLessCardViewSchema;
+export type HubCardView = CountryLessCardView;
 
-/** Either card, as `ProductCard` and `ListingGrid` accept them. */
-export type ListingCardView = ProductCardView | HubCardView;
+/** Either card, as `ProductCard` and `ListingGrid` accept them: AC-6's two forms. */
+export const ListingCardViewSchema = z.union([
+  ProductCardViewSchema,
+  CountryLessCardViewSchema,
+]);
+export type ListingCardView = ProductCardView | CountryLessCardView;
 
 /**
  * Does this card carry money? The one discriminator both components use — a type predicate rather

@@ -661,9 +661,11 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "reads QUERY_KEYS = page, sort from src/config/url-keys.ts",
+    "reads QUERY_KEYS = page, sort, price from src/config/url-keys.ts",
     () => {
-      expect(readQueryKeys(repoRoot)).toEqual(["page", "sort"]);
+      // `price`: the chooser's 303 to a country page's band (spec 004 §14 A-founder-2026-10-24a
+      // item 3; TASK-381), honoured by TASK-390's band facet.
+      expect(readQueryKeys(repoRoot)).toEqual(["page", "sort", "price"]);
     },
     REAL_TREE_MS,
   );

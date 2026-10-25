@@ -53,6 +53,7 @@ const valid = {
   region: "westernSouthernEurope",
   nameKey: "destinations.pt.name",
   slugs: Object.fromEntries(launchLocales.map((code) => [code, "portugal"])),
+  sortWeight: 0,
   corridorPagePublished: false,
   guidePublished: false,
 };

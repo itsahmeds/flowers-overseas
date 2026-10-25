@@ -100,6 +100,7 @@ const FRENCH: LocaleConfig = {
   currencyDefault: "EUR",
   numberingSystem: "latn",
   hreflangAliases: ["fr", "fr-FR"],
+  chooseSegment: "choisir-un-pays",
   pathSegments: {
     destinations: "envoyer-des-fleurs",
     shopCategory: "fleurs",

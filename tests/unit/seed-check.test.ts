@@ -241,8 +241,9 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     // The `describe.each` below declares its cases from this directory; an emptied or thinned
     // directory would otherwise just declare fewer cases and stay green. Spec 006 AC-33 added four
     // (`copy/bad-dash-in-head-*`, `copy/bad-product-seo-title-shape`; TASK-242). Spec 008 AC-75
-    // added five (`schema/bad-also-*`: the `fixed` rule's `also` dates; TASK-317).
-    expect(cases).toHaveLength(45);
+    // added five (`schema/bad-also-*`: the `fixed` rule's `also` dates; TASK-317). Spec 004 AC-72
+    // added two (`counts/bad-core-range-7`, `-13`: the core list outside 8 to 12; TASK-381).
+    expect(cases).toHaveLength(47);
     expect(
       cases
         .filter((testCase) => testCase.name.startsWith("bad-also-"))

@@ -33,10 +33,15 @@ const CARD = {
   price: { amountMinor: 4690, currency: "GBP" },
   priceLabelKey: "catalog.price.inclusive",
   provenance: "ai",
+  // The country card's three fields since spec 004 §14 A-founder-2026-10-24a items 7, 8, 10
+  // (TASK-381): nullable equivalents and slots, and the local-special flag.
+  equivalents: null,
+  slots: null,
+  localSpecial: false,
 } as const;
 
 describe("ProductCardViewSchema: what a card may say", () => {
-  it("accepts the seven fields spec 008 §5.2 lists, and the tile has no href", () => {
+  it("accepts the fields spec 008 §5.2 lists plus AC-6's three (as amended), and the tile has no href", () => {
     expect(ProductCardViewSchema.parse(CARD)).toEqual(CARD);
     expect(
       ProductCardViewSchema.parse({

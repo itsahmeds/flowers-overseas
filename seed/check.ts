@@ -17,7 +17,8 @@
  *     claims the right `origin`, and every projected file is byte-identical to a fresh projection
  *     (ADR-0017's `staleProjections()`, composed rather than restated);
  *  2. **counts** — 84 products in the 40/14/8/10/12 split, 23 categories, 6 add-ons, the occasion
- *     facet whole, and the `plan/02` §6 coverage the PL set must keep;
+ *     facet whole, the `plan/02` §6 coverage the PL set must keep, and a core range of 8 to 12
+ *     (`CORE_RANGE_SIZE`; spec 004 §14 A-founder-2026-10-24a, TASK-381);
  *  3. **references** — every facet value, category/occasion edge, price row, media asset and
  *     prompt hash resolves to something that exists;
  *  4. **slugs** — ASCII, lowercase, hyphenated, no trailing slash, the ASCII fold of the name,
@@ -104,6 +105,7 @@ import {
   shingleDistinctness,
 } from "../scripts/corridor-check.ts";
 import { floristSentenceFor } from "../scripts/i18n-draft.ts";
+import { CORE_RANGE_SIZE } from "../src/config/commerce.ts";
 import { COUNTRIES, COUNTRY_CODES } from "../src/config/countries.ts";
 import {
   describeHeadDashes,
@@ -762,6 +764,22 @@ function checkCounts(parsed: Parsed): SeedProblem[] {
           `has ${String(actual)} \`${type}\` products, not ${String(expected)} (\`plan/10\` §2.1's 40/14/8/10/12 split)`,
         );
       }
+    }
+  }
+  // The core range (spec 004 §14 A-founder-2026-10-24a item 1, AC-72): the products ranked by
+  // `coreRank` are the list the founder chose, and it holds 8 to 12. Outside that the gate fails
+  // naming the count, so a list of 7 or 13 cannot be merged by accident.
+  if (parsed.products.length > 0) {
+    const core = parsed.products.filter(
+      (product) => product.coreRank !== undefined && product.coreRank !== null,
+    ).length;
+    if (core < CORE_RANGE_SIZE.min || core > CORE_RANGE_SIZE.max) {
+      at(
+        "products.json",
+        "coreRank",
+        "core-range-size",
+        `has ${String(core)} core products (\`coreRank\` set), outside ${String(CORE_RANGE_SIZE.min)} to ${String(CORE_RANGE_SIZE.max)} (\`CORE_RANGE_SIZE\`, spec 004 §14 A-founder-2026-10-24a item 1)`,
+      );
     }
   }
   if (

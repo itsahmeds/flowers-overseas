@@ -119,6 +119,8 @@ export function countryRegistryFromRows(
       region: country.region,
       nameKey: country.nameKey,
       slugs: country.slugs,
+      // `country.sort_weight` arrives with TASK-395's migration; until then the file's weight.
+      sortWeight: country.sortWeight,
       corridorPagePublished: country.corridorPagePublished,
       guidePublished: row.guide_published,
       ...(country.citiesKey === undefined

@@ -170,6 +170,13 @@ const LocaleConfigObjectSchema = z
      */
     hreflangAliases: z.array(HreflangSchema),
     pathSegments: PathSegmentsSchema,
+    /**
+     * The country chooser's segment, `/{locale}/{chooseSegment}/{next}` (spec 004 §14
+     * A-founder-2026-10-24a item 3): the one route in front of every priced page reached from a
+     * country-less page. Not a `pathSegments` page type: the chooser is `noindex`, in no sitemap
+     * and in no hreflang cluster, so it has no place among the indexable page types.
+     */
+    chooseSegment: PathSegmentSchema,
   })
   .strict();
 
@@ -369,6 +376,16 @@ export const LocaleRegistrySchema = z
           });
         }
         owner.set(segment, key);
+      }
+      // The chooser's segment shares the URL namespace under `/{locale}`, so it may not be a page
+      // type's segment either.
+      const taken = owner.get(locale.chooseSegment);
+      if (taken !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "chooseSegment"],
+          message: `chooser segment \`${locale.chooseSegment}\` is already used by \`${taken}\` in locale \`${locale.code}\``,
+        });
       }
     });
   });

@@ -272,8 +272,9 @@ function recordFor(
  * The candidates are the catalogue's active products — `listProducts()`'s default — and every one
  * of them passes through `pageExists()` before it becomes a record, so this function cannot come
  * to a different conclusion from `productPageExists()` about the same URL. Ordered by locale, then
- * by the registry's destination order (Poland first), then by ascending SKU: deterministic, so a
- * diff of two builds is a diff of the data.
+ * by the one country order (`publishedCountries(locale)`: `sortWeight`, then the name in that
+ * locale's collation; TASK-381), then by ascending SKU: deterministic, so a diff of two builds is
+ * a diff of the data.
  */
 export async function listProductPages(
   locale?: LocaleCode,
@@ -284,7 +285,7 @@ export async function listProductPages(
 
   const candidates = await listProducts({});
   for (const code of locales) {
-    for (const iso2 of publishedCountries()) {
+    for (const iso2 of publishedCountries(code)) {
       for (const product of candidates) {
         if (!(await pageExists(product.sku, iso2, code, memo))) continue;
         const record = recordFor(product.sku, iso2, code);

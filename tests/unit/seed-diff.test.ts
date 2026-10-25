@@ -238,6 +238,8 @@ describe("seed:diff — AC-11 against the committed snapshot", () => {
             sku,
             name: "Diff Fixture",
             slug: "diff-fixture",
+            // A new product is not core: the cloned row's rank would be a second holder of it.
+            coreRank: null,
           })),
         ],
         [

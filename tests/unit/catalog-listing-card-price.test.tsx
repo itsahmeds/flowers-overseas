@@ -11,7 +11,8 @@
  *  - every card's price element is `formatMoney(view.items[i].price)` and the locale's
  *    `catalog.price.inclusive`, in grid order, and `ItemList`'s `Offer` price is that same amount
  *    (schema price = visible price);
- *  - no card, and nothing on the page, carries an equivalents line;
+ *  - no card, and nothing on the page, carries an equivalents line (the card's field is `null`
+ *    until TASK-389 renders it, spec 004 §14 A-founder-2026-10-24a item 7);
  *  - the grid's example label is **one** element, displayed at every width, before the grid: on the
  *    count line's row of a country listing, on the heading row of a hub; every card's own label
  *    is in the HTML and hidden;
@@ -196,7 +197,8 @@ describe("country listings at a fresh rate: one price per card, with the inclusi
       ),
     );
     expect(occurrences(html, LINE)).toBe(0);
-    for (const item of v.items) expect(item).not.toHaveProperty("equivalents");
+    // The field exists since TASK-381 (spec 004 item 7) and stays null until TASK-389 fills it.
+    for (const item of v.items) expect(item.equivalents).toBeNull();
     expect(html).not.toContain("data-fo-fx-fallback");
   });
 

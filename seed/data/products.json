@@ -23,7 +23,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 7
     },
     {
       "sku": "FO-BQ-002",
@@ -49,7 +50,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 6
     },
     {
       "sku": "FO-BQ-003",
@@ -75,7 +77,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 3
     },
     {
       "sku": "FO-BQ-004",
@@ -353,7 +356,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 8
     },
     {
       "sku": "FO-BQ-016",
@@ -518,7 +522,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 5
     },
     {
       "sku": "FO-BQ-024",
@@ -584,7 +589,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 4
     },
     {
       "sku": "FO-BQ-027",
@@ -690,7 +696,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 2
     },
     {
       "sku": "FO-BQ-032",
@@ -750,7 +757,8 @@
       "freshnessDays": 7,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 1
     },
     {
       "sku": "FO-BQ-035",
@@ -1214,7 +1222,8 @@
       "freshnessDays": 30,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 9
     },
     {
       "sku": "FO-PT-002",
@@ -1424,7 +1433,8 @@
       "freshnessDays": 5,
       "allergenNote": false,
       "partnerOnly": false,
-      "status": "active"
+      "status": "active",
+      "coreRank": 10
     },
     {
       "sku": "FO-FN-003",

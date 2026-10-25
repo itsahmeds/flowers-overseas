@@ -418,6 +418,16 @@ export const ProductDataSchema = z
     allergenNote: z.boolean(),
     partnerOnly: z.boolean(),
     status: z.enum(productStatuses),
+    /**
+     * The product's place in **the core range** (spec 004 §14 A-founder-2026-10-24a item 1, "Data
+     * model"): the fixed, curated list of 8 to 12 bouquets every florist in every shop country
+     * commits to make, and the only products a country-less page shows. Absent or `null`: not
+     * core. Chosen by the founder, never computed from mappings; the list's order is this rank.
+     * Spec 002's `product.core_rank smallint NULL CHECK (core_rank BETWEEN 1 AND 20)`, unique
+     * where set (the registry refinement below), in the seed until spec 012b's cutover; the list's
+     * size is `pnpm seed:check`'s (`CORE_RANGE_SIZE`).
+     */
+    coreRank: z.number().int().min(1).max(20).nullable().optional(),
   })
   .strict()
   .superRefine((product, ctx) => {
@@ -473,6 +483,23 @@ export const ProductRegistrySchema = z
         });
       }
       seenSlug.set(product.slug, product.sku);
+    });
+
+    // Spec 002's `UNIQUE (core_rank) WHERE core_rank IS NOT NULL`: two products at one rank
+    // would leave the core range's order to whichever row happened to be read first.
+    const rankOwner = new Map<number, string>();
+    products.forEach((product, index) => {
+      const rank = product.coreRank;
+      if (rank === undefined || rank === null) return;
+      const holder = rankOwner.get(rank);
+      if (holder !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [index, "coreRank"],
+          message: `core rank ${String(rank)} of \`${product.sku}\` is already held by \`${holder}\` (one product per rank)`,
+        });
+      }
+      rankOwner.set(rank, product.sku);
     });
   });
 

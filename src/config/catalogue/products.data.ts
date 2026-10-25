@@ -29,6 +29,11 @@
  *  - **`flowerTypes` and `colours` carry more than the primary.** spec 002 §5.1's `product` row
  *    stores `primary_flower` and `colour_primary` only, so the extra values are Phase 0 filter
  *    data for the read API (TASK-063) and are not projected — see `projections.ts`.
+ *  - **`coreRank` marks the core range** (spec 004 §14 A-founder-2026-10-24a item 1; Q-24a,
+ *    founder "core ok", 2026-10-24, TASK-382): the ten products a country-less page may show, in
+ *    the founder's order, rank 1 first. Not projected onto spec 002's `product` row until
+ *    TASK-395's migration adds `core_rank`; `pnpm seed:check` refuses a list outside
+ *    `CORE_RANGE_SIZE`.
  */
 import {
   type ProductData,
@@ -60,6 +65,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 7,
   },
   {
     sku: "FO-BQ-002",
@@ -86,6 +92,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 6,
   },
   {
     sku: "FO-BQ-003",
@@ -106,6 +113,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 3,
   },
   {
     sku: "FO-BQ-004",
@@ -378,6 +386,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 8,
   },
   {
     sku: "FO-BQ-016",
@@ -538,6 +547,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 5,
   },
   {
     sku: "FO-BQ-024",
@@ -604,6 +614,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 4,
   },
   {
     sku: "FO-BQ-027",
@@ -710,6 +721,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 2,
   },
   {
     sku: "FO-BQ-032",
@@ -770,6 +782,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 1,
   },
   {
     sku: "FO-BQ-035",
@@ -1229,6 +1242,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 9,
   },
   {
     sku: "FO-PT-002",
@@ -1439,6 +1453,7 @@ const products = [
     allergenNote: false,
     partnerOnly: false,
     status: "active",
+    coreRank: 10,
   },
   {
     sku: "FO-FN-003",

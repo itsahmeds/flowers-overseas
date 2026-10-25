@@ -1057,7 +1057,7 @@ export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
 
     // The keys come from `QUERY_KEYS` (spec 001 §14 A20, AC-55 (d)), so the list is this
     // schema's own and `tests/unit/url-pii.test.ts` can hold the two to each other.
-    const honoured: QueryKey[] = [];
+    const honoured: Extract<QueryKey, "page" | "sort">[] = [];
 
     const rawPage = first(raw[QUERY_KEY.page]);
     const pageValid =

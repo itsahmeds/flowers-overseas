@@ -133,7 +133,9 @@ afterEach(() => {
 describe("the space the rule is quantified over (spec 009 §2)", () => {
   it("is the four launch locales, the seven published destinations and 84 products", () => {
     expect([...listingLocales()]).toEqual([...LOCALES]);
-    expect([...COUNTRIES]).toEqual(["PL", "DE", "FR", "ES", "IT", "RO", "NL"]);
+    // The one country order (spec 004 §14 A-founder-2026-10-24a item 13; TASK-381): `sortWeight`
+    // (all 0), then the English names; no longer the registry's "Poland first".
+    expect([...COUNTRIES]).toEqual(["FR", "DE", "IT", "NL", "PL", "RO", "ES"]);
     expect(PRODUCTS.length).toBe(84);
   });
 });

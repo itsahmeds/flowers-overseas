@@ -73,11 +73,15 @@ const rewrite = (path: string): string | undefined => {
 };
 
 describe("the listing rewrite (TASK-170)", () => {
-  it("is keyed on exactly the listing's honoured keys and the six facet names", () => {
+  it("is keyed on exactly the listing's query keys and the six facet names", () => {
     expect([...LISTING_REWRITE_KEYS].sort()).toStrictEqual(
       [
         "page",
         "sort",
+        // The band (spec 004 §14 A-founder-2026-10-24a item 3; TASK-381): a `?price=` request
+        // reaches the parameter route, which renders the base listing `noindex` until TASK-390
+        // honours it.
+        "price",
         "product-type",
         "occasion",
         "flower-type",

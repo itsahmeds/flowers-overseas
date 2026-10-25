@@ -135,6 +135,7 @@ function testLocale(code: string, bcp47: string): LocaleConfig {
     currencyDefault: "EUR",
     numberingSystem: "latn",
     hreflangAliases: [bcp47],
+    chooseSegment: "choose-country",
     pathSegments: {
       destinations: "send-flowers-to",
       shopCategory: "flowers",

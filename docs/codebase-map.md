@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +91 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +93 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
@@ -47,6 +47,7 @@ task actually touches.
 | `categories.ts` | Category-row registry | 004 |
 | `checkout-samples.ts` | Demo samples | 010 |
 | `checkout.ts` | Checkout limits | 010 |
+| `commerce.ts` | The commerce structure's numbers (spec 004 §14… | 004 |
 | `company.data.ts` | The trading name as a plain constant, with no imports… | 004 |
 | `company.ts` | Company identity (spec 004 §2 "Everything data-gated is… | 004 |
 | `cookies.ts` | The cookie register | 004 |
@@ -213,14 +214,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 363 |
+| `tests/unit/` | 365 |
 | `tests/integration/` | 46 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 71 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 352 |
+| `tests/fixtures/` | 354 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

@@ -169,6 +169,15 @@ export const CountryConfigSchema = z
     citiesKey: MessageKeySchema.optional(),
     /** Per-locale corridor slug (`plan/02` §4.1). */
     slugs: SlugsSchema,
+    /**
+     * The country's place in every country list a buyer chooses from: the picker's buttons, the
+     * chooser, the menus (spec 004 §14 A-founder-2026-10-24a item 1 and "Data model": spec 002's
+     * `country.sort_weight int NOT NULL DEFAULT 0`). Lower comes first; ties are ordered by the
+     * country's name in the reader's collation, never by this file's order, so no country is first
+     * because of where it was typed (item 13: no "Poland first"). Set in the admin from spec 012b;
+     * here until its cutover.
+     */
+    sortWeight: z.number().int(),
     /** Corridor page exists and may be linked (spec 007 flips it; AC-11, AC-14). */
     corridorPagePublished: z.boolean(),
     /** Spec 002 §5.1 `country.guide_published`: the corridor guide's copy exists. */
@@ -304,6 +313,7 @@ const countries = [
     nameKey: "destinations.pl.name",
     citiesKey: "destinations.pl.cities",
     slugs: { en: "poland", "en-gb": "poland", de: "polen", pl: "polska" },
+    sortWeight: 0,
     corridorPagePublished: true,
     guidePublished: true,
     // spec 009 §13 Q3 (founder, 2026-09-16), verbatim: the recipient's zone, the same-day cutoff
@@ -326,6 +336,7 @@ const countries = [
       de: "deutschland",
       pl: "niemcy",
     },
+    sortWeight: 0,
     corridorPagePublished: true,
     guidePublished: true,
   },
@@ -335,6 +346,7 @@ const countries = [
     status: "demo",
     nameKey: "destinations.fr.name",
     slugs: { en: "france", "en-gb": "france", de: "frankreich", pl: "francja" },
+    sortWeight: 0,
     corridorPagePublished: true,
     guidePublished: true,
   },
@@ -344,6 +356,7 @@ const countries = [
     status: "demo",
     nameKey: "destinations.es.name",
     slugs: { en: "spain", "en-gb": "spain", de: "spanien", pl: "hiszpania" },
+    sortWeight: 0,
     corridorPagePublished: true,
     guidePublished: true,
   },
@@ -353,6 +366,7 @@ const countries = [
     status: "demo",
     nameKey: "destinations.it.name",
     slugs: { en: "italy", "en-gb": "italy", de: "italien", pl: "wlochy" },
+    sortWeight: 0,
     corridorPagePublished: true,
     guidePublished: true,
   },
@@ -367,6 +381,7 @@ const countries = [
       de: "rumaenien",
       pl: "rumunia",
     },
+    sortWeight: 0,
     corridorPagePublished: true,
     guidePublished: true,
   },
@@ -381,6 +396,7 @@ const countries = [
       de: "niederlande",
       pl: "holandia",
     },
+    sortWeight: 0,
     corridorPagePublished: true,
     guidePublished: true,
   },

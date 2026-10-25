@@ -63,6 +63,9 @@ const CARD: ProductCardView = {
   price: { amountMinor: 4690, currency: "GBP" },
   priceLabelKey: "catalog.price.inclusive",
   provenance: "ai",
+  equivalents: null,
+  slots: null,
+  localSpecial: false,
 };
 
 const IMAGE_CARD: ProductCardView = {
