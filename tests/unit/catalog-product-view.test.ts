@@ -3,11 +3,12 @@
  * half of **AC-21** (§5.2, §6, §8, §13 design round Q3/Q4; T-16 unit half, T-21, T-22; TASK-125).
  *
  * Every amount below is an **exact minor-unit integer** read off the committed dataset and the
- * committed ECB snapshot (`fxAsOf 2026-09-08`), and every one of them is the figure
- * `docs/design/wireframes/product-desktop.dc.html` prints: Amber Hour (`FO-BQ-001`) to Poland is
- * 199 / 229 / 259 zł, projected to £40.90 / £46.90 / £52.90 for `en-gb`; the add-on column is
+ * committed ECB snapshot (`fxAsOf 2026-09-08`): Amber Hour (`FO-BQ-001`) to Poland is
+ * 199 / 239 / 329 zł (its PL ladder override, spec 005 §14 A-founder-2026-10-15a; the wireframe
+ * `docs/design/wireframes/product-desktop.dc.html` still prints the earlier 229 / 259 zł),
+ * projected to £40.90 / £48.90 / £67.90 for `en-gb`; the add-on column is
  * 25 / 35 / 18 / 39 / 0 zł at 23 %, projected like the bouquet (spec 009 AC-34); the stale-FX
- * state quotes PLN 229.00 and the add-ons in zloty with it. `Intl` appears nowhere
+ * state quotes PLN 239.00 and the add-ons in zloty with it. `Intl` appears nowhere
  * in these assertions — formatting is the page's, and a formatted string would hide a
  * one-minor-unit error behind rounding.
  *
@@ -82,8 +83,8 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
     const view = await amber("en-gb", "PL");
     expect(view.tiers.map((tier) => [tier.tierKey, tier.price])).toEqual([
       ["stems_11", { amountMinor: 4090, currency: "GBP" }],
-      ["stems_15", { amountMinor: 4690, currency: "GBP" }],
-      ["stems_21", { amountMinor: 5290, currency: "GBP" }],
+      ["stems_15", { amountMinor: 4890, currency: "GBP" }],
+      ["stems_21", { amountMinor: 6790, currency: "GBP" }],
     ]);
     expect(view.fx).toEqual({ state: "converted" });
   });
@@ -92,8 +93,8 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
     const view = await amber("pl", "PL");
     expect(view.tiers.map((tier) => tier.price)).toEqual([
       { amountMinor: 19_900, currency: "PLN" },
-      { amountMinor: 22_900, currency: "PLN" },
-      { amountMinor: 25_900, currency: "PLN" },
+      { amountMinor: 23_900, currency: "PLN" },
+      { amountMinor: 32_900, currency: "PLN" },
     ]);
     expect(view.fx).toEqual({ state: "native" });
   });
@@ -102,11 +103,11 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
     const view = await amber("en", "PL");
     expect(view.tiers.map((tier) => [tier.tierKey, tier.price])).toEqual([
       ["stems_11", { amountMinor: 4790, currency: "EUR" }],
-      ["stems_15", { amountMinor: 5490, currency: "EUR" }],
-      ["stems_21", { amountMinor: 6190, currency: "EUR" }],
+      ["stems_15", { amountMinor: 5690, currency: "EUR" }],
+      ["stems_21", { amountMinor: 7890, currency: "EUR" }],
     ]);
     expect(view.price.displayPrice).toEqual({
-      amountMinor: 5490,
+      amountMinor: 5690,
       currency: "EUR",
     });
     expect(view.fx).toEqual({ state: "converted" });
@@ -132,7 +133,7 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
     const view = await amber("en-gb", "PL");
     expect(view.selectedTierKey).toBe("stems_15");
     expect(view.price.displayPrice).toEqual({
-      amountMinor: 4690,
+      amountMinor: 4890,
       currency: "GBP",
     });
     expect(view.price.vatRateBp).toBe(800);
@@ -145,13 +146,13 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
       selection: { tierKey: "stems_21" },
     });
     expect(chosen.selectedTierKey).toBe("stems_21");
-    expect(chosen.price.displayPrice.amountMinor).toBe(5290);
+    expect(chosen.price.displayPrice.amountMinor).toBe(6790);
 
     const unknown = await amber("en-gb", "PL", {
       selection: { tierKey: "stems_99", date: "2026-09-10" },
     });
     expect(unknown.selectedTierKey).toBe("stems_15");
-    expect(unknown.price.displayPrice.amountMinor).toBe(4690);
+    expect(unknown.price.displayPrice.amountMinor).toBe(4890);
     // No date can be chosen where the picker is `unavailable`, so the parameter is ignored.
     expect(unknown.selectedDate).toBeUndefined();
 
@@ -161,7 +162,7 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
       selection: { tierKey: "stems_18" },
     });
     expect(retired.selectedTierKey).toBe("stems_15");
-    expect(retired.price.displayPrice.amountMinor).toBe(4690);
+    expect(retired.price.displayPrice.amountMinor).toBe(4890);
   });
 
   it("falls back to the destination's currency on stale FX, says so, and moves every figure with it", async () => {
@@ -171,7 +172,7 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
       noticeKey: "catalog.availability.fxUnavailable",
     });
     expect(view.price.displayPrice).toEqual({
-      amountMinor: 22_900,
+      amountMinor: 23_900,
       currency: "PLN",
     });
     expect(view.price.fxReasonKey).toBe("catalog.availability.fxUnavailable");

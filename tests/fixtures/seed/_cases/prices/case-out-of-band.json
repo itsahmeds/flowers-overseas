@@ -2,8 +2,8 @@
   "family": "prices",
   "rule": "band",
   "replaces": "prices/PL.json",
-  "expect": "outside the plan/10 §2.3",
-  "why": "AC-6, wired from the fixture TASK-074 shipped: `bad-out-of-band.json` is `FO-BQ-001`'s real PL block with one amount outside its tier's band. Spliced in place of that product's rows so the other 83 stay priced and the single fault is the single problem.",
+  "expect": "outside its PL ladder override's band",
+  "why": "AC-6, wired from the fixture TASK-074 shipped: `bad-out-of-band.json` is `FO-BQ-001`'s real PL block with one amount outside its tier's band (since spec 005 §14 A-founder-2026-10-15a, FO-BQ-001's PL rows are held to their ladder override's band, 199 to 329 zł). Spliced in place of that product's rows so the other 83 stay priced and the single fault is the single problem.",
   "ops": [
     {
       "op": "replaceRowsFromFile",

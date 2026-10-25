@@ -23,7 +23,8 @@ cent (`CLAUDE.md`; `plan/07` §4; Price Indication Directive, CRD as amended by 
 1. Find the destination's record in `src/config/catalogue/prices.data.ts` (`DESTINATION_PRICING`).
    It carries the currency, the VAT rate on flowers, the standard rate its add-ons take, the
    `plan/10` §2.3 bands, the authored tier ladder per band, the two surcharge amounts and the six
-   add-on prices. A retail row is **expanded from the ladder**, never typed twice.
+   add-on prices. A retail row is **expanded from the ladder**, never typed twice. A SKU named in
+   the record's `ladderOverrides` is priced from its own amounts by `tierKey` instead (§7, §9).
 2. Amounts are integer minor units (`14_900` is 149 zł), VAT- and delivery-inclusive, and must land
    on the currency's psychological ending — EUR/GBP `x90`, PLN `x9`, HUF `x90` (spec 005 §13 Q1,
    `src/config/currencies.ts`). No float, anywhere, ever (`fo/no-float-money`).
@@ -210,6 +211,11 @@ make a ladder fit is the failure mode this checklist exists to prevent.
 3. Edit the band in `DESTINATION_PRICING` **and** the independent transcription of `plan/10` §2.3
    in `scripts/catalogue-check.ts` (`PLAN_10_BANDS`). They are two copies on purpose: the gate
    compares the dataset against a transcription of the plan, so editing only one of them fails.
+   A band change for **named SKUs** in one destination (spec 005 §14 A-founder-2026-10-15a) is a
+   `ladderOverrides` entry on that destination's record (the SKU, its own band, one amount per
+   `tierKey`) **and** a row in `RECORDED_BAND_CHANGES` in the same gate file. The gate refuses an
+   override with no recorded row, a recorded row with no override, and a band that differs between
+   them. Countries and SKUs are data there, never a branch in code.
 4. Re-author every ladder in the band so all three tiers sit inside it, strictly increasing, on the
    currency's ending.
 5. `pnpm catalogue:check` (modes `band`, `rounding-ending`, `float-money`), then `pnpm test`.
@@ -225,7 +231,43 @@ make a ladder fit is the failure mode this checklist exists to prevent.
 | When spec 010 ships        | `QUOTE_SIGNING_SECRET` moves from the development constant to the env store; a quote signed with the development secret must stop verifying. |
 | When spec 002 unparks      | The dataset stops being the source: the projections in `src/config/catalogue/projections.ts` seed the tables, and this runbook's edits become admin actions with an audit-log row. |
 
-## 9. Related
+## 9. Changes made in place
+
+§2 says a price is superseded, never edited. Phase 0's dataset cannot do that yet: it has one
+`PRICE_ACTIVE_FROM` and no superseded rows, so a change ships as an in-place edit. Each one is
+recorded here, with the old and new amounts, so the history can be rebuilt as superseded rows when
+spec 002 and spec 012 hold it.
+
+### 2026-10-24: odd stem counts and the Polish classic-rose prices (spec 005 §14 A-founder-2026-10-15a)
+
+Merged 2026-10-24, PR #395 (TASK-314), on top of TASK-240's odd-stem remap (PR #305).
+
+The six cells that moved, PLN minor units, in PL only, through the per-SKU `ladderOverrides` of the
+PL record in `src/config/catalogue/prices.data.ts`:
+
+| SKU | Tier | Old | New |
+| --- | --- | --- | --- |
+| FO-BQ-001 Amber Hour | `stems_15` (was `stems_18`) | 22 900 | 23 900 |
+| FO-BQ-001 Amber Hour | `stems_21` (was `stems_24`) | 25 900 | 32 900 |
+| FO-BQ-003 Baltic Dawn | `stems_15` (was `stems_18`) | 22 900 | 23 900 |
+| FO-BQ-003 Baltic Dawn | `stems_21` (was `stems_24`) | 25 900 | 32 900 |
+| FO-BQ-007 Rose Harbour | `stems_15` (was `stems_18`) | 22 900 | 23 900 |
+| FO-BQ-007 Rose Harbour | `stems_21` (was `stems_24`) | 25 900 | 32 900 |
+
+`stems_11` (was `stems_12`) stays 19 900 for all three. Their band in PL is now 199 to 329 zł
+(`RECORDED_BAND_CHANGES` in `scripts/catalogue-check.ts`); every other band is unchanged. The other
+six destinations keep these three SKUs at their position prices.
+
+FO-BQ-004 Quiet Blush changed its counts, not its prices: 12 / 18 / 24 stems became 5 / 7 / 9 stems
+(`stems_5`, `stems_7` default, `stems_9`) at the same 14 900 / 16 900 / 18 900 PLN in PL and the same
+position amounts in every destination (TASK-240).
+
+**No reduction may be announced** on FO-BQ-001, FO-BQ-003, FO-BQ-004 or FO-BQ-007 until 30 days
+after this change reaches production **and** the history is held as superseded rows (spec 002,
+spec 012). Until then `lowestPriceInLast30Days()` knows only today's amounts (§5), so no "was/now",
+no "new price" and no comparison with an old count may appear on these products (Omnibus Art. 6a).
+
+## 10. Related
 
 - `docs/runbooks/peak-day.md` — running a peak day (capacity, freeze window, on-call).
 - `docs/compliance/vat-rates.md` — the rate per destination and its provenance.

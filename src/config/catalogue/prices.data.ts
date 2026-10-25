@@ -38,6 +38,10 @@
  * **no arithmetic on money anywhere**: a tier's amount is looked up from the ladder by its `sort`
  * index, never computed from a percentage (spec 005 §5.2: a percentage applied at render is a
  * float and a rounding bug, and a stepped amount that no row carries could not be superseded).
+ * The one exception to "by position" is a destination's `ladderOverrides`: a named SKU priced by
+ * `tierKey` from its own authored amounts and its own recorded band (spec 005 §14
+ * A-founder-2026-10-15a). Which SKUs and countries carry one is data in the record below, never a
+ * branch in code.
  *
  * Resolving these rows — which one is active on a date, the VAT decomposition, FX, rounding — is
  * `src/modules/catalog/pricing/*` and TASK-065…TASK-067's. This file loads and validates; it
@@ -86,6 +90,7 @@ import {
   DestinationPricingRegistrySchema,
   type PriceBand,
   type PriceBandKey,
+  type ProductTierGroup,
   priceBandKeyFor,
 } from "./schemas.ts";
 import { PRODUCT_TIER_GROUPS } from "./tiers.data.ts";
@@ -203,6 +208,27 @@ const destinationPricing = [
       funeral_premium: [48_900, 56_900, 63_900],
       funeral_luxury: [64_900, 72_900, 79_900],
     },
+    // Spec 005 §14 A-founder-2026-10-15a points 2 and 3 (founder, 2026-10-15: "use industry
+    // price", "prices: your picks"): the three classic rose bouquets take the Polish market
+    // median for 11 / 15 / 21 roses, 199 / 239 / 329 zł, under a band of their own (199 to 329
+    // zł) recorded by that amendment. Every other classic product keeps the ladder above.
+    ladderOverrides: [
+      {
+        sku: "FO-BQ-001",
+        band: { fromMinor: 19_900, toMinor: 32_900 },
+        tiers: { stems_11: 19_900, stems_15: 23_900, stems_21: 32_900 },
+      },
+      {
+        sku: "FO-BQ-003",
+        band: { fromMinor: 19_900, toMinor: 32_900 },
+        tiers: { stems_11: 19_900, stems_15: 23_900, stems_21: 32_900 },
+      },
+      {
+        sku: "FO-BQ-007",
+        band: { fromMinor: 19_900, toMinor: 32_900 },
+        tiers: { stems_11: 19_900, stems_15: 23_900, stems_21: 32_900 },
+      },
+    ],
     // +EUR 4 / +EUR 6 at `plan/10` §2.3's own EUR→PLN add-on parity (balloon 4 EUR = 18 zł,
     // chocolates 6 EUR = 25 zł), so the surcharge and the add-on column cannot disagree.
     // `catalogue:check`'s `surcharge-amount` mode transcribes both figures independently.
@@ -245,6 +271,7 @@ const destinationPricing = [
       funeral_premium: EUR_BASE_LADDERS.funeral_premium,
       funeral_luxury: EUR_BASE_LADDERS.funeral_luxury,
     },
+    ladderOverrides: [],
     sundaySurchargeMinor: 400,
     peakDaySurchargeMinor: 600,
     addonsMinor: EUR_ADDONS,
@@ -257,6 +284,7 @@ const destinationPricing = [
     standardVatRateBp: 2000,
     bands: EUR_BASE_BANDS,
     ladders: EUR_BASE_LADDERS,
+    ladderOverrides: [],
     sundaySurchargeMinor: 400,
     peakDaySurchargeMinor: 600,
     addonsMinor: EUR_ADDONS,
@@ -269,6 +297,7 @@ const destinationPricing = [
     standardVatRateBp: 2100,
     bands: EUR_BASE_BANDS,
     ladders: EUR_BASE_LADDERS,
+    ladderOverrides: [],
     sundaySurchargeMinor: 400,
     peakDaySurchargeMinor: 600,
     addonsMinor: EUR_ADDONS,
@@ -281,6 +310,7 @@ const destinationPricing = [
     standardVatRateBp: 2200,
     bands: EUR_BASE_BANDS,
     ladders: EUR_BASE_LADDERS,
+    ladderOverrides: [],
     sundaySurchargeMinor: 400,
     peakDaySurchargeMinor: 600,
     addonsMinor: EUR_ADDONS,
@@ -313,6 +343,7 @@ const destinationPricing = [
       funeral_premium: [55_590, 64_190, 71_990],
       funeral_luxury: [73_090, 82_090, 89_990],
     },
+    ladderOverrides: [],
     sundaySurchargeMinor: 2000,
     peakDaySurchargeMinor: 3000,
     addonsMinor: {
@@ -332,6 +363,7 @@ const destinationPricing = [
     standardVatRateBp: 2100,
     bands: EUR_BASE_BANDS,
     ladders: EUR_BASE_LADDERS,
+    ladderOverrides: [],
     sundaySurchargeMinor: 400,
     peakDaySurchargeMinor: 600,
     addonsMinor: EUR_ADDONS,
@@ -411,29 +443,101 @@ function bandKeyForSku(sku: string): PriceBandKey {
   return priceBandKeyFor(product);
 }
 
-function retailRows(): CountryPriceData[] {
-  const rows: CountryPriceData[] = [];
-  for (const group of PRODUCT_TIER_GROUPS) {
-    const bandKey = bandKeyForSku(group.sku);
-    for (const destination of DESTINATION_PRICING) {
-      const ladder = destination.ladders[bandKey];
-      if (ladder === undefined) {
+/**
+ * The ladder one product is priced from in one destination, as one amount per tier key.
+ *
+ * By default that is the band ladder, read by the tier's **position** (`sort`): every product in
+ * a band costs the same at the same position. A destination's `ladderOverrides` replace it for a
+ * named SKU with amounts authored **by `tierKey`** (spec 005 §14 A-founder-2026-10-15a point 2).
+ * The override must price exactly the tiers the SKU carries: a key the SKU does not have (a
+ * `stems_12` left over from before TASK-240's remap) and a tier it leaves unpriced are both a
+ * parse error here, at module load, naming the SKU, the destination and the key — never a silent
+ * fall-back to the band ladder for the missing tier.
+ */
+function tierAmountsFor(
+  destination: DestinationPricing,
+  group: ProductTierGroup,
+): ReadonlyMap<string, number> {
+  const override = destination.ladderOverrides.find(
+    (candidate) => candidate.sku === group.sku,
+  );
+  if (override !== undefined) {
+    const carried = new Set(group.tiers.map((tier) => tier.tierKey));
+    for (const tierKey of Object.keys(override.tiers)) {
+      if (!carried.has(tierKey)) {
         throw new Error(
-          `no \`${bandKey}\` ladder for destination ${destination.countryIso2}`,
+          `the ${destination.countryIso2} ladder override of \`${group.sku}\` prices the tier key \`${tierKey}\`, which \`${group.sku}\` does not carry (it carries ${[...carried].join(", ")}; spec 005 §14 A-founder-2026-10-15a)`,
         );
       }
+    }
+    const amounts = new Map<string, number>();
+    for (const tier of group.tiers) {
+      const amount = override.tiers[tier.tierKey];
+      if (amount === undefined) {
+        throw new Error(
+          `the ${destination.countryIso2} ladder override of \`${group.sku}\` does not price its tier key \`${tier.tierKey}\`: an override prices every tier of its SKU (spec 005 §14 A-founder-2026-10-15a)`,
+        );
+      }
+      amounts.set(tier.tierKey, amount);
+    }
+    return amounts;
+  }
+
+  const bandKey = bandKeyForSku(group.sku);
+  const ladder = destination.ladders[bandKey];
+  if (ladder === undefined) {
+    throw new Error(
+      `no \`${bandKey}\` ladder for destination ${destination.countryIso2}`,
+    );
+  }
+  const amounts = new Map<string, number>();
+  for (const tier of group.tiers) {
+    const step = ladder[tier.sort];
+    if (step === undefined) {
+      throw new Error(
+        `\`${group.sku}\` has more tiers than the \`${bandKey}\` ladder of ${destination.countryIso2} has steps`,
+      );
+    }
+    amounts.set(tier.tierKey, step);
+  }
+  return amounts;
+}
+
+/**
+ * One retail row per (product, tier, destination), the amount read from `tierAmountsFor()`.
+ * Exported so the module-load refusals can be exercised over a fixture (`tests/unit/
+ * catalogue-rose-overrides.test.ts`); `COUNTRY_PRICES` is this over the committed dataset.
+ */
+export function expandRetailRows(
+  destinations: readonly DestinationPricing[],
+  groups: readonly ProductTierGroup[],
+): CountryPriceData[] {
+  const known = new Set(groups.map((group) => group.sku));
+  for (const destination of destinations) {
+    for (const override of destination.ladderOverrides) {
+      if (!known.has(override.sku)) {
+        throw new Error(
+          `the ${destination.countryIso2} ladder override names \`${override.sku}\`, which has no tiers in tiers.data.ts`,
+        );
+      }
+    }
+  }
+  const rows: CountryPriceData[] = [];
+  for (const group of groups) {
+    for (const destination of destinations) {
+      const amounts = tierAmountsFor(destination, group);
       for (const tier of group.tiers) {
-        const step = ladder[tier.sort];
-        if (step === undefined) {
+        const retailMinor = amounts.get(tier.tierKey);
+        if (retailMinor === undefined) {
           throw new Error(
-            `\`${group.sku}\` has more tiers than the \`${bandKey}\` ladder of ${destination.countryIso2} has steps`,
+            `\`${group.sku}\` \`${tier.tierKey}\` has no amount in ${destination.countryIso2}`,
           );
         }
         rows.push({
           sku: group.sku,
           countryIso2: destination.countryIso2,
           tierKey: tier.tierKey,
-          retailMinor: step,
+          retailMinor,
           currency: destination.currency,
           vatRateBp: destination.flowersVatRateBp,
           surchargeKind: null,
@@ -518,7 +622,7 @@ function surchargeRows(): CountryPriceData[] {
  * which is what spec 002's seed and spec 006's `seed/data/prices/{ISO2}.json` read (ADR-0017).
  */
 export const COUNTRY_PRICES: readonly CountryPriceData[] = [
-  ...retailRows(),
+  ...expandRetailRows(DESTINATION_PRICING, PRODUCT_TIER_GROUPS),
   ...surchargeRows(),
 ].map((row) => CountryPriceDataSchema.parse(row));
 

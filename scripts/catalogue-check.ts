@@ -585,28 +585,50 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
     if (destination === undefined || bandKey === undefined) continue;
     const sort = sortOf.get(key([row.sku, row.tierKey]));
     if (sort === undefined) continue;
-    const band = destination.bands[bandKey];
+    // A SKU with a ladder override in this destination is held to the override's own band
+    // (spec 005 §14 A-founder-2026-10-15a point 3); every other row to its plan/10 §2.3 band.
+    const override = destination.ladderOverrides.find(
+      (candidate) => candidate.sku === row.sku,
+    );
+    const band = override?.band ?? destination.bands[bandKey];
     if (band === undefined) continue;
     if (row.retailMinor < band.fromMinor || row.retailMinor > band.toMinor) {
       problems.push({
         mode: "band",
         file: DATA_FILE,
         subject: `${row.sku} ${row.tierKey ?? "-"} ${row.countryIso2}`,
-        reason: `prices tier ${String(sort)} at ${String(row.retailMinor)}, outside the plan/10 §2.3 \`${bandKey}\` band ${String(band.fromMinor)}…${String(band.toMinor)} for ${row.countryIso2}: the band is exact and holds for every tier, the "~+30% / +60%" steps bend to fit it (spec 005 §14 A1)`,
+        reason:
+          override === undefined
+            ? `prices tier ${String(sort)} at ${String(row.retailMinor)}, outside the plan/10 §2.3 \`${bandKey}\` band ${String(band.fromMinor)}…${String(band.toMinor)} for ${row.countryIso2}: the band is exact and holds for every tier, the "~+30% / +60%" steps bend to fit it (spec 005 §14 A1)`
+            : `prices tier ${String(sort)} at ${String(row.retailMinor)}, outside its ${row.countryIso2} ladder override's band ${String(band.fromMinor)}…${String(band.toMinor)}: the override band is the founder's recorded change and is exact (spec 005 §14 A-founder-2026-10-15a point 3)`,
       });
     }
   }
 
-  const ladders = new Map<string, { sort: number; minor: number }[]>();
+  interface LadderStep {
+    readonly sort: number;
+    readonly minor: number;
+    readonly tierKey: string | null;
+    readonly sku: string;
+    readonly iso2: string;
+  }
+  const ladders = new Map<string, LadderStep[]>();
   for (const row of input.countryPrices) {
     if (row.surchargeKind !== null || !isActive(row)) continue;
     const sort = sortOf.get(key([row.sku, row.tierKey]));
     if (sort === undefined) continue;
-    const rows = ladders.get(key([row.sku, row.countryIso2])) ?? [];
-    rows.push({ sort, minor: row.retailMinor });
-    ladders.set(key([row.sku, row.countryIso2]), rows);
+    const ladderKey = key([row.sku, row.countryIso2]);
+    const rows = ladders.get(ladderKey) ?? [];
+    rows.push({
+      sort,
+      minor: row.retailMinor,
+      tierKey: row.tierKey,
+      sku: row.sku,
+      iso2: row.countryIso2,
+    });
+    ladders.set(ladderKey, rows);
   }
-  for (const [ladderKey, rows] of ladders) {
+  for (const rows of ladders.values()) {
     const ordered = [...rows].sort((a, b) => a.sort - b.sort);
     for (const [index, step] of ordered.entries()) {
       const previous = ordered[index - 1];
@@ -614,8 +636,8 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
         problems.push({
           mode: "band",
           file: DATA_FILE,
-          subject: ladderKey,
-          reason: `prices tier ${String(step.sort)} at ${String(step.minor)}, not above tier ${String(previous.sort)} at ${String(previous.minor)}: plan/10 §2.3's tier steps are authored rows that increase with \`sort\``,
+          subject: `${step.sku} ${step.tierKey ?? "-"} ${step.iso2}`,
+          reason: `prices tier ${String(step.sort)} at ${String(step.minor)}, not above tier ${String(previous.sort)} (\`${previous.tierKey ?? "-"}\`) at ${String(previous.minor)}: plan/10 §2.3's tier steps are authored rows that increase with \`sort\``,
         });
       }
     }
@@ -746,6 +768,88 @@ export const PLAN_10_COLUMN: Readonly<
   IT: "EUR_BASE",
   NL: "EUR_BASE",
 };
+
+/**
+ * The band changes the founder has recorded for **named SKUs** in one destination, transcribed in
+ * major units from the spec amendment that records each one, the way `PLAN_10_BANDS` transcribes
+ * `plan/10` §2.3.
+ *
+ * A destination's `ladderOverrides` in `prices.data.ts` carry their own band, and the `band` mode
+ * holds the override SKU's rows to it. Without this second copy that band would be checked against
+ * itself, and the failure the gate exists for (a band widened to make a price fit, spec 005 §14
+ * A1) would pass. So every override's band must equal a row here, every SKU here must carry an
+ * override, and an override with no row here is refused. Adding a row is a founder decision
+ * recorded in the spec first (`docs/runbooks/pricing.md` §7), never a data edit to turn CI green.
+ */
+export const RECORDED_BAND_CHANGES: readonly {
+  readonly countryIso2: string;
+  readonly skus: readonly string[];
+  readonly band: readonly [number, number];
+  readonly source: string;
+}[] = [
+  {
+    countryIso2: "PL",
+    skus: ["FO-BQ-001", "FO-BQ-003", "FO-BQ-007"],
+    band: [199, 329],
+    source: "spec 005 §14 A-founder-2026-10-15a point 3",
+  },
+];
+
+/**
+ * Every ladder override's band is a recorded band change, to the cent, and every recorded change
+ * has its override (spec 005 §14 A-founder-2026-10-15a point 3, AC-38).
+ */
+function checkOverrideBands(input: CatalogueCheckInput): Problem[] {
+  const problems: Problem[] = [];
+  const major = (minor: number): number => minor / 100;
+  const recorded = new Map<string, (typeof RECORDED_BAND_CHANGES)[number]>();
+  for (const change of RECORDED_BAND_CHANGES) {
+    for (const sku of change.skus) {
+      recorded.set(key([sku, change.countryIso2]), change);
+    }
+  }
+  const overridden = new Set<string>();
+  for (const destination of input.destinations) {
+    for (const override of destination.ladderOverrides) {
+      const overrideKey = key([override.sku, destination.countryIso2]);
+      overridden.add(overrideKey);
+      const change = recorded.get(overrideKey);
+      if (change === undefined) {
+        problems.push({
+          mode: "band",
+          file: DATA_FILE,
+          subject: `${override.sku} ${destination.countryIso2}`,
+          reason: `has a ladder override with no recorded band change in \`RECORDED_BAND_CHANGES\`: pricing one SKU apart from its band is a founder decision recorded in the spec before it is data (spec 005 §14 A1, A-founder-2026-10-15a)`,
+        });
+        continue;
+      }
+      if (
+        major(override.band.fromMinor) !== change.band[0] ||
+        major(override.band.toMinor) !== change.band[1]
+      ) {
+        problems.push({
+          mode: "band",
+          file: DATA_FILE,
+          subject: `${override.sku} ${destination.countryIso2}`,
+          reason: `authors the override band ${String(major(override.band.fromMinor))}…${String(major(override.band.toMinor))} while ${change.source} records ${String(change.band[0])}…${String(change.band[1])}: the band is exact (spec 005 §14 A1)`,
+        });
+      }
+    }
+  }
+  for (const change of RECORDED_BAND_CHANGES) {
+    for (const sku of change.skus) {
+      if (!overridden.has(key([sku, change.countryIso2]))) {
+        problems.push({
+          mode: "band",
+          file: DATA_FILE,
+          subject: `${sku} ${change.countryIso2}`,
+          reason: `has a recorded band change (${change.source}) but no ladder override in prices.data.ts: the founder's price is not applied`,
+        });
+      }
+    }
+  }
+  return problems;
+}
 
 /** The four sub-bands the funeral row is split into, in ascending order. */
 const FUNERAL_SUB_BANDS = priceBandKeys.filter((bandKey) =>
@@ -1383,6 +1487,7 @@ export function checkCatalogue(input: CatalogueCheckInput): Problem[] {
     ...checkAmounts(input),
     ...checkAddonPrices(input),
     ...checkBandTranscription(input),
+    ...checkOverrideBands(input),
     ...checkSurchargeAmounts(input),
     ...checkSurchargeVatRates(input),
     ...checkFacets(input),

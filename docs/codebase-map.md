@@ -213,14 +213,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 362 |
+| `tests/unit/` | 363 |
 | `tests/integration/` | 46 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 71 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 351 |
+| `tests/fixtures/` | 352 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
