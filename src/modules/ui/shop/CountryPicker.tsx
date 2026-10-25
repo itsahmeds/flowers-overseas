@@ -199,7 +199,7 @@ export function CountryPicker({
         ))}
       </datalist>
       <p
-        className={`text-ink-3 mb-0 max-w-[76ch] leading-[1.4] ${home ? "mt-[8px] text-[11.5px] md:mt-[10px] md:text-xs" : "mt-[10px] text-xs"}`}
+        className={`text-ink-3 mb-0 max-w-[76ch] leading-[1.4] ${home ? "mt-[8px] text-xs md:mt-[10px]" : "mt-[10px] text-xs"}`}
       >
         {rememberLine}
       </p>
