@@ -36,6 +36,12 @@ export const MEGA_MENU_ITEM_LABEL_KEYS: Readonly<
   destinations: "nav.category.destinations",
 };
 
+/**
+ * The menu row's landmark name, `<nav aria-label="Categories">` on both chrome boards. The key is
+ * the one the retired category row used (reviewed), moved here with the row it names.
+ */
+export const MEGA_MENU_NAV_LABEL_KEY = "nav.categories.label";
+
 /** The `<details name>` every top item shares: one panel open at a time where supported. */
 export const MEGA_MENU_GROUP = "fo-mega";
 
