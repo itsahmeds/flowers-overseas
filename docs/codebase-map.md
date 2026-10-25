@@ -20,12 +20,12 @@ task actually touches.
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +105 |
-| `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
+| `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
-| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
+| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | `unit/florist-surface.test.ts` |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
 | `search` | The only import path into the search module: site… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +30 |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
 | `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +58 |
 
 ## Config (`src/config/`)
@@ -55,6 +55,7 @@ task actually touches.
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
+| `florists.ts` | The florist surface's configuration (spec 011 §5.2… | 011 |
 | `freshness-claim.ts` | Freshness scan | 009 |
 | `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
 | `info-pages.ts` | The info-page registry | 041 |
@@ -147,6 +148,17 @@ task actually touches.
 | `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e | 012 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup… | 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's… | 004 |
+| `demo/vendor-inbox/api/auth/[...nextauth]/route.ts` | Every florist Auth.js endpoint answers 404 | 011 |
+| `demo/vendor-inbox/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the token (AC-19) | 011 |
+| `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every address… | 011 |
+| `demo/vendor-inbox/api/auth/sign-out/route.ts` | POST: florist sign-out | 011 |
+| `demo/vendor-inbox/api/language/route.ts` | POST: store the florist's language (AC-32) | 011 |
+| `demo/vendor-inbox/chrome.tsx` | The florist pages' shared frame: header, language… | 011 |
+| `demo/vendor-inbox/layout.tsx` | Florist document: the member's language, noindex | 011 |
+| `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox (signed in; no session… | 011 |
+| `demo/vendor-inbox/request.ts` | The florist request's context and language, read once… | 011 |
+| `demo/vendor-inbox/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue button, uses… | 011 |
+| `demo/vendor-inbox/sign-in/page.tsx` | GET {base}/sign-in: the florist sign-in form and its… | 011 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and… | 003 |
 | `layout.tsx` | App-root layout | 003 |
 | `not-found.tsx` | The `.label` metadata line: the status code this… | 003 |
@@ -219,10 +231,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 382 |
-| `tests/integration/` | 47 |
+| `tests/unit/` | 383 |
+| `tests/integration/` | 49 |
 | `tests/contract/` | 25 |
-| `tests/e2e/` | 71 |
+| `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |

@@ -103,3 +103,45 @@ export async function orderParents(
   const recipientId = await recipient(tx, customerId);
   return { countryId, customerId, recipientId };
 }
+
+/**
+ * The columns a `partner_application` row needs since `0022_florists_v0` (spec 011 §5.1;
+ * TASK-211), as a SQL fragment's values. Fictional applicant, reserved phone range.
+ */
+export const APPLICATION_REQUIRED = {
+  contact_name: "Test Applicant",
+  contact_email: "applicant@example.test",
+  contact_phone: "+48 500 000 000",
+  privacy_notice_version: "2026-10-04",
+} as const;
+
+export interface ApplicationOptions {
+  readonly countryId: string;
+  readonly languageCode?: string;
+  readonly businessName?: string;
+  readonly status?: "new" | "contacted" | "rejected" | "converted";
+  readonly convertedPartnerId?: string | null;
+  /** How long ago the row last changed, in days (sets `updated_at`). */
+  readonly changedDaysAgo?: number;
+}
+
+/** One valid florist application; returns its id. `updated_at` is set at insert (no trigger). */
+export async function application(
+  tx: Tx,
+  options: ApplicationOptions,
+): Promise<string> {
+  const [row] = await tx<{ id: string }[]>`
+    INSERT INTO partner_application (business_name, city, country_id, language_code,
+                                     contact_name, contact_email, contact_phone,
+                                     privacy_notice_version, status, converted_partner_id,
+                                     created_at, updated_at)
+    VALUES (${options.businessName ?? unique("Kwiaty ")}, 'Warszawa', ${options.countryId},
+            ${options.languageCode ?? "pl"}, ${APPLICATION_REQUIRED.contact_name},
+            ${APPLICATION_REQUIRED.contact_email}, ${APPLICATION_REQUIRED.contact_phone},
+            ${APPLICATION_REQUIRED.privacy_notice_version}, ${options.status ?? "new"},
+            ${options.convertedPartnerId ?? null},
+            now() - make_interval(days => ${options.changedDaysAgo ?? 0}),
+            now() - make_interval(days => ${options.changedDaysAgo ?? 0}))
+    RETURNING id`;
+  return row?.id ?? "";
+}

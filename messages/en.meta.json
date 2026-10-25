@@ -4592,5 +4592,80 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "a18745121bb8af6d1a0c689cfb3c2a2245d10d5fe3b37ff37c8b69fd74773dfa"
+  },
+  "floristAuth.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1e458797afaecd762789cfdc760295801c451aade22c70790196baa424d9ce1"
+  },
+  "floristInbox.orders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "floristInbox.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "floristAuth.sentTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7732287944e204a9b51ad6c271126f3e0140974f66936e21caed22f0d9c792fd"
+  },
+  "floristAuth.confirmSubmit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "868d88446935f12ba9d4cad4332ccf55289264452289681ef473cc9c47bc4d56"
+  },
+  "emails.floristSignIn.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6bea51048c543fdc0ad7ca9a303735c781cecf64e4457a872181a52cfcfec5c0"
+  },
+  "floristAuth.email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "floristInbox.demoNotice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7ff9fa744319819ca7e7540a0ca53799e5d9f26ed333eaad94ac24e96be1199f"
+  },
+  "emails.floristSignIn.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "523efb7285b72181305eadd458593ccbd42bed553e6320aa0484b67bc01ba9df"
+  },
+  "floristAuth.submit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "672b79a7ff20479eaf045a1046da8b7d6e335aa0fe983c2282749c79bd444bdd"
+  },
+  "floristAuth.sentBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3f8e0d885e2719d0ca61e724084a2f3abc0580648900d0ef5a558882454a842"
+  },
+  "floristInbox.homeLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d7845f32ecca7176629f4e627a9f24dcad952b8d51e735c5988cf1922e17832"
+  },
+  "floristInbox.signOut": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48f0d3d397d49f135f116d947a805b49f084f637154a8e9913e7233a11dc16a0"
+  },
+  "floristInbox.menu": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862"
+  },
+  "floristAuth.expiredBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "285bafa98c36fe604321e613379eca4f838565817caa3fd3fad5a1df49b4cda0"
   }
 }

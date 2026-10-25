@@ -52,6 +52,29 @@ export const PUBLIC_FILTERED_TABLES = {
 } as const;
 
 /**
+ * Partner-filtered (`app.role = 'partner'`): a table whose rows are otherwise hidden or public by
+ * condition, of which a partner also sees the rows tied to an order it holds an open or accepted
+ * offer for. Spec 011 §5.1 (migration `0022_florists_v0`, TASK-211): the delivery photo of such an
+ * order, so a florist can see their own photo and nothing else widens. The policy is
+ * `<table>_partner`, its correlation a `SECURITY DEFINER` lookup.
+ */
+export const PARTNER_FILTERED_TABLES = {
+  media_asset:
+    "kind = 'delivery_proof' and the photo of an order the partner sees (app_partner_sees_media)",
+} as const;
+
+/**
+ * Insert-only for the public (`app.role` unset or `public`): a visitor adds a row and reads,
+ * changes and deletes nothing, not even their own (spec 011 §5.1, AC-14; migration
+ * `0022_florists_v0`, TASK-211). One `<table>_public_insert` policy `FOR INSERT … WITH CHECK`
+ * beside the staff policy; no partner or customer policy.
+ */
+export const PUBLIC_INSERT_ONLY_TABLES = {
+  partner_application:
+    "status = 'new', no converted partner, no decision time (the WITH CHECK)",
+} as const;
+
+/**
  * The build role (spec 012b §5.1 item 1, AC-4; migration `0018_catalogue_build_role`, TASK-292).
  * `next build` connects as `app_build`, which may `SELECT` exactly these tables and write nothing:
  * the public reference set above without the order machine's two reference tables (no order
@@ -197,7 +220,6 @@ export const STAFF_ONLY_TABLES = [
   "order_event",
   "outbox",
   "outbox_attempt",
-  "partner_application",
   // spec 013 / spec 002 §14 A7.5 (migration `0017_payments_a7`, TASK-254): a chargeback on a
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
