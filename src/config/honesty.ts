@@ -604,7 +604,9 @@ export const CLAIM_PATTERNS: readonly ClaimPattern[] = [
     pattern:
       /\b(?:\d[\d,.]*\+?|dozens|hundreds|thousands|a network of)\s+(?:of\s+)?florists?\b/iu,
   },
-  { label: "rating", pattern: /\b(?:ratings?|stars?|star[- ]rated)\b/iu },
+  // `star[- ]rated` first: after `stars?` it could never be the branch that matched, because
+  // "star" already ends on the hyphen's word boundary (TASK-184, `/break 270` HOLE 10).
+  { label: "rating", pattern: /\b(?:star[- ]rated|ratings?|stars?)\b/iu },
   { label: "review", pattern: /\b(?:reviews?|testimonials?|trustpilot)\b/iu },
   {
     label: "delivery photo",
