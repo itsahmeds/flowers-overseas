@@ -186,8 +186,17 @@ describe("src/modules/ui barrel", () => {
         // landing a photograph is a data change with no edit under `src/app/` (spec 006 AC-20).
         "HOME_HERO_ASSET",
         "HomeHero",
-        "HomeProvenanceNote",
-        "homeMediaAssetIds",
+        // the v3 home, products first (spec 004 §14 A-founder-2026-10-24a item 4; TASK-386,
+        // TASK-387): the sections, their view model and the tighter rhythm.
+        "HOME_OCCASION_GROUP",
+        "HOME_V3_SECTION",
+        "HomeCardViewSchema",
+        "HomeComingUp",
+        "HomeOccasionTabs",
+        "HomePickerViewSchema",
+        "HomePriceWords",
+        "HomeSelection",
+        "HomeViewSchema",
         "PROOF_FACTS",
         "ProofRow",
         // the locale home's lower sections and the trust strip (TASK-053)
@@ -196,7 +205,6 @@ describe("src/modules/ui barrel", () => {
         "HomeFaq",
         "HowItWorks",
         "OCCASIONS_ANCHOR",
-        "OccasionDates",
         "OccasionTiles",
         "occasionAssetId",
         "TRUST_CLAIMS",
@@ -211,9 +219,7 @@ describe("src/modules/ui barrel", () => {
         "REVIEWS_ANCHOR",
         "REVIEW_KINDS",
         "ReviewsSection",
-        "TRENDING_ANCHOR",
         "TRENDING_BASES",
-        "TrendingRow",
         "destinationStatusProviderOf",
         "emptyTrendingProvider",
         "getDestinationStatusProvider",
@@ -366,7 +372,10 @@ describe("src/modules/ui barrel", () => {
       "OCCASIONS_ANCHOR",
       // TASK-054: the ids of the two gated sections — DOM contracts, like the three above.
       "REVIEWS_ANCHOR",
-      "TRENDING_ANCHOR",
+      // TASK-386, TASK-387: the v3 home's section rhythm (a utility list) and its occasion radio
+      // group's `name` (a DOM contract).
+      "HOME_V3_SECTION",
+      "HOME_OCCASION_GROUP",
       // TASK-186: the page frame, a utility list like `HOME_BLEED`, shared by the header and every
       // page's `Container` so the two cannot drift (spec 004 §14 A23 clause 2).
       "PAGE_FRAME",

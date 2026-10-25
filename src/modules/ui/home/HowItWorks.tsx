@@ -37,7 +37,7 @@ import type { ReactElement } from "react";
 
 import { Display, Eyebrow, HEADING_EM } from "../primitives/typography.tsx";
 
-import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
+import { HOME_BLEED, HOME_SECTION, HOME_V3_SECTION } from "./HomeHero.tsx";
 
 export const HOW_IT_WORKS_STEPS = [
   {
@@ -70,15 +70,57 @@ const HEADING_ID = "how-it-works-heading";
 const STEP =
   "relative ps-[76px] pb-[36px] [counter-increment:step] before:absolute before:start-0 before:top-[-4px] before:grid before:size-[52px] before:place-items-center before:rounded-full before:bg-surface-card before:font-display before:text-md before:text-mark before:shadow-[inset_0_0_0_1.5px_var(--color-mark),0_0_0_5px_var(--color-paper-2)] before:content-[counter(step)] [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:start-[25px] [&:not(:last-child)]:after:top-[56px] [&:not(:last-child)]:after:bottom-[4px] [&:not(:last-child)]:after:border-s-2 [&:not(:last-child)]:after:border-dashed [&:not(:last-child)]:after:border-rule [&:not(:last-child)]:after:content-['']";
 
+/**
+ * The v3 home's short form (`.cm-how`): each step a numeral in a 40 px cornflower ring beside its
+ * title, three across from `md`, one under another on a phone; no intro and no step bodies.
+ */
+const SHORT_STEP =
+  "font-display grid grid-cols-[40px_minmax(0,1fr)] items-start gap-[14px] text-[18px] leading-[1.25] [counter-increment:step] before:grid before:size-[40px] before:place-items-center before:rounded-full before:text-[18px] before:text-mark before:shadow-[inset_0_0_0_1.5px_var(--color-mark)] before:content-[counter(step)] md:text-[21px]";
+
 export interface HowItWorksProps {
   readonly headingLevel?: "h2" | "h3";
+  /**
+   * "How it works in three lines" (spec 004 §14 A-founder-2026-10-24a item 4.7; TASK-387): the
+   * home's short form, the step titles only, under the same eyebrow and heading.
+   */
+  readonly short?: boolean;
 }
 
 export function HowItWorks({
   headingLevel = "h2",
+  short = false,
 }: HowItWorksProps = {}): ReactElement {
   const home = useTranslations("home");
   const StepHeading = headingLevel === "h2" ? "h3" : "h4";
+
+  if (short) {
+    return (
+      <section
+        className={`${HOME_V3_SECTION} ${HOME_BLEED}`}
+        aria-labelledby={HEADING_ID}
+        data-fo-how-it-works="short"
+        id="how"
+      >
+        <Eyebrow className="mb-[8px] text-xs">
+          {home("howItWorks.eyebrow")}
+        </Eyebrow>
+        <Display as={headingLevel} id={HEADING_ID} size="2xl" className="m-0">
+          {home.rich("howItWorks.heading", HEADING_EM)}
+        </Display>
+        <ol className="m-0 mt-[20px] grid list-none grid-cols-1 gap-[14px] p-0 [counter-reset:step] md:grid-cols-3 md:gap-[28px]">
+          {HOW_IT_WORKS_STEPS.map((step) => (
+            <li
+              key={step.id}
+              className={SHORT_STEP}
+              data-fo-how-it-works-step={step.id}
+            >
+              {home(step.titleKey)}
+            </li>
+          ))}
+        </ol>
+      </section>
+    );
+  }
 
   return (
     <section

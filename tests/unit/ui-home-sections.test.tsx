@@ -15,14 +15,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
-import { OCCASION_DATES, OCCASION_TILES } from "../../src/config/occasions.ts";
+import { OCCASION_TILES } from "../../src/config/occasions.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { HomeFaq, FAQ_ENTRIES } from "../../src/modules/ui/home/HomeFaq.tsx";
 import {
   HOW_IT_WORKS_STEPS,
   HowItWorks,
 } from "../../src/modules/ui/home/HowItWorks.tsx";
-import { OccasionDates } from "../../src/modules/ui/home/OccasionDates.tsx";
 import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
 import {
   TRUST_CLAIMS,
@@ -73,8 +72,6 @@ function hrefs(html: string): string[] {
 
 const tiles = (locale: string): string =>
   render(<OccasionTiles locale={locale} />, locale);
-const dates = (locale: string): string =>
-  render(<OccasionDates locale={locale} />, locale);
 const explainer = (locale: string): string => render(<HowItWorks />, locale);
 const faq = (locale: string): string => render(<HomeFaq />, locale);
 const trust = (locale: string): string => render(<TrustStrip />, locale);
@@ -197,96 +194,8 @@ describe("the occasion tiles", () => {
   });
 });
 
-describe("the 'Coming up in Poland' strip", () => {
-  it("prints the four dates in the recipient's calendar and their names", () => {
-    const rendered = text(dates("en"));
-
-    for (const fragment of [
-      "Coming up in Poland",
-      "Dates worth sending for",
-      "Sun, 1 Nov",
-      // TASK-232: the second name on its own line, no longer joined with " · ".
-      "All Saints' Day Wszystkich Świętych",
-      "Andrzejki St Andrew's Eve",
-      "Wigilia Christmas Eve",
-      "Women's Day Dzień Kobiet",
-      "Poland's biggest flower day",
-    ]) {
-      expect(rendered, fragment).toContain(fragment);
-    }
-    expect([...dates("en").matchAll(/<li/g)]).toHaveLength(
-      OCCASION_DATES.length,
-    );
-  });
-
-  it("states no cutoff at all while no destination takes delivery dates", () => {
-    // Spec 004 §14 A19 (`/review 70`; TASK-120). `occasions.ts` carries a hand-authored `orderBy`
-    // instant per date, and the strip printed it — "Order by Fri, 30 Oct, 14:00 CET" — on the
-    // home page of every locale while no florist had agreed a cutoff. The line is gated on
-    // `anyDeliveryDatesOpen()`, which is false for every destination in Phase 0, so the row falls
-    // back to its two facts: the date and its name.
-    for (const locale of LOCALES) {
-      const rendered = text(dates(locale));
-      expect(rendered, locale).not.toMatch(/Order by|14:00/u);
-    }
-    expect(text(dates("en"))).toContain("Sun, 1 Nov");
-  });
-
-  it("formats the same instants in the reader's own language", () => {
-    // The date itself is still the reader's wording and the recipient's calendar; only the
-    // order-by line is gated (TASK-120).
-    expect(text(dates("de"))).toContain("So., 1. Nov.");
-    expect(text(dates("pl"))).toContain("1 lis");
-  });
-
-  it("draws each date as a stamp on its tint, with the day as a decorative numeral (v2)", () => {
-    const html = dates("en");
-
-    expect([...html.matchAll(/data-fo-occasion-date=/g)]).toHaveLength(4);
-    for (const tint of [
-      "bg-leaf-wash",
-      "bg-butter",
-      "bg-blush",
-      "bg-sage-wash",
-    ]) {
-      expect(html, tint).toContain(tint);
-    }
-    expect(html).toMatch(/<span aria-hidden="true"[^>]*>1<\/span>/);
-  });
-
-  it("links a stamp to its occasion hub where one exists, and leaves Andrzejki as text (A20)", () => {
-    const html = render(
-      <OccasionDates
-        locale="en"
-        hubHrefs={{
-          all_saints: "/en/occasions/all-saints-day",
-          christmas: "/en/occasions/christmas",
-          womens_day: "/en/occasions/womens-day",
-        }}
-      />,
-      "en",
-    );
-    const andrzejki = html.slice(
-      html.indexOf('data-fo-occasion-date="andrzejki"'),
-    );
-
-    expect(hrefs(html)).toEqual([
-      "/en/occasions/all-saints-day",
-      "/en/occasions/christmas",
-      "/en/occasions/womens-day",
-    ]);
-    expect(andrzejki.slice(0, andrzejki.indexOf("</li>"))).not.toContain("<a ");
-  });
-
-  it("links nothing and computes nothing", () => {
-    const html = dates("en");
-
-    expect(hrefs(html)).toEqual([]);
-    // No countdown, no "days left", no "next occasion": this document is ISR-cached.
-    expect(text(html).toLowerCase()).not.toContain("days left");
-    expect(html).not.toContain("<img");
-  });
-});
+// "Coming up in Poland" left the home (spec 004 §14 A-founder-2026-10-24a items 4.6 and 13;
+// TASK-387): "Coming up" over every shop country is `tests/unit/home-v3.test.tsx`.
 
 describe("the how-it-works explainer", () => {
   it("renders the round-2 artboard's eyebrow, headline and cross-border paragraph", () => {

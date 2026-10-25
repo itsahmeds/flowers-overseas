@@ -560,8 +560,6 @@ export const MEDIA_SLOT_CAPTION = "slot · sizes · reserved ratio";
  * and `tests/a11y/home.spec.ts`).
  */
 export const HOME_SECTION_STATES = {
-  dates:
-    "OccasionDates \u00b7 default \u2014 the four Polish dates from `src/config/occasions.ts`, each with the order-by cutoff formatted in the recipient's zone (`14:00 CET`). Nothing is a link, nothing is computed, and the cutoff line is hidden below the `md` breakpoint exactly as the mobile artboard omits it.",
   occasions:
     "OccasionTiles \u00b7 unpublished-occasion \u2014 the six tiles as text and photo placeholders, 2-up mobile and 3-up desktop. Spec 008 flips `published` and the same loop renders links; the published branch is covered by the mocked-registry assertions in `tests/unit/ui-home.test.tsx`.",
   howItWorks:
@@ -576,24 +574,18 @@ export const HOME_SECTION_STATES = {
  * because a page file may hold no data and the strings here are developer-facing.
  */
 export const GATED_STATES = {
-  trendingPicks:
-    "TrendingRow \u00b7 basis=picks (Phase 0) \u2014 the florists' picks with the founder's verbatim label. A card is a reserved photo box and a name: spec 004 \u00a73 ships nothing that knows what a product is, so there is no price element at all \u2014 not a figure, not a \u201cstarting at\u201d, not the canvas's grey price bar.",
-  trendingOrders:
-    "TrendingRow \u00b7 basis=orders \u2014 the branch spec 008/016 reaches by replacing the provider with one ranked by real orders in the last seven days. The honesty label is gone, because it is no longer true, and no call site changed.",
-  trendingEmpty:
-    "TrendingRow \u00b7 empty \u2014 a provider with no picks renders no section at all: no heading, no empty grid, no reserved hole in the page.",
   reviewsEmpty:
     "ReviewsSection \u00b7 empty (Phase 0) \u2014 renders nothing, and no configuration can change that: the shipped provider is a constant empty list, so the canvas's placeholder review rows cannot reach a page (AC-15).",
   reviewsPopulated:
     "ReviewsSection \u00b7 populated \u2014 the branch spec 016 reaches with reviews from completed orders: a first name, the destination town, the date in the reader's locale and the verification word. No star row, and the Trustpilot slot is a named region with no score in it.",
   destinationsPhase0:
-    "DestinationsGrid \u00b7 unpublished-destination (Phase 0) \u2014 Poland delivering with its five cities, six guide destinations, none of them a link, and the copy-only \u201cSomewhere else?\u201d cell.",
+    "DestinationsGrid \u00b7 Phase 0: every destination by the same rule, in the one country order, each linking its guide where one exists.",
   destinationsPublished:
     "DestinationsGrid \u00b7 published-destination \u2014 one corridor page published: the same loop renders a link, with no template edit (AC-11).",
 } as const;
 
 export const HOME_STATES = {
-  hero: "HomeHero \u00b7 default \u2014 the reserved full-bleed photo slot with its caption and no `<img>` (plan/10 \u00a73), the paper card at the inline start on the desktop artboard and overlapping the slot by 56 px on the mobile one, the eyebrow, the one `<h1>` (the text LCP element) and the proposition.",
+  hero: "HomeHero \u00b7 v3: the products-first first screen (spec 004 \u00a714 A-founder-2026-10-24a item 4.2): the eyebrow from `md`, the `<h1>`, the promise line, the picker card with three fixture buttons, and beside it from `md` the photograph, the not-open state line and `shop.hub.noMoney`. No price anywhere.",
   proof:
     "ProofRow \u00b7 default \u2014 the four claims of the round-2 artboard, in the first person, 2-up on the mobile artboard and 4-up on the desktop one. The delivery-photo fact renders no photo.",
 } as const;
