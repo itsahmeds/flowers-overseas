@@ -12,7 +12,9 @@
  * is photographed as `main` at the artboard widths (1440 and 390), with the header unstuck so the
  * breadcrumb is in the picture (`./static-header.css`); the header and footer keep their own
  * baselines. At 390 a second, first-screen shot keeps the phone chrome the brief names in the
- * picture: the back link and the dock (spec 004 §14 A24 carry-forward). One `de` draft's first
+ * picture: the back link and the dock (spec 004 §14 A24 carry-forward). Only the cookie notice's
+ * dock is built today; the WhatsApp and Send flowers docks of spec 041 §14 A1 are TASK-182's open
+ * escalation E6, so the trust and help first screens are re-taken when they land. One `de` draft's first
  * screen pins the untranslated line under the not-open line (the States rows, AC-23). The help
  * page under `/ar-XB` is in `./pseudo-rtl.spec.ts` (spec 041 §7 "RTL").
  */
