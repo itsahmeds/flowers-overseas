@@ -15,6 +15,14 @@
  * `fo/no-geo-redirect`, which matches this filename). A path with no launch-locale prefix (`/`,
  * `/robots.txt`, `/api/health`, `/nope`) gets no header and no `locale` log field rather than a
  * guessed one. Still no redirects of any kind.
+ *
+ * **The country chooser** (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385) is the one address
+ * the proxy routes: `/{locale}/{chooseSegment}/...` answers either a choice (a `303` with one
+ * `Set-Cookie: fo_dest`) or a page, and only code that runs before the route can pick between a
+ * route handler and a page. The proxy asks the catalogue's `decideChooser()` (the path and the
+ * form's `to`, nothing else: no header, cookie or IP) and **rewrites** to the choice route or to the
+ * chooser page (`src/lib/chooser-routes.ts`). It redirects nothing itself and sets no cookie; the
+ * catalogue is imported only on a chooser address, so no other request loads it here.
  */
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -23,6 +31,11 @@ import {
   STAGING_BASIC_AUTH_KEY,
   basicAuthDecision,
 } from "@/lib/basic-auth";
+import {
+  chooserAddress,
+  chooserPagePath,
+  choiceRoutePath,
+} from "@/lib/chooser-routes";
 import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/request-id";
@@ -41,7 +54,38 @@ export const LOCALE_HEADER = "x-fo-locale";
 const environment = appEnvironment(process.env);
 const credential = process.env[STAGING_BASIC_AUTH_KEY];
 
-export function proxy(request: NextRequest): NextResponse {
+/**
+ * Where a chooser address is served from: the choice route for a choice, the chooser page for
+ * everything else, with the query kept for the page (it shows what was typed).
+ */
+async function chooserTarget(
+  request: NextRequest,
+  path: string,
+): Promise<URL | undefined> {
+  const address = chooserAddress(path);
+  if (address === undefined) return undefined;
+  const { chooserNextPath, decideChooser } = await import("@/modules/catalog");
+  const decision = await decideChooser(
+    address.locale,
+    address.segments,
+    request.nextUrl.searchParams.getAll("to"),
+  );
+  if (decision.kind === "choice") {
+    return new URL(
+      choiceRoutePath(
+        address.locale,
+        decision.iso2,
+        chooserNextPath(decision.next),
+      ),
+      request.url,
+    );
+  }
+  const page = new URL(chooserPagePath(address), request.url);
+  page.search = request.nextUrl.search;
+  return page;
+}
+
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
   const started = Date.now();
   const method = request.method;
@@ -84,7 +128,11 @@ export function proxy(request: NextRequest): NextResponse {
   const headers = new Headers(request.headers);
   headers.set(REQUEST_ID_HEADER, requestId);
   if (locale !== undefined) headers.set(LOCALE_HEADER, locale);
-  const response = NextResponse.next({ request: { headers } });
+  const chooser = await chooserTarget(request, path);
+  const response =
+    chooser === undefined
+      ? NextResponse.next({ request: { headers } })
+      : NextResponse.rewrite(chooser, { request: { headers } });
   response.headers.set(REQUEST_ID_HEADER, requestId);
 
   // No `status` here (`/review 26` nit, TASK-058): `NextResponse.next()` is always 200, because

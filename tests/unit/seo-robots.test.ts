@@ -73,6 +73,10 @@ Disallow: /*/account/
 Disallow: /search
 Disallow: /dev/
 Disallow: /*?*sort=
+Disallow: /en/choose-country
+Disallow: /en-gb/choose-country
+Disallow: /de/land-waehlen
+Disallow: /pl/wybierz-kraj
 
 Sitemap: https://flowersoverseas.com/sitemap.xml
 `;
