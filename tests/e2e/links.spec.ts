@@ -212,14 +212,14 @@ test.describe("AC-14: the site links to nothing that is not there", () => {
  * a menu, a search, a basket, most of a footer and five bouquet cards that looked like controls
  * and did nothing. The crawl above asks "does every link answer 200", which a page of dead text
  * passes; this one asks the other half too — **which** controls the chrome draws, that each is an
- * `<a>`, and that each answers 200 — in the header, the footer and the home's trending row of
- * every launch locale.
+ * `<a>`, and that each answers 200 — in the header, the footer and the home's Popular choices
+ * (the trending row until TASK-386) of every launch locale.
  */
 const CHROME = [
   "[data-fo-utility]",
   "[data-fo-header]",
   "footer",
-  "[data-fo-trending]",
+  '[data-fo-home-section="selection"]',
 ] as const;
 
 /** The header's category row per locale, as the ruling draws it: eight entries, all links. */
@@ -306,10 +306,10 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           : [],
       );
 
-      // The trending row: five cards, five product pages.
-      await expect(page.locator("[data-fo-trending] li a[href]")).toHaveCount(
-        5,
-      );
+      // Popular choices (v3, AC-95): the whole core range, each card a chooser link, then See all.
+      await expect(
+        page.locator('[data-fo-home-section="selection"] article a[href]'),
+      ).toHaveCount(10);
 
       // Every `<a>` in the four chrome regions has a target, and every internal one answers 200.
       const hrefs = new Set<string>();

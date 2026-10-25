@@ -377,16 +377,13 @@ test.describe("T-52 (A-founder-2026-10-19c): the open Menu and short screens (AC
           .first()
           .click();
       }
-      await expect(page.locator("[data-fo-sentence-who]")).toBeFocused();
+      // v3 (TASK-386): the picker card's first choice, its first country button.
+      await expect(
+        page.locator('[data-fo-home-picker] button[name="to"]').first(),
+      ).toBeFocused();
       const header = await headerBox(page);
       const letter = await page.evaluate(() => {
-        const form = document.getElementById("send")!;
-        const card = form.closest("[data-fo-hero-card]");
-        const box = (
-          card !== null && getComputedStyle(card).display !== "contents"
-            ? card
-            : form
-        ).getBoundingClientRect();
+        const box = document.getElementById("send")!.getBoundingClientRect();
         return { top: box.top, bottom: box.bottom };
       });
       expect(letter.top).toBeGreaterThanOrEqual(header.top + header.height - 1);
