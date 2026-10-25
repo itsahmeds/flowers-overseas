@@ -153,7 +153,7 @@ async function refusal(promise: Promise<unknown>): Promise<OrderErrorCode> {
 
 /**
  * A `test` order (PLN 18 900) and its payment, as the lifecycle writes one. Since
- * `0028_payment_purchase` (TASK-350) a payment belongs to the order's purchase; `shape: "a7"`
+ * `0026_payment_purchase` (TASK-350) a payment belongs to the order's purchase; `shape: "a7"`
  * writes it the way A7 left the table (`order_id`), for a database rolled back to `0017`.
  */
 async function orderWithPayment(
@@ -466,7 +466,7 @@ describe.skipIf(server.url === undefined)(
     });
 
     describe("constraints (spec 002 T-39 … T-43)", () => {
-      it("AC-38 (002): payment — pending without ref or method, processing, the money bounds, one live payment per purchase (0028)", async () => {
+      it("AC-38 (002): payment — pending without ref or method, processing, the money bounds, one live payment per purchase (0026)", async () => {
         const result = await rolledBack(scratch.sql, async (tx) => {
           const orderId = await insertPlacedOrder(tx, {
             ...(await orderParents(tx)),
@@ -925,7 +925,7 @@ describe.skipIf(server.url === undefined)(
       async () => {
         // The migrations after A7 (0018 on) roll back first, as `pnpm db:rollback --to` would meet
         // them, so the A7 down file is the newest and the one that must change nothing. They roll
-        // back before the live payment exists: `0028_payment_purchase`'s own guard refuses to
+        // back before the live payment exists: `0026_payment_purchase`'s own guard refuses to
         // roll back over a live payment (TASK-350), so the row is written in A7's shape.
         await locked(() => runner(first.url, ["--down", "--to", A7_VERSION]));
         const { orderId } = await (async () => {

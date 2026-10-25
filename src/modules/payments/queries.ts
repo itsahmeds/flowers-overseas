@@ -2,7 +2,7 @@
  * The payment read helpers, keyed by purchase (spec 013 §14 A-founder-2026-10-22 item 2; spec 010
  * §14 A-founder-2026-10-22 item 13 (b) and §13 Q19; TASK-350).
  *
- * A payment belongs to the **purchase** (`payment.purchase_id`, `0028_payment_purchase`): a
+ * A payment belongs to the **purchase** (`payment.purchase_id`, `0026_payment_purchase`): a
  * payment for three orders has no single order, and `payment.order_id` no longer exists. Every
  * reader that goes from an order to its payment does so through `paymentForOrder` here, which
  * joins on `"order".purchase_id`; spec 018's invoice issuing (TASK-341, "an invoice only when

@@ -232,7 +232,7 @@ describe.skipIf(server.url === undefined)(
         const withBasket = await ordersWithout(scratch.sql);
         expect(withBasket.size).toBe(5);
 
-        // `0028_payment_purchase` (TASK-350) sits above `0019` and refuses to roll back while a
+        // `0026_payment_purchase` (TASK-350) sits above `0019` and refuses to roll back while a
         // live payment exists (`PAYMENT_PURCHASE_ROLLBACK_BLOCKED`, spec 013 §8): the walk down
         // to `0018` stops there and changes nothing. The live payment and its refund are then
         // removed by hand, so `0019`'s own down still runs with a paid test order and a

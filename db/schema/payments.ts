@@ -2,7 +2,7 @@
  * Drizzle definitions for the `payments` tables — `payment`, `refund`, `payment_dispute` and
  * `webhook_inbox` (spec 002 §5.1 "`payments`", §8, §14 A7; `plan/01` §9; migrations
  * `0007_orders_payments.sql` (TASK-019), `0017_payments_a7.sql` (spec 013, TASK-254) and
- * `0028_payment_purchase.sql` (TASK-350)).
+ * `0026_payment_purchase.sql` (TASK-350)).
  *
  * The typed mirror of the migration. What to read off this file:
  *
@@ -13,7 +13,7 @@
  *  - **A7** — a payment row exists `pending` before the provider call (no `provider_ref` or
  *    `method` yet), a refund `requested` before it; a dispute is in its payment's currency. The
  *    hold-only columns ship empty (spec 013 §14);
- *  - **one payment per purchase** (`0028_payment_purchase`, spec 013 §14 A-founder-2026-10-22
+ *  - **one payment per purchase** (`0026_payment_purchase`, spec 013 §14 A-founder-2026-10-22
  *    item 2) — a payment references its purchase by `(purchase_id, currency_code)`, one live
  *    payment per purchase; a refund names its order, and `(order_id, purchase_id)` plus
  *    `(payment_id, purchase_id)` make "an order of the purchase its payment paid for" a key.
@@ -131,7 +131,7 @@ export const payment = pgTable(
     lastDeclineRef: text("last_decline_ref"),
     cardBrand: text("card_brand"),
     cardLast4: char("card_last4", { length: 4 }),
-    // `0028_payment_purchase` (spec 013 §14 A-founder-2026-10-22 item 2, TASK-350): the payment
+    // `0026_payment_purchase` (spec 013 §14 A-founder-2026-10-22 item 2, TASK-350): the payment
     // belongs to the purchase, in its currency; `order_id` is gone.
     purchaseId: uuid("purchase_id").notNull(),
   },
@@ -210,7 +210,7 @@ export const refund = pgTable(
     requestedBy: text("requested_by").notNull(),
     succeededAt: timestamp("succeeded_at", { withTimezone: true }),
     failureCode: text("failure_code"),
-    // `0028_payment_purchase` (TASK-350): the order this refund is for, an order of the purchase
+    // `0026_payment_purchase` (TASK-350): the order this refund is for, an order of the purchase
     // its payment paid for (both composite keys below), capped by `refund_order_ceiling`.
     orderId: uuid("order_id").notNull(),
     purchaseId: uuid("purchase_id").notNull(),
