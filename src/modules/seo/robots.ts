@@ -86,6 +86,13 @@ export const DISALLOWED_PATHS: readonly string[] = [
   ),
 ];
 
+/**
+ * The `rel` of every link to the country chooser (spec 004 §14 A-founder-2026-10-24a item 3, "SEO":
+ * "every link to it carries `rel="nofollow"`"), spelled here, in the one module that may spell a
+ * robots word (spec 009 AC-16's scan), and read by every chooser link (TASK-385).
+ */
+export const CHOOSER_LINK_REL = "nofollow";
+
 /** A `robots.txt` policy, before it is printed or handed to Next's metadata route. */
 export interface RobotsPolicy {
   /** `true` in the indexing environment: the site is open with an exclusion list. */

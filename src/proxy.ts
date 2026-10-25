@@ -64,12 +64,10 @@ async function chooserTarget(
 ): Promise<URL | undefined> {
   const address = chooserAddress(path);
   if (address === undefined) return undefined;
-  const { chooserNextPath, decideChooser } = await import("@/modules/catalog");
-  const decision = await decideChooser(
-    address.locale,
-    address.segments,
-    request.nextUrl.searchParams.getAll("to"),
-  );
+  const { ChooserToSchema, chooserNextPath, decideChooser } =
+    await import("@/modules/catalog");
+  const to = ChooserToSchema.parse(request.nextUrl.searchParams);
+  const decision = await decideChooser(address.locale, address.segments, to);
   if (decision.kind === "choice") {
     return new URL(
       choiceRoutePath(
