@@ -48,6 +48,7 @@ here.
 
 - 2026-10-25: provider lookups (`retrieveRefund`, `listChargeRefunds`, `retrieveDispute`) on the interface, the contract suite, the fake (async refunds, disputes) and the Stripe adapter + emulator; `refund`, rows 30/31, `applyProviderRefund`, `succeededRefunds`, `disputes.ts`, webhook routes, `adminRefund`/`adminCancel`, `0030_set_c_a9`; `tests/integration/payments-refunds-disputes.test.ts` 55 green on local PG16 (with the never-committed 0021..0027 placeholders), 17 mutations all red. Next: cheap gates, PR ready, CI.
 - 2026-10-25: PR 411 ready with ci:full. The first run on 9504e33 failed the same jobs as PR 410 (test-unit, test-integration, db-check, audit: the 0021..0027 migration gap) plus commitlint, from the inherited subject "TASK-261 in progress". That commit was reworded (tree unchanged) and force-pushed. The re-fired run on d46c536 was in flight at shutdown. Next: read that run and compare its failures with PR 410's.
+- 2026-10-25: restacked on TASK-260's new head (PR 410). `0030_set_c_a9` renumbered `0028` (PRs 403 and 405 hold `0026` and `0027`) and now pinned in `db-migrate.test.ts`. Main's A8.1 rows counted in every A9 total (80 rows). Admin permissions merged with TASK-293's two rows. 12 integration files, the touched unit and contract files green on a local PG16.
 
 ## Result
 
