@@ -95,7 +95,7 @@
       <dt>The shape of it</dt><dd>Destination and date are asked <b>once</b>, on the home finder, and the answer travels in the URL (locale prefix, destination country segment) and one cookie (display currency). There is no IP redirect anywhere in this flow, ever (ADR-0006), and no step re-asks a question an earlier step answered.</dd>
       <dt>Price identity</dt><dd>The all-in price shown on the product page — VAT and delivery included, with the date's surcharge already applied — is the same integer the checkout total and the payment charge use. There is no configuration of the flow in which a cost appears later than the tier chip that first showed a price (<code>plan/07</code> §4, drip-pricing ban).</dd>
       <dt>What is real in Phase 0</dt><dd>Steps 1–4 render. Step 5–7 are behind the <code>checkout.demo_guard</code> flag (on by default): the form renders, no order is placed and no card is charged. Steps 8–9 exist as designs for spec 010/015 and as the confirmation the demo shows a florist.</dd>
-      <dt>A-founder-2026-10-22</dt><dd>Two branches added at the foot: <b>the basket</b> (B1 to B5, spec 010) and <b>the account</b> (A1 to A5, spec 018). Guest checkout stays the spine; neither branch is required.</dd><dt>Owning specs</dt><dd>004 chrome and system · 007 country page and hub · 008 shop, category, occasion · 009 product page · 010 checkout · 015 order state and tracking</dd>
+      <dt>A-founder-2026-10-25a</dt><dd>Two more branches at the foot: <b>sign-in</b> (S1 to S5, spec 018: Google, Apple or the email link) and <b>the four steps with express checkout</b> (X1 to X5, specs 010 and 013). Step 2 of the spine splits into “Your card” and “Your details”.</dd><dt>A-founder-2026-10-22</dt><dd>Two branches added at the foot: <b>the basket</b> (B1 to B5, spec 010) and <b>the account</b> (A1 to A5, spec 018). Guest checkout stays the spine; neither branch is required.</dd><dt>Owning specs</dt><dd>004 chrome and system · 007 country page and hub · 008 shop, category, occasion · 009 product page · 010 checkout · 015 order state and tracking</dd>
       <dt>010 · what changed</dt><dd>Steps 06–09 are redrawn to spec 010's demo (2026-10-05): step 05 gains “Try a demo order”, a form submit to <code>/api/checkout/start</code>; the three steps are recipient, card and you, check; the demo banner, the sample-details button, the privacy notice and the demo calendar are on step 06; step 08 places a <b>demo order</b> (no payment, routed to a demo florist, visible in the admin queue, step 10) instead of paying; step 09 is the demo confirmation at <code>/checkout/done</code>, read from the cookie. Gone from these steps: the marketing box, the payment tiles, the withdrawal line, the photo promise. Branches: <b>closed</b> (the country is not open: “We are not taking orders for Poland yet”, no form) and <b>expired</b> (the draft is gone), both in the exits table.</dd><dt>009 · what changed</dt><dd>Step 04&#39;s exit is gone: publishing the <code>product</code> link id in <code>site-links.ts</code> turns every card from a tile into an <code>&lt;a&gt;</code>, so the Phase 0 spine now runs <b>home finder &rarr; country page &rarr; country shop &rarr; category or occasion &rarr; product</b>, and stops at <b>step 05</b> rather than step 04. Step 05 is redrawn around the three picker states: the <b>countdown</b> and the relative <b>“today”</b> chip are gone from cached HTML, the <b>“Continue”</b> button is replaced by the honest “ordering is not open yet” sentence, the <b>add-on checkboxes</b> are a priced read-only list, and the <b>withdrawal notice</b> and <b>photo-on-delivery promise</b> are gone with the “our florist in the recipient&#39;s town” claim. Two new exit rows: <i>destination has no operational data</i> and <i>past the cutoff</i>, now stated as a picker state rather than a countdown.</dd><dt>007 · what changed</dt><dd>Steps 01–03 are redrawn as the journey spec 007 creates: <b>home finder → country page → (only when a florist exists) shop</b>. Step 02 loses its waiting-list exit and gains region grouping and the two destination states; step 03 is drawn in its guide state, because that is the state every one of the seven destinations is in while <code>hasActivePartners()</code> answers false. The consequence is worth stating plainly: <b>in Phase 0 the journey stops at step 03</b>, and steps 04 onwards are reachable only behind the demo guard. That is the correct shape for a site that indexes guides and sells nothing yet.</dd><dt>008 · what changed</dt><dd>The spine is now <b>home finder &rarr; country page &rarr; country shop &rarr; country category or country occasion &rarr; (009) product</b>, and step 04 is redrawn as the listing spec 008 actually specifies: a priced product row first, category tiles with a <code>from</code> price, the destination&#39;s own occasion dates, a <code>GET</code> sort form and <code>?page=N</code> pagination. Three things about it are worth reading before the thumbnails. <b>One</b>: the card is a <b>tile, not a link</b>, until spec 009 publishes the <code>product</code> link id, so in Phase 0 the journey stops at step 04 rather than step 03 — and it stops there without a dead link, because a tile has no <code>&lt;a&gt;</code>. <b>Two</b>: there is a <b>second entrance</b> that does not pass through a country at all — the category hub, the occasion hub and the occasions index, reached from search, the locale home and the footer. They carry no price, they ask for the destination, and they are the only page types in spec 008 that become indexable at the flip. <b>Three</b>: no card in this flow carries a delivery badge, a rating or a “bestseller” mark, and no step between 01 and 04 asks for a personal detail of any kind.</dd><dt>Round 2 · what changed</dt><dd>Destination and date are settled <b>before the basket</b>, not after it: the finder asks for both on step 01, the grid on step 04 carries the date control above it and badges every card against the destination cutoff, and step 05 numbers the three decisions and prints the fee on every date chip. Steps 06–07 are data entry only — the total cannot move. The field is split on this and the half that defers the date (Interflora UK, Bloom &amp; Wild) reveals “not available on that day” after the buyer has committed (benchmarks/00-summary.md, pattern 1).</dd>
     </dl>
   </section>
@@ -301,6 +301,77 @@
         <code>/en-gb/account/details …</code>
         <div class="thumb"><div class="ink"></div><div class="row2"><div class="box" style="flex:1">Details</div><div class="box" style="flex:1">Recipients</div></div><div class="row2"><div class="box" style="flex:1">Reminders</div><div class="box" style="flex:1">Privacy</div></div></div>
         <dl class="meta"><dt>Decision</dt><dd>Prefill for next time, saved people, dated reminders with their own consent, export or delete, sign out everywhere.</dd><dt>Spec</dt><dd>018 AC-53 to AC-60</dd></dl>
+      </div>
+    </div>
+<!-- social-sign-in 2026-10-25 -->
+    <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The sign-in branch · spec 018 §14 A-founder-2026-10-25a (2026-10-25)</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">Google, Apple or the email link</h2><p style="margin:0;font-size:var(--text-sm);color:var(--color-ink-2);max-width:110ch">Optional everywhere: nothing is gated and guest checkout stays the spine. Each provider button is a native form post and one top-level redirect; no Google or Apple script runs on our pages. Starts on <code>/en-gb/account</code> (return to the account) or on checkout step 3 (return to <code>/en-gb/checkout</code>). Replaces A2 above when the provider flags are on.</p></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">S1</span><b>Account · sign in</b></header>
+        <code>/en-gb/account</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Continue with Google</div><div class="box">Continue with Apple</div><span>or</span><div class="box" style="border-color: var(--color-accent)">Email me a link</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Google, Apple or the email link. Same size for both providers; the email form as before.</dd><dt>Spec</dt><dd>018 AC-63, AC-64</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">S2</span><b>Google or Apple</b></header>
+        <code>accounts.google.com · appleid.apple.com</code>
+        <div class="thumb"><div class="ink"></div><div class="box">The provider’s own consent page</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Allow (we ask only for name and email) or cancel. Cancel, failure or a provider down lands on <code>?state=provider-error</code>.</dd><dt>Trust</dt><dd><span class="trust">We keep no token; the picture is never read.</span></dd><dt>Spec</dt><dd>018 S.2, AC-66, AC-70</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">S3</span><b>Trusted email: signed in</b></header>
+        <code>/en-gb/account · /en-gb/checkout</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Your orders</div><div class="box">every guest order with that email</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Gmail or Workspace (Google), any verified Apple email: signed in at once, earlier guest orders linked, back where the buyer started.</dd><dt>Spec</dt><dd>018 S.3, AC-65</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">S4</span><b>Untrusted email: check your inbox</b></header>
+        <code>/en-gb/account?state=confirm-email</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Check your inbox.</div><div class="box">Back to your order</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Open T14’s link in this browser: the provider is linked. Nothing is linked or signed in before (no takeover).</dd><dt>Spec</dt><dd>018 S.3 item 4, AC-65</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">S5</span><b>Hide My Email: add the email you ordered with</b></header>
+        <code>/en-gb/account/details#emails</code>
+        <div class="thumb"><div class="ink"></div><div class="box" style="background: var(--color-sage-wash)">Signed in with a private Apple email?</div><div class="box">Add the email you ordered with · Send link</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Add up to three addresses, each confirmed by a link in that inbox; their orders then show. Remove or disconnect any time.</dd><dt>Spec</dt><dd>018 S.4, AC-68, AC-69</dd></dl>
+      </div>
+    </div>
+    <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The four steps and express checkout · specs 010 and 013 §14 A-founder-2026-10-25a (2026-10-25)</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">pay in one tap, or type four fields once</h2><p style="margin:0;font-size:var(--text-sm);color:var(--color-ink-2);max-width:110ch">Step 2 of the spine (06 to 09 above, and B4) splits: “Your card” per bouquet, then “Your details” once per order, with Apple Pay, Google Pay and Link at its top in <code>test</code> and <code>live</code>. The wallet pays and says who the buyer is; the recipient, the date and the card come from our own form and never from a wallet.</p></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">X1</span><b>Step 2 · Your card</b></header>
+        <code>/en-gb/checkout?step=card</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Card message · Sign as</div><div class="box">Add something</div><div class="box" style="border-color: var(--color-accent)">Continue to your details</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>The card and add-ons, once per bouquet. No buyer field.</dd><dt>Spec</dt><dd>010 AC-105</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">X2</span><b>Step 3 · Your details</b></header>
+        <code>/en-gb/checkout?step=details</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Before you pay · £45.90 includes VAT and delivery</div><div class="row2"><div class="box" style="flex:1;background:var(--color-ink);color:var(--color-paper)">Apple Pay</div><div class="box" style="flex:1;background:var(--color-ink);color:var(--color-paper)">Google Pay</div><div class="box" style="flex:1">Link</div></div><span>Or enter your details</span><div class="box">Google · Apple · Have an account? Sign in</div><div class="box">Email · name · phone · country</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>One tap on a wallet (to X3), or the four fields and “Continue to check” (to X4). Signing in with Google or Apple here returns to this screen, filled.</dd><dt>Trust</dt><dd><span class="trust">The total and the terms sit directly above the wallet buttons.</span></dd><dt>Spec</dt><dd>013 AC-54, 010 AC-106, AC-107</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">X3</span><b>The wallet’s sheet</b></header>
+        <code>Apple Pay · Google Pay · Link</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Pay Flowers Overseas · £45.90</div><div class="box">Contact from the wallet</div><div class="box">no delivery address</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Confirm: the order is placed and paid in one step, then the confirmation. Cancel: nothing written. Declined: step 4 resumed on the same payment.</dd><dt>Spec</dt><dd>013 X.3, X.4, AC-56, AC-57</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">X4</span><b>Step 4 · Check and pay</b></header>
+        <code>/en-gb/checkout?step=review</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Every delivery, Change</div><div class="box">Card (Link fills it) · Apple Pay · Google Pay</div><div class="box" style="border-color: var(--color-accent)">Pay £45.90 and place order</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>As the pay step before; Link recognises a returning buyer from the step 3 email.</dd><dt>Spec</dt><dd>013 X.5, AC-58</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">X5</span><b>Confirmation</b></header>
+        <code>/en-gb/checkout/done</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Thank you. We have your order.</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>The same page for both paths; the order carries <code>checkout_channel</code> <code>checkout_express</code> or <code>checkout</code>.</dd><dt>Spec</dt><dd>013 X.10</dd></dl>
       </div>
     </div>
   </div>
