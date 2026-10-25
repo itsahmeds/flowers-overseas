@@ -12,21 +12,21 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
-| `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +96 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
+| `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +96 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
-| `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
-| `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
+| `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
+| `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +108 |
-| `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
-| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
-| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | `unit/florist-surface.test.ts` |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `unit/florist-surface.test.ts` |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
-| `search` | The only import path into the search module: site… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +59 |
+| `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
+| `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +59 |
 
 ## Config (`src/config/`)
 
@@ -35,39 +35,39 @@ task actually touches.
 | `address-formats.ts` | Address formats per destination country | 003 |
 | `basket.ts` | The basket's two numbers | 010 |
 | `card-message.ts` | The printed card's one limit (spec 004 §14… | 004 |
-| `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates,… | 005 |
-| `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product… | 005 |
-| `catalogue/fx.data.ts` | The committed FX snapshot: one dated set of ECB euro… | 005 |
-| `catalogue/listing-presentation.ts` | The listing presentation registry (spec 004 §14 A23… | 004 |
-| `catalogue/occasions.data.ts` | The occasion facet as rows (`plan/10` §1.1; spec 002… | 002 |
+| `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6… | 005 |
+| `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5… | 005 |
+| `catalogue/fx.data.ts` | The committed FX snapshot: one dated set of ECB… | 005 |
+| `catalogue/listing-presentation.ts` | The listing presentation registry (spec 004 §14… | 004 |
+| `catalogue/occasions.data.ts` | The occasion facet as rows (`plan/10` §1.1;… | 002 |
 | `catalogue/prices.data.ts` | The authored price dataset: `country_price` and… | 005 |
 | `catalogue/products.data.ts` | The 84 seeded products | 005 |
-| `catalogue/projections.ts` | The dataset's projections onto spec 002 §5.1's row… | 002 |
-| `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its zod… | 005 |
-| `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products (spec 005… | 005 |
+| `catalogue/projections.ts` | The dataset's projections onto spec 002 §5.1's… | 002 |
+| `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its… | 005 |
+| `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products… | 005 |
 | `categories.ts` | Category-row registry | 004 |
 | `checkout-samples.ts` | Demo samples | 010 |
 | `checkout.ts` | Checkout limits | 010 |
 | `commerce.ts` | The commerce structure's numbers (spec 004 §14… | 004 |
-| `company.data.ts` | The trading name as a plain constant, with no imports… | 004 |
-| `company.ts` | Company identity (spec 004 §2 "Everything data-gated is… | 004 |
+| `company.data.ts` | The trading name as a plain constant, with no… | 004 |
+| `company.ts` | Company identity (spec 004 §2 "Everything… | 004 |
 | `cookies.ts` | The cookie register | 004 |
-| `countries.ts` | Destination-country registry (spec 004 §2 "Everything… | 004 |
+| `countries.ts` | Destination-country registry (spec 004 §2… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
-| `florists.ts` | The florist surface's configuration (spec 011 §5.2… | 011 |
+| `florists.ts` | The florist surface's configuration (spec 011… | 011 |
 | `freshness-claim.ts` | Freshness scan | 009 |
 | `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
 | `info-pages.ts` | The info-page registry | 041 |
 | `interactions.ts` | Spec 042's build-time switches, one per idea | 042 |
-| `locales-client.data.ts` | The few locale values the browser needs, and nothing… | 003 |
-| `locales.data.ts` | Locale data as plain typed constants — the zod-free… | 004 |
+| `locales-client.data.ts` | The few locale values the browser needs, and… | 003 |
+| `locales.data.ts` | Locale data as plain typed constants — the… | 004 |
 | `locales.ts` | Locale registry | 003 |
-| `occasions.ts` | Occasion registry for the locale home (spec 004 §2… | 004 |
-| `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything… | 004 |
+| `occasions.ts` | Occasion registry for the locale home (spec 004… | 004 |
+| `payment-methods.ts` | Payment-method registry (spec 004 §2… | 004 |
 | `search.ts` | Site search's numbers and word lists | 045 |
 | `site-links.ts` | Site-link registry | 004 |
-| `trending.ts` | The florists' picks the "Most sent this week" row shows… | 004 |
+| `trending.ts` | The florists' picks the "Most sent this week"… | 004 |
 | `url-keys.ts` | The query keys our own URLs carry | 001 |
 | `voice.ts` | The voice register | 004 |
 
@@ -77,61 +77,61 @@ task actually touches.
 |---|---|---|
 | `(dev)/dev/boom/page.tsx` | A route that throws on purpose: the global 500… | 004 |
 | `(dev)/dev/components/CheckoutErrorDemo.tsx` | The gallery's live error state | 010 |
-| `(dev)/dev/components/action-bar/page.tsx` | `/dev/components/action-bar` — the sticky action bar's… | 004 |
+| `(dev)/dev/components/action-bar/page.tsx` | `/dev/components/action-bar` — the sticky… | 004 |
 | `(dev)/dev/components/catalog.ts` | The gallery's own copy | 004 |
 | `(dev)/dev/components/checkout-fixtures.ts` | The gallery's fixtures for spec 010's checkout… | 010 |
-| `(dev)/dev/components/checkout.tsx` | The gallery's "Checkout" section: every state of spec… | 010 |
-| `(dev)/dev/components/corridor-state-b/page.tsx` | `/dev/components/corridor-state-b` — the corridor page… | 007 |
-| `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders the three… | 004 |
-| `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2… | 004 |
-| `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page… | 009 |
-| `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today… | 004 |
-| `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the… | 008 |
-| `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the parameter… | 008 |
-| `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` —… | 009 |
+| `(dev)/dev/components/checkout.tsx` | The gallery's "Checkout" section: every state… | 010 |
+| `(dev)/dev/components/corridor-state-b/page.tsx` | `/dev/components/corridor-state-b` — the… | 007 |
+| `(dev)/dev/components/gated.ts` | The fake providers `/dev/components` renders… | 004 |
+| `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec… | 004 |
+| `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six… | 009 |
+| `(dev)/layout.tsx` | Document layout for the `(dev)` route group —… | 004 |
+| `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}… | 008 |
+| `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the… | 008 |
+| `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchil… | 009 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
-| `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot from the… | 043 |
-| `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{child}/{gra… | 043 |
-| `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{child}`: a | 043 |
-| `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`: the… | 043 |
-| `[locale]/@header/boom/page.tsx` | The header of the `boom` test route: out of context. A… | 043 |
-| `[locale]/@header/default.tsx` | The `@header` slot's fallback: the out-of-context… | 043 |
-| `[locale]/@header/page.tsx` | The locale home's header: out of context, and with no… | 043 |
+| `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot… | 043 |
+| `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{chi… | 043 |
+| `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{chi… | 043 |
+| `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`:… | 043 |
+| `[locale]/@header/boom/page.tsx` | The header of the `boom` test route: out of… | 043 |
+| `[locale]/@header/default.tsx` | The `@header` slot's fallback: the… | 043 |
+| `[locale]/@header/page.tsx` | The locale home's header: out of context, and… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/page.tsx` | Depth-3 language links | 003 |
 | `[locale]/@switcher/[segment]/page.tsx` | Depth-2 language links | 003 |
 | `[locale]/@switcher/default.tsx` | Unmirrored routes' language links (homes) | 003 |
-| `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` — one route… | 008 |
-| `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — one route file for one… | 008 |
-| `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — one route file for one URL… | 008 |
-| `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` | 004 |
-| `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500… | 004 |
-| `[locale]/country-listing.tsx` | The country category's and the country occasion's head… | 008 |
-| `[locale]/country-shop-root.tsx` | The country shop root's head and body, once, for the… | 007 |
+| `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` —… | 008 |
+| `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — one route file… | 008 |
+| `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — one route file for one… | 008 |
+| `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.t… | 004 |
+| `[locale]/boom/page.tsx` | A route that throws on purpose: the localised… | 004 |
+| `[locale]/country-listing.tsx` | The country category's and the country… | 008 |
+| `[locale]/country-shop-root.tsx` | The country shop root's head and body, once,… | 007 |
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
-| `[locale]/info-page-route.tsx` | One spec 041 info page's head and body, once, for the… | 041 |
-| `[locale]/layout.tsx` | The document layout for every localised URL (spec 003… | 003 |
-| `[locale]/listing-json-ld.tsx` | The listing pages' JSON-LD, mounted once per route… | 008 |
-| `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4;… | 003 |
-| `[locale]/route-header.tsx` | The commerce header as one route draws it (spec 043 §2… | 043 |
+| `[locale]/info-page-route.tsx` | One spec 041 info page's head and body, once,… | 041 |
+| `[locale]/layout.tsx` | The document layout for every localised URL… | 003 |
+| `[locale]/listing-json-ld.tsx` | The listing pages' JSON-LD, mounted once per… | 008 |
+| `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3,… | 003 |
+| `[locale]/route-header.tsx` | The commerce header as one route draws it (spec… | 043 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
-| `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first (AC-14) | 012 |
-| `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles, orphans | 012 |
+| `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first… | 012 |
+| `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
-| `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | 012 |
-| `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only, every… | 012 |
-| `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue (AC-18,… | 012 |
-| `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips, money,… | 012 |
+| `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
+| `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
+| `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
+| `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
-| `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3, AC-4) | 012 |
+| `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3,… | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
 | `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint answers 404 | 012 |
 | `admin/api/auth/confirm/route.ts` | POST: confirm sign-in, use the token (AC-9) | 012 |
 | `admin/api/auth/request/route.ts` | POST: ask for a link, one 303 for all (AC-2) | 012 |
 | `admin/api/auth/sign-out/route.ts` | POST: admin sign-out | 012 |
-| `admin/api/orders/head/route.ts` | GET: the order queue's head, for the 3 s poll (AC-18) | 012 |
+| `admin/api/orders/head/route.ts` | GET: the order queue's head, for the 3 s poll… | 012 |
 | `admin/environment.ts` | The admin environment chip | 012 |
 | `admin/forbidden.tsx` | Admin 403, noindex | 012 |
 | `admin/layout.tsx` | Admin document: English, noindex | 012 |
@@ -139,90 +139,90 @@ task actually touches.
 | `admin/sign-in/confirm/page.tsx` | GET: one Continue button, uses nothing (AC-9) | 012 |
 | `admin/sign-in/page.tsx` | GET /admin/sign-in: form and its states | 012 |
 | `admin/unauthorized.tsx` | Admin 401, noindex (AC-1) | 012 |
-| `api/checkout/start/route.ts` | `POST /api/checkout/start`: the product page's entry… | 010 |
+| `api/checkout/start/route.ts` | `POST /api/checkout/start`: the product page's… | 010 |
 | `api/consent/route.ts` | `POST /api/consent` | 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` | 004 |
 | `api/health/route.ts` | `GET /api/health` | 001 |
 | `api/internal/db-health/route.ts` | GET: secret-gated database probe for cron | 002 |
-| `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts only | 002 |
+| `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts… | 002 |
 | `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e | 012 |
-| `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup… | 004 |
-| `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's… | 004 |
+| `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
+| `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
 | `demo/vendor-inbox/api/auth/[...nextauth]/route.ts` | Every florist Auth.js endpoint answers 404 | 011 |
-| `demo/vendor-inbox/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the token (AC-19) | 011 |
-| `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every address… | 011 |
+| `demo/vendor-inbox/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the… | 011 |
+| `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every… | 011 |
 | `demo/vendor-inbox/api/auth/sign-out/route.ts` | POST: florist sign-out | 011 |
 | `demo/vendor-inbox/api/language/route.ts` | POST: store the florist's language (AC-32) | 011 |
-| `demo/vendor-inbox/chrome.tsx` | The florist pages' shared frame: header, language… | 011 |
+| `demo/vendor-inbox/chrome.tsx` | The florist pages' shared frame: header,… | 011 |
 | `demo/vendor-inbox/layout.tsx` | Florist document: the member's language, noindex | 011 |
-| `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox (signed in; no session… | 011 |
-| `demo/vendor-inbox/request.ts` | The florist request's context and language, read once… | 011 |
-| `demo/vendor-inbox/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue button, uses… | 011 |
-| `demo/vendor-inbox/sign-in/page.tsx` | GET {base}/sign-in: the florist sign-in form and its… | 011 |
-| `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and… | 003 |
+| `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox (signed in; no… | 011 |
+| `demo/vendor-inbox/request.ts` | The florist request's context and language,… | 011 |
+| `demo/vendor-inbox/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue… | 011 |
+| `demo/vendor-inbox/sign-in/page.tsx` | GET {base}/sign-in: the florist sign-in form… | 011 |
+| `global-error.tsx` | The last-resort 500 document (spec 003 §5.3… | 003 |
 | `layout.tsx` | App-root layout | 003 |
-| `not-found.tsx` | The `.label` metadata line: the status code this… | 003 |
+| `not-found.tsx` | The `.label` metadata line: the status code… | 003 |
 | `robots.ts` | `robots.txt` | 001 |
-| `sitemap.xml/route.ts` | `GET /sitemap.xml` — the sitemap index (spec 007 §2… | 007 |
-| `sitemaps/[locale]/[child]/route.ts` | `GET /sitemaps/{locale}/{index\|static\|corridors}.xml`… | 007 |
+| `sitemap.xml/route.ts` | `GET /sitemap.xml` — the sitemap index (spec… | 007 |
+| `sitemaps/[locale]/[child]/route.ts` | `GET /sitemaps/{locale}/{index\|static\|corridor… | 007 |
 
 ## Scripts (`scripts/`)
 
 | Script | `pnpm` | Purpose |
 |---|---|---|
 | `admin-grant.ts` | `admin:grant` | Create or update an admin (§2.2) |
-| `attestations-import.ts` | `attestations:import` | Recorded approvals into the review ledger (AC-13) |
+| `attestations-import.ts` | `attestations:import` | Recorded approvals into the review ledger… |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the… |
-| `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2… |
-| `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next build`… |
-| `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs, fixtures,… |
-| `catalogue-parity.ts` | `catalogue:parity` | Static vs database registry parity, read-only (AC-2) |
+| `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec… |
+| `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next… |
+| `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs,… |
+| `catalogue-parity.ts` | `catalogue:parity` | Static vs database registry parity, read-only… |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` |
-| `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20,… |
+| `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14… |
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate |
-| `check-relay-language.ts` | `check:relay-language` | `pnpm check:relay-language`: the catalogue scan of spec… |
-| `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec… |
+| `check-relay-language.ts` | `check:relay-language` | `pnpm check:relay-language`: the catalogue scan… |
+| `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement… |
 | `cloudflare/apply-zone-settings.ts` | `cloudflare:check` | Zone apply and check |
 | `cloudflare/edge.ts` | — | Edge as code |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 |
 | `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders… |
-| `corridor-check-cases.ts` | — | One deliberately failing fixture per `corridor:check`… |
-| `corridor-check.ts` | `corridor:check` | `pnpm corridor:check` — the corridor content gate |
+| `corridor-check-cases.ts` | — | One deliberately failing fixture per… |
+| `corridor-check.ts` | `corridor:check` | `pnpm corridor:check` — the corridor content… |
 | `corridor-index.ts` | `corridor:index` | `pnpm corridor:index` — regenerate the typed… |
-| `coverage-thresholds.ts` | — | Coverage-threshold loader for `vitest.coverage.json`… |
+| `coverage-thresholds.ts` | — | Coverage-threshold loader for… |
 | `db-check-live.ts` | — | `pnpm db:check`, connected half |
-| `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2… |
-| `db-migrate.ts` | `db:migrate` | `pnpm db:migrate` / `pnpm db:rollback` — the migration… |
-| `decisions-log.ts` | `decisions:log` | Decision files collected into `docs/decisions-log.md` —… |
-| `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev… |
+| `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001… |
+| `db-migrate.ts` | `db:migrate` | `pnpm db:migrate` / `pnpm db:rollback` — the… |
+| `decisions-log.ts` | `decisions:log` | Decision files collected into… |
+| `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11… |
 | `env-check.ts` | `env:check` | `pnpm env:check` |
-| `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2… |
-| `fonts/build-wordmark.ts` | `fonts:wordmark` | `pnpm fonts:wordmark` — outlines the wordmark to paths |
-| `fx-refresh.ts` | — | Weekday FX rebuild: rebuild each Railway `web` whose… |
-| `fx-snapshot.ts` | — | Build-time ECB fetch: the day's euro reference rates,… |
-| `gates-cheap.ts` | `gates:cheap` | `pnpm gates:cheap` — every cheap gate of `CLAUDE.md`… |
+| `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed… |
+| `fonts/build-wordmark.ts` | `fonts:wordmark` | `pnpm fonts:wordmark` — outlines the wordmark… |
+| `fx-refresh.ts` | — | Weekday FX rebuild: rebuild each Railway `web`… |
+| `fx-snapshot.ts` | — | Build-time ECB fetch: the day's euro reference… |
+| `gates-cheap.ts` | `gates:cheap` | `pnpm gates:cheap` — every cheap gate of… |
 | `i18n-check-scope.ts` | — | `pnpm i18n:check` check 11, "scope" |
-| `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6… |
+| `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks,… |
 | `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` |
-| `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]`… |
-| `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product that has… |
+| `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir… |
+| `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product… |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` |
-| `media-upload.ts` | `media:upload` | `pnpm media:upload [--dry-run] [--only <assetId>]… |
-| `pages-check.ts` | `pages:check` | `pnpm pages:check` — the info-page honesty gate (spec… |
-| `pages-index.ts` | `pages:index` | `pnpm pages:index` — regenerate the typed info-page… |
+| `media-upload.ts` | `media:upload` | `pnpm media:upload [--dry-run] [--only… |
+| `pages-check.ts` | `pages:check` | `pnpm pages:check` — the info-page honesty gate… |
+| `pages-index.ts` | `pages:index` | `pnpm pages:index` — regenerate the typed… |
 | `pr-policy.ts` | `pr-policy` | PR policy |
-| `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift… |
-| `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote` and `pnpm… |
-| `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in… |
+| `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the… |
+| `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote`… |
+| `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse… |
 | `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts… |
-| `seo/generate-sitemap-fixtures.ts` | — | The committed sitemap fixtures, generated from the real… |
-| `seo/lib.ts` | — | Shared plumbing for the three SEO validator CLIs (spec… |
+| `seo/generate-sitemap-fixtures.ts` | — | The committed sitemap fixtures, generated from… |
+| `seo/lib.ts` | — | Shared plumbing for the three SEO validator… |
 | `seo/lighthouse-urls.ts` | `lighthouse` | `lighthouse-urls` |
 | `seo/validate-hreflang.ts` | `seo:validate` | `validate-hreflang` |
 | `seo/validate-schema.ts` | `seo:validate` | `validate-schema` |
 | `seo/validate-sitemap.ts` | `seo:validate` | `validate-sitemap` |
-| `shop/generate-listing-url-fixture.ts` | — | The committed listing URL set, generated from the real… |
+| `shop/generate-listing-url-fixture.ts` | — | The committed listing URL set, generated from… |
 | `specs-index.ts` | `specs:index` | Section-anchored spec indexes — AC-35 / T-36 |
 | `tasks-brief.ts` | `tasks:brief` | Per-task brief files — AC-34 / T-35 |
 | `tasks-open-decisions.ts` | `tasks:check` | `TASKS.md` ledger parser — AC-31 / T-32 |
