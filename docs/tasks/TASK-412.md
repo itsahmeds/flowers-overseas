@@ -32,7 +32,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: `e2e` split into `e2e-shard` (matrix 1..3, `--shard=i/3`, 25 min each, `fail-fast: false`) and an aggregate `e2e` (`!cancelled() && needs.preview.result == 'success'`, fails unless `needs.e2e-shard.result` is `success`, sums the three JSON reports). `scripts/branch-protection.ts` excludes matrix jobs (their checks are `e2e-shard (n)`), so `e2e` stays the required check. `lint-fixtures` whole-tree case at 240 s. Next: PR, `ci:full`, shard wall times.
+- 2026-10-25: `frame-laptop-band` "primary action in view" on `/en-gb/send-flowers-to/poland` is **not** a first-try failure. In runs 40142598446, 40142656822 and 40139229981 it is reported `✘` once, with no retry and no flaky count (2697 or 2709 passed, 0 failed): it is the deliberate `test.fail` of the `PENDING.guide.inView` row (the founder's call on the guide's shop pill, TASK-189 brief). The list reporter prints an expected failure as `✘`. Nothing to fix in this task; the row leaves when TASK-189's carry-forward is decided and built.
 
 ## Result
 

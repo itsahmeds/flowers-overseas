@@ -500,7 +500,9 @@ describe("pnpm lint:fixtures over the real configs", () => {
           .map((m) => `${result.filePath}:${String(m.line)}:${m.ruleId ?? ""}`),
       );
       expect(restricted).toEqual([]);
-    }, 120_000);
+      // TASK-412: a whole-tree ESLint run takes 86 s on a good runner and 121 s on a slow one
+      // (PR 418), so 120 s timed out on ordinary runners; 240 s leaves room for both.
+    }, 240_000);
   });
 
   it("keeps the fixture directory out of the main lint run", async () => {

@@ -47,6 +47,7 @@ interface Job {
   outputs?: Record<string, string>;
   needs?: string | string[];
   if?: string;
+  strategy?: { "fail-fast"?: boolean; matrix?: Record<string, unknown> };
   "runs-on"?: string;
   "timeout-minutes"?: number;
   "continue-on-error"?: boolean;
@@ -109,6 +110,9 @@ const EXPECTED_JOBS = [
   // declaration is still checked; nightly as well.
   "cloudflare-check",
   "preview",
+  // TASK-412: the Playwright e2e suite in three shards, and the one `e2e` check that aggregates
+  // them.
+  "e2e-shard",
   "e2e",
   "visual",
   "a11y",
@@ -708,7 +712,8 @@ describe("the preview job serves an origin CI owns (TASK-137)", () => {
   const preview = ci.jobs["preview"];
   const steps = preview?.steps ?? [];
   const script = steps.map((step) => step.run ?? "").join("\n");
-  const BROWSER_JOBS = ["e2e", "visual", "a11y"] as const;
+  // TASK-412: `e2e-shard` serves and runs the suite; `e2e` is its aggregate and serves nothing.
+  const BROWSER_JOBS = ["e2e-shard", "visual", "a11y"] as const;
 
   it("builds the app on the runner rather than waiting for a third party to deploy it", () => {
     expect(script).toContain("pnpm build");
@@ -792,6 +797,109 @@ describe("the preview job serves an origin CI owns (TASK-137)", () => {
     const probe = steps.find((step) => (step.run ?? "").includes("gh api"));
     expect(probe?.["continue-on-error"]).toBe(true);
     expect(script).toContain("GITHUB_STEP_SUMMARY");
+  });
+});
+
+/**
+ * TASK-412: the e2e suite (about 3,400 cases) took 18 to 24 minutes in one job against
+ * `timeout-minutes: 30`, so a slow runner cancelled it (PRs 320, 401, 339). It now runs as a
+ * three-leg matrix, `e2e-shard`, and one aggregate job keeps the check named `e2e`. The aggregate
+ * must **fail** when a shard fails: a job that only `needs:` a red matrix is skipped, and GitHub
+ * counts a skipped check as passing, which would turn a red suite into a green `e2e`.
+ */
+describe("the e2e suite runs in shards behind one `e2e` check (TASK-412)", () => {
+  const shard = ci.jobs["e2e-shard"];
+  const aggregate = ci.jobs["e2e"];
+  const shardScript = (shard?.steps ?? [])
+    .map((step) => `${step.name ?? ""}\n${step.run ?? ""}`)
+    .join("\n");
+  const legs = (shard?.strategy?.matrix?.["shard"] ?? []) as unknown[];
+
+  it("runs the suite as Playwright shards 1..n of n, each leg to the end of its own run", () => {
+    expect(legs).toEqual([1, 2, 3]);
+    expect(shard?.strategy?.["fail-fast"]).toBe(false);
+    expect(shardScript).toContain(
+      `pnpm test:e2e --shard=\${{ matrix.shard }}/${String(legs.length)} `,
+    );
+  });
+
+  it("gives each shard a time limit with room, and the aggregate only a short one", () => {
+    // About a third of 24 minutes plus build download, serve and browser install: 25 is room.
+    expect(shard?.["timeout-minutes"]).toBe(25);
+    expect(aggregate?.["timeout-minutes"]).toBeLessThanOrEqual(5);
+  });
+
+  it("names the aggregate `e2e`, after both preview and every shard", () => {
+    expect(aggregate?.name).toBe("e2e");
+    expect([aggregate?.needs].flat()).toEqual(["preview", "e2e-shard"]);
+    // Nothing else may wait on the matrix: its leg checks are not the contract.
+    const dependants = jobs
+      .filter(([, job]) => [job.needs ?? []].flat().includes("e2e-shard"))
+      .map(([key]) => key);
+    expect(dependants).toEqual(["e2e"]);
+  });
+
+  it("runs the aggregate after a failed shard, and skips it when preview did not run", () => {
+    const pr = pullRequestContext(["ci:full"]);
+    // GitHub's rule: with no status function in `if:`, an implicit `success()` also requires
+    // every need to have succeeded; with one, the `if:` alone decides.
+    const at = (preview: string, shards: string) => {
+      const ownIf = evaluateIf(aggregate?.if, {
+        ...pr,
+        needs: {
+          preview: { result: preview },
+          "e2e-shard": { result: shards },
+        },
+      });
+      return STATUS_FUNCTION.test(aggregate?.if ?? "")
+        ? ownIf
+        : ownIf && preview === "success" && shards === "success";
+    };
+    expect(at("success", "failure")).toBe(true);
+    expect(at("success", "cancelled")).toBe(true);
+    expect(at("success", "success")).toBe(true);
+    expect(at("skipped", "skipped")).toBe(false);
+    expect(at("failure", "skipped")).toBe(false);
+  });
+
+  it.each([
+    ["success", 0],
+    ["failure", 1],
+    ["cancelled", 1],
+    ["skipped", 1],
+  ] as const)(
+    "fails the aggregate unless every shard succeeded (e2e-shard %s → exit %i)",
+    (result, status) => {
+      const verdict = (aggregate?.steps ?? []).find(
+        (step) => step.id === "verdict",
+      );
+      expect(verdict?.env?.["SHARDS"]).toBe("${{ needs.e2e-shard.result }}");
+      expect(verdict?.if).toBeUndefined();
+      const run = spawnSync(
+        "bash",
+        ["--noprofile", "--norc", "-c", verdict?.run ?? "exit 99"],
+        { encoding: "utf8", env: { ...process.env, SHARDS: result } },
+      );
+      expect(run.status, `${run.stdout}${run.stderr}`).toBe(status);
+    },
+  );
+
+  it("sums every shard's report into the one e2e summary", () => {
+    const collect = (aggregate?.steps ?? []).find((step) =>
+      (step.uses ?? "").startsWith("actions/download-artifact"),
+    );
+    expect(collect?.with?.["pattern"]).toBe("e2e-json-*");
+    const publish = (shard?.steps ?? []).find(
+      (step) =>
+        (step.uses ?? "").startsWith("actions/upload-artifact") &&
+        step.if === "always()",
+    );
+    expect(publish?.with?.["name"]).toBe("e2e-json-${{ matrix.shard }}");
+    const summary = (aggregate?.steps ?? [])
+      .map((step) => step.run ?? "")
+      .join("\n");
+    expect(summary).toContain(`-ne ${String(legs.length)} ]`);
+    expect(summary).toContain("GITHUB_STEP_SUMMARY");
   });
 });
 
@@ -1169,6 +1277,12 @@ function evaluateExpression(
       if (token.value === "false") return false;
       if (token.value === "null") return null;
       if (isOp("(")) {
+        if (token.value === "cancelled") {
+          // TASK-412: the run being evaluated is never a cancelled one.
+          expectOp("(");
+          expectOp(")");
+          return false;
+        }
         if (token.value !== "contains") {
           throw new Error(
             `unsupported function ${token.value}() in: ${source}`,
@@ -1253,7 +1367,16 @@ function interpolate(
   });
 }
 
-/** Every job the event runs, in file order: its `if:` holds and each of its `needs:` runs. */
+/** A job-level `if:` that calls a status function replaces GitHub's implicit `success()`. */
+const STATUS_FUNCTION = /\b(?:always|cancelled|failure|success)\(\s*\)/u;
+
+/**
+ * Every job the event runs, in file order. Without a status function in its `if:`, a job runs
+ * when its `if:` holds and each of its `needs:` runs (GitHub's implicit `success()`). With one
+ * (TASK-412's aggregate `e2e`: `!cancelled() && needs.preview.result == 'success'`), the `if:`
+ * alone decides, read against a `needs` context in which a job that runs concluded `success` and
+ * one that does not was `skipped`.
+ */
 function jobSet(context: Record<string, ExprValue>): string[] {
   const memo = new Map<string, boolean>();
   const runs = (key: string): boolean => {
@@ -1262,7 +1385,18 @@ function jobSet(context: Record<string, ExprValue>): string[] {
     const job = ci.jobs[key];
     if (job === undefined) throw new Error(`needs: names no job ${key}`);
     const needs = job.needs === undefined ? [] : [job.needs].flat();
-    const result = evaluateIf(job.if, context) && needs.every(runs);
+    const withNeeds = {
+      ...context,
+      needs: Object.fromEntries(
+        needs.map((need) => [
+          need,
+          { result: runs(need) ? "success" : "skipped" },
+        ]),
+      ),
+    };
+    const result = STATUS_FUNCTION.test(job.if ?? "")
+      ? evaluateIf(job.if, withNeeds)
+      : evaluateIf(job.if, withNeeds) && needs.every(runs);
     memo.set(key, result);
     return result;
   };
@@ -1299,6 +1433,7 @@ const dispatchContext = githubContext({
  */
 const PREVIEW_CHAIN = [
   "preview",
+  "e2e-shard",
   "e2e",
   "visual",
   "a11y",
@@ -1339,7 +1474,13 @@ describe("the evaluator T-39 relies on", () => {
       dispatchContext,
     ]) {
       for (const [key, job] of jobs) {
-        expect(() => evaluateIf(job.if, context), `job ${key}`).not.toThrow();
+        const needs = Object.fromEntries(
+          [job.needs ?? []].flat().map((need) => [need, { result: "success" }]),
+        );
+        expect(
+          () => evaluateIf(job.if, { ...context, needs }),
+          `job ${key}`,
+        ).not.toThrow();
       }
     }
   });
@@ -1384,7 +1525,7 @@ describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
 
   it("skips `preview` on its own `if:` and the three browser jobs only through `needs: preview`", () => {
     expect(evaluateIf(ci.jobs.preview?.if, pushContext)).toBe(false);
-    for (const key of ["e2e", "visual", "a11y"]) {
+    for (const key of ["e2e-shard", "visual", "a11y"]) {
       const job = ci.jobs[key];
       expect(job?.if, key).toBeUndefined();
       expect([job?.needs].flat(), key).toContain("preview");
@@ -1415,12 +1556,14 @@ describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
       "cloudflare-check",
       "lighthouse",
     ]);
-    // e2e, visual and a11y have no `if:` either, but `needs: preview` keeps them out.
+    // e2e-shard, visual and a11y have no `if:` either, but `needs: preview` keeps them out; the
+    // aggregate `e2e` has one, which reads `needs.preview.result` (TASK-412).
     expect(withoutIf.filter((key) => !unlabelled.includes(key))).toEqual([
-      "e2e",
+      "e2e-shard",
       "visual",
       "a11y",
     ]);
+    expect(unlabelled).not.toContain("e2e");
   });
 
   it("keeps the labelled pull-request set: every job", () => {

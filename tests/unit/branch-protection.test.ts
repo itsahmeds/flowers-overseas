@@ -70,8 +70,18 @@ describe("job-name derivation from the workflows", () => {
       "jobs:\n  key-only: {}\n  keyed:\n    name: reported\n",
     );
     expect(jobs).toEqual([
-      { key: "key-only", checkName: "key-only", informational: false },
-      { key: "keyed", checkName: "reported", informational: false },
+      {
+        key: "key-only",
+        checkName: "key-only",
+        informational: false,
+        matrix: false,
+      },
+      {
+        key: "keyed",
+        checkName: "reported",
+        informational: false,
+        matrix: false,
+      },
     ]);
   });
 
@@ -81,6 +91,14 @@ describe("job-name derivation from the workflows", () => {
     );
     expect(jobs.find((job) => job.key === "soft")?.informational).toBe(true);
     expect(jobs.find((job) => job.key === "hard")?.informational).toBe(false);
+  });
+
+  it("marks a `strategy.matrix` job as a matrix, and only that job (TASK-412)", () => {
+    const jobs = parseWorkflowJobs(
+      "jobs:\n  legs:\n    strategy:\n      matrix:\n        shard: [1, 2]\n  single:\n    strategy:\n      fail-fast: false\n",
+    );
+    expect(jobs.find((job) => job.key === "legs")?.matrix).toBe(true);
+    expect(jobs.find((job) => job.key === "single")?.matrix).toBe(false);
   });
 
   it("rejects a workflow with no `jobs:` instead of reporting an empty contract", () => {
@@ -160,11 +178,17 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
     }
   });
 
-  it("excludes nothing: spec 004 removed the last continue-on-error", () => {
+  it("excludes only the e2e matrix: spec 004 removed the last continue-on-error", () => {
     // Spec 001 §13 Q4 made `lighthouse` informational "until spec 004", and this script's whole
     // design was that the exclusion would disappear by itself when the flag went (TASK-056,
-    // AC-24). It did.
-    expect(contract.excluded).toEqual([]);
+    // AC-24). It did. TASK-412 sharded `e2e` into the `e2e-shard` matrix, whose legs report as
+    // `e2e-shard (1)`…; a required `e2e-shard` could never be satisfied, so the aggregate `e2e`
+    // is the required check and the matrix is the one exclusion.
+    expect(contract.excluded.map((exclusion) => exclusion.name)).toEqual([
+      "e2e-shard",
+    ]);
+    expect(contract.required).toContain("e2e");
+    expect(contract.required).not.toContain("e2e-shard");
     expect(contract.required).toContain("lighthouse");
   });
 
@@ -183,6 +207,7 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
     ]);
     expect(relaxed.required).not.toContain("lighthouse");
     expect(relaxed.excluded.map((exclusion) => exclusion.name)).toEqual([
+      "e2e-shard",
       "lighthouse",
     ]);
   });
