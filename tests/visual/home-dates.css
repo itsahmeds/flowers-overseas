@@ -1,6 +1,6 @@
 /*
  * Since TASK-387 the dated band is the v3 home's "Coming up" (`data-fo-home-section="coming-up"`),
- * which the v2 occasion-dates band's rule now names too. Applied to every home shot that sits below
+ * which replaced the v2 occasion-dates band. Applied to every home shot that sits below
  * the dated band, or contains it, other than
  * the band's own shot (`home.spec.ts`, the home full-page shots of `shell.spec.ts` and
  * `pseudo-rtl.spec.ts`, and the footer shots of `footer.spec.ts`). The band leaves the layout, so no photographed block's position depends
@@ -14,7 +14,6 @@
  * the band each such shot pictures only its own section. Coming up has no baseline of its own: it prints
  * the calendar's next dates, so its pixels change with the date (its layout is unit-tested).
  */
-[data-fo-occasion-dates],
 [data-fo-home-section="coming-up"] {
   display: none !important;
 }
