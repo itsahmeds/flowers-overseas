@@ -13,18 +13,21 @@
               "kind": "link",
               "id": "category:bouquet",
               "labelKey": "catalog.facet.productType.bouquet",
+              "label": "Hand-tied bouquets",
               "href": "/en-gb/netherlands/flowers/hand-tied-bouquets"
             },
             {
               "kind": "link",
               "id": "category:arrangement",
               "labelKey": "catalog.facet.productType.arrangement",
+              "label": "Arrangements",
               "href": "/en-gb/netherlands/flowers/arrangements"
             },
             {
               "kind": "link",
               "id": "category:gift_set",
               "labelKey": "catalog.facet.productType.giftSet",
+              "label": "Flowers and gift sets",
               "href": "/en-gb/netherlands/flowers/flowers-and-gift-sets"
             }
           ],
@@ -38,30 +41,35 @@
               "kind": "link",
               "id": "category:roses",
               "labelKey": "catalog.facet.flowerType.roses",
+              "label": "Roses",
               "href": "/en-gb/netherlands/flowers/roses"
             },
             {
               "kind": "link",
               "id": "category:tulips",
               "labelKey": "catalog.facet.flowerType.tulips",
+              "label": "Tulips",
               "href": "/en-gb/netherlands/flowers/tulips"
             },
             {
               "kind": "link",
               "id": "category:lilies",
               "labelKey": "catalog.facet.flowerType.lilies",
+              "label": "Lilies",
               "href": "/en-gb/netherlands/flowers/lilies"
             },
             {
               "kind": "link",
               "id": "category:peonies",
               "labelKey": "catalog.facet.flowerType.peonies",
+              "label": "Peonies",
               "href": "/en-gb/netherlands/flowers/peonies"
             },
             {
               "kind": "link",
               "id": "category:mixed",
               "labelKey": "catalog.facet.flowerType.mixed",
+              "label": "Mixed flowers",
               "href": "/en-gb/netherlands/flowers/mixed-flowers"
             }
           ],
@@ -330,6 +338,7 @@
               "kind": "link",
               "id": "category:funeral",
               "labelKey": "catalog.facet.productType.funeral",
+              "label": "Funeral and sympathy flowers",
               "href": "/en-gb/netherlands/flowers/funeral-and-sympathy-flowers"
             }
           ],
@@ -375,12 +384,14 @@
               "kind": "link",
               "id": "category:plant",
               "labelKey": "catalog.facet.productType.plant",
+              "label": "Plants",
               "href": "/en-gb/netherlands/flowers/plants"
             },
             {
               "kind": "link",
               "id": "category:gift_set",
               "labelKey": "catalog.facet.productType.giftSet",
+              "label": "Flowers and gift sets",
               "href": "/en-gb/netherlands/flowers/flowers-and-gift-sets"
             }
           ],
