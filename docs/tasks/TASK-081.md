@@ -27,6 +27,10 @@ _None recorded._
 
 _None recorded._
 
+## Progress
+
+- 2026-10-25: worktree on `origin/main`, row `in_progress`, audit of what TASK-072…080 and TASK-138 already shipped against AC-1, AC-28 and AC-29.
+
 ## Result
 
 _Pending._
