@@ -3,10 +3,11 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (25): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
+# Jobs (26): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
 # db-check · env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check ·
 # corridor-check · pages-check · seed-check · dev-os-check · cloudflare-check · audit · preview ·
-# e2e · visual · a11y · consent-active · lighthouse.
+# e2e-shard · e2e · visual · a11y · consent-active · lighthouse. `e2e-shard` is a three-leg matrix
+# and `e2e` its aggregate (TASK-412): `scripts/branch-protection.ts` requires the aggregate.
 # The lint job also runs the three orientation gates of §14 A15: `codebase:map --check`,
 # `specs:index --check`, `tasks:check`.
 #
@@ -1821,11 +1822,21 @@ jobs:
   # nothing.
   #
   # These jobs are skipped on `push` to `main`, because `preview` is a pull-request job.
-  e2e:
-    name: e2e
+  # **Sharded since TASK-412.** One `e2e` job ran the whole suite (about 3,400 cases, 2 workers)
+  # in 18 to 24 minutes against `timeout-minutes: 30`, and a slow runner cancelled it (PRs 320,
+  # 401, 339). `e2e-shard` runs it as three Playwright shards (`--shard=i/3`), each on its own
+  # runner serving the same `preview` build, with `fail-fast: false` so one red shard does not
+  # cancel the evidence of the other two. A matrix leg reports its check as `e2e-shard (1)` and so
+  # on, never as a bare name, so it is not the check anybody requires: `e2e` below is.
+  e2e-shard:
+    name: e2e-shard
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     needs: preview
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
     steps:
@@ -1835,39 +1846,97 @@ jobs:
       # answers 200 (TASK-137).
       - uses: ./.github/actions/preview-origin
       - run: pnpm exec playwright install --with-deps chromium
-      - name: pnpm test:e2e
+      - name: pnpm test:e2e (shard ${{ matrix.shard }} of 3)
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-e2e.json
-        run: pnpm test:e2e --reporter=github,json,list
+        run: pnpm test:e2e --shard=${{ matrix.shard }}/3 --reporter=github,json,list
       - name: Upload the Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-e2e
+          name: playwright-report-e2e-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
           if-no-files-found: warn
-      - name: Summarise the e2e run (AC-14, AC-15 / T-15, T-16)
+      # The aggregate `e2e` job sums the three reports into the one summary AC-14 / AC-15 ask for.
+      - name: Publish the shard's JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-json-${{ matrix.shard }}
+          path: playwright-e2e.json
+          retention-days: 1
+          if-no-files-found: warn
+      - name: Summarise the shard (AC-14, AC-15 / T-15, T-16)
         if: always()
         run: |
           set -uo pipefail
           if [ ! -f playwright-e2e.json ]; then
-            echo "::error::Playwright produced no JSON report; cannot summarise the e2e run"
+            echo "::error::Playwright produced no JSON report; cannot summarise shard ${{ matrix.shard }}"
             exit 1
           fi
           # `suites` is a tree; `..|.tests?//empty` flattens it to every test, whatever the nesting.
           expected=$(jq '[.suites | .. | .tests? // empty | .[]] | length' playwright-e2e.json)
           statuses=$(jq -r '[.suites | .. | .specs? // empty | .[] | if .ok then "passed" else "failed" end] | group_by(.) | map("\(.[0]): \(length)") | join(", ")' playwright-e2e.json)
+          {
+            echo "### e2e shard ${{ matrix.shard }} of 3"
+            echo ""
+            echo "- tests: $expected ($statuses)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # The one check named `e2e` (TASK-412). It waits on every shard and **fails unless every shard
+  # succeeded**: a job that merely `needs:` a failed matrix is skipped, and GitHub counts a skipped
+  # check as passing, so the verdict is computed here instead of inherited. `!cancelled()` lets it
+  # run after a red or timed-out shard; `needs.preview.result == 'success'` keeps it skipped on a
+  # push, on a dispatch and without `ci:full`, exactly as `needs: preview` did before.
+  e2e:
+    name: e2e
+    if: ${{ !cancelled() && needs.preview.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [preview, e2e-shard]
+    steps:
+      - name: Every shard succeeded
+        id: verdict
+        env:
+          SHARDS: ${{ needs.e2e-shard.result }}
+        run: |
+          set -euo pipefail
+          if [ "$SHARDS" != "success" ]; then
+            echo "::error::e2e-shard concluded '$SHARDS', not 'success': at least one shard failed, timed out or never ran"
+            exit 1
+          fi
+          echo "every e2e shard succeeded"
+      - name: Collect the shards' JSON reports
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          pattern: e2e-json-*
+          path: e2e-json
+      - name: Summarise the e2e run (AC-14, AC-15 / T-15, T-16)
+        if: always()
+        run: |
+          set -uo pipefail
+          shopt -s nullglob
+          reports=(e2e-json/*/playwright-e2e.json)
+          if [ "${#reports[@]}" -ne 3 ]; then
+            echo "::error::expected 3 shard reports, found ${#reports[@]}; cannot summarise the e2e run"
+            exit 1
+          fi
+          # `suites` is a tree; `..|.tests?//empty` flattens it to every test, whatever the nesting.
+          expected=$(jq -s '[.[] | .suites | .. | .tests? // empty | .[]] | length' "${reports[@]}")
+          statuses=$(jq -rs '[.[] | .suites | .. | .specs? // empty | .[] | if .ok then "passed" else "failed" end] | group_by(.) | map("\(.[0]): \(length)") | join(", ")' "${reports[@]}")
           # The projects that actually ran, not every project in `playwright.config.ts`.
-          projects=$(jq -r '[.suites | .. | .specs? // empty | .[] | .tests[].projectName] | unique | join(", ")' playwright-e2e.json)
+          projects=$(jq -rs '[.[] | .suites | .. | .specs? // empty | .[] | .tests[].projectName] | unique | join(", ")' "${reports[@]}")
           {
             echo "### e2e (AC-14, AC-15 / T-15, T-16)"
             echo ""
             echo "- target: ${{ needs.preview.outputs.preview_url }}"
+            echo "- shards: 3 (\`e2e-shard\` concluded ${{ needs.e2e-shard.result }})"
             echo "- projects: $projects"
-            echo "- tests: $expected — $statuses"
+            echo "- tests: $expected ($statuses)"
           } >> "$GITHUB_STEP_SUMMARY"
 
   visual:

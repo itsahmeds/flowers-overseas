@@ -32,11 +32,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: `e2e` split into `e2e-shard` (matrix 1..3, `--shard=i/3`, 25 min each, `fail-fast: false`) and an aggregate `e2e` (`!cancelled() && needs.preview.result == 'success'`, fails unless `needs.e2e-shard.result` is `success`, sums the three JSON reports). `scripts/branch-protection.ts` excludes matrix jobs (their checks are `e2e-shard (n)`), so `e2e` stays the required check. `lint-fixtures` whole-tree case at 240 s. Next: PR, `ci:full`, shard wall times.
+- 2026-10-25: `frame-laptop-band` "primary action in view" on `/en-gb/send-flowers-to/poland` is **not** a first-try failure. In runs 40142598446, 40142656822 and 40139229981 it is reported `✘` once, with no retry and no flaky count (2697 or 2709 passed, 0 failed): it is the deliberate `test.fail` of the `PENDING.guide.inView` row (the founder's call on the guide's shop pill, TASK-189 brief). The list reporter prints an expected failure as `✘`. Nothing to fix in this task; the row leaves when TASK-189's carry-forward is decided and built.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR #419. `e2e` is now `e2e-shard` (three Playwright shards, 25 min each, `fail-fast: false`) plus an aggregate `e2e` that fails unless every shard succeeded and sums the three reports; `scripts/branch-protection.ts` excludes matrix jobs, so `e2e` stays the required check name. On the first `ci:full` run (40150791384, head 6c6977060) the shard jobs took **8 min 17 s, 8 min 34 s and 11 min 16 s** wall time (setup, origin and browser install included), against 18 to 24 minutes for the single job before; the aggregate took 3 s. `tests/unit/lint-fixtures.test.ts`'s whole-tree lint case now has 240 s (was 120 s; 121 s observed on PR 418). Tests: unit only, 9 new cases in `ci-workflow.test.ts`, 1 in `branch-protection.test.ts`, existing job-set cases updated there and in `vercel-config.test.ts`. No expensive gate run locally. `frame-laptop-band`: no change, see Progress (an expected failure, not a flake).

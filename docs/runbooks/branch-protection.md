@@ -118,6 +118,14 @@ name: it drops any job with `continue-on-error: true`. **When spec 004 removes t
 until protection is re-applied, and re-applying is one `--print-commands` away. Nothing in this
 runbook needs editing then.
 
+## 4a. The `e2e-shard` matrix (TASK-412)
+
+The Playwright e2e suite runs as `e2e-shard`, a three-leg matrix whose checks GitHub reports as
+`e2e-shard (1)`, `e2e-shard (2)` and `e2e-shard (3)`, never as `e2e-shard`. The script therefore
+excludes any `strategy.matrix` job from the required set, and the job `e2e`, which `needs:` every
+leg and fails unless all of them succeeded, stays the required check under its old name. No setting
+on GitHub changes.
+
 ## 5. The one-approving-review problem (deviation from spec §2)
 
 Spec 001 §2 asks for "one approving review". GitHub does not let the author of a pull request

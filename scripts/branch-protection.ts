@@ -61,6 +61,10 @@ const Workflow = z.object({
       .object({
         name: z.string().optional(),
         "continue-on-error": z.union([z.boolean(), z.string()]).optional(),
+        strategy: z
+          .object({ matrix: z.unknown().optional() })
+          .loose()
+          .optional(),
       })
       .loose(),
   ),
@@ -73,6 +77,11 @@ export interface WorkflowJob {
   readonly checkName: string;
   /** True when the job carries `continue-on-error: true`. */
   readonly informational: boolean;
+  /**
+   * True when the job is a `strategy.matrix`: GitHub reports one check per leg, named
+   * `<name> (<value>)`, and never a check called `<name>`, so the bare name cannot be required.
+   */
+  readonly matrix: boolean;
 }
 
 /** Parses a workflow's jobs. Pure, so the unit test can drive it from a fixture string. */
@@ -83,6 +92,7 @@ export function parseWorkflowJobs(yamlSource: string): WorkflowJob[] {
     checkName: job.name ?? key,
     informational:
       job["continue-on-error"] === true || job["continue-on-error"] === "true",
+    matrix: job.strategy?.matrix !== undefined,
   }));
 }
 
@@ -94,7 +104,7 @@ export interface CheckContract {
 
 /**
  * The status checks that must be required on `main`: every job of every workflow that gates a PR,
- * minus the informational ones.
+ * minus the informational ones and the matrix legs (their aggregate job is the check).
  *
  * `preview`, `e2e`, `visual`, `a11y` and `pr-policy` only run on `pull_request`. Since spec 040
  * AC-38 every other `ci.yml` job, `commitlint` and `corridor-check` included, also runs on a push
@@ -107,6 +117,19 @@ export function checkContract(workflows: readonly string[]): CheckContract {
   const required: string[] = [];
   const excluded: { name: string; reason: string }[] = [];
   for (const job of jobs) {
+    if (job.matrix) {
+      excluded.push({
+        name: job.checkName,
+        reason:
+          "is a matrix: each leg reports its own check (`" +
+          job.checkName +
+          " (1)` and so on), never one named `" +
+          job.checkName +
+          "`; the job that `needs:` it and fails unless every leg succeeded is the required " +
+          "check (TASK-412: `e2e` aggregates `e2e-shard`)",
+      });
+      continue;
+    }
     if (job.informational) {
       excluded.push({
         name: job.checkName,
