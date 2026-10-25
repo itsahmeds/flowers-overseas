@@ -1,0 +1,238 @@
+{
+  "jsonld": [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/pl"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Jak to działa"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/pl"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Nasza gwarancja"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://flowersoverseas.com/pl"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Pomoc i kontakt"
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Jak działa wysyłanie kwiatów za granicę z Wami?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Zamawiasz u nas w swoim języku i walucie. Zajmujemy się Twoimi kwiatami: nasz florysta w miejscowości odbiorcy układa bukiet tego samego ranka i wręcza go osobiście. Nic nie jest wysyłane przez granicę."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Czy mogę już zamówić?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Jeszcze nie. Będziemy otwierać kraje po kolei. Do tego czasu możesz się rozejrzeć, ale za nic nie da się zapłacić."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Czy cena jest ostateczna?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Tak. Cena na stronie produktu zawiera VAT i dostawę, a kwota do zapłaty będzie taka sama. Dodatki to osobne pozycje, które wybierasz sam."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "W jakiej walucie zapłacę?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "W walucie widocznej na stronie, na której zamawiasz, na przykład w funtach na naszych stronach brytyjskich. Nie doliczamy opłaty za przewalutowanie. Twój bank może pobrać własną opłatę, jeśli karta jest w innej walucie."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Czy bukiet będzie wyglądał dokładnie jak na zdjęciu?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Podobnie, ale nie identycznie. Jest układany ręcznie z tego, co tego ranka jest świeże. Jeśli jakiś kwiat jest niedostępny, nasz florysta używa kwiatu o tej samej lub wyższej wartości, w tym samym stylu i kolorze, a my mówimy Ci, co się zmieniło."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Co jeśli nikogo nie ma w domu?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Nasz florysta najpierw dzwoni do odbiorcy, dlatego prosimy o jego numer telefonu. Jeśli kwiatów nie da się wręczyć, bezpłatnie uzgodnimy z Tobą drugą próbę."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Czy mogę wybrać porę dnia?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Wybierasz dzień. Jeśli dostępny jest przedział przedpołudniowy lub popołudniowy, zobaczysz go przy zamawianiu; w przeciwnym razie kwiaty dotrą w ciągu dnia."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I send flowers to a hospital or a funeral?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, with care. Many hospitals do not allow flowers on wards, so check first and give the reception's address. For a funeral, put the name of the funeral home or church and the time of the service in the note to the florist."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Czy mogę anulować zamówienie?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Tak, bezpłatnie, dopóki nie zaczniemy przygotowywać zamówienia, a my zwrócimy Ci całą kwotę. Kwiaty zaczynamy przygotowywać rano w dniu doręczenia. Twoja karta lub portfel cyfrowy zostaje obciążony w chwili zamówienia. Gdy już zaczniemy, kwiaty są przygotowywane specjalnie dla Ciebie. Świeże kwiaty są wyjątkiem od zwykłego 14-dniowego prawa odstąpienia od umowy. Co robimy w zamian, wyjaśnia nasza gwarancja."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Co jeśli coś pójdzie nie tak?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Daj nam znać. Jeśli Twoje kwiaty nie dotrą świeże i w dobrym stanie, wyślij nam zdjęcie w ciągu 72 godzin od doręczenia, a wymienimy je lub zwrócimy Ci całą kwotę. Jeśli dotrą w niewłaściwym dniu, zwrócimy Ci całą kwotę. Nasza gwarancja opisuje każdy przypadek."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Czy odbiorca będzie wiedział, kto wysłał kwiaty?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Tak. Twoje imię i wiadomość na karcie trafiają razem z bukietem. Napisz wiadomość w dowolnym języku; nasz florysta wydrukuje ją na naszej karcie dokładnie tak, jak została napisana."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Co robicie z danymi odbiorcy?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Imienia, nazwiska, adresu i numeru telefonu odbiorcy używamy wyłącznie do doręczenia Twojego prezentu, przekazujemy je tylko naszemu floryście, który go doręcza, i usuwamy je, gdy nie są już potrzebne. Zapytaj nas, jeśli chcesz wiedzieć dokładnie, co przechowujemy."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://flowersoverseas.com/pl"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "O nas"
+            }
+          ]
+        },
+        {
+          "@type": "Organization",
+          "name": "Flowers Overseas",
+          "url": "https://flowersoverseas.com",
+          "logo": "https://flowersoverseas.com/icon.svg"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/pl"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Dostawa i płatność"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/pl"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Pliki cookie"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flowersoverseas.com/pl"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Odstąpienie od umowy i zwroty"
+        }
+      ]
+    }
+  ]
+}
