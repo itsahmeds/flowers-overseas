@@ -41,6 +41,13 @@ describe("src/modules/ui barrel", () => {
         "SiteHeader",
         "headerListingTargets",
         "inContextListingHrefs",
+        // the mega menu's model, which the catalogue builds and the header draws (TASK-383)
+        "MegaColumnSchema",
+        "MegaEntrySchema",
+        "MegaFeaturedSchema",
+        "MegaMenuModelSchema",
+        "MegaPanelSchema",
+        "panelEntries",
         // layout primitives
         "CONTAINER_WIDTHS",
         "Cluster",

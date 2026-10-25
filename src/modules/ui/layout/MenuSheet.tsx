@@ -38,8 +38,6 @@
  */
 import type { ReactElement, ReactNode } from "react";
 
-import { Button } from "../primitives/Button.tsx";
-
 export interface MenuSheetLink {
   readonly id: string;
   readonly href: string;
@@ -53,10 +51,13 @@ export interface MenuSheetProps {
   readonly closeLabel: string;
   /** The links list's accessible name, the category row's (`nav.categories.label`). */
   readonly navLabel: string;
-  /** The header's published entries, in the row's order. */
+  /**
+   * The mega menu's six accordions (`MegaMenuAccordions`, spec 004 §14 A-founder-2026-10-24a item
+   * 5, AC-104), after the selector's place (TASK-384).
+   */
+  readonly menu: ReactNode;
+  /** The header's published end entries (account, for florists), once their pages exist. */
   readonly links: readonly MenuSheetLink[];
-  /** Send flowers: the home's sentence. */
-  readonly send: { readonly href: string; readonly label: string };
   /** Spec 003's `LocaleSwitcher`, as the header mounts it. */
   readonly switcher: ReactNode;
   readonly currency: { readonly code: string; readonly label: string };
@@ -72,8 +73,8 @@ export function MenuSheet({
   label,
   closeLabel,
   navLabel,
+  menu,
   links,
-  send,
   switcher,
   currency,
   help,
@@ -120,24 +121,24 @@ export function MenuSheet({
         className="bg-surface border-rule absolute start-0 end-0 top-full grid max-h-[calc(100dvh-65px)] gap-[16px] overflow-y-auto overscroll-contain border-b px-(--gutter-s) pt-[8px] pb-[24px] shadow-md"
         data-fo-menu-panel
       >
-        <nav aria-label={navLabel}>
-          <ul className="m-0 grid list-none p-0">
-            {links.map((link) => (
-              <li key={link.id}>
-                <a
-                  className="display text-h3 border-rule flex min-h-[52px] items-center border-b"
-                  data-fo-menu-item={link.id}
-                  href={link.href}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <Button href={send.href} size="send">
-          {send.label}
-        </Button>
+        {menu}
+        {links.length === 0 ? null : (
+          <nav aria-label={navLabel}>
+            <ul className="m-0 grid list-none p-0">
+              {links.map((link) => (
+                <li key={link.id}>
+                  <a
+                    className="border-rule text-ui flex min-h-(--target-min) items-center border-b"
+                    data-fo-menu-item={link.id}
+                    href={link.href}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-x-[14px] gap-y-[8px] text-sm">
           <div className={SWITCHER} data-fo-menu-switcher>
             {switcher}
