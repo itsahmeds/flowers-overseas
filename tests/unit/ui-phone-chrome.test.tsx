@@ -272,12 +272,22 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
           classOf(tag),
         );
       const inSwitcher = at > switcherAt && at < switcherEnd;
+      // Inside an accordion the rows share the desktop panel's markup (AC-103) and take the 44 px
+      // target from the accordion body's rule.
+      const body = panel.lastIndexOf("data-fo-menu-accordion=", at);
+      const inAccordion =
+        body !== -1 &&
+        at < panel.indexOf("</details>", body) &&
+        /\[&amp;_li&gt;a\]:min-h-\(--target-min\)/u.test(panel.slice(body, at));
       // Inside the switcher the size comes from the wrapper's rule for that element kind.
       // (`&` arrives HTML-escaped in the class attribute.)
       const rule = tag.includes("aria-current")
         ? "[&amp;_[aria-current]]:min-h-(--target-min)"
         : "[&amp;_a]:min-h-(--target-min)";
-      expect(own || (inSwitcher && wrapper.includes(rule)), tag).toBe(true);
+      expect(
+        own || inAccordion || (inSwitcher && wrapper.includes(rule)),
+        tag,
+      ).toBe(true);
     }
   });
 
