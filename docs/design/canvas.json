@@ -1743,6 +1743,166 @@
       "y": 1118970,
       "w": 1440,
       "h": 1793
+    },
+    {
+      "file": "wireframes/business-page-desktop.dc.html",
+      "title": "Business page · corporate flowers, form, error, flag off (spec 048) · desktop 1440",
+      "x": 0,
+      "y": 1122646,
+      "w": 1440,
+      "h": 6951
+    },
+    {
+      "file": "wireframes/business-page-mobile.dc.html",
+      "title": "Business page · corporate flowers, form, error, flag off (spec 048) · mobile 390",
+      "x": 1520,
+      "y": 1122646,
+      "w": 390,
+      "h": 11606
+    },
+    {
+      "file": "wireframes/business-sent-desktop.dc.html",
+      "title": "Business enquiry sent (spec 048) · desktop 1440",
+      "x": 1990,
+      "y": 1122646,
+      "w": 1440,
+      "h": 1364
+    },
+    {
+      "file": "wireframes/business-sent-mobile.dc.html",
+      "title": "Business enquiry sent (spec 048) · mobile 390",
+      "x": 3510,
+      "y": 1122646,
+      "w": 390,
+      "h": 1626
+    },
+    {
+      "file": "wireframes/admin-business-enquiries-desktop.dc.html",
+      "title": "Admin · business enquiries (spec 048) · desktop 1440",
+      "x": 3980,
+      "y": 1122646,
+      "w": 1440,
+      "h": 3926
+    },
+    {
+      "file": "wireframes/admin-business-enquiries-mobile.dc.html",
+      "title": "Admin · business enquiries (spec 048) · mobile 390",
+      "x": 5500,
+      "y": 1122646,
+      "w": 390,
+      "h": 5716
+    },
+    {
+      "file": "wireframes/plan-page-desktop.dc.html",
+      "title": "Monthly flowers · the plan page (spec 049) · desktop 1440",
+      "x": 0,
+      "y": 1134452,
+      "w": 1440,
+      "h": 5499
+    },
+    {
+      "file": "wireframes/plan-page-mobile.dc.html",
+      "title": "Monthly flowers · the plan page (spec 049) · mobile 390",
+      "x": 1520,
+      "y": 1134452,
+      "w": 390,
+      "h": 6942
+    },
+    {
+      "file": "wireframes/checkout-plan-desktop.dc.html",
+      "title": "Checkout · monthly flowers, step 4 (spec 049) · desktop 1440",
+      "x": 1990,
+      "y": 1134452,
+      "w": 1440,
+      "h": 3288
+    },
+    {
+      "file": "wireframes/checkout-plan-mobile.dc.html",
+      "title": "Checkout · monthly flowers, step 4 (spec 049) · mobile 390",
+      "x": 3510,
+      "y": 1134452,
+      "w": 390,
+      "h": 5312
+    },
+    {
+      "file": "wireframes/plan-status-desktop.dc.html",
+      "title": "Monthly flowers · plan status and cancel review (spec 049) · desktop 1440",
+      "x": 3980,
+      "y": 1134452,
+      "w": 1440,
+      "h": 3566
+    },
+    {
+      "file": "wireframes/plan-status-mobile.dc.html",
+      "title": "Monthly flowers · plan status and cancel review (spec 049) · mobile 390",
+      "x": 5500,
+      "y": 1134452,
+      "w": 390,
+      "h": 5690
+    },
+    {
+      "file": "wireframes/plan-cancel-desktop.dc.html",
+      "title": "Monthly flowers · the public cancel page (spec 049) · desktop 1440",
+      "x": 0,
+      "y": 1141594,
+      "w": 1440,
+      "h": 2234
+    },
+    {
+      "file": "wireframes/plan-cancel-mobile.dc.html",
+      "title": "Monthly flowers · the public cancel page (spec 049) · mobile 390",
+      "x": 1520,
+      "y": 1141594,
+      "w": 390,
+      "h": 2972
+    },
+    {
+      "file": "wireframes/email-plan-desktop.dc.html",
+      "title": "Monthly flowers · emails S1, S2, S3 (spec 049) · desktop 1440",
+      "x": 1990,
+      "y": 1141594,
+      "w": 1440,
+      "h": 4874
+    },
+    {
+      "file": "wireframes/email-plan-mobile.dc.html",
+      "title": "Monthly flowers · emails S1, S2, S3 (spec 049) · mobile 390",
+      "x": 3510,
+      "y": 1141594,
+      "w": 390,
+      "h": 6497
+    },
+    {
+      "file": "wireframes/admin-subscriptions-desktop.dc.html",
+      "title": "Admin · monthly flowers (spec 049) · desktop 1440",
+      "x": 3980,
+      "y": 1141594,
+      "w": 1440,
+      "h": 3789
+    },
+    {
+      "file": "wireframes/admin-subscriptions-mobile.dc.html",
+      "title": "Admin · monthly flowers (spec 049) · mobile 390",
+      "x": 5500,
+      "y": 1141594,
+      "w": 390,
+      "h": 5878
+    },
+    {
+      "file": "flows/monthly-flowers.dc.html",
+      "title": "Monthly flowers journey · choose, pay once, monthly orders, stop (spec 049)",
+      "x": 0,
+      "y": 1148291,
+      "w": 1440,
+      "h": 1804
+    },
+    {
+      "file": "flows/business-enquiry.dc.html",
+      "title": "Business enquiry journey · page, form, sent, the founder answers (spec 048)",
+      "x": 1520,
+      "y": 1148291,
+      "w": 1440,
+      "h": 917
     }
   ],
   "annotations": [
@@ -2403,6 +2563,13 @@
       "y": 1109591,
       "w": 1400,
       "text": "Discount codes and referrals (specs 047, 050; 2026-10-24): admin codes and referrals, store credit, the saved-offer note and the referral journey. Checkout step 4, confirmation, basket and B1 carry their 2026-10-24 sections at the foot of their own artboards."
+    },
+    {
+      "id": "growth-048-049",
+      "x": 0,
+      "y": 1122552,
+      "w": 1400,
+      "text": "Business gifting and monthly flowers (specs 048, 049; 2026-10-25): the business page, sent page and admin enquiries; the plan page, the plan checkout, plan status, the cancel page, the plan emails and admin; flows business-enquiry and monthly-flowers."
     }
   ],
   "launch": {
