@@ -1,32 +1,17 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { ReactElement } from "react";
 
-import { isPublished } from "@/config/site-links";
 import {
-  ListingBreadcrumb,
-  type LocalePathResolution,
-  type ProductView,
   localeProductParams,
-  productAlternatePaths,
-  productJsonLd,
-  productView,
-  resolveLocalePath,
   writeProductExistenceSummary,
 } from "@/modules/catalog";
-import { infoPageExists, infoPagePath } from "@/modules/content";
-import { LanguageAlternates } from "@/modules/i18n";
+
 import {
-  type BreadcrumbLabel,
-  JsonLd,
-  canonicalFor,
-  deploymentDescriptor,
-  pageMetadata,
-  schemaOptions,
-} from "@/modules/seo";
-// Imported directly, not through the `ui` barrel: `ProductPage` mounts the printed-card preview,
-// Caveat's one importer, so the barrel must not reach it (`tests/unit/fonts.test.ts`).
-import { ProductPage } from "@/modules/ui/product/ProductPage";
+  type ProductRouteParams,
+  productMatch,
+  productRouteBody,
+  productRouteMetadata,
+} from "../../../../product-route";
 
 /**
  * `/{locale}/-product/{segment}/{child}/{grandchild}` — **the product page's own route file**
@@ -53,17 +38,19 @@ import { ProductPage } from "@/modules/ui/product/ProductPage";
  * that emits the product params it counts, once per process (`/review 96`'s carry-forward to
  * TASK-127); its "Prebuilt" column equals its "PDPs" column since A6.
  *
- * **Rendering: ISR, `revalidate` 3600 s** with §5.4's tags, through `src/lib/cache.ts`. It renders
- * the bare URL: `?tier=` / `?date=` and their form are TASK-128's, so this file reads no search
- * parameter and stays ISR. Nothing here reads a cookie or a request header.
+ * **Rendering: ISR, `revalidate` 3600 s**, `productCachePolicy()`'s answer for every destination
+ * that is not live (`src/lib/cache.ts`, spec 009 §5.4, §14 A10; a segment config must be a
+ * literal, so `tests/unit/product-params.test.ts` holds the two equal). It renders the bare URL
+ * and **reads no search parameter** (A10): `?tier=` / `?date=` are rewritten to the parameter
+ * route `../../../../%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx`, so this file
+ * stays prebuilt and its `dynamicParams` gate holds. Reading `searchParams` here would make the
+ * build list this route as per-request (T-15). Nothing here reads a cookie or a request header.
  *
- * It mounts one module page component, `ProductPage`, over one `productView()`; the one block that
- * page cannot import — spec 008's breadcrumb — is mounted here over the same view and handed in as
- * a slot. The PDP mounts no delivery-facts block (spec 009 §14 A-founder-2026-10-14d, AC-35).
- *
- * **Its JSON-LD** (spec 009 AC-18; TASK-130) is `productJsonLd()` over the same view: the
- * `BreadcrumbList` of `product.breadcrumb`, and a `Product` + `Offer` only behind the gate, which
- * is shut on every Phase 0 PDP. It moved here with the product page (AC-37).
+ * The head and body are `../../../../product-route.tsx`'s, the same functions the parameter route
+ * calls, with `parameterised: false` and no selection: one `productView()`, one `ProductPage`
+ * (with spec 008's breadcrumb as its slot), the language alternates and `productJsonLd()` (spec 009
+ * AC-18; TASK-130). The PDP mounts no delivery-facts block (spec 009 §14 A-founder-2026-10-14d,
+ * AC-35).
  */
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -87,127 +74,21 @@ export async function generateStaticParams(): Promise<
 }
 
 interface ProductParams {
-  params: Promise<{
-    locale: string;
-    segment: string;
-    child: string;
-    grandchild: string;
-  }>;
+  params: Promise<ProductRouteParams>;
 }
 
-/** The product resolution; everything else the resolver returns is a 404 here. */
-type ProductMatch = Extract<LocalePathResolution, { kind: "product" }>;
+/** The bare URL: no parameter, the default selection (spec 009 §14 A10). */
+const BARE = { parameterised: false } as const;
 
-async function productMatch({ params }: ProductParams): Promise<ProductMatch> {
-  const { locale, segment, child, grandchild } = await params;
-  const match = await resolveLocalePath(locale, [segment, child, grandchild]);
-  if (match.kind !== "product") notFound();
-  return match;
+export async function generateMetadata({
+  params,
+}: ProductParams): Promise<Metadata> {
+  return productRouteMetadata(await productMatch(await params), BARE);
 }
 
-/**
- * The product page's one view model (spec 009 §5.2, T-32). `undefined` after the resolver said
- * the page exists can only mean the data moved under the page, and the honest answer is the 404
- * the existence rule now gives. The bare URL: `parameterised` is `false` because this route reads
- * no search parameter (TASK-128 owns `?tier=` / `?date=`).
- */
-async function productViewFor(
-  match: ProductMatch,
-  deployment?: Parameters<typeof productView>[1]["deployment"],
-): Promise<ProductView> {
-  const view = await productView(
-    { locale: match.locale, countryIso: match.iso2, sku: match.sku },
-    {
-      parameterised: false,
-      productLinks: isPublished("product"),
-      ...(deployment === undefined ? {} : { deployment }),
-    },
-  );
-  if (view === undefined) notFound();
-  return view;
-}
-
-export async function generateMetadata(
-  props: ProductParams,
-): Promise<Metadata> {
-  const match = await productMatch(props);
-  const deployment = deploymentDescriptor(process.env);
-  const view = await productViewFor(match, deployment);
-  const t = await getTranslations({ locale: match.locale });
-  const label = t as unknown as (
-    key: string,
-    values?: Record<string, string>,
-  ) => string;
-  // The description is the shop's demo sentence (N1, spec 004 §14 A23 clause 12): it is true of
-  // every product page in Phase 0, and a PDP writes no new `<head>` copy of its own while every
-  // one is `noindex`.
-  const shop = await getTranslations({
-    locale: match.locale,
-    namespace: "shop",
-  });
-  return pageMetadata({
-    title:
-      view.h1.formKey === undefined
-        ? view.h1.name
-        : label(view.h1.key, {
-            name: view.h1.name,
-            descriptor: label(view.h1.formKey, {
-              flower: label(view.h1.flowerKey),
-            }),
-          }),
-    description: shop("root.demoNotice"),
-    directive: view.indexability.directive,
-    canonical: canonicalFor(match.locale, view.path, {
-      baseUrl: deployment.siteUrl,
-    }),
-  });
-}
-
-export default async function LocaleProductRoute(props: ProductParams) {
-  const match = await productMatch(props);
-  const product = await productViewFor(match);
-  setRequestLocale(match.locale);
-  const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
-  // The translator `ListingBreadcrumb` reads, so the JSON-LD label and the visible label are one
-  // message with one value (the `[child]` route's `registryLabels()` cast, for its reason).
-  const t = await getTranslations({ locale: match.locale });
-  const label = t as unknown as BreadcrumbLabel;
-  // The popup's options go to this product in each locale that has it (TASK-197, owed from
-  // the TASK-179 review); nothing here touches the head.
-  const productAlternates = (
-    <LanguageAlternates
-      paths={await productAlternatePaths({
-        sku: match.sku,
-        countryIso: match.iso2,
-      })}
-    />
-  );
-  return (
-    <>
-      <ProductPage
-        breadcrumb={
-          // The product page keeps its trail on the phone and shows no back link (spec 004
-          // §14 A24 clause 4 (e)); `ProductPage` displays it below the buy section there.
-          <ListingBreadcrumb crumbs={product.breadcrumb} phone="trail" />
-        }
-        // The fresh-flower promise links to the guarantee page where this locale has one (spec
-        // 009 §14 A11 bullet 1, spec 041 §6; TASK-287): `infoPageExists()`'s answer, asked here
-        // because `modules/ui` may not read the content module.
-        guaranteeHref={
-          infoPageExists("guarantee", match.locale)
-            ? infoPagePath("guarantee", match.locale)
-            : undefined
-        }
-        view={product}
-      />
-      {productAlternates}
-      {/* `BreadcrumbList` from the trail above, and the gated `Product` + `Offer` (spec 009
-          AC-18; TASK-130): one `productView()` in, so the markup cannot disagree with the page. */}
-      <JsonLd
-        nodes={
-          options === undefined ? [] : productJsonLd(product, label, options)
-        }
-      />
-    </>
-  );
+export default async function LocaleProductRoute({
+  params,
+}: ProductParams): Promise<ReactElement> {
+  const match = await productMatch(await params);
+  return productRouteBody(match, BARE);
 }

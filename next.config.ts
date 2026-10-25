@@ -24,6 +24,8 @@ import {
   mediaHeaderRules,
 } from "./src/lib/media-headers";
 import {
+  productParameterCacheHeaderRules,
+  productParameterRewriteRules,
   productRewriteRules,
   productRouteHeaderRules,
 } from "./src/lib/product-rewrites";
@@ -99,6 +101,11 @@ const headerRules = [
   // name each locale's own shop segment, so no other page type's caching changes
   // (`src/lib/listing-cache-headers.ts` carries the reasoning; TASK-114).
   ...listingCacheHeaderRules(),
+  // The same shared-cache header on a product address that carries `?tier=` or `?date=`: the
+  // rewrite below sends exactly those to the product parameter route, which renders per request;
+  // the bare product URL keeps its ISR header (spec 009 AC-24, §14 A10; TASK-128;
+  // `src/lib/product-rewrites.ts`).
+  ...productParameterCacheHeaderRules(),
   // `X-Robots-Tag: noindex, nofollow` on a **direct** request to the internal parameter route
   // (`/{locale}/_query/…`); a request rewritten there keeps the address it was asked for, which
   // this source does not match. After `noindexHeaderRules()`, so its value is the one served on a
@@ -181,7 +188,14 @@ const nextConfig: NextConfig = {
       // its depth loads the product island (spec 009 §14 A-founder-2026-10-18a, AC-37; TASK-228;
       // `src/lib/product-rewrites.ts`). Unconditional, and disjoint from the listing rules: its
       // third segment is the locale's `product` segment.
-      beforeFiles: [...listingRewriteRules(), ...productRewriteRules()],
+      // A product address carrying `?tier=` or `?date=` goes first to the product parameter route
+      // (spec 009 §14 A10; TASK-128): Next stops at the first rewrite whose destination resolves,
+      // and the product rule below matches every query.
+      beforeFiles: [
+        ...listingRewriteRules(),
+        ...productParameterRewriteRules(),
+        ...productRewriteRules(),
+      ],
       afterFiles: [],
       fallback: [],
     }),

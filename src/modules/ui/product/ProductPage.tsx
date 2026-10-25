@@ -254,30 +254,44 @@ export function ProductPage({
               </p>
             )}
 
-            <div className="col-span-full">
-              <TierSelector
-                locale={code}
-                look="buy"
-                say={say}
-                selectedTierKey={view.selectedTierKey}
-                tiers={view.tiers}
-              />
-            </div>
+            {/* The page's one `GET` form (spec 009 §2, §5.2, §14 A10; TASK-128): the sizes and
+                the dates, submitted to the bare product URL. With JavaScript off, "Use this
+                date" (rendered only in `live`, with a date to choose) reloads to
+                `?tier=…&date=…`, which `next.config.ts` rewrites to the parameter route; in
+                `unavailable` and `preview` every size's price is already printed and nothing
+                submits (A10, memo E-3). `display: contents`, so the buy section's grid places the
+                two blocks exactly as before: the form draws nothing. */}
+            <form
+              action={view.path}
+              className="contents"
+              data-fo-pdp-form
+              method="get"
+            >
+              <div className="col-span-full">
+                <TierSelector
+                  locale={code}
+                  look="buy"
+                  say={say}
+                  selectedTierKey={view.selectedTierKey}
+                  tiers={view.tiers}
+                />
+              </div>
 
-            <div className="col-span-full">
-              <DeliveryDatePicker
-                country={country}
-                delivery={view.delivery}
-                locale={code}
-                look="buy"
-                {...(view.selectedDate === undefined
-                  ? {}
-                  : { selectedDate: view.selectedDate })}
-                {...(view.country.corridorPath === undefined
-                  ? {}
-                  : { corridorPath: view.country.corridorPath })}
-              />
-            </div>
+              <div className="col-span-full">
+                <DeliveryDatePicker
+                  country={country}
+                  delivery={view.delivery}
+                  locale={code}
+                  look="buy"
+                  {...(view.selectedDate === undefined
+                    ? {}
+                    : { selectedDate: view.selectedDate })}
+                  {...(view.country.corridorPath === undefined
+                    ? {}
+                    : { corridorPath: view.country.corridorPath })}
+                />
+              </div>
+            </form>
 
             {/* The primary action. Phase 0: the round-2 status pill, never a button, with the demo
                 sentence (N2) under it at every width (A24 clause 1). */}
