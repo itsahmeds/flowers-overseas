@@ -1935,8 +1935,8 @@
         "format": "avif",
         "width": 384,
         "height": 288,
-        "bytes": 9700,
-        "checksum_sha256": "46db59bee1527ddaf8183b6ca63988b9a422dafca29447afd3fbe2872ce27cb4"
+        "bytes": 6486,
+        "checksum_sha256": "9dd349ef2a5b97e200d5d72652cc8e59b66619a77ebf07a63d096a8ff95b2142"
       }
     },
     {
@@ -1967,8 +1967,8 @@
         "format": "avif",
         "width": 640,
         "height": 480,
-        "bytes": 20999,
-        "checksum_sha256": "2e82136ed8a5e3028f5a93935b73f5111cc6291749b4f59629602083d989e359"
+        "bytes": 13824,
+        "checksum_sha256": "93753283f2481436a75302cb98bb3b55df08ea971df51bf5df5ac37332168863"
       }
     },
     {
@@ -1999,8 +1999,8 @@
         "format": "avif",
         "width": 828,
         "height": 621,
-        "bytes": 31593,
-        "checksum_sha256": "e7ef0d77266dabbf1b2a0a20b11632d3f8faadb7f3f488eaee777ae057b1ce97"
+        "bytes": 20954,
+        "checksum_sha256": "b8080c0f02ba6479b2948f360024864895c90215951a7afabfabfd6ebdf4a0c5"
       }
     },
     {

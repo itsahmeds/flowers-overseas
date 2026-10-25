@@ -315,6 +315,39 @@ export const AVIF_OPTIONS = {
 } as const;
 
 /**
+ * The AVIF quality of the home hero's **phone crop** (the 4:3 rungs below
+ * `HERO_DESKTOP_MIN_WIDTH`): 40, every other option `AVIF_OPTIONS`' (TASK-411, spec 004 AC-24).
+ *
+ * The phone crop is the LCP element of every locale home on Lighthouse's mobile profile (412 px at
+ * DPR 1.75 takes the 828 rung), and at quality 50 its 31 593 B were the largest single transfer on
+ * the LCP path, which kept the four homes at 1 860 to 2 110 ms against the 2 000 ms budget. At 40
+ * the rung is 20 954 B. The cover shows that rung upscaled (a 621 px tall image in a 682 px tall
+ * box at DPR 1.75), and at that scale quality 40 and 50 were compared side by side at device size
+ * with no visible difference; 4:4:4 chroma, the reason petal edges stay clean, is kept. A 3x phone
+ * (390 px needs 1 170 px) takes the 16:9 1 200 rung, which keeps quality 50, as does the desktop.
+ */
+export const HERO_PHONE_AVIF_QUALITY = 40;
+
+/**
+ * The AVIF options one (slot, width) rung is encoded with: `AVIF_OPTIONS`, except the hero's phone
+ * crop, which takes `pipeline.encoders.avifHeroPhone.quality`. Read from the header the run pinned,
+ * so the CLI and the `--check` gate agree on one number.
+ */
+export function avifOptionsFor(
+  pipeline: MediaVariantPipeline,
+  slot: MediaSlot,
+  width: number,
+): MediaVariantPipeline["encoders"]["avif"] {
+  const phoneHero = slot === "hero" && width < HERO_DESKTOP_MIN_WIDTH;
+  return phoneHero
+    ? {
+        ...pipeline.encoders.avif,
+        quality: pipeline.encoders.avifHeroPhone.quality,
+      }
+    : pipeline.encoders.avif;
+}
+
+/**
  * The WebP options of spec 006 §13 Q5 (quality 72), with every other lever pinned explicitly.
  *
  * **`effort` is 6, not libwebp's default 4** (TASK-080). It is not a quality lever — quality stays
@@ -458,6 +491,7 @@ export const MediaVariantPipelineSchema = z
             bitdepth: z.number().int(),
           })
           .strict(),
+        avifHeroPhone: z.object({ quality: z.number().int() }).strict(),
         webp: z
           .object({
             quality: z.number().int(),
@@ -507,6 +541,7 @@ export function variantPipeline(): MediaVariantPipeline {
     metadata: { ...METADATA_POLICY },
     encoders: {
       avif: { ...AVIF_OPTIONS },
+      avifHeroPhone: { quality: HERO_PHONE_AVIF_QUALITY },
       webp: { ...WEBP_OPTIONS },
       jpeg: { ...JPEG_OPTIONS },
     },

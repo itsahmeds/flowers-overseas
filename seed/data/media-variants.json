@@ -79,6 +79,9 @@
         "lossless": false,
         "bitdepth": 8
       },
+      "avifHeroPhone": {
+        "quality": 40
+      },
       "webp": {
         "quality": 72,
         "effort": 6,
@@ -1302,8 +1305,8 @@
       "width": 384,
       "height": 288,
       "format": "avif",
-      "bytes": 9700,
-      "checksumSha256": "46db59bee1527ddaf8183b6ca63988b9a422dafca29447afd3fbe2872ce27cb4",
+      "bytes": 6486,
+      "checksumSha256": "9dd349ef2a5b97e200d5d72652cc8e59b66619a77ebf07a63d096a8ff95b2142",
       "objectKey": "media/home-hero/384.avif"
     },
     {
@@ -1322,8 +1325,8 @@
       "width": 640,
       "height": 480,
       "format": "avif",
-      "bytes": 20999,
-      "checksumSha256": "2e82136ed8a5e3028f5a93935b73f5111cc6291749b4f59629602083d989e359",
+      "bytes": 13824,
+      "checksumSha256": "93753283f2481436a75302cb98bb3b55df08ea971df51bf5df5ac37332168863",
       "objectKey": "media/home-hero/640.avif"
     },
     {
@@ -1342,8 +1345,8 @@
       "width": 828,
       "height": 621,
       "format": "avif",
-      "bytes": 31593,
-      "checksumSha256": "e7ef0d77266dabbf1b2a0a20b11632d3f8faadb7f3f488eaee777ae057b1ce97",
+      "bytes": 20954,
+      "checksumSha256": "b8080c0f02ba6479b2948f360024864895c90215951a7afabfabfd6ebdf4a0c5",
       "objectKey": "media/home-hero/828.avif"
     },
     {

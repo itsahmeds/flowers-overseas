@@ -26,6 +26,7 @@ import {
   readFileSync,
   renameSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -60,6 +61,7 @@ import { type MediaSlot, mediaSlots } from "../../seed/schema/media.ts";
 import {
   AVIF_OPTIONS,
   ENCODER_CONCURRENCY,
+  HERO_PHONE_AVIF_QUALITY,
   JPEG_OPTIONS,
   OG_JPEG_WIDTH,
   PINNED_LIBVIPS_VERSION,
@@ -68,6 +70,7 @@ import {
   WEBP_OPTIONS,
   type MediaVariantPipeline,
   aspectFor,
+  avifOptionsFor,
   aspectStepsFor,
   variantDimensions,
   variantPipeline,
@@ -338,6 +341,59 @@ describe("spec 006 AC-13: the encoder is pinned and recorded, not defaulted", ()
 /* -------------------------------------------------------------------------- */
 /* T-12 — the ladder, the ratios and the metadata (AC-12).                    */
 /* -------------------------------------------------------------------------- */
+
+describe("TASK-411: the hero's phone crop is encoded at its own AVIF quality", () => {
+  const pinned = variantPipeline();
+
+  it("pins quality 40 for the phone crop in the header, and 50 for everything else", () => {
+    expect(HERO_PHONE_AVIF_QUALITY).toBe(40);
+    expect(pinned.encoders.avifHeroPhone).toEqual({ quality: 40 });
+    expect(pinned.encoders.avif.quality).toBe(50);
+  });
+
+  it("gives the 4:3 hero rungs the phone quality and every other rung the pinned AVIF options", () => {
+    for (const width of [384, 640, 828]) {
+      expect(
+        avifOptionsFor(pinned, "hero", width),
+        `hero ${String(width)}`,
+      ).toEqual({
+        ...AVIF_OPTIONS,
+        quality: 40,
+      });
+    }
+    for (const width of [1080, 1200]) {
+      expect(
+        avifOptionsFor(pinned, "hero", width),
+        `hero ${String(width)}`,
+      ).toEqual(AVIF_OPTIONS);
+    }
+    for (const slot of mediaSlots.filter((name) => name !== "hero")) {
+      expect(avifOptionsFor(pinned, slot, 384), slot).toEqual(AVIF_OPTIONS);
+    }
+  });
+
+  it("reads the quality from the header it is given, not from the constant", () => {
+    const nudged: MediaVariantPipeline = {
+      ...pinned,
+      encoders: { ...pinned.encoders, avifHeroPhone: { quality: 33 } },
+    };
+    expect(avifOptionsFor(nudged, "hero", 828).quality).toBe(33);
+  });
+
+  it("is what the committed phone rungs were encoded with: smaller than the 16:9 rungs", () => {
+    const committed = (width: number): number =>
+      statSync(
+        join(
+          repoRoot,
+          COMMITTED_MEDIA_DIR,
+          "home-hero",
+          `${String(width)}.avif`,
+        ),
+      ).size;
+    expect(committed(828)).toBe(20954);
+    expect(committed(1080)).toBe(34819);
+  });
+});
 
 describe("T-12: the ladder over three fixture originals (AC-12)", () => {
   it(
@@ -684,6 +740,9 @@ describe("T-13: two runs are byte-identical; one changed option is a whole-manif
         encoders: {
           ...pipeline.encoders,
           avif: { ...pipeline.encoders.avif, quality: 30 },
+          // The hero's phone crop has its own quality knob (TASK-411), so the fixture's hero rung
+          // moves with that one: nudging both keeps this case about "every AVIF file".
+          avifHeroPhone: { quality: 30 },
         },
       });
       await generateVariants({ root: changed, pipeline: nudged });
