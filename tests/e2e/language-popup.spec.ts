@@ -29,7 +29,7 @@
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
 import {
-  SENTENCE_REGION,
+  FONT_SWAP_REGIONS,
   recordLayoutShifts,
   shiftOutside,
 } from "../support/layout-shift.ts";
@@ -43,7 +43,8 @@ const OPEN = `${POPUP}[open]`;
 const CLOSE = "[data-fo-language-popup-close]";
 const option = (code: string): string => `[data-fo-language-option="${code}"]`;
 const CONSENT_SHOWN = '[data-fo-consent="shown"]';
-const SENTENCE = "[data-fo-sentence]";
+/** The v3 home's first product card (spec 004 AC-94: no overlay over it; TASK-386). */
+const FIRST_CARD = '[data-fo-home-section="selection"] article';
 
 /** 365 days, `plan/03` §1 / §13 Q4. */
 const YEAR_IN_SECONDS = 31_536_000;
@@ -404,8 +405,11 @@ test.describe("(g) the shape, the scroll and CLS (AC-39)", () => {
       expect(box!.width).toBe(viewport.width);
 
       if (viewport.width === 390) {
-        const card = await page.locator(SENTENCE).first().boundingBox();
-        expect(card, "the sentence card is on the page").not.toBeNull();
+        // Spec 004 AC-94 (TASK-386): the sheet stays clear of the first product card. The v3
+        // home's picker starts higher than the sentence card did, so the sheet may cover its top
+        // until answered; the first card is what the first screen must keep in view.
+        const card = await page.locator(FIRST_CARD).first().boundingBox();
+        expect(card, "the first product card is on the page").not.toBeNull();
         expect(card!.y).toBeGreaterThanOrEqual(box!.y + box!.height);
       }
 
@@ -423,10 +427,10 @@ test.describe("(g) the shape, the scroll and CLS (AC-39)", () => {
       const after = await page.locator(OPEN).boundingBox();
       expect(after!.y).toBe(0);
 
-      // Opening: nothing moved but the home's own sentence island, which every overlay test of
-      // this repo excludes (`SENTENCE_REGION`) under the same 0.001 the consent sheet's AC-17
-      // uses. Closing: exactly zero, measured from a cleared record.
-      expect(await shiftOutside(page, SENTENCE_REGION)).toBeLessThanOrEqual(
+      // Opening: nothing moved but the home's display-face text swapping in, which every overlay
+      // test of this repo excludes (`FONT_SWAP_REGIONS`) under the same 0.001 the consent
+      // sheet's AC-17 uses. Closing: exactly zero, measured from a cleared record.
+      expect(await shiftOutside(page, FONT_SWAP_REGIONS)).toBeLessThanOrEqual(
         0.001,
       );
       await clearShifts(page);
@@ -457,10 +461,10 @@ test.describe("(g) the shape, the scroll and CLS (AC-39)", () => {
       ).toBeLessThanOrEqual(2);
       expect(box!.width).toBe(620);
 
-      // Opening: nothing moved but the home's own sentence island, which every overlay test of
-      // this repo excludes (`SENTENCE_REGION`) under the same 0.001 the consent sheet's AC-17
-      // uses. Closing: exactly zero, measured from a cleared record.
-      expect(await shiftOutside(page, SENTENCE_REGION)).toBeLessThanOrEqual(
+      // Opening: nothing moved but the home's display-face text swapping in, which every overlay
+      // test of this repo excludes (`FONT_SWAP_REGIONS`) under the same 0.001 the consent
+      // sheet's AC-17 uses. Closing: exactly zero, measured from a cleared record.
+      expect(await shiftOutside(page, FONT_SWAP_REGIONS)).toBeLessThanOrEqual(
         0.001,
       );
       await clearShifts(page);
