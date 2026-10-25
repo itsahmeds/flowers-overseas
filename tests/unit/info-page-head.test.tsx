@@ -106,6 +106,27 @@ describe("T-18 / AC-18: the info page's <head>", () => {
   });
 });
 
+describe("`/break 270` HOLE 12 (carried to TASK-184): an http: origin emits no hreflang", () => {
+  it("a local or preview build on http: has a canonical and no alternates.languages", () => {
+    // Production is `https`; `infoPageMetadata()` writes a cluster only for an https origin,
+    // because an http alternate is one Google would follow to a different URL. Mutation: dropping
+    // the `startsWith("https:")` guard emits the English cluster here and turns this red.
+    const LOCAL: DeploymentDescriptor = {
+      environment: "production",
+      siteUrl: "http://localhost:3000",
+    };
+    const metadata = infoPageMetadata("help", "en", LOCAL);
+    expect(metadata?.alternates?.canonical).toBe(
+      "http://localhost:3000/en/help",
+    );
+    expect(metadata?.alternates?.languages).toBeUndefined();
+    // The control: the same page on the https origin carries its cluster.
+    expect(
+      infoPageMetadata("help", "en", INDEXING)?.alternates?.languages,
+    ).toBeDefined();
+  });
+});
+
 describe("T-19 / AC-19: the info page's JSON-LD", () => {
   it("help's FAQPage equals the rendered questions and answers, character for character", () => {
     const html = renderToStaticMarkup(
