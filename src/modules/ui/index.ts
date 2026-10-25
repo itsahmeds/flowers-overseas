@@ -82,21 +82,6 @@ export type {
   MegaMenuModel,
   MegaPanel,
 } from "./layout/mega-model.ts";
-// The listing pages the header's category row may link to (spec 008 §14 A14; TASK-173): the
-// document layout asks the catalogue which of them exist in its locale and hands the URLs back as
-// `SiteHeader`'s `listingHrefs`, because this module may not read the catalogue (`plan/01` §5).
-// On a page in a destination's context the `@header` slot moves the shop items' hrefs to that
-// destination's own pages through `inContextListingHrefs()` (spec 043 §5.3 A; TASK-288).
-export {
-  headerListingTargets,
-  inContextListingHrefs,
-} from "./layout/header-model.ts";
-export type {
-  HeaderListingHrefs,
-  HeaderListingTarget,
-  HeaderShopLinks,
-} from "./layout/header-model.ts";
-
 // Layout primitives.
 export {
   Cluster,

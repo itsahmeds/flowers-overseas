@@ -3228,27 +3228,6 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "b8b1d894c683725260dcd78f8ed64f979331a1ab61fc8311e9ccfc300fd5de20"
   },
-  "nav.category.addOns": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
-  },
-  "nav.category.birthday": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "c6138abfa6a734269ef280d53f37d351d08408258322aa818f4cf9fe9fa4bb0d"
-  },
-  "nav.category.bouquets": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "c03f1370d259142adc1545af7da216e51468270dfacf8e60179f90b27e9ab275"
-  },
   "nav.category.destinations": {
     "source": "human",
     "reviewed": true,
@@ -3270,33 +3249,12 @@
     "reviewedAt": "2026-09-18T00:00:00Z",
     "reviewedBy": "founder"
   },
-  "nav.category.plants": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "b81ce6bddc184917f5ba6e4acb98baa1dab41ba28675975261f0c21874f82582"
-  },
   "nav.category.roses": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "5c6f53e266a7bf766d588d64267e2f94678a2aa9554b776b2762accbeabe01cf"
-  },
-  "nav.category.sameDayDelivery": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "45438665bb118ca5bb238dde385071bfe1b1984a9b08ca45b0b992702c430b02"
-  },
-  "nav.category.sameDayShort": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "571619013c22499b8e69d174fbf5700599265489aa124f15255b4805e9055103"
   },
   "nav.category.sympathy": {
     "source": "human",

@@ -2104,9 +2104,9 @@ async function destinationRowHref(
  * The href a hub's own destination list gives one destination (spec 043 §5.2), or `undefined`
  * when the hub does not exist in this locale or its row for that destination is text.
  *
- * Read by `destinationShopLinks()`: on a page in a destination's context the header's Bouquets,
- * Roses, Plants, Birthday and Sympathy link where the matching hub's picker links that
- * destination, never to a slug guessed from the entity's key.
+ * Read by `megaMenuModel()`: on a page in a destination's context the mega menu's hub entries
+ * link where the matching hub's picker links that destination, never to a slug guessed from the
+ * entity's key (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383).
  */
 export async function hubDestinationHref(
   locale: string,

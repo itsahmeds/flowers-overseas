@@ -7,10 +7,10 @@
  *     an unmatched slot's previous content on a client navigation, so one missing file would leave
  *     a Poland row on the page navigated to. Red when a new route has no slot file, and when the
  *     slot's page for a route is deleted.
- *  2. **What each slot page draws**: the header's row and Menu hrefs, rendered from the props the
- *     slot page hands `SiteHeader`. Out of context they equal the baseline captured from `main`
- *     before the change (`tests/fixtures/header/out-of-context-hrefs.json`); in Poland's and
- *     France's context they are the design band's table. The price claim is absent on the home
+ *  2. **What each slot page draws**: the mega menu's entries, rendered from the props the slot
+ *     page hands `SiteHeader`, equal `megaMenuModel()`'s for that page's context (out of context,
+ *     Poland's, France's); the model's own hrefs are pinned by `tests/unit/catalog-mega-menu.test.ts`
+ *     (TASK-383). The price claim is absent on the home
  *     only, and the language links ask for the segments `@switcher` asks for.
  *  3. **Static by construction** (T-04): no slot file reads a request header, a cookie, the search
  *     parameters or the client path, and none is a client module.

@@ -119,15 +119,9 @@
     },
     "category": {
       "ourSelection": "Our selection",
-      "birthday": "Birthday",
       "sympathy": "Sympathy",
       "occasions": "Occasions",
-      "bouquets": "Bouquets",
       "roses": "Roses",
-      "plants": "Plants",
-      "addOns": "Add-ons",
-      "sameDayDelivery": "Same-day delivery",
-      "sameDayShort": "Same-day",
       "destinations": "Destinations"
     },
     "search": {

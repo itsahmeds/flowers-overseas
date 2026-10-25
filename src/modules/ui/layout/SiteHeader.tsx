@@ -48,9 +48,9 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
-import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY, whatsappHref } from "../../../config/company.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
+import { MEGA_MENU_NAV_LABEL_KEY } from "../../../config/mega-menu.ts";
 import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
 import { AfterPaint } from "../deferred/AfterPaint.tsx";
 import { MotionLoader } from "../deferred/MotionLoader.tsx";
@@ -316,7 +316,7 @@ export function SiteHeader({
             className="border-rule col-span-2 row-start-2 -mx-(--gutter-s) flex min-h-[48px] items-center border-t px-[calc(var(--gutter)-11px)] max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0 xl:ms-[6px] xl:min-h-0 xl:border-t-0 xl:px-0"
             locale={locale}
             model={megaMenu}
-            navLabel={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
+            navLabel={registryLabel(t, MEGA_MENU_NAV_LABEL_KEY)}
           />
 
           {/* The row's end: the selector (TASK-384), then search, account and basket once their
@@ -362,7 +362,7 @@ export function SiteHeader({
               label: registryLabel(t, item.labelKey),
             }))}
             menu={<MegaMenuAccordions locale={locale} model={megaMenu} />}
-            navLabel={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
+            navLabel={registryLabel(t, MEGA_MENU_NAV_LABEL_KEY)}
             switcher={switcher}
           />
         </div>

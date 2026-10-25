@@ -90,8 +90,8 @@ export const CONFIG_FILES = [
   // — TASK-050.
   "src/config/cookies.ts",
   // The Phase 0 data registries of spec 004 §2/§5.1 (TASK-047): the destination list with its
-  // `toCountryRow()` projection, the header/footer link registry behind `isPublished()`, the
-  // category row, and the company identity behind `registered`.
+  // `toCountryRow()` projection, the header/footer link registry behind `isPublished()`, and the
+  // company identity behind `registered`.
   "src/config/countries.ts",
   "src/config/site-links.ts",
   // The occasion registry of spec 004 §13's resolution note (TASK-053): the six homepage tiles
@@ -99,7 +99,9 @@ export const CONFIG_FILES = [
   // destination's dated occasions with the order-by cutoffs the "Coming up in Poland" strip
   // prints.
   "src/config/occasions.ts",
-  "src/config/categories.ts",
+  // The mega menu's shape (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383): which taxonomy
+  // keys each panel reads, in which order, and its label keys. It replaced the category row.
+  "src/config/mega-menu.ts",
   // The five SKUs the "Most sent this week" row shows until real orders rank it (TASK-054). It
   // holds references and no product knowledge: spec 004 §3 ships nothing that knows what a
   // product is, so the names are read from the committed catalogue and emptying the array hides
