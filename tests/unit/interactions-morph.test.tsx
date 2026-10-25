@@ -130,6 +130,9 @@ describe("the card's half: no static name, no byte (AC-8, §5.3.0)", () => {
     price: { amountMinor: 4590, currency: "EUR" },
     priceLabelKey: "catalog.price.inclusive",
     provenance: "ai",
+    equivalents: null,
+    slots: null,
+    localSpecial: false,
     href: "/en/poland/product/amber-hour",
   };
 
