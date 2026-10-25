@@ -112,6 +112,8 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       "src/modules/checkout/address.ts",
       "src/modules/checkout/phone.ts",
       "src/modules/checkout/currency.ts",
+      // spec 045 AC-31 (TASK-400, TASK-401): site search's text core and in-process engine.
+      "src/modules/search",
     ]);
   });
 

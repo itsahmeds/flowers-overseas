@@ -15,7 +15,7 @@
  * is (ADR-0006).
  *
  * Every dependency is injected (the source, the clock, the invalidation subscription, the
- * logger), so the unit suite runs it on the static catalogue with no `DATABASE_URL` and an
+ * logger), so the unit suite runs it on the static catalogue with no database URL and an
  * injected clock (AC-31). `src/modules/search/default-engine.ts` wires the process's one instance.
  */
 import type { LocaleCode } from "@/config/locales";

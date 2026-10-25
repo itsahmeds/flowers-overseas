@@ -2,12 +2,12 @@
  * `parseQuery`: a raw query into tokens and, when the words name one, a destination (spec 045
  * §2.4 item 1, AC-11; TASK-400).
  *
- * A destination's words are its names in every launch locale and its URL slugs (`poland`,
- * `polska`, `polen`): data from the country registry and the catalogues, handed in by the caller,
- * so nothing here names a country (spec 004 AC-73). Words that name a destination leave the query
- * and set the destination; the first one named wins, and every destination word is consumed, so
- * "flowers to poland" searches "flowers". The query's own words beat the `to` parameter, which the
- * engine applies only when this returns no destination (§2.4: words, then `to`, then none).
+ * A destination's words are its names in every launch locale and its URL slugs: data from the
+ * country registry and the catalogues, handed in by the caller, so nothing here names a country
+ * (spec 004 AC-73). Words that name a destination leave the query and set the destination; the
+ * first one named wins, and every destination word is consumed, so "flowers to {a country}"
+ * searches "flowers". The query's own words beat the `to` parameter, which the engine applies
+ * only when this returns no destination (§2.4: words, then `to`, then none).
  *
  * Matching is exact on the normalised words (a multi-word name matches as a run of words), never
  * by stem or typo: a country is a deliberate choice, and a near-miss must not move the buyer's
@@ -20,7 +20,7 @@ import { normaliseForSearch, tokenise } from "./text";
 /** One destination as `parseQuery` needs it: its code and its words, each a normalised phrase. */
 export interface DestinationWords {
   readonly iso2: string;
-  /** Normalised phrases (`polska`, `czech republic`), each split into tokens. */
+  /** Normalised phrases (a one-word name, or a run of words for a longer one), as tokens. */
   readonly phrases: readonly (readonly string[])[];
 }
 
