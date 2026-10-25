@@ -34,6 +34,7 @@ _None recorded._
 ## Progress
 
 - 2026-10-25: worktree, row `in_progress`, draft PR #433; builders, async tree, fixtures and tests pushed; gates and mutation checks run.
+- 2026-10-25 (stop for the night): run 40189518204 failed `test-integration` on a 5 000 ms timeout (tree walk) and Lighthouse LCP 2017/2049 ms (noise band). Fixed the timeout in `f82e79b`; left: CI run 40192739321 on that head to read (rerun Lighthouse once if LCP is 2000 to 2200 ms), then merge-ready.
 
 ## Result
 
