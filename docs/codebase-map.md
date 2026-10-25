@@ -19,7 +19,7 @@ task actually touches.
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +104 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +105 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
@@ -187,6 +187,7 @@ task actually touches.
 | `fx-refresh.ts` | — | Weekday FX rebuild: rebuild each Railway `web` whose… |
 | `fx-snapshot.ts` | — | Build-time ECB fetch: the day's euro reference rates,… |
 | `gates-cheap.ts` | `gates:cheap` | `pnpm gates:cheap` — every cheap gate of `CLAUDE.md`… |
+| `i18n-check-drafts.ts` | — | `pnpm i18n:check` check 10, "drafts" (spec 003 §14 A15… |
 | `i18n-check-scope.ts` | — | `pnpm i18n:check` check 11, "scope" |
 | `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6… |
 | `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` |
@@ -217,7 +218,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 376 |
+| `tests/unit/` | 377 |
 | `tests/integration/` | 46 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 71 |

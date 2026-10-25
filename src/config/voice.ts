@@ -1,7 +1,8 @@
 /**
  * The voice register (spec 004 §14 A5; spec 007 AC-2; TASK-087).
  *
- * The nine words spec 004 §14 A5 bans from customer copy, in one place.
+ * The nine words spec 004 §14 A5 bans from customer copy, in one place, and their German and Polish
+ * forms (spec 003 §14 A15 clause 5; TASK-185).
  *
  * The list was born inside `tests/unit/design-docs.test.ts`, which is the right place to *assert*
  * it and the wrong place to *keep* it: spec 007's `pnpm corridor:check` has to fail a corridor
@@ -43,6 +44,98 @@ export const BANNED_VOICE_WORDS = [
 export type BannedVoiceWord = (typeof BANNED_VOICE_WORDS)[number];
 
 /**
+ * The same nine words in German and Polish (spec 003 §14 A15 clause 5, advisor fix 3; TASK-185).
+ * The English list alone would let "Netzwerk" or "pośrednik" through a drafted `de`/`pl` value, so
+ * these sit beside it and `bannedVoiceWordsIn()` matches them with the same rule: no word
+ * boundary, case-insensitive, a hyphen read as "hyphen or space". Each entry is a form that is
+ * not already caught by another entry; where an inflected form does not contain its base form it
+ * is listed too ("sieć" does not match "sieci"; "pośrednik" does not match "pośrednicy", which
+ * "pośrednic" does). Stems are deliberate: "dostawc" takes dostawca, dostawcy and dostawców and
+ * leaves "dostawa" (delivery) alone.
+ *
+ * They are matched in every prose a caller scans, not only in `de`/`pl` messages, because none of
+ * them is an English word: the scan stays one rule for every reader. "Sprzedawca" (the seller on
+ * a Polish invoice, which is us) is not a form of "vendor" here and is not listed.
+ *
+ * `BANNED_VOICE_WORDS` keeps the nine English words, which `docs/design/README.md` §Voice pins.
+ */
+export const BANNED_VOICE_FORMS = {
+  de: [
+    // relay
+    "Relais",
+    "Vermittl",
+    "vermittel",
+    // corridor
+    "Korridor",
+    // partner: the German word is the English one, so the English entry matches it ("Partner",
+    // "Partnerin", "Partnerfloristen"); listing it again would report one word twice.
+    // third party
+    "Drittanbieter",
+    "Drittpartei",
+    "dritte Partei",
+    "dritten Partei",
+    // vendor
+    "Anbieter",
+    "Lieferant",
+    "Händler",
+    "Verkäufer",
+    // network
+    "Netzwerk",
+    // anywhere in the world
+    "weltweit",
+    "überall auf der Welt",
+    // super fresh
+    "superfrisch",
+    "super-frisch",
+  ],
+  pl: [
+    // relay
+    "pośrednik",
+    "pośrednic",
+    "przekaźnik",
+    // corridor
+    "korytarz",
+    // partner: the English entry matches "partner", "partnerka", "partnerskie".
+    // third party
+    "strona trzecia",
+    "strony trzeciej",
+    "stronie trzeciej",
+    "stronę trzecią",
+    "stroną trzecią",
+    "stron trzecich",
+    "stronom trzecim",
+    "stronami trzecimi",
+    "stronach trzecich",
+    // vendor
+    "dostawc",
+    // network
+    "sieć",
+    "sieci",
+    // anywhere in the world
+    "na całym świecie",
+    "gdziekolwiek na świecie",
+    "wszędzie na świecie",
+    // super fresh
+    "superśwież",
+    "super-śwież",
+  ],
+} as const;
+
+export type BannedVoiceForm =
+  | (typeof BANNED_VOICE_FORMS.de)[number]
+  | (typeof BANNED_VOICE_FORMS.pl)[number];
+
+/** What `bannedVoiceWordsIn()` reports: an English word or a German or Polish form. */
+export type BannedVoiceTerm = BannedVoiceWord | BannedVoiceForm;
+
+/** Every term the scan reads, English first, then German, then Polish. */
+export const BANNED_VOICE_TERMS: readonly BannedVoiceTerm[] = [
+  ...BANNED_VOICE_WORDS,
+  ...BANNED_VOICE_FORMS.de,
+  ...BANNED_VOICE_FORMS.pl,
+];
+
+/**
  * The **one** sanctioned use of a banned word (spec 004 §14 **A22** clause 2; founder, 2026-10-04,
  * in chat: "Allow \"my partner\""). A22 keeps "partner" banned for florists and allows the home
  * sentence's "who it's for" option to read exactly "my partner". The exception is the exact ICU
@@ -74,6 +167,8 @@ export interface BannedVoiceOptions {
   readonly messageKey?: string;
   /** The exceptions to honour; `VOICE_EXCEPTIONS` unless a test mutates it. */
   readonly exceptions?: readonly VoiceExceptionRule[];
+  /** The terms to match; `BANNED_VOICE_TERMS` unless a test removes a list to watch a case go red. */
+  readonly terms?: readonly BannedVoiceTerm[];
 }
 
 /**
@@ -95,7 +190,8 @@ function withoutExceptions(prose: string, options: BannedVoiceOptions): string {
 }
 
 /**
- * The banned words that appear in one piece of prose, each named once, in list order.
+ * The banned words that appear in one piece of prose, each named once, in list order: the nine
+ * English words, then the German and Polish forms (`BANNED_VOICE_FORMS`).
  *
  * **No word boundaries, on purpose** (`/review 63`): "networked" trips `network` and "vendors"
  * trips `vendor`. The rule is over-inclusive, which is the safe direction for a copy ban — a
@@ -108,9 +204,10 @@ function withoutExceptions(prose: string, options: BannedVoiceOptions): string {
 export function bannedVoiceWordsIn(
   prose: string,
   options: BannedVoiceOptions = {},
-): readonly BannedVoiceWord[] {
+): readonly BannedVoiceTerm[] {
   const scanned = withoutExceptions(prose, options);
-  return BANNED_VOICE_WORDS.filter((word) =>
-    new RegExp(word.replaceAll("-", "[- ]"), "i").test(scanned),
+  const terms = options.terms ?? BANNED_VOICE_TERMS;
+  return terms.filter((word) =>
+    new RegExp(word.replaceAll("-", "[- ]"), "iu").test(scanned),
   );
 }

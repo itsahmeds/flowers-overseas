@@ -19,7 +19,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider, createTranslator } from "next-intl";
 
 import { CATEGORIES } from "../../src/config/categories.ts";
 import { COMPANY } from "../../src/config/company.ts";
@@ -444,8 +444,15 @@ describe("the rendered header (AC-7, AC-14)", () => {
     for (const locale of LOCALES) {
       const html = render(locale);
       const currency = headerCurrencyCode(locale);
+      // The label is the locale's own `nav.currency.label` (de/pl are drafted, TASK-185).
+      const label = createTranslator({
+        locale,
+        messages: loadMessages(locale, ["nav"]),
+        namespace: "nav",
+      })("currency.label", { currency });
+      expect(label, locale).toContain(currency);
       expect(html).toContain("data-fo-header-currency");
-      expect(html).toContain(`aria-label="Prices shown in ${currency}"`);
+      expect(html).toContain(`aria-label="${label}"`);
       expect(html).toContain(`>${currency}<`);
     }
   });

@@ -1,9 +1,14 @@
 # Glossary and style guide — `pl` (Polish)
 
-**Status: stub.** Polish copy in the repository today is an unreviewed English echo written by
-`pnpm i18n:draft` (`source: "machine"`, `reviewed: false`), so `pl` is non-indexable and tagged
-`beta` — by design (spec 003 §13 Q7, Q10). The first native review pass (`plan/13` B12) fills §3
-and records its decisions here.
+**Status: agent drafts, unreviewed.** Polish copy in the repository is an agent-written draft
+(spec 003 §14 A15; TASK-185), committed as `source: "machine"`, `reviewed: false`, with the
+`sourceHash` of the English it translates, so `pl` stays non-indexable, hidden and tagged `beta`
+until a native reviewer attests it. It uses `Ty`, and a country name stays in the nominative
+(the sentence is restructured instead). What is never drafted (legal, consent and price-display
+copy, sympathy, funeral and All Saints' copy, slugs and names) is listed in
+`content/i18n/draft-policy.json`, and `pnpm i18n:check` check 10 fails any other key still
+identical to English. The first native review pass (`plan/13` B12) reads `reviewBeforeOrders` in
+that file first, fills §3 and records its decisions here.
 
 Read `glossary.en.md` first: brand terms, the relay vocabulary, tone and the taboo list apply
 unchanged.
