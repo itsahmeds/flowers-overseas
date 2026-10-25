@@ -65,6 +65,8 @@ const FUNCTIONS = [
   "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
+  // 0021 (TASK-337): an issued invoice never changes (spec 018 §5.1, AC-16).
+  "invoice_immutable",
   "media_asset_delivery_proof_guard",
   "media_asset_partner_application_guard",
   "order_assignment_mode_check",

@@ -545,7 +545,7 @@ describe.skipIf(server.url === undefined)(
                                    destination_country_id, delivery_date, buyer_currency_code,
                                    buyer_total_minor, base_currency_code, base_total_minor,
                                    buyer_snapshot, recipient_snapshot, purchase_id)
-              VALUES (${"p".repeat(24)}, 'demo', ${buyer.customerId}, ${input.recipientId},
+              VALUES (${"p".repeat(22)}, 'demo', ${buyer.customerId}, ${input.recipientId},
                       ${to.countryId}, DATE '2027-03-10', 'PLN', ${input.buyerTotalMinor},
                       'PLN', ${input.buyerTotalMinor}, '{}'::jsonb, '{}'::jsonb, ${gbp})`;
           });

@@ -280,6 +280,23 @@ export const serverEnvSchema = z.object({
       .optional(),
   ),
   /**
+   * The HMAC key of the buyer's signed links (spec 018 §5.2 `src/lib/signed-link.ts`, §12 founder
+   * action 1; TASK-337): tracking, invoice download, privacy and export links. SECRET: never
+   * logged, never in a URL. At least 32 characters (`openssl rand -hex 32`). Distinct from
+   * spec 016's florist links and spec 011's sign-in tokens, which have their own secrets.
+   *
+   * **Optional at server start, required at use**, for `AUTH_SECRET`'s reason: absent in
+   * `development` and `test`, a clearly-named development secret signs; absent in a deployed
+   * environment, the first signed link throws naming this key (`signedLinkSecret()`).
+   */
+  SIGNED_LINK_SECRET: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .min(32, "must be at least 32 characters (`openssl rand -hex 32`)")
+      .optional(),
+  ),
+  /**
    * Resend API key for the sign-in mail of both surfaces (spec 012 §2.2, ADR-0013; TASK-217).
    * SECRET. Read only by `resendMailer` through `mailerConfig()`; required at use where the mailer
    * is `resend` (staging and production by default).
@@ -792,6 +809,17 @@ export function validateRuntimeEnv(source: EnvSource): {
     });
   }
 
+  if (
+    source[SIGNED_LINK_SECRET_KEY] === DEVELOPMENT_SIGNED_LINK_SECRET &&
+    (DEPLOYED_ENVIRONMENTS.includes(environment) ||
+      source["NODE_ENV"] === "production")
+  ) {
+    issues.push({
+      key: SIGNED_LINK_SECRET_KEY,
+      message: `must not be the committed development secret in ${environment}; generate one with \`openssl rand -hex 32\``,
+    });
+  }
+
   issues.push(...liveStripeKeyIssues(source, environment));
 
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
@@ -1000,6 +1028,15 @@ export function parseEnv(source: EnvSource): {
 
 /** The sign-in core's secret's name (spec 012 §2.2; TASK-217). */
 export const AUTH_SECRET_KEY = "AUTH_SECRET" as const;
+/** The signed-link secret's name (spec 018 §5.2; TASK-337). */
+export const SIGNED_LINK_SECRET_KEY = "SIGNED_LINK_SECRET" as const;
+/**
+ * The key buyer links are signed with where no real one is configured: `development` and `test`
+ * only. **Not a secret**, named so it cannot be mistaken for one; `signedLinkSecret()` refuses it
+ * everywhere else, and `validateEnv()` refuses it in every deployed environment.
+ */
+export const DEVELOPMENT_SIGNED_LINK_SECRET =
+  "phase-0-development-signed-link-secret-not-a-production-key";
 /** The mailer switch's name (spec 012 §2.2; TASK-217). */
 export const MAILER_KEY = "MAILER" as const;
 

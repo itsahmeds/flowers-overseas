@@ -5,6 +5,8 @@
  * The connected half — the same seed read back out of a migrated database, and the constraints
  * refusing what they exist to refuse — is `tests/integration/schema-orders-payments.test.ts`.
  */
+import { readdirSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -29,6 +31,7 @@ import {
   derivedTerminal,
 } from "../fixtures/order-machine.ts";
 import {
+  MIGRATIONS_DIR,
   checkList,
   createdTables,
   droppedTables,
@@ -41,11 +44,23 @@ const up = readMigration("0007_orders_payments.sql");
 const down = readMigration("0007_orders_payments.down.sql");
 /**
  * `0013` (TASK-245) adds `"order".locale_code`, its key and `order_reference_idx`; `0017` (spec 002
- * §14 A7, TASK-254) the payment, refund and webhook-inbox columns, checks and index.
+ * §14 A7, TASK-254) the payment, refund and webhook-inbox columns, checks and index; the
+ * post-purchase file (spec 018 §5.1, TASK-337) `"order".tracking_token_version` and the exact
+ * `public_token` check.
  */
 const a7 = readMigration("0017_payments_a7.sql");
 /** `0019` (spec 010 §14 A-founder-2026-10-22, TASK-347) adds `"order".purchase_id`, its key and index. */
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${readMigration("0019_purchase.sql")}`;
+const purchase = readMigration("0019_purchase.sql");
+/**
+ * Spec 002 §14 A8.1's two `order_transition` rows ship in `NNNN_post_purchase` (TASK-337), found by
+ * name so a renumbering at rebase changes nothing here.
+ */
+const a8 = readMigration(
+  readdirSync(MIGRATIONS_DIR).find((name) =>
+    /^\d{4}_post_purchase\.sql$/.test(name),
+  ) ?? "NNNN_post_purchase.sql",
+);
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}`;
 
 const TABLES = [
   "order_status",
@@ -62,17 +77,19 @@ const TABLES = [
   "webhook_inbox",
 ] as const;
 
-/** The `INSERT … VALUES` rows of one table, as arrays of SQL literals. */
+/** The `INSERT … VALUES` rows of one table, as arrays of SQL literals, from `0007` and A8's file. */
 function seededRows(table: string): string[][] {
-  const match = new RegExp(
-    String.raw`INSERT INTO public\.${table} \([^)]*\) VALUES\s*([\s\S]*?);`,
-  ).exec(up);
-  if (match?.[1] === undefined) return [];
-  return [...match[1].matchAll(/^\s*\((.*)\),?\s*$/gm)].map((m) =>
-    [...(m[1] ?? "").matchAll(/ARRAY\[[^\]]*\]|'[^']*'|true|false/g)].map(
-      (v) => v[0],
-    ),
-  );
+  return [up, a8].flatMap((file) => {
+    const match = new RegExp(
+      String.raw`INSERT INTO public\.${table} \([^)]*\) VALUES\s*([\s\S]*?);`,
+    ).exec(file);
+    if (match?.[1] === undefined) return [];
+    return [...match[1].matchAll(/^\s*\((.*)\),?\s*$/gm)].map((m) =>
+      [...(m[1] ?? "").matchAll(/ARRAY\[[^\]]*\]|'[^']*'|true|false/g)].map(
+        (v) => v[0],
+      ),
+    );
+  });
 }
 
 const unquote = (value: string): string => value.replace(/^'|'$/g, "");
@@ -187,8 +204,8 @@ describe("AC-14 / T-14 (unit) — the seed is A6, both ways", () => {
     );
   });
 
-  it("order_transition holds exactly A6.3's 73 rows (sets expanded)", () => {
-    expect(transitionRows).toHaveLength(73);
+  it("order_transition holds exactly A6.3's 73 rows plus A8.1's two (sets expanded)", () => {
+    expect(transitionRows).toHaveLength(75);
     expect(new Set(transitionRows)).toEqual(
       new Set(
         TRANSITIONS.map((t) =>

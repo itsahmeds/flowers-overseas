@@ -11,7 +11,7 @@
  * Every case runs on a scratch database of a disposable local Postgres 16
  * (`support/scratch-db.ts`); never the shared Phase 0 database.
  */
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 
 import postgres from "postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -121,11 +121,11 @@ async function rawCopy(
 ): Promise<void> {
   await tx`SELECT set_config('app.allow_status_write', 'on', true)`;
   await tx`
-    INSERT INTO "order" (id, public_token, mode, customer_id, recipient_id, destination_country_id,
+    INSERT INTO "order" (id, mode, customer_id, recipient_id, destination_country_id,
                          destination_postcode, delivery_date, status, buyer_currency_code,
                          buyer_total_minor, base_currency_code, base_total_minor, vat_breakdown,
                          buyer_snapshot, recipient_snapshot, locale_code, purchase_id)
-    SELECT ${id}, ${`${randomUUID().replaceAll("-", "")}abcdefgh`}, mode, customer_id,
+    SELECT ${id}, mode, customer_id,
            recipient_id, destination_country_id, destination_postcode, delivery_date, 'placed',
            buyer_currency_code, buyer_total_minor, base_currency_code, base_total_minor,
            vat_breakdown, buyer_snapshot, recipient_snapshot,
@@ -448,7 +448,7 @@ describe.skipIf(server.url === undefined)(
                                  destination_country_id, delivery_date, status,
                                  buyer_currency_code, buyer_total_minor, base_currency_code,
                                  base_total_minor, buyer_snapshot, recipient_snapshot)
-            VALUES (${id}, ${`${randomUUID().replaceAll("-", "")}abcdefgh`}, 'demo',
+            VALUES (${id}, ${randomBytes(16).toString("base64url")}, 'demo',
                     ${p.customerId}, ${p.recipientId}, ${p.countryId}, '2027-02-14', 'placed',
                     'PLN', 19900, 'PLN', 19900, '{}'::jsonb, '{}'::jsonb)`;
         }

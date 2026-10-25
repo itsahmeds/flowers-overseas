@@ -31,7 +31,7 @@
  * `terms_version` is written only for a `live` order (the schema refuses one without it, and
  * refuses one on a demo or test order: no contract is formed there, §5.1 A).
  */
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -284,11 +284,6 @@ const CountryRow = z.object({
 });
 const IdRow = z.object({ id: z.uuid() });
 
-/** 128 random bits as base64url: 22 characters, `0007`'s `public_token` pattern. */
-function publicToken(): string {
-  return randomBytes(16).toString("base64url");
-}
-
 /** The purchase of a lone order: its mode, currency, total, locale and customer (`0019`). */
 async function insertOwnPurchase(
   executor: OrderExecutor,
@@ -339,15 +334,17 @@ export async function placeWith(
     try {
       const purchaseId =
         input.purchaseId ?? (await insertOwnPurchase(executor, input));
+      // `public_token` is not named: the column default draws it (16 CSPRNG bytes, base64url;
+      // `0021`, spec 018 §5.1 and AC-2), so no token is ever made or held in application code.
       const [inserted] = await withSwitch(executor, () =>
         executor.execute(sql`
-        INSERT INTO "order" (id, public_token, mode, customer_id, recipient_id,
+        INSERT INTO "order" (id, mode, customer_id, recipient_id,
                              destination_country_id, destination_city_id, destination_postcode,
                              delivery_date, delivery_window, status, buyer_currency_code,
                              buyer_total_minor, fx_rate_ppm, base_currency_code, base_total_minor,
                              vat_breakdown, supply_model, terms_version, buyer_snapshot,
                              recipient_snapshot, locale_code, purchase_id)
-        VALUES (${candidate}, ${publicToken()}, ${input.mode}, ${input.customerId},
+        VALUES (${candidate}, ${input.mode}, ${input.customerId},
                 ${input.recipientId}, ${input.destinationCountryId},
                 ${input.destinationCityId ?? null}, ${input.destinationPostcode ?? null},
                 ${input.deliveryDate}::date, ${input.deliveryWindow ?? null}, 'placed',

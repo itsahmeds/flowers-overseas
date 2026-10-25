@@ -67,6 +67,8 @@ Disallow: /vendor/
 Disallow: /account/
 Disallow: /checkout/
 Disallow: /track/
+Disallow: /*/track/
+Disallow: /*/account/
 Disallow: /search
 Disallow: /dev/
 Disallow: /*?*sort=
@@ -223,6 +225,80 @@ describe("the route serves the same policy (AC-12)", () => {
       expect(resolveRobots(robotsMetadataRoute(deployment))).toBe(
         robotsTxt(deployment),
       );
+    }
+  });
+});
+
+/**
+ * Spec 018 AC-13, T-13 track half (TASK-337). A matcher that follows Google's rules, over the
+ * **served body** rather than the array: the most specific (longest) matching rule wins, `*` is any
+ * sequence, `$` anchors the end, and a tie between an Allow and a Disallow goes to the Allow.
+ * Written here, independently of the module, so it judges the file a crawler receives.
+ */
+function googleAllows(body: string, path: string): boolean {
+  const rules = body
+    .split("\n")
+    .map((line) => /^(Allow|Disallow):\s*(\S*)$/u.exec(line.trim()))
+    .filter((match): match is RegExpExecArray => match !== null)
+    .map((match) => ({ allow: match[1] === "Allow", pattern: match[2] ?? "" }))
+    .filter((rule) => rule.pattern !== "");
+  let best: { allow: boolean; length: number } | undefined;
+  for (const rule of rules) {
+    if (!matches(rule.pattern, path)) continue;
+    const length = rule.pattern.length;
+    if (
+      best === undefined ||
+      length > best.length ||
+      (length === best.length && rule.allow)
+    ) {
+      best = { allow: rule.allow, length };
+    }
+  }
+  return best?.allow ?? true;
+}
+
+describe("spec 018 AC-13: the token and account pages (T-13, track half)", () => {
+  const body = robotsTxt(INDEXING);
+
+  it("carries Disallow: /*/track/ and Disallow: /*/account/ in the indexing environment", () => {
+    const lines = body.split("\n");
+    expect(lines).toContain("Disallow: /*/track/");
+    expect(lines).toContain("Disallow: /*/account/");
+  });
+
+  it("blocks a tracking-token page and an account page in every locale", () => {
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      expect(googleAllows(body, `/${locale}/track/abc`), locale).toBe(false);
+      expect(
+        googleAllows(
+          body,
+          `/${locale}/track/AbCdEfGhIjKlMnOpQrStUv.x_-Y/calendar.ics`,
+        ),
+        locale,
+      ).toBe(false);
+      expect(
+        googleAllows(body, `/${locale}/account/orders/FO-AB12-CD34`),
+        locale,
+      ).toBe(false);
+    }
+  });
+
+  it("allows the lookup and the account entry, so their noindex is seen", () => {
+    expect(googleAllows(body, "/en-gb/track")).toBe(true);
+    expect(googleAllows(body, "/pl/account")).toBe(true);
+    expect(googleAllows(body, "/en-gb/track?ref=x")).toBe(true);
+  });
+
+  it("the matcher is not vacuous: it honours length and the Allow tie-break", () => {
+    expect(googleAllows("Allow: /\nDisallow: /a/", "/a/b")).toBe(false);
+    expect(googleAllows("Disallow: /a/\nAllow: /a/b", "/a/b")).toBe(true);
+    expect(googleAllows("Disallow: /a\nAllow: /a", "/a")).toBe(true);
+    expect(googleAllows("Allow: /\nDisallow: /*/x/", "/l/x/y")).toBe(false);
+  });
+
+  it("blocks nothing in the indexing body that a crawler must reach", () => {
+    for (const { url } of fixture.mustStayCrawlable) {
+      expect(googleAllows(body, url), url).toBe(true);
     }
   });
 });
