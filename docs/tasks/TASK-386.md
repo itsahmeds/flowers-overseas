@@ -31,7 +31,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-25, to the founder (copy batch): `en-gb` unreviewed share was 6.1 % on the base (PR 423, TASK-385's keys) and is 7.7 % on this branch (`en` 5.9 % to 7.5 %), so `en`/`en-gb` are not indexable on this branch and the indexability unit cases are red until the copy is recorded. `.claude/state/record-approval-386.py` records this PR's seven keys (`--check` passed); `record-approval-289.py` (`shop.toolbar.howWeSort`), `record-approval-383.py` (`nav.mega.byPrice`, `nav.mega.comingUp`) and `record-approval-385.py` record the rest; with all four run the share is about 4.4 %. Open.
+- 2026-10-25, to the orchestrator: the state line reads `destinations.state.guideNotDelivering`, which says "Ordering opens soon" only once PR 415 merges ("Guide · not delivering yet" before). Merge 415 first. Open.
+- 2026-10-25, to the founder: `shop.hub.noMoney` ("...includes VAT and delivery") now shows once on the home beside the picker, as item 2 (2026-10-24) asks; this supersedes the 2026-10-04 "dont write this on home". `tests/e2e/home.spec.ts` now allows that one line and no other inclusion sentence. Open.
+- 2026-10-25, to the orchestrator: the home H1 is the board's fixed 56 px from `md` (`.cm-hero h1`), not AC-41's fluid title step (53.76 px at 1280 x 800, 58 px at 1512 x 945); the title step's 58 px at 1440 would put the first card on AC-94's bound. `tests/e2e/frame-laptop-band.spec.ts` expects 56 for the home. Open.
+- 2026-10-25, to the orchestrator: spec 006 AC-15's whole-page 204,800 B image budget after a full scroll cannot hold on a home that shows the whole core range, the occasion panels and Coming up as photographs; `tests/e2e/media-budgets.spec.ts` now holds the home to AC-94's first-screen 307,200 B. Spec 006 needs the matching amendment. Open.
+- 2026-10-25, to the orchestrator: the language popup's phone sheet (spec 003) may cover the top of the v3 picker card on a first visit; it stays clear of the first product card (AC-94), which `tests/e2e/language-popup.spec.ts` now asserts instead of the sentence card. Open.
+- 2026-10-25, to TASK-383: `DEMO_DESTINATION_ISO2` remains in `src/config/site-links.ts` for the header's "Our selection" entry (TASK-383's scope) with its pin at `tests/unit/site-links-config.test.ts:487`; the home no longer reads it. Delete both with the mega menu. Open.
+- 2026-10-25, to TASK-411: below `md` the two cards of the first row are the same size, so the second (lazy) card's photograph can be the LCP element when it paints first (`tests/e2e/lcp.spec.ts` accepts either). Making both first-row photographs eager would help the LCP median. Open.
 
 ## Progress
 
@@ -39,11 +46,14 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: feat commit 9aad4701d (home v3 first screen, Our selection, country-less card, picker variant), tests commit 6eb40c11e; draft PR 425 on base `task/TASK-385-chooser`.
+- 2026-10-25: screenshots at 1440 x 900, 1280 x 800 and 390 x 844 against `home-desktop.dc.html` and `home-mobile.dc.html`; fixed the phone picker's lost classes (field and button padding), the hidden search decorations, the 88 px sideways scroll the tab radios caused at 390, the price section and Coming up grid (d1f250bbd).
+- 2026-10-25: the v2 home's browser cases retired or moved to v3 (home, home-round2, a11y, language popup, phone chrome, links, header, laptop band, motion, LCP, media budgets, visual parts); new `tests/e2e/home-v3-products.spec.ts`; Show prices draws motion 3's bloom; remember line 13 px, See all 24 px targets (9fdf15444 to 6d2750c99).
+- 2026-10-25: `record-approval-386.py` written and run with `--check` only; rows `in_review`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR #425 (base `task/TASK-385-chooser`). The home is products first: H1, line, the inline picker card (`CountryPicker variant="home"`), the state line and `shop.hub.noMoney` once, the 370 px photograph from `md` only; "Our selection" holds the whole core range (10) as country-less chooser cards (`ProductCard chooser`), "How we sort" closed, See all to the chooser; the sentence picker, `TrendingRow`, `OccasionDates`, `HomeProvenanceNote` and the home's `DEMO_DESTINATION_ISO2` reads are gone. Measured on `next dev` at the boards' sizes: first card photograph top 738 px at 1440 x 900 (bound 740; the board's 708 assumes the mega header, about 31 px shorter, TASK-383), 760 at 1280 x 800, 525 at 390 x 844 (bound 684); no sideways scroll at 390. Tests: unit `catalog-home.test.ts` (21) and `home-v3.test.tsx` (11) plus the touched home suites; e2e `home-v3-products.spec.ts` (T-98, T-100 to T-103, T-113, 36 cases over both projects) and the moved home suites passed on a local `next start` (load average 2 to 7). A local build was taken in the build slot because the choice route answers 500 on `next dev` (a route handler reaching `next/font` through the UI barrel, also true of `/api/send` on the base) and can only be judged on a build. Inherited reds, not this PR's: the unreviewed-share cascade (base already 6.1 %), the whole-tree lint unit timeout (TASK-412), the language popup's "beta" mark cases (`tests/e2e/language-popup.spec.ts` (a) and (b), untouched here), Lighthouse LCP just over 2,000 ms (TASK-411), the e2e 30-minute cutoff (TASK-412). Visual baselines for the new home parts come from the `visual:baselines` run on this PR.
