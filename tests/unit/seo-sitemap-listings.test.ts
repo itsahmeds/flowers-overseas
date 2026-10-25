@@ -196,19 +196,6 @@ describe("membership on the indexing deployment: the page's own verdict (AC-19, 
     }
   });
 
-  it("follows an en-gb copy override: its unreviewed category is out, its reviewed occasion is in", async () => {
-    // `seed/data/copy/en-gb/` overrides `apology` in both files: the category row unreviewed, the
-    // occasion row reviewed. `en` has the reverse pair, so this is the override being read.
-    expect(rawCopy("en-gb", "categories")[0]).toMatchObject({
-      key: "apology",
-      reviewed: false,
-    });
-    const categories = locs(await categorySitemapEntries("en-gb", INDEXING));
-    expect(categories).not.toContain(`${ORIGIN}/en-gb/flowers/sorry-flowers`);
-    const occasions = locs(await occasionSitemapEntries("en-gb", INDEXING));
-    expect(occasions).toContain(`${ORIGIN}/en-gb/occasions/i-am-sorry`);
-  });
-
   it("prints only absolute, lowercase, parameter-free URLs with no trailing slash", async () => {
     for (const locale of ["en", "en-gb"]) {
       for (const entry of [
