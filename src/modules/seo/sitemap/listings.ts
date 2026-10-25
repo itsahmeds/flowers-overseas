@@ -80,9 +80,8 @@ export async function listingSitemapEntries(
       ...(page.countryIso === undefined ? {} : { countryIso: page.countryIso }),
       ...(page.entityKey === undefined ? {} : { entityKey: page.entityKey }),
     };
-    if (!catalog.listingPageIndexability(identity, deployment).indexable) {
-      continue;
-    }
+    const verdict = catalog.listingPageIndexability(identity, deployment);
+    if (!verdict.indexable) continue;
 
     const loc = absoluteUrl(page.path, { baseUrl });
     const cluster =
