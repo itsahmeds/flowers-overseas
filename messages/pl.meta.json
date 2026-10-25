@@ -2364,6 +2364,11 @@
     "reviewed": false,
     "sourceHash": "76c90f3766e84a946be2f0dbffdefe0fa6a19163fb29ef86fe6c9ec41c8b6a09"
   },
+  "infoPages.status.untranslated": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "484e8a67ba8675df36c6f9bc1e846edfb71c095485ee6fec14066fb71031f107"
+  },
   "languagePopup.browserMatch": {
     "source": "machine",
     "reviewed": false,
