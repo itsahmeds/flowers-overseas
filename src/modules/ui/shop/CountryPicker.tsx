@@ -25,6 +25,8 @@
  */
 import type { ReactElement } from "react";
 
+import { QUERY_KEY } from "@/config/url-keys";
+
 import { Icon } from "../icons/Icon.tsx";
 import { PILL_ACCENT, PILL_SECONDARY } from "../primitives/Button.tsx";
 
@@ -100,7 +102,7 @@ export function CountryPicker({
         <div className="mb-[12px]">
           <button
             type="submit"
-            name="to"
+            name={QUERY_KEY.to}
             value={continueTo.code}
             className={`${ACCENT} min-h-[50px] px-[28px]`}
             data-fo-pending=""
@@ -115,7 +117,7 @@ export function CountryPicker({
           <button
             key={chip.code}
             type="submit"
-            name="to"
+            name={QUERY_KEY.to}
             value={chip.code}
             className={CHIP}
             data-fo-choose-chip={chip.code}
@@ -137,7 +139,7 @@ export function CountryPicker({
           <input
             id={fieldId}
             type="search"
-            name="to"
+            name={QUERY_KEY.to}
             list={listId}
             autoComplete="off"
             placeholder={searchLabel}

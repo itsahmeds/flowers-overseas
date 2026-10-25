@@ -20,6 +20,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import type { LocaleCode } from "@/config/locales";
 import { formatList } from "@/modules/i18n";
+import { CHOOSER_LINK_REL } from "@/modules/seo";
 import { Container, CountryPicker } from "@/modules/ui";
 
 import type { ChooserCountryView, ChooserPageView } from "../chooser-choice";
@@ -54,7 +55,7 @@ function linkedList(
           key={country.code}
           className="link"
           href={country.href}
-          rel="nofollow"
+          rel={CHOOSER_LINK_REL}
           data-fo-choose-closest={country.code}
         >
           {country.name}
@@ -138,7 +139,7 @@ export function ChooserPage({ view }: ChooserPageProps): ReactElement {
                       <a
                         className="border-rule text-ink text-ui flex min-h-(--target-min) items-center border-b border-solid no-underline"
                         href={country.href}
-                        rel="nofollow"
+                        rel={CHOOSER_LINK_REL}
                         data-fo-choose-country={country.code}
                       >
                         {country.name}

@@ -24,6 +24,7 @@ import { isLocaleCode } from "@/config/locales";
 import {
   ChooserPage,
   type ChooserPageState,
+  ChooserSearchParamsSchema,
   chooserPageView,
   decideChooser,
 } from "@/modules/catalog";
@@ -63,8 +64,7 @@ export default async function ChooserRoute({
   const { locale: requested, rest = [] } = await params;
   const locale = chooserLocale(requested);
   setRequestLocale(locale);
-  const raw = (await searchParams).to;
-  const to = raw === undefined ? [] : Array.isArray(raw) ? raw : [raw];
+  const to = ChooserSearchParamsSchema.parse(await searchParams);
   const decision = await decideChooser(locale, rest, to);
   // A choice is the proxy's to answer; one that reaches the page (a request typed at the internal
   // route) is shown the question again, never a redirect or a cookie from here.
