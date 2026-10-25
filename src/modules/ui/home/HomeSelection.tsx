@@ -15,6 +15,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { CHOOSER_LINK_REL } from "@/modules/seo";
+
 import type { LocaleCode } from "../../../config/locales.ts";
 import { Display, HEADING_EM } from "../primitives/typography.tsx";
 
@@ -70,7 +72,7 @@ export function HomeSelection({
         <a
           className="text-link text-ui inline-flex min-h-[24px] items-center font-bold underline decoration-[1.5px] underline-offset-[5px]"
           href={selection.seeAllHref}
-          rel="nofollow"
+          rel={CHOOSER_LINK_REL}
           data-fo-see-all="selection"
         >
           {t("shop.seeAll", { count: selection.cards.length })}
