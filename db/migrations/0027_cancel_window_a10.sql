@@ -1,4 +1,4 @@
--- 0029_cancel_window_a10: free cancellation until the delivery morning (spec 002 §14 A10, the
+-- 0027_cancel_window_a10: free cancellation until the delivery morning (spec 002 §14 A10, the
 -- founder's "2 B" of 2026-10-14; spec 013 §14 A-founder-2026-10-14b; AC-52 to AC-54 of spec 002;
 -- spec 013 §12 task 3; TASK-258).
 --
@@ -14,7 +14,7 @@
 -- Row 16's timing (06:00 destination-local on the delivery date, A10.1) is code, not data: spec
 -- 013's production-start job (`src/modules/payments/production.ts`).
 --
--- Rollback: `0029_cancel_window_a10.down.sql`, guarded by `A10_ROLLBACK_ROWS_IN_USE` (A10.4).
+-- Rollback: `0027_cancel_window_a10.down.sql`, guarded by `A10_ROLLBACK_ROWS_IN_USE` (A10.4).
 
 SET LOCAL ROLE app_owner;
 

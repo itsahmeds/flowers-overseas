@@ -152,7 +152,7 @@ const PaymentRow = z.object({
 });
 type Payment = z.infer<typeof PaymentRow>;
 
-/** The statuses a payment row is "live" in (the partial unique index of `0028`). */
+/** The statuses a payment row is "live" in (the partial unique index of `0026`). */
 const ENDED_PAYMENT = ["cancelled", "failed"] as const;
 
 /** Orders still waiting for their money (A6 row 2's `from`). */

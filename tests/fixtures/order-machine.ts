@@ -267,7 +267,7 @@ const ROWS_A8: typeof ROWS = [
 ];
 
 /**
- * Spec 002 §14 A10.2, rows 39 and 40 (`0029_cancel_window_a10`, TASK-258): the buyer's free cancel
+ * Spec 002 §14 A10.2, rows 39 and 40 (`0027_cancel_window_a10`, TASK-258): the buyer's free cancel
  * after a florist accepted, until production starts. Set P is set E plus these two states.
  */
 const ROWS_A10: typeof ROWS = [
@@ -291,7 +291,7 @@ export const A6_TRANSITIONS: readonly TransitionRow[] = expand(ROWS);
 /** A8.1's two rows, as `0021_post_purchase` inserts them. */
 export const A8_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A8);
 
-/** A10's two rows, as `0029_cancel_window_a10` inserts them. */
+/** A10's two rows, as `0027_cancel_window_a10` inserts them. */
 export const A10_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A10);
 
 /** The table after every migration: A6.3's 73 rows, A8.1's 2 and A10's 2, 77 in all. */
