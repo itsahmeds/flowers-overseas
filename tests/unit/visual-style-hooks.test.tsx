@@ -64,7 +64,6 @@ describe("every visual stylesheet selects a hook the source still writes", () =>
       "data-fo-date-grid",
       "data-fo-date-why-line",
       "data-fo-fx-notice",
-      "data-fo-occasion-dates",
       "data-fo-price-equivalents",
     ]);
   });
