@@ -217,6 +217,70 @@ const COLUMN_HEADING =
 const PANEL_ENTRY =
   "text-ink text-ui flex min-h-[36px] w-full items-center gap-[10px] text-start hover:underline";
 
+/**
+ * A panel's columns, its add-ons line and its "All" link: **one markup for both surfaces**. The
+ * desktop panel and the phone accordion print these bytes identically (only their containers'
+ * classes differ), so the Menu's second copy of every entry costs Brotli a back-reference, not a
+ * second menu (AC-103: header plus Menu at most 6,144 B).
+ */
+function PanelColumns({
+  panel,
+  t,
+  locale,
+}: {
+  readonly panel: MegaPanel;
+  readonly t: Translator;
+  readonly locale: LocaleCode;
+}): ReactElement {
+  return (
+    <>
+      {panel.columns.map((column) => (
+        <div
+          className={column.wide ? "col-span-2" : undefined}
+          data-fo-mega-column={column.id}
+          key={column.id}
+        >
+          <h3 className={COLUMN_HEADING}>{label(t, column.headingKey)}</h3>
+          <ul
+            className={`m-0 grid list-none p-0 ${column.wide ? "grid-cols-2 gap-x-[20px]" : ""}`}
+          >
+            {column.entries.map((entry) => (
+              <li key={entry.id}>
+                <Entry
+                  className={PANEL_ENTRY}
+                  entry={entry}
+                  locale={locale}
+                  t={t}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {panel.extras === null ? null : (
+        <div data-fo-mega-column="extras">
+          <h3 className={COLUMN_HEADING}>
+            {label(t, panel.extras.headingKey)}
+          </h3>
+          <ul className="text-ink-muted m-0 flex list-none flex-wrap gap-x-[8px] p-0 py-[6px] text-sm leading-[1.5]">
+            {panel.extras.labelKeys.map((key, index) => (
+              <li className="inline-flex gap-x-[8px]" key={key}>
+                {index === 0 ? null : <span aria-hidden="true">·</span>}
+                {label(t, key)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {panel.all === null ? null : (
+        <p className="col-span-full mt-[10px]">
+          <AllLink entry={panel.all} locale={locale} t={t} />
+        </p>
+      )}
+    </>
+  );
+}
+
 /** One open panel (`.cm-panel`): its columns, its "All" link, its extras, its featured card. */
 function PanelBody({
   panel,
@@ -237,49 +301,7 @@ function PanelBody({
         <div
           className={`grid content-start gap-[28px] ${GRID_COLUMNS[gridColumns(panel)] ?? "grid-cols-2"} ${full ? "col-span-12" : "col-span-9"}`}
         >
-          {panel.columns.map((column) => (
-            <div
-              className={column.wide ? "col-span-2" : undefined}
-              data-fo-mega-column={column.id}
-              key={column.id}
-            >
-              <h3 className={COLUMN_HEADING}>{label(t, column.headingKey)}</h3>
-              <ul
-                className={`m-0 grid list-none p-0 ${column.wide ? "grid-cols-2 gap-x-[20px]" : ""}`}
-              >
-                {column.entries.map((entry) => (
-                  <li key={entry.id}>
-                    <Entry
-                      className={PANEL_ENTRY}
-                      entry={entry}
-                      locale={locale}
-                      t={t}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          {panel.extras === null ? null : (
-            <div data-fo-mega-column="extras">
-              <h3 className={COLUMN_HEADING}>
-                {label(t, panel.extras.headingKey)}
-              </h3>
-              <ul className="text-ink-muted m-0 flex list-none flex-wrap gap-x-[8px] p-0 py-[6px] text-sm leading-[1.5]">
-                {panel.extras.labelKeys.map((key, index) => (
-                  <li className="inline-flex gap-x-[8px]" key={key}>
-                    {index === 0 ? null : <span aria-hidden="true">·</span>}
-                    {label(t, key)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {panel.all === null ? null : (
-            <p className="col-span-full mt-[10px]">
-              <AllLink entry={panel.all} locale={locale} t={t} />
-            </p>
-          )}
+          <PanelColumns locale={locale} panel={panel} t={t} />
         </div>
         {panel.featured === null ? null : (
           <aside
@@ -350,11 +372,13 @@ export function MegaMenuNav({
 }
 
 /**
- * The board's accordion rows are 40 px apart by 14; here they are the 44 px target (spec 004 §14
- * A-founder-2026-10-24a "Accessibility", 2.5.8) apart by 10, the same 54 px rhythm.
+ * The accordion's body (`.cm-acc .in`): the panel's own column markup, restyled from here. One
+ * column of rows (a wide column's two sub-columns fold into one), each row the 44 px target
+ * (spec 004 §14 A-founder-2026-10-24a "Accessibility", 2.5.8) where the board draws 40 px apart
+ * by 14: the same 54 px rhythm with a 10 px gap. Column headings sit 14 px below the rows above.
  */
-const ACCORDION_ENTRY =
-  "text-ink text-ui flex min-h-(--target-min) w-full items-center text-start";
+const ACCORDION_BODY =
+  "grid gap-[14px] pb-[16px] [&_li>a]:min-h-(--target-min) [&_li>form>button]:min-h-(--target-min) [&_ul]:grid-cols-1 [&_ul]:gap-y-[10px] [&_ul.flex]:gap-y-0 [&_h3]:mb-[10px]";
 
 /**
  * The phone Menu's six accordions (`.cm-acc`): the same panels and entries as the desktop row,
@@ -381,41 +405,8 @@ export function MegaMenuAccordions({
           <summary className="display text-ink after:font-body after:text-link flex min-h-[56px] cursor-pointer list-none items-center justify-between text-[21px] select-none after:text-[22px] after:font-bold after:content-['+'] group-open/acc:after:content-['−'] [&::-webkit-details-marker]:hidden">
             {label(t, panel.labelKey)}
           </summary>
-          <div className="grid gap-[10px] pb-[16px]">
-            {panel.columns.map((column) => (
-              <div className="contents" key={column.id}>
-                <h4 className="text-ink-3 m-0 text-xs font-bold tracking-(--tracking-label) uppercase">
-                  {label(t, column.headingKey)}
-                </h4>
-                {column.entries.map((entry) => (
-                  <Entry
-                    className={ACCORDION_ENTRY}
-                    entry={entry}
-                    key={entry.id}
-                    locale={locale}
-                    t={t}
-                  />
-                ))}
-              </div>
-            ))}
-            {panel.extras === null ? null : (
-              <div className="contents">
-                <h4 className="text-ink-3 m-0 text-xs font-bold tracking-(--tracking-label) uppercase">
-                  {label(t, panel.extras.headingKey)}
-                </h4>
-                <p className="text-ink-muted m-0 text-sm leading-[1.5]">
-                  {panel.extras.labelKeys.map((key, index) => (
-                    <span key={key}>
-                      {index === 0 ? null : <span aria-hidden="true"> · </span>}
-                      {label(t, key)}
-                    </span>
-                  ))}
-                </p>
-              </div>
-            )}
-            {panel.all === null ? null : (
-              <AllLink entry={panel.all} locale={locale} t={t} />
-            )}
+          <div className={ACCORDION_BODY}>
+            <PanelColumns locale={locale} panel={panel} t={t} />
           </div>
         </details>
       ))}
