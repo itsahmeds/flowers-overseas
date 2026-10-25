@@ -17,7 +17,7 @@
  *  - **AC-27 / T-36 (schema half):** `recipient` has no saving column and `retention_policy` no
  *    `saved_recipient` row.
  *  - **RLS:** the three reference tables are staff only; a buyer reads their own invoice only.
- *  - **Spec 002 §14 A8:** AC-14 (75 rows), AC-44, AC-45, AC-46 (the adapter writes `created_at`
+ *  - **Spec 002 §14 A8:** AC-14 (75 rows; 77 with A10, TASK-258), AC-44, AC-45, AC-46 (the adapter writes `created_at`
  *    once), AC-47 (the guarded rollback).
  *  - **Rollback:** down then up with demo orders in place, introspection-identical to the schema
  *    before the migration; a rotated order's token changes on the way down so a revoked token
@@ -938,7 +938,7 @@ describe.skipIf(server.url === undefined)(
     });
 
     describe("spec 002 §14 A8", () => {
-      it("AC-14: order_transition holds the fixture's 75 rows, rows 37 and 38 with {system} only", async () => {
+      it("AC-14: order_transition holds the fixture's 77 rows (A10's two since TASK-258), rows 37 and 38 with {system} only", async () => {
         const rows = await scratch.sql<
           {
             from_status: string;
@@ -948,8 +948,8 @@ describe.skipIf(server.url === undefined)(
           }[]
         >`
           SELECT from_status, event, to_status, allowed_actors FROM order_transition`;
-        expect(rows).toHaveLength(75);
-        expect(TRANSITIONS).toHaveLength(75);
+        expect(rows).toHaveLength(77);
+        expect(TRANSITIONS).toHaveLength(77);
         const a8 = rows.filter(
           (row) =>
             row.event === "order.no_partner_available" &&
