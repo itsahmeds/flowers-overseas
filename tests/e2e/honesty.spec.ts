@@ -148,10 +148,12 @@ test.describe("AC-16: no structured data or hreflang from a 004 page; the canoni
         string,
         unknown
       >[];
-      expect(graph.map((node) => node["@type"])).toEqual([
-        "Organization",
-        "WebSite",
-      ]);
+      // Spec 004 AC-107 (TASK-387): after the identity pair, one `ItemList` per product section
+      // of the v3 home, and nothing else.
+      const types = graph.map((node) => node["@type"]);
+      expect(types.slice(0, 2)).toEqual(["Organization", "WebSite"]);
+      expect(types.length).toBeGreaterThanOrEqual(4);
+      for (const type of types.slice(2)) expect(type).toBe("ItemList");
       expect(blocks[0]).not.toContain("SearchAction");
       expect(blocks[0]).not.toContain("FAQPage");
       expect(blocks[0]).not.toContain("Product");
