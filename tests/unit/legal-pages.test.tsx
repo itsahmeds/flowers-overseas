@@ -201,10 +201,11 @@ describe("T-02 / AC-2: imprint, terms and privacy wait for the complete trader i
   it("a complete identity makes them exist wherever a file does, and changes nothing else", () => {
     for (const locale of LOCALES) {
       for (const pageId of GATED) {
+        // Every launch locale has a file for the three (the de/pl drafts are TASK-184's).
         expect(
           infoPageExists(pageId, locale, WITH_COMPANY),
           `${pageId} ${locale}`,
-        ).toBe((ENGLISH as readonly string[]).includes(locale));
+        ).toBe(true);
       }
       for (const pageId of INFO_PAGE_IDS.filter(
         (id) => !(GATED as readonly string[]).includes(id),
@@ -561,7 +562,27 @@ describe("T-17 / AC-17: a legal page also needs lawyerReviewed to be indexed", (
 });
 
 describe("T-21 / AC-21: the legal links in the footer", () => {
-  it("en and en-gb link cookies and withdrawal and refunds; no locale links imprint, terms or privacy", () => {
+  it("every launch locale links cookies and withdrawal and refunds at its own path; no locale links imprint, terms or privacy", () => {
+    const paths: Readonly<
+      Record<string, { cookies: string; cancellation: string }>
+    > = {
+      en: {
+        cookies: "/en/legal/cookies",
+        cancellation: "/en/legal/cancellation",
+      },
+      "en-gb": {
+        cookies: "/en-gb/legal/cookies",
+        cancellation: "/en-gb/legal/cancellation",
+      },
+      de: {
+        cookies: "/de/rechtliches/cookies",
+        cancellation: "/de/rechtliches/widerruf",
+      },
+      pl: {
+        cookies: "/pl/informacje-prawne/cookies",
+        cancellation: "/pl/informacje-prawne/odstapienie-od-umowy",
+      },
+    };
     for (const locale of LOCALES) {
       const view = footerView(locale, {
         unavailable: missingInfoPageLinkIds(locale),
@@ -571,12 +592,9 @@ describe("T-21 / AC-21: the legal links in the footer", () => {
           .flatMap((group) => group.links)
           .map((link) => [link.id, link.href]),
       );
-      const english = (ENGLISH as readonly string[]).includes(locale);
-      expect(hrefs.get("cookies"), locale).toBe(
-        english ? `/${locale}/legal/cookies` : undefined,
-      );
+      expect(hrefs.get("cookies"), locale).toBe(paths[locale]?.cookies);
       expect(hrefs.get("withdrawal-and-refunds"), locale).toBe(
-        english ? `/${locale}/legal/cancellation` : undefined,
+        paths[locale]?.cancellation,
       );
       for (const id of ["imprint", "terms", "privacy"]) {
         expect(hrefs.get(id), `${locale} ${id}`).toBeUndefined();
