@@ -95,7 +95,12 @@ const CHECKOUT_PATHS = [
  * Spec 013 payment copy (TASK-255): the checkout's own paths plus the payments module, which maps
  * a decline code to its key. No indexable page imports `src/modules/payments/`.
  */
-const PAYMENTS_PATHS = [...CHECKOUT_PATHS, "src/modules/payments/**"];
+const PAYMENTS_PATHS = [
+  ...CHECKOUT_PATHS,
+  "src/modules/payments/**",
+  // The minute tick (TASK-258): its job handlers run the production start; it answers counts.
+  "src/app/api/internal/jobs/**",
+];
 const CHECKOUT_SUBTREES = [
   "action",
   "buyer",
