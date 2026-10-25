@@ -1,6 +1,6 @@
 ---
 seoTitle: "Polityka prywatności"
-seoDescription: "Kto odpowiada za Twoje dane osobowe na tej stronie, co przetwarzamy dziś i po otwarciu zamówień, kto się nimi zajmuje oraz jakie masz prawa."
+seoDescription: "Kto odpowiada za Państwa dane osobowe na tej stronie, co przetwarzamy dziś i po otwarciu zamówień, kto je przetwarza i jakie mają Państwo prawa."
 h1: "Polityka prywatności"
 version: "0.1.0"
 effectiveFrom: "2026-10-24"
@@ -28,7 +28,7 @@ updatedAt: "2026-10-25"
 
 {legalName} prowadzi tę stronę i odpowiada za dane osobowe opisane na tej stronie (administrator). Spółka jest zarejestrowana w rejestrze {registryName} pod numerem {registrationNumber}, a jej siedziba mieści się pod adresem {address}.
 
-We wszystkich sprawach dotyczących Twoich danych osobowych zadzwoń do nas lub napisz na WhatsAppie pod numer {phone} albo wyślij e-mail na adres {supportEmail}.
+We wszystkich sprawach dotyczących Państwa danych osobowych prosimy zadzwonić do nas lub napisać na WhatsAppie pod numer {phone} albo wysłać e-mail na adres {supportEmail}.
 
 ## Co ta strona przetwarza dziś {#today}
 
@@ -36,7 +36,7 @@ Nie przyjmujemy jeszcze zamówień, więc dziś ta strona przetwarza bardzo niew
 
 ### Logi hostingu i sieci brzegowej
 
-Gdy otwierasz stronę, usługi, które ją hostują i dostarczają, zapisują techniczne szczegóły żądania: Twój adres IP, identyfikator przeglądarki (user agent), godzinę, adres strony i odpowiedź serwera. Wykorzystujemy je, aby udostępniać stronę i ją chronić. Podstawa prawna: nasz prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO). Przetwarzają je Railway, który uruchamia stronę, Cloudflare, który ją dostarcza i chroni, oraz Vercel, dopóki pozostaje naszym hostingiem zapasowym, każdy przez okres, w którym przechowuje swoje logi w używanym przez nas planie.
+Gdy otwierają Państwo stronę, usługi, które ją hostują i dostarczają, zapisują techniczne szczegóły żądania: adres IP, identyfikator przeglądarki (user agent), godzinę, adres strony i odpowiedź serwera. Wykorzystujemy je, aby udostępniać stronę i ją chronić. Podstawa prawna: nasz prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO). Przetwarzają je Railway, który uruchamia stronę, Cloudflare, który ją dostarcza i chroni, oraz Vercel, dopóki pozostaje naszym hostingiem zapasowym, każdy przez okres, w którym przechowuje swoje logi w używanym przez nas planie.
 
 ### Monitorowanie błędów
 
@@ -44,11 +44,11 @@ Gdy na naszym serwerze coś pójdzie nie tak, raport o błędzie może zostać w
 
 ### Zapisy zgód
 
-Gdy odpowiadasz na pytanie o pliki cookie, zapisujemy Twoją odpowiedź wraz z losowym kodem, który Cię nie identyfikuje, datą i godziną oraz wersją zasad dotyczących plików cookie. Przechowujemy ją, aby móc pokazać, co wybrano. Podstawa prawna: nasz obowiązek prawny wykazania zgody (art. 6 ust. 1 lit. c RODO w związku z art. 7 ust. 1). Nasze zasady przewidują przechowywanie przez pięć lat; dziś zapis znajduje się w logach hostingu i jest usuwany razem z nimi, czyli wcześniej.
+Gdy odpowiadają Państwo na pytanie o pliki cookie, zapisujemy odpowiedź wraz z losowym kodem, który nie pozwala Państwa zidentyfikować, datą i godziną oraz wersją zasad dotyczących plików cookie. Przechowujemy ją, aby móc pokazać, co Państwo wybrali. Podstawa prawna: nasz obowiązek prawny wykazania zgody (art. 6 ust. 1 lit. c RODO w związku z art. 7 ust. 1). Nasze zasady przewidują przechowywanie przez pięć lat; dziś zapis znajduje się w logach hostingu i jest usuwany razem z nimi, czyli wcześniej.
 
 ### Analityka
 
-Przygotowaliśmy Google Analytics, ale jest wyłączone. Jeśli je włączymy, będzie działać tylko wtedy, gdy zaakceptujesz analityczne pliki cookie, a ta polityka zostanie wcześniej odpowiednio zaktualizowana.
+Przygotowaliśmy Google Analytics, ale jest wyłączone. Jeśli je włączymy, będzie działać tylko wtedy, gdy zgodzą się Państwo na analityczne pliki cookie, a ta polityka zostanie wcześniej odpowiednio zaktualizowana.
 
 ### Przypomnienia o okazjach
 
@@ -62,20 +62,20 @@ Nasza baza danych, prowadzona przez Neon we Frankfurcie, oraz przechowywanie pli
 
 Ta część opisuje przyszłość: nic z tego jeszcze się nie dzieje.
 
-- **Twoje dane** (imię i nazwisko, adres e-mail, numer telefonu i kraj), aby przyjąć, potwierdzić i doręczyć Twoje zamówienie. Podstawa prawna: umowa z Tobą (art. 6 ust. 1 lit. b RODO). Dokumentację faktur przechowujemy tak długo, jak wymagają tego przepisy rachunkowe; pozostałe dane osobowe są pseudonimizowane po trzech latach.
-- **Płatność.** Dane Twojej karty trafiają bezpośrednio do naszego dostawcy płatności i nigdy do nas nie docierają. Przechowujemy tylko identyfikator płatności.
-- **Dane odbiorcy** (imię i nazwisko, adres, numer telefonu i Twoja wiadomość na karcie), aby doręczyć prezent. Podstawa prawna: prawnie uzasadniony interes, Twój i nasz, w doręczeniu prezentu (art. 6 ust. 1 lit. f RODO).
-- **Zdjęcie z doręczenia**, jako potwierdzenie doręczenia dla Ciebie. Przechowywane przez dwa lata.
+- **Państwa dane** (imię i nazwisko, adres e-mail, numer telefonu i kraj), aby przyjąć, potwierdzić i doręczyć zamówienie. Podstawa prawna: umowa z Państwem (art. 6 ust. 1 lit. b RODO). Dokumentację faktur przechowujemy tak długo, jak wymagają tego przepisy rachunkowe; pozostałe dane osobowe są pseudonimizowane po trzech latach.
+- **Płatność.** Dane karty trafiają bezpośrednio do naszego dostawcy płatności i nigdy do nas nie docierają. Przechowujemy tylko identyfikator płatności.
+- **Dane odbiorcy** (imię i nazwisko, adres, numer telefonu i wiadomość na karcie), aby doręczyć prezent. Podstawa prawna: prawnie uzasadniony interes, Państwa i nasz, w doręczeniu prezentu (art. 6 ust. 1 lit. f RODO).
+- **Zdjęcie z doręczenia**, jako potwierdzenie doręczenia dla Państwa. Przechowywane przez dwa lata.
 
 Przed pierwszym zamówieniem ta sekcja wymieni każdą firmę, która przetwarza te dane.
 
-## Jeśli otrzymałeś lub otrzymałaś od nas kwiaty {#recipients}
+## Jeśli otrzymali Państwo od nas kwiaty {#recipients}
 
-Ktoś zamówił dla Ciebie kwiaty na naszej stronie i podał nam Twoje imię i nazwisko, adres i numer telefonu, aby nasz florysta mógł je doręczyć i w razie potrzeby do Ciebie zadzwonić. Wykorzystujemy te dane wyłącznie do doręczenia prezentu, przekazujemy je tylko floryście, który go doręcza, i nigdy nie używamy ich do celów marketingowych. Usuwamy je lub pseudonimizujemy 90 dni po doręczeniu.
+Ktoś zamówił dla Państwa kwiaty na naszej stronie i podał nam Państwa imię i nazwisko, adres i numer telefonu, aby nasz florysta mógł je doręczyć i w razie potrzeby do Państwa zadzwonić. Wykorzystujemy te dane wyłącznie do doręczenia prezentu, przekazujemy je tylko floryście, który go doręcza, i nigdy nie używamy ich do celów marketingowych. Usuwamy je lub pseudonimizujemy 90 dni po doręczeniu.
 
-Korzystając z podanych wyżej danych kontaktowych, możesz zapytać nas, co o Tobie przechowujemy, lub poprosić o usunięcie tych danych.
+Korzystając z podanych wyżej danych kontaktowych, mogą Państwo zapytać nas, co o Państwu przechowujemy, lub poprosić o usunięcie tych danych.
 
-## Kto przetwarza Twoje dane {#who-handles-it}
+## Kto przetwarza Państwa dane {#who-handles-it}
 
 - **Railway** uruchamia stronę.
 - **Cloudflare** dostarcza i chroni stronę oraz przechowuje nasze pliki w Unii Europejskiej.
@@ -92,13 +92,13 @@ Jesteśmy firmą z siedzibą w Stanach Zjednoczonych, podobnie jak kilka firm, k
 
 Każda sekcja powyżej podaje, jak długo przechowywane są jej dane. Po upływie okresu dane są usuwane lub pseudonimizowane.
 
-## Twoje prawa {#your-rights}
+## Państwa prawa {#your-rights}
 
-Możesz poprosić nas o kopię swoich danych osobowych, o ich sprostowanie, usunięcie, ograniczenie ich wykorzystania lub przesłanie Ci ich w formacie umożliwiającym przeniesienie, a także wnieść sprzeciw wobec ich wykorzystywania. Jeśli udzielono zgody, możesz ją w każdej chwili wycofać, w przypadku plików cookie przez „Ustawienia cookies” u dołu każdej strony. Zadzwoń do nas, napisz na WhatsAppie pod numer {phone} albo wyślij e-mail na adres {supportEmail}.
+Mogą Państwo poprosić nas o kopię swoich danych osobowych, o ich sprostowanie, usunięcie, ograniczenie ich wykorzystania lub przesłanie ich w formacie umożliwiającym przeniesienie, a także wnieść sprzeciw wobec ich wykorzystywania. Jeśli udzielili Państwo zgody, mogą ją Państwo w każdej chwili wycofać, w przypadku plików cookie przez „Ustawienia cookies” u dołu każdej strony. Prosimy zadzwonić do nas, napisać na WhatsAppie pod numer {phone} albo wysłać e-mail na adres {supportEmail}.
 
 ## Skargi {#complaints}
 
-Jeśli uważasz, że niewłaściwie potraktowaliśmy Twoje dane osobowe, możesz złożyć skargę do organu ochrony danych w miejscu, w którym mieszkasz lub pracujesz: na przykład do UODO w Polsce lub, w Wielkiej Brytanii, do ICO.
+Jeśli uważają Państwo, że niewłaściwie potraktowaliśmy Państwa dane osobowe, mogą Państwo złożyć skargę do organu ochrony danych w miejscu, w którym Państwo mieszkają lub pracują: na przykład do UODO w Polsce lub, w Wielkiej Brytanii, do ICO.
 
 ## Zmiany tej polityki {#changes}
 

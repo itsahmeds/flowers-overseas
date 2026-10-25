@@ -120,3 +120,15 @@ a birthday missed by a border) and the copy earns that by being concrete.
 | `glossary.en-gb.md` | `en-gb` — British English, thin override      | the `-ise` / vocabulary / GBP delta                                   |
 | `glossary.de.md`    | `de` — German                                 | stub, awaiting the first native review pass                           |
 | `glossary.pl.md`    | `pl` — Polish                                 | stub; register already decided (informal `Ty` in UI, formal in legal) |
+
+## 8. Trust and legal pages (spec 041)
+
+The four terms the trust and legal pages carry in every locale. Each locale's file gives its own
+word; the rule here binds all of them.
+
+| Term            | Use                                                                                                                                                                                                                           | Never                                                                                                                          |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **guarantee**   | "our guarantee", "the fresh-flower promise": fresh and in good condition on arrival, a photo within 72 hours, replace or refund in full. It comes on top of the buyer's legal rights, never instead of them (spec 041 AC-16). | a number of days of freshness ("7-day"), "guaranteed delivery", a guarantee of a time of day (§4)                              |
+| **withdrawal**  | the statutory right to withdraw from a distance contract, and why fresh flowers are exempt (CRD Art. 16(d)); our own free cancellation until we start preparing the order is "cancel", never "withdraw"                       | "return the flowers", a 14-day right for fresh flowers, "withdrawal" for our voluntary cancellation                            |
+| **imprint**     | the page with the company's registered facts (`/imprint`, `/de/impressum`, `/pl/dane-firmy`); it exists only once the trader identity is complete (spec 041 AC-2)                                                             | "legal notice", "as required by", any claim of statutory completeness before the lawyer rules (A-founder-2026-10-23 clause 7a) |
+| **our florist** | the person who makes and delivers, in the present tense (spec 004 §14 A22 clause 1): "our florist makes it that morning"                                                                                                      | "partner florist", "a florist accepts your order", "another florist", "no florist" (§4, `RELAY_PATTERNS`)                      |
