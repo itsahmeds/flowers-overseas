@@ -33,11 +33,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: both comments reworded in PR 431 (with TASK-128). Done.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#431](https://github.com/itsahmeds/flowers-overseas/pull/431), in the TASK-128 feature PR. `src/modules/ui/icons/Icon.tsx` L46 now reads "the fresh-flower promise (spec 009 §14 A11, no number of days)", and `src/modules/ui/trust/TrustStrip.tsx` L6-L10 paraphrases spec 004 §2 with the guarantee named as the fresh-flower promise "which names no number of days since spec 009 §14 A11 retired A6's default", no longer quoting the retired "7-day" wording. Comments only: no rendered text, key, `<title>`, meta or structured data changed, so no test was added; `grep -rn "7-day" src/modules/ui` finds nothing.
