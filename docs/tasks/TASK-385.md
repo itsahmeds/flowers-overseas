@@ -28,9 +28,18 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **Deferred island budget, shared:** TASK-384 (hover, selector label), TASK-385 (history replace), TASK-391 (fill, URL rule) and TASK-393 (countdown) together add at most 2,560 B Brotli to the existing deferred set, no new island on any route (spec 004 item "Rendering"). Print this PR's share and the running total; if it will not fit, drop the hover first (Q-24g), then stop and report.
 - **From `/plan-tasks` (orchestrator, 2026-10-24), keyless strings:** the boards mark several strings `[slot]` with no message key. Do not invent a key or text: list each one this PR needs, with a proposed key and text, in the PR and here as an escalation for the founder's copy batch.
 
+- **To TASK-392 (from TASK-385):** the not-available state lives at `/{locale}/{chooseSegment}/{next}?to={iso2}` (the choice route 303s there with the cookie set); `chooserPageState()` returns `unavailable {iso2, sku}` and the page draws the ask form for it today.
+- **To TASK-395 (from TASK-385):** a registry country outside the shop set 303s back to the chooser with `?to={iso2}`; the page shows the no-match box with the full grouped list until the not-live page lands (`notLive` state in `chooserPageState()`).
+- **To TASK-384 and TASK-386 (from TASK-385):** `CountryPicker` (`src/modules/ui/shop/CountryPicker.tsx`) takes `variant="page"` only; add the selector's and the home's skins there, and post to `choiceRoutePath(next)`.
+- **To spec 045 / TASK-404 (from TASK-385):** the `search` shape lands on the shop root; the form's `q` is not carried yet.
+- **Known gap (from TASK-385):** a typed endonym that is no launch locale's name ("España") gets no match; the datalist offers the launch-locale names.
+
 ## Escalations
 
 - **2026-10-24, the colour shape** (`open`): see TASK-381.
+- **2026-10-25, the copy share trips** (`open`, founder): the 9 new `en` keys ship `reviewed: false` (de and pl echo-drafted). The unreviewed share goes from 4.4 % to 5.88 % (`en`) and from 4.6 % to 6.06 % (`en-gb`), over the 5 % gate, so both locales read `noindex` and 24 unit and contract files go red, every one of them only because of the share (probed: with the 9 keys marked reviewed on a throwaway tree, all 24 pass apart from `sitemap-fixtures`' lastmod, which regenerates at approval). Needs the founder's `record-approval` of the list in PR 423's "Copy for the founder", then `UPDATE_SEO_FIXTURES=1 pnpm exec vitest run tests/unit/sitemap-fixtures.test.ts`.
+- **2026-10-25, three [slot] keys** (`open`, founder's copy batch): the boards draw three strings with no message key: `shop.choose.noMatch` "We could not find “{query}”.", `shop.choose.closest` "Did you mean <countries></countries>?", `shop.choose.all` "Every country we send to". Proposed keys and texts are in the PR; the founder confirms or rewrites them.
+- **2026-10-25, routing as built** (`noted`, no spec change): the form's `action` is the choice route `/api/choose/{locale}/{next}`, and the proxy rewrites the path form there; a page render can set no cookie and pick no 303, and the proxy's graph may not reach the catalogue (`next/font`). The visitor's address is the spec's `/{locale}/{chooseSegment}/{next}` throughout, apart from the form's GET, which lands on `/api/choose/...` for one 303. The page is served from an internal `-choose/-next/` route so the product `beforeFiles` rewrite cannot take it.
 
 ## Progress
 
@@ -38,11 +47,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: route, page, cookie row, policy line, island replace and tests built (aac9b5b62, 6af1ead30); the form posts to the choice route and the proxy stays synchronous (e71e784af); pseudo-locale 404 case (a9639dedc). Screenshots at 1440, 1280 and 390 match the boards (header aside: TASK-383/384). Blocked only on the founder's copy approval.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 423 (draft, base `task/TASK-381-commerce-foundation` until PR 412 merges). AC-77, AC-78, AC-79, AC-89 and AC-90 are built and tested, but the share gate holds the merge: 9 new keys at `reviewed: false` take the unreviewed share over 5 % (en 4.4 to 5.88 %, en-gb 4.6 to 6.06 %), see Escalations. Tests: unit `chooser-choice` (26), `chooser-proxy` (8), `chooser-page` (8), `chooser-unavailable` (4), plus updates to `cookies-config`, `seo-robots`, `url-pii`, `catalog-barrel`, `ui-barrel`, `listing-rewrites`; e2e `country-chooser.spec.ts` (29 cases × desktop and mobile, 58/58 green on a local `next start` in the build slot, run because the 303, the cookie and the history replace cannot be judged without a server). Cookie register: a server-set cookie now needs `serverScope: "uncached"` (the spec's "server-set" rule). Island share: about 120 B Brotli, estimated from the minified diff (CI's `budget:client-js` judges it). Known red on main, not this PR: Lighthouse LCP on home and listings (TASK-411), e2e time limit and the whole-tree lint test timeout (TASK-412).
