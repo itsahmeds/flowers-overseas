@@ -31,6 +31,7 @@ import type { ReactElement } from "react";
 import { QUERY_KEY } from "@/config/url-keys";
 
 import { Icon } from "../icons/Icon.tsx";
+import { Mark } from "../icons/Mark.tsx";
 import { PILL_ACCENT, PILL_SECONDARY } from "../primitives/Button.tsx";
 
 /** One country button: its lowercase code (the form value) and its name in the page's locale. */
@@ -178,7 +179,18 @@ export function CountryPicker({
           className={`${continueTo === undefined ? ACCENT : OUTLINE} min-h-[46px] px-[24px] ${home ? "flex-none max-md:min-h-[44px]" : ""}`}
           data-fo-pending=""
         >
-          {submitLabel}
+          {/* Motion 3 (spec 004 §14 A24 clause 9): the bloom `Button` draws on every primary
+              action, in the label's inline-end padding, so the pill keeps its width. */}
+          <span className="relative">
+            {submitLabel}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute start-full top-1/2 size-[22px] -translate-y-1/2 opacity-0"
+              data-fo-pending-bloom=""
+            >
+              <Mark size={22} tone="current" />
+            </span>
+          </span>
         </button>
       </div>
       <datalist id={listId}>
