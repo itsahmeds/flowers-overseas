@@ -56,6 +56,7 @@ _None recorded._
 ## Progress
 
 - 2026-10-25: TASK-273's comments, the parser, the rewrite and header rules, the parameter route, the shared `product-route.tsx`, the form and the cache policy committed; unit tests and `tests/e2e/product-params.spec.ts` green locally against a build-slot build. Next: ready, `ci:full`.
+- 2026-10-25 evening: PR 431 ready with `ci:full`. First CI run failed only `build` (`pnpm budget:client-js`: `listing-cache-headers.ts`/`listing-rewrites.ts` imported `../config/locales` without `.ts`, which plain node refuses); fixed, guard test added, rebased on main. Left: confirm the `ci` run on head (run 40193771641) is green; if red, fix and toggle `ci:full`. Nothing else open.
 
 ## Result
 
