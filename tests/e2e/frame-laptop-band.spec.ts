@@ -81,6 +81,13 @@ const STEPS = {
 } as const;
 type Step = keyof typeof STEPS;
 
+/**
+ * The v3 home's H1 from `md` up: 56 px at every width, as `home-desktop.dc.html` draws it
+ * (`.cm-hero h1`), so the first product card stays in the first screen (AC-94). The title step's
+ * 58 px at 1440 would push it to the bound. Recorded in `docs/tasks/TASK-386.md` "Escalations".
+ */
+const HOME_V3_H1_PX = 56;
+
 function resolveStep(step: Step, width: number, height: number): number {
   const { min, vw, vh, max } = STEPS[step];
   const preferred = Math.min((vw * width) / 100, (vh * height) / 100);
@@ -110,17 +117,18 @@ const heroPhotoMax = (height: number): number => Math.min(520, 0.6 * height);
 
 /**
  * Which step each page's H1 is set in, and what its primary action is (clause 9 "What the first
- * screen shows"): the home's "Send flowers" (the sentence's submit today), the first price on a
+ * screen shows"): the home's "Show prices" (the picker's submit since TASK-386), the first price on a
  * country page, the way to a price on a hub, and on the guide its way into the shop.
  */
 const FIRST_SCREEN: Readonly<
   Record<PageType, { readonly h1: Step; readonly action: string }>
 > = {
-  // Home v3 (TASK-196): option A's card sets the H1 in the title step from `md` (the artboard's
-  // `.t-title`, 53.76 px at 1280 × 800); the phone cover keeps the hero step's minimum (T-45).
+  // The v3 home (TASK-386; spec 004 §14 A-founder-2026-10-24a item 4.2): the action is the
+  // picker's "Show prices". Its H1 is the board's fixed 56 px from `md` (`HOME_V3_H1_PX`), not a
+  // fluid step: `home-desktop.dc.html` `.cm-hero h1`.
   home: {
     h1: "title",
-    action: "main [data-fo-sentence] button[type='submit']",
+    action: "main [data-fo-home-picker] button[type='submit']:not([name])",
   },
   // The first price line: the amount with "Includes VAT and delivery" beside it from `md` up
   // (spec 004 §14 A-founder-2026-10-19b clause 1; no card carries an equivalents line).
@@ -477,7 +485,10 @@ test.describe("T-43: the laptop band's first screen (AC-41)", () => {
           .evaluate((element) =>
             parseFloat(getComputedStyle(element).fontSize),
           );
-        const expected = resolveStep(step, viewport.width, viewport.height);
+        const expected =
+          type === "home"
+            ? HOME_V3_H1_PX
+            : resolveStep(step, viewport.width, viewport.height);
         expect(
           Math.abs(fontSize - expected),
           `H1 ${String(fontSize)} px, clause 9 --text-${step}-fluid = ${expected.toFixed(1)} px`,

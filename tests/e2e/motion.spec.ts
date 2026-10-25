@@ -23,7 +23,7 @@
  *  6b. motion 6, premium (spec 004 §14 A-founder-2026-10-19e; TASK-277): every AC-44 bullet it
  *     adds, read after the link's `transitionend` (or 700 ms), on a fine and a coarse pointer, under
  *     both preferences, in `en` and `/ar-XB`, the priority card and the header's primary pill;
- *  7. motion 4 plays once, unless the form was touched first;
+ *  7. (motion 4, the sentence's shimmer, retired with the sentence by TASK-386);
  *  8. the 2 px bar grows from the inline start, in both directions.
  *
  * The bytes the module costs are AC-25's (`tests/e2e/client-js-budget.spec.ts`,
@@ -551,14 +551,16 @@ test.describe("4. motions 11 and 12 never hold back the first viewport (A24 clau
 });
 
 test.describe("5. motion 3: the pending button", () => {
-  test("Continue takes aria-busy and disabled at the same width, and pageshow releases it", async ({
+  test("Show prices takes aria-busy and disabled at the same width, and pageshow releases it", async ({
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto(HOME);
     // The module loads after the LCP paint (TASK-244): submit once it has run.
     await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
-    const button = page.locator("button[data-fo-pending]");
+    const button = page.locator(
+      "[data-fo-home-picker] button[data-fo-pending]",
+    );
     await button.scrollIntoViewIfNeeded();
     const before = await button.boundingBox();
     await page.route(
@@ -607,20 +609,19 @@ test.describe("5. motion 3: the pending button", () => {
       );
       return { during, after: read() };
     });
-    expect(states.during).toEqual({
+    // The v3 home's primary action is the picker's "Show prices" (TASK-386), which draws no
+    // arrow: the bloom opens in the label's inline-end padding, as `Button` places it there.
+    expect(states.during).toMatchObject({
       busy: "true",
       disabled: true,
       width: before?.width,
       bloom: "1",
       stem: "fo-bloom-stem",
-      arrow: "0",
-      inArrowSlot: true,
     });
     expect(states.after).toMatchObject({
       busy: null,
       disabled: false,
       bloom: "0",
-      arrow: "1",
     });
   });
 
@@ -630,7 +631,9 @@ test.describe("5. motion 3: the pending button", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(HOME);
     await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
-    const button = page.locator("button[data-fo-pending]");
+    const button = page.locator(
+      "[data-fo-home-picker] button[data-fo-pending]",
+    );
     await page.route(
       (url) => url.pathname.includes("/api/") || url.pathname !== HOME,
       async (route) => {
@@ -651,7 +654,7 @@ test.describe("5. motion 3: the pending button", () => {
         ).opacity,
       };
     });
-    expect(during).toEqual({ busy: "true", arrow: "1", bloom: "0" });
+    expect(during).toMatchObject({ busy: "true", bloom: "0" });
   });
 });
 
@@ -718,7 +721,7 @@ function reducedViolations(
 }
 
 test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", () => {
-  test("the consent sheet, the Menu, the sections and the sentence: a fade at most", async ({
+  test("the consent sheet, the Menu and the sections: a fade at most", async ({
     page,
     isMobile,
   }) => {
@@ -769,8 +772,9 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
     await page.waitForTimeout(1500);
     const motions = await recorded(page);
     expect(reducedViolations(motions).length).toBeGreaterThan(0);
+    // The H1's underline (motion 5); the sentence's shimmer left with the sentence (TASK-386).
     expect(motions.map((motion) => motion.what)).toContain(
-      "@keyframes fo-shimmer",
+      "@keyframes fo-underline-draw",
     );
   });
 
@@ -1055,37 +1059,6 @@ test.describe("6b. motion 6, premium (A-founder-2026-10-19e; AC-44, T-48)", () =
     await page.mouse.move(4, 400);
     await page.mouse.up();
     expect(transform).toBe("none");
-  });
-});
-
-test.describe("7. motion 4: once, 800 ms after load, unless the form was touched", () => {
-  test("a reader who touches the sentence first gets no shimmer", async ({
-    page,
-  }) => {
-    await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto(HOME);
-    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
-    const shimmer = await page.evaluate(async () => {
-      document
-        .querySelector<HTMLSelectElement>("form[data-fo-sentence] select")
-        ?.focus();
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      return document
-        .querySelector("form[data-fo-sentence]")
-        ?.getAttribute("data-fo-shimmer");
-    });
-    expect(shimmer).toBeNull();
-  });
-
-  test("an untouched sentence shimmers once (not vacuous)", async ({
-    page,
-  }) => {
-    await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto(HOME);
-    await expect(page.locator("form[data-fo-sentence]")).toHaveAttribute(
-      "data-fo-shimmer",
-      "",
-    );
   });
 });
 
@@ -1528,7 +1501,8 @@ test.describe("12. motion 10's close half: the Menu and the consent sheet (TASK-
   }) => {
     test.skip(!isMobile, "the action bar is drawn below md");
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto(HOME);
+    // The v3 home draws no action bar (TASK-386); the product page does.
+    await page.goto(PDP);
     await expect(page.locator("[data-fo-action-bar]")).toHaveCount(1);
     await openConsentSettings(page);
     const sheet = page.locator('[data-fo-consent-sheet="fixed"]');
