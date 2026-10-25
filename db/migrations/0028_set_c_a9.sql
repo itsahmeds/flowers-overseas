@@ -1,4 +1,4 @@
--- 0030_set_c_a9: spec 002 §14 A9 (the founder's ruling of 2026-10-14: no relay language to
+-- 0028_set_c_a9: spec 002 §14 A9 (the founder's ruling of 2026-10-14: no relay language to
 -- buyers), as A9.3 says to ship it, in one file: the projection change of A9.1 and the three
 -- row-34 rows of A9.7. Shipped by spec 013's TASK-261, whose dispute path (AC-31) needs A9.7's
 -- set C; A9.3 names "the first migration of spec 016 or 018" as the carrier, and none of those
@@ -12,7 +12,7 @@
 --      `order.chargeback_opened`, `chargeback_open`, `{system}`). Three rows; the distinct
 --      events stay 28 and no state is added.
 --
--- Rollback: `0030_set_c_a9.down.sql`, guarded by `A9_ROLLBACK_ROWS_IN_USE` (A9.3).
+-- Rollback: `0028_set_c_a9.down.sql`, guarded by `A9_ROLLBACK_ROWS_IN_USE` (A9.3).
 
 SET LOCAL ROLE app_owner;
 
