@@ -36,6 +36,9 @@ import { openConsentSettings } from "../support/consent.ts";
 const HOME = "/en";
 const SHOP = "/en/poland/flowers";
 const SHOP_PAGE_2 = `${SHOP}?page=2`;
+/** A page with a primary `Button` (motion 6's pill): the component gallery. */
+const PILL_PAGE = "/dev/components";
+const PRIMARY_PILL = ".fo-pill.bg-accent";
 const PDP = "/en-gb/poland/product/amber-hour";
 const PAGES = [HOME, "/en-gb", SHOP, SHOP_PAGE_2, PDP] as const;
 
@@ -243,7 +246,7 @@ test.describe("1c. the bloom clears, and never starts for another tab (motion 1)
 // it for the bar.
 
 test.describe("1b. a jump inside the page is not a navigation", () => {
-  test("clicking the header's #send on the home shows no loader", async ({
+  test("clicking the action bar's #send on the home shows no loader", async ({
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -993,15 +996,17 @@ test.describe("6b. motion 6, premium (A-founder-2026-10-19e; AC-44, T-48)", () =
     ).toBe("underline");
   });
 
-  test("the header's primary pill fades its layer, presses in 120 ms and settles in 200 ms", async ({
+  test("the primary pill fades its layer, presses in 120 ms and settles in 200 ms", async ({
     page,
     isMobile,
   }) => {
-    test.skip(isMobile, "the header's pill shows from `md` up");
+    test.skip(isMobile, "the hover and press are a fine pointer's");
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto(SHOP);
-    const pill = page.locator("header a.fo-pill").first();
-    // The page and the variant, named: the header's Send flowers is `Button` `primary`.
+    // The header's Send flowers pill left with the mega menu (spec 004 §14
+    // A-founder-2026-10-24a, Q-24d; TASK-383): the gallery's primary `Button` carries motion 6.
+    await page.goto(PILL_PAGE);
+    const pill = page.locator(PRIMARY_PILL).first();
+    // The variant, named: `Button` `primary`.
     expect(await pill.getAttribute("class")).toContain(
       "bg-accent text-on-accent",
     );
@@ -1042,10 +1047,10 @@ test.describe("6b. motion 6, premium (A-founder-2026-10-19e; AC-44, T-48)", () =
     page,
     isMobile,
   }) => {
-    test.skip(isMobile, "the header's pill shows from `md` up");
+    test.skip(isMobile, "the hover and press are a fine pointer's");
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto(SHOP);
-    const pill = page.locator("header a.fo-pill").first();
+    await page.goto(PILL_PAGE);
+    const pill = page.locator(PRIMARY_PILL).first();
     await pill.hover();
     await page.mouse.down();
     await page.waitForTimeout(200);
@@ -1493,7 +1498,7 @@ test.describe("12. motion 10's close half: the Menu and the consent sheet (TASK-
     await page.goto(SHOP);
     await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
     await openMenu(page);
-    await page.locator("[data-fo-menu-item]").first().focus();
+    await page.locator("[data-fo-menu-accordion] > summary").first().focus();
     await page.keyboard.press("Escape");
     await expect(
       page.locator("details[data-fo-menu][data-fo-closing]"),
