@@ -37,8 +37,12 @@ type Doc = (typeof DOCS)[number];
 
 export const dynamicParams = false;
 
-export function generateStaticParams(): { doc: Doc }[] {
-  return DOCS.map((doc) => ({ doc }));
+/**
+ * The param is named `segment`, the name every other one-segment route uses, so the tree's set of
+ * dynamic-segment names stays the one `tests/unit/url-pii.test.ts` pins.
+ */
+export function generateStaticParams(): { segment: Doc }[] {
+  return DOCS.map((segment) => ({ segment }));
 }
 
 /** The committed company with the identity completed: fixture values, never published. */
@@ -61,10 +65,10 @@ const FIXTURE_COMPANY = CompanySchema.parse({
 export default async function TraderIdentityFixturePage({
   params,
 }: {
-  readonly params: Promise<{ doc: string }>;
+  readonly params: Promise<{ segment: string }>;
 }): Promise<ReactElement> {
   if (!devUiEnabled(process.env)) notFound();
-  const { doc } = await params;
+  const { segment: doc } = await params;
   if (!(DOCS as readonly string[]).includes(doc)) notFound();
   const locale = documentFallbackLocale().code;
   setRequestLocale(locale);
