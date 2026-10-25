@@ -50,6 +50,7 @@ import {
 import {
   A6_STATES,
   A6_TRANSITIONS,
+  A8_TRANSITIONS,
   A9_TRANSITIONS,
   A10_TRANSITIONS,
   SET_C_A9,
@@ -1481,7 +1482,7 @@ describe.skipIf(server.url === undefined)(
 );
 
 // ---------------------------------------------------------------------------------------------
-// Spec 002 §14 A9.3 / AC-49: `0030_set_c_a9` and its guarded rollback, on a database of its own
+// Spec 002 §14 A9.3 / AC-49: `0028_set_c_a9` and its guarded rollback, on a database of its own
 // ---------------------------------------------------------------------------------------------
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -1552,7 +1553,7 @@ describe.skipIf(server.url === undefined)(
     });
 
     it("up: accepted and paid project to confirmed, three row-34 rows; down: both undone, nothing else; up again", async () => {
-      expect(A9_VERSION > "0029").toBe(true);
+      expect(A9_VERSION > "0027").toBe(true);
       expect(await machine()).toEqual({
         projections: projectionsOf(STATES),
         rows: TRANSITIONS.length,
@@ -1562,7 +1563,10 @@ describe.skipIf(server.url === undefined)(
       expect(await down()).toBe("rolled back");
       expect(await machine()).toEqual({
         projections: projectionsOf(A6_STATES),
-        rows: A6_TRANSITIONS.length + A10_TRANSITIONS.length,
+        rows:
+          A6_TRANSITIONS.length +
+          A8_TRANSITIONS.length +
+          A10_TRANSITIONS.length,
         fromRouting: [],
       });
       await locked(() => runner(db.url));
