@@ -44,7 +44,7 @@ here.
 
 - 2026-10-24: done on PR 410 (stacked on PR 405, which is stacked on PR 403). `webhooks.ts` (ingest, process, replay, the Stripe endpoint and replay bodies), `POST /api/webhooks/stripe`, `POST /api/internal/payments/replay-webhooks`, `pnpm jobs:replay-webhooks`, job `webhook.process` (registered; its handler waits for the Stripe key, TASK-266), env keys `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (optional, 503 without them), the AC-27 fixture scan. Integration 14 cases green on PG16; mutations W1, W2, W4, W5, W6, W8, W9 red.
 - 2026-10-25: restacked on TASK-257's new head (PR 405). Env contract merged with main's `SIGNED_LINK_SECRET`: 36 keys, 32 required. The i18n scope registry test now names the webhook and replay paths (it was red on the old head). Webhook integration suite green on a local PG16.
-- 2026-10-25 (2): audit red on gitleaks (`sk_test_placeholder` reads as a Stripe token): the webhooks suite uses `sk_test_contract_emulated`. Restacked on PR 405's new head.
+- 2026-10-25 (2): audit red on gitleaks (the old fake key, `sk_test_` then the word placeholder, reads as a Stripe token): the webhooks suite uses `sk_test_contract_emulated`. Restacked on PR 405's new head.
 
 ## Result
 
