@@ -38,8 +38,15 @@
  *    images whose top is at or below the first viewport's foot take their `pending` start state,
  *    and each plays once (`in`). Nothing in the first viewport is ever hidden, and without
  *    JavaScript nothing is (A24 (g)).
+ *  - **Motion 14, the photo morph** (spec 042 §5.3.1; TASK-307), behind its build-time switch
+ *    (`INTERACTIONS.morph`): the same plain click, on a product card's link, arms `./morph.ts`,
+ *    whose `pageswap` handler names that card's photograph and nothing else.
  */
 import { useEffect } from "react";
+
+import { INTERACTIONS } from "@/config/interactions";
+
+import { armMorph } from "./morph.ts";
 
 export function MotionIsland(): null {
   useEffect(() => {
@@ -53,6 +60,8 @@ export function MotionIsland(): null {
     const openMenu = "details[data-fo-menu][open]";
     let timer = 0;
     let touched = false;
+    // Motion 14 (spec 042 §5.3.1; TASK-307): the card a plain click activated, for `pageswap`.
+    const morph = INTERACTIONS.morph ? armMorph(d) : undefined;
 
     // Motion 10's close: hold the Menu open until its panel's transition ends.
     const close = (menu: HTMLDetailsElement): void => {
@@ -129,6 +138,11 @@ export function MotionIsland(): null {
       ) {
         return;
       }
+      morph?.(
+        link.closest("[data-fo-product-card],[data-fo-trending-pick]")
+          ? link
+          : null,
+      );
       if (link.matches(pending)) {
         setTimeout(() => {
           link.setAttribute(busy, "true");
