@@ -79,6 +79,14 @@
       "y": 0,
       "w": 1440,
       "h": 1788
+    },
+    {
+      "file": "referral.dc.html",
+      "title": "Referral journey · share → friend's order → credit → next order (spec 050)",
+      "x": 0,
+      "y": 14786,
+      "w": 1440,
+      "h": 1793
     }
   ],
   "annotations": [
@@ -88,6 +96,13 @@
       "y": -140,
       "w": 1400,
       "text": "flows — the buyer journey home → track, the florist journey landing → first order, and the three overlapping first-visit surfaces with their z-order. Round 2: the buyer journey states explicitly that destination and date are settled before the basket, and that the total cannot move after the product page (benchmarks/00-summary.md, pattern 1)."
+    },
+    {
+      "id": "growth-047-050",
+      "x": 0,
+      "y": 14692,
+      "w": 1400,
+      "text": "Discount codes and referrals (specs 047, 050; 2026-10-24): admin codes and referrals, store credit, the saved-offer note and the referral journey. Checkout step 4, confirmation, basket and B1 carry their 2026-10-24 sections at the foot of their own artboards."
     }
   ],
   "launch": {
