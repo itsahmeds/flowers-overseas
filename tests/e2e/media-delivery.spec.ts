@@ -39,20 +39,22 @@ async function urlsByAsset(page: Page): Promise<Map<string, string[]>> {
         picture
           .closest("[data-fo-media-asset]")
           ?.getAttribute("data-fo-media-asset") ?? "";
-      const urls = [...picture.querySelectorAll("img, source")].flatMap(
-        (element) => [
+      const urls = [...picture.querySelectorAll("img, source")]
+        // A blank `data:` source fetches nothing (its base64 holds a comma, so it is dropped
+        // whole, before the candidate split): the width where the picture is not displayed (the
+        // v3 home's photograph below `md`, the first card's from `md`; TASK-386).
+        .filter(
+          (element) =>
+            !(element.getAttribute("srcset") ?? "").startsWith("data:") &&
+            !(element.getAttribute("src") ?? "").startsWith("data:"),
+        )
+        .flatMap((element) => [
           ...(element.getAttribute("srcset") ?? "")
             .split(",")
             .map((candidate) => candidate.trim().split(/\s+/u)[0] ?? ""),
           element.getAttribute("src") ?? "",
-        ],
-      );
-      // A blank `data:` source fetches nothing: the width where the picture is not displayed
-      // (the v3 home's photograph below `md`, the first card's from `md`; TASK-386).
-      return [
-        asset,
-        urls.filter((url) => url !== "" && !url.startsWith("data:")),
-      ] as const;
+        ]);
+      return [asset, urls.filter((url) => url !== "")] as const;
     }),
   );
   const byAsset = new Map<string, string[]>();
