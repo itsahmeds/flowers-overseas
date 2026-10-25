@@ -1727,6 +1727,54 @@
       "y": 1037523,
       "w": 390,
       "h": 5878
+    },
+    {
+      "file": "email-basket-reminder-desktop.dc.html",
+      "title": "Basket email R1 · one line, three lines, not sent (spec 034) · desktop 1440",
+      "x": 0,
+      "y": 1044314,
+      "w": 1440,
+      "h": 3660
+    },
+    {
+      "file": "email-basket-reminder-mobile.dc.html",
+      "title": "Basket email R1 · one line, three lines, not sent (spec 034) · mobile 390",
+      "x": 1520,
+      "y": 1044314,
+      "w": 390,
+      "h": 5685
+    },
+    {
+      "file": "basket-reminder-pages-desktop.dc.html",
+      "title": "Basket email pages · link ended, stop, restored basket, the consent box (spec 034) · desktop 1440",
+      "x": 1990,
+      "y": 1044314,
+      "w": 1440,
+      "h": 4800
+    },
+    {
+      "file": "basket-reminder-pages-mobile.dc.html",
+      "title": "Basket email pages · link ended, stop, restored basket, the consent box (spec 034) · mobile 390",
+      "x": 3510,
+      "y": 1044314,
+      "w": 390,
+      "h": 6545
+    },
+    {
+      "file": "admin-basket-reminders-desktop.dc.html",
+      "title": "Admin · basket emails (spec 034) · desktop 1440",
+      "x": 3980,
+      "y": 1044314,
+      "w": 1440,
+      "h": 2981
+    },
+    {
+      "file": "admin-basket-reminders-mobile.dc.html",
+      "title": "Admin · basket emails (spec 034) · mobile 390",
+      "x": 5500,
+      "y": 1044314,
+      "w": 390,
+      "h": 4216
     }
   ],
   "annotations": [
@@ -2331,6 +2379,13 @@
       "y": 1018481,
       "w": 1400,
       "text": "Business gifting and monthly flowers (specs 048, 049; 2026-10-25): the business page, sent page and admin enquiries; the plan page, the plan checkout, plan status, the cancel page, the plan emails and admin; flows business-enquiry and monthly-flowers."
+    },
+    {
+      "id": "growth-034",
+      "x": 0,
+      "y": 1044220,
+      "w": 1400,
+      "text": "Abandoned checkout (spec 034; 2026-10-25): the basket email R1, the link-ended and stop pages with the restored basket and the consent box, and admin basket emails. The components sheet gains its “Basket emails” group."
     }
   ],
   "launch": {
