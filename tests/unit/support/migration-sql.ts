@@ -115,7 +115,7 @@ function fkKey(
  * shape too. So do, since spec 002 §14 A7 (`0017_payments_a7`, TASK-254), a later
  * `ALTER TABLE … ALTER COLUMN … DROP NOT NULL` / `SET NOT NULL`, and a later
  * `ALTER TABLE … DROP CONSTRAINT <name>` / `ADD CONSTRAINT <name> CHECK`, read in file order (one
- * clause per statement). And, since `0028_payment_purchase` (TASK-350), a later
+ * clause per statement). And, since `0026_payment_purchase` (TASK-350), a later
  * `ALTER TABLE … ADD CONSTRAINT <name> UNIQUE`, a later `DROP CONSTRAINT` of a key, a later
  * `DROP INDEX public.<name>` and a later `ALTER TABLE … DROP COLUMN <name>`: what a later
  * migration removes is not part of the shape.

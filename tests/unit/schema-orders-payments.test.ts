@@ -61,11 +61,11 @@ const a8 = readMigration(
   ) ?? "NNNN_post_purchase.sql",
 );
 /**
- * `0028` (spec 013 §14 A-founder-2026-10-22 item 2, TASK-350) moves the payment to the purchase:
+ * `0026` (spec 013 §14 A-founder-2026-10-22 item 2, TASK-350) moves the payment to the purchase:
  * `payment.purchase_id` and its keys, `payment.order_id` dropped, `refund.order_id` and
  * `refund.purchase_id` with their keys, `"order" UNIQUE (id, purchase_id)`.
  */
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0028_payment_purchase.sql")}`;
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0026_payment_purchase.sql")}`;
 
 const TABLES = [
   "order_status",

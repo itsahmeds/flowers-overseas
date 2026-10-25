@@ -108,7 +108,7 @@ const BUILD_POLICIES: Policy[] = [
 
 /**
  * The policies in force after every migration: a later migration that drops and re-creates a
- * policy (`0028_payment_purchase`'s `payment_customer`, TASK-350) replaces the earlier text.
+ * policy (`0026_payment_purchase`'s `payment_customer`, TASK-350) replaces the earlier text.
  */
 const EFFECTIVE_POLICIES: Policy[] = [
   ...new Map(POLICIES.map((p) => [`${p.table}.${p.name}`, p])).values(),
