@@ -16,7 +16,7 @@ import { COMPANY } from "@/config/company";
 import { type InfoPageId, infoPage } from "@/config/info-pages";
 
 import {
-  infoPageAlternatePaths,
+  infoPageHreflangPaths,
   infoPageHeadView,
   infoPageView,
 } from "../content/index.ts";

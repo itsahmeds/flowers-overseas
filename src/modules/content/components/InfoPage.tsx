@@ -539,6 +539,15 @@ function Head({
           {label(t, "infoPages.status.notYetOpen")}
         </p>
       ) : null}
+      {view.untranslated ? (
+        <p
+          className="border-sky text-ink-2 m-0 border-s-2 py-[4px] ps-[12px] text-sm"
+          data-fo-untranslated
+          role="note"
+        >
+          {label(t, "infoPages.status.untranslated")}
+        </p>
+      ) : null}
       {children}
     </div>
   );

@@ -40,9 +40,11 @@ import {
   type InfoCrumbView,
   type InfoLinkView,
   type InfoPageOptions,
+  infoContentLocale,
   infoPageExists,
   infoPagePath,
   infoPageView,
+  isUntranslatedDraft,
   parsedInfoFiles,
 } from "./pages.ts";
 import type { ParsedInfoFile } from "./parse.ts";
@@ -123,6 +125,11 @@ export interface LegalDocumentView {
   readonly h1: string;
   /** The file's own `reviewed` flag (the founder's copy approval). */
   readonly reviewed: boolean;
+  /**
+   * `infoPages.status.untranslated` renders under the draft line while this is true: an
+   * unchecked `de`/`pl` draft (spec 041 §2 "Untranslated draft", AC-23).
+   */
+  readonly untranslated: boolean;
   readonly lawyerReviewed: boolean;
   /** What the indexability engine reads as `reviewed` (AC-17): both flags. */
   readonly indexReviewed: boolean;
@@ -155,7 +162,7 @@ function legalFile(
   options: InfoPageOptions,
 ): Extract<ParsedInfoFile, { kind: "legal" }> | undefined {
   const files = parsedInfoFiles(options.provider ?? staticInfoContentProvider);
-  const file = files.get(`${pageId}/${locale}`);
+  const file = files.get(`${pageId}/${infoContentLocale(locale) ?? locale}`);
   if (file === undefined) return undefined;
   if (file.kind === "legal") return file;
   if (file.kind === "extends") {
@@ -346,6 +353,7 @@ export function legalDocumentView(
     seoDescription: doc.seoDescription,
     h1: doc.h1,
     reviewed: doc.reviewed,
+    untranslated: isUntranslatedDraft(file.locale, doc.reviewed),
     lawyerReviewed: doc.lawyerReviewed,
     indexReviewed: doc.reviewed && doc.lawyerReviewed,
     updatedAt: doc.updatedAt,
