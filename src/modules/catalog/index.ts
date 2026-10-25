@@ -452,6 +452,15 @@ export {
 // "may the site link into this destination's shop, and is there a shop root there to link at".
 export { corridorShopEntry } from "./shop-entry";
 
+export {
+  type MegaCorridor,
+  type MegaMenuData,
+  type MegaMenuOptions,
+  type MegaTaxonomyRow,
+  committedMegaMenuData,
+  megaMenuModel,
+} from "./mega-menu";
+
 // The header in a destination's context (spec 043 §5.2, AC-1, AC-2; TASK-288). `src/modules/ui`
 // may not read the catalogue, so the `@header` slot asks here which destination a route is in and
 // where each shop item links there, and hands the answer to `SiteHeader` as data.
