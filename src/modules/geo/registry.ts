@@ -126,6 +126,10 @@ export function countryRegistryFromRows(
       ...(country.citiesKey === undefined
         ? {}
         : { citiesKey: country.citiesKey }),
+      // A message key, so the file's (spec 007 §14 A-founder-2026-10-14c clause 4; TASK-239).
+      ...(country.faqCutoffKey === undefined
+        ? {}
+        : { faqCutoffKey: country.faqCutoffKey }),
       ...(operations === undefined ? {} : { operations }),
     };
     return overlaid;
