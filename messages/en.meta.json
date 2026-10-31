@@ -3216,10 +3216,8 @@
   },
   "nav.basket": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "e891362064e535b883a161a2e885d5e94ebc3afefd7b02677fab442f9dd3a6b1"
+    "reviewed": false,
+    "sourceHash": "b331a771c2e30ea57e636f62e8c91facc0178cf1d6c80694e8dc7a90b0b6d08e"
   },
   "nav.categories.label": {
     "source": "human",
@@ -4592,5 +4590,110 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "a18745121bb8af6d1a0c689cfb3c2a2245d10d5fe3b37ff37c8b69fd74773dfa"
+  },
+  "nav.basketCount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "90fd4bbd3be993db0653247c4e8bbe2668521d9b5c7d403a3a18b2f1de12cfe8"
+  },
+  "checkout.basket.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2243feb06b8d5adbf62dd658d7288b4e94866891929d880de231cba9c499fa04"
+  },
+  "checkout.basket.added": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eb7c3f9f7bad9b38259c19d36b2b81becc2ff300a01a9968bbd1c5f4c7c678ec"
+  },
+  "checkout.basket.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "64b48eb94ccd773821a65ca2329ad17a6e94e30d76f2eb94b58bc4039c8193c8"
+  },
+  "checkout.basket.emptyLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "67365fd526e0b1747973be9e31ecb6a622a97d5e0796e2340206b36dfc6d9274"
+  },
+  "checkout.basket.to": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "df1288b9efa5ac6bf50475c2fd5b7c6c6388f96e2edf8dc549bd5e771c820269"
+  },
+  "checkout.basket.dateLater": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d536695a6415ff05a93c2abffc320d29b3b96e1a2026192a19aa16841a346d77"
+  },
+  "checkout.basket.included": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b002c0df2df77569d5c92728ebd62aa8dac2d3a0c609f6e17b0a11f03872e717"
+  },
+  "checkout.basket.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "checkout.basket.checkout": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "326e405a5be387324a34fdd0861a7e4792d57e6e9e953a80108e2471d4478858"
+  },
+  "checkout.basket.continue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "264a224fd18a1bf56b080cb6e2087555c6144c482f7a2e3322662e90eaf1bbfe"
+  },
+  "checkout.basket.remove": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
+  },
+  "checkout.basket.removeLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ea6cf9a10efd03f3d5157288075b68551d46dbac05285874abc907a07232d813"
+  },
+  "checkout.basket.full": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "56ca5afea0eac6454130bf8432d9a8e91d93604031043a490440b85e71d6de14"
+  },
+  "checkout.basket.otherMode": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5359b046ca7128ae6b3b8392f4733c9a1e576b4e4974c5c964c6516f379b9593"
+  },
+  "checkout.basket.otherCurrency": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2d3c96d27e783681ac8b43f68343fd41c45dc30e624fdec87de199009c9531e9"
+  },
+  "checkout.basket.unavailable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "85d86ed4da865e0cb4dec95504ec1ef2e26cc5f0ce95b6769bea864529c9bda4"
+  },
+  "checkout.basket.unavailableSummary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c5b8f2b49c1155e32e0c62a1a4b878c5d62df0b144cd24ea59ca061457b5d2cf"
+  },
+  "checkout.basket.useNext": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c8edaad6ae9c333b81701f7005ba507abe91c76011286254f69b042c54d87ab1"
+  },
+  "checkout.basket.addOns": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "27d0cf95a71aacf7ddf33b511f0af349a617a88b4ff08a09265ebbde19a66c17"
+  },
+  "checkout.date.gone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9a1b2f67b9d48c5123ebf83ac710e1dff1b0cec3cca9ca512a4af888746e2360"
   }
 }

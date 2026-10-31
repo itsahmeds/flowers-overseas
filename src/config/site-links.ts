@@ -88,6 +88,13 @@ export const listingPageLinkTypes = [
 export type ListingPageLinkType = (typeof listingPageLinkTypes)[number];
 
 /**
+ * The transactional pages a chrome entry may name (spec 010 §14 A-founder-2026-10-22; TASK-349):
+ * pages whose URL segment is the same English word in every locale (spec 010 §13 Q10).
+ */
+export const transactionalPages = ["basket"] as const;
+export type TransactionalPage = (typeof transactionalPages)[number];
+
+/**
  * The one demo destination the chrome sends a buyer into (spec 008 §14 A14 (d), (e)): "Our
  * selection" is its shop root and the home's trending cards are its product pages. One constant,
  * so the category row and the trending row cannot name two different countries.
@@ -180,6 +187,19 @@ export const SiteLinkTargetSchema = z.discriminatedUnion("kind", [
    * `src/modules/content` and hands the missing ones to the footer.
    */
   z.object({ kind: z.literal("infoPage"), page: InfoPageIdSchema }).strict(),
+  /**
+   * **One transactional page** of spec 010: the basket (§14 A-founder-2026-10-22 item 6; TASK-349).
+   * Its own kind because its segment is **the English word in every locale** (spec 010 §13 Q10,
+   * as for checkout), so it is not one of `localePath()`'s localised page types, and because the
+   * page is `no-store` and `noindex, nofollow`: the chrome links to it with `rel="nofollow"` and
+   * never from a surface a crawler is meant to follow. The URL is `/{locale}/{page}`.
+   */
+  z
+    .object({
+      kind: z.literal("transactional"),
+      page: z.enum(transactionalPages),
+    })
+    .strict(),
   z.object({ kind: z.literal("pending") }).strict(),
 ]);
 
@@ -356,11 +376,13 @@ const siteLinks = [
     owningSpec: "019",
     surfaces: ["header"],
   },
+  // Spec 010 §14 A-founder-2026-10-22 D10 (TASK-349): published now that `/{locale}/basket`
+  // answers 200. The header draws it as the icon link with the count's slot, not as a row entry.
   {
     id: "basket",
     labelKey: "nav.basket",
-    target: { kind: "pending" },
-    published: false,
+    target: { kind: "transactional", page: "basket" },
+    published: true,
     owningSpec: "010",
     surfaces: ["header"],
   },
@@ -925,15 +947,26 @@ export const SITE_LINK_GROUPS: readonly SiteLinkGroup[] =
 export type SiteLinkGroupId = (typeof siteLinkGroups)[number]["id"];
 
 /**
- * The masthead's account cluster, in the canvas's order (`Sign in` · `My orders` ·
- * `Basket (0)`). A list rather than a group because the canvas gives it no heading and TASK-048
- * must not invent one.
+ * The masthead's account cluster, in the canvas's order (`Sign in` · `My orders`). A list rather
+ * than a group because the canvas gives it no heading and TASK-048 must not invent one. The basket
+ * left it with spec 010 §14 A-founder-2026-10-22 D10 (TASK-349): it is the header's icon link with
+ * the count's slot (`BASKET_LINK_ID`), drawn after "Send flowers" as `chrome-*.dc.html` draws it.
  */
 export const MASTHEAD_LINK_IDS = [
   "sign-in",
   "my-orders",
-  "basket",
 ] as const satisfies readonly SiteLinkId[];
+
+/** The header's basket link (spec 010 D10): an icon, the `nav.basket` name and the badge slot. */
+export const BASKET_LINK_ID = "basket" satisfies SiteLinkId;
+
+/**
+ * The basket link's `rel` (spec 010 §14 A-founder-2026-10-22 item 12, AC-70): the page is
+ * `noindex, nofollow` and disallowed in `robots.txt`, and every page links to it, so the link
+ * passes no signal and is not a crawl target. Data here, so no module under `src/modules/` but
+ * `seo` spells a robots word (spec 009 AC-16's grep).
+ */
+export const BASKET_LINK_REL = "nofollow";
 
 /** The category row's end cluster: `For florists` (the locale switcher beside it is spec 003's). */
 export const CATEGORY_ROW_LINK_IDS = [

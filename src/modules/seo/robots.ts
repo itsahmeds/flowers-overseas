@@ -60,6 +60,12 @@ export const DISALLOWED_PATHS: readonly string[] = [
   "/vendor/",
   "/account/",
   "/checkout/",
+  // The basket (spec 010 §14 A-founder-2026-10-22 item 12, AC-72; `plan/02` §4 "cart: noindex +
+  // robots disallow"): `/{locale}/basket`, the English word under every locale prefix (§13 Q10).
+  // A prefix rule, so it also covers any path whose second segment starts with `basket`: no
+  // catalogue slug does, and a new one that did would be blocked (`tests/unit/basket-seo.test.ts`
+  // pins the slug set).
+  "/*/basket",
   "/track/",
   // Spec 018 §2 "Cross-cutting", AC-13 (TASK-337): the locale-prefixed token and account pages.
   // The trailing slash is the point: `/{locale}/track` (the lookup) and `/{locale}/account` (its

@@ -38,6 +38,7 @@ import {
   CATEGORY_ROW_LINK_IDS,
   CORRIDOR_LINKS,
   DEMO_DESTINATION_ISO2,
+  BASKET_LINK_ID,
   MASTHEAD_LINK_IDS,
   SEARCH_LINK_ID,
   SHOP_LINK_IDS,
@@ -65,6 +66,10 @@ const messages = JSON.parse(
   readFileSync(resolve(__dirname, "../../messages/en.json"), "utf8"),
 ) as Record<string, unknown>;
 
+const chromeCanvas = readFileSync(
+  resolve(__dirname, "../../docs/design/wireframes/chrome-desktop.dc.html"),
+  "utf8",
+);
 const canvas = readFileSync(
   resolve(__dirname, "../../docs/design/homepage-v1/homepage-desktop.dc.html"),
   "utf8",
@@ -152,6 +157,18 @@ describe("src/config/site-links.ts", () => {
         expect(INFO_PAGE_IDS, link.id).toContain(link.target.page);
         continue;
       }
+      if (link.target.kind === "transactional") {
+        // Spec 010's transactional pages (TASK-349): the English word under every locale prefix
+        // (spec 010 §13 Q10), owned by spec 010.
+        expect(link.target.page, link.id).toBe("basket");
+        expect(link.owningSpec, link.id).toBe("010");
+        for (const locale of launchLocales) {
+          expect(localePath(locale, "home", link.target.page)).toBe(
+            `/${locale}/basket`,
+          );
+        }
+        continue;
+      }
       expect(link.target.kind, link.id).toBe("pending");
       expect(isPublished(link.id), link.id).toBe(false);
     }
@@ -168,6 +185,8 @@ describe("src/config/site-links.ts", () => {
     // so does a missing one.
     expect(published).toEqual([
       "locale-home",
+      // Spec 010 §14 A-founder-2026-10-22 D10 (TASK-349): `/{locale}/basket` answers 200.
+      "basket",
       "destinations",
       "occasions",
       // Spec 041's four trust links (TASK-182).
@@ -536,7 +555,16 @@ describe("src/config/site-links.ts", () => {
   });
 
   it("carries the masthead cluster, the category-row cluster and the search target", () => {
-    expect([...MASTHEAD_LINK_IDS]).toEqual(["sign-in", "my-orders", "basket"]);
+    // The basket left the cluster for its own icon link (spec 010 §14 A-founder-2026-10-22 D10;
+    // TASK-349): `BASKET_LINK_ID`, published with a `transactional` target.
+    expect([...MASTHEAD_LINK_IDS]).toEqual(["sign-in", "my-orders"]);
+    expect(BASKET_LINK_ID).toBe("basket");
+    expect(siteLink(BASKET_LINK_ID).target).toEqual({
+      kind: "transactional",
+      page: "basket",
+    });
+    expect(isPublished(BASKET_LINK_ID)).toBe(true);
+    expect(siteLink(BASKET_LINK_ID).surfaces).toEqual(["header"]);
     expect([...CATEGORY_ROW_LINK_IDS]).toEqual(["for-florists"]);
     expect(siteLink(SEARCH_LINK_ID).descriptionKey).toBe("nav.search.help");
     for (const id of [...MASTHEAD_LINK_IDS, ...CATEGORY_ROW_LINK_IDS]) {
@@ -588,8 +616,9 @@ describe("src/config/site-links.ts", () => {
       expect(canvas, `${link.id} → ${label}`).toContain(`>${label}<`);
     }
     expect(canvas).toContain("Search flowers, occasions, a city or a country");
-    // The basket label is the one plural-ready label: the canvas prints its empty state.
-    expect(messageAt("nav.basket")).toBe("Basket ({count, number})");
-    expect(canvas).toContain(">Basket (0)<");
+    // The basket's static name is "Basket" with no figure (spec 010 D10; `chrome-desktop.dc.html`
+    // "No cookie, no count: … the name is Basket"); the count is `nav.basketCount`'s, after paint.
+    expect(messageAt("nav.basket")).toBe("Basket");
+    expect(chromeCanvas).toContain("the name is “Basket”");
   });
 });

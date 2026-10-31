@@ -98,8 +98,12 @@ const CHECKOUT_PATHS = [
 const PAYMENTS_PATHS = [...CHECKOUT_PATHS, "src/modules/payments/**"];
 const CHECKOUT_SUBTREES = [
   "action",
+  // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349): only
+  // `/{locale}/basket`, a `no-store` `noindex` page under `(checkout)`, renders them.
+  "basket",
   "buyer",
   "card",
+  "date",
   "demo",
   "error",
   "field",

@@ -167,6 +167,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "defaultTier",
         "listAddons",
         "listTiers",
+        // What a basket line shows about its bouquet (spec 010 item 6; TASK-349).
+        "lineDisplay",
         // the pricing core (TASK-065): whole prices, dated surcharges, integer money, VAT
         "FromPriceQuerySchema",
         "GrossAtRateSchema",
@@ -400,6 +402,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/country-order.ts`,
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
+      // What a basket line shows about its bouquet (spec 010 item 6; TASK-349).
+      `${moduleDir}/line-display.ts`,
       `${moduleDir}/listing.ts`,
       // The listings' JSON-LD over their view (spec 008 AC-17, AC-18; TASK-115).
       `${moduleDir}/listingSchema.ts`,

@@ -23,6 +23,10 @@
       "because": "plan/02 §7, same row (locale-prefixed forms follow when spec 010 creates the segment)"
     },
     {
+      "path": "/*/basket",
+      "because": "plan/02 §4 L89 'cart: noindex + robots disallow'; spec 010 §14 A-founder-2026-10-22 item 12, AC-72 (TASK-349)"
+    },
+    {
       "path": "/track/",
       "because": "plan/02 §7, same row (locale-prefixed forms follow when spec 013 creates the segment)"
     },
