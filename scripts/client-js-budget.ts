@@ -331,9 +331,69 @@ const ROW_REFERENCE = /^\$([0-9a-f]+)$/;
 const CHUNK_ROW =
   /(?:^|\\n|\n|\[1,")([0-9a-f]+):"\/_next\/(static\/[^"]+?\.js)"/g;
 
+/** One `self.__next_f.push([1,"…"])` string literal of the HTML form, still JSON-escaped. */
+const PUSH_STRING = /self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g;
+const CHUNK_PATH = /^"\/_next\/(static\/[^"]+?\.js)"$/;
+
+/**
+ * The chunk rows of a flight payload, read row by row (TASK-383). A text row (`id:T<hex>,…`)
+ * carries exactly `<hex>` UTF-8 bytes and **no newline after them**, so the row that follows it
+ * starts mid-line: a JSON-LD block or a long description written as a text row put the next chunk
+ * row out of `CHUNK_ROW`'s reach (`…}]}]}77:"/_next/static/chunks/….js"`). The HTML form's push
+ * strings are decoded and joined first, so a row split across two pushes is whole again. A payload
+ * that does not walk cleanly (a fragment, as the unit cases write) answers what it read so far;
+ * `CHUNK_ROW` still covers it.
+ */
+function walkChunkRows(html: string): Map<string, string> {
+  const rows = new Map<string, string>();
+  const pushes = [...html.matchAll(PUSH_STRING)];
+  let flight = "";
+  if (pushes.length > 0) {
+    for (const [, literal] of pushes) {
+      try {
+        flight += JSON.parse(literal ?? '""') as string;
+      } catch {
+        return rows;
+      }
+    }
+  } else {
+    flight = html;
+  }
+  const bytes = Buffer.from(flight, "utf8");
+  let at = 0;
+  while (at < bytes.length) {
+    const colon = bytes.indexOf(0x3a, at);
+    if (colon === -1) break;
+    const id = bytes.subarray(at, colon).toString("utf8");
+    // A hint row (`:HL[…]`) has no id.
+    if (!/^[0-9a-f]*$/.test(id)) break;
+    if (bytes[colon + 1] === 0x54) {
+      // `T<hex length>,` then exactly that many bytes, no terminator.
+      const comma = bytes.indexOf(0x2c, colon + 2);
+      if (comma === -1) break;
+      const length = Number.parseInt(
+        bytes.subarray(colon + 2, comma).toString("utf8"),
+        16,
+      );
+      if (!Number.isFinite(length)) break;
+      at = comma + 1 + length;
+      continue;
+    }
+    const end = bytes.indexOf(0x0a, colon + 1);
+    const value = bytes
+      .subarray(colon + 1, end === -1 ? bytes.length : end)
+      .toString("utf8");
+    const asset = CHUNK_PATH.exec(value)?.[1];
+    if (asset !== undefined) rows.set(id, asset);
+    if (end === -1) break;
+    at = end + 1;
+  }
+  return rows;
+}
+
 export function parseClientReferences(html: string): ClientReference[] {
   const flight = html.replaceAll('\\"', '"');
-  const chunkRows = new Map<string, string>();
+  const chunkRows = walkChunkRows(html);
   for (const [, row, asset] of flight.matchAll(CHUNK_ROW)) {
     if (row !== undefined && asset !== undefined) chunkRows.set(row, asset);
   }

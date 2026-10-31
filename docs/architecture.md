@@ -88,7 +88,7 @@ src/lib/                  env (zod), logger, health, sentry, cache adapter; db c
 src/jobs/                 pg-boss job definitions and cron schedule
 src/emails/               React Email templates, localised
 src/config/               locales.ts, locales.data.ts, currencies.ts, address-formats.ts,
-                          cookies.ts, countries.ts, site-links.ts, occasions.ts, categories.ts,
+                          cookies.ts, countries.ts, site-links.ts, occasions.ts, mega-menu.ts,
                           company.ts, payment-methods.ts
                           (spec 003/004; zod-validated at module load, no database — `pnpm
                           check:no-db`. `locales.data.ts` is the authored locale rows as plain
@@ -97,10 +97,13 @@ src/config/               locales.ts, locales.data.ts, currencies.ts, address-fo
                           `cookies.ts` is the cookie register, and
                           `docs/compliance/cookie-register.md` derives its table from it via
                           `pnpm cookies:check` — TASK-050; countries.ts, site-links.ts,
-                          categories.ts, company.ts are the Phase 0 data registries of spec 004
-                          §2/§5.1 — TASK-047: the seven destinations with `toCountryRow()`, the
-                          header/footer link registry behind `isPublished()`, the category row,
-                          and the company identity behind `registered: false`;
+                          company.ts are the Phase 0 data registries of spec 004 §2/§5.1 —
+                          TASK-047: the seven destinations with `toCountryRow()`, the
+                          header/footer link registry behind `isPublished()`, and the company
+                          identity behind `registered: false`; mega-menu.ts is the header menu's
+                          shape (which taxonomy keys each panel reads, its label keys), spec 004
+                          §14 A-founder-2026-10-24a item 5 — TASK-383, replacing the category
+                          row's categories.ts;
                           payment-methods.ts is the colophon's method list, every row
                           `available: false` until 013/014 configures a processor, which is how
                           spec 004 §8's third-party-trademark rule is enforced as data —

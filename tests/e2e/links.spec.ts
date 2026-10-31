@@ -69,9 +69,8 @@ function unpublishedPaths(): ReadonlySet<string> {
     if (isPublished(link.id)) continue;
     // A `pending` target has no route shape at all, so there is no path it could occupy; a
     // `route` target has one, and that is the path nothing may link to while it is unpublished.
-    // An unpublished `listingPage` target (spec 008 §14 A14) is never even resolved: the layout
-    // asks the catalogue only about published ones (`headerListingTargets()`, pinned by
-    // `tests/unit/ui-site-header.test.tsx`), so no URL for it reaches a document.
+    // A `listingPage` target is never resolved from the registry at all: the header's listing
+    // entries are the mega menu's (TASK-383), so no URL for one reaches a document from here.
     if (link.target.kind !== "route") continue;
     for (const locale of LAUNCH_LOCALES) {
       paths.add(localePath(locale, link.target.pageType));
@@ -222,18 +221,6 @@ const CHROME = [
   "[data-fo-trending]",
 ] as const;
 
-/** The header's category row per locale, as the ruling draws it: eight entries, all links. */
-const ROW_IDS = [
-  "our-selection",
-  "birthday",
-  "sympathy",
-  "occasions",
-  "bouquets",
-  "roses",
-  "plants",
-  "destinations",
-] as const;
-
 test.describe("TASK-173: every chrome control is a link that answers 200, or is not drawn", () => {
   for (const locale of LAUNCH_LOCALES) {
     test(`/${locale}: the header, footer and trending row draw only live links`, async ({
@@ -242,28 +229,31 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
     }) => {
       expect((await page.goto(`/${locale}`))?.status()).toBe(200);
 
-      // The header's category row: the eight entries with a page, each an `<a>`, in order.
-      const row = await page
-        .locator("[data-fo-header-item]")
+      // The header's mega menu (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383): six items,
+      // and every entry inside them an `<a>` in this locale (out of context, no form).
+      await expect(page.locator("[data-fo-mega-summary]")).toHaveCount(6);
+      const entries = await page
+        .locator("[data-fo-header] [data-fo-mega-entry]")
         .evaluateAll((nodes) =>
           nodes.map((node) => ({
-            id: node.getAttribute("data-fo-header-item") ?? "",
+            id: node.getAttribute("data-fo-mega-entry") ?? "",
             tag: node.tagName,
             href: node.getAttribute("href") ?? "",
           })),
         );
-      // …then the Basket icon link (spec 010 §14 A-founder-2026-10-22 D10; TASK-349).
-      expect(row.map((item) => item.id)).toEqual([...ROW_IDS, "basket"]);
-      expect(row.at(-1)?.href).toBe(`/${locale}/basket`);
-      for (const item of row) {
+      expect(entries.length).toBeGreaterThan(40);
+      for (const item of entries) {
         expect(item.tag, item.id).toBe("A");
         expect(item.href, item.id).toMatch(new RegExp(`^/${locale}/`, "u"));
       }
-      // Our selection is the demo destination's shop, Destinations the hub.
-      expect(row[0]?.href).toMatch(
-        /\/(?:poland|polen|polska)\/(?:flowers|blumen|kwiaty)$/u,
+      // All destinations is the hub.
+      expect(entries.find((item) => item.id === "all-destinations")?.href).toBe(
+        localePath(locale, "destinations"),
       );
-      expect(row.at(-2)?.href).toBe(localePath(locale, "destinations"));
+      // …then the Basket icon link (spec 010 §14 A-founder-2026-10-22 D10; TASK-349).
+      await expect(
+        page.locator('[data-fo-header] [data-fo-header-item="basket"]'),
+      ).toHaveAttribute("href", `/${locale}/basket`);
 
       // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
       // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and
@@ -331,15 +321,39 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           else expect(href, href).toMatch(/^(?:tel:|https:\/\/)[^\s]+$/u);
         }
       }
-      // Exactly: the header's eight (the footer's two are among them), the header's Basket link
-      // (TASK-349), five products, the lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
-      // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
-      // four trust pages and two legal pages. A further control is a diff here.
-      const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
-      expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
-      expect(hrefs.size).toBe(
-        8 + 1 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0),
-      );
+      // Exactly: the mega menu's entries and featured cards (the footer's hubs are among the
+      // entries; TASK-383 replaced the eight-link category row), the header's Basket link (TASK-349),
+      // the lockup's home, the switcher's
+      // sibling shown homes (one on a shown locale, both English homes on a hidden one; spec 003
+      // §14 A-founder-2026-10-14c), the trending row's five products and shop link and, in
+      // English, the footer's four trust pages and two legal pages. A further control is a diff
+      // here.
+      const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale);
+      expect(siblings.length).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
+      const featured = await page
+        .locator("[data-fo-header] [data-fo-mega-featured] a[href]")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      expect(featured.length).toBeGreaterThan(0);
+      // The trending row's five products and its link to the demo shop.
+      const trending = await page
+        .locator("[data-fo-trending] a[href]")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      const expected = new Set<string>([
+        ...entries.map((item) => item.href),
+        ...featured,
+        `/${locale}/basket`,
+        `/${locale}`,
+        ...siblings.map((shown) => `/${shown}`),
+        ...trending,
+        ...sending,
+        ...company,
+        ...legal,
+      ]);
+      expect([...hrefs].sort()).toEqual([...expected].sort());
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }

@@ -352,9 +352,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // link into the shop" with "does this destination have a shop root in this locale", so
         // `src/modules/geo` never reads the catalogue (spec 008 AC-20).
         "corridorShopEntry",
-        // the header in a destination's context (spec 043 §5.2; TASK-288): which destination a
-        // route is in, and where each header shop item links there, read by the `@header` slot.
-        "destinationShopLinks",
+        // the header in a destination's context (spec 043 §5.3 A; TASK-288): which destination a
+        // route is in, read by the `@header` slot to build the mega menu there (TASK-383).
         "pageDestination",
         // the occasions index's page component (TASK-113): the page that puts every occasion hub
         // two clicks from any document, which is how AC-21's depth bound closes for the hubs.
@@ -385,6 +384,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "hasCardPhoto",
         "listingHref",
         "rankBandsFor",
+        // the mega menu's model (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383), from the
+        // existence functions, the taxonomy and the registries; its committed inputs stay inside.
+        "megaMenuModel",
       ].sort(),
     );
   });
@@ -407,6 +409,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/listing.ts`,
       // The listings' JSON-LD over their view (spec 008 AC-17, AC-18; TASK-115).
       `${moduleDir}/listingSchema.ts`,
+      // The mega menu's model (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383).
+      `${moduleDir}/mega-menu.ts`,
       `${moduleDir}/observability.ts`,
       `${moduleDir}/params.ts`,
       `${moduleDir}/pricing/equivalents.ts`,

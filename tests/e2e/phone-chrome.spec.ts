@@ -135,7 +135,7 @@ test.describe("T-52: the phone header (AC-47)", () => {
       }
     });
 
-    test(`at ${String(viewport.width)} px, with JavaScript off, Menu reveals the links, Send flowers, the languages, the currency and the help line, each ≥ 44 px`, async ({
+    test(`at ${String(viewport.width)} px, with JavaScript off, Menu reveals the six accordions, the languages, the currency and the help line, each ≥ 44 px`, async ({
       browser,
     }) => {
       const { context, page } = await noScriptPage(browser, viewport);
@@ -145,18 +145,31 @@ test.describe("T-52: the phone header (AC-47)", () => {
         await page.locator(SUMMARY).click();
         await expect(page.locator(`${MENU}[open]`)).toHaveCount(1);
 
-        const items = page.locator("[data-fo-menu-item]");
-        // Every row entry is in the Menu; the Basket icon link stays in the bar (TASK-349).
-        expect(await items.count()).toBe(
-          await page
-            .locator(
-              '[data-fo-header-item]:not([data-fo-header-item="basket"])',
-            )
-            .count(),
-        );
-        await expect(page.locator(`${PANEL} a[href="/en-gb#send"]`)).toHaveText(
-          "Send flowers",
-        );
+        // The six items as accordions (spec 004 §14 A-founder-2026-10-24a item 5, AC-104;
+        // TASK-383), each opening with no script, with the desktop panels' entries and no image.
+        const accordions = page.locator(`${PANEL} [data-fo-menu-accordion]`);
+        await expect(accordions).toHaveCount(6);
+        for (const accordion of await accordions.all()) {
+          await accordion.locator("summary").click();
+          await expect(accordion).toHaveAttribute("open", "");
+        }
+        await expect(page.locator(`${PANEL} img`)).toHaveCount(0);
+        await expect(page.locator(`${PANEL} a[href$="#send"]`)).toHaveCount(0);
+        const desktop = await page
+          .locator('[data-fo-header-band="categories"] [data-fo-mega-entry]')
+          .evaluateAll((nodes) =>
+            nodes.map((node) => node.getAttribute("data-fo-mega-entry")),
+          );
+        const items = page.locator(`${PANEL} [data-fo-mega-entry]`);
+        expect(
+          await items.evaluateAll((nodes) =>
+            nodes.map((node) => node.getAttribute("data-fo-mega-entry")),
+          ),
+        ).toEqual(desktop);
+        // The Basket icon link stays in the bar, not in the Menu (spec 010 §13 Q26; TASK-349).
+        await expect(
+          page.locator(`${PANEL} [data-fo-header-item="basket"]`),
+        ).toHaveCount(0);
         const switcher = page.locator("[data-fo-menu-switcher] nav");
         await expect(switcher).toHaveAttribute("aria-label", "Change language");
         // T-52's Menu case (spec 004 §14 A-founder-2026-10-14e): the language links of
@@ -186,7 +199,8 @@ test.describe("T-52: the phone header (AC-47)", () => {
             height: Math.round(node.getBoundingClientRect().height),
           })),
         );
-        expect(heights.length).toBe((await items.count()) + 1 + 1 + 1);
+        // Every entry (all links out of context), the sibling shown locale and the help line.
+        expect(heights.length).toBe((await items.count()) + 1 + 1);
         for (const { href, height } of heights) {
           expect(height, href).toBeGreaterThanOrEqual(MIN_TARGET);
         }
@@ -216,7 +230,7 @@ test.describe("T-52: the phone header (AC-47)", () => {
       if ((await page.locator(`${MENU}[open]`).count()) === 0) {
         await page.locator(SUMMARY).click();
       }
-      await page.locator("[data-fo-menu-item]").first().focus();
+      await page.locator("[data-fo-menu-accordion] > summary").first().focus();
       await page.keyboard.press("Escape");
       await expect(page.locator(`${MENU}[open]`)).toHaveCount(0, {
         timeout: 500,
@@ -236,11 +250,12 @@ test.describe("T-52: the phone header (AC-47)", () => {
     await page.setViewportSize(DESKTOP);
     await page.goto("/en-gb");
     await expect(page.locator(UTILITY)).toBeVisible();
-    expect(Math.round((await headerBox(page)).height)).toBe(83);
+    expect(Math.round((await headerBox(page)).height)).toBe(77);
     await expect(page.locator(MENU)).toBeHidden();
-    // Eight row entries and the Basket icon link (spec 010 D10; TASK-349).
-    await expect(page.locator("[data-fo-header-item]")).toHaveCount(9);
-    for (const item of await page.locator("[data-fo-header-item]").all()) {
+    await expect(page.locator("[data-fo-mega-summary]")).toHaveCount(6);
+    // The Basket icon link ends the row (spec 010 D10; TASK-349).
+    await expect(page.locator('[data-fo-header-item="basket"]')).toBeVisible();
+    for (const item of await page.locator("[data-fo-mega-summary]").all()) {
       await expect(item).toBeVisible();
     }
     await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
@@ -355,57 +370,6 @@ test.describe("T-52 (A-founder-2026-10-19c): the open Menu and short screens (AC
       await page.keyboard.press("Escape");
       await expect(page.locator(`${MENU}[open]`)).toHaveCount(0);
       await expect(page.locator(SUMMARY)).toBeFocused();
-    });
-  }
-
-  test("off the home, Send flowers is a link to the home's #send, and activating it leaves for the home", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await withModule(page, SHOP);
-    await openMenu(page);
-    const send = page.locator(`${PANEL} a[href$="#send"]`);
-    await expect(send).toHaveAttribute("href", "/en-gb#send");
-    await send.click();
-    await page.waitForURL(/\/en-gb#send$/u);
-  });
-
-  for (const viewport of [
-    { width: 390, height: 844, from: "menu" },
-    { width: 360, height: 640, from: "menu" },
-    { width: 1440, height: 900, from: "pill" },
-  ] as const) {
-    test(`on the home at ${String(viewport.width)} × ${String(viewport.height)}, Send flowers (${viewport.from}) closes the Menu, brings the letter in below the header and focuses its first choice`, async ({
-      page,
-    }) => {
-      await page.setViewportSize(viewport);
-      await withModule(page, "/en-gb");
-      if (viewport.from === "menu") {
-        await openMenu(page);
-        await page.locator(`${PANEL} a[href$="#send"]`).click();
-        await expect(page.locator(`${MENU}[open]`)).toHaveCount(0);
-      } else {
-        await page
-          .locator(`${HEADER} a[href$="#send"]:visible`)
-          .first()
-          .click();
-      }
-      await expect(page.locator("[data-fo-sentence-who]")).toBeFocused();
-      const header = await headerBox(page);
-      const letter = await page.evaluate(() => {
-        const form = document.getElementById("send")!;
-        const card = form.closest("[data-fo-hero-card]");
-        const box = (
-          card !== null && getComputedStyle(card).display !== "contents"
-            ? card
-            : form
-        ).getBoundingClientRect();
-        return { top: box.top, bottom: box.bottom };
-      });
-      expect(letter.top).toBeGreaterThanOrEqual(header.top + header.height - 1);
-      expect(letter.top).toBeLessThan(viewport.height);
-      // The page stayed where it was: no navigation, no jump to the anchor.
-      expect(new URL(page.url()).pathname).toBe("/en-gb");
     });
   }
 

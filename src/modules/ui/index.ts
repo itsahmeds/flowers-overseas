@@ -65,21 +65,23 @@ export type { WordmarkProps } from "./icons/Wordmark";
 // locale is set and adds no client JavaScript (§14 A1).
 export { NoticePriceClaim, SiteHeader } from "./layout/SiteHeader.tsx";
 export type { SiteHeaderProps } from "./layout/SiteHeader.tsx";
-// The listing pages the header's category row may link to (spec 008 §14 A14; TASK-173): the
-// document layout asks the catalogue which of them exist in its locale and hands the URLs back as
-// `SiteHeader`'s `listingHrefs`, because this module may not read the catalogue (`plan/01` §5).
-// On a page in a destination's context the `@header` slot moves the shop items' hrefs to that
-// destination's own pages through `inContextListingHrefs()` (spec 043 §5.3 A; TASK-288).
+// The mega menu's model (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383): the shape
+// `megaMenuModel()` in the catalogue builds and parses, and `SiteHeader` draws.
 export {
-  headerListingTargets,
-  inContextListingHrefs,
-} from "./layout/header-model.ts";
+  MegaColumnSchema,
+  MegaEntrySchema,
+  MegaFeaturedSchema,
+  MegaMenuModelSchema,
+  MegaPanelSchema,
+  panelEntries,
+} from "./layout/mega-model.ts";
 export type {
-  HeaderListingHrefs,
-  HeaderListingTarget,
-  HeaderShopLinks,
-} from "./layout/header-model.ts";
-
+  MegaColumn,
+  MegaEntry,
+  MegaFeatured,
+  MegaMenuModel,
+  MegaPanel,
+} from "./layout/mega-model.ts";
 // Layout primitives.
 export {
   Cluster,

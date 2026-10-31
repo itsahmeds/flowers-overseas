@@ -11,9 +11,12 @@
 import { COUNTRIES } from "../../src/config/countries.ts";
 
 /**
- * The three category hubs the header's category row links in each listing locale (spec 008 §14
- * A14 (a); TASK-173), as literal paths: the hubs the crawl now **must** reach. Literal rather than
- * derived from `site-links.ts`, so a header that stops linking one is red here, not absorbed.
+ * The category hubs the header links in each listing locale, as literal paths: the hubs the crawl
+ * now **must** reach. TASK-173's category row linked three (spec 008 §14 A14 (a)); the mega menu
+ * that replaced it (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383) links those three and ten
+ * more out of context, under By type, By flower and Plants & gifts. The other ten are
+ * occasion-kind category hubs item 5's table does not list. Literal rather than derived from the
+ * menu's model, so a header that stops linking one is red here, not absorbed.
  */
 export const HEADER_CATEGORY_HUBS: Readonly<Record<string, readonly string[]>> =
   {
@@ -21,18 +24,62 @@ export const HEADER_CATEGORY_HUBS: Readonly<Record<string, readonly string[]>> =
       "/en/flowers/hand-tied-bouquets",
       "/en/flowers/roses",
       "/en/flowers/plants",
+      "/en/flowers/arrangements",
+      "/en/flowers/flowers-and-gift-sets",
+      "/en/flowers/funeral-and-sympathy-flowers",
+      "/en/flowers/gerberas",
+      "/en/flowers/lilies",
+      "/en/flowers/mixed-flowers",
+      "/en/flowers/orchids",
+      "/en/flowers/peonies",
+      "/en/flowers/sunflowers",
+      "/en/flowers/tulips",
     ],
     "en-gb": [
       "/en-gb/flowers/hand-tied-bouquets",
       "/en-gb/flowers/roses",
       "/en-gb/flowers/plants",
+      "/en-gb/flowers/arrangements",
+      "/en-gb/flowers/flowers-and-gift-sets",
+      "/en-gb/flowers/funeral-and-sympathy-flowers",
+      "/en-gb/flowers/gerberas",
+      "/en-gb/flowers/lilies",
+      "/en-gb/flowers/mixed-flowers",
+      "/en-gb/flowers/orchids",
+      "/en-gb/flowers/peonies",
+      "/en-gb/flowers/sunflowers",
+      "/en-gb/flowers/tulips",
     ],
     de: [
       "/de/blumen/blumenstraeusse",
       "/de/blumen/rosen",
       "/de/blumen/pflanzen",
+      "/de/blumen/blumen-mit-geschenk",
+      "/de/blumen/blumengestecke",
+      "/de/blumen/gemischte-blumen",
+      "/de/blumen/gerbera",
+      "/de/blumen/lilien",
+      "/de/blumen/orchideen",
+      "/de/blumen/pfingstrosen",
+      "/de/blumen/sonnenblumen",
+      "/de/blumen/trauerfloristik",
+      "/de/blumen/tulpen",
     ],
-    pl: ["/pl/kwiaty/bukiety", "/pl/kwiaty/roze", "/pl/kwiaty/rosliny"],
+    pl: [
+      "/pl/kwiaty/bukiety",
+      "/pl/kwiaty/roze",
+      "/pl/kwiaty/rosliny",
+      "/pl/kwiaty/bukiety-mieszane",
+      "/pl/kwiaty/gerbery",
+      "/pl/kwiaty/kompozycje-kwiatowe",
+      "/pl/kwiaty/kwiaty-pogrzebowe",
+      "/pl/kwiaty/kwiaty-z-prezentem",
+      "/pl/kwiaty/lilie",
+      "/pl/kwiaty/piwonie",
+      "/pl/kwiaty/sloneczniki",
+      "/pl/kwiaty/storczyki",
+      "/pl/kwiaty/tulipany",
+    ],
   };
 
 /**
@@ -43,10 +90,11 @@ export const HEADER_CATEGORY_HUBS: Readonly<Record<string, readonly string[]>> =
  * third:** the header's category row now links the demo destination's shop root and three
  * category hubs from every document, so the crawl's reach grew and the waiver shrank.
  *
- *  1. **`categoryHub`, every locale, minus the three the header links** (Bouquets, Roses, Plants
- *     — `HEADER_CATEGORY_HUBS`). Spec 008 §2 reserves five link ids and none publishes a
- *     country-less category hub; TASK-173's category row is the first publisher, for three of
- *     the twenty-three. The other twenty still have no inbound edge.
+ *  1. **`categoryHub`, every locale, minus the thirteen the header links**
+ *     (`HEADER_CATEGORY_HUBS`). Spec 008 §2 reserves five link ids and none publishes a
+ *     country-less category hub; TASK-173's category row was the first publisher, for three of
+ *     the twenty-three, and TASK-383's mega menu links thirteen. The other ten, occasion-kind
+ *     category hubs, still have no inbound edge.
  *  2. **Closed by TASK-173.** `countryShopRoot` in `de` and `pl`. The shop root's only inbound link in §2's plan is
  *     the **corridor page**, and neither locale has one: their guides are machine drafts, so
  *     `corridorPageExists()` is false for every destination there. Seven URLs each, all
@@ -121,12 +169,13 @@ export const PUBLISHED_DESTINATIONS = COUNTRIES.filter(
 export const TARGETS: Readonly<
   Record<string, Readonly<Record<string, number>>>
 > = {
-  // TASK-173: every locale carries the whole shop now, plus the header's three category hubs.
+  // TASK-173: every locale carries the whole shop now; TASK-383: plus the mega menu's thirteen
+  // category hubs.
   en: {
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
     countryOccasion: 59,
-    categoryHub: 3,
+    categoryHub: 13,
     occasionHub: 28,
     occasionsIndex: 1,
   },
@@ -134,7 +183,7 @@ export const TARGETS: Readonly<
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
     countryOccasion: 59,
-    categoryHub: 3,
+    categoryHub: 13,
     occasionHub: 28,
     occasionsIndex: 1,
   },
@@ -142,7 +191,7 @@ export const TARGETS: Readonly<
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
     countryOccasion: 59,
-    categoryHub: 3,
+    categoryHub: 13,
     occasionHub: 28,
     occasionsIndex: 1,
   },
@@ -150,7 +199,7 @@ export const TARGETS: Readonly<
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
     countryOccasion: 59,
-    categoryHub: 3,
+    categoryHub: 13,
     occasionHub: 28,
     occasionsIndex: 1,
   },
@@ -174,11 +223,11 @@ export const TARGETS: Readonly<
 export const WAIVED: Readonly<
   Record<string, Readonly<Record<string, number>>>
 > = {
-  // TASK-173 shrank every locale's waiver to the twenty category hubs nothing links yet: the
-  // `de`/`pl` shop roots and country categories are reached through the header's "Our
-  // selection", and three hubs per locale through its category row.
-  en: { categoryHub: 20 },
-  "en-gb": { categoryHub: 20 },
-  de: { categoryHub: 20 },
-  pl: { categoryHub: 20 },
+  // TASK-173 shrank every locale's waiver to the twenty category hubs nothing linked then;
+  // TASK-383's mega menu links ten more per locale, leaving the ten occasion-kind category hubs
+  // item 5's table does not list.
+  en: { categoryHub: 10 },
+  "en-gb": { categoryHub: 10 },
+  de: { categoryHub: 10 },
+  pl: { categoryHub: 10 },
 };

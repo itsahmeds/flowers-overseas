@@ -1,21 +1,13 @@
 import type { ReactElement } from "react";
 import { setRequestLocale } from "next-intl/server";
 
-import { isLocaleCode } from "@/config/locales";
 import {
   PageLocaleSwitcher,
-  destinationShopLinks,
-  listingAlternatePaths,
+  megaMenuModel,
   pageDestination,
 } from "@/modules/catalog";
 import { documentFallbackLocale, routableLocale } from "@/modules/i18n";
-import {
-  type HeaderListingHrefs,
-  NoticePriceClaim,
-  SiteHeader,
-  headerListingTargets,
-  inContextListingHrefs,
-} from "@/modules/ui";
+import { NoticePriceClaim, SiteHeader } from "@/modules/ui";
 
 /**
  * The commerce header **as one route draws it** (spec 043 §2 A, §5.3 A, §5.4, AC-1 to AC-4;
@@ -60,20 +52,15 @@ export async function RouteHeader({
 }): Promise<ReactElement> {
   const locale = (routableLocale(requested) ?? documentFallbackLocale()).code;
   setRequestLocale(locale);
-  const outOfContext = await headerListingHrefs(locale);
+  // The mega menu in this route's context (spec 004 §14 A-founder-2026-10-24a item 5; spec 043
+  // AC-50; TASK-383): the URL's country with a shop, or none. `megaMenuModel()` treats a country
+  // with no shop root here as out of context, as TASK-288's row did.
   const destination = await pageDestination(locale, segments);
-  const shopLinks =
-    destination === undefined
-      ? undefined
-      : await destinationShopLinks(locale, destination);
+  const megaMenu = await megaMenuModel(locale, destination ?? null);
   return (
     <SiteHeader
       locale={locale}
-      listingHrefs={
-        shopLinks === undefined
-          ? outOfContext
-          : inContextListingHrefs(outOfContext, shopLinks)
-      }
+      megaMenu={megaMenu}
       priceClaim={home ? null : <NoticePriceClaim />}
       basketCurrent={basketCurrent}
       switcher={
@@ -81,25 +68,4 @@ export async function RouteHeader({
       }
     />
   );
-}
-
-/**
- * The header's listing-page links that **exist** in this locale (spec 008 §14 A14, spec 004 §14
- * A20; TASK-173): each identity the header names, asked of the catalogue's one existence rule
- * through `listingAlternatePaths()`, and kept only where it answers with a path here. Composed in
- * `app/` because `src/modules/ui` may not read the catalogue. A pseudo-locale has no listing page,
- * so it gets none. Moved here from the `[locale]` layout by TASK-288, unchanged.
- */
-async function headerListingHrefs(locale: string): Promise<HeaderListingHrefs> {
-  if (!isLocaleCode(locale)) return {};
-  const resolved = await Promise.all(
-    headerListingTargets().map(
-      async ({ id, identity }) =>
-        [
-          id,
-          (await listingAlternatePaths({ ...identity, locale }))[locale],
-        ] as const,
-    ),
-  );
-  return Object.fromEntries(resolved.filter(([, path]) => path !== undefined));
 }

@@ -7,10 +7,10 @@
  *     an unmatched slot's previous content on a client navigation, so one missing file would leave
  *     a Poland row on the page navigated to. Red when a new route has no slot file, and when the
  *     slot's page for a route is deleted.
- *  2. **What each slot page draws**: the header's row and Menu hrefs, rendered from the props the
- *     slot page hands `SiteHeader`. Out of context they equal the baseline captured from `main`
- *     before the change (`tests/fixtures/header/out-of-context-hrefs.json`); in Poland's and
- *     France's context they are the design band's table. The price claim is absent on the home
+ *  2. **What each slot page draws**: the mega menu's entries, rendered from the props the slot
+ *     page hands `SiteHeader`, equal `megaMenuModel()`'s for that page's context (out of context,
+ *     Poland's, France's); the model's own hrefs are pinned by `tests/unit/catalog-mega-menu.test.ts`
+ *     (TASK-383). The price claim is absent on the home
  *     only, and the language links ask for the segments `@switcher` asks for.
  *  3. **Static by construction** (T-04): no slot file reads a request header, a cookie, the search
  *     parameters or the client path, and none is a client module.
@@ -23,12 +23,17 @@ import { describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
+import { megaMenuModel } from "../../src/modules/catalog";
+import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import {
   SiteHeader,
   type SiteHeaderProps,
 } from "../../src/modules/ui/layout/SiteHeader.tsx";
-import baseline from "../fixtures/header/out-of-context-hrefs.json" with { type: "json" };
+import {
+  type MegaMenuModel,
+  panelEntries,
+} from "../../src/modules/ui/layout/mega-model.ts";
 
 vi.mock("next-intl/server", () => ({
   setRequestLocale: (): void => undefined,
@@ -77,9 +82,10 @@ describe("the slot has a page for every route under [locale] (T-03)", () => {
   });
 });
 
-/** The same two locales the baseline was captured in. */
+/** The two locales AC-3 names. */
 type BaselineLocale = "en" | "en-gb";
-type Hrefs = Record<string, string>;
+/** `[entry id, target]` in drawing order: an href, or a form's `action?name=value`. */
+type Drawn = [string, string][];
 
 interface SlotModule {
   default: (input: {
@@ -117,54 +123,69 @@ async function headerProps(
   return header.props;
 }
 
-/** The row's and the Menu's hrefs by item id, and the Send pill's, as `SiteHeader` draws them. */
+/**
+ * The row's and the Menu's entries as `SiteHeader` draws them, each with its target, and any link
+ * to the old Send pill's `#send` (spec 004 §14 A-founder-2026-10-24a, Q-24d: none).
+ */
 function drawn(props: SiteHeaderProps): {
-  row: Hrefs;
-  menu: Hrefs;
+  row: Drawn;
+  menu: Drawn;
   send: string | undefined;
   basket: string | undefined;
+  context: string | null | undefined;
 } {
   const html = renderToStaticMarkup(
     <NextIntlClientProvider
       locale={props.locale}
-      messages={loadMessages(props.locale, [
-        "nav",
-        "company",
-        "a11y",
-        "common",
-      ])}
+      messages={loadMessages(props.locale, MESSAGE_NAMESPACES)}
       timeZone="UTC"
     >
       {/* The switcher is an async Server Component; it is asserted by its props below. */}
       <SiteHeader {...props} switcher={null} />
     </NextIntlClientProvider>,
   );
-  const anchors = [...html.matchAll(/<a\b[^>]*>/g)].map(([tag]) => tag);
-  const attr = (tag: string, name: string): string | undefined =>
-    new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
-  const collect = (name: string): Hrefs =>
-    Object.fromEntries(
-      anchors
-        .filter((tag) => attr(tag, name) !== undefined)
-        .map((tag) => [attr(tag, name) ?? "", attr(tag, "href") ?? ""]),
+  const menuAt = html.search(/<details[^>]*\sdata-fo-menu=""/u);
+  const collect = (markup: string): Drawn =>
+    [
+      ...markup.matchAll(
+        /<a\b[^>]*\sdata-fo-mega-entry="([^"]*)"[^>]*\shref="([^"]*)"|<a\b[^>]*\shref="([^"]*)"[^>]*\sdata-fo-mega-entry="([^"]*)"|<form action="([^"]*)" method="get"><input type="hidden" name="([^"]*)" value="([^"]*)"\/><button[^>]*data-fo-mega-entry="([^"]*)"/gu,
+      ),
+    ].map((match) =>
+      match[1] !== undefined
+        ? [match[1], match[2] ?? ""]
+        : match[4] !== undefined
+          ? [match[4], match[3] ?? ""]
+          : [
+              match[8] ?? "",
+              `${match[5] ?? ""}?${match[6] ?? ""}=${match[7] ?? ""}`,
+            ],
     );
-  const send = anchors
-    .map((tag) => attr(tag, "href"))
-    .find((href) => href?.endsWith("#send"));
-  // The Basket link (spec 010 D10; TASK-349) carries `data-fo-header-item="basket"` but is the
-  // header's icon link, not a row entry: it is asserted on its own, so the row stays main's.
-  const { basket, ...row } = collect("data-fo-header-item");
+  const send = [...html.matchAll(/href="([^"]*#send)"/gu)].map((m) => m[1])[0];
+  // The Basket link (spec 010 D10; TASK-349): the header's icon link, not a menu entry, so it is
+  // read on its own.
+  const basketTag = /<a\b[^>]*\sdata-fo-header-item="basket"[^>]*>/u.exec(
+    html,
+  )?.[0];
+  const basket = basketTag && /\shref="([^"]*)"/u.exec(basketTag)?.[1];
   return {
-    row,
-    menu: collect("data-fo-menu-item"),
+    row: collect(html.slice(0, menuAt)),
+    menu: collect(html.slice(menuAt)),
     send,
     basket,
+    context: props.megaMenu?.context,
   };
 }
 
-/** Order matters: the row is a list, so compare entries, not sets. */
-function entriesOf(hrefs: Hrefs): [string, string][] {
-  return Object.entries(hrefs);
+/** The model's entries as `drawn()` reads them: what AC-3 and AC-50 compare the header with. */
+function expected(model: MegaMenuModel): Drawn {
+  return model.panels.flatMap((panel) =>
+    panelEntries(panel).map((entry): [string, string] => [
+      entry.id,
+      entry.kind === "facet"
+        ? `${entry.action}?${entry.name}=${entry.value}`
+        : entry.href,
+    ]),
+  );
 }
 
 const OUT_OF_CONTEXT: readonly {
@@ -214,60 +235,44 @@ const OUT_OF_CONTEXT: readonly {
   },
 ];
 
-describe("out of context, the row and the Menu keep main's hrefs (AC-3, T-03)", () => {
+describe("out of context, the row and the Menu equal megaMenuModel(locale, null) (AC-3, T-03)", () => {
   for (const locale of ["en", "en-gb"] as const) {
     for (const { name, path, params } of OUT_OF_CONTEXT) {
       it(`${name} in ${locale}`, async () => {
         const target = path.startsWith("../")
           ? path.slice("../@header/".length)
           : path;
-        const { row, menu, send, basket } = drawn(
+        const { row, menu, send, basket, context } = drawn(
           await headerProps(target, params(locale)),
         );
-        expect(entriesOf(row)).toEqual(entriesOf(baseline[locale].row));
-        expect(entriesOf(menu)).toEqual(entriesOf(baseline[locale].menu));
-        expect(send).toBe(baseline[locale].send);
+        const model = await megaMenuModel(locale, null);
+        expect(context).toBeNull();
+        expect(row.length).toBeGreaterThan(40);
+        expect(row).toEqual(expected(model));
+        expect(menu).toEqual(expected(model));
+        expect(send).toBeUndefined();
         expect(basket).toBe(`/${locale}/basket`);
       });
     }
   }
 });
 
-/** The design band's table (`country-shop-desktop.dc.html`, "Spec 043 · the header in context"). */
-function inContext(
-  locale: BaselineLocale,
-  country: "poland" | "france",
-): Hrefs {
-  const base = baseline[locale].row;
-  return {
-    "our-selection": `/${locale}/${country}/flowers`,
-    birthday: `/${locale}/${country}/flowers/birthday-flowers`,
-    sympathy: `/${locale}/${country}/flowers/sympathy-flowers`,
-    // Unchanged everywhere.
-    occasions: base.occasions,
-    bouquets: `/${locale}/${country}/flowers/hand-tied-bouquets`,
-    roses: `/${locale}/${country}/flowers/roses`,
-    plants: `/${locale}/${country}/flowers/plants`,
-    destinations: base.destinations,
-  };
-}
-
 const IN_CONTEXT: readonly {
   name: string;
   path: string;
-  country: "poland" | "france";
+  country: "PL" | "FR";
   params: (locale: BaselineLocale) => Record<string, string>;
 }[] = [
   {
     name: "Poland's shop root",
     path: "[segment]/[child]/page.tsx",
-    country: "poland",
+    country: "PL",
     params: (locale) => ({ locale, segment: "poland", child: "flowers" }),
   },
   {
     name: "Poland's roses",
     path: "[segment]/[child]/[grandchild]/page.tsx",
-    country: "poland",
+    country: "PL",
     params: (locale) => ({
       locale,
       segment: "poland",
@@ -278,7 +283,7 @@ const IN_CONTEXT: readonly {
   {
     name: "a Poland product page",
     path: "-product/[segment]/[child]/[grandchild]/page.tsx",
-    country: "poland",
+    country: "PL",
     params: (locale) => ({
       locale,
       segment: "poland",
@@ -289,7 +294,7 @@ const IN_CONTEXT: readonly {
   {
     name: "Poland's guide",
     path: "[segment]/[child]/page.tsx",
-    country: "poland",
+    country: "PL",
     params: (locale) => ({
       locale,
       segment: "send-flowers-to",
@@ -299,19 +304,19 @@ const IN_CONTEXT: readonly {
   {
     name: "France's shop root",
     path: "[segment]/[child]/page.tsx",
-    country: "france",
+    country: "FR",
     params: (locale) => ({ locale, segment: "france", child: "flowers" }),
   },
   {
     name: "Poland's shop root page 2 (the parameter route)",
     path: "%5Fquery/[segment]/[child]/page.tsx",
-    country: "poland",
+    country: "PL",
     params: (locale) => ({ locale, segment: "poland", child: "flowers" }),
   },
   {
     name: "Poland's roses sorted (the depth-4 parameter route)",
     path: "%5Fquery/[segment]/[child]/[grandchild]/page.tsx",
-    country: "poland",
+    country: "PL",
     params: (locale) => ({
       locale,
       segment: "poland",
@@ -321,17 +326,28 @@ const IN_CONTEXT: readonly {
   },
 ];
 
-describe("in a destination's context, the shop items link to its own pages (AC-1, T-01)", () => {
+describe("in a destination's context, every entry is that country's (spec 043 AC-1, AC-50, T-01, T-50)", () => {
   for (const locale of ["en", "en-gb"] as const) {
     for (const { name, path, country, params } of IN_CONTEXT) {
       it(`${name} in ${locale}`, async () => {
-        const { row, menu, send, basket } = drawn(
+        const { row, menu, send, basket, context } = drawn(
           await headerProps(path, params(locale)),
         );
-        expect(entriesOf(row)).toEqual(entriesOf(inContext(locale, country)));
-        expect(entriesOf(menu)).toEqual(entriesOf(inContext(locale, country)));
-        expect(send).toBe(baseline[locale].send);
+        const model = await megaMenuModel(locale, country);
+        expect(context).toBe(country);
+        expect(row).toEqual(expected(model));
+        expect(menu).toEqual(expected(model));
+        expect(send).toBeUndefined();
         expect(basket).toBe(`/${locale}/basket`);
+        // In context nothing goes through the chooser, and the hubs are the country's pages.
+        const out = expected(await megaMenuModel(locale, null));
+        for (const [id, target] of row) {
+          expect(target, id).not.toContain("/choose-country");
+          const hub = out.find(([other]) => other === id)?.[1];
+          if (id.startsWith("category:") || id.startsWith("occasion:")) {
+            expect(target, id).not.toBe(hub);
+          }
+        }
       });
     }
   }

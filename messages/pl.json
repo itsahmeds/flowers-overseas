@@ -794,22 +794,40 @@
       "label": "Categories"
     },
     "category": {
-      "addOns": "Add-ons",
-      "birthday": "Birthday",
-      "bouquets": "Bouquets",
       "destinations": "Destinations",
       "occasions": "Occasions",
       "ourSelection": "Our selection",
-      "plants": "Plants",
       "roses": "Roses",
-      "sameDayDelivery": "Same-day delivery",
-      "sameDayShort": "Same-day",
       "sympathy": "Sympathy"
     },
     "currency": {
       "label": "Prices shown in {currency}"
     },
     "forFlorists": "For florists",
+    "mega": {
+      "allDestinations": "All destinations",
+      "allFlowers": "All flowers",
+      "allOccasions": "All occasions",
+      "byColour": "By colour",
+      "byFlower": "By flower",
+      "byPrice": "By price",
+      "byType": "By type",
+      "comingUp": "Coming up",
+      "everyDay": "Every day",
+      "extras": "Extras you can add",
+      "flowers": "Flowers",
+      "forWhom": "For whom",
+      "open": "Ordering open",
+      "plantsGifts": "Plants & gifts",
+      "recipient": {
+        "colleague": "For a colleague",
+        "grandparents": "For grandparents",
+        "mum": "For mum",
+        "newParents": "For new parents",
+        "partner": "For someone you love"
+      },
+      "soon": "Opening soon"
+    },
     "menu": {
       "label": "Menu"
     },
@@ -991,6 +1009,9 @@
       "seoTitle": "{entity} for {country}: one all-in price",
       "siblingsHeading": "Also for {country}"
     },
+    "cta": {
+      "chooseCountry": "Choose where to send"
+    },
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
       "corridorLink": "Read the {country} guide",
@@ -1033,6 +1054,14 @@
       "pageOf": "Page {page} of {total}",
       "previous": "Previous",
       "titleSuffix": "{title} · Page {page}"
+    },
+    "price": {
+      "bandWord": {
+        "high": "Higher prices",
+        "low": "Lower prices",
+        "mid": "Middle prices"
+      },
+      "choose": "Choose a country to see the price"
     },
     "root": {
       "dateColumn": "Date",
