@@ -261,13 +261,33 @@ describe("the shipped catalogues and manifests", () => {
   const AWAITING_FOUNDER_REVIEW = [
     // TASK-204..206 (spec 010): the checkout page, its states and the confirmation, and the
     // product page's two entry buttons (`product.entry.*`), the implementer's wording until the
-    // founder's record run attests them.
+    // founder's record run attests them. The basket page (spec 010 §14 A-founder-2026-10-22,
+    // Appendix A; TASK-349): the `checkout.basket.*` keys but `alsoInBasket`, and `checkout.date.gone`.
     "checkout.addons.add",
     "checkout.addons.addLabel",
     "checkout.addons.legend",
     "checkout.addons.remove",
     "checkout.addons.removeLabel",
+    "checkout.basket.addOns",
+    "checkout.basket.added",
     "checkout.basket.alsoInBasket",
+    "checkout.basket.checkout",
+    "checkout.basket.continue",
+    "checkout.basket.dateLater",
+    "checkout.basket.empty",
+    "checkout.basket.emptyLink",
+    "checkout.basket.full",
+    "checkout.basket.included",
+    "checkout.basket.otherCurrency",
+    "checkout.basket.otherMode",
+    "checkout.basket.remove",
+    "checkout.basket.removeLabel",
+    "checkout.basket.title",
+    "checkout.basket.to",
+    "checkout.basket.total",
+    "checkout.basket.unavailable",
+    "checkout.basket.unavailableSummary",
+    "checkout.basket.useNext",
     "checkout.buyer.legend",
     "checkout.closed.back",
     "checkout.closed.opensSoon",
@@ -355,27 +375,6 @@ describe("the shipped catalogues and manifests", () => {
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
-    // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
-    "checkout.basket.addOns",
-    "checkout.basket.added",
-    "checkout.basket.checkout",
-    "checkout.basket.continue",
-    "checkout.basket.dateLater",
-    "checkout.basket.empty",
-    "checkout.basket.emptyLink",
-    "checkout.basket.full",
-    "checkout.basket.included",
-    "checkout.basket.otherCurrency",
-    "checkout.basket.otherMode",
-    "checkout.basket.remove",
-    "checkout.basket.removeLabel",
-    "checkout.basket.title",
-    "checkout.basket.to",
-    "checkout.basket.total",
-    "checkout.basket.unavailable",
-    "checkout.basket.unavailableSummary",
-    "checkout.basket.useNext",
-    "checkout.date.gone",
     "company.controller",
     "confirmation.demo.body",
     "confirmation.demo.next",
@@ -475,8 +474,9 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.submitting",
     "payments.step.testLabel",
 
-    "product.entry.addToBasket",
-    "product.entry.demo",
+    // `product.entry.addToBasket` and `product.entry.demo` (TASK-206, counted: the product page is
+    // indexable) are not queued here: with the basket's keys they take `en` over A17's 5 % share,
+    // so they ship for the founder's `record-approval-204.py` run, which marks them reviewed.
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
