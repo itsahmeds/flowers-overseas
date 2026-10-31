@@ -40,9 +40,10 @@ export type RoutedMode = z.infer<typeof RoutedModeSchema>;
  * Mode pairing (§5.2; spec 010's `ASSIGNMENT_MODE_MISMATCH` trigger enforces the same pair): a
  * `live` order goes to an `active` florist, a `test` order to a `demo` florist.
  */
-export const PARTNER_STATUS_FOR_MODE: Readonly<
-  Record<RoutedMode, PartnerStatus>
-> = Object.freeze({ live: "active", test: "demo" });
+export const PARTNER_STATUS_FOR_MODE = Object.freeze({
+  live: "active",
+  test: "demo",
+} as const satisfies Record<RoutedMode, PartnerStatus>);
 
 const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/u);
 const IdSchema = z.string().min(1);
