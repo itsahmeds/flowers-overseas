@@ -182,6 +182,7 @@ describe("ensureQueues", () => {
       "media.derive_variants",
       "neon.usage_probe",
       "outbox.dispatch",
+      "payments.production_start",
       "retention.sweep",
     ]);
   });
@@ -360,10 +361,11 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles retention.sweep (TASK-025) and outbox.dispatch (TASK-254), nothing else yet", async () => {
+  it("the production map handles retention.sweep (TASK-025), outbox.dispatch (TASK-254) and payments.production_start (TASK-258), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
       "outbox.dispatch",
+      "payments.production_start",
       "retention.sweep",
     ]);
   });

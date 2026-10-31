@@ -268,7 +268,11 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
       ).map(([match, surface]) => ({
         match,
         surface,
-        paths: [...paths, "src/modules/payments/**"],
+        paths: [
+          ...paths,
+          "src/modules/payments/**",
+          "src/app/api/internal/jobs/**",
+        ],
       })),
       // Spec 011 §7 (TASK-212): the florist surface under `FLORIST_BASE_PATH` and its email.
       ...(

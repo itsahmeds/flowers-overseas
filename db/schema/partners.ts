@@ -47,7 +47,7 @@ import { product, productTier } from "./catalog.ts";
 import { city, country, currency, postcodeZone, rowSources } from "./geo.ts";
 import { locale, timestamps } from "./i18n.ts";
 import { mediaAsset } from "./media.ts";
-import { order } from "./orders.ts";
+import { order, orderAssignment } from "./orders.ts";
 
 /* -------------------------------------------------------------------------- */
 /* The closed value sets (CHECK lists, never a Postgres enum — AC-7)          */
@@ -611,5 +611,66 @@ export const payoutLine = pgTable(
     uniqueIndex("payout_line_order_once_idx")
       .on(table.orderId)
       .where(sql`kind = 'order'`),
+  ],
+);
+
+/* -------------------------------------------------------------------------- */
+/* payout_adjustment (spec 002 §14 A10.3, `0027_cancel_window_a10`)            */
+/* -------------------------------------------------------------------------- */
+
+/** `payout_adjustment.kind`: the one case A10 records. */
+export const payoutAdjustmentKinds = [
+  "withdrawn_by_buyer_after_acceptance",
+] as const;
+/** `payout_adjustment.status`: the payouts spec settles or waives an open row. */
+export const payoutAdjustmentStatuses = ["open", "settled", "waived"] as const;
+
+/**
+ * What a florist who accepted an order the buyer then cancelled may be owed (A10.3). No amount
+ * column, on purpose: the florist agreement decides it, and a `payout_line` of kind `adjustment`
+ * carries it once settled. One row per accepted assignment. RLS: staff all; a partner reads its
+ * own rows.
+ */
+export const payoutAdjustment = pgTable(
+  "payout_adjustment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => order.id, { onDelete: "restrict" }),
+    partnerId: uuid("partner_id")
+      .notNull()
+      .references(() => fulfillmentPartner.id, { onDelete: "restrict" }),
+    assignmentId: uuid("assignment_id")
+      .notNull()
+      .references(() => orderAssignment.id, { onDelete: "restrict" }),
+    kind: text("kind").notNull(),
+    status: text("status").notNull().default("open"),
+    payoutLineId: uuid("payout_line_id").references(() => payoutLine.id, {
+      onDelete: "restrict",
+    }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    unique("payout_adjustment_assignment_id_key").on(table.assignmentId),
+    check(
+      "payout_adjustment_kind_check",
+      sql.raw(`kind in ${valueList(payoutAdjustmentKinds)}`),
+    ),
+    check(
+      "payout_adjustment_status_check",
+      sql.raw(`status in ${valueList(payoutAdjustmentStatuses)}`),
+    ),
+    check(
+      "payout_adjustment_resolved_check",
+      sql`(${table.status} = 'open') = (${table.resolvedAt} is null)`,
+    ),
+    check(
+      "payout_adjustment_settled_line_check",
+      sql`${table.status} <> 'settled' or ${table.payoutLineId} is not null`,
+    ),
+    index("payout_adjustment_order_id_idx").on(table.orderId),
+    index("payout_adjustment_partner_id_idx").on(table.partnerId),
   ],
 );

@@ -243,8 +243,13 @@ const ROWS: readonly (readonly [
     "chargeback_lost",
     ["system"],
   ],
-  // Spec 002 §14 A8.1 (spec 016 §13 Q9; shipped by `0021_post_purchase`, TASK-337): no candidate
-  // at the first attempt sends the order to `no_partner_available` without passing `routed`.
+];
+
+/**
+ * Spec 002 §14 A8.1 (spec 016 §13 Q9; shipped by `0021_post_purchase`, TASK-337): no candidate at
+ * the first attempt sends the order to `no_partner_available` without passing `routed`.
+ */
+const ROWS_A8: typeof ROWS = [
   [
     37,
     ["authorised"],
@@ -261,16 +266,43 @@ const ROWS: readonly (readonly [
   ],
 ];
 
-/** A6.3 plus A8.1 with their sets expanded: one row per `(from_status, event)`, 75 in all. */
-export const TRANSITIONS: readonly TransitionRow[] = ROWS.flatMap(
-  ([, froms, event, to, allowedActors]) =>
+/**
+ * Spec 002 §14 A10.2, rows 39 and 40 (`0027_cancel_window_a10`, TASK-258): the buyer's free cancel
+ * after a florist accepted, until production starts. Set P is set E plus these two states.
+ */
+const ROWS_A10: typeof ROWS = [
+  [39, ["accepted"], "order.cancelled", "cancelled", ["buyer", "admin"]],
+  [40, ["paid"], "order.cancelled", "cancelled", ["buyer", "admin"]],
+];
+
+const expand = (rows: typeof ROWS): readonly TransitionRow[] =>
+  rows.flatMap(([, froms, event, to, allowedActors]) =>
     froms.map((from) => ({
       from,
       event,
       to: to === "same" ? from : to,
       allowedActors,
     })),
-);
+  );
+
+/** A6.3 with its sets expanded, as `0007` seeds it: one row per `(from_status, event)`, 73. */
+export const A6_TRANSITIONS: readonly TransitionRow[] = expand(ROWS);
+
+/** A8.1's two rows, as `0021_post_purchase` inserts them. */
+export const A8_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A8);
+
+/** A10's two rows, as `0027_cancel_window_a10` inserts them. */
+export const A10_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A10);
+
+/** The table after every migration: A6.3's 73 rows, A8.1's 2 and A10's 2, 77 in all. */
+export const TRANSITIONS: readonly TransitionRow[] = [
+  ...A6_TRANSITIONS,
+  ...A8_TRANSITIONS,
+  ...A10_TRANSITIONS,
+];
+
+/** Spec 002 §14 A10.2, set P: the states a buyer may cancel from (set E, `accepted`, `paid`). */
+export const SET_P = [...SET_E, "accepted", "paid"] as const;
 
 /** A6.6: the 28 transition events, which have rows. */
 export const TRANSITION_EVENTS = [
