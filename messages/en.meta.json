@@ -4740,32 +4740,44 @@
   },
   "shop.price.choose": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-386.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:13Z",
     "sourceHash": "a2feaa6a63a393f179a03353b1f1379faebd8e98148cf8f326142ad0a85e1ab3"
   },
   "shop.cta.chooseCountry": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-386.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:13Z",
     "sourceHash": "f9ffb731106f959a7f57d6b3226e201d29b8935406a91271e66601feeb9c8a4c"
   },
   "shop.seeAll": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-386.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:13Z",
     "sourceHash": "835b97b7a0e86a2bb4b845bec6ad5677ebc67049f4c2a8eee6f61218a2043012"
   },
   "shop.price.bandWord.low": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-386.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:13Z",
     "sourceHash": "e5f80d066124fc1ee0f59ea0ec707f690a857c06c2a0ca605c32d0328a54f65e"
   },
   "shop.price.bandWord.mid": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-386.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:13Z",
     "sourceHash": "14f5861d3d2935ea142b98b5bbbdb029fc22b230e9dde2ec64aae7928c73cf9d"
   },
   "shop.price.bandWord.high": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-386.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:13Z",
     "sourceHash": "dfb38a11fff7bc6264ec646a6dc5e2d0c6c52b5dd8e3e55584ab63f9c7ab8c92"
   },
   "shop.toolbar.howWeSort": {
@@ -4785,7 +4797,9 @@
   },
   "home.comingUp.more": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-386.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:13Z",
     "sourceHash": "1a2612705dd797842beda42948a2979b5b6c763ee71acf4f87868f5c2c254420"
   }
 }
