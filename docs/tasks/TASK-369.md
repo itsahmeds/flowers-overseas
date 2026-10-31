@@ -41,6 +41,7 @@ here.
 
 - 2026-10-24: `src/modules/orders/close/` (`closeDueAt`, `OrderClosedV1`, `runCloseSweep`), `order.close_sweep` registered, handled and enqueued by the tick under a `singletonKey`; `COMPLAINT_WINDOW_HOURS` in `company.ts`; unit T-01, T-05 unit half, AC-2 scan; integration T-02 to T-05 and the backlog alert, green on a local PG16 with six mutations seen red. Next: PR, CI.
 - 2026-11-01 (agent V): restacked onto PR 411 (`task/TASK-261-refunds-disputes`, which carries PR 403's `0026`): the refund check now reads `refund.order_id`, `refundOf` writes the purchase's payment, and a two-order purchase case joins T-03 (a refund naming one order holds that order only). The 2026-10-24 carry-forward on PR 403 is resolved here. Merges after PR 411. Integration file green on a local PG16 (9 tests), two mutations seen red.
+- 2026-11-01 (agent V, paused for machine heat): stopped after the restack. The job-registry conflicts with TASK-258 and TASK-260 (`payments.production_start`, `webhook.process`) are resolved by hand (tick enqueues three jobs, 16 job names) but `jobs-internal`, `jobs-registry`, `jobs-runtime` and `order-close` unit files were NOT run. Next: those four files, `pnpm gates:cheap`, `## Self-review` in PR 406, rebase before ready, toggle `ci:full`.
 
 ## Result
 
