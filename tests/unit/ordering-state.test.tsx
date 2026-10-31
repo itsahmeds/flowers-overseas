@@ -24,6 +24,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   COUNTRIES,
   type CountryConfig,
+  CountryConfigSchema,
   countryConfig,
   deliveryDatesOpen,
   statusDisagreements,
@@ -332,6 +333,49 @@ describe("AC-34 (T-35): cutoff text renders only for a country where ordering is
     );
     expect(open).toContain(
       `${value("en", "corridor.facts.orderBy.label")} ${value("en", "corridor.facts.orderBy.none")}`,
+    );
+  });
+
+  it("prints the FAQ cutoff for the open country whose registry row names it, read from data", async () => {
+    // Countries are data (founder 2026-10-24): the component carries no country code, so the
+    // sentence follows the registry's `faqCutoffKey`. Poland open with its key taken away: no cutoff.
+    const poland = COUNTRIES.find((country) => country.iso2 === "PL");
+    if (poland === undefined) throw new Error("Poland must be in the registry");
+    expect(poland.faqCutoffKey).toBe("faq.whoDelivers.answerCutoff");
+    const faq = () =>
+      withActivePartnersProvider(POLAND_PARTNERS, () =>
+        text(render(<HomeFaq />, "en")),
+      );
+    const key = poland.faqCutoffKey;
+    if (key === undefined)
+      throw new Error("Poland must name its cutoff sentence");
+    try {
+      delete (poland as { faqCutoffKey?: string }).faqCutoffKey;
+      const without = await faq();
+      expect(without).toContain(value("en", "faq.whoDelivers.answer"));
+      expect(without).not.toContain(
+        value("en", "faq.whoDelivers.answerCutoff"),
+      );
+    } finally {
+      (poland as { faqCutoffKey?: string }).faqCutoffKey = key;
+    }
+    expect(await faq()).toContain(value("en", "faq.whoDelivers.answerCutoff"));
+  });
+
+  it("refuses a cutoff sentence on a country with no agreed operations block", () => {
+    const { iso2, ...germany } = countryConfig("DE");
+    expect(germany.operations).toBeUndefined();
+    const parsed = CountryConfigSchema.safeParse({
+      ...germany,
+      iso2,
+      faqCutoffKey: "faq.whoDelivers.answerCutoff",
+    });
+    expect(parsed.success).toBe(false);
+    expect(parsed.error?.issues.map((issue) => issue.path.join("."))).toEqual([
+      "faqCutoffKey",
+    ]);
+    expect(CountryConfigSchema.safeParse({ ...germany, iso2 }).success).toBe(
+      true,
     );
   });
 

@@ -110,6 +110,14 @@ const MessageKeySchema = z
     "must be a dotted `destinations.*` message key",
   );
 
+/** A `faq.*` message key: the home FAQ sentence that states one country's cutoff. */
+const FaqMessageKeySchema = z
+  .string()
+  .regex(
+    /^faq\.[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)+$/,
+    "must be a dotted `faq.*` message key",
+  );
+
 /**
  * One slug per launch locale, and no locale missing: the object is built from the registry rather
  * than hand-listed, so adding a fifth launch locale fails this parse until its slugs are authored
@@ -176,6 +184,15 @@ export const CountryConfigSchema = z
      * to, because naming cities there would claim coverage we do not have (`plan/10` §3).
      */
     citiesKey: MessageKeySchema.optional(),
+    /**
+     * The home FAQ's sentence that states this country's own cutoff ("Order by 14:00 in Warsaw…",
+     * spec 004 §14 A19), shown only while ordering is open here (spec 007 §14
+     * A-founder-2026-10-14c clause 4, AC-34). The sentence names this country's zone and cutoff,
+     * so the country it belongs to is data on the country, never a code literal in the component
+     * (founder 2026-10-24: countries are data). Only a country with an agreed `operations` block
+     * may carry one.
+     */
+    faqCutoffKey: FaqMessageKeySchema.optional(),
     /** Per-locale corridor slug (`plan/02` §4.1). */
     slugs: SlugsSchema,
     /**
@@ -245,6 +262,17 @@ export const CountryConfigSchema = z
         code: "custom",
         path: ["corridorPagePublished"],
         message: `\`${country.iso2}\` publishes a corridor page while it is neither \`live\` nor \`guidePublished\`: a page with no guide and no delivery is thin content (plan/02 §5.1)`,
+      });
+    }
+    // A cutoff sentence states the agreed cutoff, so a country with none may not carry one.
+    if (
+      country.faqCutoffKey !== undefined &&
+      country.operations === undefined
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["faqCutoffKey"],
+        message: `\`${country.iso2}\` carries a cutoff sentence with no \`operations\` block: no cutoff has been agreed there (spec 009 §13 Q3)`,
       });
     }
     // A country we do not deliver to may not name cities (`plan/10` §3, honesty rule).
@@ -327,6 +355,7 @@ const countries = [
     guidePublished: true,
     // spec 009 §13 Q3 (founder, 2026-09-16), verbatim: the recipient's zone, the same-day cutoff
     // in it, Monday–Saturday, and §13 Q3's "sundayDelivery: false" as spec 002 §5.1's `none`.
+    faqCutoffKey: "faq.whoDelivers.answerCutoff",
     operations: {
       ianaZone: "Europe/Warsaw",
       sameDayCutoffLocal: "14:00",

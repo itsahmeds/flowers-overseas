@@ -27,10 +27,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import {
-  type CountryIso2,
-  deliveryDatesOpen,
-} from "../../../config/countries.ts";
+import { COUNTRIES, deliveryDatesOpen } from "../../../config/countries.ts";
 import { Grid, Stack } from "../primitives/layout.tsx";
 import {
   Display,
@@ -58,21 +55,30 @@ export const FAQ_ENTRIES = [
     questionKey: "whoDelivers.question",
     answerKey: "whoDelivers.answer",
     // A19's gated sentence: "Order by 14:00 in Warsaw … for delivery today" is appended only
-    // while ordering is open in the country it names (spec 007 §14 A-founder-2026-10-14c clause 4,
-    // AC-34; TASK-239): Poland's cutoff, so Poland's predicate, not "any destination". Written out
-    // rather than assembled, for the reason the block comment above gives about `i18n:check`.
+    // while ordering is open in the country whose registry row names it as its `faqCutoffKey`
+    // (spec 007 §14 A-founder-2026-10-14c clause 4, AC-34; TASK-239): that country's own
+    // predicate, not "any destination", and no country code here. Written out rather than
+    // assembled, for the reason the block comment above gives about `i18n:check`.
     gatedAnswerKey: "whoDelivers.answerCutoff",
-    gatedCountry: "PL",
   },
 ] as const satisfies readonly {
   id: string;
   questionKey: string;
   answerKey: string;
-  /** Appended to the answer only while `deliveryDatesOpen(gatedCountry)` (A19, AC-34). */
+  /**
+   * Appended to the answer only while ordering is open in a country whose `faqCutoffKey` is
+   * `faq.{gatedAnswerKey}` (A19, AC-34): the country the sentence states the cutoff of.
+   */
   gatedAnswerKey?: string;
-  /** The country whose cutoff `gatedAnswerKey` states. */
-  gatedCountry?: CountryIso2;
 }[];
+
+/** True while ordering is open in a country whose own cutoff sentence is `faq.{key}`. */
+function cutoffSentenceOpen(key: string): boolean {
+  return COUNTRIES.some(
+    (country) =>
+      country.faqCutoffKey === `faq.${key}` && deliveryDatesOpen(country.iso2),
+  );
+}
 
 const HEADING_ID = "faq-heading";
 
@@ -152,7 +158,7 @@ export function HomeFaq({
                   is open in the country it names, so the answer drops it rather than stating a
                   cutoff nobody can order against (TASK-120, TASK-239). */}
               {"gatedAnswerKey" in entry &&
-              deliveryDatesOpen(entry.gatedCountry)
+              cutoffSentenceOpen(entry.gatedAnswerKey)
                 ? `${t(entry.answerKey)} ${t(entry.gatedAnswerKey)}`
                 : t(entry.answerKey)}
             </Text>
