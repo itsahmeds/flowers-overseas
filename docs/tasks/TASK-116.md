@@ -36,6 +36,7 @@ _None recorded._
 - 2026-10-25: worktree, row `in_progress`, draft PR #433; builders, async tree, fixtures and tests pushed; gates and mutation checks run.
 - 2026-10-25 (stop for the night): run 40189518204 failed `test-integration` on a 5 000 ms timeout (tree walk) and Lighthouse LCP 2017/2049 ms (noise band). Fixed the timeout in `f82e79b`; left: CI run 40192739321 on that head to read (rerun Lighthouse once if LCP is 2000 to 2200 ms), then merge-ready.
 - 2026-10-31: rebased on `origin/main` (c0d6b6f2c, TASK-337); `docs/codebase-map.md` regenerated, not hand-merged; `pnpm seo:validate` exit 0 (validate-sitemap 11 fixtures ok, hreflang 3, schema 14); `gates:cheap` six gates exit 0, tests red only on 5 000 ms timeouts at load average 76 (other agents), re-run green except one case at load 77; CI on the new head is the gate of record.
+- 2026-11-01: main moved (790ea4d48, TASK-380); rebased again, map regenerated; two unit cases that reach the listing children (`seo-sitemap.test.ts`, `i18n-fifth-locale.test.tsx`) timed out at 5 000 ms under `gates:cheap` at load 25, now state a 30 s budget; `gates:cheap` PASS on `e03210ede` (120 files, 2 953 tests); `validate-sitemap` 11 fixtures ok.
 
 ## Result
 
