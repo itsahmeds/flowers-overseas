@@ -733,7 +733,10 @@ describe("the rendered header (AC-7, AC-14)", () => {
     ].map((match) => match[0]);
     expect(summaries).toHaveLength(6);
     // The Basket link (spec 010 D10) is the 44 px round target.
-    const basket = tagAt(banner, banner.indexOf('data-fo-header-item="basket"'));
+    const basket = tagAt(
+      banner,
+      banner.indexOf('data-fo-header-item="basket"'),
+    );
     expect(basket).toMatch(/size-\(--target-min\)/u);
     for (const summary of summaries) {
       expect(summary, summary).toMatch(/min-h-\(--target-min\)/u);

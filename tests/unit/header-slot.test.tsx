@@ -163,7 +163,9 @@ function drawn(props: SiteHeaderProps): {
   const send = [...html.matchAll(/href="([^"]*#send)"/gu)].map((m) => m[1])[0];
   // The Basket link (spec 010 D10; TASK-349): the header's icon link, not a menu entry, so it is
   // read on its own.
-  const basketTag = /<a\b[^>]*\sdata-fo-header-item="basket"[^>]*>/u.exec(html)?.[0];
+  const basketTag = /<a\b[^>]*\sdata-fo-header-item="basket"[^>]*>/u.exec(
+    html,
+  )?.[0];
   const basket = basketTag && /\shref="([^"]*)"/u.exec(basketTag)?.[1];
   return {
     row: collect(html.slice(0, menuAt)),

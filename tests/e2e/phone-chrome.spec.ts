@@ -167,7 +167,9 @@ test.describe("T-52: the phone header (AC-47)", () => {
           ),
         ).toEqual(desktop);
         // The Basket icon link stays in the bar, not in the Menu (spec 010 §13 Q26; TASK-349).
-        await expect(page.locator(`${PANEL} [data-fo-header-item="basket"]`)).toHaveCount(0);
+        await expect(
+          page.locator(`${PANEL} [data-fo-header-item="basket"]`),
+        ).toHaveCount(0);
         const switcher = page.locator("[data-fo-menu-switcher] nav");
         await expect(switcher).toHaveAttribute("aria-label", "Change language");
         // T-52's Menu case (spec 004 §14 A-founder-2026-10-14e): the language links of
