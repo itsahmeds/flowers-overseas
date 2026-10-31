@@ -115,10 +115,33 @@ function fkKey(
  * shape too. So do, since spec 002 §14 A7 (`0017_payments_a7`, TASK-254), a later
  * `ALTER TABLE … ALTER COLUMN … DROP NOT NULL` / `SET NOT NULL`, and a later
  * `ALTER TABLE … DROP CONSTRAINT <name>` / `ADD CONSTRAINT <name> CHECK`, read in file order (one
- * clause per statement).
+ * clause per statement). And, since `0026_payment_purchase` (TASK-350), a later
+ * `ALTER TABLE … ADD CONSTRAINT <name> UNIQUE`, a later `DROP CONSTRAINT` of a key, a later
+ * `DROP INDEX public.<name>` and a later `ALTER TABLE … DROP COLUMN <name>`: what a later
+ * migration removes is not part of the shape.
  */
 export function sqlShape(sql: string, table: string, later = ""): Shape {
   const body = tableBody(sql, table);
+  const droppedConstraints = new Set(
+    [
+      ...later.matchAll(
+        new RegExp(
+          `ALTER TABLE ${quoted(table)}\\s+DROP CONSTRAINT (\\w+);`,
+          "g",
+        ),
+      ),
+    ].map((m) => m[1] ?? ""),
+  );
+  const droppedIndexes = new Set(
+    [...later.matchAll(/DROP INDEX public\.(\w+);/g)].map((m) => m[1] ?? ""),
+  );
+  const droppedColumns = new Set(
+    [
+      ...later.matchAll(
+        new RegExp(`ALTER TABLE ${quoted(table)}\\s+DROP COLUMN (\\w+);`, "g"),
+      ),
+    ].map((m) => m[1] ?? ""),
+  );
   const named = (kind: string): string[] =>
     [...body.matchAll(new RegExp(`CONSTRAINT (\\w+) ${kind}`, "g"))]
       .map((m) => m[1] ?? "")
@@ -152,12 +175,14 @@ export function sqlShape(sql: string, table: string, later = ""): Shape {
         ),
       ),
     )
+    .filter((key) => !droppedConstraints.has(key.slice(0, key.indexOf("("))))
     .sort();
   const indexes = [
     ...`${sql}\n${later}`.matchAll(
       new RegExp(`CREATE (UNIQUE )?INDEX (\\w+)\\s+ON ${quoted(table)} `, "g"),
     ),
   ]
+    .filter((m) => !droppedIndexes.has(m[2] ?? ""))
     .map((m) => `${m[1] === undefined ? "" : "unique "}${m[2] ?? ""}`)
     .sort();
   const added = [
@@ -191,14 +216,29 @@ export function sqlShape(sql: string, table: string, later = ""): Shape {
     if (m[1] === "DROP CONSTRAINT") checks.delete(m[2] ?? "");
     else if (m[3] !== undefined) checks.add(m[2] ?? "");
   }
+  const uniques = named("UNIQUE")
+    .concat(
+      [
+        ...later.matchAll(
+          new RegExp(
+            `ALTER TABLE ${quoted(table)}\\s+ADD CONSTRAINT (\\w+) UNIQUE`,
+            "g",
+          ),
+        ),
+      ].map((m) => m[1] ?? ""),
+    )
+    .filter((name) => !droppedConstraints.has(name))
+    .sort();
   return {
-    columns: [...columnsOf(sql, table), ...added].map((column) =>
-      nullability.has(column.name)
-        ? { ...column, notNull: nullability.get(column.name) === true }
-        : column,
-    ),
+    columns: [...columnsOf(sql, table), ...added]
+      .filter((column) => !droppedColumns.has(column.name))
+      .map((column) =>
+        nullability.has(column.name)
+          ? { ...column, notNull: nullability.get(column.name) === true }
+          : column,
+      ),
     checks: [...checks].sort(),
-    uniques: named("UNIQUE"),
+    uniques,
     primaryKeys: named("PRIMARY KEY"),
     foreignKeys,
     indexes,

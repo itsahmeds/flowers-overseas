@@ -40,8 +40,11 @@ export const MISSING_PURPOSE = "TODO purpose";
  * 56 since TASK-275: the map had grown to 20 402 B against the 20 480 B hard cap (spec 001 §14
  * A21), so every PR that added a file tripped it and agents were trimming `@purpose` lines by hand.
  * The same reasoning holds at 56: the row names what the file is for, the doc comment says the rest.
+ *
+ * 48 since TASK-350 (PR 403): the 0021..0028 backend stack (PRs 384 to 411) took the map to
+ * 20 943 B against the same 20 480 B cap; at 48 the top of that stack is about 20 000 B.
  */
-export const PURPOSE_LIMIT = 56;
+export const PURPOSE_LIMIT = 48;
 /**
  * At most this many test files are named per entry, then `+N` for the rest. 3 until TASK-275; the
  * reader opens the barrel's tests from the first two names and finds the rest by the same prefix.

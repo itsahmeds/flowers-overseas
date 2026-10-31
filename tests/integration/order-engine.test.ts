@@ -308,7 +308,8 @@ describe.skipIf(server.url === undefined)(
         const [counts] = await tx<
           { payments: number; outbox: number; lines: number }[]
         >`
-          SELECT (SELECT count(*)::int FROM payment WHERE order_id = ${orderId}) AS payments,
+          SELECT (SELECT count(*)::int FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+                   WHERE o.id = ${orderId}) AS payments,
                  (SELECT count(*)::int FROM outbox) AS outbox,
                  (SELECT count(*)::int FROM order_line WHERE order_id = ${orderId}) AS lines`;
         return {
