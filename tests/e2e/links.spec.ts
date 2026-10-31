@@ -40,6 +40,20 @@ import { localePath, shownLocales } from "@/modules/i18n/routing";
 const LAUNCH_LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 /**
+ * The legal row's accessible name per launch locale (`footer.group.legal`), restated from
+ * `messages/<locale>.json` rather than read from it: the row is an inline `<nav>` named by
+ * `aria-label`, so a de or pl page names it in its own language.
+ */
+const LEGAL_ROW_NAME: Readonly<
+  Record<(typeof LAUNCH_LOCALES)[number], string>
+> = {
+  en: "Legal",
+  "en-gb": "Legal",
+  de: "Rechtliches",
+  pl: "Informacje prawne",
+};
+
+/**
  * The locales the chrome offers (spec 004 §14 A-founder-2026-10-14e: AC-14's crawl reads "the
  * shown locales plus `/`"), and the launch locales reached by URL only. Both are crawled: `/de`
  * and `/pl` keep AC-14's link rule on their own pages.
@@ -292,7 +306,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       // Spec 041's legal row: cookies and withdrawal and refunds exist in every launch locale
       // (TASK-183, TASK-184); imprint, terms and privacy wait for the company, so none draws them.
       const legal = await page
-        .locator('footer nav[aria-label="Legal"] a')
+        .locator(`footer nav[aria-label="${LEGAL_ROW_NAME[locale]}"] a`)
         .evaluateAll((nodes) =>
           nodes.map((node) => node.getAttribute("href") ?? ""),
         );

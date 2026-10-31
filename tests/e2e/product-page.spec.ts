@@ -461,12 +461,16 @@ test.describe("the fresh-flower promise names no number of days (spec 009 §14 A
 });
 
 // Spec 009 §14 A11 bullet 1, spec 041 §6 (TASK-287): where `infoPageExists("guarantee", locale)`
-// holds, the fresh-flower promise's title links to the guarantee page, and that page answers;
-// in a locale without the page the trust block carries no link at all.
+// holds, the fresh-flower promise's title links to the guarantee page, and that page answers.
+// Every launch locale has the page since TASK-184's de and pl drafts, so each links to its own
+// locale's path; the locale without the page is pinned by `tests/unit/product-page.test.tsx`.
+// `product.trust.freshness.title` is still the English title in de and pl's message files.
 test.describe("the fresh-flower promise links to the guarantee page where it exists (TASK-287)", () => {
   for (const [url, href] of [
     ["/en/poland/product/amber-hour", "/en/guarantee"],
     ["/en-gb/poland/product/amber-hour", "/en-gb/guarantee"],
+    ["/de/polen/produkt/amber-hour", "/de/garantie"],
+    ["/pl/polska/produkt/amber-hour", "/pl/gwarancja"],
   ] as const) {
     test(`${url}: the promise links to ${href}`, async ({ page }) => {
       await page.goto(url);
@@ -477,21 +481,6 @@ test.describe("the fresh-flower promise links to the guarantee page where it exi
       await expect(link).toHaveText("Fresh-flower promise");
       const response = await page.request.get(href);
       expect(response.status(), href).toBe(200);
-    });
-  }
-
-  for (const url of [
-    "/de/polen/produkt/amber-hour",
-    "/pl/polska/produkt/amber-hour",
-  ] as const) {
-    test(`${url}: no guarantee page in the locale, so the promise is plain text`, async ({
-      page,
-    }) => {
-      await page.goto(url);
-      const trust = page.locator("[data-fo-pdp-trust]");
-      await expect(trust).toHaveCount(1);
-      await expect(trust).toContainText("72");
-      await expect(trust.locator("a")).toHaveCount(0);
     });
   }
 });
