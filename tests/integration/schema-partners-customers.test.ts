@@ -951,6 +951,8 @@ describe.skipIf(sql === undefined)(
               (sp) =>
                 sp`UPDATE media_asset SET kind = 'brand' WHERE id = ${shopPhoto}`,
             );
+            // `0023` (spec 012b, TASK-293): review columns change under `attest()`'s flag.
+            await tx`SELECT set_config('app.allow_review_write', 'on', true)`;
             await accept(
               "media_asset a listed asset reviewed in place",
               () =>

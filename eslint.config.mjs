@@ -116,6 +116,24 @@ const eslintConfig = defineConfig([
     plugins: { fo },
     rules: { "fo/no-direct-order-status-write": "error" },
   },
+  {
+    // spec 012b §2.4, AC-14 (TASK-293; proposed ADR-0022): the review columns (`reviewed`,
+    // `reviewed_by`, `reviewed_at`, `review_state`) are written only by `attest()`. The same
+    // roots as `fo/order-status`, for the same reason: every root that can reach the database.
+    // The one allowed place (a function named `attest`) is held inside the rule, never here.
+    name: "fo/review-write",
+    files: [
+      "db/**/*.ts",
+      "scripts/**/*.ts",
+      "seed/**/*.ts",
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "*.ts",
+      "*.mjs",
+    ],
+    plugins: { fo },
+    rules: { "fo/no-direct-review-write": "error" },
+  },
   // spec 001 §14 A20, AC-56 and AC-57 (TASK-160): the logger's side doors in `src/`, and SDKs
   // only in their adapters, everywhere `eslint .` lints. The four `no-restricted-*` rules are
   // configured here and nowhere else, one object per disjoint file group, from one function:
