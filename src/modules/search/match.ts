@@ -7,6 +7,11 @@
  * **prefix** (the last query token only, from 3 letters); **typo** (Damerau-Levenshtein 1 for 4 to
  * 7 letters, 2 from 8, never under 4, against the index vocabulary of tokens and stems).
  *
+ * A token takes typo matches only when it matches nothing firmly (exact, stem or prefix) in any
+ * field of any document of the searched set (§2.3 as amended by §14 A-orchestrator-2026-10-25b;
+ * TASK-426): a word the catalogue carries is taken as meant, so German `Rosa` (pink) is not a
+ * near-miss of `rose`, nor Polish `różne` (various) of `róża`. Decided once per token per query.
+ *
  * The tier of a document (higher is better): **5** the whole query is the name, or the SKU;
  * **4** every token matches the name or the facets (request or alt language), none by typo;
  * **3** every token matches some field, none by typo; **2** every token matches some field, at
@@ -102,6 +107,39 @@ export function fieldMatch(
 const firm = (kind: MatchKind | undefined): boolean =>
   kind !== undefined && kind !== "typo";
 
+const NO_TYPO_TERMS: ReadonlySet<string> = new Set<string>();
+
+function fieldsOf(document: IndexedDocument): readonly IndexedField[] {
+  return [
+    document.name,
+    document.facets,
+    document.description,
+    ...document.alt,
+  ];
+}
+
+/**
+ * The plans with the typo targets of every token that matches some field of some document firmly
+ * removed: a typo counts only for a token that matches nothing firmly in the searched set (§2.3,
+ * A-orchestrator-2026-10-25b item 1). One scan per token with typo targets, stopping at the first
+ * firm field, so the cost stays per query rather than per document (AC-28).
+ */
+function typoOnlyWhereUnmatched(
+  plans: readonly TokenPlan[],
+  documents: readonly IndexedDocument[],
+): TokenPlan[] {
+  return plans.map((plan) => {
+    if (plan.typoTerms.size === 0) return plan;
+    const firmOnly: TokenPlan = { ...plan, typoTerms: NO_TYPO_TERMS };
+    const firmSomewhere = documents.some((document) =>
+      fieldsOf(document).some(
+        (field) => fieldMatch(field, firmOnly) !== undefined,
+      ),
+    );
+    return firmSomewhere ? firmOnly : plan;
+  });
+}
+
 function halfUp(count: number): number {
   return Math.ceil(count / 2);
 }
@@ -122,22 +160,12 @@ export function matchDocument(
   let nameOrFacetHits = 0;
 
   for (const plan of plans) {
-    let name = fieldMatch(document.name, plan);
-    let facets = fieldMatch(document.facets, plan);
-    let alt = document.alt.map((field) => fieldMatch(field, plan));
-    let description = fieldMatch(document.description, plan);
-    // "In this order" (§2.3): a typo is the fallback for a token nothing better matches in this
-    // document. Where the token matches some field firmly, its typo hits elsewhere are dropped,
-    // so a near-miss cannot lift the relevance band of a document the word already found
-    // (`róże` meets the name "Rose…" only by typo; it must rank as `róża` does, AC-6).
-    if ([name, facets, description, ...alt].some(firm)) {
-      const keepFirm = (kind: MatchKind | undefined): MatchKind | undefined =>
-        firm(kind) ? kind : undefined;
-      name = keepFirm(name);
-      facets = keepFirm(facets);
-      description = keepFirm(description);
-      alt = alt.map(keepFirm);
-    }
+    // `plans` went through `typoOnlyWhereUnmatched`: a token with typo targets left matches
+    // nothing firmly in any document, so here a typo hit is the token's only kind of hit.
+    const name = fieldMatch(document.name, plan);
+    const facets = fieldMatch(document.facets, plan);
+    const alt = document.alt.map((field) => fieldMatch(field, plan));
+    const description = fieldMatch(document.description, plan);
 
     const nameOrFacetsFirm = firm(name) || firm(facets) || alt.some(firm);
     const anyFirm = nameOrFacetsFirm || firm(description);
@@ -175,7 +203,10 @@ export function matchDocuments(
   config: SearchConfig = SEARCH_CONFIG,
 ): Match[] {
   if (tokens.length === 0) return [];
-  const plans = planTokens(tokens, index.vocabulary.keys(), config);
+  const plans = typoOnlyWhereUnmatched(
+    planTokens(tokens, index.vocabulary.keys(), config),
+    index.documents,
+  );
   const queryKey = tokens.join(" ");
   const matches: Match[] = [];
   for (const document of index.documents) {
@@ -198,12 +229,7 @@ export function unmatchedTokens(
   const unmatched = new Set<string>();
   for (const plan of plans) {
     const found = index.documents.some((document) =>
-      [
-        document.name,
-        document.facets,
-        document.description,
-        ...document.alt,
-      ].some((field) => fieldMatch(field, plan) !== undefined),
+      fieldsOf(document).some((field) => fieldMatch(field, plan) !== undefined),
     );
     if (!found) unmatched.add(plan.token);
   }

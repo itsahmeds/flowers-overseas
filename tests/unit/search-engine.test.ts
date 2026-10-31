@@ -1,17 +1,20 @@
 /**
  * The search engine on the committed static catalogue (spec 045 AC-6, AC-7, AC-8, AC-9, AC-11;
- * T-06 to T-09, T-11; TASK-401).
+ * T-06 to T-09, T-11; TASK-401, restated by TASK-426 per §14 A-orchestrator-2026-10-25b).
  *
- * Every list is asserted as the **exact ordered SKU array** the engine returns over every page,
- * never as a set of reachable values; where an AC names a set ("exactly the products whose flower
- * types include roses"), the array is also checked against that set computed from the catalogue,
- * so the literal cannot drift from what it claims to be. Tiers are read through the pure
- * `matchDocuments` over the same index, so a tier claim and a list claim cannot disagree.
+ * AC-6 to AC-8 are **ranking properties** that hold whatever the `de` and `pl` copy says, so a
+ * faithful translation never turns them red: the spellings of one word are compared with each
+ * other as exact ordered arrays (one value, never a set of reachable ones), and each list's lead
+ * is checked against the **entity set** the test computes from the catalogue (`listProducts`
+ * flower types), never a literal SKU list. Tiers are read through the pure `matchDocuments` over
+ * the same index, and every list the engine returns is first asserted equal to that ranking, so a
+ * tier claim and a list claim cannot disagree.
  *
  * The destination is the registry's, named here as test data; nothing under `src/` names it.
  */
 import { beforeAll, describe, expect, it } from "vitest";
 
+import de from "../../messages/de.json";
 import type { LocaleCode } from "../../src/config/locales.ts";
 import { listProducts, listingView } from "../../src/modules/catalog/index.ts";
 import {
@@ -58,9 +61,18 @@ async function skus(
   return all;
 }
 
-/** `sku:tier` for every match, in rank order, through the pure functions. */
-function tiers(locale: LocaleCode, query: string): string[] {
-  const shop = index.locales.get(locale)?.shops.get(DESTINATION);
+interface Ranked {
+  readonly sku: string;
+  readonly tier: number;
+}
+
+/** Every match in rank order with its tier, through the pure functions. */
+function ranked(
+  locale: LocaleCode,
+  query: string,
+  over: SearchIndex = index,
+): Ranked[] {
+  const shop = over.locales.get(locale)?.shops.get(DESTINATION);
   if (shop === undefined) throw new Error("no shop");
   const parsed = parseQuery(query, locale, []);
   return rankSearchResults(
@@ -71,9 +83,34 @@ function tiers(locale: LocaleCode, query: string): string[] {
       hasPhoto: match.document.hasPhoto,
       curationIndex: match.document.curationIndex,
     })),
-  ).map((match) => `${match.sku}:${String(match.tier)}`);
+  ).map((match) => ({ sku: match.sku, tier: match.tier }));
 }
 
+/** `sku:tier` for every match, in rank order. */
+function tiers(locale: LocaleCode, query: string): string[] {
+  return ranked(locale, query).map(
+    (match) => `${match.sku}:${String(match.tier)}`,
+  );
+}
+
+/**
+ * The engine's list for `query`, asserted equal to the pure ranking first (so the tiers read below
+ * are the tiers of exactly this list), with each result's tier.
+ */
+async function results(
+  locale: LocaleCode,
+  query: string,
+  using: MemoryEngine = engine,
+  over: SearchIndex = index,
+): Promise<Ranked[]> {
+  const list = ranked(locale, query, over);
+  expect(await skus(locale, query, DESTINATION.toLowerCase(), using)).toEqual(
+    list.map((match) => match.sku),
+  );
+  return list;
+}
+
+/** A flower's entity set: the destination's listed products whose flower types include it. */
 async function withFlower(flower: string): Promise<string[]> {
   return (await listProducts({ countryIso: DESTINATION }))
     .filter((product) =>
@@ -83,127 +120,141 @@ async function withFlower(flower: string): Promise<string[]> {
     .sort();
 }
 
-const ROSES_PL = [
-  "FO-BQ-001",
-  "FO-GS-001",
-  "FO-BQ-003",
-  "FO-GS-002",
-  "FO-FN-009",
-  "FO-AR-002",
-  "FO-BQ-005",
-  "FO-BQ-004",
-  "FO-GS-006",
-  "FO-BQ-007",
-  "FO-BQ-006",
-  "FO-BQ-002",
-  "FO-AR-012",
-  "FO-FN-004",
-  "FO-BQ-008",
-];
+/**
+ * §9's lead: the first results are exactly `entity`, each at `tier`. The SKUs are compared as one
+ * sorted array (§2.5's order inside the set is AC-16's), the tiers as one array.
+ */
+function expectLeads(
+  list: readonly Ranked[],
+  entity: readonly string[],
+  tier: number,
+): void {
+  expect(entity.length).toBeGreaterThan(0);
+  const lead = list.slice(0, entity.length);
+  expect(lead.map((match) => match.sku).sort()).toEqual([...entity].sort());
+  expect(lead.map((match) => match.tier)).toEqual(entity.map(() => tier));
+}
 
-const ROSES_EN = [
-  "FO-BQ-007",
-  "FO-BQ-008",
-  "FO-BQ-001",
-  "FO-GS-001",
-  "FO-BQ-003",
-  "FO-GS-002",
-  "FO-FN-009",
-  "FO-AR-002",
-  "FO-BQ-005",
-  "FO-BQ-004",
-  "FO-GS-006",
-  "FO-BQ-006",
-  "FO-BQ-002",
-  "FO-AR-012",
-  "FO-FN-004",
-  "FO-BQ-029",
-  "FO-BQ-025",
-  "FO-BQ-028",
-];
+/** The tiers along a list, which must never rise. */
+function expectTierNeverRises(list: readonly Ranked[]): void {
+  const along = list.map((match) => match.tier);
+  expect(along).toEqual([...along].sort((a, b) => b - a));
+}
 
-const TULIPS_PL = [
-  "FO-BQ-013",
-  "FO-BQ-011",
-  "FO-BQ-009",
-  "FO-GS-005",
-  "FO-BQ-012",
-  "FO-AR-005",
-  "FO-BQ-010",
-  "FO-BQ-014",
-];
+/** The spellings of one word return one and the same ordered list; that list is returned. */
+async function sameList(
+  locale: LocaleCode,
+  spellings: readonly string[],
+  using: MemoryEngine = engine,
+  over: SearchIndex = index,
+): Promise<Ranked[]> {
+  const [first, ...rest] = spellings;
+  if (first === undefined) throw new Error("no spelling");
+  const list = await results(locale, first, using, over);
+  for (const spelling of rest) {
+    expect(await results(locale, spelling, using, over)).toEqual(list);
+  }
+  return list;
+}
 
-const SUNFLOWERS = ["FO-BQ-023", "FO-GS-007", "FO-BQ-024", "FO-BQ-025"];
+/** A source over the committed catalogue with one change to the products it hands over. */
+function editedSource(
+  edit: (
+    product: Awaited<ReturnType<SearchSource["products"]>>[number],
+    locale: LocaleCode,
+  ) => Awaited<ReturnType<SearchSource["products"]>>[number],
+): () => SearchSource {
+  return () => {
+    const source = catalogSearchSource();
+    return {
+      ...source,
+      products: async (locale, iso2) =>
+        (await source.products(locale, iso2)).map((product) =>
+          edit(product, locale),
+        ),
+    };
+  };
+}
 
-describe("AC-6 (T-06): normalisation makes accents, case and spacing irrelevant", () => {
-  it.each(["roza", "róża", "róże", "ROZE", " roze "])(
-    "/pl/szukaj %j returns the roses products in §2.5's order",
-    async (query) => {
-      expect(await skus("pl", query)).toEqual(ROSES_PL);
-    },
-  );
-
-  it("that list is exactly the products whose flower types include roses", async () => {
-    expect([...ROSES_PL].sort()).toEqual(await withFlower("roses"));
+describe("AC-6 (T-06): accents, case and spacing do not change the list", () => {
+  it("/pl/szukaj `roza`, `róża`, `róże`, `ROZE` and ` roze ` return one list, led by the roses at tier 4", async () => {
+    const list = await sameList("pl", [
+      "roza",
+      "róża",
+      "róże",
+      "ROZE",
+      " roze ",
+    ]);
+    expectLeads(list, await withFlower("roses"), 4);
   });
 
-  it.each(["krakow", "Kraków"])(
-    "/en/search %j returns FO-BQ-009 Kraków Spring first",
-    async (query) => {
-      expect(await skus("en", query)).toEqual(["FO-BQ-009", "FO-GS-005"]);
-    },
-  );
+  it("/de/suche `Rosen`, `rosen` and `Rose` return one list, led by the roses at tier 4, the set `roses` leads with on /en/search", async () => {
+    const roses = await withFlower("roses");
+    expectLeads(await results("en", "roses"), roses, 4);
+    expectLeads(await sameList("de", ["Rosen", "rosen", "Rose"]), roses, 4);
+  });
 
-  it.each(["Rosen", "rosen", "Rose"])(
-    "/de/suche %j returns the same SKU set as `roses` on /en/search",
-    async (query) => {
-      expect(await skus("en", "roses")).toEqual(ROSES_EN);
-      expect([...(await skus("de", query))].sort()).toEqual(
-        [...ROSES_EN].sort(),
-      );
-    },
-  );
+  it("/en/search `krakow` and `Kraków` return one list, FO-BQ-009 Kraków Spring first", async () => {
+    const list = await sameList("en", ["krakow", "Kraków"]);
+    expect(list[0]?.sku).toBe("FO-BQ-009");
+  });
 
-  it("`Strauß` and `Strauss` both find a product whose German name contains `Strauß`", async () => {
-    const renamed = (): SearchSource => {
-      const source = catalogSearchSource();
-      return {
-        ...source,
-        products: async (locale, iso2) =>
-          (await source.products(locale, iso2)).map((product) =>
-            locale === "de" && product.sku === "FO-BQ-001"
-              ? { ...product, name: "Bernstein-Strauß" }
-              : product,
-          ),
-      };
-    };
-    const fixture = memoryEngine({ source: renamed });
-    expect(await skus("de", "Strauß", "pl", fixture)).toEqual(["FO-BQ-001"]);
-    expect(await skus("de", "Strauss", "pl", fixture)).toEqual(["FO-BQ-001"]);
-    expect(await skus("de", "STRAUSS", "pl", fixture)).toEqual(["FO-BQ-001"]);
+  describe("a German name with `ß`", () => {
+    // `Maßliebchen` (an old German name for the daisy); `Strauß` (bouquet) is in most German
+    // descriptions, so it could not single out one product.
+    const WORD = "Maßliebchen";
+    const SPELLINGS = [WORD, "Massliebchen", "MASSLIEBCHEN"];
+    const RENAMED = "FO-BQ-001";
+    const renamed = editedSource((product, locale) =>
+      locale === "de" && product.sku === RENAMED
+        ? { ...product, name: `${WORD}-Strauß` }
+        : product,
+    );
+
+    it("the word is in no document of Poland's unmodified `de` index", async () => {
+      const shop = index.locales.get("de")?.shops.get(DESTINATION);
+      const [token] = parseQuery(WORD, "de", []).tokens;
+      expect(token).toBe("massliebchen");
+      expect(shop?.vocabulary.has(token ?? "")).toBe(false);
+      for (const spelling of SPELLINGS) {
+        expect(await skus("de", spelling)).toEqual([]);
+      }
+    });
+
+    it("spelt with `ß`, with `ss` and in upper case it returns one list: the renamed product alone", async () => {
+      const fixture = memoryEngine({ source: renamed });
+      const fixtureIndex = await buildIndex(renamed());
+      const list = await sameList("de", SPELLINGS, fixture, fixtureIndex);
+      expect(list.map((match) => match.sku)).toEqual([RENAMED]);
+    });
   });
 });
 
 describe("AC-7 (T-07): stems and the last token's prefix", () => {
-  it("`rose` and `roses` return the same list on /en/search", async () => {
-    expect(await skus("en", "rose")).toEqual(ROSES_EN);
-    expect(await skus("en", "roses")).toEqual(ROSES_EN);
+  it("/en/search `rose` and `roses` return one list, led by the roses at tier 4", async () => {
+    expectLeads(
+      await sameList("en", ["rose", "roses"]),
+      await withFlower("roses"),
+      4,
+    );
   });
 
-  it.each(["tulipany", "tulipanów", "tulipan"])(
-    "/pl/szukaj %j returns exactly the tulip products",
-    async (query) => {
-      expect(await skus("pl", query)).toEqual(TULIPS_PL);
-    },
-  );
-
-  it("the tulip list is exactly the products whose flower types include tulips", async () => {
-    expect([...TULIPS_PL].sort()).toEqual(await withFlower("tulips"));
+  it("/pl/szukaj `tulipany`, `tulipanów` and `tulipan` return one list, led by the tulips at tier 4", async () => {
+    const list = await sameList("pl", ["tulipany", "tulipanów", "tulipan"]);
+    const tulips = await withFlower("tulips");
+    expectLeads(list, tulips, 4);
+    // What may follow is a product whose description alone names tulips, at tier 3.
+    expect(
+      list.slice(tulips.length).filter((match) => match.tier !== 3),
+    ).toEqual([]);
   });
 
-  it("`sunfl` (the last token, as a prefix) returns exactly the sunflower products", async () => {
-    expect(await skus("en", "sunfl")).toEqual(SUNFLOWERS);
-    expect([...SUNFLOWERS].sort()).toEqual(await withFlower("sunflowers"));
+  it("`sunfl` (the last token, as a prefix) leads with the sunflowers at tier 4", async () => {
+    expectLeads(
+      await results("en", "sunfl"),
+      await withFlower("sunflowers"),
+      4,
+    );
   });
 
   it("`su` (2 letters) prefix-matches nothing: no product carries the token `su`", async () => {
@@ -218,58 +269,187 @@ describe("AC-7 (T-07): stems and the last token's prefix", () => {
 });
 
 describe("AC-7: the prefix is the last token's alone", () => {
-  it("`yellow sunfl` finds the yellow sunflower products; `sunfl yellow` finds nothing", async () => {
-    expect(await skus("en", "yellow sunfl")).toEqual([
-      "FO-BQ-023",
-      "FO-GS-007",
-      "FO-BQ-024",
-    ]);
+  it("`yellow sunfl` leads with the yellow sunflowers at tier 4; `sunfl yellow` finds nothing", async () => {
+    const yellowSunflowers = (await listProducts({ countryIso: DESTINATION }))
+      .filter(
+        (product) =>
+          (product.flowerTypes as readonly string[]).includes("sunflowers") &&
+          (product.colours as readonly string[]).includes("yellow"),
+      )
+      .map((product) => product.sku);
+    expectLeads(await results("en", "yellow sunfl"), yellowSunflowers, 4);
     expect(await skus("en", "sunfl yellow")).toEqual([]);
   });
 });
 
-describe("AC-8 (T-08): typo tolerance and its tier", () => {
-  it("`sunflwers` returns the sunflower products, every one at tier 2", async () => {
-    expect(await skus("en", "sunflwers")).toEqual(SUNFLOWERS);
-    expect(tiers("en", "sunflwers")).toEqual(
-      SUNFLOWERS.map((sku) => `${sku}:2`),
-    );
-  });
+/**
+ * A source in which the `de` label of the colour `pink` is `Rosa` (one letter from `rose` and
+ * `roza`), and one listed product without roses has the word `różne` (various; one letter from
+ * the stem of `róża`) in its `pl` description: the words a faithful translation brings.
+ */
+const PINK_DE = de.catalog.facet.colour.pink;
+let pink: ReadonlySet<string>;
+let variousSku: string;
 
-  it("`orchds` returns the orchid products, every one at tier 2", async () => {
-    expect(tiers("en", "orchds")).toEqual([
-      "FO-PT-002:2",
-      "FO-PT-001:2",
-      "FO-PT-003:2",
-    ]);
-    expect(["FO-PT-001", "FO-PT-002", "FO-PT-003"]).toEqual(
-      await withFlower("orchids"),
-    );
-  });
+function rosaSource(): SearchSource {
+  return editedSource((product, locale) => {
+    let edited = product;
+    if (pink.has(product.sku)) {
+      edited =
+        locale === "de"
+          ? {
+              ...edited,
+              facetLabels: [
+                ...edited.facetLabels.filter((label) => label !== PINK_DE),
+                "Rosa",
+              ],
+            }
+          : {
+              ...edited,
+              altLabels: [
+                ...edited.altLabels.filter(
+                  (label) => !(label.locale === "de" && label.text === PINK_DE),
+                ),
+                { locale: "de", text: "Rosa" },
+              ],
+            };
+    }
+    if (locale === "pl" && product.sku === variousSku) {
+      edited = {
+        ...edited,
+        description: `${edited.description} Kwiaty różne.`,
+      };
+    }
+    return edited;
+  })();
+}
 
-  it("`tulpis` (one transposition) returns the tulip products at tier 2", async () => {
-    expect(tiers("en", "tulpis")).toEqual([
-      ...TULIPS_PL.map((sku) => `${sku}:2`),
-      // Its description names tulips; it is not a tulip bouquet, and it is a tier-2 result too.
-      "FO-BQ-037:2",
-    ]);
-  });
+describe("AC-8 (T-08): typo tolerance only for a word that matches nothing firmly", () => {
+  it.each([
+    ["sunflwers", "sunflowers"],
+    ["orchds", "orchids"],
+    ["tulpis", "tulips"],
+  ])(
+    "`%s` matches no word firmly: every result is at tier 2, led by the %s",
+    async (query, flower) => {
+      const list = await results("en", query);
+      expect(list.map((match) => match.tier)).toEqual(list.map(() => 2));
+      expectLeads(list, await withFlower(flower), 2);
+    },
+  );
 
   it("`tolaps` (distance 2 on a 6-letter word) returns no tulip product", async () => {
-    expect(await skus("en", "tolaps")).toEqual([]);
+    const tulips = new Set(await withFlower("tulips"));
+    expect(
+      (await skus("en", "tolaps")).filter((sku) => tulips.has(sku)),
+    ).toEqual([]);
   });
 
   it("`rse` (3 letters) returns no fuzzy match", async () => {
     expect(await skus("en", "rse")).toEqual([]);
   });
 
-  it("a query whose results mix tiers sorts every tier-2 result after every tier-4 one", () => {
-    expect(tiers("en", "róże")).toEqual([
-      ...ROSES_PL.map((sku) => `${sku}:4`),
-      "FO-BQ-029:2",
-      "FO-BQ-025:2",
-      "FO-BQ-028:2",
-    ]);
+  const FIRM: readonly (readonly [LocaleCode, string])[] = [
+    ["en", "rose"],
+    ["en", "roses"],
+    ["de", "Rose"],
+    ["pl", "róża"],
+  ];
+
+  it.each(FIRM)(
+    "on the committed catalogue, %s %j returns no result at tier 2",
+    async (locale, query) => {
+      expect(
+        (await results(locale, query)).filter((match) => match.tier === 2),
+      ).toEqual([]);
+    },
+  );
+
+  describe("on a source where `de` pink is `Rosa` and a product has `różne` in Polish", () => {
+    let fixture: MemoryEngine;
+    let fixtureIndex: SearchIndex;
+
+    beforeAll(async () => {
+      const listed = await listProducts({ countryIso: DESTINATION });
+      pink = new Set(
+        listed
+          .filter((product) =>
+            (product.colours as readonly string[]).includes("pink"),
+          )
+          .map((product) => product.sku),
+      );
+      const various = listed.find(
+        (product) =>
+          !(product.flowerTypes as readonly string[]).includes("roses") &&
+          !pink.has(product.sku),
+      );
+      if (various === undefined) throw new Error("no product without roses");
+      variousSku = various.sku;
+      fixture = memoryEngine({ source: rosaSource });
+      fixtureIndex = await buildIndex(rosaSource());
+    }, 60_000);
+
+    it("the fixture carries the words: `Rosa` finds the pink products, `różne` the edited one", async () => {
+      const roses = new Set(await withFlower("roses"));
+      expect([...pink].filter((sku) => !roses.has(sku)).length).toBeGreaterThan(
+        0,
+      );
+      expectLeads(
+        await results("de", "Rosa", fixture, fixtureIndex),
+        [...pink],
+        4,
+      );
+      expect(
+        (await results("pl", "różne", fixture, fixtureIndex)).map(
+          (match) => match.sku,
+        ),
+      ).toEqual([variousSku]);
+    });
+
+    it.each(FIRM)(
+      "%s %j returns no result at tier 2",
+      async (locale, query) => {
+        expect(
+          (await results(locale, query, fixture, fixtureIndex)).filter(
+            (match) => match.tier === 2,
+          ),
+        ).toEqual([]);
+      },
+    );
+  });
+
+  it("along the list of every AC-6 to AC-9 query, the tier never rises", async () => {
+    const queries: readonly (readonly [LocaleCode, string])[] = [
+      ["pl", "roza"],
+      ["pl", "róża"],
+      ["pl", "róże"],
+      ["pl", "ROZE"],
+      ["pl", " roze "],
+      ["de", "Rosen"],
+      ["de", "rosen"],
+      ["de", "Rose"],
+      ["en", "roses"],
+      ["en", "krakow"],
+      ["en", "Kraków"],
+      ["en", "rose"],
+      ["pl", "tulipany"],
+      ["pl", "tulipanów"],
+      ["pl", "tulipan"],
+      ["en", "sunfl"],
+      ["en", "su"],
+      ["en", "yellow sunfl"],
+      ["en", "sunflwers"],
+      ["en", "orchds"],
+      ["en", "tulpis"],
+      ["en", "tolaps"],
+      ["en", "rse"],
+      ["en", "red roses"],
+      ["en", "róże"],
+      ["en", "FO-BQ-001"],
+    ];
+    for (const [locale, query] of queries) {
+      expectTierNeverRises(await results(locale, query));
+    }
   });
 });
 
@@ -292,12 +472,8 @@ describe("AC-9 (T-09): facets, the alt field and the SKU", () => {
     expect(red).toEqual(["FO-AR-002", "FO-BQ-002", "FO-BQ-006"]);
   });
 
-  it("`róże` on /en/search finds the roses products through the alt field, at tier 4", () => {
-    expect(
-      tiers("en", "róże")
-        .filter((entry) => entry.endsWith(":4"))
-        .map((entry) => entry.slice(0, -2)),
-    ).toEqual(ROSES_PL);
+  it("`róże` on /en/search finds the roses products through the alt field, at tier 4", async () => {
+    expectLeads(ranked("en", "róże"), await withFlower("roses"), 4);
   });
 
   it("`FO-BQ-001` returns exactly FO-BQ-001, at tier 5", async () => {
