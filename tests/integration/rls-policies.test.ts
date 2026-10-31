@@ -842,8 +842,9 @@ describe.skipIf(server.url === undefined)(
                  VALUES (${occasion?.id ?? ""}, 'en', 'Birthday', 'birthday')`;
         await mediaAsset(tx, { kind: "product", visibility: "public" });
         await mediaAsset(tx, { kind: "product", visibility: "private" });
+        // `trustpilot`: spec 022a's `0029` keeps `internal` reviews to verified orders.
         await tx`INSERT INTO review (source, rating, moderation_status, published_at)
-                 VALUES ('internal', 5, 'published', now()), ('internal', 1, 'pending', NULL)`;
+                 VALUES ('trustpilot', 5, 'published', now()), ('trustpilot', 1, 'pending', NULL)`;
         const [someone] = await tx<{ id: string }[]>`
           INSERT INTO users (email) VALUES ('someone@example.test') RETURNING id`;
         const someoneId = someone?.id ?? "";
@@ -884,6 +885,9 @@ describe.skipIf(server.url === undefined)(
           "partner_application",
           "feature_flag",
           "retention_policy",
+          // Spec 022a §5.1 (`0029`, AC-19): the public reads reviews through `public_review`,
+          // never the table.
+          "review",
           ...Object.keys(PARTNER_SCOPED_TABLES),
         ];
         const owner: Record<string, number> = {};
@@ -901,12 +905,12 @@ describe.skipIf(server.url === undefined)(
             "t.visibility <> 'public'",
           );
           out.media_asset = await countOf(sp, "media_asset");
-          out.review_unpublished = await countOf(
-            sp,
-            "review",
-            "t.moderation_status <> 'published'",
-          );
-          out.review = await countOf(sp, "review");
+          out.public_review =
+            (
+              await sp<
+                { n: number }[]
+              >`SELECT count(*)::int AS n FROM public_review`
+            )[0]?.n ?? -1;
           out.partner_order =
             (
               await sp<
@@ -952,8 +956,8 @@ describe.skipIf(server.url === undefined)(
       }
       expect(report.seen.media_asset).toBe(1);
       expect(report.seen.media_asset_private).toBe(0);
-      expect(report.seen.review).toBe(1);
-      expect(report.seen.review_unpublished).toBe(0);
+      // Spec 002's public-read criterion through spec 022a's view: the published one only.
+      expect(report.seen.public_review).toBe(1);
       expect(report.seen.partner_order).toBe(0);
       expect(report.seen.customer_order_event).toBe(0);
     });

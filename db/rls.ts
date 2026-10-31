@@ -44,7 +44,11 @@ export const PUBLIC_REFERENCE_TABLES = [
   "region",
 ] as const;
 
-/** Read by anyone, but only some rows: the condition is the migration's. */
+/**
+ * Read by anyone, but only some rows: the condition is the migration's. `review` left this set in
+ * spec 022a §5.1 (migration `0029_reviews_close`, TASK-368): the public reads published reviews
+ * through the `public_review` view (`PUBLIC_VIEWS`), and the table itself is staff only.
+ */
 export const PUBLIC_FILTERED_TABLES = {
   // spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321): a post only once published; a
   // revision only as the published revision of a published post; a tag only of such a post.
@@ -54,7 +58,6 @@ export const PUBLIC_FILTERED_TABLES = {
   blog_post_revision: "the published revision of a published post",
   media_asset: "visibility = 'public'",
   media_variant: "its media_asset is readable (public)",
-  review: "moderation_status = 'published'",
 } as const;
 
 /**
@@ -99,12 +102,15 @@ export const BUILD_ROLE_READ_TABLES = [
 
 /**
  * The build role's filtered reads granted by `0018`: the same rows a public render sees
- * (`PUBLIC_FILTERED_TABLES`, without the blog's, which `0024` grants).
+ * (`PUBLIC_FILTERED_TABLES`, without the blog's, which `0024` grants), and `0018`'s
+ * `review_build_read` on published reviews, which `0029` leaves in place although the public's
+ * `review_read` is gone (moving the build to `public_review` is spec 022a's display task,
+ * TASK-373).
  */
 export const BUILD_ROLE_FILTERED_TABLES = {
   media_asset: PUBLIC_FILTERED_TABLES.media_asset,
   media_variant: PUBLIC_FILTERED_TABLES.media_variant,
-  review: PUBLIC_FILTERED_TABLES.review,
+  review: "moderation_status = 'published'",
 } as const;
 
 /**
@@ -197,12 +203,32 @@ export const PARTNER_VIEWS = {
 } as const;
 
 /**
- * The public's column-limited read paths (spec 044 §5.1 item 7, migration `0024_blog`,
- * TASK-321): a `security_barrier` view owned by `app_owner`, `SELECT` only for `app_web` and
- * `app_build`, each listing exactly the columns it shows.
+ * The public's column-limited read paths: `security_barrier` views owned by `app_owner`, each
+ * listing exactly the columns it shows.
+ *
+ *  - `blog_author_public` (spec 044 §5.1 item 7, migration `0024_blog`, TASK-321): `SELECT` only
+ *    for `app_web` and `app_build`.
+ *  - `public_review` (spec 022a §5.1, migration `0029_reviews_close`, TASK-368, AC-19): the
+ *    published reviews, for everyone, with the text `NULL` when withheld and no private column
+ *    (no order, partner, moderation note or moderator). Filtered by
+ *    `moderation_status = 'published'` rather than a lookup: every role sees the same published
+ *    set.
  */
 export const PUBLIC_VIEWS = {
   blog_author_public: ["id", "display_name"],
+  public_review: [
+    "id",
+    "rating",
+    "text",
+    "display_name",
+    "locale_code",
+    "published_at",
+    "delivered_month",
+    "destination_country_id",
+    "product_id",
+    "response_text",
+    "response_at",
+  ],
 } as const;
 
 /** The buyer's order timeline without the internal payload and actor (review round 1, nit 3). */
@@ -269,6 +295,10 @@ export const STAFF_ONLY_TABLES = [
   // is append-only by trigger, so the staff policy never means update or delete.
   "review_attestation",
   "reviewer_locale",
+  // spec 022a §5.1 (migration `0029_reviews_close`, TASK-368): a review is staff only once its
+  // public read moved to `public_review`; an invite (one per order, a token hash) never was public.
+  "review",
+  "review_invite",
   "sessions",
   "tax_registration",
   "verification_tokens",

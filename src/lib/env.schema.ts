@@ -327,6 +327,31 @@ export const serverEnvSchema = z.object({
    * configuration mistake cannot swallow every sign-in link there.
    */
   MAILER: z.preprocess(emptyToUndefined, z.enum(mailerKinds).optional()),
+  /**
+   * The HMAC key of the review link (spec 022a §5.2 "The review link", AC-33; TASK-368): the
+   * token is `HMAC-SHA256(REVIEW_TOKEN_SECRET, inviteId)`, base64url, and only its SHA-256 is
+   * stored. SECRET: never logged, never in an error message. At least 32 characters
+   * (`openssl rand -hex 32`).
+   *
+   * **Optional at server start, required at use**, for `AUTH_SECRET`'s reason: absent in
+   * `development` and `test`, a clearly-named development key is used; absent in a deployed
+   * environment, the first review link throws naming this key (`reviewTokenSecret()`); the
+   * development key itself is refused at boot in a deployed environment. A boot requirement would
+   * fail every deployment's healthcheck before the invitation (TASK-370) has a reader.
+   */
+  REVIEW_TOKEN_SECRET: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .min(32, "must be at least 32 characters (`openssl rand -hex 32`)")
+      .optional(),
+  ),
+  /**
+   * Trustpilot's automatic feedback (AFS) address for this business (spec 022a §13 Q2, AC-10,
+   * AC-33; TASK-368): with the `reviews.trustpilot` flag on, B9 is BCC'd to it. Optional: unset,
+   * no B9 carries a BCC. Not secret, but configuration only, never a literal in code.
+   */
+  TRUSTPILOT_AFS_ADDRESS: z.preprocess(emptyToUndefined, z.email().optional()),
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
   /**
@@ -833,6 +858,19 @@ export function validateRuntimeEnv(source: EnvSource): {
     });
   }
 
+  // Spec 022a AC-33 (TASK-368): the committed development review key is refused as a configured
+  // value wherever `reviewTokenSecret()` would refuse it. An absent key stays a use-time error.
+  if (
+    source[REVIEW_TOKEN_SECRET_KEY] === DEVELOPMENT_REVIEW_TOKEN_SECRET &&
+    (DEPLOYED_ENVIRONMENTS.includes(environment) ||
+      source["NODE_ENV"] === "production")
+  ) {
+    issues.push({
+      key: REVIEW_TOKEN_SECRET_KEY,
+      message: `must not be the committed development key in ${environment}; generate one with \`openssl rand -hex 32\``,
+    });
+  }
+
   issues.push(...liveStripeKeyIssues(source, environment));
 
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
@@ -1052,6 +1090,16 @@ export const DEVELOPMENT_SIGNED_LINK_SECRET =
   "phase-0-development-signed-link-secret-not-a-production-key";
 /** The mailer switch's name (spec 012 §2.2; TASK-217). */
 export const MAILER_KEY = "MAILER" as const;
+/** The review link's key's name (spec 022a §5.2, AC-33; TASK-368). */
+export const REVIEW_TOKEN_SECRET_KEY = "REVIEW_TOKEN_SECRET" as const;
+
+/**
+ * The key review links are signed with where no real one is configured: `development` and `test`
+ * only. **Not a secret**, named so it cannot be mistaken for one; `reviewTokenSecret()` refuses it
+ * everywhere else, and so does the boot check in a deployed environment.
+ */
+export const DEVELOPMENT_REVIEW_TOKEN_SECRET =
+  "phase-1-development-review-token-key-not-for-production";
 
 /**
  * The secret sign-in tokens are hashed with where no real one is configured: `development` and

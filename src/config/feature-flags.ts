@@ -32,6 +32,9 @@
  *    018 §12 calls it `account`; `0009`'s key check needs a dotted key, so it is `account.open`.
  *  - `invoice.issue`, country scope: invoices for live orders to that destination.
  *
+ * Spec 022a (TASK-368, migration `0029_reviews_close`) adds `reviews.invite` and
+ * `reviews.trustpilot`, global and high-risk.
+ *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
 import { z } from "zod";
@@ -163,6 +166,24 @@ const REGISTRY = [
     scopeKinds: ["global"],
     description:
       "Stripe takes payments (spec 013; ADR-0005). Off returns new checkouts to demo while orders already paid keep moving. Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
+  // Spec 022a §5.1, §12 (migration `0029_reviews_close`, TASK-368): the two review switches,
+  // global, off, high-risk. Display follows data, so neither dirties a page.
+  {
+    key: "reviews.invite",
+    scopeKinds: ["global"],
+    description:
+      "One review email to every delivered live order, 24 hours after the photo (spec 022a). Turn on only after the founder approves the email copy and the review policy. Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
+  {
+    key: "reviews.trustpilot",
+    scopeKinds: ["global"],
+    description:
+      "The review email carries Trustpilot's automatic feedback BCC (spec 022a §13 Q2). Turn on only after the Trustpilot DPA is filed and TRUSTPILOT_AFS_ADDRESS is set. Admin only; type the key to confirm.",
     risk: "high",
     dirties: [],
   },
