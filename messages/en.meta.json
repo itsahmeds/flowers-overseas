@@ -4691,207 +4691,289 @@
   },
   "checkout.step.recipient": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "e6d65f2847fe816aa1a74bfc1a30910de796867a99b353f79ebff8c3cccc5c11"
   },
   "checkout.step.card": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "d092064f060f6202af25aa313c1e301c8aad4ca06217bcbcba8ccbcef936e6f1"
   },
   "checkout.step.review": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "88960e9c0f8659cc105e9cafdb9af472867e6f0e44e083acee5a2f83e0464f39"
   },
   "checkout.step.deliveryOf": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "583687a087c862bf3573edf912e4afc74d1c01b7f32e276033db0b3e1a1d6953"
   },
   "checkout.demo.dateHeading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "6ecfe2ed92e4547d0accf7bd0e23abf94c9fa548a55c7ef95f85d09074f63e48"
   },
   "checkout.date.legend": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
   },
   "checkout.date.useNext": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "c8edaad6ae9c333b81701f7005ba507abe91c76011286254f69b042c54d87ab1"
   },
   "checkout.demo.cap": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "35c2f9fc1f2eb7c7fb0f21631bd5cf9f9bc690b0571855024962ef8be18896ae"
   },
   "checkout.closed.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "b08e064b2e425e18d29a06da71df77e7e0c60672ae495b517894a0a9d4bdc5c3"
   },
   "checkout.closed.opensSoon": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "156b4555c62dde99f512cb01529097dc43fcf4a3e0a6ad387ac042a23732bb7d"
   },
   "checkout.closed.back": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "01bf52cf30a40984b4cedf6d128a4e18cf94dde7adee73c49a4a34922b517857"
   },
   "checkout.expired.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "964b4a6c1a5c53fe104322a5450a7c4ab9c1d86fe3e64675d8f0d9d33dfe30d6"
   },
   "checkout.expired.link": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "67365fd526e0b1747973be9e31ecb6a622a97d5e0796e2340206b36dfc6d9274"
   },
   "checkout.basket.alsoInBasket": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "ff50c942048abfb244515d332bc63607e6689d178e09cddd487a05d7fc6c402c"
   },
   "checkout.recipient.deliveryNote": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "79cfb80448a908ff9d9cf3e4a150aab08acc28c44e774b15d88bb2fca988cce8"
   },
   "checkout.recipient.deliveryNoteHint": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "e9ea567ac3c8ac2a35770d4ec49fd3adf39a334e16dc00568d4f90adb112ad07"
   },
   "checkout.addons.legend": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "97f0721e40460a7780783f462c14fb9a6166c8e142690ea0f3aa179e82f4b641"
   },
   "checkout.addons.add": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "9fd728c66c9a256b121472dabf32a34317aed01d8427d70ec830289cf23a7cc8"
   },
   "checkout.addons.addLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "253e23d41a31318f309177530a2d29ace8914e847f804ec752db9d1401b3272b"
   },
   "checkout.addons.remove": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
   },
   "checkout.addons.removeLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "e6a3c4a1250a6ad3f10faa22333e5e50a6ba78e5b28a3b26f5743d9f8c7ede93"
   },
   "checkout.buyer.legend": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "c0bcd4c0f8e707844c003e6e8720cc209aff9410eb44daa252875e31c5468199"
   },
   "checkout.review.bouquet": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
   },
   "checkout.review.date": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
   },
   "checkout.review.recipient": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
   },
   "checkout.review.card": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "be3702e3f1af559a8df03568294283934a2558521fd8895f68eda09e3ce4f8a3"
   },
   "checkout.review.addons": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
   },
   "checkout.review.none": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
   },
   "checkout.review.noCard": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "a9fac8afb9b1095a7f48bf406ed9ebc1730c55708c7965c2ba4337ad5c554aab"
   },
   "checkout.review.change": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "c0bf75bd78bf9572596720d596bd5a20a5b9145cde0fe50dec1e783cb184d69b"
   },
   "checkout.review.amount": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "93c91c851e7acc17d881c9b89ea954be1183070254014be03a93d169cf52dbbd"
   },
   "confirmation.demo.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "cdfd012838c84769976d1ae8d959aa93467b5dffa33bb9530829ba97014a9f2d"
   },
   "confirmation.demo.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "9b0ff616314519aa5c879e5c1d6be39a301d9b2dac0fa216d3c2373904488095"
   },
   "confirmation.demo.reference": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "342ca923aa50fec3a43e3b93b81d54a8cf33f2f0c43a48799c0e742242171d5f"
   },
   "confirmation.demo.referenceSentence": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "02745958f6568f8440d4a7f118c17d996b2ab8a58958a407f4c39d0de697ef8e"
   },
   "confirmation.demo.next": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "b5e12f05a214a495ec590c1a30605b2a6a62aeeef873dcf36f75188dad75c866"
   },
   "product.entry.demo": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "a0a54cc461dbc887eb87ec36926bace436b61cf09990b52b0ad11219b7a68c42"
   },
   "product.entry.addToBasket": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "276ef9a05af4e88c84072fcfd7241705d10fd3f400ae1a58ade9fbc36323b9d7"
   },
   "checkout.error.unable": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "959f8fba8fd2455f9549d4c31a72e5a38a7e19d7dd59ac7de689e9d1ff01fa30"
   },
   "confirmation.page.gone": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "6950a89088169eff05ea24dfffe8ddfa4cbf0d8ba77d86e879658b507d20c8c7"
   },
   "confirmation.page.promise": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "bb665a52536e859f75b586c994d4acb332cd37ecfd6cd69e559a0cf78cbdf869"
   },
   "consent.cookies.csrf.purpose": {
@@ -4903,17 +4985,23 @@
   },
   "checkout.summary.guaranteeLink": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "532110c3116f84381d68d71dfde52d43cdb8688239540453086da642ed07e2d9"
   },
   "checkout.field.namePlaceholder": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "25c5a0fcb8aa3369b1ef1bfd123068ac9ea4aff0778868cab89f9ca5f9469fc3"
   },
   "checkout.date.offNote": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "3f150bc5455830808fa11deb4a528511ac70f35c24f4f09a6c0aadbd4579f3b4"
   }
 }
