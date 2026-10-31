@@ -259,18 +259,11 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
-    // TASK-204..206 (spec 010): the checkout page, its states and the confirmation, and the
-    // product page's two entry buttons (`product.entry.*`), the implementer's wording until the
-    // founder's record run attests them. The basket page (spec 010 §14 A-founder-2026-10-22,
-    // Appendix A; TASK-349): the `checkout.basket.*` keys but `alsoInBasket`, and `checkout.date.gone`.
-    "checkout.addons.add",
-    "checkout.addons.addLabel",
-    "checkout.addons.legend",
-    "checkout.addons.remove",
-    "checkout.addons.removeLabel",
+    // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349). TASK-204..206's
+    // 44 keys (the checkout, its confirmation and the product page's two entry buttons) are not
+    // queued: they ship for the founder's `record-approval-204.py` run (A17 clause 5).
     "checkout.basket.addOns",
     "checkout.basket.added",
-    "checkout.basket.alsoInBasket",
     "checkout.basket.checkout",
     "checkout.basket.continue",
     "checkout.basket.dateLater",
@@ -288,36 +281,7 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.basket.unavailable",
     "checkout.basket.unavailableSummary",
     "checkout.basket.useNext",
-    "checkout.buyer.legend",
-    "checkout.closed.back",
-    "checkout.closed.opensSoon",
-    "checkout.closed.title",
     "checkout.date.gone",
-    "checkout.date.legend",
-    "checkout.date.offNote",
-    "checkout.date.useNext",
-    "checkout.demo.cap",
-    "checkout.demo.dateHeading",
-    "checkout.error.unable",
-    "checkout.expired.link",
-    "checkout.expired.title",
-    "checkout.field.namePlaceholder",
-    "checkout.recipient.deliveryNote",
-    "checkout.recipient.deliveryNoteHint",
-    "checkout.review.addons",
-    "checkout.review.amount",
-    "checkout.review.bouquet",
-    "checkout.review.card",
-    "checkout.review.change",
-    "checkout.review.date",
-    "checkout.review.noCard",
-    "checkout.review.none",
-    "checkout.review.recipient",
-    "checkout.step.card",
-    "checkout.step.deliveryOf",
-    "checkout.step.recipient",
-    "checkout.step.review",
-    "checkout.summary.guaranteeLink",
     // TASK-242/243 (spec 003 §14 A-founder-2026-10-15a): head copy without a dash. The approved
     // targets ("specs ok", 2026-10-15; the home title and description by the founder's own words,
     // 2026-10-18) ship `reviewed: false` until the founder's record run attests the exact values.
@@ -376,13 +340,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     "company.controller",
-    "confirmation.demo.body",
-    "confirmation.demo.next",
-    "confirmation.demo.reference",
-    "confirmation.demo.referenceSentence",
-    "confirmation.demo.title",
-    "confirmation.page.gone",
-    "confirmation.page.promise",
     "consent.privacyLink",
     // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide
     // calendar's Rule column in words, approved in the 2026-10-04 batch ("approve copy") and
@@ -473,10 +430,6 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
-
-    // `product.entry.addToBasket` and `product.entry.demo` (TASK-206, counted: the product page is
-    // indexable) are not queued here: with the basket's keys they take `en` over A17's 5 % share,
-    // so they ship for the founder's `record-approval-204.py` run, which marks them reviewed.
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
