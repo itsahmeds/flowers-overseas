@@ -30,8 +30,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export function GET(): Response {
-  return new Response(sitemapIndexDocument(deploymentDescriptor(process.env)), {
+export async function GET(): Promise<Response> {
+  const document = await sitemapIndexDocument(
+    deploymentDescriptor(process.env),
+  );
+  return new Response(document, {
     headers: {
       "content-type": SITEMAP_CONTENT_TYPE,
       "cache-control": SITEMAP_CACHE_CONTROL,

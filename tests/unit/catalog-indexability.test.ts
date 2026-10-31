@@ -202,9 +202,12 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
       // with the same limit. `indexability.ts` calls it "the one answer sitemap membership is
       // allowed to read", and a sitemap that re-derived a directive from the terms is the
       // disagreement `plan/02` §10 forbids. One read per builder, nothing else.
+      // TASK-116: spec 008's `listings.ts` (behind `categories.xml` and `occasions.xml`) reads the
+      // verdict `listingView()` itself carries, once, with the same limit.
       if (
         path.endsWith(join("modules", "seo", "sitemap", "corridors.ts")) ||
-        path.endsWith(join("modules", "seo", "sitemap", "statics.ts"))
+        path.endsWith(join("modules", "seo", "sitemap", "statics.ts")) ||
+        path.endsWith(join("modules", "seo", "sitemap", "listings.ts"))
       ) {
         // One read per builder: `statics.ts` holds two since spec 041's info-page rows joined
         // the hub's (TASK-182).

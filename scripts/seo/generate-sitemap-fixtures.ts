@@ -35,7 +35,10 @@
  * live one.
  *
  * `noindex.json` is generated from the same engine over the URLs the sitemap did *not* take: the
- * hub of every locale that is not announced. `/` is in neither list: it is one 308 to `/en` with
+ * hub of every locale that is not announced, and every spec 008 listing page whose own verdict is
+ * `noindex` on this deployment (AC-19's "no `noindex` URL appears in either"; TASK-116): the
+ * country-scoped pages, which wait for an operational destination, the hubs whose copy is
+ * unreviewed, and every `de`/`pl` listing. `/` is in neither list: it is one 308 to `/en` with
  * no document (spec 003 §14 A16 clause 3). `validate-sitemap` intersects
  * it with every `<loc>` it reads, which is AC-14's first half as a CI gate rather than an
  * argument.
@@ -44,6 +47,11 @@ import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  listingLocales,
+  listingPageIndexability,
+  listingPages,
+} from "../../src/modules/catalog/index.ts";
 import {
   localePath,
   routableLocaleCodes,
@@ -93,11 +101,44 @@ function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
+/**
+ * Every spec 008 listing URL whose own verdict is `noindex` on this deployment (TASK-116): the
+ * same `listingPageIndexability()` the page's `<head>` and the sitemap row read, over the
+ * existence set of every routable locale.
+ */
+async function noindexListingUrls(
+  deployment: DeploymentDescriptor,
+): Promise<readonly string[]> {
+  const routable = new Set<string>(routableLocaleCodes());
+  const urls: string[] = [];
+  for (const locale of listingLocales()) {
+    if (!routable.has(locale)) continue;
+    for (const page of await listingPages(locale)) {
+      const verdict = listingPageIndexability(
+        {
+          pageType: page.pageType,
+          locale: page.locale,
+          ...(page.countryIso === undefined
+            ? {}
+            : { countryIso: page.countryIso }),
+          ...(page.entityKey === undefined
+            ? {}
+            : { entityKey: page.entityKey }),
+        },
+        deployment,
+      );
+      if (verdict.indexable) continue;
+      urls.push(absoluteUrl(page.path, { baseUrl: deployment.siteUrl }));
+    }
+  }
+  return urls;
+}
+
 /** Every URL the sitemap declined, as `validate-sitemap`'s `noindex.json` shape. */
-export function noindexUrlSet(
+export async function noindexUrlSet(
   deployment: DeploymentDescriptor = FIXTURE_DEPLOYMENT,
-): readonly string[] {
-  const announced = new Set(sitemapLocales(deployment));
+): Promise<readonly string[]> {
+  const announced = new Set(await sitemapLocales(deployment));
   const urls = [
     ...routableLocaleCodes()
       .filter((locale) => !announced.has(locale))
@@ -106,6 +147,7 @@ export function noindexUrlSet(
           baseUrl: deployment.siteUrl,
         }),
       ),
+    ...(await noindexListingUrls(deployment)),
   ];
   return [...urls].sort();
 }
@@ -115,10 +157,12 @@ export function noindexUrlSet(
  * from the **sitemap rows**, so the file the hreflang validator reads and the `xhtml:link` sets
  * the sitemap prints are the same bytes by construction (AC-11).
  */
-export function corridorClusters(
+export async function corridorClusters(
   deployment: DeploymentDescriptor = FIXTURE_DEPLOYMENT,
-): readonly { url: string; alternates: readonly SitemapAlternate[] }[] {
-  return sitemapLocales(deployment).flatMap((locale) =>
+): Promise<
+  readonly { url: string; alternates: readonly SitemapAlternate[] }[]
+> {
+  return (await sitemapLocales(deployment)).flatMap((locale) =>
     corridorSitemapEntries(locale, deployment).map((entry) => ({
       url: entry.loc,
       alternates: entry.alternates,
@@ -127,19 +171,19 @@ export function corridorClusters(
 }
 
 /** The fixture set: the index, then each announced locale's index and children. */
-export function generateSitemapFixtures(
+export async function generateSitemapFixtures(
   deployment: DeploymentDescriptor = FIXTURE_DEPLOYMENT,
-): readonly GeneratedFixture[] {
+): Promise<readonly GeneratedFixture[]> {
   const fixtures: GeneratedFixture[] = [
     {
       dir: FIXTURE_DIR,
       file: "sitemap.xml",
-      contents: sitemapIndexDocument(deployment),
+      contents: await sitemapIndexDocument(deployment),
     },
   ];
 
-  for (const locale of sitemapLocales(deployment)) {
-    const index = localeSitemapDocument(locale, deployment);
+  for (const locale of await sitemapLocales(deployment)) {
+    const index = await localeSitemapDocument(locale, deployment);
     if (index !== undefined) {
       fixtures.push({
         dir: FIXTURE_DIR,
@@ -148,7 +192,7 @@ export function generateSitemapFixtures(
       });
     }
     for (const child of SITEMAP_CHILDREN) {
-      const document = sitemapChildDocument(locale, child, deployment);
+      const document = await sitemapChildDocument(locale, child, deployment);
       if (document === undefined) continue;
       fixtures.push({
         dir: FIXTURE_DIR,
@@ -161,13 +205,13 @@ export function generateSitemapFixtures(
   fixtures.push({
     dir: FIXTURE_DIR,
     file: "noindex.json",
-    contents: json({ noindex: noindexUrlSet(deployment) }),
+    contents: json({ noindex: await noindexUrlSet(deployment) }),
   });
 
   fixtures.push({
     dir: HREFLANG_FIXTURE_DIR,
     file: "corridor-clusters.json",
-    contents: json({ pages: corridorClusters(deployment) }),
+    contents: json({ pages: await corridorClusters(deployment) }),
   });
 
   return fixtures;
@@ -179,9 +223,9 @@ export function fixturePath(dir: string, file: string): string {
 }
 
 /** Write the whole set to its two directories. The test is the only caller. */
-export function writeSitemapFixtures(): readonly string[] {
+export async function writeSitemapFixtures(): Promise<readonly string[]> {
   const written: string[] = [];
-  for (const { dir, file, contents } of generateSitemapFixtures()) {
+  for (const { dir, file, contents } of await generateSitemapFixtures()) {
     writeFileSync(fixturePath(dir, file), contents, "utf8");
     written.push(`${dir}/${file}`);
   }

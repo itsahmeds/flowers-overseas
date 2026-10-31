@@ -32,7 +32,12 @@ import { NextIntlClientProvider } from "next-intl";
 
 import type { LocaleConfig } from "../../src/config/locales.ts";
 import { alternatesFor } from "../../src/modules/i18n/alternates.ts";
-import { CANONICAL_HOST, sitemapLocales } from "../../src/modules/seo";
+import {
+  CANONICAL_HOST,
+  categorySitemapEntries,
+  occasionSitemapEntries,
+  sitemapLocales,
+} from "../../src/modules/seo";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   type MessageNamespace,
@@ -324,10 +329,20 @@ describe("showing `de` again is data (AC-48)", () => {
         { pageType: "home" },
         { baseUrl: `https://${CANONICAL_HOST}` },
       ).map((page) => page.url.slice(`https://${CANONICAL_HOST}/`.length)),
-      sitemaps: sitemapLocales({
+      sitemaps: await sitemapLocales({
         environment: "production",
         siteUrl: `https://${CANONICAL_HOST}`,
       }),
+      germanListings: [
+        ...(await categorySitemapEntries("de", {
+          environment: "production",
+          siteUrl: `https://${CANONICAL_HOST}`,
+        })),
+        ...(await occasionSitemapEntries("de", {
+          environment: "production",
+          siteUrl: `https://${CANONICAL_HOST}`,
+        })),
+      ].map((entry) => entry.loc),
     });
     const hidden = await underFlip(false, observe);
     const shown = await underFlip(true, observe);
@@ -341,9 +356,16 @@ describe("showing `de` again is data (AC-48)", () => {
     expect(shown.indexable).toBe(true);
     expect(shown.html).toContain(GERMAN_LINK);
     expect(shown.hreflang).toEqual(["en", "en-gb", "de"]);
-    // The sitemaps read the same gate; `de` has no published corridor guide, so no German URL
-    // is indexable yet and the index still announces the English locales only.
-    expect(shown.sitemaps).toEqual(["en", "en-gb"]);
+    // The sitemaps read the same gate. `de` has no published corridor guide and every German
+    // hub's copy row is an unreviewed machine draft, so the one German URL that becomes
+    // indexable is the occasions index, whose intro is message-catalogue copy and is reviewed
+    // under this flip (spec 008 §6; its own `<head>` says `index,follow` from the same verdict).
+    // Spec 008's `occasions.xml` (TASK-116) announces it, so `de` joins the index with it.
+    expect(hidden.germanListings).toEqual([]);
+    expect(shown.sitemaps).toEqual(["en", "en-gb", "de"]);
+    expect(shown.germanListings).toEqual([
+      `https://${CANONICAL_HOST}/de/anlaesse`,
+    ]);
     expect({
       app: manifest("src/app"),
       modules: manifest("src/modules"),

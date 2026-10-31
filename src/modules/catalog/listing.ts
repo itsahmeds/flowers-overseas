@@ -126,6 +126,7 @@ import {
 import { copyRow, copyRows } from "./copy";
 import { orderedCountryCodes } from "./country-order";
 import { fromPriceProjection, priceProjection } from "./pricing/project";
+import { resolvePrice } from "./pricing/resolve";
 import {
   countProductsFor,
   countProductsIn,
@@ -1048,6 +1049,147 @@ export function listingIndexability(
   return pageIndexability(listingDescriptor(identity, terms), deployment);
 }
 
+/** The catalogue kind an entity-scoped page type names; `undefined` for the two that name none. */
+function kindOf(
+  pageType: ListingPageType,
+): "category" | "occasion" | undefined {
+  if (pageType === "countryCategory" || pageType === "categoryHub") {
+    return "category";
+  }
+  if (pageType === "countryOccasion" || pageType === "occasionHub") {
+    return "occasion";
+  }
+  return undefined;
+}
+
+/**
+ * The verdict for one page **of the existence set**, with §6's terms gathered from the data: the
+ * rendered entity's copy `reviewed` flag and, for the three country-scoped types, whether the
+ * destination is operational (`corridorState(iso2) === 'live'`).
+ *
+ * This is the one place those two terms are read. `listingView()` calls it for the page's robots
+ * meta, and the `categories.xml` / `occasions.xml` builders (spec 008 AC-19; TASK-116) call it
+ * for sitemap membership. A listing URL is therefore in a sitemap **iff** its own document says
+ * `index,follow`, by construction rather than by two readings agreeing (spec 008 §6: membership
+ * and the robots directive come from one predicate; spec 007 AC-14).
+ *
+ * The caller asserts existence: `listingView()` has just asked `listingExists()`, and the sitemap
+ * reads `listingPages()`, which is the existence set. `parameterised` is the request's own term
+ * (AC-15); a sitemap row is a bare URL and never passes it.
+ */
+export function listingPageIndexability(
+  identity: ListingIdentity,
+  deployment: DeploymentDescriptor,
+  options: { readonly parameterised?: boolean } = {},
+): IndexabilityVerdict {
+  const kind = kindOf(identity.pageType);
+  const entityRow =
+    identity.entityKey === undefined || kind === undefined
+      ? undefined
+      : copyRow(kind, identity.entityKey, identity.locale);
+  // A page with no entity (the shop root, the occasions index) renders message-catalogue chrome
+  // and authored names, and asserts no copy record of its own.
+  const reviewed = entityRow?.reviewed ?? true;
+  const iso2 = identity.countryIso;
+  return listingIndexability(
+    identity,
+    {
+      exists: true,
+      reviewed,
+      ...(isCountryScoped(identity.pageType)
+        ? {
+            operational:
+              iso2 !== undefined &&
+              corridorState(iso2, identity.locale) === "live",
+          }
+        : {}),
+      ...(options.parameterised === undefined
+        ? {}
+        : { unparameterised: !options.parameterised }),
+    },
+    deployment,
+  );
+}
+
+/**
+ * The dated sources of one listing page's `<lastmod>` (spec 008 §6 "Sitemap membership": "the
+ * real max `updatedAt` across the catalogue entity, its copy and its price data, never 'now'";
+ * AC-19; TASK-116). Each value is the newest **day** that source changed, or `undefined` when the
+ * source carries no date; `lastmodOf()` in `modules/seo` takes the maximum and refuses to invent
+ * one.
+ *
+ *  - **`content`**: the copy the page prints. On the four entity-scoped types, the entity's own
+ *    copy row's `reviewedAt`; on the shop root (whose tiles print the category names) and the
+ *    occasions index (whose rows print the occasion names), the newest `reviewedAt` of that
+ *    locale's category or occasion rows. The catalogue entity rows themselves
+ *    (`src/config/catalogue/*.data.ts`) carry no date in Phase 0, so their copy is their dated
+ *    record, as `xml.ts` documents for the country registry.
+ *  - **`prices`**: the country-scoped types only, because a hub and the occasions index show no
+ *    money (§2, §8). For every product the page lists, the default tier's retail row in force
+ *    (`activeFrom`) and the FX snapshot the displayed amount was converted at (`fxAsOf`): the two
+ *    dates on which the number a buyer sees can change. Read through `resolvePrice()` and
+ *    `priceProjection()`, the functions the card's price comes from, so the date describes the
+ *    number printed.
+ */
+export interface ListingDatedSources {
+  readonly content?: string;
+  readonly prices?: string;
+}
+
+/** The newest of some `YYYY-MM-DD…` values, as a day, or `undefined`. */
+function newestDay(
+  values: readonly (string | undefined)[],
+): string | undefined {
+  let newest: string | undefined;
+  for (const value of values) {
+    const day = value?.slice(0, 10);
+    if (day?.length !== 10) continue;
+    if (newest === undefined || day > newest) newest = day;
+  }
+  return newest;
+}
+
+export async function listingDatedSources(
+  identity: ListingIdentity,
+  options: { readonly now?: Date } = {},
+): Promise<ListingDatedSources> {
+  const { pageType, locale, entityKey } = identity;
+  const iso2 = identity.countryIso;
+  const kind = kindOf(pageType);
+
+  const content =
+    kind !== undefined && entityKey !== undefined
+      ? newestDay([copyRow(kind, entityKey, locale)?.reviewedAt])
+      : newestDay(
+          copyRows(
+            pageType === "occasionsIndex" ? "occasion" : "category",
+            locale,
+          ).map((row) => row.reviewedAt),
+        );
+
+  if (iso2 === undefined || !isCountryScoped(pageType)) {
+    return content === undefined ? {} : { content };
+  }
+
+  const now = options.now ?? new Date();
+  const days: (string | undefined)[] = [];
+  for (const product of await productsFor(pageType, entityKey, kind, iso2)) {
+    const tier = await defaultTier(product.sku);
+    const query = {
+      productId: product.sku,
+      tierKey: tier.tierKey,
+      countryIso: iso2,
+    };
+    days.push((await resolvePrice(query)).activeFrom);
+    days.push((await priceProjection(locale, { ...query, now })).fxAsOf);
+  }
+  const prices = newestDay(days);
+  return {
+    ...(content === undefined ? {} : { content }),
+    ...(prices === undefined ? {} : { prices }),
+  };
+}
+
 /* -------------------------------------------------------------------------- */
 /* Projections: the card, the tile, the chip.                                 */
 /* -------------------------------------------------------------------------- */
@@ -1580,20 +1722,16 @@ export async function listingView(
       ? await tilesFor(locale, iso2, now)
       : [];
 
-  const reviewed = entityRow?.reviewed ?? true;
   const state: CorridorState | undefined =
     iso2 === undefined ? undefined : corridorState(iso2, locale);
-  const verdict = listingIndexability(
+  // The sitemap builders ask the same function (TASK-116), so the robots meta this view carries
+  // and the page's sitemap membership are one answer.
+  const verdict = listingPageIndexability(
     identity,
-    {
-      exists: true,
-      reviewed,
-      ...(isCountryScoped(pageType) ? { operational: state === "live" } : {}),
-      ...(options.parameterised === undefined
-        ? {}
-        : { unparameterised: !options.parameterised }),
-    },
     options.deployment ?? deploymentDescriptor(process.env),
+    options.parameterised === undefined
+      ? {}
+      : { parameterised: options.parameterised },
   );
 
   const links = await linksFor(locale, pageType, iso2, entityKey, kind, path);

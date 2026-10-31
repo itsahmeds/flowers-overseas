@@ -273,6 +273,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "listingLocales",
         "listingPages",
         "listingView",
+        // the sitemap row's two reads (TASK-116, spec 008 §6 / AC-19): the verdict
+        // `listingView()` carries, and the dated sources of the row's `<lastmod>`.
+        "listingDatedSources",
+        "listingPageIndexability",
         "productCardView",
         // spec 043 §5.2 (TASK-290): photographed products first, re-exported from the design system.
         "photoFirst",
