@@ -821,7 +821,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
     );
     // The logo, the eight category links, `For florists` (spec 011), the Send pill and the Basket
     // link (spec 010 D10).
-    expect(anchors).toHaveLength(1 + (EXPECTED_ROW.en ?? []).length + 1 + 1 + 1);
+    expect(anchors).toHaveLength(
+      1 + (EXPECTED_ROW.en ?? []).length + 1 + 1 + 1,
+    );
     for (const anchor of anchors) {
       expect(anchor, anchor).toMatch(
         /(?:min-h|size)-\(--(?:target-min|control-sm)\)/u,
