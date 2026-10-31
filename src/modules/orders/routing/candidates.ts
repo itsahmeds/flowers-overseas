@@ -40,8 +40,9 @@ export type RoutedMode = z.infer<typeof RoutedModeSchema>;
  * Mode pairing (§5.2; spec 010's `ASSIGNMENT_MODE_MISMATCH` trigger enforces the same pair): a
  * `live` order goes to an `active` florist, a `test` order to a `demo` florist.
  */
-export const PARTNER_STATUS_FOR_MODE: Readonly<Record<RoutedMode, PartnerStatus>> =
-  Object.freeze({ live: "active", test: "demo" });
+export const PARTNER_STATUS_FOR_MODE: Readonly<
+  Record<RoutedMode, PartnerStatus>
+> = Object.freeze({ live: "active", test: "demo" });
 
 const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/u);
 const IdSchema = z.string().min(1);
@@ -216,8 +217,9 @@ function mappingFor(
     (row) => row.productId === line.productId,
   );
   return (
-    forProduct.find((row) => row.tierKey !== null && row.tierKey === line.tierKey) ??
-    forProduct.find((row) => row.tierKey === null)
+    forProduct.find(
+      (row) => row.tierKey !== null && row.tierKey === line.tierKey,
+    ) ?? forProduct.find((row) => row.tierKey === null)
   );
 }
 
@@ -263,7 +265,10 @@ function verdict(
   if (order.offeredPartnerIds.includes(partner.partnerId)) {
     return { ok: false, rule: "already_offered" };
   }
-  if (partner.memberCount < 1 || !context.signInStatuses.includes(partner.status)) {
+  if (
+    partner.memberCount < 1 ||
+    !context.signInStatuses.includes(partner.status)
+  ) {
     return { ok: false, rule: "sign_in" };
   }
   return { ok: true, payoutMinor };
@@ -312,7 +317,9 @@ export function eligibleCandidates(
 /* -------------------------------------------------------------------------- */
 
 /** A null rating ranks as 4.50 (§13 16-1). */
-export function effectiveRatingBp(candidate: Pick<Candidate, "ratingBp">): number {
+export function effectiveRatingBp(
+  candidate: Pick<Candidate, "ratingBp">,
+): number {
   return candidate.ratingBp ?? ROUTING_RANKING.defaultRatingBp;
 }
 
@@ -336,21 +343,28 @@ function compareAscending(a: number | string, b: number | string): number {
 }
 
 /**
- * `rankCandidates`'s key over `candidates` alone (§5.2): inside the best-rating band (rating at
- * least 95 % of the best of them) before outside it; rating descending; acceptance rate
- * descending; payout ascending (compared within one payout currency: a mixed set orders by
- * currency code first, so the order stays total and deterministic); last offer ascending, never
- * offered first (round-robin); partner id ascending.
+ * `rankCandidates`'s key over `candidates` alone (§5.2; `plan/06` §5.2 rule 2):
+ *
+ *  1. inside the best-rating band (rating at least 95 % of the best of them) before outside it;
+ *  2. rating descending **outside the band only**: inside it the ratings count as equal, which is
+ *     what the band is for (`plan/06` rule 2c: payout decides "only within 5 % of the best
+ *     rating"; AC-3 and T-50 observe the band, which a plain rating sort would make vacuous);
+ *  3. acceptance rate descending;
+ *  4. payout for this order ascending (compared within one payout currency: a mixed set orders
+ *     by currency code first, so the order stays total and deterministic);
+ *  5. last offer ascending, never offered first (round-robin);
+ *  6. partner id ascending.
  */
 function rankByKey(candidates: readonly Candidate[]): Candidate[] {
   if (candidates.length === 0) return [];
   const best = Math.max(...candidates.map(effectiveRatingBp));
   const inBand = (candidate: Candidate): boolean =>
-    effectiveRatingBp(candidate) * 100 >= best * ROUTING_RANKING.ratingBandPercent;
+    effectiveRatingBp(candidate) * 100 >=
+    best * ROUTING_RANKING.ratingBandPercent;
   return [...candidates].sort(
     (a, b) =>
       Number(inBand(b)) - Number(inBand(a)) ||
-      effectiveRatingBp(b) - effectiveRatingBp(a) ||
+      (inBand(a) ? 0 : effectiveRatingBp(b) - effectiveRatingBp(a)) ||
       effectiveAcceptanceBp(b) - effectiveAcceptanceBp(a) ||
       compareAscending(a.payout.currency, b.payout.currency) ||
       a.payout.minor - b.payout.minor ||
@@ -441,7 +455,11 @@ export function servability(
 ): CanServeResult {
   let fullOnly = false;
   for (const partner of partners) {
-    const result = verdict({ ...order, offeredPartnerIds: [] }, partner, context);
+    const result = verdict(
+      { ...order, offeredPartnerIds: [] },
+      partner,
+      context,
+    );
     if (result.ok) return { ok: true };
     if (result.rule === "capacity") {
       const ignoringCapacity = verdict(
