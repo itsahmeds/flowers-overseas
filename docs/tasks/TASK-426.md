@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-01, WIP, stopped on the orchestrator's order (founder reprioritised): engine change done in `src/modules/search/match.ts` (`typoOnlyWhereUnmatched`, once per token per query; per-document fallback removed); AC-6 to AC-8 tests restated as properties in `tests/unit/search-engine.test.ts` (Rosa/różne fixture, Maßliebchen `ß` fixture). Local run: 38 of 39 green on `main`'s catalogue. **Open finding, escalate before continuing:** `/de/suche` `Rose` vs `Rosen` are not one ordered list on `main`'s catalogue: the `de` descriptions of FO-BQ-025, -028, -029 still carry the English word `roses`, which `Rose` (last token) prefix-matches at tier 3 and `Rosen` (stem `ros`, `roses` stems to `rose` in German) does not; the old per-document typo let `Rosen` reach them. The lead (the 15 roses at tier 4) is equal. Likely holds on PR 328's German drafts (not yet run: the scratch merge conflicts in `messages/de.json`, `docs/codebase-map.md` and a visual baseline). Next: the founder/orchestrator decides whether AC-6's de group compares whole lists or the lead on `main`'s copy; then the scratch-merge run, mutations, gates, draft PR. No PR opened, no CI fired.
 
 ## Result
 
