@@ -16,7 +16,7 @@ import { COMPANY } from "@/config/company";
 import type { InfoPageId } from "@/config/info-pages";
 
 import {
-  infoPageAlternatePaths,
+  infoPageHreflangPaths,
   infoPageHeadView,
   infoPageView,
 } from "../content/index.ts";
@@ -53,7 +53,7 @@ export function infoPageMetadata(
   );
   const cluster = deployment.siteUrl.startsWith("https:")
     ? alternatesFor(
-        { pathByLocale: infoPageAlternatePaths(pageId) },
+        { pathByLocale: infoPageHreflangPaths(pageId) },
         { baseUrl: deployment.siteUrl },
       ).find((page) => page.url.endsWith(view.path))?.alternates
     : undefined;

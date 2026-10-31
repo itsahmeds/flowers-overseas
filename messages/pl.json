@@ -619,7 +619,7 @@
     },
     "link": {
       "cookies": "Pliki cookie",
-      "deliveryAndPayment": "Delivery and payment",
+      "deliveryAndPayment": "Dostawa i płatność",
       "destinations": "Kierunki",
       "guarantee": "Gwarancja",
       "helpAndContact": "Pomoc i kontakt",
@@ -723,13 +723,13 @@
       "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
     },
     "contact": {
-      "body": "A person answers. Call us or message us on WhatsApp, and include your order number if you have one.",
-      "heading": "Talk to us",
-      "phone": "Phone",
-      "privacy": "Questions about your personal data come to the same number."
+      "body": "Odpowiada człowiek. Zadzwoń do nas lub napisz na WhatsAppie i podaj numer zamówienia, jeśli go masz.",
+      "heading": "Porozmawiaj z nami",
+      "phone": "Telefon",
+      "privacy": "Pytania o Twoje dane osobowe kieruj na ten sam numer."
     },
     "cookies": {
-      "change": "Change cookie settings"
+      "change": "Zmień ustawienia cookies"
     },
     "delivery": {
       "status": "Status"
@@ -749,7 +749,8 @@
       "version": "Version {version}"
     },
     "status": {
-      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
+      "notYetOpen": "Nie przyjmujemy jeszcze zamówień. Ta strona opisuje, jak będzie wyglądać zamawianie, gdy zaczniemy działać.",
+      "untranslated": "To tłumaczenie nie zostało jeszcze sprawdzone. Jeśli różni się od wersji angielskiej, obowiązuje wersja angielska."
     }
   },
   "languagePopup": {
