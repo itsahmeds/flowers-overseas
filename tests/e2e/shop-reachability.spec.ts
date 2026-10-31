@@ -37,7 +37,7 @@
  *    A link found on a depth-3 page is a fourth click: its target gets a status check, and nothing
  *    more. It is not walked and it does not count as reached, so criterion 1's bound stays ≤3.
  *  - **The pages the walk cannot reach.** Every listing page in the locale's existence set that
- *    the walk did not reach within 3 clicks (today exactly the `EXCLUDED` waiver: the twenty
+ *    the walk did not reach within 3 clicks (today exactly the `EXCLUDED` waiver: the ten
  *    category hubs nothing links yet) is fetched afterwards, and its links get the same three
  *    checks. A waiver excuses a missing inbound link, never a broken outbound one.
  *
@@ -50,9 +50,10 @@
  * five reserved ids and none of them is a category hub. TASK-173 (spec 008 §14 A14) made the
  * header's category row the first, for Bouquets, Roses and Plants, and closed the `de`/`pl`
  * shop-root and country-category escalations through "Our selection". `EXCLUDED`
- * (`tests/support/shop-crawl-targets.ts`) now holds one rule — the category hub, minus the three
- * the header links (`HEADER_CATEGORY_HUBS`) — and is asserted to be exactly that, so it cannot
- * quietly grow. The pages it covers are pinned too (`WAIVED`: 20 category hubs per locale), so the
+ * (`tests/support/shop-crawl-targets.ts`) now holds one rule — the category hub, minus the
+ * thirteen the header's mega menu links (`HEADER_CATEGORY_HUBS`; TASK-383) — and is asserted to be
+ * exactly that, so it cannot quietly grow. The pages it covers are pinned too (`WAIVED`: 10
+ * category hubs per locale), so the
  * rule cannot grow by matching more pages either.
  */
 import { readFileSync } from "node:fs";
@@ -470,8 +471,8 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
     }
     // **Every locale carries no exclusion but the category hub** (the indexable two since
     // TASK-113, `de`/`pl` since TASK-173). That is the half of AC-21 that protects organic
-    // ranking, asserted in the direction that cannot be padded: every listing page bar twenty
-    // category hubs is in the crawl's target set.
+    // ranking, asserted in the direction that cannot be padded: every listing page bar ten
+    // category hubs is in the crawl's target set (twenty until TASK-383's mega menu).
     for (const locale of ["en", "en-gb", "de", "pl"]) {
       const pages = EXISTENCE_SET[locale] ?? [];
       const excluded = pages.filter((page) =>
@@ -481,7 +482,7 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         [...new Set(excluded.map((page) => page.pageType))],
         locale,
       ).toEqual(["categoryHub"]);
-      expect(expectedPages(locale).length, locale).toBe(238);
+      expect(expectedPages(locale).length, locale).toBe(248);
     }
   });
 });

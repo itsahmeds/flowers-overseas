@@ -1153,11 +1153,17 @@ async function openMenu(page: Page): Promise<void> {
   await expect(panel).toHaveCSS("transform", "none");
 }
 
+/**
+ * A page whose `<main>` holds a primary link (`Button` `primary` with an `href`): the guide's
+ * shop entry. The chrome had one (the header's and the phone Menu's Send pill) until the mega menu
+ * replaced it (spec 004 §14 A-founder-2026-10-24a, Q-24d; TASK-383).
+ */
+const PRIMARY_LINK_PAGE = "/en/send-flowers-to/poland";
+
 /** Clicks the first primary link a reader can see, from inside the page, and reads it twice. */
-async function pressPrimaryLink(page: Page, isMobile: boolean) {
+async function pressPrimaryLink(page: Page) {
   await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
-  if (isMobile) await openMenu(page);
-  const link = page.locator("a[data-fo-pending]:visible").first();
+  const link = page.locator("main a[data-fo-pending]:visible").first();
   const before = await link.boundingBox();
   const href = (await link.getAttribute("href")) ?? "";
   await holdDocument(page, new URL(href, page.url()).pathname);
@@ -1189,11 +1195,10 @@ async function pressPrimaryLink(page: Page, isMobile: boolean) {
 test.describe("9. motion 3 on every primary action (TASK-283)", () => {
   test("a primary link: aria-busy and aria-disabled at the same width, its bloom and not motion 1's, released on pageshow", async ({
     page,
-    isMobile,
   }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto(SHOP);
-    const { before, during, after } = await pressPrimaryLink(page, isMobile);
+    await page.goto(PRIMARY_LINK_PAGE);
+    const { before, during, after } = await pressPrimaryLink(page);
     expect(during).toEqual({
       busy: "true",
       disabled: "true",
@@ -1207,11 +1212,10 @@ test.describe("9. motion 3 on every primary action (TASK-283)", () => {
 
   test("under reduced motion only aria-busy changes: no bloom shows", async ({
     page,
-    isMobile,
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto(SHOP);
-    const { during } = await pressPrimaryLink(page, isMobile);
+    await page.goto(PRIMARY_LINK_PAGE);
+    const { during } = await pressPrimaryLink(page);
     expect(during).toMatchObject({ busy: "true", bloom: "0", stem: "none" });
   });
 

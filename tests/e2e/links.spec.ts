@@ -321,15 +321,39 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           else expect(href, href).toMatch(/^(?:tel:|https:\/\/)[^\s]+$/u);
         }
       }
-      // Exactly: the header's eight (the footer's two are among them), the header's Basket link
-      // (TASK-349), five products, the lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
-      // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
-      // four trust pages and two legal pages. A further control is a diff here.
-      const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
-      expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
-      expect(hrefs.size).toBe(
-        8 + 1 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0),
-      );
+      // Exactly: the mega menu's entries and featured cards (the footer's hubs are among the
+      // entries; TASK-383 replaced the eight-link category row), the header's Basket link (TASK-349),
+      // the lockup's home, the switcher's
+      // sibling shown homes (one on a shown locale, both English homes on a hidden one; spec 003
+      // §14 A-founder-2026-10-14c), the trending row's five products and shop link and, in
+      // English, the footer's four trust pages and two legal pages. A further control is a diff
+      // here.
+      const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale);
+      expect(siblings.length).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
+      const featured = await page
+        .locator("[data-fo-header] [data-fo-mega-featured] a[href]")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      expect(featured.length).toBeGreaterThan(0);
+      // The trending row's five products and its link to the demo shop.
+      const trending = await page
+        .locator("[data-fo-trending] a[href]")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      const expected = new Set<string>([
+        ...entries.map((item) => item.href),
+        ...featured,
+        `/${locale}/basket`,
+        `/${locale}`,
+        ...siblings.map((shown) => `/${shown}`),
+        ...trending,
+        ...sending,
+        ...company,
+        ...legal,
+      ]);
+      expect([...hrefs].sort()).toEqual([...expected].sort());
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }
