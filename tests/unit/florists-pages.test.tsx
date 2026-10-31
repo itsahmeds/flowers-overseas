@@ -148,14 +148,14 @@ describe("T-02 / AC-2: the landing's blocks, in §2's order", () => {
     const status = html.indexOf("data-fo-status-line");
     expect(h1).toBeGreaterThan(0);
     expect(status).toBeGreaterThan(h1);
-    expect(html).toContain("We are not taking orders yet. Poland opens first.");
+    expect(html).toContain(">We are not taking orders yet.</p>");
     expect(html).toMatch(/role="status"[^>]*data-fo-status-line/u);
   });
 
   it("drops the status line when a delivery date is open", async () => {
     const html = await landingHtml("en", true);
     expect(html).not.toContain("data-fo-status-line");
-    expect(html).not.toContain("Poland opens first");
+    expect(html).not.toContain("We are not taking orders yet.");
   });
 
   it.each(LOCALES)(
