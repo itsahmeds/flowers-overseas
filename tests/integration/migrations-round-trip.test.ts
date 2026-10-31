@@ -114,6 +114,8 @@ const FUNCTIONS = [
   "review_row_is_own",
   "review_subject_hash",
   "review_write_guard",
+  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1).
+  "review_content_immutable",
   "set_updated_at",
   "status_flip_guard",
 ];

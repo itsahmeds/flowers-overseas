@@ -163,7 +163,7 @@ describe("the committed migration set", () => {
   // TASK-024 0012, TASK-245 0013, TASK-217 0014, TASK-203 0015, TASK-218 0016, TASK-254 0017,
   // TASK-292 0018, TASK-347 0019, TASK-348 0020, TASK-337 0021, TASK-211 0022, TASK-293 0023, TASK-321 0024,
   // TASK-070 0025, TASK-350 0026, TASK-258 0027,
-  // TASK-261 0028).
+  // TASK-261 0028, TASK-368 0029).
   it("reads each committed migration and its rollback from db/migrations", () => {
     expect(readMigrations(migrationsDir).map((m) => m.file)).toEqual([
       "0001_roles_grants_updated_at.sql",
@@ -194,6 +194,7 @@ describe("the committed migration set", () => {
       "0026_payment_purchase.sql",
       "0027_cancel_window_a10.sql",
       "0028_set_c_a9.sql",
+      "0029_reviews_close.sql",
     ]);
   });
 });

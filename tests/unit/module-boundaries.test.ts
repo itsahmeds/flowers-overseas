@@ -115,8 +115,8 @@ describe("zone generation from the module manifest", () => {
   it("covers the app rule plus one zone per module", () => {
     // Eleven `plan/01` §5 modules plus `ui`, spec 004 §2 / §13 Q9's documented addition
     // (TASK-045), `checkout` (spec 010, TASK-200), `content` (spec 041 §13 Q7, TASK-182) and
-    // `search` (spec 045 §5.2, TASK-400).
-    expect(MODULES).toHaveLength(15);
+    // `search` (spec 045 §5.2, TASK-400) and `reviews` (spec 022a, TASK-368).
+    expect(MODULES).toHaveLength(16);
     expect(zones).toHaveLength(MODULES.length + 1);
     expect(zones[0]).toMatchObject({
       target: "src/modules/**",
