@@ -4775,7 +4775,9 @@
   },
   "nav.mega.recipient.partner": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-383b.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:13:49Z",
     "sourceHash": "497077858312e0d5cb804ff5ccb3e771adfe0e51c7f0f964d091dc788443c3be"
   },
   "nav.mega.recipient.newParents": {
