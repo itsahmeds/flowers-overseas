@@ -555,6 +555,198 @@ describe("the shared claim patterns, one case per label (AC-5, AC-8)", () => {
   });
 });
 
+/**
+ * `/break 270` HOLE 10 (carried to TASK-184): one hit row per **alternation branch** of every
+ * claim pattern, not one per label. Each row names the exact text the pattern returns, so a branch
+ * deleted from `CLAIM_PATTERNS` (or from `DELIVERY_TIMING_PATTERN`, which `seed:check` reads too)
+ * turns its own row red: either nothing matches, or a different branch does and returns other text.
+ * `corridor:check` and `seed:check` read the same two patterns, so these rows hold for both.
+ */
+const BRANCH_ROWS: readonly {
+  readonly label: string;
+  readonly hit: string;
+  readonly match: string;
+}[] = [
+  {
+    label: "delivery timing",
+    hit: "We offer next-day flowers.",
+    match: "next-day",
+  },
+  {
+    label: "delivery timing",
+    hit: "We offer same day flowers.",
+    match: "same day",
+  },
+  {
+    label: "delivery timing",
+    hit: "It takes two working days.",
+    match: "working days",
+  },
+  {
+    label: "delivery timing",
+    hit: "The lead time is short.",
+    match: "lead time",
+  },
+  {
+    label: "delivery timing",
+    hit: "Arriving on time or late.",
+    match: "or late",
+  },
+  {
+    label: "delivery timing",
+    hit: "It arrives within 4 hours.",
+    match: "within 4 hours",
+  },
+  {
+    label: "delivery timing",
+    hit: "Please order by 2pm.",
+    match: "order by 2pm",
+  },
+  {
+    label: "delivery timing",
+    hit: "Choose 10am for delivery tomorrow.",
+    match: "10am for delivery tomorrow",
+  },
+  { label: "cutoff", hit: "Mind the cutoffs.", match: "cutoffs" },
+  { label: "cutoff", hit: "Mind the cut off.", match: "cut off" },
+  {
+    label: "delivery date",
+    hit: "Pick from the delivery dates.",
+    match: "delivery dates",
+  },
+  {
+    label: "delivery date",
+    hit: "It is delivered today.",
+    match: "delivered today",
+  },
+  {
+    label: "delivery date",
+    hit: "We deliver tomorrow.",
+    match: "deliver tomorrow",
+  },
+  {
+    label: "delivery date",
+    hit: "It arrives by tomorrow.",
+    match: "by tomorrow",
+  },
+  {
+    label: "delivery date",
+    hit: "It comes on the date they picked.",
+    match: "on the date they picked",
+  },
+  {
+    label: "florist count",
+    hit: "We know 300+ florists.",
+    match: "300+ florists",
+  },
+  {
+    label: "florist count",
+    hit: "We know dozens of florists.",
+    match: "dozens of florists",
+  },
+  {
+    label: "florist count",
+    hit: "We know thousands of florists.",
+    match: "thousands of florists",
+  },
+  {
+    label: "florist count",
+    hit: "We are a network of florists.",
+    match: "a network of florists",
+  },
+  { label: "rating", hit: "See our ratings.", match: "ratings" },
+  { label: "rating", hit: "Five stars from everyone.", match: "stars" },
+  { label: "rating", hit: "A star-rated shop.", match: "star-rated" },
+  { label: "review", hit: "See our reviews.", match: "reviews" },
+  { label: "review", hit: "Read a testimonial.", match: "testimonial" },
+  { label: "review", hit: "Find us on Trustpilot.", match: "trustpilot" },
+  {
+    label: "delivery photo",
+    hit: "You get delivery photos.",
+    match: "delivery photos",
+  },
+  {
+    label: "delivery photo",
+    hit: "You get a photo of the delivery.",
+    match: "photo of the delivery",
+  },
+  {
+    label: "delivery photo",
+    hit: "They photograph the bouquet at the doorstep.",
+    match: "photograph the bouquet at the doorstep",
+  },
+  {
+    label: "delivery photo",
+    hit: "We photographed it on the door.",
+    match: "photographed it on the door",
+  },
+  {
+    label: "delivery photo",
+    hit: "You get proof of delivery.",
+    match: "proof of delivery",
+  },
+];
+
+describe("HOLE 10: one hit row per alternation branch of the claim patterns", () => {
+  it("covers every label", () => {
+    expect([...new Set(BRANCH_ROWS.map((row) => row.label))]).toEqual(
+      CLAIM_PATTERNS.map((claim) => claim.label),
+    );
+  });
+
+  it.each(BRANCH_ROWS)(
+    '$label returns exactly "$match" for "$hit"',
+    ({ label, hit, match }) => {
+      const claim = CLAIM_PATTERNS.find((c) => c.label === label);
+      expect(claim?.pattern.exec(hit)?.[0].toLowerCase()).toBe(match);
+      // The gate itself fails the sentence on a trust page, under that label.
+      const files = sectionBody(
+        "pages/en/about.md",
+        "We are not taking orders yet.",
+        hit,
+      );
+      expect(
+        checkInfoCorpus(files)
+          .filter((problem) => problem.rule === "trust-claims")
+          .map((problem) => problem.message.split(" claim ")[0]),
+      ).toContain(`makes a ${label}`);
+    },
+  );
+});
+
+/**
+ * `/break 270` HOLE 11 (carried to TASK-184): a claim in an FAQ question and in a section item's
+ * title is read, each naming its own field. Dropping the `faq.N.q` push, or the item title from
+ * the item's text, in `proseOf()` turns its case red.
+ */
+describe("HOLE 11: the FAQ question and the item title are prose too", () => {
+  it("a claim in a help question fails trust-claims at faq.1.q", () => {
+    const files = sectionBody(
+      "pages/en/help.md",
+      'q: "Can I order now?"',
+      'q: "Can I read your reviews?"',
+    );
+    expect(
+      checkInfoCorpus(files)
+        .filter((problem) => problem.rule === "trust-claims")
+        .map((problem) => problem.field),
+    ).toEqual(["faq.1.q"]);
+  });
+
+  it("a claim in a step's title fails trust-claims at that item", () => {
+    const files = sectionBody(
+      "pages/en/how-it-works.md",
+      'title: "You order from us."',
+      'title: "Next-day, from us."',
+    );
+    expect(
+      checkInfoCorpus(files)
+        .filter((problem) => problem.rule === "trust-claims")
+        .map((problem) => problem.field),
+    ).toEqual(["sections.0.items.0"]);
+  });
+});
+
 describe("pages:check, continued", () => {
   it("prints the §11 summary table, one row per file", () => {
     const table = summaryTable(FILES);

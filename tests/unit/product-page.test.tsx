@@ -40,7 +40,11 @@ import {
 } from "../../src/modules/catalog";
 import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
 import { getProduct } from "../../src/modules/catalog/read.ts";
-import { infoPageExists, infoPageView } from "../../src/modules/content";
+import {
+  infoPageExists,
+  infoPagePath,
+  infoPageView,
+} from "../../src/modules/content";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
@@ -1116,10 +1120,14 @@ describe("spec 009 §14 A11 bullet 1 (TASK-287): the promise is the guarantee pa
     },
   );
 
-  it.each(["de", "pl"] as const)(
-    "%s has no guarantee page, so its product page links nowhere",
-    (locale) => {
-      expect(infoPageExists("guarantee", locale)).toBe(false);
+  it.each([
+    ["de", "/de/garantie"],
+    ["pl", "/pl/gwarancja"],
+  ] as const)(
+    "%s has its guarantee draft (TASK-184), so its product page links to %s",
+    (locale, path) => {
+      expect(infoPageExists("guarantee", locale)).toBe(true);
+      expect(infoPagePath("guarantee", locale)).toBe(path);
     },
   );
 

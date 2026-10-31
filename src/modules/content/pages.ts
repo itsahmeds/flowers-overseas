@@ -100,6 +100,42 @@ export function parsedInfoFiles(
   return map;
 }
 
+/**
+ * The locale whose content files a URL prefix reads: the prefix itself for a launch locale, and
+ * the x-default locale for a **pseudo-locale** (`/en-XA`, `/ar-XB`), exactly as a corridor guide
+ * reads it (`contentLocaleOf()` in `src/modules/geo/corridor.ts`). The pseudo catalogue rewrites the
+ * chrome strings and nothing else, so a pseudo info page is the English page inside pseudo chrome:
+ * what the RTL screenshot has to show (spec 041 §7 "RTL", T-28). It is never indexed or announced:
+ * a pseudo-locale is not a launch locale, so it is in no hreflang cluster and no sitemap, and the
+ * production env schema refuses the flag that routes it at all. `undefined` for any other code.
+ */
+export function infoContentLocale(locale: string): string | undefined {
+  const config = routableLocale(locale);
+  if (config === undefined) return undefined;
+  if (!config.isPseudo) return config.code;
+  return config.fallbackCode ?? undefined;
+}
+
+/**
+ * Whether a content file's own locale writes in the source language (`en` and `en-gb`, the files
+ * the founder approves). Every other file is a translation of them, the `de` and `pl` drafts.
+ */
+export function isSourceContentLocale(contentLocale: string): boolean {
+  return contentLocale === "en" || contentLocale.startsWith("en-");
+}
+
+/**
+ * `infoPages.status.untranslated` renders under the `<h1>` exactly when the file a page renders
+ * is a translation (not `en`/`en-gb`) that nobody has checked yet (spec 041 §2 "Untranslated
+ * draft", AC-23). A pseudo-locale reads the English file, so it never carries the line.
+ */
+export function isUntranslatedDraft(
+  contentLocale: string,
+  reviewed: boolean,
+): boolean {
+  return !reviewed && !isSourceContentLocale(contentLocale);
+}
+
 /** The trust content a locale renders, following `extends: en`; `undefined` when there is none. */
 export function trustContent(
   pageId: InfoPageId,
@@ -107,7 +143,8 @@ export function trustContent(
   provider: InfoContentProvider = staticInfoContentProvider,
 ): InfoPageContent | undefined {
   const files = parsedInfoFiles(provider);
-  const file = files.get(fileKey(pageId, locale));
+  const own = infoContentLocale(locale) ?? locale;
+  const file = files.get(fileKey(pageId, own));
   if (file === undefined) return undefined;
   if (file.kind === "trust") return file.content;
   if (file.kind === "extends") {
@@ -124,7 +161,9 @@ function hasContent(
   provider: InfoContentProvider,
 ): boolean {
   const files = parsedInfoFiles(provider);
-  const file = files.get(fileKey(pageId, locale));
+  const own = infoContentLocale(locale);
+  if (own === undefined) return false;
+  const file = files.get(fileKey(pageId, own));
   if (file === undefined) return false;
   if (file.kind !== "extends") return true;
   const parent = files.get(fileKey(pageId, file.parent));
@@ -180,7 +219,7 @@ export function missingInfoPageLinkIds(
   });
 }
 
-/** The page in each launch locale where it exists: the language links and the hreflang source. */
+/** The page in each launch locale where it exists: what the language links offer. */
 export function infoPageAlternatePaths(
   pageId: InfoPageId,
   options: InfoPageOptions = {},
@@ -189,6 +228,48 @@ export function infoPageAlternatePaths(
     launchLocaleCodes()
       .filter((code) => infoPageExists(pageId, code, options))
       .map((code) => [code, infoPagePath(pageId, code)]),
+  );
+}
+
+/**
+ * The page's own `reviewed` flag in a locale, read from the file it renders (following `extends:
+ * en`); `undefined` where the page does not exist. The copy flag, not the legal `lawyerReviewed`.
+ */
+export function infoPageFileReviewed(
+  pageId: InfoPageId,
+  locale: string,
+  options: InfoPageOptions = {},
+): boolean | undefined {
+  if (!infoPageExists(pageId, locale, options)) return undefined;
+  const provider = options.provider ?? staticInfoContentProvider;
+  const files = parsedInfoFiles(provider);
+  const own = infoContentLocale(locale) ?? locale;
+  const file = files.get(fileKey(pageId, own));
+  const resolved =
+    file?.kind === "extends" ? files.get(fileKey(pageId, file.parent)) : file;
+  if (resolved === undefined || resolved.kind === "extends") return undefined;
+  return resolved.content.reviewed;
+}
+
+/**
+ * The hreflang source (spec 041 §6 "hreflang", AC-18): the language links' set, less every
+ * translation nobody has checked yet. A `de` or `pl` draft appears in no alternate set while it
+ * is unreviewed, whatever its locale's own gate says; `alternatesFor()` then also drops every
+ * locale that is not indexable. The source-language files (`en`, `en-gb`) form the cluster as
+ * TASK-182 shipped it.
+ */
+export function infoPageHreflangPaths(
+  pageId: InfoPageId,
+  options: InfoPageOptions = {},
+): Readonly<Record<string, string>> {
+  return Object.fromEntries(
+    Object.entries(infoPageAlternatePaths(pageId, options)).filter(
+      ([code]) =>
+        !isUntranslatedDraft(
+          infoContentLocale(code) ?? code,
+          infoPageFileReviewed(pageId, code, options) ?? false,
+        ),
+    ),
   );
 }
 
@@ -310,6 +391,11 @@ export interface InfoPageView {
   readonly updatedAt: string;
   /** `infoPages.status.notYetOpen` renders under the `<h1>` while this is true (AC-6). */
   readonly notYetOpen: boolean;
+  /**
+   * `infoPages.status.untranslated` renders under the `<h1>`, after the not-open line, while
+   * this is true: an unchecked `de`/`pl` draft (AC-23).
+   */
+  readonly untranslated: boolean;
   readonly sections: readonly InfoSectionView[];
   readonly faq: readonly { readonly q: string; readonly a: string }[];
   /** In-body links whose target exists in this locale, in authored order (§6). */
@@ -451,6 +537,10 @@ export function infoPageView(
     reviewed: content.reviewed,
     updatedAt: content.updatedAt,
     notYetOpen: !(options.datesOpen ?? anyDeliveryDatesOpen()),
+    untranslated: isUntranslatedDraft(
+      infoContentLocale(locale) ?? locale,
+      content.reviewed,
+    ),
     sections: content.sections.flatMap(
       (section) => sectionView(section, company, registered) ?? [],
     ),

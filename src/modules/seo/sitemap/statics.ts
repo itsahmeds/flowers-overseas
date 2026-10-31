@@ -40,7 +40,7 @@ import {
 import type { InfoPageId } from "@/config/info-pages";
 
 import {
-  infoPageAlternatePaths,
+  infoPageHreflangPaths,
   infoPageHeadView,
 } from "../../content/index.ts";
 import {
@@ -138,7 +138,7 @@ function infoPageEntry(pageId: InfoPageId): StaticSitemapEntryBuilder {
     const loc = absoluteUrl(view.path, { baseUrl });
     const cluster =
       alternatesFor(
-        { pathByLocale: infoPageAlternatePaths(pageId) },
+        { pathByLocale: infoPageHreflangPaths(pageId) },
         { baseUrl },
       ).find((candidate) => candidate.url === loc)?.alternates ?? [];
     return {

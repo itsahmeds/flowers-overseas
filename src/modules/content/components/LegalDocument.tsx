@@ -415,6 +415,15 @@ export function LegalDocumentPage({
                 {label(t, view.draftLine)}
               </p>
             )}
+            {view.untranslated ? (
+              <p
+                className="text-ui text-ink bg-paper-2 border-sky m-0 max-w-(--measure) rounded-e-md border-s-[3px] px-[18px] py-[12px] leading-(--line-height-tight)"
+                data-fo-untranslated
+                role="note"
+              >
+                {label(t, "infoPages.status.untranslated")}
+              </p>
+            ) : null}
           </header>
           {document ? (
             <div className="mt-[8px] grid grid-cols-1 items-start gap-[24px] md:mt-[28px] md:grid-cols-[minmax(0,3fr)_minmax(0,8fr)] md:gap-[56px]">

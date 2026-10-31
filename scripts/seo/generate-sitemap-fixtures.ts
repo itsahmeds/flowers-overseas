@@ -35,7 +35,8 @@
  * live one.
  *
  * `noindex.json` is generated from the same engine over the URLs the sitemap did *not* take: the
- * hub of every locale that is not announced. `/` is in neither list: it is one 308 to `/en` with
+ * hub of every locale that is not announced, and every spec 041 info page the engine serves
+ * `noindex` (TASK-184). `/` is in neither list: it is one 308 to `/en` with
  * no document (spec 003 §14 A16 clause 3). `validate-sitemap` intersects
  * it with every `<loc>` it reads, which is AC-14's first half as a CI gate rather than an
  * argument.
@@ -44,7 +45,10 @@ import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { INFO_PAGE_IDS } from "../../src/config/info-pages.ts";
+import { infoPageHeadView } from "../../src/modules/content/index.ts";
 import {
+  launchLocaleCodes,
   localePath,
   routableLocaleCodes,
 } from "../../src/modules/i18n/index.ts";
@@ -53,6 +57,7 @@ import {
   CANONICAL_HOST,
   type DeploymentDescriptor,
 } from "../../src/modules/seo/environment.ts";
+import { pageIndexability } from "../../src/modules/seo/indexability.ts";
 import { corridorSitemapEntries } from "../../src/modules/seo/sitemap/corridors.ts";
 import type { SitemapAlternate } from "../../src/modules/seo/sitemap/xml.ts";
 import {
@@ -93,6 +98,31 @@ function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
+/**
+ * Every spec 041 info page that exists in a launch locale and that the engine serves
+ * `noindex` (spec 041 AC-17, AC-20, AC-23; TASK-184): the unreviewed `en`/`en-gb` pages, the
+ * whole legal set until a lawyer signs it, and every `de`/`pl` draft. Asked of the same
+ * `pageIndexability()` call the page's `<head>` and its sitemap row make, so `validate-sitemap`
+ * fails the day one of them reaches a `<loc>` while it is still `noindex`.
+ */
+export function noindexInfoPageUrls(
+  deployment: DeploymentDescriptor = FIXTURE_DEPLOYMENT,
+): readonly string[] {
+  return launchLocaleCodes().flatMap((locale) =>
+    INFO_PAGE_IDS.flatMap((pageId) => {
+      const head = infoPageHeadView(pageId, locale);
+      if (head === undefined) return [];
+      const verdict = pageIndexability(
+        { pageType: pageId, locale, exists: true, reviewed: head.reviewed },
+        deployment,
+      );
+      return verdict.indexable
+        ? []
+        : [absoluteUrl(head.path, { baseUrl: deployment.siteUrl })];
+    }),
+  );
+}
+
 /** Every URL the sitemap declined, as `validate-sitemap`'s `noindex.json` shape. */
 export function noindexUrlSet(
   deployment: DeploymentDescriptor = FIXTURE_DEPLOYMENT,
@@ -106,6 +136,7 @@ export function noindexUrlSet(
           baseUrl: deployment.siteUrl,
         }),
       ),
+    ...noindexInfoPageUrls(deployment),
   ];
   return [...urls].sort();
 }
