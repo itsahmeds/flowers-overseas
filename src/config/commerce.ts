@@ -62,3 +62,36 @@ export const CHOOSER_INPUT_MAX_CHARS = 64;
  * typed. Under `/api/`, which `robots.txt` disallows.
  */
 export const CHOICE_ROUTE_PREFIX = "/api/choose";
+
+/**
+ * The home's occasion tabs (spec 004 §14 A-founder-2026-10-24a item 4.4): catalogue occasion keys,
+ * in the order the tabs are drawn. A tab renders only where at least `HOME_SECTION_MIN_PRODUCTS`
+ * core products carry the occasion, so a key here is a candidate, never a promise; every key names
+ * an occasion row of the catalogue (`tests/unit/catalog-home.test.ts`).
+ */
+export const HOME_OCCASION_TABS = [
+  "birthday",
+  "sympathy",
+  "thank_you",
+  "anniversary",
+  "get_well",
+  "new_baby",
+] as const;
+
+/**
+ * The fewest core products an occasion tab or a "Coming up" occasion needs before the home draws
+ * it (item 4.4 and 4.6: "at least 2 core products carry the occasion").
+ */
+export const HOME_SECTION_MIN_PRODUCTS = 2;
+
+/** Cards in one occasion tab's panel (item 4.4: "up to 4 core cards"). */
+export const HOME_TAB_CARDS = 4;
+
+/** "Coming up": how many dated occasions, and cards under each (item 4.6). */
+export const HOME_COMING_UP = { occasions: 3, cards: 3, names: 2 } as const;
+
+/**
+ * How far ahead "Coming up" looks for a dated occasion, in months: a year, so every annual
+ * occasion is found once whatever the day the page is rendered.
+ */
+export const HOME_COMING_UP_MONTHS = 12;

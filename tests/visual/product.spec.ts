@@ -90,11 +90,6 @@ const BLOCKS = [
   },
 ] as const;
 
-/** The date-row shots' one rule: the dated home band out of the layout (see the file). */
-const PICKER_ROW_STYLE = fileURLToPath(
-  new URL("./picker-row.css", import.meta.url),
-);
-
 /** Hides the docked bar and takes the date grid out (see the file). */
 const BLOCK_STYLE = fileURLToPath(
   new URL("./product-blocks.css", import.meta.url),
@@ -202,7 +197,7 @@ for (const { width, viewport } of WIDTHS) {
       );
       await expect(picker).toHaveScreenshot(
         `product-${width}-picker-${state}.png`,
-        { stylePath: [PICKER_ROW_STYLE, HEADER_STYLE] },
+        { stylePath: [HEADER_STYLE] },
       );
     }
   });

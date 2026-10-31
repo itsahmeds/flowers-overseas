@@ -4,7 +4,7 @@
  * ruling 2026-10-04).
  *
  * Until the v2 home, every layout shift on a locale home came from the header or a banner, so a
- * page-wide total was the subject's total. The v2 home's sentence picker is set in Fraunces, which
+ * page-wide total was the subject's total. The v2 home's sentence picker (the v3 home's picker card since TASK-386) is set in Fraunces, which
  * A21 clause 3 forbids preloading on the home, so its selects re-measure when the webfont swaps in
  * (metric-matched fallbacks keep that small, never zero). The page-wide total then read the
  * sentence's swap as a header or banner shift. These helpers keep every entry the browser reports
@@ -17,20 +17,30 @@
  */
 import type { BrowserContext, Page } from "@playwright/test";
 
-/** The sentence picker's form (`SentencePicker`, `data-fo-sentence`). */
-export const SENTENCE_REGION = "[data-fo-sentence]";
+/**
+ * The v3 home's picker card (`CountryPicker variant="home"`, `data-fo-home-picker`; TASK-386),
+ * which replaced the sentence picker: its question is set in the display face, never preloaded.
+ */
+export const PICKER_REGION = "[data-fo-home-picker]";
 
 /** The hero's copy: the eyebrow, the H1 and its line (`HomeHero`, `data-fo-hero-copy`). */
 export const HERO_COPY_REGION = "[data-fo-hero-copy]";
 
 /**
+ * Every heading's one italic phrase (`HEADING_EM`, `data-fo-em`): Fraunces 300 italic, never
+ * preloaded (A21 clause 3). On the v3 home "Popular choices" sits at the first viewport's foot at
+ * 1280 × 720, so its phrase's swap is on screen (TASK-386).
+ */
+export const ITALIC_PHRASE_REGION = "[data-fo-em]";
+
+/**
  * Every region of the home whose display-face text re-measures when its webfont swaps in: the
- * sentence, and since TASK-231 the H1, whose italic phrase (Fraunces 300 italic, never preloaded,
+ * picker's question (the sentence's until TASK-386), and since TASK-231 the H1, whose italic phrase (Fraunces 300 italic, never preloaded,
  * A21 clause 3) re-balances its lines on the swap (spec 004 §14 A-founder-2026-10-14d). The
  * zero-shift tests of the header and the consent sheet exclude both; `tests/e2e/home.spec.ts`
  * bounds each one's own swap.
  */
-export const FONT_SWAP_REGIONS = `${SENTENCE_REGION}, ${HERO_COPY_REGION}`;
+export const FONT_SWAP_REGIONS = `${PICKER_REGION}, ${HERO_COPY_REGION}, ${ITALIC_PHRASE_REGION}`;
 
 /** Record every layout shift, with its source nodes, from the first paint onwards. */
 export async function recordLayoutShifts(

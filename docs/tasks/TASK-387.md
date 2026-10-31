@@ -29,7 +29,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-25, to the founder (copy batch), keyless [slot]: the price section's heading. The board draws "Shop by price" as a [slot] under the eyebrow "By price"; no key was invented, so the section's heading is the menu's `nav.mega.byPrice` ("By price"). Proposed: `home.price.heading` = "Shop by price". Open.
+- 2026-10-25, to the orchestrator: "Coming up" renders with today's data (Christmas, Valentine's Day, Sant Jordi; at least two core products carry each), though the board notes it absent with the default list. The data decides (AC-96). Open.
+- 2026-10-25, to the orchestrator: Coming up's cards use the occasion panels' four-column grid; the board draws its layout only in a narrow state cell. Open.
 
 ## Progress
 
@@ -37,11 +39,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: built with TASK-386 in PR 425; see TASK-386's Progress.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Shipped in PR #425 with TASK-386: Shop by occasion as one native radio group with `:has(:checked)` panels (`HomeOccasionTabs`, `globals.css`), five tabs today, up to four cards each and the hub link; Shop by price as three word links to `next=price/{band}`; Coming up over every shop country (earliest date per occasion, `Intl.ListFormat`, `home.comingUp.more`); destinations from data with no Poland case; the short how-it-works; the dedupe rule (`dedupeSection`); the example label once per grid; one `ItemList` per section equal to its cards with no price. Mutations seen red: dedupe skip removed, a tab threshold of 1, a tie ignored in Coming up, an amount in a band label, every radio checked, the per-card label shown. Tests are listed in TASK-386's result.

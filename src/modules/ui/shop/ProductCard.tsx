@@ -51,6 +51,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import { type LocaleCode } from "@/config/locales";
 import { formatMoney } from "@/modules/i18n";
+import { CHOOSER_LINK_REL } from "@/modules/seo";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
 import type { MediaManifest } from "../media/manifest.ts";
@@ -113,6 +114,16 @@ export interface ProductCardProps {
    * related row at `lg`).
    */
   readonly qualifierBelow?: boolean;
+  /**
+   * The country-less card's purchase entry (spec 004 §14 A-founder-2026-10-24a items 2 and 8; spec
+   * 008 AC-6's first form; TASK-386): a priceless card that links through the chooser prints, in
+   * the price's reserved box, `shop.price.choose` ("Choose a country to see the price") and, as its
+   * action line, `shop.cta.chooseCountry` ("Choose where to send"), and its link carries
+   * `rel="nofollow"` (AC-76: every link to the chooser does). No amount, currency, equivalents or
+   * slot: the card has no field one could come from. Ignored on a priced card. The home builds it;
+   * the hubs (TASK-388) and the menu's featured card reuse it.
+   */
+  readonly chooser?: boolean;
 }
 
 /** Where a card's own example label is displayed (`ProductCardProps.provenance`). */
@@ -139,8 +150,12 @@ export function ProductCard({
   lead = false,
   priorityAt,
   qualifierBelow = false,
+  chooser = false,
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
+  const shop = useTranslations("shop");
+  // The chooser form applies to a priceless card only: a priced card is already in a country.
+  const asks = chooser && !hasCardPrice(card);
   // Motion 6 moves a card that links to its page and is not the priority card (AC-44): the LCP
   // photograph and its ancestors carry no transition, no shadow layer and no line.
   const moving = card.href !== undefined && !priority;
@@ -231,11 +246,11 @@ export function ProductCard({
       <Display
         as={headingLevel}
         size="lg"
-        className={
+        className={`${asks ? "mt-[9px] md:mt-[12px]" : "mt-[10px] md:mt-[14px]"} ${
           moving
-            ? `mt-[10px] md:mt-[14px] ${CARD_MOTION_HEADING}`
-            : "mt-[10px] decoration-1 underline-offset-[5px] group-hover:underline md:mt-[14px]"
-        }
+            ? CARD_MOTION_HEADING
+            : "decoration-1 underline-offset-[5px] group-hover:underline"
+        }`}
       >
         <bdi>{card.name}</bdi>
         {moving ? <CardMotionLine /> : null}
@@ -250,6 +265,22 @@ export function ProductCard({
           qualifier={catalog("price.inclusive")}
           {...(qualifierBelow ? { qualifierBelow: true } : {})}
         />
+      ) : asks ? (
+        <>
+          {/* The reserved price box, with no price in it (the founder's "b", 2026-10-24). */}
+          <p
+            className="text-ink-muted m-0 mt-[5px] text-sm leading-[1.35]"
+            data-fo-card-ask=""
+          >
+            {shop("price.choose")}
+          </p>
+          <p
+            className="text-link m-0 mt-[6px] inline-flex items-center gap-[6px] self-start text-sm font-bold underline decoration-[1.5px] underline-offset-4 after:inline-block after:no-underline after:content-['→']"
+            data-fo-card-cta=""
+          >
+            {shop("cta.chooseCountry")}
+          </p>
+        </>
       ) : null}
     </>
   );
@@ -290,6 +321,8 @@ export function ProductCard({
         <a
           className="group flex flex-col"
           href={card.href}
+          // The chooser is `noindex` and robots-disallowed; every link to it says so (AC-76).
+          {...(asks ? { rel: CHOOSER_LINK_REL } : {})}
           // Motion 6 (spec 004 §14 A-founder-2026-10-19e; TASK-277): the card lifts 4 px and its
           // photograph zooms 6 % inside its clipped box on a fine pointer's hover (`globals.css`).
           {...(moving ? CARD_MOTION_ATTRIBUTE : {})}

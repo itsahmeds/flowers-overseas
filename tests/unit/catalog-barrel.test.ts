@@ -401,6 +401,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "isShopCountry",
         "normaliseCountryInput",
         "resolveCountryInput",
+        // spec 004 §14 A-founder-2026-10-24a item 4 (TASK-386, TASK-387): the home's model and
+        // the dedupe rule (AC-98).
+        "dedupeSection",
+        "homeView",
       ].sort(),
     );
   });
@@ -419,6 +423,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       // The one country order: `sortWeight`, then collation (item 13; TASK-381).
       `${moduleDir}/country-order.ts`,
       `${moduleDir}/flags.ts`,
+      // The locale home's model, products first (spec 004 §14 A-founder-2026-10-24a item 4).
+      `${moduleDir}/home.ts`,
       `${moduleDir}/index.ts`,
       // What a basket line shows about its bouquet (spec 010 item 6; TASK-349).
       `${moduleDir}/line-display.ts`,

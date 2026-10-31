@@ -648,10 +648,11 @@
     "signoff": "Z miłością, skądkolwiek jesteś."
   },
   "home": {
+    "comingUp": {
+      "more": "and {count} more"
+    },
     "dates": {
-      "eyebrow": "Coming up in Poland",
-      "heading": "Dates worth <em>sending for</em>",
-      "orderBy": "Order by {date}, {time}"
+      "heading": "Dates worth <em>sending for</em>"
     },
     "destinations": {
       "body": "Otwieramy kraje jeden po drugim i tylko wtedy, gdy możemy obiecać te same kwiaty i tę samą troskę.",
@@ -722,7 +723,6 @@
       "who": "{who, select, mum {mojej mamy} dad {mojego taty} grandma {mojej babci} grandad {mojego dziadka} friend {przyjaciela lub przyjaciółki} someoneILove {ukochanej osoby} other {mojej drugiej połówki}}"
     },
     "trending": {
-      "basis": "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",
       "heading": "Popularne <em>wybory</em>"
     }
   },
@@ -818,6 +818,10 @@
       "label": "Prices shown in {currency}"
     },
     "forFlorists": "For florists",
+    "mega": {
+      "byPrice": "By price",
+      "comingUp": "Coming up"
+    },
     "menu": {
       "label": "Menu"
     },
@@ -1006,6 +1010,9 @@
       "noMatch": "We could not find “{query}”.",
       "remember": "We will remember this country on this device. Change it any time under Sending to."
     },
+    "cta": {
+      "chooseCountry": "Choose where to send"
+    },
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
       "corridorLink": "Read the {country} guide",
@@ -1049,6 +1056,14 @@
       "previous": "Previous",
       "titleSuffix": "{title} · Page {page}"
     },
+    "price": {
+      "bandWord": {
+        "high": "Higher prices",
+        "low": "Lower prices",
+        "mid": "Middle prices"
+      },
+      "choose": "Choose a country to see the price"
+    },
     "root": {
       "dateColumn": "Date",
       "demoNotice": "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
@@ -1068,6 +1083,7 @@
       "tilesHeading": "By what it is",
       "tilesSubheading": "Narrow it down"
     },
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}",
     "sort": {
       "default": "Our order",
       "priceAsc": "Price: low to high",
@@ -1076,6 +1092,7 @@
     "toolbar": {
       "count": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}}",
       "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
+      "howWeSort": "How we sort",
       "reorderLabel": "Change the order",
       "sortLabel": "Sort by",
       "submit": "Sort",

@@ -7,7 +7,6 @@ import { setRequestLocale } from "next-intl/server";
 
 import { devUiEnabled } from "@/lib/env.schema";
 import { isLocaleCode } from "@/config/locales";
-import { DEMO_DESTINATION_ISO2 } from "@/config/site-links";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
   AddonPriceList,
@@ -45,7 +44,6 @@ import {
   HomeFaq,
   HomeHero,
   HowItWorks,
-  OccasionDates,
   OccasionTiles,
   Label,
   ListingEmpty,
@@ -68,7 +66,6 @@ import {
   ProofRow,
   Placeholder,
   ReviewsSection,
-  TrendingRow,
   TrustStrip,
   footerView,
   type FooterView,
@@ -92,9 +89,8 @@ import { CheckoutGallery } from "./checkout.tsx";
 
 import {
   GALLERY_DESTINATIONS_PUBLISHED,
+  GALLERY_HOME_PICKER,
   GALLERY_REVIEWS,
-  GALLERY_TRENDING_EMPTY,
-  GALLERY_TRENDING_RANKED,
 } from "./gated";
 import {
   BODY_SAMPLES,
@@ -825,10 +821,8 @@ export default function DevComponentsPage(): ReactElement {
                     key="hero"
                     locale={galleryLocale}
                     priority={false}
-                    // The live home's state: the demo destination's shop exists, so its option
-                    // is the selected one. With no shop countries every option is "not yet" and
-                    // the select draws blank (baseline run 37171984787).
-                    shopCountries={[DEMO_DESTINATION_ISO2]}
+                    picker={GALLERY_HOME_PICKER}
+                    notOpen
                   />,
                 ],
                 ["proof", <ProofRow headingLevel="h3" key="proof" />],
@@ -848,14 +842,6 @@ export default function DevComponentsPage(): ReactElement {
           <Stack gap="lg">
             {(
               [
-                [
-                  "dates",
-                  <OccasionDates
-                    headingLevel="h3"
-                    key="dates"
-                    locale={galleryLocale}
-                  />,
-                ],
                 [
                   "occasions",
                   <OccasionTiles
@@ -950,32 +936,6 @@ export default function DevComponentsPage(): ReactElement {
           <Stack gap="lg">
             {(
               [
-                [
-                  "trendingPicks",
-                  <TrendingRow
-                    headingLevel="h3"
-                    key="trending-picks"
-                    locale={galleryLocale}
-                  />,
-                ],
-                [
-                  "trendingOrders",
-                  <TrendingRow
-                    headingLevel="h3"
-                    key="trending-orders"
-                    locale={galleryLocale}
-                    provider={GALLERY_TRENDING_RANKED}
-                  />,
-                ],
-                [
-                  "trendingEmpty",
-                  <TrendingRow
-                    headingLevel="h3"
-                    key="trending-empty"
-                    locale={galleryLocale}
-                    provider={GALLERY_TRENDING_EMPTY}
-                  />,
-                ],
                 [
                   "reviewsEmpty",
                   <ReviewsSection

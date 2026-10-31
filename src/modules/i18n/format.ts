@@ -632,8 +632,12 @@ export function formatRelativeTime(
   );
 }
 
-/** `conjunction` = "a, b and c"; `disjunction` = "a, b or c" (`plan/03` §7 "Lists"). */
-export type ListType = "conjunction" | "disjunction";
+/**
+ * `conjunction` = "a, b and c"; `disjunction` = "a, b or c" (`plan/03` §7 "Lists"); `unit` = "a, b"
+ * with no final word, for a list a message continues (the home's "France, Germany and 4 more",
+ * spec 004 §14 A-founder-2026-10-24a item 4.6).
+ */
+export type ListType = "conjunction" | "disjunction" | "unit";
 
 export function formatList(
   items: readonly string[],

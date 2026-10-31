@@ -45,8 +45,6 @@ import {
 } from "../../src/modules/catalog";
 import { CountryCategoryPage } from "../../src/modules/catalog/ui/CountryCategoryPage.tsx";
 import { formatMoney, loadMessages } from "../../src/modules/i18n";
-import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
-import { trendingProviderOf } from "../../src/modules/ui/home/trending-provider.ts";
 import {
   committedMediaManifest,
   setMediaManifest,
@@ -320,21 +318,9 @@ describe("the product page's related row: photographs first, before the six are 
   });
 });
 
-describe("the home's product row: photographs first (AC-13)", () => {
-  it("puts a pick whose photograph does not resolve after the ones that do, each group in order", () => {
-    const provider = trendingProviderOf([
-      { id: "gone-1", name: "Missing One", assetId: "fo-no-such-asset-hero" },
-      { id: "amber", name: "Amber Hour", assetId: "fo-bq-001-hero" },
-      { id: "gone-2", name: "Missing Two", assetId: "fo-no-such-asset-hero" },
-      { id: "baltic", name: "Baltic Dawn", assetId: "fo-bq-002-hero" },
-    ]);
-    const html = render(<TrendingRow locale="en" provider={provider} />, "en");
-    const order = [...html.matchAll(/data-fo-trending-pick="([^"]+)"/gu)].map(
-      (match) => match[1],
-    );
-    expect(order).toEqual(["amber", "baltic", "gone-1", "gone-2"]);
-  });
-});
+// The home's product row left with TrendingRow (spec 004 §14 A-founder-2026-10-24a item 4.3;
+// TASK-386): "Our selection" is the core range in "Our order", the founder's rank, so no
+// photograph partition applies to it (spec 045 §2.5 supersedes spec 043 AC-13 there).
 
 describe("the placeholder box: no words, aria-hidden, the card keeps its name and price (AC-14)", () => {
   it("on /en/poland/flowers/plants", async () => {
