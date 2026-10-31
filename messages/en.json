@@ -1081,5 +1081,28 @@
       "notDeliveredRefunding": "We could not deliver this order. We are refunding {amount} to your original payment method.",
       "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}."
     }
+  },
+  "floristAuth": {
+    "title": "Sign in to see your orders",
+    "email": "Email",
+    "submit": "Send me a link",
+    "sentTitle": "Check your email",
+    "sentBody": "If this address belongs to one of our florists, we have sent a link to it. The link works once, for one hour.",
+    "confirmSubmit": "Continue to your orders",
+    "expiredBody": "This link has expired or was already used. Ask for a new one."
+  },
+  "floristInbox": {
+    "homeLabel": "Flowers Overseas, your orders",
+    "orders": "Orders",
+    "demoNotice": "<b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.",
+    "menu": "Menu",
+    "language": "Language",
+    "signOut": "Sign out"
+  },
+  "emails": {
+    "floristSignIn": {
+      "subject": "Your link to sign in to Flowers Overseas",
+      "body": "Open your orders: {link}. The link works once, for one hour. If you did not ask for it, you can ignore this email."
+    }
   }
 }

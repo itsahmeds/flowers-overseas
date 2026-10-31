@@ -200,15 +200,15 @@ describe("purpose and spec extraction", () => {
 });
 
 describe("the compact index the generator writes (TASK-275)", () => {
-  it("cuts purposes at 56 characters and names two test files per entry", () => {
-    expect(PURPOSE_LIMIT).toBe(56);
+  it("cuts purposes at 48 characters and names two test files per entry", () => {
+    expect(PURPOSE_LIMIT).toBe(48);
     expect(TESTS_LISTED).toBe(2);
   });
 
   it("cuts a long purpose at a word inside the limit and marks the cut", () => {
     const long = `${"word ".repeat(20)}end`;
     const cut = truncate(long);
-    expect(cut).toBe(`${"word ".repeat(11).trimEnd()}…`);
+    expect(cut).toBe(`${"word ".repeat(9).trimEnd()}…`);
     expect(cut.length).toBeLessThanOrEqual(PURPOSE_LIMIT + 1);
     expect(truncate("short enough")).toBe("short enough");
   });

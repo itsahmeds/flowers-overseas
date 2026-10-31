@@ -118,6 +118,16 @@ const CHECKOUT_SUBTREES = [
 /**
  * Keys that no page an indexer reads can show. Add the entry in the PR that adds the keys.
  */
+/**
+ * Spec 011 (TASK-212): the florist surface under `FLORIST_BASE_PATH` (`noindex`, `no-store`, 404 in
+ * production) and the florist sign-in email, which renders on no page at all.
+ */
+const FLORIST_PATHS = [
+  "src/app/demo/vendor-inbox/**",
+  "src/modules/partners/**",
+  "src/lib/auth/florist.ts",
+];
+
 const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   ...CHECKOUT_SUBTREES.map((subtree) => ({
     match: `checkout.${subtree}.*`,
@@ -147,6 +157,9 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     surface: "orderConfirmation",
     paths: PAYMENTS_PATHS,
   },
+  { match: "floristAuth", surface: "florist", paths: FLORIST_PATHS },
+  { match: "floristInbox", surface: "florist", paths: FLORIST_PATHS },
+  { match: "emails.floristSignIn.*", surface: "email", paths: FLORIST_PATHS },
 ];
 
 export const NON_INDEXABLE_SCOPE: readonly ScopeEntry[] = Object.freeze(
