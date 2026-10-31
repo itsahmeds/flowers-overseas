@@ -45,4 +45,8 @@ export {
   offerWindow,
   routingDeadline,
 } from "./windows";
-export type { FirstOfferInput, OfferWindow, RoutingDestination } from "./windows";
+export type {
+  FirstOfferInput,
+  OfferWindow,
+  RoutingDestination,
+} from "./windows";

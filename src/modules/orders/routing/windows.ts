@@ -104,7 +104,11 @@ export function offerWindow(
   const offersFrom = minuteOfDay(ROUTING_WINDOWS.offersFromLocal);
   const dayStarts = minuteOfDay(ROUTING_WINDOWS.dayStartsLocal);
 
-  const capped = (offerAt: Date, slaEnd: Date, sameDay: boolean): OfferWindow => {
+  const capped = (
+    offerAt: Date,
+    slaEnd: Date,
+    sameDay: boolean,
+  ): OfferWindow => {
     const slaEndsAt = earliest(slaEnd, deadline);
     if (slaEndsAt.getTime() <= offerAt.getTime()) {
       return { kind: "deadline_passed", deadline };
@@ -179,11 +183,7 @@ export function graceEnd(
   const notBefore = plusMinutes(exhaustedAt, NO_PARTNER_GRACE.minimumMinutes);
   const morning = minuteOfDay(NO_PARTNER_GRACE.morningLocal);
   let candidate = instantAt(localDate, morning, zone);
-  for (
-    let day = 1;
-    candidate.getTime() < notBefore.getTime();
-    day += 1
-  ) {
+  for (let day = 1; candidate.getTime() < notBefore.getTime(); day += 1) {
     candidate = instantAt(addDays(localDate, day), morning, zone);
   }
   return earliest(candidate, deadline);
