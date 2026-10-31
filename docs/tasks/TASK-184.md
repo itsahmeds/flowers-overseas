@@ -34,6 +34,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   what CI cannot judge, and say so in `
 - 2026-10-31: run 40193614044 on d0ed55e9 was red in e2e only: `links.spec` read the footer legal row by `aria-label="Legal"`, which de/pl name in their own language; `product-page.spec` still pinned no guarantee link in de/pl. Both fixed in the specs (efb4e213), rebased on main c0d6b6f2c (map regenerated), unit i18n and product-page tests green, unreviewed share en 4.56 % and en-gb 4.74 % (no record-approval script). ci:full re-fired.
 - 2026-11-01: the 10-31 run showed the de/pl legal row now read but expected the English `cancellation` leaf; `links.spec` restates the localized leaf (`widerruf`, `odstapienie-od-umowy`). Rebased on main 790ea4d4.
+- 2026-11-01: rebased on main fc74ec5d (basket link in the header). Conflicts: the pinned review queue (both entries kept, sorted), the `links.spec` href count (basket + every-locale trust pages: `8 + 1 + 5 + 1 + siblings + 6`), and seven linux PNGs. Refreshed from `visual-baselines` run 41241456992: the twelve PR-owned PNGs whose render changed (ar-XB, de, footer-de-*, home-de/pl-*, info-*-first), manifest hashes taken from that run. With the basket keys on main, en-gb's unreviewed share is 29/571 = 5.08 % (noindex) until the founder runs `.claude/state/record-approval-184.py` (one key, `infoPages.status.untranslated`; `--check` passes); then 28/571 = 4.90 %.
 
 ## Result`.
 - **Class:** not review-only (i18n tooling that decides indexability, the crawl). `/review` and
