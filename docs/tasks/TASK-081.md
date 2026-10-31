@@ -21,12 +21,21 @@ Branch `task/TASK-081-seed-imagery-docs-records`. Spec 006 §13's 2026-09-09 res
 
 ## Carry-forwards
 
-_None recorded._
+- **From self-review (2026-10-25), for TASK-294 (spec 012b's catalogue cutover):** spec 012b §2.0 item 2 makes `next build` read the database through `DATABASE_BUILD_URL` and fail when it is unreachable (T-04). Once TASK-294 selects the database providers, AC-1's "`pnpm build` succeeds with no network" stops holding by design: the build will need its database (it still never reads `DATABASE_URL`). The later approved spec supersedes this clause; TASK-294 should say so in spec 006 §14 when it lands. Today nothing selects the database providers (`src/modules/geo/db/registry.ts` header), and the build below passed offline.
+- **Founder action, unchanged by this task:** the Cloudflare DPA (RoPA "DPAs still to be filed") is still not accepted; the media bucket now holds the product imagery, which is not personal data, so the row is accurate but the DPA must land before the first backup or delivery photograph.
 
 ## Escalations
 
 _None recorded._
 
+## Progress
+
+- 2026-10-25: worktree on `origin/main`, row `in_progress`, audit of what TASK-072…080 and TASK-138 already shipped against AC-1, AC-28 and AC-29.
+- 2026-10-25: seed-catalogue runbook, imagery record counted, RoPA statement and row 8, architecture §2/§3/§4, `check:no-db` gaps closed, T-01 and T-29 tests, offline build run in the build slot; draft PR #435.
+- 2026-10-25 (stop for the night): CI run 40191274793 on `ab1a4d7` green except Lighthouse LCP 2029/2038 ms (noise band, diff touches no page); failed job re-run once (attempt 2). Left: read attempt 2; if green, merge-ready.
+- 2026-10-31: rebased on `origin/main` (c0d6b6f2c, TASK-337); `docs/codebase-map.md` regenerated, not hand-merged; CI re-fired on the new head.
+- 2026-11-01: main moved (790ea4d48, TASK-380); rebased again, map regenerated; `gates:cheap` PASS on `d5303dbfa` (10 files, 227 tests).
+
 ## Result
 
-_Pending._
+PR [#435](https://github.com/itsahmeds/flowers-overseas/pull/435). Most of spec 006's Phase-0 documents already existed (README's four scripts, the imagery runbook, the style guide, both generator terms records); this task closed what was missing. **AC-1:** `check:no-db` now covers the two spec 006 files it missed (`seed/watermark.ts`, `scripts/imagery-prompts-remaining.ts`); `tests/unit/seed-no-db-seam.test.ts` (10 cases) fails any spec 006 file that is neither scanned nor named outside the seam with a reason (`seed/index.ts`, `seed/plan.ts`, `scripts/media-upload.ts`), runs `seed:check` and `media:variants --check` with every `DATABASE_*` key removed and sockets, DNS and `fetch` refused (with live controls), and pins the unit job's and container build's no-database configuration. `pnpm build` was run once in the build slot (2026-10-25, load average about 8) with `DATABASE_URL`, `DATABASE_URL_UNPOOLED` and `DATABASE_BUILD_URL` unset and every non-loopback connection refused: exit 0, 3 438 static pages, the FX step fell back to the committed snapshot (`"reason":"network"`). Taken because no CI job runs that exact configuration (the `build` job has a database and the `container` job only runs when the container contract changes). **AC-28:** `docs/runbooks/seed-catalogue.md` (new, indexed); `docs/runbooks/imagery.md` §3 now counts the 2026-09-18 run: 27 delivered, 1 rejected (`fo-fn-001-hero`, easel; the file kept under `.local/imagery/rejected/`), 5 regenerated, 31 approved, 0 retouched, and records FO-FN-001's hero as the one product taken end to end (T-28); §6 adds the R2 storage probe note beside TASK-029. **AC-29:** RoPA "Spec 006: no personal data" statement, conditional row 8, and the Cloudflare DPA cell corrected; `docs/architecture.md` §2 (`content/imagery/`, `public/media/`, `.local/`, `seed/` ownership), §3 (`ui/media` is spec 006's), §4 (the committed-bytes row brought up to date: 10 hero files, 315 662 B). `tests/unit/seed-imagery-docs.test.ts` (13 cases).
