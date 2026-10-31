@@ -26,7 +26,12 @@ import {
   listProductPages,
   listingPages,
 } from "@/modules/catalog";
-import { hubView, listCorridorPages } from "@/modules/geo";
+import {
+  type PickerState,
+  hubView,
+  listCorridorPages,
+  pickerState,
+} from "@/modules/geo";
 import { localePath, routableLocaleCodes } from "@/modules/i18n";
 import { absoluteUrl, deploymentDescriptor } from "@/modules/seo";
 
@@ -142,62 +147,105 @@ export const SITEMAP_CACHE_TAG = "sitemap";
  */
 const UNRESOLVED_TAGS: readonly string[] = [SITEMAP_CACHE_TAG];
 
-/**
- * The destination whose `catalog` entity `tag` is, or `undefined`. Compared against spec 005's
- * `cacheTagsFor()` — the one builder of `catalog:{iso2}` — for every configured destination, so
- * this file never parses or spells a catalogue tag itself.
- */
-function catalogDestinationOf(tag: string): CountryIso2 | undefined {
-  for (const iso2 of COUNTRY_CODES) {
-    if (!isCountryIso2(iso2)) continue;
-    const tags = cacheTagsFor(
-      CacheEntitySchema.parse({ kind: "catalog", countryIso: iso2 }),
-    );
-    if (tags.includes(tag)) return iso2;
-  }
-  return undefined;
+/** `catalog:{iso2}`, spelled by spec 005's `cacheTagsFor()`, its only builder. */
+function catalogTag(iso2: CountryIso2): string {
+  const [tag] = cacheTagsFor(
+    CacheEntitySchema.parse({ kind: "catalog", countryIso: iso2 }),
+  );
+  if (tag === undefined) throw new Error(`no catalogue tag for ${iso2}`);
+  return tag;
 }
 
 /**
- * The documents carrying `catalog:{iso2}` (spec 012 §2.4, §5.4; TASK-220): every country shop
- * listing (spec 008 §5.4: the shop root, the country categories and occasions) and every product
- * page (spec 009 §5.4) of that destination, in every locale — read from the catalogue's own
- * existence sets, `listingPages()` and `listProductPages()`, which `generateStaticParams`, the
- * sitemaps and the crawl read too. Only the `catalog:{iso2}` tag is declared on them here: their
- * other tags (`product:{sku}`, `catalog:{iso2}:{locale}`) are spec 012b's to resolve (§15.10), and
- * resolve to nothing until then, exactly as before.
+ * Every catalogue document with the tags it declares (spec 008 §5.4, spec 009 §5.4, §14 A10;
+ * spec 012 §2.4; TASK-220, TASK-128): every country shop listing (the shop root, the country
+ * categories and occasions) with `catalog:{iso2}` and `catalog:{iso2}:{locale}`, and every product
+ * page with `productCachePolicy()`'s tags for its destination's picker state, read from the
+ * catalogue's own existence sets, `listingPages()` and `listProductPages()`, which
+ * `generateStaticParams`, the sitemaps and the crawl read too. Listings first, then products, each
+ * in registry order.
  *
- * Asynchronous because the catalogue reads its dataset through a provider; only a catalogue tag
- * pays for it, so the corridor, hub and home tags resolve as they always did.
+ * Asynchronous because the catalogue reads its dataset through a provider; only a tag no
+ * home, hub or corridor document carries pays for it (`pathsForTag()`).
  */
-async function catalogDocuments(iso2: CountryIso2): Promise<TaggedDocument[]> {
-  const tags = cacheTagsFor(
-    CacheEntitySchema.parse({ kind: "catalog", countryIso: iso2 }),
-  );
-  const listings = (await listingPages()).filter(
-    (page) => page.countryIso === iso2,
-  );
-  const products = (await listProductPages()).filter(
-    (page) => page.countryIso === iso2,
-  );
-  return [...listings, ...products].map((page) => ({ path: page.path, tags }));
+async function catalogueDocuments(): Promise<TaggedDocument[]> {
+  // A destination-less hub carries no destination's tag (`listingPages()` lists it beside them).
+  const listings = (await listingPages()).flatMap((page) => {
+    const iso2 = page.countryIso;
+    if (iso2 === undefined) return [];
+    return [
+      {
+        path: page.path,
+        tags: [catalogTag(iso2), localeCatalogCacheTag(iso2, page.locale)],
+      },
+    ];
+  });
+  const states = new Map<CountryIso2, PickerState>();
+  const products = (await listProductPages()).flatMap((page) => {
+    const iso2 = page.countryIso;
+    if (!isCountryIso2(iso2)) return [];
+    const state = states.get(iso2) ?? pickerState(iso2);
+    states.set(iso2, state);
+    return [
+      {
+        path: page.path,
+        tags: productCachePolicy({
+          state,
+          countryIso: iso2,
+          locale: page.locale,
+          sku: page.sku,
+        }).tags,
+      },
+    ];
+  });
+  return [...listings, ...products];
 }
 
 /**
  * The site-relative paths of every document carrying `tag`, de-duplicated, in registry order.
  * The origin half of `invalidate()` revalidates exactly these; `urlsForTag()` is the same set made
- * absolute for the edge.
+ * absolute for the edge. The home, hub and corridor documents are asked first; a tag none of them
+ * carries is looked up on the catalogue's documents (`catalog:{iso2}`, `catalog:{iso2}:{locale}`,
+ * `product:{sku}`, `cutoff:{iso2}`).
  */
 export async function pathsForTag(tag: string): Promise<string[]> {
   if (UNRESOLVED_TAGS.includes(tag)) return [];
-  const iso2 = catalogDestinationOf(tag);
-  const documents =
-    iso2 === undefined ? taggedDocuments() : await catalogDocuments(iso2);
-  const paths = new Set<string>();
-  for (const document of documents) {
-    if (document.tags.includes(tag)) paths.add(document.path);
+  const carrying = (documents: readonly TaggedDocument[]): string[] => [
+    ...new Set(
+      documents
+        .filter((document) => document.tags.includes(tag))
+        .map((document) => document.path),
+    ),
+  ];
+  const site = carrying(taggedDocuments());
+  if (site.length > 0 || !isCatalogueTag(tag)) return site;
+  return carrying(await catalogueDocuments());
+}
+
+/**
+ * Whether `tag` is one the catalogue's documents can carry, decided by the builders themselves
+ * rather than by spelling a prefix: a destination's `catalog:{iso2}`, its `catalog:{iso2}:{…}` and
+ * its `cutoff:{iso2}`, or a `product:{sku}` that `cacheTagsFor()` rebuilds from its own suffix.
+ * Cheap, so a corridor, hub or home tag that no document carries never enumerates the catalogue.
+ */
+function isCatalogueTag(tag: string): boolean {
+  for (const code of COUNTRY_CODES) {
+    if (!isCountryIso2(code)) continue;
+    const catalog = catalogTag(code);
+    if (
+      tag === catalog ||
+      tag.startsWith(`${catalog}:`) ||
+      tag === cutoffCacheTag(code)
+    ) {
+      return true;
+    }
   }
-  return [...paths];
+  const sku = tag.slice(tag.indexOf(":") + 1);
+  const entity = CacheEntitySchema.safeParse({
+    kind: "product",
+    productId: sku,
+  });
+  return entity.success && cacheTagsFor(entity.data).includes(tag);
 }
 
 /**
@@ -205,7 +253,9 @@ export async function pathsForTag(tag: string): Promise<string[]> {
  * §5.4: "a pure `urlsForTag(tag)` built from the same registries the pages are generated from").
  * Computed, never fetched. A tag no document carries resolves to `[]`, which the adapter reports
  * by name; tags are compared exactly as the builders spell them. `catalog:{iso2}` is learned here
- * (spec 012 §2.4, TASK-220), which is why this answers a promise.
+ * (spec 012 §2.4, TASK-220), which is why this answers a promise; the product page's tags,
+ * `product:{sku}`, `catalog:{iso2}:{locale}` and `cutoff:{iso2}`, with spec 009 §14 A10
+ * (TASK-128).
  */
 export async function urlsForTag(
   tag: string,
@@ -399,4 +449,73 @@ export function corridorCacheTags(
  */
 export function hubCacheTags(locale: string): readonly string[] {
   return [`hub:${locale}`, SITEMAP_CACHE_TAG];
+}
+
+/**
+ * `catalog:{iso2}:{locale}`: one destination's catalogue pages in one locale, the listings (spec
+ * 008 §5.4) and the product pages (spec 009 §5.4). Built on `cacheTagsFor()`'s spelling of
+ * `catalog:{iso2}`, so the two cannot drift.
+ */
+export function localeCatalogCacheTag(
+  iso2: CountryIso2,
+  locale: string,
+): string {
+  return `${catalogTag(iso2)}:${locale}`;
+}
+
+/**
+ * `cutoff:{iso2}`: a **live** destination's product pages (spec 009 §2 "No relative day labels",
+ * §5.4). A later scheduled job purges it at the destination's midnight and at its cutoff minute,
+ * so a cached page never offers a date that has closed; that job, and the route's own 300 s, are
+ * the task that takes the first country live (A10).
+ */
+export function cutoffCacheTag(iso2: CountryIso2): string {
+  return `cutoff:${iso2}`;
+}
+
+/** The product page's ISR window while nothing can be bought (`plan/01` §3: "product 1 h"). */
+export const PRODUCT_REVALIDATE_SECONDS = 3600;
+
+/** The window of a **live** product page (spec 009 §5.4): its dates and cutoff move by the hour. */
+export const LIVE_PRODUCT_REVALIDATE_SECONDS = 300;
+
+/** One product page's caching: its ISR window and the tags its document declares. */
+export interface ProductCachePolicy {
+  readonly revalidate: number;
+  readonly tags: readonly string[];
+}
+
+/**
+ * **The product page's cache policy, a pure function of its picker state** (spec 009 §5.4, AC-24,
+ * §14 A10 "Cache policy per picker state"; memo E-2; TASK-128).
+ *
+ *  - `unavailable` and `preview`: `revalidate` 3600 and §5.4's tags, `product:{sku}`,
+ *    `catalog:{iso2}`, `catalog:{iso2}:{locale}` and `sitemap`;
+ *  - `live`: `revalidate` 300 and the same tags plus `cutoff:{iso2}`.
+ *
+ * AC-24's "(300 when live)" is this policy's output. The product route itself exports the
+ * literal 3600, which is this policy's answer for every Phase 0 destination (no country is live),
+ * and Phase 0 attaches no tag to a cache entry (`corridorCacheTags()` says why); `urlsForTag()`
+ * reads these tags, so a purge reaches the pages that declare them.
+ */
+export function productCachePolicy(page: {
+  readonly state: PickerState;
+  readonly countryIso: CountryIso2;
+  readonly locale: string;
+  readonly sku: string;
+}): ProductCachePolicy {
+  const tags = [
+    ...cacheTagsFor(
+      CacheEntitySchema.parse({ kind: "product", productId: page.sku }),
+    ),
+    catalogTag(page.countryIso),
+    localeCatalogCacheTag(page.countryIso, page.locale),
+    SITEMAP_CACHE_TAG,
+  ];
+  return page.state === "live"
+    ? {
+        revalidate: LIVE_PRODUCT_REVALIDATE_SECONDS,
+        tags: [...tags, cutoffCacheTag(page.countryIso)],
+      }
+    : { revalidate: PRODUCT_REVALIDATE_SECONDS, tags };
 }

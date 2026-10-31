@@ -47,7 +47,7 @@
  * One rule per (locale, key), because a `has` key is matched literally.
  */
 import { FACET_PARAMETERS } from "../config/catalogue/schemas.ts";
-import { LOCALES } from "../config/locales";
+import { LOCALES } from "../config/locales.ts";
 import { QUERY_KEYS } from "../config/url-keys.ts";
 
 import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
