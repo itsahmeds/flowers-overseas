@@ -42,6 +42,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-24: built the dependency-free layer in PR 398 (stacked on PR 307): the four permissions (T-01), `ORDER_ACTION_AVAILABILITY` and `availableActions` over the 26 statuses, the action schemas and result codes, the AC-8 source scan (T-09); 20 mutations each went red. Next, once TASK-258/261/327 merge: the migration `0027_admin_order_actions` + down, `runOrderAction`, `orderActionHistory`, request 1.
+- 2026-10-31: finisher L: the 10-25 e2e reds were the Sunday-chip tests (not this PR's; same two failed on PR 326 that hour). Re-run on 60e3ed40: all green but lighthouse, home LCP only (2003 to 2055 ms on /en-gb and /pl; rerun 2016 /en-gb, 2032 /de), pages this diff does not touch. Rebased onto main 790ea4d4 and re-fired.
 
 ## Result
 
