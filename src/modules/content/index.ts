@@ -15,6 +15,7 @@ export {
   type ContactView,
   type CompanyBlockView,
   type DestinationRowView,
+  type GuideLinkView,
   type InfoCrumbView,
   type InfoLinkView,
   type InfoPageOptions,
@@ -24,6 +25,7 @@ export {
   infoPageAlternatePaths,
   infoPageExists,
   infoPageForLeaf,
+  infoPageForPath,
   infoPageForSegment,
   infoPagePath,
   infoPageView,
@@ -31,6 +33,7 @@ export {
   missingInfoPageLinkIds,
   parsedInfoFiles,
   trustContent,
+  withoutEmphasis,
 } from "./pages.ts";
 export {
   type InfoParseIssue,
@@ -53,8 +56,10 @@ export {
   LegalDocumentSchema,
   SEO_DESCRIPTION_MAX,
   SEO_TITLE_MAX,
+  type FloristLabels,
   type HonestyAllow,
   type InfoPageContent,
+  type InfoSectionScreen,
   type LegalDocument,
 } from "./schemas.ts";
 export {

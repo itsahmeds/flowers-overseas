@@ -156,10 +156,16 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     .filter(([, policy]) => policy === "never")
     .map(([pageType]) => pageType as SeoPageType);
 
-  it("keeps the dev gallery and the basket permanently out of the index, and only them", () => {
+  it("keeps the dev gallery, the basket and spec 011's application pages permanently out of the index, and only them", () => {
     // `/` was the other one until spec 003 §14 A16 made it a 308 with no document. The basket is
-    // spec 010 §14 A-founder-2026-10-22 item 12's transactional page (AC-72; TASK-349).
-    expect(never).toEqual(["devGallery", "basket"]);
+    // spec 010 §14 A-founder-2026-10-22 item 12's transactional page (AC-72; TASK-349). Spec 011 §6
+    // (TASK-210): the application and its sent page are `noindex,follow` in every combination.
+    expect(never).toEqual([
+      "devGallery",
+      "basket",
+      "florist-apply",
+      "florist-apply-sent",
+    ]);
   });
 
   it("answers `noindex,follow` for a never-indexable page type in all sixteen cases", () => {
@@ -209,6 +215,12 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       privacy: "byRule",
       cookies: "byRule",
       cancellation: "byRule",
+      // spec 011 §6 (TASK-210): the landing and the walkthrough by rule; the application and its
+      // sent page "always `noindex,follow`, rendered, linked and crawlable, never in a sitemap".
+      "for-florists": "byRule",
+      "how-orders-work": "byRule",
+      "florist-apply": "never",
+      "florist-apply-sent": "never",
     });
   });
 });

@@ -355,8 +355,13 @@ describe("AC-7: a fixture flip of `guidePublished` moves the sitemap row", () =>
         expect(xml).not.toContain(countrySlug(OFF, locale));
 
         // `static.xml` is unmoved: the hub is still announced, so this is a row leaving a
-        // sitemap and not a sitemap collapsing.
-        expect(flipped.staticSitemapEntries(locale, INDEXING)).toHaveLength(1);
+        // sitemap and not a sitemap collapsing. The reviewed florists walkthrough (spec 011,
+        // TASK-210) is the file's other English row and does not depend on the flag.
+        expect(
+          flipped
+            .staticSitemapEntries(locale, INDEXING)
+            .filter((row) => !row.loc.includes("/for-florists/")),
+        ).toHaveLength(1);
       }
     } finally {
       vi.doUnmock("../../src/config/countries.ts");
@@ -387,6 +392,10 @@ describe("static.xml is the page-type list applied (AC-13, AC-14)", () => {
     privacy: (locale) => `${ORIGIN}/${locale}/legal/privacy`,
     cookies: (locale) => `${ORIGIN}/${locale}/legal/cookies`,
     cancellation: (locale) => `${ORIGIN}/${locale}/legal/cancellation`,
+    // Spec 011 §6 (TASK-210): the florists' landing and walkthrough, by the same rule.
+    "for-florists": (locale) => `${ORIGIN}/${locale}/for-florists`,
+    "how-orders-work": (locale) =>
+      `${ORIGIN}/${locale}/for-florists/how-orders-work`,
   };
 
   /**

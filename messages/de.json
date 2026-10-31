@@ -610,6 +610,28 @@
     },
     "submit": "Continue"
   },
+  "floristInbox": {
+    "accept": "Annehmen",
+    "address": "Adresse",
+    "answerBy": "Antworten bis {time}",
+    "cardMessage": "Kartentext zum Ausdrucken",
+    "decline": "Ablehnen",
+    "deliveryDate": "Liefertag",
+    "deliveryNote": "Hinweis zur Zustellung",
+    "forDate": "Für {date}",
+    "orders": "Aufträge",
+    "outForDelivery": "Unterwegs zur Zustellung",
+    "photo": {
+      "choose": "Foto des zugestellten Straußes aufnehmen oder auswählen",
+      "send": "Foto senden"
+    },
+    "recipient": "Empfänger",
+    "stage": {
+      "inProgress": "In Arbeit",
+      "waiting": "Wartet auf Ihre Antwort"
+    },
+    "youReceive": "Sie erhalten <strong>{payout}</strong>"
+  },
   "footer": {
     "cookieSettings": "Cookie-Einstellungen",
     "group": {
@@ -643,6 +665,107 @@
       "submit": "Remind me"
     },
     "signoff": "Mit Liebe, von wo auch immer Sie sind."
+  },
+  "forFlorists": {
+    "apply": {
+      "crumb": "Bewerben",
+      "error": {
+        "area": "Bitte sagen Sie uns, wohin Sie liefern.",
+        "capacity": "Bitte geben Sie eine ganze Zahl von 1 bis 500 ein.",
+        "contactName": "Bitte nennen Sie uns Ihren Namen.",
+        "country": "Bitte wählen Sie ein Land.",
+        "email": "Bitte geben Sie eine E-Mail-Adresse wie name@example.com ein.",
+        "phone": "Bitte geben Sie eine Telefonnummer ein, unter der wir Sie erreichen.",
+        "shopName": "Bitte nennen Sie uns den Namen Ihres Geschäfts.",
+        "town": "Bitte nennen Sie uns Ihren Ort.",
+        "website": "Bitte geben Sie eine vollständige Webadresse ein, die mit https:// beginnt."
+      },
+      "errorSummary": "Bitte prüfen Sie diese Angaben",
+      "failed": "Wir konnten Ihre Bewerbung nicht senden. Ihre Angaben sind noch hier. Versuchen Sie es erneut, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+      "field": {
+        "area": {
+          "help": "Stadtteile, Postleitzahlen oder eine Entfernung von Ihrem Geschäft",
+          "label": "Wohin Sie liefern"
+        },
+        "capacity": {
+          "help": "Eine ehrliche Zahl. Wir schicken Ihnen lieber weniger, und jeder Auftrag wird zugestellt.",
+          "label": "Aufträge pro Tag, die Sie übernehmen könnten"
+        },
+        "contactBy": {
+          "email": "E-Mail",
+          "label": "Wie sollen wir Sie kontaktieren?",
+          "phone": "Telefon",
+          "whatsapp": "WhatsApp"
+        },
+        "contactName": {
+          "label": "Ihr Name"
+        },
+        "country": {
+          "choose": "Land wählen",
+          "label": "Land"
+        },
+        "email": {
+          "label": "E-Mail"
+        },
+        "language": {
+          "de": "Deutsch",
+          "en": "English",
+          "label": "Sprache",
+          "pl": "Polski"
+        },
+        "phone": {
+          "help": "Die Nummer, die wir anrufen und an die wir Aufträge schicken",
+          "label": "Telefon oder WhatsApp"
+        },
+        "registration": {
+          "help": "NIP, KRS, Handelsregister oder das Gegenstück in Ihrem Land",
+          "label": "Registernummer"
+        },
+        "shopName": {
+          "help": "So wie er an Ihrem Geschäft steht",
+          "label": "Name Ihres Geschäfts"
+        },
+        "town": {
+          "label": "Ort"
+        },
+        "website": {
+          "label": "Instagram oder Website"
+        },
+        "weekends": {
+          "label": "Liefern Sie am Wochenende?",
+          "no": "Nein",
+          "sometimes": "Manchmal",
+          "yes": "Ja"
+        }
+      },
+      "formOff": "Rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}, dann besprechen wir alles mit Ihnen. Wir hören lieber von Ihnen selbst, wie Ihr Geschäft arbeitet.",
+      "h1": "Bewerben Sie sich bei uns",
+      "honeypot": "Dieses Feld leer lassen",
+      "intro": "Erzählen Sie uns von Ihrem Geschäft. Es dauert ein paar Minuten, und nach Bankdaten fragen wir nicht.",
+      "next": {
+        "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn sie Ja lautet, rufen wir Sie an, vereinbaren, was Sie pro Strauß erhalten, und schicken Ihnen einen Testauftrag vor dem ersten echten. Sie fangen an, wenn wir uns beide einig sind, nicht weil Sie dieses Formular geschickt haben.",
+        "heading": "Wie es weitergeht"
+      },
+      "notice": {
+        "body": "Wir nutzen diese Angaben, um Ihre Bewerbung zu prüfen und Sie wegen einer Zusammenarbeit zu kontaktieren. Rechtsgrundlage sind Schritte, um die Sie vor einem Vertrag gebeten haben (DSGVO Art. 6 Abs. 1 lit. b). Wir bewahren sie 12 Monate nach unserem letzten Kontakt auf und löschen sie dann, es sei denn, wir beginnen eine Zusammenarbeit. Gespeichert werden sie bei unseren Anbietern für Hosting, Datenbank und E-Mail, darunter US-Unternehmen, die unter den EU-Garantien für Datenübermittlungen arbeiten. Wir verkaufen sie nicht und zeigen sie keinem Käufer. Um sie einzusehen, zu berichtigen oder zu löschen, rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+        "controller": "Diese Website wird von {name} betrieben. Bei Fragen zu Ihren personenbezogenen Daten rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+        "heading": "Was wir mit Ihren Angaben tun",
+        "privacyLink": "Unsere Datenschutzerklärung"
+      },
+      "optional": "optional",
+      "submit": "Bewerbung senden",
+      "title": "Bewerben Sie sich bei uns | Für Floristen",
+      "tooMany": "Gerade kommen zu viele Bewerbungen auf einmal an. Bitte versuchen Sie es gleich noch einmal, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}."
+    },
+    "sent": {
+      "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn Sie früher sprechen möchten, rufen Sie uns an oder schreiben Sie uns unter <phone>{phoneDisplay}</phone>.",
+      "h1": "Danke. Wir haben Ihre Bewerbung.",
+      "title": "Danke | Für Floristen",
+      "walkthrough": "So kommt ein Auftrag zu Ihnen"
+    },
+    "status": {
+      "choosingFirst": "Wir nehmen noch keine Bestellungen an."
+    }
   },
   "home": {
     "dates": {
@@ -749,7 +872,8 @@
       "version": "Version {version}"
     },
     "status": {
-      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
+      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open.",
+      "untranslated": "Diese Übersetzung wurde noch nicht geprüft. Weicht sie von der englischen Fassung ab, gilt die englische Fassung."
     }
   },
   "languagePopup": {

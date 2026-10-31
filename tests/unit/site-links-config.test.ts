@@ -187,6 +187,8 @@ describe("src/config/site-links.ts", () => {
       "locale-home",
       // Spec 010 §14 A-founder-2026-10-22 D10 (TASK-349): `/{locale}/basket` answers 200.
       "basket",
+      // Spec 011 §12 (TASK-210): the for-florists landing exists in all four locales.
+      "for-florists",
       "destinations",
       "occasions",
       // Spec 041's four trust links (TASK-182).
@@ -233,7 +235,8 @@ describe("src/config/site-links.ts", () => {
       "category-row-destinations",
     ]);
     expect(isPublished("locale-home")).toBe(true);
-    expect(isPublished("for-florists")).toBe(false);
+    // Spec 011 published the florists' landing (TASK-210).
+    expect(isPublished("for-florists")).toBe(true);
   });
 
   it("names the five ids spec 007 reserved, and publishes every one of them (AC-20)", () => {

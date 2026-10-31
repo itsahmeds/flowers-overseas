@@ -610,6 +610,28 @@
     },
     "submit": "Continue"
   },
+  "floristInbox": {
+    "accept": "Przyjmij",
+    "address": "Adres",
+    "answerBy": "Odpowiedz do {time}",
+    "cardMessage": "Treść bileciku do wydruku",
+    "decline": "Odrzuć",
+    "deliveryDate": "Data dostawy",
+    "deliveryNote": "Uwagi do dostawy",
+    "forDate": "Na {date}",
+    "orders": "Zamówienia",
+    "outForDelivery": "W drodze do odbiorcy",
+    "photo": {
+      "choose": "Zrób lub wybierz zdjęcie dostarczonego bukietu",
+      "send": "Wyślij zdjęcie"
+    },
+    "recipient": "Odbiorca",
+    "stage": {
+      "inProgress": "W realizacji",
+      "waiting": "Czeka na Twoją odpowiedź"
+    },
+    "youReceive": "Otrzymujesz <strong>{payout}</strong>"
+  },
   "footer": {
     "cookieSettings": "Ustawienia plików cookie",
     "group": {
@@ -643,6 +665,107 @@
       "submit": "Remind me"
     },
     "signoff": "Z miłością, skądkolwiek jesteś."
+  },
+  "forFlorists": {
+    "apply": {
+      "crumb": "Zgłoszenie",
+      "error": {
+        "area": "Napisz, gdzie dostarczasz.",
+        "capacity": "Wpisz liczbę całkowitą od 1 do 500.",
+        "contactName": "Podaj swoje imię i nazwisko.",
+        "country": "Wybierz kraj.",
+        "email": "Wpisz adres e-mail w rodzaju imie@example.com.",
+        "phone": "Wpisz numer telefonu, pod który możemy zadzwonić.",
+        "shopName": "Podaj nazwę swojej kwiaciarni.",
+        "town": "Podaj swoją miejscowość.",
+        "website": "Wpisz pełny adres strony zaczynający się od https://."
+      },
+      "errorSummary": "Sprawdź te odpowiedzi",
+      "failed": "Nie udało się wysłać zgłoszenia. Twoje odpowiedzi są nadal tutaj. Spróbuj ponownie albo zadzwoń lub napisz do nas pod numer {phoneDisplay}.",
+      "field": {
+        "area": {
+          "help": "Dzielnice, kody pocztowe albo odległość od kwiaciarni",
+          "label": "Gdzie dostarczasz"
+        },
+        "capacity": {
+          "help": "Szczera liczba. Wolimy wysłać Ci mniej i mieć pewność, że każde zostanie dostarczone.",
+          "label": "Ile zamówień dziennie możesz przyjąć"
+        },
+        "contactBy": {
+          "email": "E-mail",
+          "label": "Jak mamy się z Tobą kontaktować?",
+          "phone": "Telefon",
+          "whatsapp": "WhatsApp"
+        },
+        "contactName": {
+          "label": "Imię i nazwisko"
+        },
+        "country": {
+          "choose": "Wybierz kraj",
+          "label": "Kraj"
+        },
+        "email": {
+          "label": "E-mail"
+        },
+        "language": {
+          "de": "Deutsch",
+          "en": "English",
+          "label": "Język",
+          "pl": "Polski"
+        },
+        "phone": {
+          "help": "Numer, pod który dzwonimy i wysyłamy zamówienia",
+          "label": "Telefon lub WhatsApp"
+        },
+        "registration": {
+          "help": "NIP, KRS, Handelsregister albo odpowiednik w Twoim kraju",
+          "label": "Numer rejestrowy"
+        },
+        "shopName": {
+          "help": "Tak jak na szyldzie",
+          "label": "Nazwa kwiaciarni"
+        },
+        "town": {
+          "label": "Miejscowość"
+        },
+        "website": {
+          "label": "Instagram lub strona internetowa"
+        },
+        "weekends": {
+          "label": "Czy dostarczasz w weekendy?",
+          "no": "Nie",
+          "sometimes": "Czasami",
+          "yes": "Tak"
+        }
+      },
+      "formOff": "Zadzwoń albo napisz do nas pod numer {phoneDisplay}, a wszystko z Tobą omówimy. Wolimy usłyszeć o Twojej kwiaciarni od Ciebie.",
+      "h1": "Zgłoś się do współpracy",
+      "honeypot": "Zostaw to pole puste",
+      "intro": "Opowiedz nam o swojej kwiaciarni. To zajmie kilka minut i nie pytamy o konto bankowe.",
+      "next": {
+        "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli tak, dzwonimy do Ciebie, ustalamy, ile otrzymujesz za każdy bukiet, i wysyłamy zamówienie testowe przed prawdziwym. Zaczynasz, gdy oboje się zgodzimy, a nie dlatego, że wysłałeś ten formularz.",
+        "heading": "Co dalej"
+      },
+      "notice": {
+        "body": "Używamy tych danych, aby rozpatrzyć Twoje zgłoszenie i skontaktować się w sprawie współpracy. Podstawą prawną są działania podjęte na Twoje żądanie przed zawarciem umowy (RODO art. 6 ust. 1 lit. b). Przechowujemy je przez 12 miesięcy od naszego ostatniego kontaktu, a potem usuwamy, chyba że zaczniemy współpracę. Przechowują je nasi dostawcy hostingu, bazy danych i poczty e-mail, w tym firmy z USA działające w ramach unijnych zabezpieczeń przekazywania danych. Nie sprzedajemy ich i nie pokazujemy ich kupującym. Aby je zobaczyć, poprawić lub usunąć, zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
+        "controller": "Tę stronę prowadzi {name}. W sprawie Twoich danych osobowych zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
+        "heading": "Co robimy z Twoimi danymi",
+        "privacyLink": "Nasza polityka prywatności"
+      },
+      "optional": "opcjonalnie",
+      "submit": "Wyślij zgłoszenie",
+      "title": "Zgłoś się do współpracy | Dla kwiaciarni",
+      "tooMany": "W tej chwili przychodzi zbyt wiele zgłoszeń naraz. Spróbuj ponownie za chwilę albo zadzwoń lub napisz do nas pod numer {phoneDisplay}."
+    },
+    "sent": {
+      "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli chcesz porozmawiać wcześniej, zadzwoń albo napisz do nas pod numer <phone>{phoneDisplay}</phone>.",
+      "h1": "Dziękujemy. Mamy Twoje zgłoszenie.",
+      "title": "Dziękujemy | Dla kwiaciarni",
+      "walkthrough": "Zobacz, jak przychodzi zamówienie"
+    },
+    "status": {
+      "choosingFirst": "Nie przyjmujemy jeszcze zamówień."
+    }
   },
   "home": {
     "dates": {
@@ -749,7 +872,8 @@
       "version": "Version {version}"
     },
     "status": {
-      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
+      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open.",
+      "untranslated": "To tłumaczenie nie zostało jeszcze sprawdzone. Jeśli różni się od wersji angielskiej, obowiązuje wersja angielska."
     }
   },
   "languagePopup": {

@@ -183,6 +183,9 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
       // locale each: the template is the same in `en`, and the occasion hub already measures both.
       "/en-gb/flowers/roses",
       "/en-gb/occasions",
+      // Spec 011 AC-35 (TASK-210): the florists' landing in English and in its Polish draft.
+      "/en/for-florists",
+      "/pl/dla-kwiaciarni",
     ]);
   });
 
