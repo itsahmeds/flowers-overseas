@@ -54,6 +54,19 @@ const LEGAL_ROW_NAME: Readonly<
 };
 
 /**
+ * The withdrawal and refunds page's leaf slug below the legal segment, per launch locale,
+ * restated from `src/config/info-pages.ts` (spec 041 §6): de and pl name it in their own language.
+ */
+const WITHDRAWAL_LEAF: Readonly<
+  Record<(typeof LAUNCH_LOCALES)[number], string>
+> = {
+  en: "cancellation",
+  "en-gb": "cancellation",
+  de: "widerruf",
+  pl: "odstapienie-od-umowy",
+};
+
+/**
  * The locales the chrome offers (spec 004 §14 A-founder-2026-10-14e: AC-14's crawl reads "the
  * shown locales plus `/`"), and the launch locales reached by URL only. Both are crawled: `/de`
  * and `/pl` keep AC-14's link rule on their own pages.
@@ -312,7 +325,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         );
       expect(legal).toEqual([
         localePath(locale, "legal", "cookies"),
-        localePath(locale, "legal", "cancellation"),
+        localePath(locale, "legal", WITHDRAWAL_LEAF[locale]),
       ]);
 
       // The trending row: five cards, five product pages.
