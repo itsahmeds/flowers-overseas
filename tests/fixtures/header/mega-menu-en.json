@@ -252,6 +252,12 @@
             },
             {
               "kind": "link",
+              "id": "recipient:partner",
+              "labelKey": "nav.mega.recipient.partner",
+              "href": "/en/occasions/love-and-romance"
+            },
+            {
+              "kind": "link",
               "id": "recipient:newParents",
               "labelKey": "nav.mega.recipient.newParents",
               "href": "/en/occasions/new-baby"

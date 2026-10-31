@@ -232,6 +232,12 @@
             },
             {
               "kind": "link",
+              "id": "recipient:partner",
+              "labelKey": "nav.mega.recipient.partner",
+              "href": "/en-gb/germany/flowers/romantic-flowers"
+            },
+            {
+              "kind": "link",
               "id": "recipient:newParents",
               "labelKey": "nav.mega.recipient.newParents",
               "href": "/en-gb/germany/flowers/new-baby-flowers"

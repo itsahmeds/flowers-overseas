@@ -3563,5 +3563,10 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "a2feaa6a63a393f179a03353b1f1379faebd8e98148cf8f326142ad0a85e1ab3"
+  },
+  "nav.mega.recipient.partner": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "497077858312e0d5cb804ff5ccb3e771adfe0e51c7f0f964d091dc788443c3be"
   }
 }
