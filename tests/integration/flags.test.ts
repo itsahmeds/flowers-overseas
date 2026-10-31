@@ -43,7 +43,7 @@ describe.skipIf(server.url === undefined)(
       });
     }
 
-    it("reads the seven registered flags as migrations 0009, 0021 and 0029 seed them, and nothing else", async () => {
+    it("reads the nine registered flags as migrations 0009, 0021, 0029 and 0030 seed them, and nothing else", async () => {
       const snapshot = await snapshotAs("system");
       expect(
         [...snapshot.flags].sort((a, b) => a.key.localeCompare(b.key)),
@@ -53,11 +53,14 @@ describe.skipIf(server.url === undefined)(
         { key: "checkout.demo_guard", enabledDefault: true },
         { key: "checkout.open", enabledDefault: false },
         { key: "invoice.issue", enabledDefault: false },
+        // Spec 016 (`0030`, TASK-327): the two rollback switches, on.
+        { key: "notifications.email", enabledDefault: true },
         // Spec 013 (TASK-257) registers it; 0009 seeded it off.
         { key: "payments.stripe", enabledDefault: false },
         // Spec 022a (`0029`, TASK-368): the two review switches, off.
         { key: "reviews.invite", enabledDefault: false },
         { key: "reviews.trustpilot", enabledDefault: false },
+        { key: "routing.auto", enabledDefault: true },
       ]);
       expect(
         [...snapshot.scopes].sort((a, b) => a.flagKey.localeCompare(b.flagKey)),

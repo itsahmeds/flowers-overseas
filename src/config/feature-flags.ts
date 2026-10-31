@@ -35,6 +35,11 @@
  * Spec 022a (TASK-368, migration `0029_reviews_close`) adds `reviews.invite` and
  * `reviews.trustpilot`, global and high-risk.
  *
+ * Spec 016 (TASK-327, migration `0030_routing_notifications`) adds its two rollback switches, both
+ * on by default and high-risk: `routing.auto` (country scope: off sends a destination's paid
+ * orders to the founder instead of to florists) and `notifications.email` (global: off holds every
+ * email, never drops one).
+ *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
 import { z } from "zod";
@@ -184,6 +189,25 @@ const REGISTRY = [
     scopeKinds: ["global"],
     description:
       "The review email carries Trustpilot's automatic feedback BCC (spec 022a §13 Q2). Turn on only after the Trustpilot DPA is filed and TRUSTPILOT_AFS_ADDRESS is set. Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
+  // Spec 016 §5.1, §12 (migration `0030_routing_notifications`, TASK-327): the two rollback
+  // switches, both on by default and high-risk. Neither dirties a page: routing and email run on
+  // the worker and no cached page shows either.
+  {
+    key: "routing.auto",
+    scopeKinds: ["country"],
+    description:
+      "Paid orders to a destination are offered to florists automatically (spec 016). Off: each paid order there goes to the founder at once and is cancelled and refunded at its grace end if nobody acts. Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
+  {
+    key: "notifications.email",
+    scopeKinds: ["global"],
+    description:
+      "Order emails are sent (spec 016). Off: every email waits, held and never dropped, until it is on again. Admin only; type the key to confirm.",
     risk: "high",
     dirties: [],
   },
