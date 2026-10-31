@@ -52,6 +52,7 @@ here.
 - 2026-10-25: `record-approval-386.py` written and run with `--check` only; rows `in_review`.
 - 2026-10-25: Linux baselines for the 14 home section shots from visual-baselines run 40162080984 (phone H1 kept on one line on Linux with a `7.95vw` ceiling, header unstuck in the shots); full-page home, header utility and popup shots left for after the copy record (they carry the BETA mark).
 - 2026-10-25: rebased onto TASK-385's new head 64a21f639 (after PR 412). CI run 40169726272 showed two failures of this PR's own: the robots grep (spec 009 AC-16) refused the `"nofollow"` literals on the home and card chooser links, now `CHOOSER_LINK_REL` from `modules/seo`; and `i18n:draft`'s determinism test, because `pl` (and `de`) were not in drafted key order, now rewritten by the CLI (same content). Commit dbd4f29ef.
+- 2026-11-01 (finisher F2): rebased onto PR 423's head caee97a7a (en.json, en.meta.json, the review-queue test and links.spec merged with main's basket keys; the header link count is 8 + Basket + core range + See all + lockup + siblings). visual-baselines run 41242858724 shows the BETA mark on en and en-gb: the en share is 5.12 % because `nav.mega.byPrice`, `nav.mega.comingUp` (recorded on PR 422) and `shop.toolbar.howWeSort` (recorded on PR 415) are unreviewed here. Baselines not committed: merge 422 (and 415) first, rebase, then one more baselines run.
 
 ## Result
 
