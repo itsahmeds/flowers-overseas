@@ -12,6 +12,9 @@
  *    makes that locale unreviewed (AC-12).
  *  - `media_asset` — one photo, referenced by and hashed as its `checksum_sha256`: a photo is its
  *    bytes, so the reference is the same in every database the ledger is replayed into.
+ *  - `blog_post_revision` (spec 044 §2.4, migration `0024_blog`, TASK-321) — one revision of a
+ *    blog post, referenced by the revision id, in the post's locale. Its hash covers the ten
+ *    fields the approver saw (`blogRevisionHash`); an approval freezes the revision.
  *
  * `productCopyHash` is the TypeScript twin of `public.review_product_copy_hash()` (migration
  * `0023`): the same canonical text — a version tag, then each field as `|~` (absent) or
@@ -30,6 +33,7 @@ import { z } from "zod";
 export const SLICE_A_SUBJECT_KINDS = [
   "product_translation",
   "media_asset",
+  "blog_post_revision",
 ] as const;
 export type SubjectKind = (typeof SLICE_A_SUBJECT_KINDS)[number];
 
@@ -63,12 +67,19 @@ export const SubjectSchema = z.discriminatedUnion("kind", [
     })
     .strict(),
   z.object({ kind: z.literal("media_asset"), ref: HashSchema }).strict(),
+  z
+    .object({
+      kind: z.literal("blog_post_revision"),
+      ref: z.uuid(),
+      locale: LocaleSchema,
+    })
+    .strict(),
 ]);
 export type Subject = z.infer<typeof SubjectSchema>;
 
 /** The subject's locale, or `null` for a photo. */
 export function subjectLocale(subject: Subject): string | null {
-  return subject.kind === "product_translation" ? subject.locale : null;
+  return subject.kind === "media_asset" ? null : subject.locale;
 }
 
 /** A stable map key for a subject. */
@@ -128,7 +139,8 @@ export const LedgerEntrySchema = z
     (entry) =>
       (entry.subjectKind === "media_asset") === (entry.localeCode === null),
     {
-      message: "a photo has no locale; product copy has one",
+      message:
+        "a photo has no locale; product copy and a blog revision have one",
       path: ["localeCode"],
     },
   );
@@ -146,13 +158,17 @@ export type AttestationsFile = z.infer<typeof AttestationsFileSchema>;
 
 /** The subject of a ledger entry. */
 export function entrySubject(entry: LedgerEntry): Subject {
-  return entry.subjectKind === "media_asset"
-    ? { kind: "media_asset", ref: entry.subjectRef }
-    : {
-        kind: "product_translation",
-        ref: entry.subjectRef,
-        locale: entry.localeCode ?? "",
-      };
+  return subjectOf(entry.subjectKind, entry.subjectRef, entry.localeCode);
+}
+
+/** A subject from a ledger row's three columns. */
+export function subjectOf(
+  kind: SubjectKind,
+  ref: string,
+  locale: string | null,
+): Subject {
+  if (kind === "media_asset") return { kind, ref };
+  return { kind, ref, locale: locale ?? "" };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -175,10 +191,32 @@ export interface ProductCopyContent {
   readonly alts: readonly AttachedAlt[];
 }
 
+/** One honesty allow entry of a blog revision, as hashed (spec 044 §2.3). */
+export interface HashedAllowEntry {
+  readonly sentence: string;
+  readonly rule: string;
+  readonly reason: string;
+}
+
+/** The ten hashed fields of one blog revision (spec 044 §2.4). */
+export interface BlogRevisionContent {
+  readonly title: string;
+  readonly slug: string;
+  readonly excerpt: string;
+  readonly seoTitle: string;
+  readonly seoDescription: string;
+  readonly bodyMd: string;
+  readonly coverMediaId: string | null;
+  readonly coverAlt: string | null;
+  readonly honestyAllow: readonly HashedAllowEntry[];
+  readonly authorId: string;
+}
+
 /** What a subject's hash is computed from. */
 export type SubjectContent =
   | ({ readonly kind: "product_translation" } & ProductCopyContent)
-  | { readonly kind: "media_asset"; readonly checksum: string };
+  | { readonly kind: "media_asset"; readonly checksum: string }
+  | ({ readonly kind: "blog_post_revision" } & BlogRevisionContent);
 
 const PRODUCT_COPY_TAG = "fo.review.product_translation.v1";
 
@@ -213,9 +251,42 @@ export function productCopyHash(content: ProductCopyContent): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
 }
 
+const BLOG_REVISION_TAG = "fo.review.blog_post_revision.v1";
+
+/**
+ * The blog revision hash: `public.review_blog_revision_hash()`'s twin (migration `0024`). The
+ * version tag, then title, slug, excerpt, SEO title, SEO description, body, cover media id and
+ * cover alt, then `|allows` and one `|a` with the sentence, rule and reason of each allow entry in
+ * list order, then `|author` and the author id; ids as lower-case text.
+ */
+export function blogRevisionHash(content: BlogRevisionContent): string {
+  const allows = content.honestyAllow
+    .map(
+      (entry) =>
+        `|a${part(entry.sentence)}${part(entry.rule)}${part(entry.reason)}`,
+    )
+    .join("");
+  const text =
+    BLOG_REVISION_TAG +
+    part(content.title) +
+    part(content.slug) +
+    part(content.excerpt) +
+    part(content.seoTitle) +
+    part(content.seoDescription) +
+    part(content.bodyMd) +
+    part(content.coverMediaId?.toLowerCase() ?? null) +
+    part(content.coverAlt) +
+    "|allows" +
+    allows +
+    "|author" +
+    part(content.authorId.toLowerCase());
+  return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
 /** The hash of what a subject serves now (§5.2 `subjectHash`). */
 export function subjectHash(content: SubjectContent): string {
   if (content.kind === "media_asset") return HashSchema.parse(content.checksum);
+  if (content.kind === "blog_post_revision") return blogRevisionHash(content);
   return productCopyHash(content);
 }
 
@@ -331,7 +402,7 @@ export const ATTEST_REFUSALS = {
   not_a_reviewer: 403,
   /** The profile's `display_name` is blank: a decision must carry a name. */
   no_display_name: 403,
-  /** Product copy in a locale the user does not hold in `reviewer_locale`. */
+  /** Product copy or a blog revision in a locale the user does not hold in `reviewer_locale`. */
   locale_not_granted: 403,
   /** A photo, and the user's roles lack `media.review`. */
   permission_denied: 403,

@@ -31,11 +31,18 @@ One dated bullet per `/review`, newest last.
 - **From `/plan-tasks` (orchestrator, 2026-10-21):** add `src/modules/content/blog/db/` to `scripts/check-no-db.ts`'s allowed paths in this PR (the database provider lands here and `check:no-db` would go red otherwise); AC-21's check of it is verified again in TASK-325.
 - **From `/plan-tasks` (orchestrator, 2026-10-21):** the `blog_author` table has no numbered public id in slice A. Public author pages at `/en/authors/{number}` and the numbered column are slice B, which has no task row yet; do not add them here.
 
+- **From the implementer (backend-implementer, 2026-10-24), open in this PR:** the seed fixtures (one author, one published and one draft post, `source = 'seed'`, never written by `db:seed --insert-only`) are **not built**. The tables carry `source` and the commands accept an injected `runAdmin`, so the seed can drive `createAuthor`, `createPost`, `attest()` (import channel, which freezes) and `publishPost` through an `executorOf` runner. TASK-322's e2e needs them; build them first there or in a follow-up row.
+- **For TASK-322 (public pages):** existence here is the database half only (`dbBlogProvider`); AND it with spec 012b's manifest (`existsNow`, TASK-295). Tag every `/en` and `/en-gb` blog document with `blog:en` (the post's content locale), because `publishChanges` and `unpublishPost` return exactly `blog:post:{id}`, `blog:{post locale}`, `sitemap` (AC-15). The T-07 built-HTML half (element allow-list inside the article) is the page's. `resolveBlogLink` and `siteBlogLinkTargets` are ready.
+- **For TASK-322 / TASK-323:** after `reassignAuthor` on a live post the byline changes at once while the served revision's approval was for the old author id; per §6 the post should read as not reviewed (noindex) until the new draft is approved and `publishChanges` runs. The page's indexability term should compare the ledger head with `review_subject_hash()`.
+- **For TASK-323 (admin):** `publishPost` reports `firstPublish`; requesting spec 012b's publish run (AC-15) is the action's. Permission checks (`blog.edit`, `blog.publish`, `blog.unpublish`, `blog.authors`) are the actions'. Rule messages live under `admin.blog.rule.*` (`blogRuleMessageKey(id)`), `reviewed: false`.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-24, to the orchestrator (for the founder): AC-6 conflicts with spec 004 §14 A5.** AC-6 says "Flowers for your partner on her name day." saves. It passes `blog/relay` (the `PROSE_RELAY_CONTEXT` refinement works as specified), but §2.3 rule 5 also applies `bannedVoiceWordsIn`, whose list bans "partner" anywhere, and `src/config/voice.ts` allows no new exception without a spec amendment. Implemented as the stricter reading: the sentence is refused with `blog/voice` (not `blog/relay`). The founder either amends the voice rule for blog prose or changes AC-6's example. **open**
+- **2026-10-24, recorded:** migration number is `0024`, not the `0025` the work order named: `db:check` requires contiguous versions and PR 307 adds no migration, so `0024` is the next free one on the stack (PR 383, 384, 326, 320). The brief's `NNNN_catalogue_cms` (TASK-294) has no migration yet; `0024_blog` reads nothing it adds. **closed**
+- **2026-10-24, recorded:** spec §2.2 (advisor fix 2) names `own_name_confirmed_at`, which §5.1 item 1's column list omits. Added the column, the person-only confirmation (`blog_author_guard()`, `app.user_id` must be the author's user), the reset on a display-name change (`blog_author_follow_profile()` on `admin_profile`) and `BLOG_AUTHOR_NAME_UNCONFIRMED` in the publish guard. **closed (spec text followed)**
 
 ## Progress
 
@@ -43,11 +50,13 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: worktree on `task/TASK-321-blog-data`, stacked on PR 320 (TASK-293's `attest()`), rebased onto `origin/main` 5adb1e0b. Migration `0024_blog` + rollback, Drizzle mirror, RLS map, db-check snapshot; `attest()`/`subjectHash()` learn `blog_post_revision`; lint rule guards `published_revision_id` and `frozen_at`; shared distinctness in `src/lib/distinctness.ts`; `PROSE_RELAY_CONTEXT`; competitor list moved to `src/config/competitors.ts`; blog module (schemas, markdown, rules, links, provider, db provider, commands); unit and integration suites green on a local PG16. Seed fixtures not started.
+
+- 2026-10-24 finisher: restacked onto TASK-293's rebased head 0569181b (after PR 383 merged); `auth-adapter.test.ts` now lists 0024's two RESTRICT keys into `users` (`blog_author_user_id_users_id_fk`, `blog_post_revision_created_by_users_id_fk`), which CI reported as unexpected; the whole-tree lint case in `lint-fixtures.test.ts` gets a 300 s bound (26 s locally on this branch and on 293's, 120 s exceeded on a loaded CI unit job). PR 394's base is now `task/TASK-293-review-ledger`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 394](https://github.com/itsahmeds/flowers-overseas/pull/394), stacked on PR 320. Migration `0024_blog` (five tables, the `blog_author_public` view, the hash, freeze, publish-guard and slug-lock triggers plus the draft rehash and the two author triggers, RLS for `app_web` and `app_build`, the audit trigger on all five, the widened ledger check) with a hand-written rollback that keeps blog ledger rows and restores the old check `NOT VALID`. `attest()` freezes an approved revision in its own transaction; `blogRevisionHash()` equals the trigger's hash. Rules `blog/*` (19 hard, 4 soft), the markdown subset, link targets, `dbBlogProvider`, and the commands `createPost`, `saveRevision`, `setTags`, `approveRevision`, `publishPost`, `publishChanges`, `unpublishPost`, `createAuthor`, `confirmOwnName`, `withdrawAuthor`, `reassignAuthor`. Tests: unit `blog-rules` 40, `blog-markdown` 10, `blog-hash` 14, `no-direct-review-write` +2, `rls-policies` +3; integration `blog` 19 (T-01 to T-05, T-17), plus updated pins in `build-role`, `audit-trail`, `migrations-round-trip`, `db-migrate`, `admin-scans`, `i18n-barrel`, `no-db-imports`. Not done: the seed fixtures (carry-forward above). Open: the AC-6 voice-word escalation.
