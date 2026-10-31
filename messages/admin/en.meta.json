@@ -384,6 +384,16 @@
     "reviewed": false,
     "sourceHash": "d820ecd2b46017afdb648120509d19c3fc0cb6910c682714ba3f1c9e08f0caea"
   },
+  "admin.flags.confirmBody.notifications.email.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2c1a6d1dfaba67347547a968b9121370843dd3194f6bd361dd695cc6b3ecfc2a"
+  },
+  "admin.flags.confirmBody.notifications.email.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e915d3d1de848997940f748d42d8fe304fbcf6b59f907a822f77ce1e1c79ff32"
+  },
   "admin.flags.confirmBody.payments.stripe.off": {
     "source": "human",
     "reviewed": false,
@@ -413,6 +423,16 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "c7e51d39a8ba2ea6a6a671814950872f8479889ff00c886d1d3a6292f2b1c6af"
+  },
+  "admin.flags.confirmBody.routing.auto.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8661b3703af0512e620ecd403331ea2d4d7edba5b0d1a85c9b1ab8f7c5adc44d"
+  },
+  "admin.flags.confirmBody.routing.auto.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b8c7443ef4f0fb4208daa111551682c2e67962a2dc229142c67b3754e919e79c"
   },
   "admin.flags.confirmField": {
     "source": "human",
@@ -484,6 +504,11 @@
     "reviewed": false,
     "sourceHash": "d1a12a3aad496e68ffa808bae076ed53603271acef5bc3700e41096fe306cee6"
   },
+  "admin.flags.description.notifications.email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "090d7eaa06dfc7b6276a39ba847e598e2f01ab46aca8212af42cbfab432b6d93"
+  },
   "admin.flags.description.payments.stripe": {
     "source": "human",
     "reviewed": false,
@@ -498,6 +523,11 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "c38762df332c6519b7d39d859c0ce8ff55e5a9029a18e6feb2462ca88af0fae4"
+  },
+  "admin.flags.description.routing.auto": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cd16b17e963856ab502d540c4de6e262a857fe8b207e85034a182e171e402255"
   },
   "admin.flags.lead": {
     "source": "human",

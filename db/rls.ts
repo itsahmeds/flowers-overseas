@@ -283,6 +283,10 @@ export const STAFF_ONLY_TABLES = [
   "invoice_profile",
   "invoice_series",
   "message_catalog",
+  // spec 016 §5.1 (migration `0030_routing_notifications`, TASK-327): what was sent and what
+  // Resend said, and each invoice a B1 carried. No partner, customer or public policy.
+  "notification_delivery",
+  "notification_delivery_invoice",
   "order_event",
   "outbox",
   "outbox_attempt",

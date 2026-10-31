@@ -29,15 +29,20 @@ describe.skipIf(server.url === undefined)(
       await scratch.drop();
     });
 
-    it("§12: only checkout.demo_guard is on; checkout.open has its PL scope row, off", async () => {
+    it("§12: checkout.demo_guard and spec 016's two rollback switches are on; checkout.open has its PL scope row, off", async () => {
       const on = await scratch.sql<{ key: string }[]>`
         SELECT key FROM feature_flag WHERE enabled_default ORDER BY key`;
-      expect(on.map((row) => row.key)).toEqual(["checkout.demo_guard"]);
+      // Spec 016 §5.1 (`0030`, TASK-327): `notifications.email` and `routing.auto`, default on.
+      expect(on.map((row) => row.key)).toEqual([
+        "checkout.demo_guard",
+        "notifications.email",
+        "routing.auto",
+      ]);
       const [count] = await scratch.sql<{ n: number }[]>`
         SELECT count(*)::int AS n FROM feature_flag`;
       // 0009's sixteen, spec 018's two (`NNNN_post_purchase`, TASK-337), both off, and spec 022a's
-      // `reviews.invite` and `reviews.trustpilot` (`0029`).
-      expect(count?.n).toBe(20);
+      // `reviews.invite` and `reviews.trustpilot` (`0029`), and spec 016's two (`0030`).
+      expect(count?.n).toBe(22);
       const scopes = await scratch.sql`
         SELECT flag_key, scope, scope_ref, enabled FROM feature_flag_scope ORDER BY flag_key`;
       expect([...scopes]).toEqual([
