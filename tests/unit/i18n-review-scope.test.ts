@@ -274,6 +274,8 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         paths: [
           ...paths,
           "src/modules/payments/**",
+          "src/app/api/webhooks/**",
+          "src/app/api/internal/payments/**",
           "src/app/api/internal/jobs/**",
         ],
       })),

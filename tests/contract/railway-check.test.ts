@@ -129,17 +129,18 @@ describe("service drift (AC-9, T-10)", () => {
 });
 
 describe("the declared key set (AC-11)", () => {
-  it("is AC-11's 34: the 32 of the env contract plus APP_ENV and NEXT_PUBLIC_APP_ENV", () => {
+  it("is AC-11's 36: the 34 of the env contract plus APP_ENV and NEXT_PUBLIC_APP_ENV", () => {
     // 29 since TASK-200 added QUOTE_SIGNING_SECRET (spec 005 §13 Q5, spec 010 §8); 33 since TASK-217
     // added the sign-in core's AUTH_SECRET, RESEND_API_KEY, EMAIL_FROM and MAILER (spec 012 §2.2);
-    // 34 since TASK-337 added SIGNED_LINK_SECRET (spec 018 §5.2, §12 founder action 1).
-    expect(CONTRACT_VARIABLE_KEYS).toHaveLength(34);
+    // 34 since TASK-337 added SIGNED_LINK_SECRET (spec 018 §5.2, §12 founder action 1); 36 since
+    // TASK-260 added STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (spec 013 §5.2).
+    expect(CONTRACT_VARIABLE_KEYS).toHaveLength(36);
     expect(CONTRACT_VARIABLE_KEYS).toContain("APP_ENV");
     expect(CONTRACT_VARIABLE_KEYS).toContain("NEXT_PUBLIC_APP_ENV");
   });
 
-  it("requires 30 of them: the four Vercel keys are injected, never pasted", () => {
-    expect(REQUIRED_VARIABLE_KEYS).toHaveLength(30);
+  it("requires 32 of them: the four Vercel keys are injected, never pasted", () => {
+    expect(REQUIRED_VARIABLE_KEYS).toHaveLength(32);
     for (const key of PLATFORM_INJECTED_CONTRACT_KEYS) {
       expect(CONTRACT_VARIABLE_KEYS, key).toContain(key);
       expect(REQUIRED_VARIABLE_KEYS, key).not.toContain(key);
@@ -148,7 +149,7 @@ describe("the declared key set (AC-11)", () => {
 });
 
 describe("variable key sets (AC-11, T-11)", () => {
-  it("passes on the 34 contract keys plus the staging access switch", () => {
+  it("passes on the 36 contract keys plus the staging access switch", () => {
     const report = runRailwayCheck({
       declared,
       environmentName: "staging",
@@ -180,9 +181,7 @@ describe("variable key sets (AC-11, T-11)", () => {
       variables: variables("variables-extra-key.json"),
     });
     expect(report.ok).toBe(false);
-    expect(report.lines.join("\n")).toContain(
-      "unexpected key STRIPE_SECRET_KEY",
-    );
+    expect(report.lines.join("\n")).toContain("unexpected key MOLLIE_API_KEY");
   });
 
   it("treats the staging switch as an extra key in production (AC-25: no wall there)", () => {

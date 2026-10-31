@@ -98,6 +98,10 @@ const CHECKOUT_PATHS = [
 const PAYMENTS_PATHS = [
   ...CHECKOUT_PATHS,
   "src/modules/payments/**",
+  // The webhook endpoint and the replay route (TASK-260): POST handlers that answer a status and
+  // counts and render nothing, so no payment key can reach an indexable page through them.
+  "src/app/api/webhooks/**",
+  "src/app/api/internal/payments/**",
   // The minute tick (TASK-258): its job handlers run the production start; it answers counts.
   "src/app/api/internal/jobs/**",
 ];
