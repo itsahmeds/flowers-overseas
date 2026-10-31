@@ -3,9 +3,10 @@
  * TASK-047).
  *
  * The Phase 0 source of truth for the seven destinations the founder-approved design renders in
- * its destinations grid and in the home finder: **PL delivering now**, plus **DE, FR, ES, IT, RO,
- * NL** as guide-and-waiting-list (spec 004 §13 Q12 / `plan/13` A7, and the grid drawn in
- * `docs/design/homepage-v1/homepage-desktop.dc.html`). No database is read here and none may be
+ * its destinations grid and in the home finder: **PL** first, plus **DE, FR, ES, IT, RO, NL**
+ * (spec 004 §13 Q12 / `plan/13` A7, and the grid drawn in
+ * `docs/design/homepage-v1/homepage-desktop.dc.html`). No destination takes orders yet, so every
+ * one of them reads "Ordering opens soon" (spec 007 §14 A-founder-2026-10-14c; TASK-239). No database is read here and none may be
  * (`pnpm check:no-db`, spec 004 AC-2): spec 002 §5.1's `country` table stays the later
  * persistence target and `toCountryRow()` is the projection its seed reads, so the two cannot
  * drift.
@@ -39,9 +40,14 @@
  *    which keeps `CLAUDE.md`'s "no literal user-facing string" rule true for the one registry that
  *    would otherwise carry seven exonyms per locale.
  *
- * `status` is spec 002 §5.1's `country.status` enum verbatim (`demo | live | disabled`). PL is
- * `live` — the state the founder-approved canvas labels "Delivering now" — and the six guide
- * countries are `demo`, which is the state spec 002's seed gives every country it ships.
+ * `status` is spec 002 §5.1's `country.status` enum verbatim (`demo | live | disabled`), and it
+ * **agrees with the pages** (spec 007 §14 A-founder-2026-10-14c clause 5, AC-35; TASK-239): a
+ * destination is `live` if and only if ordering is open there (`deliveryDatesOpen()`), so all
+ * seven are `demo` today, Poland included. It used to be a design label ("Delivering now" on
+ * Poland while no florist was signed); the site test of 2026-10-14 found the label and the pages
+ * contradicting each other. `statusDisagreements()` below is the check, held by a unit test until
+ * spec 012's admin owns the flip. Opening a country stays a data flip: its `operations` block, an
+ * active florist through the partners provider and `status: "live"`, together.
  */
 import { z } from "zod";
 
@@ -155,7 +161,10 @@ export function regionHeadingKey(region: CountryRegion): string {
 export const CountryConfigSchema = z
   .object({
     iso2: Iso2Schema,
-    /** Spec 002 §5.1 `country.status`; `live` is the canvas's "Delivering now" state. */
+    /**
+     * Spec 002 §5.1 `country.status`; `live` only while ordering is open there, i.e. exactly when
+     * `deliveryDatesOpen()` is true (spec 007 §14 A-founder-2026-10-14c clause 5, AC-35).
+     */
     status: z.enum(countryStatuses),
     /** Which group of the all-destinations hub this destination is rendered in (spec 007 §5.3). */
     region: z.enum(countryRegions),
@@ -297,8 +306,9 @@ export const CountryRegistrySchema = z
 
 /**
  * The seven Phase 0 destinations, in the order the canvas's destinations grid draws them
- * (`docs/design/homepage-v1/homepage-desktop.dc.html`): Poland first as the delivering
- * destination, then the six guide countries of spec 004 §13 Q12.
+ * (`docs/design/homepage-v1/homepage-desktop.dc.html`): Poland first, then the six guide
+ * countries of spec 004 §13 Q12. Poland is `demo` with no `citiesKey` (TASK-239): its city line
+ * returns, with its `live` status, the day ordering opens there.
  *
  * Slugs are `plan/02` §4.1/§4.2's forms, ASCII-folded (`rumaenien`, `wlochy`). The Polish
  * `holandia` and German `rumaenien` are the high-intent search forms rather than the formal
@@ -309,9 +319,8 @@ const countries = [
   {
     iso2: "PL",
     region: "centralEurope",
-    status: "live",
+    status: "demo",
     nameKey: "destinations.pl.name",
-    citiesKey: "destinations.pl.cities",
     slugs: { en: "poland", "en-gb": "poland", de: "polen", pl: "polska" },
     sortWeight: 0,
     corridorPagePublished: true,
@@ -488,6 +497,10 @@ export function hasCompleteOperations(iso2: CountryIso2): boolean {
  * body (`status === "live"` and a block) would have turned true for Poland that moment and printed
  * "Order by 14:00 in Warsaw" with no florist behind it. `live` needs a block **and** an active
  * partner, so the promise now returns the day a florist is signed, and not a day earlier.
+ *
+ * **"Ordering is open in a country" means exactly this predicate** (spec 007 §14
+ * A-founder-2026-10-14c clause 1; TASK-239), and `status === "live"` must agree with it
+ * (`statusDisagreements()`, AC-35).
  */
 export function deliveryDatesOpen(iso2: CountryIso2): boolean {
   return pickerState(iso2) === "live";
@@ -509,15 +522,42 @@ export function anyDeliveryDatesOpen(): boolean {
 /**
  * The state message the destinations grid prints for a destination — the canvas's two states, as
  * keys rather than as a branch on a literal in a component: "Delivering now" only where delivery
- * dates are open (`deliveryDatesOpen()`, a signed florist behind it), "Guide · not delivering yet"
- * for everything else. Not `status === "live"`: that is the registry label, true for Poland while
- * no florist is signed, and it printed "Delivering now" on a home where nobody can order (PR 174,
- * the live crawl, 2026-10-04). Same predicate as the rest of the site's "You cannot order yet".
+ * dates are open (`deliveryDatesOpen()`, a signed florist behind it), "Ordering opens soon" for
+ * everything else (spec 007 §14 A-founder-2026-10-14c clause 2; the key keeps its old name,
+ * `guideNotDelivering`, so every surface that prints it moved with one value). Not
+ * `status === "live"`: `status` agrees with this predicate on committed data (AC-35), but a
+ * registry edit that broke the agreement must not print "Delivering now" where nobody can order
+ * (PR 174, the live crawl, 2026-10-04).
  */
 export function destinationStateKey(country: CountryConfig): string {
   return deliveryDatesOpen(country.iso2)
     ? "destinations.state.deliveringNow"
     : "destinations.state.guideNotDelivering";
+}
+
+/**
+ * **`status` agrees with the pages** (spec 007 §14 A-founder-2026-10-14c clause 5, AC-35;
+ * TASK-239): one line per destination whose `status === "live"` differs from "ordering is open
+ * there", naming its ISO code. Empty on committed data. `isOpen` is `deliveryDatesOpen` in every
+ * real call; it is a parameter so the unit test can run the rule over a fixture registry without
+ * mutating this one. Admin enforcement is spec 012's; until then the unit test holds the data.
+ */
+export function statusDisagreements(
+  countries: readonly Pick<CountryConfig, "iso2" | "status">[],
+  isOpen: (iso2: CountryIso2) => boolean,
+): readonly string[] {
+  const problems: string[] = [];
+  for (const country of countries) {
+    const live = country.status === "live";
+    const open = isOpen(country.iso2);
+    if (live === open) continue;
+    problems.push(
+      live
+        ? `\`${country.iso2}\` is \`status: "live"\` while ordering is not open there (deliveryDatesOpen is false): set it to \`demo\`, or open it (operations, an active florist, then \`live\`)`
+        : `\`${country.iso2}\` takes orders (deliveryDatesOpen is true) while its status is \`${country.status}\`: set it to \`live\``,
+    );
+  }
+  return problems;
 }
 
 /**

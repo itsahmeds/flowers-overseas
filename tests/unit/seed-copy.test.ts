@@ -198,6 +198,17 @@ const awaiting243 = (id: string): boolean =>
   id.startsWith("product:") || AWAITING_243_ROWS.has(id);
 
 /** TASK-226: the rows reworded to the founder's relay-copy batches of 2026-10-14 and 2026-10-15. */
+/**
+ * TASK-239 (founder, 2026-10-20, "ok"; `.claude/state/copy-batch-1020.md`): the hub sentences that
+ * promised an order-by cutoff were replaced. These rows, reviewed before, wait unattributed for
+ * the founder's record run. (`category:apology` was already waiting with TASK-243's head copy.)
+ */
+const AWAITING_239: ReadonlySet<string> = new Set([
+  "category:birthday",
+  "occasion:apology",
+  "occasion:easter",
+]);
+
 const AWAITING_226: ReadonlySet<string> = new Set([
   "category:funeral",
   "category:get_well",
@@ -469,6 +480,7 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
     const attested: string[] = [];
     const awaiting: string[] = [];
     const awaitingHead: string[] = [];
+    const awaiting239: string[] = [];
     for (const row of allRows("en")) {
       expect(row.translationStatus).toBe("human");
       expect(row.sourceHash).toBe(copySourceHash(row));
@@ -480,6 +492,12 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
         } else {
           expect(row.reviewedBy, row.key).toBeUndefined();
         }
+        continue;
+      }
+      if (AWAITING_239.has(`${row.entity}:${row.key}`)) {
+        awaiting239.push(`${row.entity}:${row.key}`);
+        expect(row.reviewed, row.key).toBe(false);
+        expect(row.reviewedBy, row.key).toBeUndefined();
         continue;
       }
       if (AWAITING_226.has(`${row.entity}:${row.key}`)) {
@@ -514,6 +532,7 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
       [...AWAITING_226].filter((id) => !awaiting243(id)).sort(),
     );
     expect(awaitingHead).toHaveLength(84 + 10 + 8);
+    expect(awaiting239.sort()).toEqual([...AWAITING_239].sort());
   });
 
   it("stays inside the SEO field limits", () => {

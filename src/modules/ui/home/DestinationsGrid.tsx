@@ -1,10 +1,12 @@
 /**
  * **v2** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.dest-chips`): the intro beside a wrap of
  * chips. Every chip links to its destination's **guide** (plan/02 §11, spec 004 Q11/A2; PR 174
- * review R2); the guide links the shop root. Where a locale has no guide, the featured (`live`)
- * destination's chip links its **shop root** (`shopHref`, from the page) instead. Only a
- * destination taking delivery dates (`deliveryDatesOpen()`) is poppy and says "Delivering now";
- * until a florist is signed, Poland's chip is neutral and says "Guide · not delivering yet". A
+ * review R2); the guide links the shop root. Where a locale has no guide, the featured destination's
+ * (Poland's) chip links its **shop root** (`shopHref`, from the page) instead. Only a
+ * destination taking orders (`deliveryDatesOpen()`) is poppy and says "Delivering now"; every
+ * other chip, Poland's included until a florist is signed, is neutral and says "Ordering opens
+ * soon" (spec 007 §14 A-founder-2026-10-14c clause 2; TASK-239). The state comes from the
+ * provider's `stateKey` and `delivering`, never from `country.status` (AC-33). A
  * destination with neither page is a chip-shaped label with no link (never a dead control, A20).
  * The artboard draws Poland's chip to the shop root: recorded in `docs/design/README.md`.
  *
@@ -19,12 +21,10 @@
  *
  * What the grid draws, from `DestinationStatusProvider` and nothing else:
  *
- *  - **Poland**, spanning the row on mobile as the artboard draws it, with the state word
- *    *Delivering now* and its five cities as text (`destinations.pl.cities`). Only a `live`
- *    destination may name cities — `countries.ts` refuses the combination for anything else, so
- *    naming a town we cannot deliver to is a failed parse rather than a copy review (`plan/10`
- *    §3).
- *  - **The six guide destinations**, each with *Guide · not delivering yet*. The state is a **word, not
+ *  - **Poland** first, the featured destination. Only a `live` destination may name cities, and
+ *    none is live today — `countries.ts` refuses the combination for anything else, so naming a
+ *    town we cannot deliver to is a failed parse rather than a copy review (`plan/10` §3).
+ *  - **Every destination** where ordering is not open says *Ordering opens soon*. The state is a **word, not
  *    a colour** (§5.3), which is also why nothing here carries a status dot.
  *  - **"Somewhere else?"** as the last cell: copy only. A waiting-list email field is a new
  *    personal-data flow and a RoPA row (010/016 own it), and an inert input that collects nothing
@@ -118,7 +118,7 @@ export function DestinationsGrid({
           {destinations.map((destination) => {
             // Every chip leads to its guide (plan/02 §11, spec 004 Q11/A2): the guide is the
             // page that ranks for "send flowers to Poland", and it links the shop root. Only
-            // where a locale has no guide does the featured (`live`) chip go to the shop root.
+            // where a locale has no guide does the featured chip (Poland's) go to the shop root.
             const href =
               destination.href ?? (destination.featured ? shopHref : undefined);
             return (

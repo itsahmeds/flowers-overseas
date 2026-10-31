@@ -116,7 +116,8 @@ export function SentencePicker({
   const shops = new Set(shopCountries);
   const destinations = sentenceDestinations(locale, (key) => t(key), shops);
   const occasions = sentenceOccasions();
-  const firstOpen = destinations.find((destination) => destination.open);
+  // Preselected: the first destination Continue takes to a shop (Poland), as before TASK-239.
+  const firstShop = destinations.find((destination) => destination.shop);
   const defaultWho = SENTENCE_WHO[0];
   const occasionLabel = (occasion: string, pronoun: string): string =>
     t("home.sentence.occasion", { occasion, pronoun });
@@ -146,7 +147,12 @@ export function SentencePicker({
       >
         {t("home.sentence.heading")}
       </Heading>
-      <p className="display text-lg-s m-0 leading-[1.75] md:text-lg">
+      {/* The phone measure is 280 px at every phone width (TASK-239). The not-open mark
+          ("Poland (soon)", spec 007 §14 A-founder-2026-10-14c clause 3) left the 390 px line
+          10 px of slack, so the webfont swap re-broke the sentence on CI's fallback faces and
+          moved the hero (CLS 0.0104 against A21 clause 3's 0.001). At 280 px the sentence breaks
+          as it does at 360, where the swap measures 0 in all four locales. */}
+      <p className="display text-lg-s m-0 leading-[1.75] max-md:[max-inline-size:280px] md:text-lg">
         {t.rich("home.sentence.frame", {
           who: () => (
             <Pick id={SENTENCE_IDS.who}>
@@ -176,14 +182,15 @@ export function SentencePicker({
                 id={SENTENCE_IDS.country}
                 name={SENTENCE_FIELDS.country}
                 className={SELECT}
-                defaultValue={firstOpen?.iso2}
+                defaultValue={firstShop?.iso2}
                 data-fo-sentence-country
               >
+                {/* Every country is selectable; one where ordering is not open says "soon"
+                    beside its name, in words (spec 007 §14 A-founder-2026-10-14c clause 3). */}
                 {destinations.map((destination) => (
                   <option
                     key={destination.iso2}
                     value={destination.iso2}
-                    disabled={!destination.open}
                     data-fo-sentence-destination={destination.iso2}
                   >
                     {destination.open

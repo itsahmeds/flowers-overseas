@@ -123,7 +123,9 @@ describe("the guide state (AC-8, AC-19)", () => {
   });
 
   it("states the blanks in words and claims no cutoff, date, price or city", () => {
-    expect(body).toContain("None yet.");
+    // The "Order by" row is hidden while ordering is not open (founder, 2026-10-20; TASK-239).
+    expect(body).not.toContain("None yet.");
+    expect(body).not.toMatch(/\border by\b/iu);
     expect(body).toContain("no price on this page");
     expect(body).toMatch(/Nowhere in Poland, today/u);
     // No price, no time of day, no "same-day": the guide claims nothing operational. (The

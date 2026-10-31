@@ -2413,7 +2413,8 @@
     "reviewed": true,
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "e67345b62a144e03db9db7c94c201718b369ca703bdeb2bc285a04ab6b7fcfdd"
+    "sourceHash": "e67345b62a144e03db9db7c94c201718b369ca703bdeb2bc285a04ab6b7fcfdd",
+    "retained": true
   },
   "destinations.pl.name": {
     "source": "human",
@@ -2438,10 +2439,8 @@
   },
   "destinations.state.guideNotDelivering": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (decisions-log 2026-09-15, PR 60 design ruling (f))",
-    "reviewedAt": "2026-09-15T00:00:00Z",
-    "sourceHash": "9687cc0b20837784ae1ed2996a99bfd7dcd36d78695d97557cbef4fb58e1f8bf"
+    "reviewed": false,
+    "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "destinationsHub.emptyBody": {
     "source": "human",
@@ -2459,10 +2458,8 @@
   },
   "destinationsHub.intro": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-    "reviewedAt": "2026-10-15T05:41:33Z",
-    "sourceHash": "359d44d09dfeadd1c76b748e58d458f2d01a0cec8418607920fc7dee767a121a"
+    "reviewed": false,
+    "sourceHash": "f886b0aefdff9227ade54619c03c41ec558b60e8e82f077c56ab4c14d4969b37"
   },
   "destinationsHub.noGuide": {
     "source": "human",
@@ -3060,10 +3057,8 @@
   },
   "home.sentence.notYet": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "5c2509052b7380caea5338f54a20cde12d3eec84fc2616dcbca52df28a8f6622"
+    "reviewed": false,
+    "sourceHash": "3d62739fb297609ec1d7dff643dcfcde609fbff7975feb08f0b410a363629a83"
   },
   "home.sentence.occasion": {
     "source": "human",
@@ -3697,10 +3692,8 @@
   },
   "product.demo.heading": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
-    "reviewedAt": "2026-10-03T00:00:00Z",
-    "sourceHash": "7a4118b7ef54d87a36944c940584cce0cf2b677659a01324742828fa853ca9ef"
+    "reviewed": false,
+    "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "product.destination.change": {
     "source": "human",

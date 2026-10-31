@@ -63,9 +63,9 @@ describe("src/config/countries.ts", () => {
     expect([...COUNTRY_CODES]).toEqual([...CANVAS_DESTINATIONS]);
   });
 
-  it("delivers to Poland and treats the other six as guide + not-delivering", () => {
-    expect(countryConfig("PL").status).toBe("live");
-    for (const iso2 of CANVAS_DESTINATIONS.filter((code) => code !== "PL")) {
+  it("is `demo` everywhere, Poland included, while no destination takes orders (spec 007 AC-35)", () => {
+    // TASK-239: `status` agrees with the pages, so Poland is no longer `live` by label.
+    for (const iso2 of CANVAS_DESTINATIONS) {
       expect(countryConfig(iso2).status, iso2).toBe("demo");
     }
   });
@@ -144,12 +144,16 @@ describe("src/config/countries.ts", () => {
         `destinations.${country.iso2.toLowerCase()}.name`,
       );
     }
-    expect(countryConfig("PL").citiesKey).toBe("destinations.pl.cities");
+    // No destination is live, so none names cities (`plan/10` §3); Poland's line returns with
+    // its `live` status (TASK-239). The key stays in the catalogue, `retained`, for that day.
+    for (const country of COUNTRIES) {
+      expect(country.citiesKey, country.iso2).toBeUndefined();
+    }
   });
 
   it("claims delivery in the state word only where delivery dates are open, not on status (PR 174 item 6)", async () => {
-    // Today: Poland is `live` in the registry, but no florist is signed, so nobody can order.
-    expect(countryConfig("PL").status).toBe("live");
+    // Today: no florist is signed, so nobody can order, and Poland is `demo` (TASK-239).
+    expect(countryConfig("PL").status).toBe("demo");
     expect(deliveryDatesOpen("PL")).toBe(false);
     for (const country of COUNTRIES) {
       expect(destinationStateKey(country), country.iso2).toBe(
@@ -332,8 +336,8 @@ describe("Poland's operations block, and the chrome predicate that reads the pic
   });
 
   it("`deliveryDatesOpen` is false for Poland while no florist is signed, block or no block", () => {
-    // The body TASK-120 shipped (`status === "live"` and a block) is true here; the picker is not.
-    expect(countryConfig("PL").status).toBe("live");
+    // Poland keeps its block while `demo` (TASK-239); the picker, not the label, decides.
+    expect(countryConfig("PL").status).toBe("demo");
     expect(hasCompleteOperations("PL")).toBe(true);
     expect(deliveryDatesOpen("PL")).toBe(false);
     expect(anyDeliveryDatesOpen()).toBe(false);
