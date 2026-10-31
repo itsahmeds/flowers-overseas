@@ -143,6 +143,61 @@ export function zonedMinuteOfDay(instant: Date, timeZone: string): number {
   return clock.hour * 60 + clock.minute;
 }
 
+/**
+ * **The instant at which the wall clock in `timeZone` reads `minuteOfDay` on `date`** (spec 016
+ * §5.2 "Routing functions": the night offer at 07:30, the SLA ends at 08:00 and 09:00, the
+ * routing deadline at the cutoff plus 2 hours, the grace end at 10:00; TASK-327).
+ *
+ * The inverse of `clockIn`, answered from ICU's zone data through it and never from a fixed
+ * offset: the local reading is treated as if it were UTC, the zone's offset at that guess is read
+ * back, and the guess is corrected by it; when the correction lands on the other side of a DST
+ * change the second offset is tried. Two edge cases exist and are settled the way a florist would
+ * read the clock:
+ *
+ *  - **a wall time that does not exist** (the spring-forward hour, e.g. 02:30 in Warsaw on
+ *    28 March 2027) is pushed forward by the gap, so 02:30 reads as 03:30 summer time;
+ *  - **a wall time that exists twice** (the fall-back hour, e.g. 02:30 in Warsaw on 25 October
+ *    2026) takes the second, standard-time occurrence.
+ *
+ * `minuteOfDay` may be 1440 or more (the cutoff plus 2 hours of a late cutoff): it is normalised
+ * onto the following calendar day by `Date.UTC`, the same day arithmetic `addDays` uses.
+ */
+export function instantAt(
+  date: IsoDate,
+  minuteOfDay: number,
+  timeZone: string,
+): Date {
+  if (!Number.isInteger(minuteOfDay) || minuteOfDay < 0) {
+    throw new RangeError(
+      `a minute of the day is a non-negative integer, received ${String(minuteOfDay)}`,
+    );
+  }
+  const { year, month, day } = parseIsoDate(date);
+  const wallAsUtc = Date.UTC(year, month - 1, day, 0, minuteOfDay);
+  const offsetAt = (epochMs: number): number => {
+    const clock = clockIn(new Date(epochMs), timeZone);
+    return (
+      Date.UTC(
+        clock.year,
+        clock.month - 1,
+        clock.day,
+        clock.hour,
+        clock.minute,
+        clock.second,
+      ) - epochMs
+    );
+  };
+  const first = offsetAt(wallAsUtc);
+  const guess = wallAsUtc - first;
+  const second = offsetAt(guess);
+  if (second === first) return new Date(guess);
+  const retry = wallAsUtc - second;
+  if (offsetAt(retry) === second) return new Date(retry);
+  // Neither offset maps back onto the wall time: it falls in a spring-forward gap. Move it
+  // forward by the gap, i.e. read it with the offset in force before the change.
+  return new Date(wallAsUtc - Math.min(first, second));
+}
+
 /** Guard for a window length, so a caller cannot ask for a grid of 10 000 days. */
 export function assertDayCount(days: number, max: number): number {
   if (!Number.isInteger(days) || days < 1 || days > max) {

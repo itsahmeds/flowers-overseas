@@ -76,6 +76,8 @@ export type {
   OrderQueueFilterOptions,
   OrderQueueHead,
 } from "./queries";
+// Spec 016 §5.2 (TASK-327): the routing rules, pure.
+export * from "./routing";
 // Spec 018 §5.2 (TASK-337): the tracking token, its resolver and its rotation.
 export {
   RotationChannelSchema,
