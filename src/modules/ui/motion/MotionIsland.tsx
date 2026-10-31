@@ -34,6 +34,10 @@
  *    the summary), marks it `data-fo-closing`: the panel fades and rises out on the transition
  *    `globals.css` gives it, and the `<details>` closes when that transition ends (at once when
  *    nothing runs). `display` never transitions (AC-44), so the open state is held until then.
+ *  - **The header's basket count** (spec 010 §14 A-founder-2026-10-22 D10, AC-71; TASK-349).
+ *    `../basket/basket-count.ts` reads `fo_basket` and fills the Basket link's reserved slot and
+ *    name. It rides in this chunk, which every page already loads after the paint, instead of a
+ *    request of its own.
  *  - **Motion 11 and 12.** `<html data-fo-motion>` first; then only sections and not-yet-loaded
  *    images whose top is at or below the first viewport's foot take their `pending` start state,
  *    and each plays once (`in`). Nothing in the first viewport is ever hidden, and without
@@ -41,9 +45,13 @@
  */
 import { useEffect } from "react";
 
+import { fillBasketCount } from "../basket/basket-count.ts";
+
 export function MotionIsland(): null {
   useEffect(() => {
     const d = document;
+    // The header's basket count (spec 010 D10, AC-71), after the paint like everything here.
+    fillBasketCount(d);
     const root = d.documentElement;
     const here = location;
     const fold = innerHeight;

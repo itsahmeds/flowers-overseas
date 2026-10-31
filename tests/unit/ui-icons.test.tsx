@@ -86,6 +86,12 @@ describe("the icon set (AC-5)", () => {
       resolve(repoRoot, "docs/design/system/components.dc.html"),
       "utf8",
     );
+    // The header's basket icon traces to the chrome boards' "Header icons" (spec 010 §14
+    // A-founder-2026-10-22 D10; TASK-349), which redrew it for the Basket link.
+    const chromeSheet = readFileSync(
+      resolve(repoRoot, "docs/design/wireframes/chrome-desktop.dc.html"),
+      "utf8",
+    );
     const unapproved: string[] = [];
     for (const name of ICON_NAMES) {
       if (MIRRORED_IN_RTL.has(name)) continue;
@@ -97,7 +103,11 @@ describe("the icon set (AC-5)", () => {
         .filter((match) => !["width", "height"].includes(match[1] ?? ""))
         .map((match) => `${match[1] ?? ""}="${match[2] ?? ""}"`);
       expect(geometry.length, name).toBeGreaterThan(0);
-      const source = V2_GRID_ICONS.has(name) ? v2Sheet : canvas;
+      const source = V2_GRID_ICONS.has(name)
+        ? v2Sheet
+        : name === "basket"
+          ? chromeSheet
+          : canvas;
       if (geometry.some((attribute) => !source.includes(attribute))) {
         unapproved.push(name);
       }

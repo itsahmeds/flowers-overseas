@@ -30,6 +30,18 @@ import { type Page, expect, test } from "@playwright/test";
 const PDP = "/en-gb/poland/product/amber-hour";
 const PHONE = { width: 390, height: 844 } as const;
 const BAR = "[data-fo-action-bar]";
+/**
+ * The buy section's primary action, `#buy`'s first child: the status pill where the checkout is
+ * closed, or the checkout entry's two submits (spec 010 AC-5) where the demo or the live checkout
+ * is open, as on the database-less preview, which draws the demo entry for an open country.
+ */
+const PRIMARY = "#buy > :first-child";
+/**
+ * The bar's action. The preview draws the checkout entry for an open country, so the dock holds
+ * the entry's two submits (spec 010 AC-5, `product-mobile.dc.html` "the docked bar with Add to
+ * basket"); this is the step's action at the inline end.
+ */
+const BAR_ACTION = `${BAR} button[value="checkout"]`;
 
 /** The demo sentence (N2), restated from `messages/en.json`, not read from it. */
 const N2 =
@@ -139,7 +151,7 @@ test.describe("T-51: the product first screens (AC-46, product half)", () => {
         "[data-fo-pdp-buy] h1",
         "[data-fo-pdp-price]",
         "[data-fo-pdp-buy] [data-fo-tier-selector]",
-        "[data-fo-pdp-status]",
+        PRIMARY,
       ]) {
         const box = await boxOf(page, selector);
         expect(
@@ -205,8 +217,8 @@ test.describe("T-51: the product first screens (AC-46, product half)", () => {
       sheet.top,
     );
     expect(grips, "a grip handle").toEqual([]);
-    // N2 under the status pill, in the sheet.
-    const status = await boxOf(page, "[data-fo-pdp-status]");
+    // N2 under the primary action, in the sheet.
+    const status = await boxOf(page, PRIMARY);
     const demo = page.locator("[data-fo-pdp-buy] [data-fo-pdp-demo]");
     await expect(demo).toBeVisible();
     await expect(demo).toHaveText(N2);
@@ -228,7 +240,7 @@ test.describe("T-53: the docked bar on the product page (AC-48)", () => {
   }) => {
     await open(page);
     expect(await barShown(page), "on the first screen").toBe(true);
-    const action = await boxOf(page, `${BAR} a`);
+    const action = await boxOf(page, BAR_ACTION);
     expect(inside(action, PHONE), JSON.stringify(action)).toBe(true);
     // Where the artboard draws it: in the 76 px dock at the screen's foot.
     expect(action.top).toBeGreaterThanOrEqual(PHONE.height - 76);
@@ -244,43 +256,44 @@ test.describe("T-53: the docked bar on the product page (AC-48)", () => {
     expect(await barShown(page), "scrolled").toBe(true);
   });
 
-  test("its price is the sheet's selected price, and its action an in-page link to the status", async ({
+  test("with the checkout entry open it holds the entry's two submits, of the buy form, Add to basket first and narrower", async ({
     page,
   }) => {
     await open(page);
-    const sheetPrice = (
-      await page.locator("[data-fo-pdp-price] bdi").textContent()
-    )?.trim();
-    const checked = (
-      await page
-        .locator(
-          "[data-fo-pdp-buy] [data-fo-segment]:has(input:checked) [data-fo-tier-label]",
-        )
-        .textContent()
-    )?.trim();
-    await scrollPastBuy(page);
-    const barPrice = (
-      await page
-        .locator(`${BAR} [data-fo-action-bar-price] strong`)
-        .textContent()
-    )?.trim();
-    expect(barPrice).toBeTruthy();
-    expect(barPrice).toBe(sheetPrice);
-    // The checked size's own segment prints the same amount, and the bar's caption names it.
-    const segmentPrice = (
-      await page
-        .locator("[data-fo-pdp-buy] [data-fo-segment]:has(input:checked) bdi")
-        .textContent()
-    )?.trim();
-    expect(segmentPrice).toBe(barPrice);
-    await expect(
-      page.locator(`${BAR} [data-fo-action-bar-price] small`),
-    ).toHaveText(checked ?? "");
-    const href = await page.locator(`${BAR} a`).getAttribute("href");
-    expect(href).toBe("#buy");
-    await expect(page.locator("#buy [data-fo-pdp-status]")).toHaveCount(1);
-    await page.locator(`${BAR} a`).click();
-    await expect(page.locator("#buy [data-fo-pdp-status]")).toBeInViewport();
+    const submits = page.locator(`${BAR} button[type="submit"]`);
+    await expect(submits).toHaveCount(2);
+    // Twins of the flow's own submits: the same form, the same action, the same values.
+    const flow = page.locator('[data-fo-pdp-entry] button[type="submit"]');
+    await expect(flow).toHaveCount(2);
+    const formId = await page.locator("[data-fo-pdp-form]").getAttribute("id");
+    expect(formId).toBeTruthy();
+    const read = (locator: typeof submits) =>
+      locator.evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          value: node.getAttribute("value"),
+          formaction: node.getAttribute("formaction"),
+          text: node.textContent?.trim() ?? "",
+        })),
+      );
+    const inBar = await read(submits);
+    expect(inBar.map((entry) => entry.value)).toEqual(["basket", "checkout"]);
+    const inFlow = await read(flow);
+    for (const entry of inBar) {
+      expect(inFlow).toContainEqual(entry);
+    }
+    for (const form of await submits.evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("form")),
+    )) {
+      expect(form).toBe(formId);
+    }
+    const basket = await boxOf(page, `${BAR} button[value="basket"]`);
+    const action = await boxOf(page, BAR_ACTION);
+    expect(basket.right).toBeLessThanOrEqual(action.left);
+    expect(basket.width).toBeLessThan(action.width);
+    // No price in the dock while it holds the entry (the board draws none).
+    await expect(page.locator(`${BAR} [data-fo-action-bar-price]`)).toHaveCount(
+      0,
+    );
   });
 
   test("scrolled to the bottom, no text node sits under it", async ({

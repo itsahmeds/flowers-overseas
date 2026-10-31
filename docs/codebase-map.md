@@ -14,19 +14,19 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +96 |
-| `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +98 |
+| `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +9 |
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +105 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +107 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
 | `search` | The only import path into the search module: site… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +30 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +58 |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +61 |
 
 ## Config (`src/config/`)
 
@@ -46,6 +46,7 @@ task actually touches.
 | `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its zod… | 005 |
 | `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products (spec 005… | 005 |
 | `categories.ts` | Category-row registry | 004 |
+| `checkout-entry.ts` | The product page's way into checkout, as data an… | 010 |
 | `checkout-samples.ts` | Demo samples | 010 |
 | `checkout.ts` | Checkout limits | 010 |
 | `commerce.ts` | The commerce structure's numbers (spec 004 §14… | 004 |
@@ -87,9 +88,20 @@ task actually touches.
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today… | 004 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the parameter… | 008 |
+| `[locale]/(checkout)/_views/CheckoutHeader.tsx` | The checkout's header | 010 |
+| `[locale]/(checkout)/_views/CheckoutView.tsx` | `/{locale}/checkout`, drawn (spec 010 §2 "The checkout:… | 010 |
+| `[locale]/(checkout)/_views/ConfirmationView.tsx` | `/{locale}/checkout/done`, drawn (spec 010 §2… | 010 |
+| `[locale]/(checkout)/basket/BasketView.tsx` | The basket page's body (spec 010 §14… | 010 |
+| `[locale]/(checkout)/basket/page.tsx` | `/{locale}/basket` (spec 010 §14 A-founder-2026-10-22… | 010 |
+| `[locale]/(checkout)/checkout/actions.ts` | The checkout page's one server action. Thin glue | 010 |
+| `[locale]/(checkout)/checkout/done/page.tsx` | `/{locale}/checkout/done` (spec 010 §2 "Confirmation",… | 010 |
+| `[locale]/(checkout)/checkout/page.tsx` | `/{locale}/checkout` (spec 010 §2 "The checkout: three… | 010 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` —… | 009 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
+| `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
+| `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header: the logo and the help line only,… | 010 |
+| `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header: the logo and the help line only,… | 010 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot from the… | 043 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{child}/{gra… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{child}`: a | 043 |
@@ -219,10 +231,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 382 |
-| `tests/integration/` | 47 |
+| `tests/unit/` | 390 |
+| `tests/integration/` | 49 |
 | `tests/contract/` | 25 |
-| `tests/e2e/` | 71 |
+| `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |

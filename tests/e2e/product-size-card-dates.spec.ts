@@ -105,14 +105,24 @@ test.describe("T-34 (JS on): every figure of the size follows the size the buyer
         await expect(page.locator("[data-fo-price-total]"), where).toHaveText(
           own,
         );
-        await expect(
-          page.locator(`${BAR} [data-fo-action-bar-price] strong`),
-          where,
-        ).toHaveText(own);
-        await expect(
-          page.locator(`${BAR} [data-fo-action-bar-price] small`),
-          where,
-        ).toHaveText(label);
+        // With the checkout entry open (the preview draws the demo entry) the docked bar holds
+        // the entry's two submits and no price (spec 010 AC-5, `product-mobile.dc.html`); the
+        // status bar of a closed country repeats the size and its price.
+        if ((await page.locator(`${BAR} button[type="submit"]`).count()) > 0) {
+          await expect(
+            page.locator(`${BAR} [data-fo-action-bar-price]`),
+            where,
+          ).toHaveCount(0);
+        } else {
+          await expect(
+            page.locator(`${BAR} [data-fo-action-bar-price] strong`),
+            where,
+          ).toHaveText(own);
+          await expect(
+            page.locator(`${BAR} [data-fo-action-bar-price] small`),
+            where,
+          ).toHaveText(label);
+        }
         // Exactly one all-in amount in the buy price element, and the total is the polite live
         // region that announces it.
         await expect(page.locator("[data-fo-pdp-price] bdi")).toHaveCount(1);

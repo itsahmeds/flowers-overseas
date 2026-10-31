@@ -29,13 +29,21 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-24 (self-review, PR 397): left for later, each named for its owner.
+  - `/dev/components` has no gallery entries for the six basket components yet; the system file `docs/design/system/components.dc.html` already draws them. Owner: TASK-204 (same components, same agent).
+  - The basket's date line uses `formatDate(…, "calendarDate")`, which prints the year ("Thursday 8 October 2026"); the board prints "Thursday 8 October". A yearless weekday style is an i18n-module change. Owner: TASK-204 (the checkout prints the same dates).
+  - The browser halves stay with TASK-208: the badge after the LCP mark, zero requests from the island, CLS 0, the 512 B Brotli measure, `/ar-XB` baselines, axe, the e2e JS-off Remove walk, `cf-cache-status` on staging.
+  - The language links on the basket point at each locale's home (`switcherSegments=[]`), not at `/{other}/basket`.
+  - The price-changed notice's "Continue at" posts `confirmPrice` with `returnStep=recipient`, so it lands on the checkout's first screen, not back on the basket (TASK-348's action takes a step, not the basket).
+- 2026-10-25 (self-review after the resume, PR 397):
+  - The lines states (one line, cap, mode, currency, unavailable, date gone, price changed) were not photographed against `basket-desktop`/`basket-mobile`: neither CI's preview nor a local build has a database with a draft in it, so only the empty state and the header were compared (1440, 1280, 390). Owner: TASK-208 (the browser halves, on a preview with a database).
+  - The boards load Fraunces from Google Fonts with `SOFT 100`; the build serves its self-hosted display face, so every heading and italic line is narrower than on the board at the same size and weight (38 px H1, 23 px empty sentence, both equal to the board's). Site-wide, not this page's: for the design system owner.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24: copy for the founder's batch (Q28), not a blocker. (a) Appendix A's `checkout.basket.full` "Your basket holds up to {max} bouquets…" matches `RELAY_PATTERNS` `hold` (AC-74 would fail), so it ships as "Your basket has room for up to {max} bouquets. Please check out first, then start a new basket."; (b) `nav.basket` changes from the reviewed "Basket ({count, number})" to "Basket" (the chrome boards' gap note), so it is `reviewed: false` again; (c) one key not in Appendix A, `checkout.basket.addOns` "Add-ons · {list}". All `reviewed: false`. `nav.basket` and `nav.basketCount` render on indexable pages: the `en` unreviewed share is 4.70 % and `en-gb` 4.88 % (threshold 5 %), and spec 010 Q28 says the header island does not reach production before the founder approves these rows. Open, for the founder.
 
 ## Progress
 
@@ -43,11 +51,17 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24 (resumed after a usage-limit cut-off): committed the previous agent's components, header link and count island; rebased onto main after PR 383 merged.
+- 2026-10-24: copy keys (en, pl plural forms, de/pl drafts), the basket route and view, the `basket` page type, `Disallow: /*/basket`, the basket header rules, the header slot page.
+- 2026-10-24: unit tests (count island, header link, SEO, view states), the integration test of `loadBasketPage` on a local PG16, the header baselines moved once; mutations run. Next: PR ready with `ci:full`.
+- 2026-10-25 (resumed after a usage-limit cut-off): CI on `ff0cc86f` red on `links.spec.ts` (the chrome link count lacked the Basket link; fixed), e2e cancelled at the 30-minute limit after retries, visual red on the moved header (expected), Lighthouse `/de` LCP 2031 ms (noise). Rebased on main; baselines re-rendered by the `visual:baselines` run on the new head. Next: commit baselines, `ci:full`.
+- 2026-10-25: design check against `basket-*` boards: at 1280 px the eight links ran under the wordmark on the Linux runner (fixed: the row gap eases 22 px at 1440 to 16 px at 1280, e2e case holds 32 px in en-gb, de, ar-XB); the H1 lacked the board's italic "basket" (fixed, `<em>` marker per spec 004 A-founder-2026-10-14d) and the empty sentence its 300 weight (fixed). Baselines re-rendered by run 40132811264 and committed. Next: `ci:full` on head.
+- 2026-10-25: CI on `a061a5e9`: visual, a11y and the spine green; e2e red only on `links.spec.ts` listing "Basket" among the dead words (removed, it is a live link now); test-unit red on `design-docs.test.ts` (canvas overlap of `admin-product-edit-made-by-desktop` and `admin-catalogue-import-desktop`), which is red on main `84acab50` too (PRs 318 and 347), not this diff; Lighthouse skipped behind test-unit. Next: rebase once main's canvas is fixed, then `ci:full` and Lighthouse on that head.
+- 2026-10-25 (finisher): rebased on main `8dd0b75a` (PRs 412, 419, 420), dropped the old base's baseline commit, re-rendered the 46 moved Linux baselines by run 40171709025 and committed them after looking at the header pictures; CI run 40171709034 on the code-identical head: every job green but `visual` (old baselines). Rebased again on `7bb74808` (PR 421, map-only conflict); local cheap gates green but one ESLint-spawning test timing out under load (`catalog-pricing-minor.test.ts`, not in this diff). Next: CI on the head.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 397: `/{locale}/basket` (SSR per request, `noindex,nofollow` meta and header, `no-store`, no canonical, hreflang or JSON-LD) with every state of item 6 (empty, lines, demo banner, added, cap, mode, currency, unavailable, date gone with "Use {next}", price changed), built from the six components in `src/modules/ui/basket`; the header Basket link (`rel="nofollow"`, `nav.basket`, a 20 x 20 px empty slot) published in `site-links.ts`; the count filled after paint inside the motion module's existing chunk (no new request, no new chunk); `basket` registered as a `"never"` page type; `Disallow: /*/basket`. Tests: unit 4 new files (40 cases) plus 6 existing files moved for the new link; integration 1 new file (3 cases, local PG16). No build, e2e, visual or Lighthouse run locally: CI's. Browser halves are TASK-208's (see Carry-forwards). After the resume: the chrome link count in `links.spec.ts` (+1 for the Basket link), the 1280 row gap and its e2e case (4 cases), the heading's `<em>` and the empty sentence's weight (unit: 5 cases in `basket-view`, 1 in `home-round2`), 40 Linux baselines from run 40132811264. One local build inside the slot, to photograph `/en-gb/basket` at 1440, 1280 and 390 against the boards (no DB-backed state possible).

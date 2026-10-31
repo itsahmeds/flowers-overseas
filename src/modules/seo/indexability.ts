@@ -78,6 +78,14 @@ export type SeoPageType =
   // AC-16, "no new `noindex` branch in this spec"; TASK-125). `catalog/product.ts` gathers its
   // terms — every one of them **stated**, none omitted — and calls `pageIndexability()`.
   | "product"
+  // Spec 010 §14 A-founder-2026-10-22 item 12 (AC-72; TASK-349): the basket, a transactional
+  // page. `"never"` below is its constant `noindex` rule; `./transactional.ts` adds the `nofollow`
+  // half and the header, which a transactional page carries and an indexable one never does.
+  | "basket"
+  // Spec 010 §6's checkout and confirmation (TASK-204): transactional, never indexed
+  // (`transactional.ts` holds their `noindex, nofollow` header and meta).
+  | "checkout"
+  | "checkoutDone"
   // Spec 041 §2's ten info pages, by page id (§11: GA4's `page_type` is the page id), registered
   // here rather than branching there (AC-17; TASK-182). A trust page is indexable iff it exists,
   // its content is reviewed, the locale is indexable and this is the indexing environment; a
@@ -94,6 +102,9 @@ export const PAGE_TYPE_POLICY: Readonly<
 > = {
   // spec 004 AC-28: a development affordance, refused in production by the env schema.
   devGallery: "never",
+  // Spec 010 §6, AC-30: a checkout is a transaction, not a page; no data can lift it.
+  checkout: "never",
+  checkoutDone: "never",
   localeHome: "byRule",
   destinationsHub: "byRule",
   corridor: "byRule",
@@ -110,6 +121,9 @@ export const PAGE_TYPE_POLICY: Readonly<
   // **and** the product is indexable there **and** the locale is **and** this is the indexing
   // environment. Every PDP answers `noindex,follow` in Phase 0 by data, not by policy.
   product: "byRule",
+  // Spec 010 §14 A-founder-2026-10-22 item 12: `noindex, nofollow` by header and meta, never in a
+  // sitemap, disallowed in `robots.txt` (AC-72). No data flip can lift it.
+  basket: "never",
   // Spec 041 §6: all ten are `byRule`. Every Phase 0 legal page is `noindex,follow` by data
   // (`lawyerReviewed: false`), every `de`/`pl` draft by data (`reviewed: false`), not by policy.
   "how-it-works": "byRule",

@@ -92,6 +92,8 @@ export type StepState =
   | { readonly status: "idle" }
   | { readonly status: "expired" }
   | { readonly status: "closed" }
+  /** Placement refused where the buyer stands (TASK-205): the daily cap, or unable to place. */
+  | { readonly status: "refused"; readonly reason: "cap" | "unable" }
   | {
       readonly status: "invalid";
       readonly step: CheckoutStep;

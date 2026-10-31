@@ -458,6 +458,10 @@ describe("control characters are refused (hole 4)", () => {
     ["combining grapheme joiner U+034F", "\u034f"],
     ["Hangul filler U+3164", "\u3164"],
     ["Mongolian vowel separator U+180E", "\u180e"],
+    // `/break 275` hole 18, closed by TASK-204: each one alone among visible text is refused.
+    ["halfwidth Hangul filler U+FFA0", "\uffa0"],
+    ["blank Braille pattern U+2800", "\u2800"],
+    ["soft hyphen U+00AD", "\u00ad"],
   ])(
     "refuses an invisible %s among visible text (/break 275 hole 4)",
     (_label, c) => {

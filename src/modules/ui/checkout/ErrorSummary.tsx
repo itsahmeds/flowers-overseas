@@ -62,7 +62,7 @@ export function ErrorSummary({
       role="alert"
       tabIndex={-1}
     >
-      <h2 className="text-h3 text-ink m-0" id={titleId}>
+      <h2 className="display text-h3 text-ink m-0" id={titleId}>
         {title}
       </h2>
       <ul className="m-0 grid list-none gap-[4px] p-0">

@@ -1,7 +1,7 @@
 /**
  * The checkout's server actions (spec 010 §5.2 "Server actions and the route"; TASK-203):
- * `saveRecipientStep`, `saveCardAndBuyerStep`, `updateSelection`. `placeOrderAction` is
- * TASK-205's.
+ * `saveRecipientStep`, `saveCardAndBuyerStep`, `updateSelection`; TASK-205's `placeOrderAction`
+ * (`place.ts`).
  *
  * Thin: each reads the `fo_checkout` cookie, hands the form to its runner in `steps.ts` (which
  * loads the draft, re-runs the mode, parses, verifies the quote and saves), then answers with a
@@ -34,6 +34,7 @@ import {
   CHECKOUT_COOKIE_NAME,
   isDraftToken,
 } from "./cookie";
+import { runPlaceOrder } from "./place";
 import {
   type StepContext,
   type StepOutcome,
@@ -146,4 +147,16 @@ export async function useNextDateAction(
   if (!bound.success) return { status: "expired" };
   const ctx = await context(bound.data);
   return answer(await runUseNextDate(ctx, form), ctx.token);
+}
+
+/** Step 3's place control (TASK-205): one purchase for the basket, then the confirmation. */
+export async function placeOrderAction(
+  locale: unknown,
+  _previous: StepState,
+  form: FormData,
+): Promise<StepState> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runPlaceOrder(ctx, form), ctx.token);
 }

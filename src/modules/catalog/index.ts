@@ -104,6 +104,8 @@ export {
   ProductTierSchema,
 } from "./schemas";
 export { defaultTier, listAddons, listTiers } from "./read";
+// What a basket line shows about its bouquet (spec 010 §14 A-founder-2026-10-22 item 6; TASK-349).
+export { lineDisplay, type LineDisplay } from "./line-display";
 
 // The pricing core (spec 005 §2 "Pricing", §5.2 `pricing/*`, §8, AC-8/AC-13/AC-16; TASK-065).
 //

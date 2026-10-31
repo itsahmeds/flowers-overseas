@@ -48,6 +48,17 @@ export {
 } from "./canonical.ts";
 
 export {
+  TRANSACTIONAL_PAGE_TYPES,
+  TRANSACTIONAL_ROBOTS,
+  TRANSACTIONAL_ROBOTS_HEADER,
+  TRANSACTIONAL_ROBOTS_META,
+  type TransactionalHeaderRule,
+  type TransactionalPageType,
+  checkoutHeaderRules,
+  transactionalMetadata,
+} from "./transactional.ts";
+
+export {
   DISALLOWED_PATHS,
   SITEMAP_PATH,
   type RobotsPolicy,
