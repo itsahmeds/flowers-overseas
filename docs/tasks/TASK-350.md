@@ -46,6 +46,7 @@ here.
 - 2026-10-25: restacked on TASK-070 (PR 324, `0025`), PR 403's base moved to that branch. PRs 349 (TASK-082) and 398 (TASK-357) ship no migration, so the file is renumbered `0026_payment_purchase` (db:check refuses a gap). TASK-222's admin `orderDetail` (merged meanwhile) read `payment.order_id`; it now joins through the order's purchase. Snapshot regenerated on a fresh PG16 (unchanged from the merged union); 12 touched integration files and 5 unit files green locally.
 - 2026-10-24: migration, Drizzle mirror, `paymentForOrder`/`paymentForPurchase`, `tests/integration/payment-purchase.test.ts` (16 cases) and the existing suites moved to the purchase shape; pushed, draft PR open.
 - 2026-10-25 (2): CI on efa76109c: test-unit red on `admin-orders.test.tsx` (its fake answers the order row to any `FROM "order" o` statement; the payments read now starts `FROM payment p`), test-integration red only on TASK-070's coreRank parity (fixed on PR 324's branch, restacked). PR 405's map hit the 20 480 B cap at 20 623 B: `PURPOSE_LIMIT` 56 to 48 here (TASK-275's lever; TASK-095 owns the generator), map 19 545 B. Deviation listed in the PR body.
+- 2026-10-31: finisher L restacked onto PR 324's new head; the purpose cut to 48 (`02db858c6`) now lands in PR 320 (TASK-293), whose own map was over the 20 480 B cap on main, so this PR no longer carries it (dropped in the rebase, nothing else changed).
 
 ## Result
 
