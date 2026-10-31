@@ -748,6 +748,33 @@ describe("parseClientReferences (which Client Components a document mounts)", ()
     ]);
   });
 
+  // TASK-383: a text row (`id:T<hex bytes>,…`) has no newline after its bytes, so the chunk row
+  // after it starts mid-line. The mega menu's guide page put row 77 there in the CI build.
+  it("reads a chunk row that follows a text row, and one split across two pushes", () => {
+    const text = '{"@type":"Thing","name":"Zażółć"}';
+    const length = Buffer.byteLength(text, "utf8").toString(16);
+    const rsc =
+      `2:"/_next/static/chunks/f.js"\n:HL["/_next/static/chunks/s.css","style"]\n` +
+      `75:T${length},${text}77:"/_next/static/chunks/a.js"\n` +
+      '78:I[144668,["$2","$77"],"default"]\n';
+    expect(parseClientReferences(rsc)).toEqual([
+      {
+        id: "144668",
+        name: "default",
+        chunks: ["static/chunks/f.js", "static/chunks/a.js"],
+      },
+    ]);
+
+    const html = `<script>self.__next_f.push([1,${JSON.stringify(rsc.slice(0, 120))}])</script><script>self.__next_f.push([1,${JSON.stringify(rsc.slice(120))}])</script>`;
+    expect(parseClientReferences(html)).toEqual([
+      {
+        id: "144668",
+        name: "default",
+        chunks: ["static/chunks/f.js", "static/chunks/a.js"],
+      },
+    ]);
+  });
+
   it("reads both forms side by side in one reference", () => {
     const html =
       '<script>self.__next_f.push([1,"1b:\\"/_next/static/chunks/a.js\\"\\n' +
