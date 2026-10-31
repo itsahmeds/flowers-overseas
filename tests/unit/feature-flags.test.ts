@@ -32,13 +32,15 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags, spec 018's two and spec 013's payments.stripe", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe and spec 022a's two review switches", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
       "account.open",
       "invoice.issue",
       "payments.stripe",
+      "reviews.invite",
+      "reviews.trustpilot",
     ]);
   });
 
@@ -68,6 +70,19 @@ describe("T-16 — the registry", () => {
       description: expect.stringMatching(/\S/u) as unknown as string,
     });
   });
+
+  it.each(["reviews.invite", "reviews.trustpilot"] as const)(
+    "registers %s as global and high-risk, dirtying no public page (spec 022a §12)",
+    (key) => {
+      expect(flagDefinition(key)).toEqual({
+        key,
+        scopeKinds: ["global"],
+        risk: "high",
+        dirties: [],
+        description: expect.stringMatching(/\S/u) as unknown as string,
+      });
+    },
+  );
 
   it("registers checkout.open with country scope, standard risk and the catalog:{iso2} tag", () => {
     expect(flagDefinition("checkout.open")).toEqual({

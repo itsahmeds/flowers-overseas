@@ -164,6 +164,9 @@ export const STATUS_PRESERVING_ACTORS: Readonly<
   // Spec 013 §5.2 "Refunds": the refund service appends it with the actor who asked, an admin
   // (`adminRefund`) or the system (the cancel handler, the reconcile anomaly).
   "order.refund_requested": ["system", "admin"],
+  // Spec 022a §5.2 "Events" (TASK-368): a review is written by the buyer who holds the invite's
+  // link, and by nobody else; its schema is registered by the `reviews` module.
+  "review.created": ["buyer"],
 };
 
 /** What the engine needs of a payload schema: it parses to an object that names its mode. */

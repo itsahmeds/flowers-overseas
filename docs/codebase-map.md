@@ -21,9 +21,10 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +111 |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` +1 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `unit/florist-surface.test.ts` |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
+| `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +59 |
@@ -68,6 +69,7 @@ task actually touches.
 | `orders.ts` | Order timing rules: the destination-local hour… | 013 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2… | 004 |
 | `payments.ts` | Payment lifecycle timings: the unpaid-purchase… | 013 |
+| `reviews.ts` | Review constants: invite timing, text cap,… | 022 |
 | `search.ts` | Site search's numbers and word lists | 045 |
 | `site-links.ts` | Site-link registry | 004 |
 | `trending.ts` | The florists' picks the "Most sent this week"… | 004 |
@@ -238,8 +240,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 393 |
-| `tests/integration/` | 59 |
+| `tests/unit/` | 394 |
+| `tests/integration/` | 60 |
 | `tests/contract/` | 26 |
 | `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |
