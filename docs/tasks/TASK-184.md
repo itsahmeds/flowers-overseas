@@ -31,7 +31,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   visual baseline (AC-28). The go-live copy batch lists the sentences that say we are not open
   yet (§12, as amended 2026-10-04).
 - The new baselines go through the `visual:baselines` label flow. Take the build slot only for
-  what CI cannot judge, and say so in `## Result`.
+  what CI cannot judge, and say so in `
+- 2026-10-31: run 40193614044 on d0ed55e9 was red in e2e only: `links.spec` read the footer legal row by `aria-label="Legal"`, which de/pl name in their own language; `product-page.spec` still pinned no guarantee link in de/pl. Both fixed in the specs (efb4e213), rebased on main c0d6b6f2c (map regenerated), unit i18n and product-page tests green, unreviewed share en 4.56 % and en-gb 4.74 % (no record-approval script). ci:full re-fired.
+
+## Result`.
 - **Class:** not review-only (i18n tooling that decides indexability, the crawl). `/review` and
   `/break` both run.
 
