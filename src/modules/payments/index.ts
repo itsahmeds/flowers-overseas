@@ -32,3 +32,45 @@ export {
   PaymentRecordSchema,
 } from "./queries.ts";
 export type { PaymentRecord } from "./queries.ts";
+
+// Spec 013 §5.2 (TASK-257): the payment half of the lifecycle. Each takes a purchase id and its
+// dependencies, never an amount (AC-9): the amount is read from the purchase.
+export {
+  PAYMENTS_ACTOR,
+  startPayment,
+  sweepPayments,
+  SWEEP_ACTOR,
+  syncFromProvider,
+} from "./lifecycle.ts";
+export type {
+  LifecycleDeps,
+  PaymentTransaction,
+  ReconcileOutcome,
+  ReconcileResult,
+  StartPaymentResult,
+  SweepCounts,
+} from "./lifecycle.ts";
+
+// Spec 013 §5.2 (TASK-258): cancellation, the refund on cancel, and the delivery-morning start.
+// No amount parameter anywhere (AC-9): a cancel refunds the order's own remaining balance.
+export { cancelOrder, paymentsOutboxHandler } from "./cancel.ts";
+export type { CancelOrderRefusal, CancelOrderResult } from "./cancel.ts";
+export {
+  PRODUCTION_START_ACTOR,
+  productionStartAt,
+  runProductionStart,
+  startProduction,
+} from "./production.ts";
+export type {
+  ProductionStartCounts,
+  ProductionStartDeps,
+  ProductionTiming,
+  StartProductionOptions,
+  StartProductionResult,
+} from "./production.ts";
+export { refundCancelledOrder, submitRefund } from "./refunds.ts";
+export type {
+  CancelRefundOutcome,
+  RefundDeps,
+  SubmitOutcome,
+} from "./refunds.ts";

@@ -43,7 +43,7 @@ describe.skipIf(server.url === undefined)(
       });
     }
 
-    it("reads the four registered flags as migrations 0009 and 0021 seed them, and nothing else", async () => {
+    it("reads the five registered flags as migrations 0009 and 0021 seed them, and nothing else", async () => {
       const snapshot = await snapshotAs("system");
       expect(
         [...snapshot.flags].sort((a, b) => a.key.localeCompare(b.key)),
@@ -53,6 +53,8 @@ describe.skipIf(server.url === undefined)(
         { key: "checkout.demo_guard", enabledDefault: true },
         { key: "checkout.open", enabledDefault: false },
         { key: "invoice.issue", enabledDefault: false },
+        // Spec 013 (TASK-257) registers it; 0009 seeded it off.
+        { key: "payments.stripe", enabledDefault: false },
       ]);
       expect(
         [...snapshot.scopes].sort((a, b) => a.flagKey.localeCompare(b.flagKey)),

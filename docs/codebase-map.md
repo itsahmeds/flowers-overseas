@@ -65,7 +65,9 @@ task actually touches.
 | `locales.data.ts` | Locale data as plain typed constants — the… | 004 |
 | `locales.ts` | Locale registry | 003 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004… | 004 |
+| `orders.ts` | Order timing rules: the destination-local hour… | 013 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2… | 004 |
+| `payments.ts` | Payment lifecycle timings: the unpaid-purchase… | 013 |
 | `search.ts` | Site search's numbers and word lists | 045 |
 | `site-links.ts` | Site-link registry | 004 |
 | `trending.ts` | The florists' picks the "Most sent this week"… | 004 |
@@ -236,8 +238,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 394 |
-| `tests/integration/` | 56 |
+| `tests/unit/` | 395 |
+| `tests/integration/` | 58 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |
