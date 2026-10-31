@@ -50,7 +50,7 @@ per batch, and no agent sets `reviewed: true`.
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- **From `/plan-tasks` (2026-11-01):** spec 004 §14 A-orchestrator-2026-11-01a clause 5. If TASK-430 has merged, its `PENDING_DASH_KEYS` lists this task's four consent keys (`consent.essentialLocked`, `consent.cookies.{session,csrf,stripeMid}.purpose`); delete those entries in this PR, since the check fails on an entry that no longer holds a dash.
 
 ## Escalations
 
