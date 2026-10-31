@@ -2589,6 +2589,11 @@
     "reviewed": false,
     "sourceHash": "879b57dac1ab0a3706ef5a52f1dd24e96868c0f95ee6bc50d638e9d89b23a597"
   },
+  "nav.mega.recipient.partner": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "497077858312e0d5cb804ff5ccb3e771adfe0e51c7f0f964d091dc788443c3be"
+  },
   "nav.mega.soon": {
     "source": "machine",
     "reviewed": false,

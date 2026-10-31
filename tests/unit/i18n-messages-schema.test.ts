@@ -370,6 +370,9 @@ describe("the shipped catalogues and manifests", () => {
     // The header Basket link's name and count (spec 010 D10; TASK-349).
     "nav.basket",
     "nav.basketCount",
+    // TASK-383 (spec 004 §14 A-founder-2026-10-24a item 5): the mega menu's partner group label,
+    // decided 2026-10-31; it leaves this queue when record-approval-383b.py records it.
+    "nav.mega.recipient.partner",
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;

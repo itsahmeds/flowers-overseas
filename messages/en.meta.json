@@ -4773,6 +4773,11 @@
     "reviewedAt": "2026-10-31T19:01:01Z",
     "sourceHash": "d9358d74cb1af0bb7841b07737f82f35d93236d0099b6148ef43e46213409959"
   },
+  "nav.mega.recipient.partner": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "497077858312e0d5cb804ff5ccb3e771adfe0e51c7f0f964d091dc788443c3be"
+  },
   "nav.mega.recipient.newParents": {
     "source": "human",
     "reviewed": true,

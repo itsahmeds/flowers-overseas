@@ -59,10 +59,9 @@ export const MEGA_EVERY_DAY_EXCLUDED: readonly string[] = ["sympathy"];
 
 /**
  * Occasions, "For whom" (item 5's `RECIPIENT_GROUPS`): a recipient mapped to the occasion hub that
- * serves it, each drawn only where that hub exists. The amendment's fifth group (a partner, to
- * `romance`) is not here: its label text fails the voice scan (`src/config/voice.ts`), the board
- * draws it as a `[slot]` for the founder's wording, and an entry with no approved label cannot be
- * drawn (TASK-383 brief, carry-forward and escalation). It is one line here once the key exists.
+ * serves it, each drawn only where that hub exists, in the amendment's order. The partner group's
+ * label reads "For someone you love" (decided 2026-10-31, TASK-383 brief): the word "partner" stays
+ * out of customer copy (`src/config/voice.ts`), so only its id and key carry it.
  */
 export const RECIPIENT_GROUPS: readonly {
   readonly id: string;
@@ -78,6 +77,11 @@ export const RECIPIENT_GROUPS: readonly {
     id: "grandparents",
     occasionKey: "grandparents_day",
     labelKey: "nav.mega.recipient.grandparents",
+  },
+  {
+    id: "partner",
+    occasionKey: "romance",
+    labelKey: "nav.mega.recipient.partner",
   },
   {
     id: "newParents",

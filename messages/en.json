@@ -168,6 +168,7 @@
       "recipient": {
         "mum": "For mum",
         "grandparents": "For grandparents",
+        "partner": "For someone you love",
         "newParents": "For new parents",
         "colleague": "For a colleague"
       }
