@@ -122,12 +122,14 @@ test.describe("a hub shows no money (AC-7, T-07)", () => {
       const main = await page.locator("main").innerText();
       expect(main, url).not.toMatch(MONEY);
       expect(main, url).toContain("We show no price on this page");
-      // Every card on the page is on the priceless branch, and there are cards.
+      // Every card on the page is on the priceless branch, and there are cards. The page's own
+      // cards are in `<main>`; the header's mega menu holds its featured cards in closed panels
+      // (TASK-383), priceless out of context too, so the page-wide count stays at zero.
       await expect(
         page.locator('[data-fo-product-card-money="priced"]'),
       ).toHaveCount(0);
       await expect(
-        page.locator('[data-fo-product-card-money="none"]').first(),
+        page.locator('main [data-fo-product-card-money="none"]').first(),
       ).toBeVisible();
       // No purchase affordance and no control that cannot act (§8, §14 A8 (c)).
       await expect(page.locator("main button")).toHaveCount(0);
