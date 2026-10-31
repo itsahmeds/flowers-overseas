@@ -343,7 +343,6 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.basket.useNext",
     "checkout.date.gone",
     "company.controller",
-    "consent.cookies.dest.purpose",
     "consent.privacyLink",
     // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide
     // calendar's Rule column in words, approved in the 2026-10-04 batch ("approve copy") and
@@ -356,9 +355,6 @@ describe("the shipped catalogues and manifests", () => {
     "footer.link.deliveryAndPayment",
     // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
     "home.comingUp.more",
-    "home.picker.label",
-    "home.picker.search",
-    "home.picker.submit",
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
     "infoPages.contact.heading",
@@ -440,12 +436,6 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
-
-    "shop.choose.all",
-    "shop.choose.closest",
-    "shop.choose.continue",
-    "shop.choose.noMatch",
-    "shop.choose.remember",
     "shop.cta.chooseCountry",
     "shop.price.bandWord.high",
     "shop.price.bandWord.low",
