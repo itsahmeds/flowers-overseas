@@ -252,7 +252,9 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
             href: node.getAttribute("href") ?? "",
           })),
         );
-      expect(row.map((item) => item.id)).toEqual([...ROW_IDS]);
+      // …then the Basket icon link (spec 010 §14 A-founder-2026-10-22 D10; TASK-349).
+      expect(row.map((item) => item.id)).toEqual([...ROW_IDS, "basket"]);
+      expect(row.at(-1)?.href).toBe(`/${locale}/basket`);
       for (const item of row) {
         expect(item.tag, item.id).toBe("A");
         expect(item.href, item.id).toMatch(new RegExp(`^/${locale}/`, "u"));
@@ -261,7 +263,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       expect(row[0]?.href).toMatch(
         /\/(?:poland|polen|polska)\/(?:flowers|blumen|kwiaty)$/u,
       );
-      expect(row.at(-1)?.href).toBe(localePath(locale, "destinations"));
+      expect(row.at(-2)?.href).toBe(localePath(locale, "destinations"));
 
       // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
       // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and
@@ -329,13 +331,15 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           else expect(href, href).toMatch(/^(?:tel:|https:\/\/)[^\s]+$/u);
         }
       }
-      // Exactly: the header's eight (the footer's two are among them), five products, the
-      // lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
+      // Exactly: the header's eight (the footer's two are among them), the header's Basket link
+      // (TASK-349), five products, the lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
       // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
       // four trust pages and two legal pages. A further control is a diff here.
       const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
       expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
-      expect(hrefs.size).toBe(8 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0));
+      expect(hrefs.size).toBe(
+        8 + 1 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0),
+      );
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }
@@ -345,7 +349,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         for (const word of [
           "Sign in",
           "My orders",
-          "Basket",
+          // "Basket" has a page since TASK-349 and is a live header link above.
           "For florists",
           "Add-ons",
           "Imprint",

@@ -78,3 +78,10 @@ export type {
 } from "./TextAreaWithCounter.tsx";
 export { TextField } from "./TextField.tsx";
 export type { ClientFieldMessages, TextFieldProps } from "./TextField.tsx";
+// The notice and button classes, for the basket page's own notices and forms (TASK-349).
+export {
+  MONEY_FIGURE,
+  NOTICE_BLOCKING,
+  NOTICE_CALM,
+  buttonClass,
+} from "./styles.ts";

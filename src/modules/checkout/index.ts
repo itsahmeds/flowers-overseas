@@ -101,6 +101,7 @@ export {
   LinePatchSchema,
   NewLineSchema,
   appendLine,
+  clearPendingNotice,
   createDraft,
   draftExpiryAt,
   draftModes,
@@ -190,3 +191,12 @@ export {
   updateSelection,
   useNextDateAction,
 } from "./actions";
+// The basket page's view model (spec 010 §14 A-founder-2026-10-22 item 6; TASK-349).
+export {
+  type BasketPage,
+  type BasketPageLine,
+  type GoneReason,
+  type LoadBasketPageInput,
+  goneReason,
+  loadBasketPage,
+} from "./basket-page";

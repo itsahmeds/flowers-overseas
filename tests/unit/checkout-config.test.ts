@@ -228,7 +228,8 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
   });
 
   it("ships the checkout and confirmation strings unreviewed, but the five approved address labels", () => {
-    expect(checkoutKeys).toHaveLength(66);
+    // 66, plus the basket page's 19 `checkout.basket.*` and `checkout.date.gone` (TASK-349).
+    expect(checkoutKeys).toHaveLength(86);
     const metaKeys = Object.keys(enMeta).filter((key) => KEY.test(key));
     expect(metaKeys.toSorted()).toEqual(checkoutKeys.toSorted());
     const reviewed = metaKeys.filter((key) => enMeta[key]?.reviewed === true);

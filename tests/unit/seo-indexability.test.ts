@@ -156,9 +156,10 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     .filter(([, policy]) => policy === "never")
     .map(([pageType]) => pageType as SeoPageType);
 
-  it("keeps the dev gallery permanently out of the index, and only it", () => {
-    // `/` was the other one until spec 003 §14 A16 made it a 308 with no document.
-    expect(never).toEqual(["devGallery"]);
+  it("keeps the dev gallery and the basket permanently out of the index, and only them", () => {
+    // `/` was the other one until spec 003 §14 A16 made it a 308 with no document. The basket is
+    // spec 010 §14 A-founder-2026-10-22 item 12's transactional page (AC-72; TASK-349).
+    expect(never).toEqual(["devGallery", "basket"]);
   });
 
   it("answers `noindex,follow` for a never-indexable page type in all sixteen cases", () => {
@@ -194,6 +195,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       // spec 009 §6: the PDP is `index,follow` iff exists ∧ `corridorState(iso2) === 'live'` ∧
       // `isProductIndexable()` ∧ `isLocaleIndexable()` ∧ `isIndexingEnvironment()` (TASK-125).
       product: "byRule",
+      // spec 010 §14 A-founder-2026-10-22 item 12, AC-72: "a registered `SeoPageType` with a
+      // constant `noindex` rule" (TASK-349).
+      basket: "never",
       // spec 041 §6, AC-17 (TASK-182): the ten info pages, by page id.
       "how-it-works": "byRule",
       guarantee: "byRule",

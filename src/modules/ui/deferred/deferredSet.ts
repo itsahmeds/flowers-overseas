@@ -104,7 +104,7 @@ export const DEFERRED_ISLANDS: readonly DeferredIsland[] = [
     status: "deferred",
     trigger: "paint",
     control: null,
-    what: "the motions (spec 004 §14 A23 clause 11, AC-44) and, inside the same module, the header and phone Menu enhancement: Esc closes the Menu (§14 A24 clause 3, AC-47)",
+    what: "the motions (spec 004 §14 A23 clause 11, AC-44) and, inside the same module, the header and phone Menu enhancement: Esc closes the Menu (§14 A24 clause 3, AC-47), and the header basket count (spec 010 §14 A-founder-2026-10-22 D10, AC-71)",
     task: "TASK-194",
     module: "src/modules/ui/motion/MotionIsland.tsx",
     chunk: "src/modules/ui/motion/MotionIsland.tsx",
@@ -178,6 +178,8 @@ export const NOT_DEFERRED: Readonly<Record<string, string>> = {
     "a checkout island: mounted on no public page yet (spec 010; only /dev); clause 4 applies when a checkout page mounts it",
   "src/modules/ui/checkout/PlaceOrderButton.tsx":
     "a checkout island: mounted on no public page yet (spec 010; only /dev); clause 4 applies when a checkout page mounts it",
+  "src/modules/ui/basket/BasketRefresh.tsx":
+    "the basket page's focus and count refresh after a Remove (spec 010 AC-79): mounted on /{locale}/basket only, a no-store page that is never indexed and is outside the audited set, and it acts only after the buyer's own Remove",
   "src/modules/ui/admin/AdminConfirmSwitch.tsx":
     "the flags page's typed-key confirm switch (TASK-220): admin only, not a public page, no LCP budget",
   "src/modules/ui/admin/OrderQueuePoll.tsx":

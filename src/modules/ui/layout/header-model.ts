@@ -24,6 +24,7 @@ import {
   isCountryIso2,
 } from "../../../config/countries.ts";
 import {
+  BASKET_LINK_ID,
   CATEGORY_ROW_LINK_IDS,
   type ListingPageLinkType,
   MASTHEAD_LINK_IDS,
@@ -194,7 +195,8 @@ export function headerListingTargets(): readonly HeaderListingTarget[] {
  * Three reasons for `undefined`, and they are the whole rule: the entry is not published; its
  * target is `pending` (no route shape exists yet, which `SiteLinkSchema` already refuses to
  * publish); or it is one listing page that does not exist in this locale (`listingHrefs` has no
- * entry for it). A `route` target exists wherever `localePath()` builds it.
+ * entry for it). A `route` target exists wherever `localePath()` builds it, and a `transactional`
+ * one (the basket) under every locale prefix.
  */
 export function siteLinkHref(
   locale: string,
@@ -207,6 +209,10 @@ export function siteLinkHref(
     return localePath(locale, link.target.pageType);
   }
   if (link.target.kind === "listingPage") return listingHrefs[id];
+  // A transactional page's segment is the English word in every locale (spec 010 §13 Q10).
+  if (link.target.kind === "transactional") {
+    return localePath(locale, "home", link.target.page);
+  }
   return undefined;
 }
 
@@ -307,14 +313,23 @@ export function headerCategoryItems(
 }
 
 /**
- * The masthead's account cluster (`Sign in` · `My orders` · `Basket (0)`), **only the entries
- * whose page exists** — none today (010/019 own them), so the cluster is empty. The mobile artboard
- * draws two of the three icons, so `My orders` is the one entry hidden below the `md` breakpoint.
+ * The masthead's account cluster (`Sign in` · `My orders`), **only the entries whose page exists**
+ * — none today (019 owns them), so the cluster is empty. `My orders` is hidden below the `md`
+ * breakpoint. The basket is not in it: it is the icon link of `headerBasketHref()`.
  */
 export function headerAccountItems(locale: string): readonly HeaderItem[] {
   return MASTHEAD_LINK_IDS.map((id) =>
     fromSiteLink(locale, siteLink(id), id !== "my-orders"),
   ).filter(drawn);
+}
+
+/**
+ * The header's basket link (spec 010 §14 A-founder-2026-10-22 D10; TASK-349): `/{locale}/basket`
+ * once the registry publishes it, or `undefined` (not drawn). The same URL for every visitor: the
+ * count is the post-paint island's, never the server's, so a cached page stays one document.
+ */
+export function headerBasketHref(locale: string): string | undefined {
+  return siteLinkHref(locale, BASKET_LINK_ID);
 }
 
 /** The category row's end cluster (`For florists`, spec 011's), only once its page exists. */
