@@ -345,6 +345,10 @@ describe("the shipped catalogues and manifests", () => {
     "corridor.calendar.ruleEaster",
     "corridor.calendar.ruleFixed",
     "corridor.calendar.ruleWeekday",
+    // TASK-239 (spec 007 §14 A-founder-2026-10-14c, D2 A): the not-open state "Ordering opens
+    // soon" on the destinations grid, hub and guide and on the product page's status, the
+    // finder's "{country} (soon)", and the hub intro's clause that said "not delivering yet".
+    // All but the hub intro's clause are the founder's approved words; each waits for his record run.
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
     // "Status" label ship `reviewed: false` until the founder's own record-approval run.
     "footer.link.deliveryAndPayment",

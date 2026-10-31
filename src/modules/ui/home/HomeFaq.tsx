@@ -19,15 +19,15 @@
  * open**, as both artboards draw it.
  *
  * The five answers are the artboards' own, in the first person (§14 A5). Two of them state
- * delivery timing — the redelivery window and the Warsaw cutoff — which the home page already
- * states above them in `finder.cutoff` and `nav.utility.cutoff`; they are recorded in the PR body
+ * delivery timing — the redelivery window and the Warsaw cutoff (the latter only while ordering
+ * is open in Poland, AC-34) — which the chrome states in `nav.utility.cutoff`; they are recorded in the PR body
  * for the reviewer, because spec 006 §14 A4 bans that class of phrase from **catalogue copy** and
  * the boundary between the two is a judgement a reviewer should re-make rather than inherit.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
+import { COUNTRIES, deliveryDatesOpen } from "../../../config/countries.ts";
 import { Grid, Stack } from "../primitives/layout.tsx";
 import {
   Display,
@@ -55,17 +55,30 @@ export const FAQ_ENTRIES = [
     questionKey: "whoDelivers.question",
     answerKey: "whoDelivers.answer",
     // A19's gated sentence: "Order by 14:00 in Warsaw … for delivery today" is appended only
-    // when a destination actually has an agreed cutoff. Written out rather than assembled, for
-    // the reason the block comment above gives about `i18n:check`'s text scan.
+    // while ordering is open in the country whose registry row names it as its `faqCutoffKey`
+    // (spec 007 §14 A-founder-2026-10-14c clause 4, AC-34; TASK-239): that country's own
+    // predicate, not "any destination", and no country code here. Written out rather than
+    // assembled, for the reason the block comment above gives about `i18n:check`.
     gatedAnswerKey: "whoDelivers.answerCutoff",
   },
 ] as const satisfies readonly {
   id: string;
   questionKey: string;
   answerKey: string;
-  /** Appended to the answer only while `anyDeliveryDatesOpen()` (spec 004 §14 A19). */
+  /**
+   * Appended to the answer only while ordering is open in a country whose `faqCutoffKey` is
+   * `faq.{gatedAnswerKey}` (A19, AC-34): the country the sentence states the cutoff of.
+   */
   gatedAnswerKey?: string;
 }[];
+
+/** True while ordering is open in a country whose own cutoff sentence is `faq.{key}`. */
+function cutoffSentenceOpen(key: string): boolean {
+  return COUNTRIES.some(
+    (country) =>
+      country.faqCutoffKey === `faq.${key}` && deliveryDatesOpen(country.iso2),
+  );
+}
 
 const HEADING_ID = "faq-heading";
 
@@ -86,7 +99,6 @@ export function HomeFaq({
   allTopicsHref,
 }: HomeFaqProps = {}): ReactElement {
   const t = useTranslations("faq");
-  const datesOpen = anyDeliveryDatesOpen();
 
   return (
     <Grid
@@ -142,10 +154,11 @@ export function HomeFaq({
               </span>
             </summary>
             <Text className="mt-sm" measure size="sm" tone="muted">
-              {/* A19: the cutoff sentence is a *second* sentence, appended only when a
-                  destination has an agreed one, so the answer drops it rather than restating a
-                  promise the utility strip has already stopped making (TASK-120). */}
-              {"gatedAnswerKey" in entry && datesOpen
+              {/* A19: the cutoff sentence is a *second* sentence, appended only while ordering
+                  is open in the country it names, so the answer drops it rather than stating a
+                  cutoff nobody can order against (TASK-120, TASK-239). */}
+              {"gatedAnswerKey" in entry &&
+              cutoffSentenceOpen(entry.gatedAnswerKey)
                 ? `${t(entry.answerKey)} ${t(entry.gatedAnswerKey)}`
                 : t(entry.answerKey)}
             </Text>

@@ -443,7 +443,7 @@ describe("the destinations grid", () => {
     }
     // PR 174 item 6: nobody can order yet (no florist signed), so no chip claims delivery.
     expect(rendered).not.toContain("Delivering now");
-    expect(rendered.split("Guide · not delivering yet")).toHaveLength(
+    expect(rendered.split("Ordering opens soon")).toHaveLength(
       COUNTRIES.length + 1,
     );
     // TASK-092 published the seven corridor targets: every destination whose guide exists in
@@ -550,7 +550,7 @@ describe("the destinations grid", () => {
     expect(others).toHaveLength(6);
     for (const country of others) {
       expect(text(item(country.iso2)), country.iso2).toContain(
-        "Guide · not delivering yet",
+        "Ordering opens soon",
       );
       expect(item(country.iso2), country.iso2).not.toContain("bg-accent");
     }

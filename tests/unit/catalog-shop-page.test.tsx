@@ -194,7 +194,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
     expect(text).toContain("P.S.");
     expect(html).not.toContain("data-fo-listing-interlude");
     expect(html).toContain('data-fo-listing-state-line="guide"');
-    expect(text).toContain("Guide · not delivering yet");
+    expect(text).toContain("Ordering opens soon");
     expect(text).toContain("Narrow it down");
   });
 

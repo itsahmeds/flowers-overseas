@@ -22,7 +22,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { FX_SNAPSHOT_AS_OF } from "../../src/config/catalogue/fx.data.ts";
 import type { LocaleCode } from "../../src/config/locales.ts";
@@ -34,6 +34,14 @@ import {
 import type { OfferProjection } from "../../src/modules/catalog/types.ts";
 import { formatMoney, moneyDecimalString } from "../../src/modules/i18n";
 import { runSeoCli } from "./support/seo-cli.ts";
+
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
 
 const CLI = "validate-schema.ts";
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);

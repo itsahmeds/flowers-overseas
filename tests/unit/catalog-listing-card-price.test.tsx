@@ -21,7 +21,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   type ListingView,
@@ -39,6 +39,15 @@ import {
   loadMessages,
   moneyDecimalString,
 } from "../../src/modules/i18n";
+
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite compares each card with the `Offer` the live product page emits, so it runs against
+// the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
 
 /** Inside the 48-hour window of the 2026-09-08 snapshot. */
 const FRESH = new Date("2026-09-09T12:00:00Z");

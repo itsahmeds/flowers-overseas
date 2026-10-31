@@ -14,6 +14,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import { bannedVoiceWordsIn } from "../../src/config/voice.ts";
+import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
+import { POLAND_PARTNERS } from "../fixtures/poland-registry.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
@@ -312,29 +314,35 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     ]);
   });
 
-  it('opens Poland, selected, and says "not yet" in words for the six others', () => {
+  // Spec 007 §14 A-founder-2026-10-14c clause 3 (TASK-239): every country stays selectable, one
+  // where ordering is not open carries "soon" beside its name, and none is marked live unless open.
+  it('keeps every country selectable, preselects Poland, and says "soon" beside every name while none is open', () => {
     const html = picker("en");
     const options = countryOptions(html);
 
     expect(options.find(([iso]) => iso === "PL")).toEqual([
       "PL",
-      "Poland",
+      "Poland (soon)",
       false,
     ]);
-    expect(options.filter(([, , disabled]) => disabled)).toHaveLength(6);
     expect(options.find(([iso]) => iso === "DE")).toEqual([
       "DE",
-      "Germany (not yet)",
-      true,
+      "Germany (soon)",
+      false,
     ]);
+    expect(options).toHaveLength(7);
+    expect(options.filter(([, , disabled]) => disabled)).toEqual([]);
+    for (const [iso, label] of options) {
+      expect(label, iso).toMatch(/ \(soon\)$/u);
+    }
     expect(html).toMatch(/<option value="PL"[^>]* selected=""/);
   });
 
   it.each([
-    ["de", "Polen", "Deutschland (not yet)"],
-    ["pl", "Polska", "Niemcy (not yet)"],
+    ["de", "Polen (soon)", "Deutschland (soon)"],
+    ["pl", "Polska (soon)", "Niemcy (soon)"],
   ])(
-    '%s: Poland open, and every other country says "not yet" in words, not by greying alone (H1)',
+    '%s: every country selectable and says "soon" in words, not by greying alone (H1)',
     (locale, poland, germany) => {
       const options = countryOptions(picker(locale));
 
@@ -346,12 +354,11 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
       expect(options.find(([iso]) => iso === "DE")).toEqual([
         "DE",
         germany,
-        true,
+        false,
       ]);
-      const closed = options.filter(([, , disabled]) => disabled);
-      expect(closed).toHaveLength(6);
-      for (const [iso, label] of closed) {
-        expect(label, iso).toMatch(/ \(not yet\)$/u);
+      expect(options.filter(([, , disabled]) => disabled)).toEqual([]);
+      for (const [iso, label] of options) {
+        expect(label, iso).toMatch(/ \(soon\)$/u);
       }
     },
   );
@@ -427,10 +434,13 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     });
   });
 
-  it("closes Poland too when its shop root does not exist here", () => {
-    const options = countryOptions(picker("en", []));
+  it("preselects nothing when Poland's shop root does not exist here, and still disables nothing", () => {
+    const html = picker("en", []);
+    const options = countryOptions(html);
 
-    expect(options.filter(([, , disabled]) => disabled)).toHaveLength(7);
+    expect(options).toHaveLength(7);
+    expect(options.filter(([, , disabled]) => disabled)).toEqual([]);
+    expect(html).not.toMatch(/<option value="[A-Z]{2}"[^>]* selected=""/);
   });
 
   it("reads as the founder's sentence: Send flowers to [who] in [country] for [occasion].", () => {
@@ -548,31 +558,24 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     expect(source).toMatch(/import \{ useEffect \} from "react";/);
   });
 
-  it("opens a destination when the registry makes it live, with no change under `src/app/` (T-13)", async () => {
-    vi.doMock("../../src/config/countries.ts", async () => {
-      const actual = await vi.importActual<
-        typeof import("../../src/config/countries.ts")
-      >("../../src/config/countries.ts");
-      return {
-        ...actual,
-        countryConfig: (iso2: Parameters<typeof actual.countryConfig>[0]) =>
-          iso2 === "DE"
-            ? { ...actual.countryConfig(iso2), status: "live" as const }
-            : actual.countryConfig(iso2),
-      };
-    });
-    const { SentencePicker: Flipped } =
-      await import("../../src/modules/ui/home/SentencePicker.tsx");
-    const html = render(
-      <Flipped locale="en" shopCountries={["PL", "DE"]} />,
-      "en",
+  it("opens a destination when the data opens it, with no change under `src/app/` (T-13)", async () => {
+    // Opening is data (spec 007 §14 A-founder-2026-10-14c clause 5): Poland's committed
+    // `operations` block plus a florist through the provider is what `deliveryDatesOpen()` reads.
+    // Its "soon" goes, and nobody else's does.
+    const html = await withActivePartnersProvider(POLAND_PARTNERS, () =>
+      picker("en"),
     );
+    const options = countryOptions(html);
 
-    expect(countryOptions(html).find(([iso]) => iso === "DE")).toEqual([
-      "DE",
-      "Germany",
+    expect(options.find(([iso]) => iso === "PL")).toEqual([
+      "PL",
+      "Poland",
       false,
     ]);
+    expect(options.filter(([, label]) => !label.endsWith(" (soon)"))).toEqual([
+      ["PL", "Poland", false],
+    ]);
+    expect(html).toMatch(/<option value="PL"[^>]* selected=""/);
   });
 
   it("closes Poland when its corridor page is unpublished, from the same flag", async () => {
@@ -589,11 +592,13 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
       await import("../../src/modules/ui/home/SentencePicker.tsx");
     const html = render(<Flipped locale="en" shopCountries={["PL"]} />, "en");
 
+    // Still selectable (clause 3), no longer preselected: Continue would land on the hub.
     expect(countryOptions(html).find(([iso]) => iso === "PL")).toEqual([
       "PL",
-      "Poland (not yet)",
-      true,
+      "Poland (soon)",
+      false,
     ]);
+    expect(html).not.toMatch(/<option value="PL"[^>]* selected=""/);
   });
 
   it("renders in every launch locale", () => {

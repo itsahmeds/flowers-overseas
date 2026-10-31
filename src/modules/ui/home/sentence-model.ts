@@ -13,21 +13,26 @@
  *
  * - **Fields.** Only `country` (ISO code) and `occasion` (an occasion-tile id) have a `name`
  *   (`SENTENCE_FIELDS`). Nothing else on the form is ever submitted.
- * - **Which destinations are open.** `isSentenceDestination()`: the registry publishes the
- *   destination's corridor page (`corridorPagePublished`), the destination is `live` (we have
- *   said we will deliver there), **and** its shop root exists in this locale. The last term is
- *   the catalogue's (`corridorShopEntry()`), so the caller hands it in as `shopCountries`:
- *   `src/modules/ui` may not import the catalogue (`plan/01` §5). Every other destination is a
- *   `disabled` option labelled "not yet" in words, never by colour alone (A21 clause 4, A20
- *   clause 3). The `live` term is TASK-177's reading of the clause, recorded in the brief's
- *   escalations: TASK-092 set `corridorPagePublished` on all seven, and the artboards (and the
- *   honesty rules) draw six of them as "not yet".
+ * - **Which destinations lead to a shop.** `isSentenceDestination()`: the registry publishes the
+ *   destination's corridor page (`corridorPagePublished`), ordering is open there
+ *   (`deliveryDatesOpen()`) **or** it is the demo destination the chrome sends a buyer into
+ *   (`DEMO_DESTINATION_ISO2`, Poland), **and** its shop root exists in this locale. The last term
+ *   is the catalogue's (`corridorShopEntry()`), so the caller hands it in as `shopCountries`:
+ *   `src/modules/ui` may not import the catalogue (`plan/01` §5). The middle term read
+ *   `status === "live"` (TASK-177's reading of A21 clause 4) until Poland became `demo` (spec 007
+ *   §14 A-founder-2026-10-14c clause 5; TASK-239), whose clause 3 keeps Continue's behaviour
+ *   unchanged: Poland still lands on its shop, every other country on the destinations hub.
+ * - **Which destinations say "soon".** Every destination is selectable (clause 3). One where
+ *   ordering is not open (`deliveryDatesOpen()` false, today all seven) carries the short state
+ *   "soon" beside its name, in words and never by colour alone (A21 clause 4, A20 clause 3), and
+ *   none is marked or styled as live unless ordering is open there.
  * - **Order.** `collator(locale)`, never the registry's (AC-11; `pl` sorts `Ł` correctly).
  * - **Where a submission lands** (`sentenceTarget()`), from the user's own input only — never an
  *   IP or a header (ADR-0006):
- *     1. an open destination and an existing occasion page for the chosen occasion → that page;
+ *     1. an open destination (one that leads to a shop, above) and an existing occasion page for the chosen occasion → that page;
  *     2. an open destination → its shop root;
- *     3. anything else (unknown code, unpublished, not live, malformed) → the destinations hub.
+ *     3. anything else (unknown code, unpublished, not open and not the demo destination,
+ *        malformed) → the destinations hub.
  *   "The occasion page" is the country occasion page (spec 008 `countryOccasion`) for a seasonal
  *   occasion and the country's occasion **category** (`countryCategory`, same key) for an
  *   evergreen one — birthday, anniversary, sympathy, new baby and just because are categories in
@@ -42,7 +47,7 @@ import {
   COUNTRIES,
   type CountryConfig,
   type CountryIso2,
-  countryConfig,
+  deliveryDatesOpen,
   isCorridorPagePublished,
   isCountryIso2,
 } from "../../../config/countries.ts";
@@ -52,6 +57,7 @@ import {
   type OccasionId,
   type OccasionTile,
 } from "../../../config/occasions.ts";
+import { DEMO_DESTINATION_ISO2 } from "../../../config/site-links.ts";
 import { localePath, sortBy } from "../../i18n";
 
 /** The two submitted fields. A third `name` on the form is a defect (T-12). */
@@ -102,8 +108,17 @@ function localeCode(locale: string): LocaleCode {
 }
 
 /**
- * Is this destination open in the sentence? See the header for the three terms. `shopCountries`
- * is the set of ISO codes whose shop root exists in this locale (the catalogue's answer).
+ * The middle term of `isSentenceDestination()`: ordering is open here, or it is the demo
+ * destination. Shared with `sentenceTarget()`, so the form and the route cannot disagree.
+ */
+function leadsToShop(iso2: CountryIso2): boolean {
+  return deliveryDatesOpen(iso2) || iso2 === DEMO_DESTINATION_ISO2;
+}
+
+/**
+ * Does Continue take this destination to its shop? See the header for the three terms.
+ * `shopCountries` is the set of ISO codes whose shop root exists in this locale (the catalogue's
+ * answer).
  */
 export function isSentenceDestination(
   iso2: string,
@@ -111,20 +126,22 @@ export function isSentenceDestination(
 ): boolean {
   if (!isCountryIso2(iso2)) return false;
   if (!isCorridorPagePublished(iso2)) return false;
-  if (countryConfig(iso2).status !== "live") return false;
+  if (!leadsToShop(iso2)) return false;
   return shopCountries.has(iso2);
 }
 
-/** One `<option>` of the country select. */
+/** One `<option>` of the country select. Every option is selectable (clause 3). */
 export interface SentenceDestination {
   readonly iso2: CountryIso2;
   /** `destinations.{iso}.name`. */
   readonly nameKey: string;
-  /** `false` → a `disabled` option labelled "not yet". */
+  /** Continue lands on this destination's shop (`isSentenceDestination()`); the first is preselected. */
+  readonly shop: boolean;
+  /** Ordering is open here (`deliveryDatesOpen()`); `false` → labelled "soon" beside the name. */
   readonly open: boolean;
 }
 
-/** The seven destinations in the reader's collation order, each open or not yet. */
+/** The seven destinations in the reader's collation order. */
 export function sentenceDestinations(
   locale: string,
   nameOf: (nameKey: string) => string,
@@ -138,7 +155,8 @@ export function sentenceDestinations(
     ({ country }): SentenceDestination => ({
       iso2: country.iso2,
       nameKey: country.nameKey,
-      open: isSentenceDestination(country.iso2, shopCountries),
+      shop: isSentenceDestination(country.iso2, shopCountries),
+      open: deliveryDatesOpen(country.iso2),
     }),
   );
 }
@@ -205,7 +223,7 @@ export async function sentenceTarget(
   const iso2 = query.country;
   if (iso2 === undefined || !isCountryIso2(iso2)) return hub;
   if (!isCorridorPagePublished(iso2)) return hub;
-  if (countryConfig(iso2).status !== "live") return hub;
+  if (!leadsToShop(iso2)) return hub;
   const shopRoot = await lookups.shopRoot(iso2);
   if (shopRoot === undefined) return hub;
   const tile = tileOf(query.occasion);

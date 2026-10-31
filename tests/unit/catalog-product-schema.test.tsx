@@ -15,7 +15,7 @@
  */
 import { NextIntlClientProvider, createTranslator } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   ListingBreadcrumb,
@@ -34,6 +34,14 @@ import {
   productOffer,
 } from "../../src/modules/seo";
 import { pdpJsonLdProblems } from "../support/pdp-jsonld-scan";
+
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
 
 const BASE = { baseUrl: "https://flowersoverseas.com" } as const;
 const NOW = new Date("2026-09-09T07:00:00Z");

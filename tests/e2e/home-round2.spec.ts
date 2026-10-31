@@ -77,7 +77,7 @@ test.describe("the country select renders every value whole (TASK-231; AC-43, AC
             const option = element.options[at];
             if (option === undefined) throw new Error("no option");
             // Select each destination in turn: a disabled one is enabled for the probe only, with
-            // the label an open destination prints (its name, without the "(not yet)" state), so
+            // the label an open destination prints (its name, without the "(soon)" state), so
             // the box is measured as it renders once its flag flips (AC-11's case).
             if (option.disabled) {
               option.disabled = false;

@@ -20,7 +20,7 @@
  *    through unchanged rather than deciding again, so the honesty rule (`plan/10` §3) lives in
  *    one place.
  *
- * Ordering is the artboard's: the featured (`live`) destination first, then the guide destinations in
+ * Ordering is the artboard's: the featured destination (Poland) first, then the guide destinations in
  * `collator(locale)` order over their **translated** names, which is why `nameOf` is a parameter
  * — this module reads no catalogue, exactly like `./finder-model.ts`.
  */
@@ -32,6 +32,7 @@ import {
   destinationStateKey,
 } from "../../../config/countries.ts";
 import type { LocaleCode } from "../../../config/locales.ts";
+import { DEMO_DESTINATION_ISO2 } from "../../../config/site-links.ts";
 import { corridorLinkHref } from "../../geo";
 import { sortBy } from "../../i18n";
 
@@ -58,8 +59,13 @@ export interface DestinationStatus {
    */
   readonly delivering: boolean;
   /**
-   * True for a `status: "live"` destination — the one the site is built around (Poland), listed
+   * True for the one destination the site is built around (`DEMO_DESTINATION_ISO2`, Poland), listed
    * first and, where a locale has no guide, linked to its shop root. Says nothing about delivery.
+   *
+   * It read `status === "live"` until Poland became `demo` (spec 007 §14 A-founder-2026-10-14c
+   * clause 5; TASK-239). It is the page's `shopHref` destination by definition, because that link
+   * is the demo destination's shop root and no other country's: keyed on the same constant, the
+   * order and the link stay as they were and cannot point a second country at Poland's shop.
    */
   readonly featured: boolean;
   /** The corridor page, or `undefined` while unpublished — AC-14's "never a dead link". */
@@ -100,6 +106,11 @@ function defaultCorridorHref(
   return corridorLinkHref(iso2, locale);
 }
 
+/** The featured destination: the demo destination the chrome sends a buyer into (see above). */
+function isFeatured(country: CountryConfig): boolean {
+  return country.iso2 === DEMO_DESTINATION_ISO2;
+}
+
 function project(
   country: CountryConfig,
   locale: string,
@@ -111,7 +122,7 @@ function project(
     citiesKey: country.citiesKey,
     stateKey: destinationStateKey(country),
     delivering: deliveryDatesOpen(country.iso2),
-    featured: country.status === "live",
+    featured: isFeatured(country),
     href: hrefOf(country.iso2, locale),
   };
 }
@@ -133,7 +144,7 @@ export function destinationStatusProviderOf(
       const named = countries.map((country) => ({
         country,
         name: nameOf(country.nameKey),
-        featured: country.status === "live",
+        featured: isFeatured(country),
       }));
       const collated = sortBy(named, localeCode(locale), (entry) => entry.name);
       return [

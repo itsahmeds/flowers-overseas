@@ -131,14 +131,12 @@
       "locale": "en",
       "name": "I am sorry",
       "slug": "i-am-sorry",
-      "descriptionMd": "When you are apologizing, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will print it on our card. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "When you are apologizing, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will print it on our card. Choose where it is going and the day you want, and we take care of the rest. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Apology flower delivery across Europe",
       "seoDescription": "Pale roses, white tulips and freesias with your own words on a printed card. Quiet rather than grand, and it arrives on the date you pick.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "f3fd54ab230cdb93ff2c70c68bdd79a09d42f3962bd497714786e504b635dbc4"
+      "reviewed": false,
+      "sourceHash": "434baf64b8517b1702ddb3092911116d5e34a734f35dddfe7ced45734f6d7deb"
     },
     {
       "entity": "occasion",
@@ -292,14 +290,12 @@
       "locale": "en",
       "name": "Easter",
       "slug": "easter",
-      "descriptionMd": "Easter moves every year and takes the whole week with it: cutoffs shift, markets close on Good Friday and Easter Monday, and Saturday fills first. Spring flowers are the point — mixed and yellow tulips, narcissi, a garden crate. The destination page shows this year's date and the cutoff to order by. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Easter moves every year and takes the whole week with it: cutoffs shift, markets close on Good Friday and Easter Monday, and Saturday fills first. Spring flowers are the point — mixed and yellow tulips, narcissi, a garden crate. The destination page shows this year's date in that country. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Easter flower delivery across Europe",
       "seoDescription": "Mixed and yellow tulips, narcissi and garden crates for Easter. Dates move each year; the destination page shows the date and its cutoff.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "362884002463d20ae2ac61481fed9f662c0b13bed13b4e6aadc71e483dfc6d14"
+      "reviewed": false,
+      "sourceHash": "72afb2b604bd34db461330a52f61fa6a63d55952ed704d94d46b0529e3e76b49"
     },
     {
       "entity": "occasion",
