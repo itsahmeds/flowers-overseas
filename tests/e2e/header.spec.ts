@@ -338,12 +338,7 @@ test.describe("the site header (AC-7)", () => {
     await expect(basket).toHaveAttribute("href", "/en/basket");
     await expect(basket).toHaveAttribute("rel", "nofollow");
     // And the targets with no page are absent, not text.
-    for (const id of [
-      "sign-in",
-      "my-orders",
-      "add-ons",
-      "same-day-delivery",
-    ]) {
+    for (const id of ["sign-in", "my-orders", "add-ons", "same-day-delivery"]) {
       await expect(
         page.locator(`[data-fo-header-item="${id}"]`),
         id,
