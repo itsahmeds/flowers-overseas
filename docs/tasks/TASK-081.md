@@ -34,6 +34,7 @@ _None recorded._
 - 2026-10-25: seed-catalogue runbook, imagery record counted, RoPA statement and row 8, architecture §2/§3/§4, `check:no-db` gaps closed, T-01 and T-29 tests, offline build run in the build slot; draft PR #435.
 - 2026-10-25 (stop for the night): CI run 40191274793 on `ab1a4d7` green except Lighthouse LCP 2029/2038 ms (noise band, diff touches no page); failed job re-run once (attempt 2). Left: read attempt 2; if green, merge-ready.
 - 2026-10-31: rebased on `origin/main` (c0d6b6f2c, TASK-337); `docs/codebase-map.md` regenerated, not hand-merged; CI re-fired on the new head.
+- 2026-11-01: main moved (790ea4d48, TASK-380); rebased again, map regenerated; `gates:cheap` PASS on `d5303dbfa` (10 files, 227 tests).
 
 ## Result
 
