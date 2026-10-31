@@ -95,6 +95,15 @@ const CONFIRM_BODY = {
     on: "admin.flags.confirmBody.reviews.trustpilot.on",
     off: "admin.flags.confirmBody.reviews.trustpilot.off",
   },
+  // Spec 016 §12 (TASK-327): the two rollback switches.
+  "routing.auto": {
+    on: "admin.flags.confirmBody.routing.auto.on",
+    off: "admin.flags.confirmBody.routing.auto.off",
+  },
+  "notifications.email": {
+    on: "admin.flags.confirmBody.notifications.email.on",
+    off: "admin.flags.confirmBody.notifications.email.off",
+  },
 } as const satisfies Partial<
   Record<FlagKey, { readonly on: string; readonly off: string }>
 >;
