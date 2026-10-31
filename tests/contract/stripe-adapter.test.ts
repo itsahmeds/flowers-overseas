@@ -8,6 +8,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import chargeFixture from "./fixtures/stripe/2026-09-30.endive/charge.json" with { type: "json" };
+import disputeFixture from "./fixtures/stripe/2026-09-30.endive/dispute.json" with { type: "json" };
 import eventFixture from "./fixtures/stripe/2026-09-30.endive/event.json" with { type: "json" };
 import intentFixture from "./fixtures/stripe/2026-09-30.endive/payment_intent.json" with { type: "json" };
 import refundFixture from "./fixtures/stripe/2026-09-30.endive/refund.json" with { type: "json" };
@@ -27,6 +28,7 @@ import { SUBSCRIBED_STRIPE_EVENT_TYPES } from "../../src/modules/payments/stripe
 import { INTENT_METADATA_KEYS } from "../../src/modules/payments/stripe/params.ts";
 import {
   StripeChargeSchema,
+  StripeDisputeSchema,
   StripeEventSchema,
   StripePaymentIntentSchema,
   StripeRefundSchema,
@@ -361,6 +363,57 @@ describe("refund: the wire parameters", () => {
   });
 });
 
+describe("refund and dispute lookups: what the adapter reads (TASK-261)", () => {
+  it("reads our refund id back from the refund's metadata, and lists a charge's refunds by the charge", async () => {
+    const stripe = provider();
+    const intent = (await stripe.createIntent(input())) as ProviderIntent;
+    await emulator.simulateSuccess(intent.ref);
+    const refundId = "4f2e1d0c-9b8a-4776-a5b4-c3d2e1f0a9b8";
+    const made = await stripe.refund(
+      intent.ref,
+      { amountMinor: 1500, currency: "GBP" },
+      refundId,
+      { orderId: ORDER_ID, refundId, reason: "goodwill" },
+    );
+    expect(isProviderFailure(made)).toBe(false);
+    const ref = (made as { ref: string }).ref;
+    const read = await stripe.retrieveRefund(ref);
+    expect(read).toMatchObject({ ref, intentRef: intent.ref, refundId });
+    const charge = await emulator.chargeRefOf(intent.ref);
+    await stripe.listChargeRefunds(charge);
+    const list = emulator.requests.find(
+      (request) => request.method === "GET" && request.path === "/refunds",
+    );
+    expect(list?.params).toEqual({ charge, limit: "100" });
+  });
+
+  it("finds a dispute's intent through its charge when the dispute names none, and maps Stripe's states to four", async () => {
+    const stripe = provider();
+    const intent = (await stripe.createIntent(input())) as ProviderIntent;
+    await emulator.simulateSuccess(intent.ref);
+    const ref = await emulator.simulateDispute(intent.ref, "fraudulent");
+    const open = await stripe.retrieveDispute(ref);
+    expect(open).toMatchObject({
+      ref,
+      intentRef: intent.ref,
+      status: "open",
+      amount: { amountMinor: 5490, currency: "GBP" },
+      reason: "fraudulent",
+      evidenceDueBy: new Date(disputeFixture.evidence_details.due_by * 1000),
+    });
+    expect(
+      emulator.requests
+        .filter((request) => request.method === "GET")
+        .map((request) => request.path),
+    ).toEqual([
+      `/disputes/${ref}`,
+      `/charges/${await emulator.chargeRefOf(intent.ref)}`,
+    ]);
+    await emulator.simulateDisputeOutcome(ref, "lost");
+    expect(await stripe.retrieveDispute(ref)).toMatchObject({ status: "lost" });
+  });
+});
+
 describe("listEventsSince: the subscribed types, every page, oldest first", () => {
   it("asks for exactly the subscribed types from the instant, and follows has_more", async () => {
     const stripe = provider();
@@ -404,6 +457,7 @@ describe("Stripe's published fixtures parse with the schemas the adapter reads t
     ["payment_intent", StripePaymentIntentSchema, intentFixture],
     ["charge", StripeChargeSchema, chargeFixture],
     ["refund", StripeRefundSchema, refundFixture],
+    ["dispute", StripeDisputeSchema, disputeFixture],
     ["event", StripeEventSchema, eventFixture],
   ] as const)("%s", (_name, schema, fixture) => {
     expect(schema.safeParse(fixture).success).toBe(true);

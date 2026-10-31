@@ -27,6 +27,9 @@ const MATRIX: Record<string, readonly string[]> = {
   // spec 012b §5.2 "Permission rows" (TASK-293): the two the review ledger reads.
   "translation.attest": ["admin", "ops", "finance", "content"],
   "media.review": ["admin", "content"],
+  // spec 013 §5.2 adminRefund / adminCancel: role admin, named as spec 020a §5.2 names them.
+  "orders.refund": ["admin"],
+  "orders.cancel": ["admin"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

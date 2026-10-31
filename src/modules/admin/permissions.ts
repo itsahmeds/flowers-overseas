@@ -22,6 +22,10 @@ export const adminPermissions = [
   // spec 012b §5.2 (TASK-293): the two rows the review ledger reads.
   "translation.attest",
   "media.review",
+  // Spec 013 §5.2 `adminRefund` / `adminCancel` (role `admin`; TASK-261), under the names spec
+  // 020a §5.2 gives them (`orders.refund`, `orders.cancel`, admin only).
+  "orders.refund",
+  "orders.cancel",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -42,6 +46,8 @@ export const ADMIN_PERMISSIONS: Readonly<
   // (`attest()` checks the grant); photos need `media.review`.
   "translation.attest": ["admin", "ops", "finance", "content"],
   "media.review": ["admin", "content"],
+  "orders.refund": ["admin"],
+  "orders.cancel": ["admin"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */
