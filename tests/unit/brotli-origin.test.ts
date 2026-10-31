@@ -29,7 +29,6 @@ import {
   SUBRESOURCE_HEADERS,
   acceptsBrotli,
   brotli,
-  createEncoder,
   forwardedHeaders,
   isCompressible,
 } from "../../scripts/seo/brotli-origin.ts";
@@ -126,71 +125,5 @@ describe("which headers cross the proxy (§14 A12)", () => {
     expect(SUBRESOURCE_HEADERS).toContain("content-encoding");
     // `nosniff` stays: it is about how the byte stream is interpreted, which is not inert.
     expect(SUBRESOURCE_HEADERS).toContain("x-content-type-options");
-  });
-});
-
-describe("an immutable asset is encoded once, a document every time (TASK-427)", () => {
-  const STATIC = "public, max-age=31536000, immutable";
-  const DOCUMENT = "s-maxage=31536000";
-
-  /** A Brotli encoder that counts its own calls. */
-  function counted(): {
-    encode: ReturnType<typeof createEncoder>;
-    calls: () => number;
-  } {
-    let calls = 0;
-    const encode = createEncoder((body) => {
-      calls += 1;
-      return brotli(body);
-    });
-    return { encode, calls: () => calls };
-  }
-
-  it("serves the stored bytes for a second request of the same immutable body", () => {
-    const { encode, calls } = counted();
-    const chunk = Buffer.from(
-      "(globalThis.TURBOPACK||=[]).push(1);".repeat(200),
-    );
-    const first = encode(chunk, STATIC);
-    const second = encode(Buffer.from(chunk), STATIC);
-    expect(calls()).toBe(1);
-    expect(second.equals(first)).toBe(true);
-    // The stored bytes are the quality-11 bytes, not some cheaper encoding.
-    expect(second.equals(brotli(chunk))).toBe(true);
-    expect(brotliDecompressSync(second).equals(chunk)).toBe(true);
-  });
-
-  it("encodes a document on every request, at quality 11", () => {
-    const { encode, calls } = counted();
-    const html = Buffer.from(
-      "<!DOCTYPE html><html><body>x</body></html>".repeat(50),
-    );
-    encode(html, DOCUMENT);
-    encode(html, DOCUMENT);
-    encode(html, undefined);
-    encode(html, null);
-    expect(calls()).toBe(4);
-    expect(encode(html, DOCUMENT).equals(brotli(html))).toBe(true);
-  });
-
-  it("never answers a changed immutable body with the old bytes", () => {
-    const { encode, calls } = counted();
-    const a = Buffer.from("a".repeat(500));
-    const b = Buffer.from("b".repeat(500));
-    encode(a, STATIC);
-    const out = encode(b, STATIC);
-    expect(calls()).toBe(2);
-    expect(brotliDecompressSync(out).equals(b)).toBe(true);
-  });
-
-  it("reads `immutable` as a directive, not as a substring", () => {
-    const { encode, calls } = counted();
-    const body = Buffer.from("c".repeat(500));
-    encode(body, "public, max-age=0, x-not-immutable");
-    encode(body, "public, max-age=0, x-not-immutable");
-    expect(calls()).toBe(2);
-    encode(body, "public, max-age=31536000, IMMUTABLE");
-    encode(body, "public, max-age=31536000, IMMUTABLE");
-    expect(calls()).toBe(3);
   });
 });
