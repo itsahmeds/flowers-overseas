@@ -108,6 +108,18 @@ export {
 
 export { corridorSitemapEntries } from "./sitemap/corridors.ts";
 
+// Spec 008's two listing children (§6 "Sitemap membership", AC-19; TASK-116): each is its
+// page-type list applied to `listingPages()` and the page's own verdict.
+export {
+  CATEGORY_SITEMAP_PAGE_TYPES,
+  categorySitemapEntries,
+} from "./sitemap/categories.ts";
+export type { ListingSitemapPageType } from "./sitemap/listings.ts";
+export {
+  OCCASION_SITEMAP_PAGE_TYPES,
+  occasionSitemapEntries,
+} from "./sitemap/occasions.ts";
+
 export {
   STATIC_SITEMAP_PAGE_TYPES,
   type StaticSitemapPageType,

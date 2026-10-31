@@ -1,6 +1,7 @@
 /**
- * `GET /sitemaps/{locale}/{index|static|corridors}.xml` — the locale index and its children
- * (spec 007 §2 "Sitemaps", §5.2, §5.4, AC-13, AC-14; `plan/02` §10; TASK-094).
+ * `GET /sitemaps/{locale}/{index|static|corridors|categories|occasions}.xml` — the locale index
+ * and its children (spec 007 §2 "Sitemaps", §5.2, §5.4, AC-13, AC-14; `plan/02` §10; TASK-094;
+ * spec 008's two listing children, AC-19, TASK-116).
  *
  * One route file for both levels, because they answer the same question about the same two
  * segments and Next allows one dynamic slug name per depth (the constraint spec 007 §14 A8
@@ -35,7 +36,7 @@ export async function GET(
   const parsed = SitemapParamsSchema.safeParse(await params);
   if (!parsed.success) return new Response(null, { status: NOT_FOUND });
 
-  const document = sitemapDocumentFor(
+  const document = await sitemapDocumentFor(
     parsed.data.locale,
     sitemapNameOf(parsed.data.child),
     deploymentDescriptor(process.env),

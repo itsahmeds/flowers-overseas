@@ -32,7 +32,12 @@ import { NextIntlClientProvider } from "next-intl";
 
 import type { LocaleConfig } from "../../src/config/locales.ts";
 import { alternatesFor } from "../../src/modules/i18n/alternates.ts";
-import { CANONICAL_HOST, sitemapLocales } from "../../src/modules/seo";
+import {
+  CANONICAL_HOST,
+  categorySitemapEntries,
+  occasionSitemapEntries,
+  sitemapLocales,
+} from "../../src/modules/seo";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   type MessageNamespace,
@@ -262,6 +267,13 @@ describe("a fifth locale is data (AC-31)", () => {
 });
 
 /**
+ * The flip case renders a page, hashes two trees and walks both listing sitemap children twice
+ * (TASK-116); it ran past Vitest's 5 000 ms default when `gates:cheap` ran 117 files beside other
+ * agents (2026-10-31, load average 25), so it says its own budget.
+ */
+const FLIP_WALK_TIMEOUT_MS = 30_000;
+
+/**
  * AC-48 / T-48's integration half (spec 003 §14 A-founder-2026-10-14c clause 4): showing a hidden
  * locale again is a data flip. `de` with every key reviewed, then `shown: true` in a fixture
  * registry: the switcher gains its link and `isLocaleIndexable("de")` turns true, and no file under
@@ -310,45 +322,66 @@ describe("showing `de` again is data (AC-48)", () => {
     }
   }
 
-  it("adds the German link to the switcher and makes `de` indexable, with no file changed", async () => {
-    const before = {
-      app: manifest("src/app"),
-      modules: manifest("src/modules"),
-    };
-    const GERMAN_LINK = 'lang="de" hrefLang="de">Deutsch</a>';
+  it(
+    "adds the German link to the switcher and makes `de` indexable, with no file changed",
+    async () => {
+      const before = {
+        app: manifest("src/app"),
+        modules: manifest("src/modules"),
+      };
+      const GERMAN_LINK = 'lang="de" hrefLang="de">Deutsch</a>';
 
-    const observe = async () => ({
-      html: await renderLocaleDocument("en"),
-      indexable: isLocaleIndexable("de"),
-      hreflang: alternatesFor(
-        { pageType: "home" },
-        { baseUrl: `https://${CANONICAL_HOST}` },
-      ).map((page) => page.url.slice(`https://${CANONICAL_HOST}/`.length)),
-      sitemaps: sitemapLocales({
-        environment: "production",
-        siteUrl: `https://${CANONICAL_HOST}`,
-      }),
-    });
-    const hidden = await underFlip(false, observe);
-    const shown = await underFlip(true, observe);
+      const observe = async () => ({
+        html: await renderLocaleDocument("en"),
+        indexable: isLocaleIndexable("de"),
+        hreflang: alternatesFor(
+          { pageType: "home" },
+          { baseUrl: `https://${CANONICAL_HOST}` },
+        ).map((page) => page.url.slice(`https://${CANONICAL_HOST}/`.length)),
+        sitemaps: await sitemapLocales({
+          environment: "production",
+          siteUrl: `https://${CANONICAL_HOST}`,
+        }),
+        germanListings: [
+          ...(await categorySitemapEntries("de", {
+            environment: "production",
+            siteUrl: `https://${CANONICAL_HOST}`,
+          })),
+          ...(await occasionSitemapEntries("de", {
+            environment: "production",
+            siteUrl: `https://${CANONICAL_HOST}`,
+          })),
+        ].map((entry) => entry.loc),
+      });
+      const hidden = await underFlip(false, observe);
+      const shown = await underFlip(true, observe);
 
-    // Hidden: a fully reviewed `de` is still offered nowhere and indexed nowhere (AC-47).
-    expect(hidden.indexable).toBe(false);
-    expect(hidden.html).not.toContain(GERMAN_LINK);
-    expect(hidden.hreflang).toEqual(["en", "en-gb"]);
-    expect(hidden.sitemaps).toEqual(["en", "en-gb"]);
-    // Shown: the same tree, one flag apart.
-    expect(shown.indexable).toBe(true);
-    expect(shown.html).toContain(GERMAN_LINK);
-    expect(shown.hreflang).toEqual(["en", "en-gb", "de"]);
-    // The sitemaps read the same gate; `de` has no published corridor guide, so no German URL
-    // is indexable yet and the index still announces the English locales only.
-    expect(shown.sitemaps).toEqual(["en", "en-gb"]);
-    expect({
-      app: manifest("src/app"),
-      modules: manifest("src/modules"),
-    }).toEqual(before);
-  });
+      // Hidden: a fully reviewed `de` is still offered nowhere and indexed nowhere (AC-47).
+      expect(hidden.indexable).toBe(false);
+      expect(hidden.html).not.toContain(GERMAN_LINK);
+      expect(hidden.hreflang).toEqual(["en", "en-gb"]);
+      expect(hidden.sitemaps).toEqual(["en", "en-gb"]);
+      // Shown: the same tree, one flag apart.
+      expect(shown.indexable).toBe(true);
+      expect(shown.html).toContain(GERMAN_LINK);
+      expect(shown.hreflang).toEqual(["en", "en-gb", "de"]);
+      // The sitemaps read the same gate. `de` has no published corridor guide and every German
+      // hub's copy row is an unreviewed machine draft, so the one German URL that becomes
+      // indexable is the occasions index, whose intro is message-catalogue copy and is reviewed
+      // under this flip (spec 008 §6; its own `<head>` says `index,follow` from the same verdict).
+      // Spec 008's `occasions.xml` (TASK-116) announces it, so `de` joins the index with it.
+      expect(hidden.germanListings).toEqual([]);
+      expect(shown.sitemaps).toEqual(["en", "en-gb", "de"]);
+      expect(shown.germanListings).toEqual([
+        `https://${CANONICAL_HOST}/de/anlaesse`,
+      ]);
+      expect({
+        app: manifest("src/app"),
+        modules: manifest("src/modules"),
+      }).toEqual(before);
+    },
+    FLIP_WALK_TIMEOUT_MS,
+  );
 
   it("leaves the static registry hiding `de` afterwards", () => {
     expect(staticLocaleRegistry.get("de")?.shown).toBe(false);
