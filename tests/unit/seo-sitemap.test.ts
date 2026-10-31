@@ -70,18 +70,29 @@ const ENGLISH_LOCALES = ["en", "en-gb"] as const;
 const locs = (entries: readonly SitemapEntry[]): string[] =>
   entries.map((entry) => entry.loc);
 
+/**
+ * The first case that reaches the listing children pays the lazy import of the catalogue barrel
+ * (`listings.ts`, TASK-116), which ran past Vitest's 5 000 ms default when `gates:cheap` ran 117
+ * files beside other agents (2026-10-31, load average 25). The async cases say their own budget.
+ */
+const LISTING_IMPORT_TIMEOUT_MS = 30_000;
+
 describe("membership: the engine decides, nothing re-derives (AC-14)", () => {
-  it("announces nothing at all outside an indexing environment", async () => {
-    for (const locale of ENGLISH_LOCALES) {
-      expect(corridorSitemapEntries(locale, PREVIEW)).toEqual([]);
-      expect(staticSitemapEntries(locale, PREVIEW)).toEqual([]);
-    }
-    expect(await sitemapLocales(PREVIEW)).toEqual([]);
-    expect(await sitemapIndexEntries(PREVIEW)).toEqual([]);
-    // The index is still a valid, empty sitemap index — an empty announcement, not a 404.
-    expect(await sitemapIndexDocument(PREVIEW)).toContain("<sitemapindex");
-    expect(await sitemapIndexDocument(PREVIEW)).not.toContain("<loc>");
-  });
+  it(
+    "announces nothing at all outside an indexing environment",
+    async () => {
+      for (const locale of ENGLISH_LOCALES) {
+        expect(corridorSitemapEntries(locale, PREVIEW)).toEqual([]);
+        expect(staticSitemapEntries(locale, PREVIEW)).toEqual([]);
+      }
+      expect(await sitemapLocales(PREVIEW)).toEqual([]);
+      expect(await sitemapIndexEntries(PREVIEW)).toEqual([]);
+      // The index is still a valid, empty sitemap index — an empty announcement, not a 404.
+      expect(await sitemapIndexDocument(PREVIEW)).toContain("<sitemapindex");
+      expect(await sitemapIndexDocument(PREVIEW)).not.toContain("<loc>");
+    },
+    LISTING_IMPORT_TIMEOUT_MS,
+  );
 
   it("lists every existing, indexable corridor URL in an indexing environment", () => {
     for (const locale of ENGLISH_LOCALES) {
@@ -99,13 +110,17 @@ describe("membership: the engine decides, nothing re-derives (AC-14)", () => {
     }
   });
 
-  it("has no corridor row for a locale nobody has authored a guide in (§13 Q1)", async () => {
-    for (const locale of ["de", "pl"]) {
-      expect(corridorSitemapEntries(locale, INDEXING)).toEqual([]);
-      // …and the locale is announced nowhere, because its catalogue is unreviewed.
-      expect(await sitemapLocales(INDEXING)).not.toContain(locale);
-    }
-  });
+  it(
+    "has no corridor row for a locale nobody has authored a guide in (§13 Q1)",
+    async () => {
+      for (const locale of ["de", "pl"]) {
+        expect(corridorSitemapEntries(locale, INDEXING)).toEqual([]);
+        // …and the locale is announced nowhere, because its catalogue is unreviewed.
+        expect(await sitemapLocales(INDEXING)).not.toContain(locale);
+      }
+    },
+    LISTING_IMPORT_TIMEOUT_MS,
+  );
 
   it("never lists a pseudo-locale, whatever the flag says", () => {
     for (const locale of ["en-XA", "ar-XB"]) {
