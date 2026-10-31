@@ -49,9 +49,24 @@ function banner(locale: string, megaMenu: MegaMenuModel): string {
   return html.slice(start, end + "</header>".length);
 }
 
-/** The banner with each inline SVG's paths left out (the logo lockup; see the header). */
+/**
+ * The logo lockup's link (`data-fo-header-logo`), the one part of the banner left out. Every other
+ * inline SVG (the Basket icon, spec 010 D10; TASK-349) is counted.
+ */
+function logoLink(markup: string): string {
+  const start = markup.lastIndexOf("<a", markup.indexOf("data-fo-header-logo"));
+  const end = markup.indexOf("</a>", start);
+  if (start === -1 || end === -1) throw new Error("no logo link");
+  return markup.slice(start, end + "</a>".length);
+}
+
+/** The banner with the logo lockup's SVG paths left out (see the header). */
 function withoutSvg(markup: string): string {
-  return markup.replace(/<svg[\s\S]*?<\/svg>/gu, "<svg></svg>");
+  const logo = logoLink(markup);
+  return markup.replace(
+    logo,
+    logo.replace(/<svg[\s\S]*?<\/svg>/gu, "<svg></svg>"),
+  );
 }
 
 /** The inline SVGs' own share of the banner, so the exclusion above stays the logo's alone. */
@@ -83,7 +98,7 @@ describe("header plus Menu bytes (AC-103, T-109)", () => {
         HEADER_BROTLI_MAX,
       );
       // The excluded part is the lockup and nothing else: two SVGs, within the logo's budget.
-      const svgs = markup.match(/<svg[\s\S]*?<\/svg>/gu) ?? [];
+      const svgs = logoLink(markup).match(/<svg[\s\S]*?<\/svg>/gu) ?? [];
       expect(svgs).toHaveLength(2);
       expect(brotliBytes(svgs.join(""))).toBeLessThanOrEqual(LOGO_BROTLI_MAX);
     },
