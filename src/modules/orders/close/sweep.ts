@@ -10,8 +10,10 @@
  *     status and the instant that status was entered, asks `closeDueAt` again, and checks its
  *     refunds; then either closes it through `orderService.transition(orderId, 'order.closed',
  *     'system:order.close', { mode, from })` or skips it:
- *       - `skipped_refund`: a refund of the order is `requested` or `pending` (spec 013 §12's
- *         requirement on the closing job); a later run closes it once the refund has settled;
+ *       - `skipped_refund`: a refund naming the order (`refund.order_id`, `0026`) is `requested`
+ *         or `pending` (spec 013 §12's requirement on the closing job); a refund of another order
+ *         of the same purchase does not hold this one; a later run closes it once the refund has
+ *         settled;
  *       - `skipped_moved`: the order is no longer due (another sweep closed it while this one
  *         waited on the lock, or it moved on, for example to `disputed`, between the select and
  *         the lock). No event, no error;
@@ -174,8 +176,8 @@ async function closeOne(
   }
 
   const [refund] = await executor.execute(sql`
-    SELECT 1 AS open FROM refund r JOIN payment p ON p.id = r.payment_id
-    WHERE p.order_id = ${orderId}
+    SELECT 1 AS open FROM refund r
+    WHERE r.order_id = ${orderId}
       AND r.status = ANY(ARRAY[${sql.join(
         OPEN_REFUND_STATUSES.map((status) => sql`${status}`),
         sql`, `,

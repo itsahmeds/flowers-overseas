@@ -85,11 +85,19 @@ function alerts(): AlertRaiser & {
   return Object.assign(raise, { raised });
 }
 
-/** A `live` order walked to `photo_uploaded`, its photo event at `photoAt`. */
-async function photoOrder(tx: Tx, photoAt: Date): Promise<string> {
+/**
+ * A `live` order walked to `photo_uploaded`, its photo event at `photoAt`; in `purchaseId` when
+ * given (two orders of one purchase), else in a purchase of its own.
+ */
+async function photoOrder(
+  tx: Tx,
+  photoAt: Date,
+  purchaseId?: string,
+): Promise<string> {
   const orderId = await insertPlacedOrder(tx, {
     ...(await orderParents(tx)),
     mode: "live",
+    ...(purchaseId === undefined ? {} : { purchaseId }),
   });
   await walkOrderTo(tx, orderId, "delivered");
   await applyTransition(
@@ -122,23 +130,28 @@ async function statusOf(tx: Tx | postgres.Sql, orderId: string) {
   return row?.status;
 }
 
-/** A captured `live` payment of `orderId` and one refund of it in `status`. */
+/**
+ * A captured `live` payment of `orderId`'s purchase (`0026`: the payment belongs to the purchase)
+ * and one refund naming `refundOrderId` (default `orderId`) in `status`.
+ */
 async function refundOf(
   tx: Tx,
   orderId: string,
   status: "requested" | "pending",
+  refundOrderId: string = orderId,
 ): Promise<string> {
-  const [payment] = await tx<{ id: string }[]>`
-    INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
+  const [payment] = await tx<{ id: string; purchase_id: string }[]>`
+    INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor,
                          currency_code, livemode, capture_method, amount_captured_minor,
                          captured_at)
-    VALUES (${orderId}, 'stripe', ${`pi_${crypto.randomUUID().slice(0, 12)}`}, 'captured',
-            'card', 18900, 'PLN', true, 'automatic', 18900, now())
-    RETURNING id`;
+    VALUES ((SELECT purchase_id FROM "order" WHERE id = ${orderId}), 'stripe',
+            ${`pi_${crypto.randomUUID().slice(0, 12)}`}, 'captured', 'card', 18900, 'PLN', true,
+            'automatic', 18900, now())
+    RETURNING id, purchase_id`;
   const [refund] = await tx<{ id: string }[]>`
-    INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
-                        requested_by)
-    VALUES (${payment?.id ?? ""},
+    INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                        currency_code, reason, status, requested_by)
+    VALUES (${payment?.id ?? ""}, ${refundOrderId}, ${payment?.purchase_id ?? ""},
             ${status === "pending" ? `re_${crypto.randomUUID().slice(0, 12)}` : null},
             500, 'PLN', 'quality', ${status}, 'system:payments')
     RETURNING id`;
@@ -306,6 +319,42 @@ describe.skipIf(server.url === undefined)(
         expect(result.events).toHaveLength(1);
       },
     );
+
+    it("T-03 (AC-3): a pending refund naming one order of a two-order purchase holds that order only", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const parents = await orderParents(tx);
+        // Two orders of 18 900 each; `purchase_total_check` runs at commit, which never comes.
+        const [purchase] = await tx<{ id: string }[]>`
+          INSERT INTO purchase (mode, buyer_currency_code, total_minor, locale_code, customer_id)
+          VALUES ('live', 'PLN', 37800, 'en', ${parents.customerId})
+          RETURNING id`;
+        const purchaseId = purchase?.id ?? "";
+        const held = await photoOrder(tx, ago(WINDOW + HOUR), purchaseId);
+        const sibling = await photoOrder(tx, ago(WINDOW + HOUR), purchaseId);
+        await refundOf(tx, sibling, "pending", held);
+        const counts = await runCloseSweep({
+          transaction: savepoints(tx),
+          now: () => NOW,
+          alert: alerts(),
+          log: silentLogger(),
+        });
+        return {
+          counts,
+          held: await statusOf(tx, held),
+          sibling: await statusOf(tx, sibling),
+        };
+      });
+      expect(result.counts).toEqual({
+        selected: 2,
+        closed: 1,
+        held: 1,
+        moved: 0,
+        failed: 0,
+        remaining: 1,
+      });
+      expect(result.held).toBe("photo_uploaded");
+      expect(result.sibling).toBe("closed");
+    });
 
     it("T-04 (AC-4): an order moved to disputed between the select and the lock is skipped, no event, no error", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
