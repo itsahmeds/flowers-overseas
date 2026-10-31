@@ -33,6 +33,7 @@ _None recorded._
 - 2026-10-25: worktree on `origin/main`, row `in_progress`, audit of what TASK-072…080 and TASK-138 already shipped against AC-1, AC-28 and AC-29.
 - 2026-10-25: seed-catalogue runbook, imagery record counted, RoPA statement and row 8, architecture §2/§3/§4, `check:no-db` gaps closed, T-01 and T-29 tests, offline build run in the build slot; draft PR #435.
 - 2026-10-25 (stop for the night): CI run 40191274793 on `ab1a4d7` green except Lighthouse LCP 2029/2038 ms (noise band, diff touches no page); failed job re-run once (attempt 2). Left: read attempt 2; if green, merge-ready.
+- 2026-10-31: rebased on `origin/main` (c0d6b6f2c, TASK-337); `docs/codebase-map.md` regenerated, not hand-merged; CI re-fired on the new head.
 
 ## Result
 
