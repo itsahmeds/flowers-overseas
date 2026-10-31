@@ -39,6 +39,7 @@ here.
 
 - 2026-10-22: migration `0020_florists_v0` + `.down.sql` (numbered after PR 320's `0019`), Drizzle mirror, `db/rls.ts` classes `PUBLIC_INSERT_ONLY_TABLES` and `PARTNER_FILTERED_TABLES`, three retention handlers, T-14 (`tests/integration/florists-schema.test.ts`, incl. rollback on a seeded database) and T-17 (`retention-sweep.test.ts`); existing suites updated for the new `NOT NULL` columns. `scripts/db-check.snapshot.json` is regenerated only after PR 320 lands (its `0019` is in the same snapshot). Next: TASK-212.
 - 2026-10-24 finisher (renumber): PR head `42fde07d` rebased onto PR 384's head `a4688a7b` (main + 383's `0019`/`0020` + 384's `0021`), migration renumbered to `0022_florists_v0`, `scripts/db-check.snapshot.json` regenerated from a migrated PG16 (its 11 objects only), `schema-partners-customers.test.ts` merged with 384's generic later-migration reader. A stale paused rebase in `fo-wt-211` was aborted; the old local branch tip is kept as `backup/211-local-1022`.
+- 2026-10-31: finisher L: the 10-25 e2e reds (shards 2 and 3) were not this PR's: the same two Sunday-chip tests (`product-page.spec.ts:197`, `product-size-card-dates.spec.ts:346`) failed on PR 398 in the same hour; they fail on a Sunday after the 14:00 Warsaw cutoff. Re-run on ff319587 all green (run 41229333645); rebased onto main 790ea4d4 (TASK-380) and re-fired.
 
 ## Result
 
