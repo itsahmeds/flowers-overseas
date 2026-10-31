@@ -40,6 +40,7 @@ Decisions taken inside the task (fail-closed, nothing blocked on them), each nee
 - 2026-10-23: `deriveVariants` moved verbatim to `seed/derive.ts` (CLI re-exports it); worker `src/jobs/media-derive-variants.ts` + handler; T-25 green on a scratch PG16.
 - 2026-10-23: `pnpm media:upload --originals [--backfill]` (`scripts/media-originals.ts`); docs, `.env.example`, railway optional key, codebase map; 17 mutations each red; `gates:cheap` PASS. PR 349.
 - 2026-10-24: finisher rebased onto `origin/main` (692a24b5), map regenerated, deps reinstalled (zod 4.6.7), private bucket recorded in Escalations.
+- 2026-10-31: finisher L rebased onto origin/main c0d6b6f2c (map regenerated) and re-fired CI; the 10-25 lighthouse red was LCP 2036 ms on pages the diff does not touch, known noise.
 
 ## Result
 
