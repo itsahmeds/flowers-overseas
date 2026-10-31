@@ -173,9 +173,13 @@ test.describe("sorting (AC-9, T-09)", () => {
     await context.close();
   });
 
-  test("the whole control is reachable and operable from the keyboard alone", async ({
-    page,
+  test("the whole control is reachable and operable from the keyboard alone, with JavaScript off", async ({
+    browser,
   }) => {
+    // With JavaScript on the select applies the order on change (spec 043 item 3, the island);
+    // with it off the `<noscript>` Sort button submits the GET form (AC-39).
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
     await page.goto(SHOP);
     const select = page.getByLabel(/sort by/iu);
     await select.focus();
@@ -186,19 +190,21 @@ test.describe("sorting (AC-9, T-09)", () => {
     await expect(page.getByRole("button", { name: /^sort$/iu })).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/\?sort=price-desc$/u);
+    await context.close();
   });
 
   test("the default order is labelled plainly and disclosed, never as a ranking", async ({
     page,
   }) => {
     await page.goto(SHOP);
-    // C3 (TASK-241): the form sits above the grid and the disclosure is its own line.
+    // C3 (TASK-241): the form sits above the grid; the disclosure is behind "How we sort", in
+    // the server HTML (spec 043 item 2).
     await expect(page.locator("[data-fo-listing-sort-form]")).toHaveAttribute(
       "data-fo-listing-sort-form",
       "default",
     );
     await expect(
-      page.locator("main [data-fo-listing-disclosure]"),
+      page.locator("main [data-fo-ranking-disclosure]"),
     ).toContainText("It is not a ranking by sales");
     const text = (await page.locator("body").innerText()).toLowerCase();
     for (const claim of ["bestseller", "most popular", "recommended for you"]) {

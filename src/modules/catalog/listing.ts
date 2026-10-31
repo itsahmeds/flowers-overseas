@@ -65,6 +65,7 @@ import {
   type CountryIso2,
   COUNTRY_CODES,
   countryConfig,
+  deliveryDatesOpen,
   isCountryIso2,
   isGuidePublished,
 } from "@/config/countries";
@@ -244,6 +245,13 @@ export const ListingCountrySchema = z
      * listing module reads `corridorView()` (spec 008 §14 A9).
      */
     state: z.enum(["guide", "live"]),
+    /**
+     * Whether ordering is open in this destination: `deliveryDatesOpen(iso2)`, the one predicate
+     * spec 007 §14 A-founder-2026-10-14c clause 1 names. The listing head's quiet line prints the
+     * not-open state part only while this is `false` (spec 043 §14 A-founder-2026-10-22 item 1,
+     * revised 2026-10-24; AC-36; TASK-289).
+     */
+    orderingOpen: z.boolean(),
   })
   .strict();
 
@@ -409,6 +417,12 @@ export const ListingViewSchema = z
     items: z.array(ProductCardViewSchema).readonly(),
     hubItems: z.array(HubCardViewSchema).readonly(),
     tiles: z.array(CategoryTileViewSchema).readonly(),
+    /**
+     * Of the category keys this page links in its "Categories" panel (the shop root's tiles, the
+     * country category's sibling chips), those of kind `occasion` in the authored taxonomy: the
+     * panel's second group (spec 043 §5.3 E; TASK-289). Absent on every other page type.
+     */
+    occasionCategoryKeys: z.array(z.string().min(1)).readonly().optional(),
     occasionDates: z.array(ListingOccasionDateSchema).readonly().optional(),
     occasions: z.array(ListingOccasionEntrySchema).readonly().optional(),
     /**
@@ -1627,6 +1641,7 @@ export async function listingView(
                 }
               : {}),
             state: state ?? "guide",
+            orderingOpen: deliveryDatesOpen(iso2),
           },
         }),
     ...(entityKey === undefined ||
@@ -1677,6 +1692,15 @@ export async function listingView(
     items,
     hubItems,
     tiles,
+    ...(pageType === "countryShopRoot" ||
+    (pageType === "countryCategory" && kind === "category")
+      ? {
+          occasionCategoryKeys: await occasionCategoryKeysOf([
+            ...tiles.map((tile) => tile.key),
+            ...links.chips.map((chip) => chip.key),
+          ]),
+        }
+      : {}),
     ...(hubPresentation === undefined
       ? {}
       : await hubFirstScreen(
@@ -2155,6 +2179,21 @@ export async function hubDestinationHref(
       : await occasionHubExists(hub.entityKey, locale, memo);
   if (!hubExists) return undefined;
   return destinationRowHref(locale, hub.kind, hub.entityKey, iso2, memo);
+}
+
+/**
+ * The keys of `keys` whose authored category is of kind `occasion`, in input order, each once
+ * (spec 043 §5.3 E: the "Categories" panel's second group). Read through the catalogue
+ * provider, like every other category fact here.
+ */
+async function occasionCategoryKeysOf(
+  keys: readonly string[],
+): Promise<readonly string[]> {
+  const out: string[] = [];
+  for (const key of new Set(keys)) {
+    if ((await getCategory(key))?.kind === "occasion") out.push(key);
+  }
+  return out;
 }
 
 /** Every link §2 asks the page to render, and only to pages that exist. */

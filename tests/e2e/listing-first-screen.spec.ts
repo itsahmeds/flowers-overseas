@@ -1,31 +1,31 @@
 /**
- * The three country listings' first screens, as a browser lays them out (spec 004 §14 **A24**
- * clause 2, rebound **AC-34**, **AC-45**, T-49, T-50; spec 008 §14 **A15**, **A16**,
- * A-founder-2026-10-14c, AC-31, AC-33, AC-6, T-35, T-37, T-06; TASK-187, TASK-241).
+ * The three country listings' first screens and their head, as a browser lays them out (spec 043
+ * §14 A-founder-2026-10-22 as revised 2026-10-24: AC-5, AC-7, AC-35 to AC-37, AC-40, AC-41,
+ * AC-51 to AC-54, T-05, T-07, T-35 to T-37, T-40, T-41, T-51 to T-54; spec 004 rebound AC-34,
+ * AC-45, T-49, T-50; spec 008 A-founder-2026-10-15c, T-39; TASK-187, TASK-241, TASK-289).
  *
- * Three sizes: 1440 × 900 and 1280 × 800 (the laptop band) and 390 × 844 (the phone). Every case
- * sets its own viewport, so it runs once, in `e2e-desktop`.
+ * Every case sets its own viewport, so it runs once, in `e2e-desktop`. The drawing is the
+ * `lh:2026-10-24b` block of `docs/design/wireframes/country-{shop,category,occasion}-*.dc.html`.
  *
- * What each probe would go red on, by construction:
- * - the first row: a card of the grid's first row whose photograph top or price bottom lies
- *   outside the viewport (a lead figure restored above the grid pushes the row down);
- * - the state line: text that is not the message for the `data-fo-listing-state-line` state the
- *   server rendered, a line not directly under the H1 at 390, or no line;
- * - the price marker: a card's price with no "Includes VAT and delivery" (`catalog.price.inclusive`,
- *   spec 004 §14 A-founder-2026-10-19b clause 1) in the same card (a bare number);
- * - AC-45: a band of the first viewport over 120 px tall with no text, image or control in it, and
- *   any rotated element or `aria-hidden` element 48 px or larger;
- * - C3 (spec 008 §14 A-founder-2026-10-14c, AC-33, T-37; TASK-241, which withdrew T-36): a sort
- *   form or a chip row after the grid or below its first card, a count line or disclosure that is
- *   not visible or not before them, a pager before the grid, in any of four locales at 390 or 1440;
- *   a form that no longer sorts with JavaScript off;
- * - the phone label: anything but exactly one displayed "Example arrangement" label above the
- *   grid's first card, inside the first viewport, while every card's own label stays in the HTML.
+ * What each probe goes red on, by construction:
+ * - T-41: a first-row price bottom below 900 or 800, or the phone's first photograph top below
+ *   340 (the H1 put back at `--text-title-fluid`, the occasion's lead photograph restored, the
+ *   example label put back above the grid on the phone);
+ * - T-35: a second element between the H1 and the toolbar (the destination line, an eyebrow, the
+ *   P.S. column), an image before the first card, a two-line quiet line at 1440 or 1280;
+ * - T-36: the quiet line's parts not exactly count, state, prices (or joined into one node);
+ * - T-37: the sort control on its own row, a count on the toolbar row, "How we sort" left on the
+ *   phone's toolbar row, "Change the order" anywhere;
+ * - T-40: the sentence outside its `<details>`, missing, filled by script, or in an overlay;
+ * - T-51: another H1 wording, size or a wrapping H1;
+ * - T-52: "page N of M" on page 1, or the state and prices parts on page 2;
+ * - T-53: the example label above the first card, or more than one displayed;
+ * - T-54: the occasion's lead photograph or date card, or `priority` off the first card.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { type Page, expect, test } from "@playwright/test";
+import { type Page, type TestInfo, expect, test } from "@playwright/test";
 
 import { forbiddenPhrasesIn } from "../support/forbidden-phrases";
 
@@ -34,20 +34,71 @@ const CATEGORY = "/en-gb/poland/flowers/roses";
 const OCCASION = "/en-gb/poland/occasions/mothers-day";
 const PAGES = [SHOP, CATEGORY, OCCASION] as const;
 
+/** AC-41's pages: the shop root, the founder's country category and the country occasion. */
+const FIRST_SCREEN_PAGES = [
+  { url: "/en/poland/flowers", type: "shop" },
+  { url: "/en/poland/flowers/birthday-flowers", type: "category" },
+  { url: "/en/poland/occasions/mothers-day", type: "occasion" },
+  { url: "/en-gb/poland/flowers", type: "shop" },
+  { url: "/en-gb/poland/flowers/birthday-flowers", type: "category" },
+  { url: "/en-gb/poland/occasions/mothers-day", type: "occasion" },
+] as const;
+
+/** "The three listings" for Poland and Germany (spec 043 §14 AC preamble). */
+const THREE_LISTINGS = [
+  { url: "/en/poland/flowers", type: "shop", h1: "Flowers to Poland" },
+  {
+    url: "/en/poland/flowers/birthday-flowers",
+    type: "category",
+    h1: "Birthday flowers to Poland",
+  },
+  {
+    url: "/en/poland/occasions/mothers-day",
+    type: "occasion",
+    h1: "Mother's Day flowers to Poland",
+  },
+  { url: "/en-gb/germany/flowers", type: "shop", h1: "Flowers to Germany" },
+  {
+    url: "/en-gb/germany/flowers/anniversary-flowers",
+    type: "category",
+    h1: "Anniversary flowers to Germany",
+  },
+  {
+    url: "/en-gb/germany/occasions/mothers-day",
+    type: "occasion",
+    h1: "Mother's Day flowers to Germany",
+  },
+] as const;
+
 const SIZES = [
   { width: 1440, height: 900 },
   { width: 1280, height: 800 },
   { width: 390, height: 844 },
 ] as const;
+const DESKTOP = SIZES[0];
+const LAPTOP = SIZES[1];
+const PHONE = SIZES[2];
 
-/** The state messages, from the catalogue the page renders (no copy retyped here). */
-const MESSAGES = JSON.parse(
+/** The `en` catalogue the pages render (`en-gb` inherits it): no copy retyped here. */
+const EN = JSON.parse(
   readFileSync(resolve(import.meta.dirname, "../../messages/en.json"), "utf8"),
-) as { destinations: { state: Record<string, string> } };
-const STATE_TEXT: Readonly<Record<string, string | undefined>> = {
-  guide: MESSAGES.destinations.state["guideNotDelivering"],
-  live: MESSAGES.destinations.state["deliveringNow"],
+) as {
+  destinations: { state: Record<string, string> };
+  nav: { utility: Record<string, string>; categories: { label: string } };
+  shop: {
+    toolbar: Record<string, string>;
+    root: Record<string, string>;
+    occasion: Record<string, string>;
+  };
+  media: { provenance: Record<string, string> };
+  product: { destination: Record<string, string> };
 };
+const NOT_OPEN = EN.destinations.state["guideNotDelivering"] ?? "";
+const PRICES = EN.nav.utility["pricesInclude"] ?? "";
+const SENTENCE = EN.shop.toolbar["disclosure"] ?? "";
+const HOW_WE_SORT = EN.shop.toolbar["howWeSort"] ?? "";
+const AI_EXAMPLE = EN.media.provenance["aiExample"] ?? "";
+const DEMO_NOTICE = EN.shop.root["demoNotice"] ?? "";
 
 test.beforeEach(({}, testInfo) => {
   test.skip(
@@ -65,6 +116,26 @@ async function open(
   const response = await page.goto(url);
   expect(response?.status(), url).toBe(200);
   await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+  });
+}
+
+/** A JavaScript-off page at `size`; the caller closes its context. */
+async function openNoScript(
+  browser: import("@playwright/test").Browser,
+  url: string,
+  size: { width: number; height: number },
+): Promise<{ page: Page; close: () => Promise<void> }> {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: size,
+  });
+  const page = await context.newPage();
+  const response = await page.goto(url);
+  expect(response?.status(), url).toBe(200);
+  await page.evaluate(() => document.fonts.ready);
+  return { page, close: async () => context.close() };
 }
 
 interface Box {
@@ -72,6 +143,7 @@ interface Box {
   readonly bottom: number;
   readonly left: number;
   readonly right: number;
+  readonly height: number;
 }
 
 /** The box of the first **displayed** element matching `selector`, in viewport coordinates. */
@@ -85,6 +157,7 @@ async function boxOf(page: Page, selector: string): Promise<Box> {
         bottom: rect.bottom,
         left: rect.left,
         right: rect.right,
+        height: rect.height,
       };
     }
     return null;
@@ -102,41 +175,49 @@ function inside(box: Box, size: { width: number; height: number }): boolean {
   );
 }
 
+/** Two boxes share a horizontal band. */
+function overlapsVertically(a: Box, b: Box): boolean {
+  return a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+}
+
 /**
  * The grid's first row: every displayed card whose top equals the first displayed card's top, each
- * as its photograph's top and its price's bottom. On the occasion page from `md` up the lead `<li>`
- * is placed over the hero, so the grid's first row is the first row of the other cards.
+ * as its photograph's top and its price's bottom (the amount with its inclusive words, rebound
+ * AC-34's price element).
  */
-async function firstRow(
-  page: Page,
-): Promise<{ id: string; top: number; bottom: number; price: string }[]> {
+async function firstRow(page: Page): Promise<
+  {
+    id: string;
+    top: number;
+    photoTop: number;
+    bottom: number;
+    price: string;
+  }[]
+> {
   return page.evaluate(() => {
     const cards = Array.from(
       document.querySelectorAll<HTMLElement>(
-        "main [data-fo-listing-grid] > li:not([data-fo-lead-item]) article, main [data-fo-listing-grid] > li[data-fo-lead-item] article",
+        "main [data-fo-listing-grid] > li article",
       ),
-    ).filter((card) => {
-      const li = card.closest("li");
-      return li !== null && getComputedStyle(li).position !== "absolute";
-    });
+    );
     const first = cards[0]?.getBoundingClientRect().top;
     return cards
       .filter(
         (card) => Math.abs(card.getBoundingClientRect().top - (first ?? 0)) < 1,
       )
       .map((card) => {
-        // The price is the amount with its inclusive words (the `Price` primitive's first child:
-        // beside the amount from `md` up, on the next line below `md`; spec 004 §14
-        // A-founder-2026-10-19b, item 7A). No card carries an equivalents line any more.
         const price = card.querySelector<HTMLElement>(
           "[data-fo-price] > :first-child",
         );
+        const photo =
+          card.querySelector("img, picture, [data-fo-photo-placeholder]") ??
+          card;
         return {
           id: card.getAttribute("data-fo-product-card") ?? "",
           top: card.getBoundingClientRect().top,
+          photoTop: photo.getBoundingClientRect().top,
           bottom:
             price?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY,
-          // `innerText`: a marker hidden by CSS is not beside the price.
           price: price?.innerText ?? "",
         };
       });
@@ -166,107 +247,97 @@ async function firstViewportText(page: Page): Promise<string> {
   });
 }
 
-test.describe("rebound AC-34 (T-49): the first screen of the three country types", () => {
-  for (const url of PAGES) {
+/**
+ * The innermost **displayed** elements of `<main>` whose own text is `value`, with their boxes
+ * (each counted once: an ancestor whose child already reads `value` is not counted).
+ */
+async function displayed(
+  page: Page,
+  value: string,
+): Promise<
+  { top: number; bottom: number; inStatus: boolean; afterGrid: boolean }[]
+> {
+  return page.evaluate((text) => {
+    const main = document.querySelector("main");
+    if (main === null) return [];
+    const grid = main.querySelector("[data-fo-listing-grid]");
+    return Array.from(main.querySelectorAll("*"))
+      .filter(
+        (element) =>
+          (element.textContent ?? "").trim() === text &&
+          !Array.from(element.children).some(
+            (child) => (child.textContent ?? "").trim() === text,
+          ) &&
+          element.checkVisibility({ visibilityProperty: true }) &&
+          element.getBoundingClientRect().height > 0,
+      )
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top,
+          bottom: rect.bottom,
+          inStatus: element.closest("[data-fo-listing-status]") !== null,
+          afterGrid:
+            grid !== null &&
+            (grid.compareDocumentPosition(element) &
+              Node.DOCUMENT_POSITION_FOLLOWING) !==
+              0,
+        };
+      });
+  }, value);
+}
+
+/** Records a measured number on the test, so the CI report carries it. */
+function note(testInfo: TestInfo, description: string): void {
+  testInfo.annotations.push({ type: "measured", description });
+}
+
+test.describe("T-41 and rebound AC-34 (T-49): the first screen of the three country types", () => {
+  for (const { url, type } of FIRST_SCREEN_PAGES) {
     for (const size of SIZES) {
       test(`${url} at ${String(size.width)} × ${String(size.height)}`, async ({
         page,
-      }) => {
+      }, testInfo) => {
         await open(page, url, size);
 
-        // The H1, first in DOM order, inside the viewport.
         const h1 = await boxOf(page, "main h1");
         expect(inside(h1, size), "H1").toBe(true);
 
-        // The state line, from the view's state, inside the viewport and directly under the H1.
-        const line = page.locator("main [data-fo-listing-state-line]");
-        await expect(line).toHaveCount(1);
-        const state =
-          (await line.getAttribute("data-fo-listing-state-line")) ?? "";
-        expect(STATE_TEXT[state], state).toBeDefined();
-        await expect(line).toHaveText(STATE_TEXT[state] ?? "");
-        const lineBox = await boxOf(page, "main [data-fo-listing-state-line]");
-        expect(inside(lineBox, size), "state line").toBe(true);
-        expect(lineBox.top, "state line under the H1").toBeGreaterThanOrEqual(
-          h1.bottom - 0.5,
-        );
-        expect(
-          await page.evaluate(
-            () =>
-              document
-                .querySelector("main h1")
-                ?.nextElementSibling?.hasAttribute(
-                  "data-fo-listing-state-line",
-                ) ?? false,
-          ),
-          "the state line is the H1's next sibling",
-        ).toBe(true);
-
-        // The H1 precedes the first price in DOM order.
-        expect(
-          await page.evaluate(() => {
-            const h = document.querySelector("main h1");
-            const price = document.querySelector("main [data-fo-price]");
-            return (
-              h !== null &&
-              price !== null &&
-              (h.compareDocumentPosition(price) &
-                Node.DOCUMENT_POSITION_FOLLOWING) !==
-                0
-            );
-          }),
-        ).toBe(true);
-
         const row = await firstRow(page);
-        if (url === OCCASION) {
-          // The date and `items[0]`'s price, and at 390 the whole first row.
-          expect(
-            inside(await boxOf(page, "main [data-fo-occasion-date]"), size),
-            "the date",
-          ).toBe(true);
-          const leadPrice = await boxOf(
-            page,
-            "main li[data-fo-lead-item] [data-fo-price]",
+        expect(row.length, "cards in the first row").toBe(
+          size.width < 768 ? 2 : 4,
+        );
+        // No lead figure on any type: `items[0]` is the grid's first card (AC-54).
+        await expect(page.locator("main [data-fo-lead]")).toHaveCount(0);
+        const lowestPrice = Math.max(...row.map((card) => card.bottom));
+        const firstPhoto = row[0]?.photoTop ?? Number.POSITIVE_INFINITY;
+        note(
+          testInfo,
+          `${url} ${String(size.width)}x${String(size.height)} (${type}): first photo top ${firstPhoto.toFixed(1)}, first-row price bottom ${lowestPrice.toFixed(1)}`,
+        );
+        for (const card of row) {
+          expect(card.top, `${card.id} card top`).toBeGreaterThanOrEqual(-0.5);
+          // AC-41 and rebound AC-34: every first-row price inside the first screen.
+          expect(card.bottom, `${card.id} price bottom`).toBeLessThanOrEqual(
+            size.height + 0.5,
           );
-          expect(inside(leadPrice, size), "items[0]'s price").toBe(true);
-          if (size.width < 768) {
-            expect(row.length).toBe(2);
-            for (const card of row) {
-              expect(card.top, card.id).toBeGreaterThanOrEqual(-0.5);
-              expect(card.bottom, card.id).toBeLessThanOrEqual(
-                size.height + 0.5,
-              );
-            }
-          }
-        } else {
-          // No lead figure: `items[0]` is the grid's first card, and the whole first row of
-          // priced cards lies inside the viewport, photograph top to price bottom.
-          await expect(page.locator("main [data-fo-lead]")).toHaveCount(0);
-          expect(row.length, "cards in the first row").toBe(
-            size.width < 768 ? 2 : 4,
+          expect(card.price, `${card.id} price`).toContain(
+            "Includes VAT and delivery",
           );
-          for (const card of row) {
-            expect(card.top, `${card.id} photo top`).toBeGreaterThanOrEqual(
-              -0.5,
-            );
-            expect(card.bottom, `${card.id} price bottom`).toBeLessThanOrEqual(
-              size.height + 0.5,
-            );
-            expect(card.price, `${card.id} price`).toContain(
-              "Includes VAT and delivery",
-            );
-          }
+        }
+        if (size.width < 768) {
+          // AC-41: the first photograph starts at or above 340 px on the phone.
+          expect(firstPhoto, "first photograph top").toBeLessThanOrEqual(340);
         }
 
-        // Every card's price has its inclusive words beside it, in the same card, at every width,
-        // and no card carries an equivalents line (A-founder-2026-10-19b clauses 1 and 2).
+        // Every card's price has its inclusive words beside it, in the same card, and no card
+        // carries an equivalents line (spec 004 A-founder-2026-10-19b clauses 1 and 2).
         const cards = page.locator("main article[data-fo-product-card]");
         const count = await cards.count();
-        expect(count).toBe(url === OCCASION ? 7 : 12);
+        expect(count).toBeGreaterThan(5);
         for (let index = 0; index < count; index += 1) {
           const price = cards.nth(index).locator("[data-fo-price]");
           await expect(price).toBeVisible();
-          // Rendered text, so a marker hidden by CSS below `md` counts as absent (T-49).
           await expect(price).toContainText("Includes VAT and delivery", {
             useInnerText: true,
           });
@@ -275,7 +346,7 @@ test.describe("rebound AC-34 (T-49): the first screen of the three country types
           ).toHaveCount(0);
         }
 
-        // Each product's URL once in `<main>` (AC-31).
+        // Each product's URL once in `<main>` (spec 008 AC-31).
         const hrefs = await page
           .locator("main article[data-fo-product-card] a[href]")
           .evaluateAll((links) =>
@@ -293,27 +364,593 @@ test.describe("rebound AC-34 (T-49): the first screen of the three country types
           ).toHaveLength(1);
         }
 
-        // No first-viewport text says what AC-37 forbids.
+        // No first-viewport text says what spec 004 AC-37 forbids.
         expect(forbiddenPhrasesIn(await firstViewportText(page))).toStrictEqual(
           [],
         );
       });
     }
   }
+});
 
-  for (const url of [SHOP, CATEGORY]) {
-    test(`${url}?page=2 renders no hero`, async ({ page }) => {
-      await open(page, `${url}?page=2`, SIZES[0]);
-      await expect(page.locator("main [data-fo-listing-hero]")).toHaveCount(0);
-      await expect(
-        page.locator("main [data-fo-listing-state-line]"),
-      ).toHaveCount(0);
-      await expect(page.locator("main h1")).toHaveCount(1);
-      // The results start the page: the first card's photograph is in the first viewport.
-      const first = await boxOf(page, "main article[data-fo-product-card]");
-      expect(first.top).toBeLessThan(SIZES[0].height);
+test.describe("T-35, T-05: the head holds the H1, the quiet line and the toolbar, and nothing else (AC-35, AC-5)", () => {
+  for (const { url, type } of THREE_LISTINGS) {
+    for (const size of [DESKTOP, LAPTOP, PHONE]) {
+      test(`${url} at ${String(size.width)}, JavaScript off`, async ({
+        browser,
+      }) => {
+        const { page, close } = await openNoScript(browser, url, size);
+        const head = await page.evaluate(() => {
+          const main = document.querySelector("main");
+          const h1 = main?.querySelector("h1");
+          const toolbar = main?.querySelector("[data-fo-listing-toolbar]");
+          const firstCard = main?.querySelector("[data-fo-product-card]");
+          if (!main || !h1 || !toolbar || !firstCard) return null;
+          const follows = (a: Node, b: Node): boolean =>
+            (a.compareDocumentPosition(b) &
+              Node.DOCUMENT_POSITION_FOLLOWING) !==
+            0;
+          // The outermost elements after the H1 and before the toolbar, not ancestors of it.
+          const between: string[] = [];
+          for (const element of Array.from(main.querySelectorAll("*"))) {
+            if (!follows(h1, element) || !follows(element, toolbar)) continue;
+            if (h1.contains(element) || element.contains(toolbar)) continue;
+            const parent = element.parentElement;
+            if (
+              parent !== null &&
+              follows(h1, parent) &&
+              !parent.contains(toolbar)
+            ) {
+              continue;
+            }
+            between.push(
+              element.hasAttribute("data-fo-listing-status")
+                ? "status"
+                : element.hasAttribute("data-fo-occasion-date")
+                  ? "date"
+                  : element.outerHTML.slice(0, 80),
+            );
+          }
+          const images = Array.from(main.querySelectorAll("img")).filter(
+            (img) => follows(img, firstCard),
+          );
+          const backgrounds = Array.from(main.querySelectorAll("*")).filter(
+            (element) =>
+              follows(element, firstCard) &&
+              !element.contains(firstCard) &&
+              getComputedStyle(element).backgroundImage !== "none",
+          );
+          const status = main.querySelector<HTMLElement>(
+            "[data-fo-listing-status]",
+          );
+          const headBox = main.querySelector("[data-fo-listing-head]");
+          const eyebrows = Array.from(
+            headBox?.querySelectorAll(".eyebrow, .label") ?? [],
+          ).filter(
+            (element) =>
+              element.closest("[data-fo-listing-categories]") === null &&
+              element.getBoundingClientRect().height > 0,
+          );
+          return {
+            between,
+            imagesBeforeFirstCard: images.length,
+            backgroundsBeforeFirstCard: backgrounds.length,
+            statusHeight: status?.getBoundingClientRect().height ?? 0,
+            statusLineHeight: Number.parseFloat(
+              status === null ? "0" : getComputedStyle(status).lineHeight,
+            ),
+            eyebrows: eyebrows.map((element) => element.textContent ?? ""),
+            notes: main.querySelectorAll("[data-fo-listing-note]").length,
+            text: main.textContent ?? "",
+          };
+        });
+        expect(head, "main, h1, toolbar and a card").not.toBeNull();
+        if (head === null) return;
+        expect(head.between, "between the H1 and the toolbar").toStrictEqual(
+          type === "occasion" ? ["date", "status"] : ["status"],
+        );
+        expect(head.imagesBeforeFirstCard, "images before the first card").toBe(
+          0,
+        );
+        expect(head.backgroundsBeforeFirstCard, "background images").toBe(0);
+        expect(head.notes, "the P.S. column").toBe(0);
+        expect(head.eyebrows, "eyebrows in the head").toStrictEqual([]);
+        expect(head.text).not.toContain("P.S.");
+        expect(head.text).not.toContain("Guide · not delivering yet");
+        // AC-5: no destination line in `<main>`; the header's selector carries it.
+        expect(head.text).not.toContain(EN.product.destination["label"] ?? "");
+        expect(head.text).not.toContain(EN.product.destination["change"] ?? "");
+        if (size.width >= 1280) {
+          expect(head.statusHeight, "the quiet line is one line").toBeLessThan(
+            2 * head.statusLineHeight,
+          );
+        }
+        await close();
+      });
+    }
+  }
+});
+
+test.describe("T-36, T-07: the quiet line's parts, and the state said once (AC-36, AC-7)", () => {
+  for (const { url, type } of THREE_LISTINGS) {
+    test(`${url} at 1440`, async ({ page }) => {
+      await open(page, url, DESKTOP);
+      const parts = await page
+        .locator("main [data-fo-listing-status] [data-fo-listing-status-part]")
+        .evaluateAll((elements) =>
+          elements
+            .filter((element) => element.getBoundingClientRect().height > 0)
+            .map((element) => [
+              element.getAttribute("data-fo-listing-status-part"),
+              element.textContent?.trim(),
+            ]),
+        );
+      const count = parts[0]?.[1] ?? "";
+      expect(count, "the count").toMatch(/^\d+ bouquets?$/u);
+      expect(parts).toStrictEqual([
+        ["count", count],
+        ["state", NOT_OPEN],
+        ["prices", PRICES],
+      ]);
+      const separators = await page
+        .locator("main [data-fo-listing-status] [data-fo-sep]")
+        .evaluateAll((elements) =>
+          elements.map((element) => element.getAttribute("aria-hidden")),
+        );
+      expect(separators.length).toBeGreaterThan(0);
+      expect(new Set(separators)).toStrictEqual(new Set(["true"]));
+      // AC-7: each value once in `<main>`, inside the quiet line; no demo sentence, no P.S.
+      for (const value of [NOT_OPEN, PRICES]) {
+        const shown = await displayed(page, value);
+        expect(shown, value).toHaveLength(1);
+        expect(shown[0]?.inStatus, `${value} in the quiet line`).toBe(true);
+      }
+      expect(await displayed(page, DEMO_NOTICE)).toHaveLength(0);
+      await expect(page.locator("main")).not.toContainText(DEMO_NOTICE);
+    });
+
+    test(`${url} at 390: the phone's rows`, async ({ page }) => {
+      await open(page, url, PHONE);
+      const count = await boxOf(
+        page,
+        'main [data-fo-listing-status] [data-fo-listing-status-part="count"]',
+      );
+      const hws = await boxOf(
+        page,
+        "main [data-fo-ranking-disclosure] > summary",
+      );
+      expect(
+        overlapsVertically(count, hws),
+        "How we sort on the count row",
+      ).toBe(true);
+      expect(hws.left, "How we sort after the count").toBeGreaterThan(
+        count.right,
+      );
+      if (type === "occasion") {
+        // The status parts follow the grid below `md` (spec 004 AC-57).
+        for (const value of [NOT_OPEN, PRICES]) {
+          const shown = await displayed(page, value);
+          expect(shown, value).toHaveLength(1);
+          expect(shown[0]?.afterGrid, `${value} after the grid`).toBe(true);
+        }
+      } else {
+        const state = await boxOf(
+          page,
+          'main [data-fo-listing-status] [data-fo-listing-status-part="state"]',
+        );
+        const prices = await boxOf(
+          page,
+          'main [data-fo-listing-status] [data-fo-listing-status-part="prices"]',
+        );
+        expect(
+          overlapsVertically(state, prices),
+          "state and prices on one row",
+        ).toBe(true);
+        expect(
+          state.bottom,
+          "the status row above the count",
+        ).toBeLessThanOrEqual(count.top + 0.5);
+        for (const value of [NOT_OPEN, PRICES]) {
+          expect(await displayed(page, value), value).toHaveLength(1);
+        }
+      }
     });
   }
+});
+
+test.describe("T-37, T-40: one toolbar row, and How we sort (AC-37, AC-40)", () => {
+  for (const { url, type } of THREE_LISTINGS) {
+    for (const size of [DESKTOP, LAPTOP]) {
+      test(`${url} at ${String(size.width)}: start, How we sort, sort pill`, async ({
+        page,
+      }) => {
+        await open(page, url, size);
+        const start = await boxOf(
+          page,
+          type === "occasion"
+            ? "main [data-fo-listing-also-in]"
+            : "main [data-fo-listing-categories] > summary",
+        );
+        const hws = await boxOf(
+          page,
+          "main [data-fo-ranking-disclosure] > summary",
+        );
+        const select = await boxOf(
+          page,
+          "main [data-fo-listing-sort-form] select",
+        );
+        const pill = await boxOf(page, "main [data-fo-listing-sort-form]");
+        expect(overlapsVertically(start, hws), "start and How we sort").toBe(
+          true,
+        );
+        expect(
+          overlapsVertically(hws, select),
+          "How we sort and the select",
+        ).toBe(true);
+        expect(start.right, "the start control first").toBeLessThan(hws.left);
+        expect(
+          hws.right,
+          "How we sort before the sort pill",
+        ).toBeLessThanOrEqual(pill.left + 0.5);
+        const status = await boxOf(page, "main [data-fo-listing-status]");
+        expect(
+          status.bottom,
+          "the quiet line above the row",
+        ).toBeLessThanOrEqual(start.top + 0.5);
+        // The sort pill's end edge is the row's last.
+        expect(pill.right).toBeGreaterThanOrEqual(
+          Math.max(start.right, hws.right),
+        );
+        // The pill is 44 px tall.
+        expect(Math.round(pill.height)).toBe(44);
+        // One hairline under the row from `md` up, and no count on the row.
+        const rule = await boxOf(page, "main [data-fo-listing-toolbar-rule]");
+        expect(rule.top).toBeGreaterThanOrEqual(pill.bottom);
+        const firstCard = await boxOf(
+          page,
+          "main article[data-fo-product-card]",
+        );
+        expect(
+          hws.bottom,
+          "How we sort ends above the first card",
+        ).toBeLessThan(firstCard.top);
+        expect(
+          await page
+            .locator(
+              "main [data-fo-listing-toolbar] [data-fo-listing-status-part='count']",
+            )
+            .count(),
+        ).toBe(0);
+        await expect(page.locator("main")).not.toContainText(
+          "Change the order",
+        );
+      });
+    }
+
+    test(`${url} at 768: the toolbar spans at most two rows`, async ({
+      page,
+    }) => {
+      await open(page, url, { width: 768, height: 1024 });
+      const tops = await page.evaluate(() =>
+        [
+          "main [data-fo-listing-categories] > summary, main [data-fo-listing-also-in]",
+          "main [data-fo-ranking-disclosure] > summary",
+          "main [data-fo-listing-sort-form]",
+        ].map((query) =>
+          Math.round(
+            document.querySelector(query)?.getBoundingClientRect().top ?? -1,
+          ),
+        ),
+      );
+      expect(tops).not.toContain(-1);
+      expect(new Set(tops).size).toBeLessThanOrEqual(2);
+    });
+
+    test(`${url} at 390: the start control and the sort pill on one row, no rule`, async ({
+      page,
+    }) => {
+      await open(page, url, PHONE);
+      const start = await boxOf(
+        page,
+        type === "occasion"
+          ? "main [data-fo-listing-also-in] a"
+          : "main [data-fo-listing-categories] > summary",
+      );
+      const pill = await boxOf(page, "main [data-fo-listing-sort-form]");
+      expect(overlapsVertically(start, pill)).toBe(true);
+      expect(start.right).toBeLessThanOrEqual(pill.left + 0.5);
+      expect(pill.right).toBeLessThanOrEqual(PHONE.width + 0.5);
+      const rule = page.locator("main [data-fo-listing-toolbar-rule]");
+      expect(
+        await rule.evaluate((element) => getComputedStyle(element).display),
+      ).toBe("none");
+    });
+  }
+
+  for (const url of [SHOP, OCCASION]) {
+    test(`${url}: How we sort is closed, holds the sentence once, opens by keyboard in flow`, async ({
+      browser,
+    }) => {
+      const { page, close } = await openNoScript(browser, url, DESKTOP);
+      const details = page.locator("main [data-fo-ranking-disclosure]");
+      await expect(details).toHaveCount(1);
+      expect(
+        await details.evaluate(
+          (element) => (element as HTMLDetailsElement).open,
+        ),
+      ).toBe(false);
+      await expect(details.locator("summary")).toHaveText(HOW_WE_SORT);
+      // The sentence, word for word, inside the `<details>` and nowhere else in `<main>`.
+      const occurrences = await page
+        .locator("main")
+        .evaluate(
+          (main, sentence) =>
+            (main.textContent ?? "").split(sentence).length - 1,
+          SENTENCE,
+        );
+      expect(occurrences).toBe(1);
+      await expect(details).toContainText(SENTENCE);
+      const before = (await boxOf(page, "main article[data-fo-product-card]"))
+        .top;
+      await details.locator("summary").focus();
+      await page.keyboard.press("Enter");
+      const sentence = page.locator("main [data-fo-ranking-sentence]");
+      await expect(sentence).toBeVisible();
+      expect(
+        await sentence.evaluate(
+          (element) => element.scrollHeight <= element.clientHeight + 1,
+        ),
+        "not clipped",
+      ).toBe(true);
+      const after = (await boxOf(page, "main article[data-fo-product-card]"))
+        .top;
+      expect(after, "the grid pushed down").toBeGreaterThan(before + 20);
+      await close();
+    });
+  }
+});
+
+test.describe("T-51: the short H1 (AC-51)", () => {
+  for (const { url, h1 } of THREE_LISTINGS) {
+    for (const size of SIZES) {
+      test(`${url} at ${String(size.width)}`, async ({ page }) => {
+        await open(page, url, size);
+        const heading = page.locator("main h1");
+        await expect(heading).toHaveCount(1);
+        await expect(heading).toHaveText(h1);
+        const em = heading.locator("em");
+        await expect(em).toHaveCount(1);
+        await expect(em).toHaveText(h1.split(" ").at(-1) ?? "");
+        const metrics = await heading.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            size: Number.parseFloat(style.fontSize),
+            line: Number.parseFloat(style.lineHeight),
+            height: element.getBoundingClientRect().height,
+          };
+        });
+        expect(metrics.size).toBeCloseTo(size.width < 768 ? 32 : 46, 0);
+        expect(metrics.height).toBeLessThan(
+          (size.width < 768 ? 3 : 2) * metrics.line,
+        );
+      });
+    }
+  }
+
+  test("every country listing's H1 is one line at 1280 × 800 and at most two at 390 × 844", async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(240_000);
+    const fixture = JSON.parse(
+      readFileSync(
+        resolve(import.meta.dirname, "../fixtures/shop/listing-urls.json"),
+        "utf8",
+      ),
+    ) as Record<string, { pageType: string; path: string }[]>;
+    const listings = (fixture["en"] ?? []).filter((entry) =>
+      ["countryShopRoot", "countryCategory", "countryOccasion"].includes(
+        entry.pageType,
+      ),
+    );
+    expect(listings.length).toBeGreaterThan(50);
+    const headings: { path: string; html: string }[] = [];
+    for (const { path } of listings) {
+      const response = await request.get(path);
+      expect(response.status(), path).toBe(200);
+      const match = /<h1[^>]*>(.*?)<\/h1>/su.exec(await response.text());
+      headings.push({ path, html: match?.[1] ?? "" });
+    }
+    for (const size of [LAPTOP, PHONE]) {
+      await open(page, "/en/poland/flowers", size);
+      const tooTall = await page.evaluate(
+        ({ all, lines }) => {
+          const h1 = document.querySelector("main h1");
+          if (h1 === null) return ["no h1"];
+          const line = Number.parseFloat(getComputedStyle(h1).lineHeight);
+          const out: string[] = [];
+          for (const { path, html } of all) {
+            h1.innerHTML = html;
+            if (h1.getBoundingClientRect().height >= (lines + 1) * line) {
+              out.push(`${path}: ${h1.textContent ?? ""}`);
+            }
+          }
+          return out;
+        },
+        { all: headings, lines: size.width < 768 ? 2 : 1 },
+      );
+      expect(tooTall, `${String(size.width)}`).toStrictEqual([]);
+    }
+  });
+});
+
+test.describe("T-52: page numbers from page 2 only (AC-52)", () => {
+  test("/en/poland/flowers: page 1 says no page, page 2's quiet line is the summary alone", async ({
+    page,
+  }) => {
+    await open(page, "/en/poland/flowers", DESKTOP);
+    const pageOne = await page.locator("main").evaluate((main) => {
+      const copy = main.cloneNode(true) as HTMLElement;
+      copy.querySelector("[data-fo-pagination]")?.remove();
+      return copy.textContent ?? "";
+    });
+    expect(pageOne).not.toMatch(/page \d+ of \d+/u);
+    await open(page, "/en/poland/flowers?page=2", DESKTOP);
+    const status = page.locator("main [data-fo-listing-status]");
+    await expect(status).toHaveText(/^\d+ bouquets · page 2 of \d+$/u);
+    await expect(status).not.toContainText(NOT_OPEN);
+    await expect(status).not.toContainText(PRICES);
+  });
+});
+
+test.describe("T-53: the example note under the grid (AC-53)", () => {
+  for (const { url } of THREE_LISTINGS.slice(0, 3)) {
+    for (const size of [DESKTOP, PHONE]) {
+      test(`${url} at ${String(size.width)}`, async ({ page }) => {
+        await open(page, url, size);
+        const shown = await displayed(page, AI_EXAMPLE);
+        expect(shown, "displayed example labels").toHaveLength(1);
+        const cards = await page
+          .locator("main [data-fo-listing-grid] > li")
+          .evaluateAll((items) =>
+            items.map((item) => item.getBoundingClientRect().bottom),
+          );
+        expect(shown[0]?.top ?? -1).toBeGreaterThanOrEqual(
+          Math.max(...cards) - 0.5,
+        );
+        const pager = page.locator("main [data-fo-pagination]");
+        if ((await pager.count()) > 0) {
+          expect(shown[0]?.bottom ?? Infinity).toBeLessThanOrEqual(
+            (await boxOf(page, "main [data-fo-pagination]")).top + 0.5,
+          );
+        }
+        // Every card keeps its own label in the HTML, hidden by CSS.
+        expect(
+          await page.locator("main [data-fo-card-provenance='hidden']").count(),
+        ).toBeGreaterThan(5);
+      });
+    }
+  }
+});
+
+test.describe("T-54: the country occasion's head (AC-54)", () => {
+  for (const url of [
+    "/en/poland/occasions/mothers-day",
+    "/en-gb/poland/occasions/mothers-day",
+  ]) {
+    for (const size of SIZES) {
+      test(`${url} at ${String(size.width)}, JavaScript off`, async ({
+        browser,
+      }) => {
+        const { page, close } = await openNoScript(browser, url, size);
+        const probe = await page.evaluate(() => {
+          const main = document.querySelector("main");
+          const firstCard = main?.querySelector("[data-fo-product-card]");
+          const img = main?.querySelector("img");
+          const h1 = main?.querySelector("h1");
+          const date = h1?.nextElementSibling as HTMLElement | null | undefined;
+          return {
+            firstImgInFirstCard:
+              img !== null &&
+              img !== undefined &&
+              firstCard?.contains(img) === true,
+            fetchpriority: img?.getAttribute("fetchpriority") ?? null,
+            loading: img?.getAttribute("loading") ?? null,
+            dateHook: date?.hasAttribute("data-fo-occasion-date") ?? false,
+            dateText: date?.textContent ?? "",
+            dateHeight: date?.getBoundingClientRect().height ?? 0,
+            dateLine: Number.parseFloat(
+              date === null || date === undefined
+                ? "0"
+                : getComputedStyle(date).lineHeight,
+            ),
+            cards:
+              main?.querySelectorAll("[data-fo-date-card], [data-fo-lead]")
+                .length ?? -1,
+          };
+        });
+        expect(
+          probe.firstImgInFirstCard,
+          "the first image is the first card's",
+        ).toBe(true);
+        expect(probe.fetchpriority).toBe("high");
+        expect(probe.loading).not.toBe("lazy");
+        expect(probe.cards, "no date card, no lead").toBe(0);
+        expect(probe.dateHook, "the date line follows the H1").toBe(true);
+        expect(probe.dateText).toBe(
+          "Mother's Day in Poland is Wednesday, 26 May 2027.",
+        );
+        if (size.width >= 1280) {
+          expect(probe.dateHeight).toBeLessThan(2 * probe.dateLine);
+        }
+        const noteText = (EN.shop.occasion["dateNote"] ?? "").replace(
+          "{country}",
+          "Poland",
+        );
+        const notes = await displayed(page, noteText);
+        expect(notes, "the date note").toHaveLength(1);
+        expect(notes[0]?.afterGrid, "after the grid").toBe(true);
+        await close();
+      });
+    }
+  }
+});
+
+test.describe("the sort select applies on change, with JavaScript on (AC-38)", () => {
+  test("/en/poland/flowers: price low to high, no reload, focus kept, Back restores", async ({
+    page,
+  }) => {
+    await open(page, "/en/poland/flowers", DESKTOP);
+    await page.waitForFunction(
+      () => performance.getEntriesByName("fo:deferred:listing-sort").length > 0,
+      undefined,
+      { timeout: 30_000 },
+    );
+    await page.evaluate(() => {
+      (window as unknown as { __foMarker: boolean }).__foMarker = true;
+    });
+    const scrollBefore = await page.evaluate(() => window.scrollY);
+    await page.locator("main select[name='sort']").focus();
+    await page.locator("main select[name='sort']").selectOption("price-asc");
+    await expect(page).toHaveURL(/\/en\/poland\/flowers\?sort=price-asc$/u);
+    expect(
+      await page.evaluate(
+        () =>
+          (window as unknown as { __foMarker?: boolean }).__foMarker === true,
+      ),
+      "no full reload",
+    ).toBe(true);
+    await expect(page.locator("main select[name='sort']")).toHaveValue(
+      "price-asc",
+    );
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.activeElement?.getAttribute("name") ?? ""),
+      )
+      .toBe("sort");
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+    // The JavaScript-off order of the same URL.
+    const order = async (p: Page): Promise<string[]> =>
+      p
+        .locator("main [data-fo-product-card]")
+        .evaluateAll((cards) =>
+          cards.map((card) => card.getAttribute("data-fo-product-card") ?? ""),
+        );
+    const sorted = await order(page);
+    const context = await page.context().browser()?.newContext({
+      javaScriptEnabled: false,
+    });
+    const plain = await context?.newPage();
+    if (plain === undefined) throw new Error("no page");
+    await plain.goto("/en/poland/flowers?sort=price-asc");
+    expect(sorted).toStrictEqual(await order(plain));
+    await context?.close();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\/poland\/flowers$/u);
+    await expect(page.locator("main select[name='sort']")).toHaveValue(
+      "default",
+    );
+  });
 });
 
 /**
@@ -449,243 +1086,41 @@ test.describe("AC-45 (T-50): calm, not bland", () => {
 });
 
 /**
- * The founder's C3 (spec 008 §14 A-founder-2026-10-14c, AC-33, T-37; TASK-241): on the shop root,
- * the country category, the country occasion and the occasion hub, at 390 and 1440, in four
- * locales — the count line, the ranking disclosure, the chip row and the sort form, in that DOM
- * order, all ending above the first card of the grid; the pager after the grid; no sort form and
- * no chip row after it. The "first card" is the grid's first card in flow: on the country occasion
- * from `md` up the lead `<li>` is drawn over the hero (A16 (b)), so it is the first of the others.
+ * The founder's C3 on the occasion hubs (spec 008 §14 A-founder-2026-10-14c, AC-33, T-37): the
+ * destination row before the grid. The hubs are unchanged by spec 043's revision (§14 "Hubs are
+ * unchanged"); the three country listings' order is T-35 and T-37 above.
  */
-const C3_PAGES = [
-  {
-    locale: "en-gb",
-    pages: [SHOP, CATEGORY, OCCASION, "/en-gb/occasions/birthday"],
-  },
-  {
-    locale: "en",
-    pages: [
-      "/en/poland/flowers",
-      "/en/poland/flowers/roses",
-      "/en/poland/occasions/mothers-day",
-      "/en/occasions/birthday",
-    ],
-  },
-  {
-    locale: "de",
-    pages: [
-      "/de/polen/blumen",
-      "/de/polen/blumen/rosen",
-      "/de/polen/anlaesse/muttertag",
-      "/de/anlaesse/geburtstag",
-    ],
-  },
-  {
-    locale: "pl",
-    pages: [
-      "/pl/polska/kwiaty",
-      "/pl/polska/kwiaty/roze",
-      "/pl/polska/okazje/dzien-matki",
-      "/pl/okazje/urodziny",
-    ],
-  },
-] as const;
-
-/** "Change the order" in each locale, from the catalogue the page renders. */
-function reorderLabel(locale: string): string {
-  const read = (file: string): string | undefined => {
-    const messages = JSON.parse(
-      readFileSync(
-        resolve(import.meta.dirname, `../../messages/${file}.json`),
-        "utf8",
-      ),
-    ) as { shop?: { toolbar?: { reorderLabel?: string } } };
-    return messages.shop?.toolbar?.reorderLabel;
-  };
-  return read(locale) ?? read(locale.split("-")[0] ?? "en") ?? "";
-}
-
-interface C3Layout {
-  /** The hooks found, in DOM order, among the parts AC-33 orders. */
-  readonly order: readonly string[];
-  /** Each part's box bottom and height, and the first in-flow card's top. */
-  readonly bottoms: Readonly<
-    Record<string, { bottom: number; height: number }>
-  >;
-  readonly firstCardTop: number;
-  /** Every `form`, `select` or `nav` in `<main>` after the grid, other than the pager. */
-  readonly afterGrid: readonly string[];
-}
-
-/** The parts AC-33 orders, read off the served page in one pass. */
-async function c3Layout(page: Page): Promise<C3Layout> {
-  return page.evaluate(() => {
-    const parts: readonly (readonly [string, string])[] = [
-      ["count", "main [data-fo-listing-count]"],
-      ["disclosure", "main [data-fo-listing-disclosure]"],
-      // On the country category the chip row is the "Categories" disclosure's `<summary>`
-      // (A-founder-2026-10-15c, AC-33 amended).
-      [
-        "chips",
-        "main [data-fo-listing-chips], main [data-fo-hub-destinations], main [data-fo-hub-pills], main [data-fo-phone-chips], main [data-fo-listing-categories] > summary",
-      ],
-      ["sort", "main [data-fo-listing-sort-form]"],
-      ["grid", "main [data-fo-listing-grid]"],
-      ["pager", "main [data-fo-pagination]"],
-    ];
-    const found: { name: string; element: Element }[] = [];
-    const bottoms: Record<string, { bottom: number; height: number }> = {};
-    for (const [name, query] of parts) {
-      let all = Array.from(document.querySelectorAll(query));
-      // A hub draws its pills twice, a wrapping row from `md` up and a scroller below it, each
-      // `display: none` at the other width (TASK-188's `HubPills`): the displayed one is the row.
-      if (all.length > 1)
-        all = all.filter(
-          (element) => element.getBoundingClientRect().height > 0,
-        );
-      if (all.length === 0) continue;
-      if (all.length > 1)
-        throw new Error(`${name}: ${String(all.length)} elements`);
-      const element = all[0] as Element;
-      found.push({ name, element });
-      const rect = element.getBoundingClientRect();
-      bottoms[name] = { bottom: rect.bottom, height: rect.height };
-    }
-    found.sort((a, b) =>
-      a.element.compareDocumentPosition(b.element) &
-      Node.DOCUMENT_POSITION_FOLLOWING
-        ? -1
-        : 1,
-    );
-    const grid = document.querySelector("main [data-fo-listing-grid]");
-    const inFlow = Array.from(
-      document.querySelectorAll<HTMLElement>(
-        "main [data-fo-listing-grid] > li",
-      ),
-    ).find((li) => getComputedStyle(li).position !== "absolute");
-    const afterGrid =
-      grid === null
-        ? []
-        : Array.from(
+test.describe("C3 on the occasion hubs (AC-33, T-37)", () => {
+  for (const url of [
+    "/en-gb/occasions/birthday",
+    "/en/occasions/birthday",
+    "/de/anlaesse/geburtstag",
+    "/pl/okazje/urodziny",
+  ]) {
+    for (const size of [DESKTOP, PHONE]) {
+      test(`${url} at ${String(size.width)}`, async ({ page }) => {
+        await open(page, url, size);
+        const order = await page.evaluate(() => {
+          const chips = Array.from(
             document.querySelectorAll(
-              "main form, main select, main nav, main details",
+              "main [data-fo-hub-destinations], main [data-fo-hub-pills], main [data-fo-phone-chips]",
             ),
-          )
-            .filter(
-              (element) =>
-                (grid.compareDocumentPosition(element) &
-                  Node.DOCUMENT_POSITION_FOLLOWING) !==
-                  0 && !element.hasAttribute("data-fo-pagination"),
-            )
-            .map((element) => element.outerHTML.slice(0, 120));
-    return {
-      order: found.map((part) => part.name),
-      bottoms,
-      firstCardTop:
-        inFlow?.getBoundingClientRect().top ?? Number.NEGATIVE_INFINITY,
-      afterGrid,
-    };
-  });
-}
-
-test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-37)", () => {
-  for (const { locale, pages } of C3_PAGES) {
-    for (const url of pages) {
-      const hub = url === pages[3];
-      for (const size of [SIZES[0], SIZES[2]]) {
-        test(`${url} at ${String(size.width)}`, async ({ page }) => {
-          await open(page, url, size);
-          const layout = await c3Layout(page);
-          const expected = hub
+          ).find((element) => element.getBoundingClientRect().height > 0);
+          const grid = document.querySelector("main [data-fo-listing-grid]");
+          if (!chips || !grid) return null;
+          return (chips.compareDocumentPosition(grid) &
+            Node.DOCUMENT_POSITION_FOLLOWING) !==
+            0
             ? ["chips", "grid"]
-            : ["count", "disclosure", "chips", "sort", "grid"];
-          // DOM order: the parts the page has, in AC-33's order, the pager (where there is one)
-          // after the grid.
-          expect(
-            layout.order.filter((name) => name !== "pager"),
-            "DOM order",
-          ).toStrictEqual(expected);
-          if (layout.order.includes("pager")) {
-            expect(layout.order.at(-1), "the pager follows the grid").toBe(
-              "pager",
-            );
-          }
-          // From `md` up the shop root draws no chip line (its tiles are the categories, PR 236):
-          // the line is in the DOM, in order, and displayed below `md` only. The country
-          // category's "chips" are the "Categories" summary, displayed at every width
-          // (A-founder-2026-10-15c; T-39 below).
-          const chipsShown = !(url === pages[0] && size.width >= 768);
-          if (!chipsShown) {
-            expect(layout.bottoms["chips"]?.height ?? -1, "no chip row").toBe(
-              0,
-            );
-          }
-          // Boxes: every part above the grid is displayed and ends above the first card's top.
-          for (const name of expected.filter(
-            (part) => part !== "grid" && (chipsShown || part !== "chips"),
-          )) {
-            const box = layout.bottoms[name];
-            expect(box, name).toBeDefined();
-            expect(box?.height ?? 0, `${name} is displayed`).toBeGreaterThan(
-              10,
-            );
-            expect(
-              box?.bottom ?? Infinity,
-              `${name} ends above the first card`,
-            ).toBeLessThanOrEqual(layout.firstCardTop + 0.5);
-          }
-          // Nothing that sorts or narrows the list follows the grid.
-          expect(layout.afterGrid, "after the grid").toStrictEqual([]);
-          if (!hub) {
-            for (const hook of [
-              "[data-fo-listing-count]",
-              "[data-fo-listing-disclosure]",
-            ]) {
-              await expect(page.locator(`main ${hook}`), hook).toBeVisible();
-            }
-            // The one sort control: "Change the order" (A10) where the page's form has always
-            // carried it, the shop root and the country category; the country occasion keeps its
-            // "Sort by" form (the C3 artboards, PR 236).
-            await expect(page.locator("main form")).toHaveCount(1);
-            await expect(page.locator("main select")).toHaveCount(1);
-            const form = page.locator("main [data-fo-listing-sort-form]");
-            if (url === pages[2]) {
-              await expect(form).toBeVisible();
-              await expect(form.locator("label")).toBeVisible();
-            } else {
-              await expect(form).toContainText(reorderLabel(locale));
-            }
-            // The disclosure is not clipped.
-            expect(
-              await page
-                .locator("main [data-fo-listing-disclosure]")
-                .evaluate(
-                  (element) => element.scrollHeight <= element.clientHeight + 1,
-                ),
-            ).toBe(true);
-          }
-          // Below `md` the chip row is one horizontal scroller: every chip on one line
-          // (A16 (e), spec 004 AC-49).
-          if (
-            !hub &&
-            url !== pages[1] &&
-            size.width < 768 &&
-            layout.order.includes("chips")
-          ) {
-            const tops = await page
-              .locator("main [data-fo-listing-chips] li")
-              .evaluateAll((items) =>
-                items.map((item) =>
-                  Math.round(item.getBoundingClientRect().top),
-                ),
-              );
-            expect(tops.length).toBeGreaterThan(0);
-            expect(new Set(tops).size, "one line").toBe(1);
-          }
+            : ["grid", "chips"];
         });
-      }
+        expect(order).toStrictEqual(["chips", "grid"]);
+      });
     }
   }
+});
 
+test.describe("spec 008 AC-9, spec 043 AC-39: the sort form with JavaScript off", () => {
   test("with JavaScript off, the form above the grid still sorts it", async ({
     browser,
   }) => {
@@ -713,71 +1148,12 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
     const sorted = await prices();
     expect(sorted.length).toBeGreaterThan(1);
     expect(sorted).toStrictEqual([...sorted].sort((a, b) => a - b));
-    // Still above the grid after the round trip.
-    const layout = await c3Layout(page);
-    expect(layout.order.indexOf("sort")).toBeLessThan(
-      layout.order.indexOf("grid"),
-    );
+    // Still above the grid after the round trip, and the Sort button is the `<noscript>` one.
+    const form = await boxOf(page, "main [data-fo-listing-sort-form]");
+    const firstCard = await boxOf(page, "main article[data-fo-product-card]");
+    expect(form.bottom).toBeLessThanOrEqual(firstCard.top);
     await context.close();
   });
-});
-
-test.describe("the phone's honesty label, once per grid (spec 008 §14 A16 (a), T-06)", () => {
-  for (const url of [SHOP, CATEGORY]) {
-    test(`${url} at 390: one displayed label, above the first card, in the first viewport`, async ({
-      page,
-    }) => {
-      await open(page, url, SIZES[2]);
-      const shown = await page.evaluate(() =>
-        Array.from(
-          document.querySelectorAll("main [data-fo-media-provenance]"),
-        ).map((element) => {
-          const rect = element.getBoundingClientRect();
-          return {
-            top: rect.top,
-            bottom: rect.bottom,
-            displayed: rect.height > 0,
-          };
-        }),
-      );
-      const displayed = shown.filter((label) => label.displayed);
-      expect(displayed).toHaveLength(1);
-      const first = await boxOf(page, "main article[data-fo-product-card]");
-      expect(displayed[0]?.bottom ?? Infinity).toBeLessThanOrEqual(first.top);
-      expect(displayed[0]?.top ?? -1).toBeGreaterThanOrEqual(0);
-      // The per-card labels stay in the HTML, hidden by CSS.
-      expect(shown.length).toBeGreaterThan(1);
-    });
-  }
-});
-
-test.describe("the country occasion's lead is one element (spec 008 §14 A16 (b), T-35)", () => {
-  for (const size of [SIZES[0], SIZES[2]]) {
-    test(`at ${String(size.width)}: items[0] once, and its URL once in <main>`, async ({
-      page,
-    }) => {
-      await open(page, OCCASION, size);
-      await expect(page.locator("main [data-fo-lead-item]")).toHaveCount(1);
-      const id = await page
-        .locator("main [data-fo-lead-item] article")
-        .getAttribute("data-fo-product-card");
-      await expect(
-        page.locator(`main [data-fo-product-card="${id ?? ""}"]`),
-      ).toHaveCount(1);
-      await expect(
-        page.locator("main [data-fo-lead-item] article"),
-      ).toBeVisible();
-      // It is the grid's first `<li>` in the DOM at every width.
-      expect(
-        await page.evaluate(
-          () =>
-            document
-              .querySelector("main [data-fo-listing-grid] > li")
-              ?.hasAttribute("data-fo-lead-item") ?? false,
-        ),
-      ).toBe(true);
-    });
-  }
 });
 
 /**
@@ -812,9 +1188,10 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
         page,
       }) => {
         await open(page, url, size);
-        const toggle = page.locator("main details");
+        // Two `<details>` on the row: "Categories" and "How we sort" (spec 043 item 2).
+        await expect(page.locator("main details")).toHaveCount(2);
+        const toggle = page.locator("main details[data-fo-listing-categories]");
         await expect(toggle).toHaveCount(1);
-        await expect(toggle).toHaveAttribute("data-fo-listing-categories");
         expect(
           await toggle.evaluate(
             (element) => (element as HTMLDetailsElement).open,
@@ -845,7 +1222,7 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
             document.querySelector(query)?.getBoundingClientRect();
           const summaryBox = box("main [data-fo-listing-categories] > summary");
           const sort = box("main [data-fo-listing-sort-form] select");
-          const count = box("main [data-fo-listing-count]");
+          const count = box("main [data-fo-listing-status]");
           const card = box("main [data-fo-listing-grid] > li");
           const summaryElement = document.querySelector(
             "main [data-fo-listing-categories] > summary",
@@ -873,9 +1250,8 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
         });
         expect(row.beforeGrid, "before the grid in the DOM").toBe(true);
         expect(row.withSort, "on the sort form's row").toBe(true);
-        if (size.width >= 1280) {
-          expect(row.withCount, "on the count line's row").toBe(true);
-        }
+        // The count is in the quiet line above the row, never on it (spec 043 AC-37).
+        expect(row.withCount, "not on the count's row").toBe(false);
         expect(row.summaryBottom, "above the first card").toBeLessThanOrEqual(
           row.cardTop + 0.5,
         );
@@ -895,6 +1271,7 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
           const panel = document
             .querySelector("main [data-fo-listing-categories] nav")
             ?.getBoundingClientRect();
+          // Grouped: what it is, then the occasions (spec 043 §5.3 E).
           const card = document
             .querySelector("main [data-fo-listing-grid] > li")
             ?.getBoundingClientRect();
@@ -933,13 +1310,28 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
       elements.map((element) => element.textContent?.trim() ?? ""),
     );
     // The sibling set the chip row carried (the exact set against `listingView()` is the unit
-    // case in `catalog-category-page`), the current category marked and not a link, in the
-    // page's collation order (sortBy, by name).
+    // case in `catalog-category-page`), the current category marked and not a link, in two
+    // labelled groups (spec 043 §5.3 E), each in the page's collation order (sortBy, by name).
     expect(names.length).toBeGreaterThan(5);
     expect(hrefs).toHaveLength(names.length - 1);
-    expect(names).toStrictEqual(
-      [...names].sort(new Intl.Collator("en-GB").compare),
-    );
+    const groups = await page
+      .locator("main [data-fo-listing-categories] ul")
+      .evaluateAll((lists) =>
+        lists.map((list) =>
+          Array.from(list.querySelectorAll("li")).map(
+            (item) => item.textContent?.trim() ?? "",
+          ),
+        ),
+      );
+    expect(groups.length).toBe(2);
+    for (const group of groups) {
+      expect(group).toStrictEqual(
+        [...group].sort(new Intl.Collator("en-GB").compare),
+      );
+    }
+    await expect(
+      page.locator("main [data-fo-listing-categories] h3"),
+    ).toHaveText(["By what it is", "Shop by occasion"]);
     await expect(
       page.locator("main [data-fo-listing-categories] [aria-current='page']"),
     ).toHaveCount(1);
@@ -968,162 +1360,4 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
       expect(response.status(), href).toBe(200);
     }
   });
-});
-
-/**
- * T-62 (spec 004 §14 A-founder-2026-10-18c clause 3, AC-57; spec 008's pointer; TASK-241): on page
- * 1 of the country occasion, N1 (`shop.root.demoNotice`) follows the grid's last card below `md`,
- * before the pager where one renders, as `country-occasion-mobile` draws it, and keeps its place in
- * the hero from `md` up. At every size exactly one element displays N1, and the accessibility tree
- * holds exactly one `note`, named by `shop.note.label`, whose text is N1.
- *
- * The mechanism (recorded in the brief): one render per band, the other `display: none`; the hero's
- * copy is hidden below `md`, the after-grid copy from `md` up. Red with the note put back in the
- * hero below `md` (its box above the grid), with a second copy displayed below `md` (two displayed
- * notes), and with the displayed phone copy `aria-hidden` (no `note` in the tree).
- */
-const NOTE_PAGES = [
-  { url: OCCASION, locale: "en-gb", pager: false },
-  { url: "/de/polen/anlaesse/muttertag", locale: "de", pager: false },
-  // AC-57's third URL, "a country occasion with more than 12 products, so that a pager renders
-  // (today `/en-gb/poland/occasions/birthday`)", answers 404: Mother's Day is the only country
-  // occasion the catalogue builds, in seven destinations, none with a pager (E-5 in the brief).
-  // The note-before-the-pager order is the unit case in `catalog-occasion-page.test.tsx` until a
-  // paged country occasion exists.
-] as const satisfies readonly {
-  url: string;
-  locale: string;
-  pager: boolean;
-}[];
-
-const NOTE_SIZES = [
-  { width: 390, height: 844, band: "phone" },
-  { width: 360, height: 640, band: "phone" },
-  { width: 1280, height: 800, band: "desktop" },
-  { width: 1440, height: 900, band: "desktop" },
-] as const;
-
-const escapeRegExp = (value: string): string =>
-  value.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-
-/** A `shop` message as the locale resolves it: its own catalogue, else `en`'s (the overlay). */
-function shopMessage(locale: string, path: readonly string[]): string {
-  const read = (code: string): unknown => {
-    let node: unknown = (
-      JSON.parse(
-        readFileSync(
-          resolve(import.meta.dirname, `../../messages/${code}.json`),
-          "utf8",
-        ),
-      ) as { shop?: unknown }
-    ).shop;
-    for (const key of path) {
-      node =
-        typeof node === "object" && node !== null
-          ? (node as Record<string, unknown>)[key]
-          : undefined;
-    }
-    return node;
-  };
-  const value = read(locale) ?? read("en");
-  if (typeof value !== "string") throw new Error(`no shop.${path.join(".")}`);
-  return value;
-}
-
-test.describe("T-62: the country occasion's note after the grid on the phone (AC-57)", () => {
-  for (const { url, locale, pager } of NOTE_PAGES) {
-    const text = shopMessage(locale, ["root", "demoNotice"]);
-    const label = shopMessage(locale, ["note", "label"]);
-    const mark = shopMessage(locale, ["note", "mark"]);
-    for (const size of NOTE_SIZES) {
-      test(`${url} at ${String(size.width)} × ${String(size.height)}: one note, ${size.band === "phone" ? "after the grid" : "in the hero"}`, async ({
-        page,
-      }) => {
-        await open(page, url, size);
-        const probe = await page.evaluate((n1) => {
-          const main = document.querySelector("main");
-          const grid = main?.querySelector("[data-fo-listing-grid]");
-          const h1 = main?.querySelector("h1");
-          if (!main || !grid || !h1) return null;
-          // The innermost displayed elements whose own text is N1.
-          const shown = Array.from(main.querySelectorAll("*")).filter(
-            (element) =>
-              (element.textContent ?? "").trim() === n1 &&
-              !Array.from(element.children).some(
-                (child) => (child.textContent ?? "").trim() === n1,
-              ) &&
-              element.checkVisibility({ visibilityProperty: true }) &&
-              element.getBoundingClientRect().height > 0,
-          );
-          const cards = Array.from(grid.querySelectorAll(":scope > li"))
-            .map((li) => li.getBoundingClientRect())
-            .filter((rect) => rect.height > 0);
-          const pagerNav = main.querySelector("[data-fo-pagination]");
-          const count = main.querySelector("[data-fo-listing-count]");
-          const follows = (a: Element, b: Element): boolean =>
-            (a.compareDocumentPosition(b) &
-              Node.DOCUMENT_POSITION_FOLLOWING) !==
-            0;
-          return {
-            notes: shown.map((element) => {
-              const rect = element.getBoundingClientRect();
-              return {
-                top: rect.top,
-                bottom: rect.bottom,
-                beforeGrid: follows(element, grid),
-                betweenH1AndGrid:
-                  follows(h1, element) && follows(element, grid),
-                beforePager:
-                  pagerNav === null ? null : follows(element, pagerNav),
-              };
-            }),
-            lastCardBottom: Math.max(...cards.map((rect) => rect.bottom)),
-            pagerTop: pagerNav?.getBoundingClientRect().top ?? null,
-            countTop: count?.getBoundingClientRect().top ?? null,
-          };
-        }, text);
-        expect(probe, "main, its h1 and its grid").not.toBeNull();
-        if (probe === null) return;
-        expect(probe.notes, "displayed N1 elements").toHaveLength(1);
-        const [note] = probe.notes;
-        if (note === undefined) return;
-        expect(probe.pagerTop !== null, "a pager renders").toBe(pager);
-
-        if (size.band === "phone") {
-          expect(
-            note.top,
-            "note top vs the last card's bottom",
-          ).toBeGreaterThanOrEqual(probe.lastCardBottom - 0.5);
-          expect(note.betweenH1AndGrid, "N1 between the H1 and the grid").toBe(
-            false,
-          );
-          if (probe.pagerTop !== null) {
-            expect(note.beforePager, "note before the pager in the DOM").toBe(
-              true,
-            );
-            expect(note.bottom).toBeLessThanOrEqual(probe.pagerTop + 0.5);
-          }
-        } else {
-          expect(note.beforeGrid, "note before the grid in the DOM").toBe(true);
-          expect(probe.countTop).not.toBeNull();
-          expect(note.bottom).toBeLessThanOrEqual((probe.countTop ?? 0) + 0.5);
-        }
-
-        // The accessibility tree: one `note`, named by `shop.note.label`, reading N1.
-        const notes = page.locator("main").getByRole("note");
-        await expect(notes).toHaveCount(1);
-        await expect(notes).toHaveAccessibleName(label);
-        // From `md` up the hero's note keeps its drawn "P.S." mark over N1 (unchanged); below `md`
-        // the note is N1 alone.
-        await expect(notes).toHaveText(
-          size.band === "phone"
-            ? text
-            : new RegExp(
-                `^${escapeRegExp(mark)}\\s*${escapeRegExp(text)}$`,
-                "u",
-              ),
-        );
-      });
-    }
-  }
 });

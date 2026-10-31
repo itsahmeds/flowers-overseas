@@ -149,11 +149,12 @@ const deferred = DEFERRED_ISLANDS.filter(
 );
 
 describe("the deferred set names its islands (T-60 unit, clause 2)", () => {
-  it("is exactly the motions (with the Menu's Esc), the language popup and the home sentence", () => {
+  it("is exactly the motions (with the Menu's Esc), the language popup, the home sentence and the listing sort", () => {
     expect(DEFERRED_ISLANDS.map((island) => island.id)).toEqual([
       "motions",
       "language-popup",
       "home-sentence",
+      "listing-sort",
     ]);
   });
 

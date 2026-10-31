@@ -55,7 +55,8 @@ const APPROVED: Readonly<Record<string, string>> = {
     "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
   "product.trust.freshness.title": "Fresh-flower promise",
   "shop.cardNote.heading": "Every one of these comes with a card, at no cost.",
-  "shop.listing.eyebrow": "Sending to {country}",
+  // `shop.listing.eyebrow` left this batch: spec 043 §14 A-founder-2026-10-22 item 1 (revised
+  // 2026-10-24) removed the country occasion's eyebrow and its key (TASK-289).
   "shop.note.label": "A note before you choose",
   "shop.note.mark": "P.S.",
   "shop.root.tilesSubheading": "Narrow it down",
