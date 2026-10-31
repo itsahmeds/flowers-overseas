@@ -19,7 +19,7 @@ task actually touches.
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +107 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +110 |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `unit/florist-surface.test.ts` |
@@ -174,6 +174,7 @@ task actually touches.
 | Script | `pnpm` | Purpose |
 |---|---|---|
 | `admin-grant.ts` | `admin:grant` | Create or update an admin (§2.2) |
+| `attestations-import.ts` | `attestations:import` | Recorded approvals into the review ledger… |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the… |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec… |
 | `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next… |
@@ -234,8 +235,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 388 |
-| `tests/integration/` | 50 |
+| `tests/unit/` | 390 |
+| `tests/integration/` | 53 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |
