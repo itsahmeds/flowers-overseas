@@ -41,6 +41,7 @@ here.
 - 2026-10-21: migration `0019_review_attestation` + rollback, `attest()` (`src/modules/i18n/db/ledger.ts`), the pure half (`attestation.ts`), `fo/no-direct-review-write`, `admin:grant --locale/--revoke-locale`, `pnpm attestations:import`, `seed/data/attestations.json` (171 photo approvals, 0 copy) and the seed replay, the retention handler; tests T-10–T-14, T-28 written. Draft PR 320. Next: run the touched suites (machine load permitting), mutation checks, gates, ready.
 - 2026-10-24 finisher (renumber): rebased onto PR 326's head `adcd4074` (main + 383 `0019`/`0020` + 384 `0021` + 326 `0022`), renumbered to `0023_review_attestation`, retention handlers and rows merged with 326's, snapshot regenerated; full integration (46 files, 518 tests) and all 364 unit/contract files green on a throwaway PG16.
 - 2026-10-31: finisher L restacked onto PR 326's head (main 790ea4d4 + TASK-211) and moved TASK-350's purpose cut (56 to 48, `scripts/codebase-map.ts`) down here: on main this PR's map was 20 570 B, over the 20 480 B cap, and `codebase-map.test` failed in `gates:cheap`; now 19 627 B, the test green. gates:cheap otherwise exit 0 on 92c8471b.
+- 2026-10-31 (later): the purpose cut moved one PR further down, into PR 326 (TASK-211), whose own map went over the cap on main fc74ec5d; dropped here in the restack onto 326's new head. This PR's map is 19 915 B.
 
 ## Result
 
