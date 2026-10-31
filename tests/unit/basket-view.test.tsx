@@ -444,10 +444,11 @@ describe("AC-74 basket half: no relay language", () => {
     const meta = loadMeta();
     for (const [key, record] of Object.entries(meta)) {
       // TASK-204's `checkout.basket.alsoInBasket` (the checkout's notice, not the basket page's)
-      // is recorded by the founder's own `record-approval-204.py` run, and by nothing else.
+      // is recorded by `record-approval-204.py` under the founder's delegation (spec 003
+      // A-founder-2026-10-31a), and by nothing else.
       if (
         key === "checkout.basket.alsoInBasket" &&
-        /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-204\.py /u.test(
+        /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-204\.py /u.test(
           record.reviewedBy ?? "",
         )
       ) {

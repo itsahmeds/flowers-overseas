@@ -319,8 +319,9 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         enMeta[key]?.reviewedBy ?? "",
       ),
     );
-    // PR 400 (TASK-204..206): its 42 checkout and confirmation keys are recorded by the founder's
-    // own `record-approval-204.py` run, and by nothing else.
+    // PR 400 (TASK-204..206): its 42 checkout and confirmation keys are recorded by
+    // `record-approval-204.py`, run by the orchestrator under the founder's delegation
+    // (spec 003 A-founder-2026-10-31a), and by nothing else.
     const recorded204 = [
       "checkout.addons.add",
       "checkout.addons.addLabel",
@@ -365,7 +366,7 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
       "confirmation.page.gone",
       "confirmation.page.promise",
     ].filter((key) =>
-      /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-204\.py /u.test(
+      /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-204\.py /u.test(
         enMeta[key]?.reviewedBy ?? "",
       ),
     );
