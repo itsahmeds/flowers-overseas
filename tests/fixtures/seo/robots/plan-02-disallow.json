@@ -1,6 +1,6 @@
 {
   "source": "plan/02-seo-spec.md §7 (Canonicalisation, pagination, facets, noindex) + spec 007 §2 (the `(dev)` group)",
-  "note": "`mayDisallow` is the closed universe of paths robots.txt is allowed to block: every row of plan/02 §7 that says 'robots disallow' or is unreachable-by-design, plus the (dev) route group of spec 004 AC-28. `mustStayCrawlable` is the other half of the same section — URLs whose `noindex` can only be seen if the crawler may fetch them (plan/02 §7: facets are 'not blocked in robots so the noindex is seen'), plus the parameter shapes that carry real landing traffic.",
+  "note": "`mayDisallow` is the closed universe of paths robots.txt is allowed to block: every row of plan/02 §7 that says 'robots disallow' or is unreachable-by-design, plus the (dev) route group of spec 004 AC-28. `mustStayCrawlable` is the other half of the same section — URLs whose `noindex` can only be seen if the crawler may fetch them (plan/02 §7: facets are 'not blocked in robots so the noindex is seen'), plus the parameter shapes that carry real landing traffic. `stillDisallowed` pins URLs a crawlable parameter must not unblock.",
   "mayDisallow": [
     {
       "path": "/api/",
@@ -95,6 +95,24 @@
     {
       "url": "/sitemap.xml",
       "because": "plan/02 §10: robots.txt names it, so it must be fetchable"
+    },
+    {
+      "url": "/en-gb/poland/product/amber-hour?tier=stems_15",
+      "because": "spec 009 §6 (b): ?tier= is noindex,follow with a canonical to the bare URL, and robots.txt adds its shape without blocking it, so the noindex can be seen (TASK-128)"
+    },
+    {
+      "url": "/en-gb/poland/product/amber-hour?date=2026-11-03",
+      "because": "spec 009 §6 (b), same rule for ?date= (TASK-128)"
+    },
+    {
+      "url": "/en-gb/poland/product/amber-hour?tier=stems_15&date=2026-11-03",
+      "because": "spec 009 §6 (b), the form's combined shape (TASK-128)"
+    }
+  ],
+  "stillDisallowed": [
+    {
+      "url": "/en-gb/poland/product/amber-hour?tier=stems_15&sort=price-asc",
+      "because": "spec 007 §14 A5: the sort rule blocks any URL carrying sort=, and a product parameter beside it does not unblock it (TASK-128)"
     }
   ]
 }

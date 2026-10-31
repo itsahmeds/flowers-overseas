@@ -79,6 +79,7 @@ Sitemap: https://flowersoverseas.com/sitemap.xml
 interface DisallowFixture {
   readonly mayDisallow: readonly { readonly path: string }[];
   readonly mustStayCrawlable: readonly { readonly url: string }[];
+  readonly stillDisallowed: readonly { readonly url: string }[];
 }
 
 const fixture = JSON.parse(
@@ -175,6 +176,25 @@ describe("the disallow list against plan/02 §7 (AC-12, T-13)", () => {
       expect(
         DISALLOWED_PATHS.some((pattern) => matches(pattern, url)),
         `${url} must be blocked`,
+      ).toBe(true);
+    }
+  });
+
+  it("keeps a product parameter crawlable, and a sort beside it blocked (spec 009 §6 (b); TASK-128)", () => {
+    // The fixture names the product page's `?tier=` / `?date=` shapes among the crawlable URLs
+    // above; this pins that they are there, and that the sort rule still wins beside them.
+    const crawlable = fixture.mustStayCrawlable.map((entry) => entry.url);
+    expect(crawlable.some((url) => /\/product\/[^?]+\?tier=/u.test(url))).toBe(
+      true,
+    );
+    expect(crawlable.some((url) => /\/product\/[^?]+\?date=/u.test(url))).toBe(
+      true,
+    );
+    expect(fixture.stillDisallowed.length).toBeGreaterThan(0);
+    for (const { url } of fixture.stillDisallowed) {
+      expect(
+        DISALLOWED_PATHS.some((pattern) => matches(pattern, url)),
+        `${url} must stay blocked`,
       ).toBe(true);
     }
   });

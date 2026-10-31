@@ -43,7 +43,7 @@ export const ICON_NAMES = [
   // is only observable with a mirrored icon, and the header/footer links of TASK-048 need them.
   "arrow-end",
   "chevron-end",
-  // Hero trust row and trust strip: "7-day freshness guarantee".
+  // Hero trust row and trust strip: the fresh-flower promise (spec 009 §14 A11, no number of days).
   "shield-check",
   // Mobile header search field: "Search flowers, occasions, a city or a country".
   "search",

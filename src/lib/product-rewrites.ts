@@ -34,7 +34,13 @@
  * no page for that locale is the same 404 the shared route gave it.
  */
 import { LOCALES } from "../config/locales.ts";
+import { PRODUCT_QUERY_KEYS } from "../config/url-keys.ts";
 
+import { LISTING_CACHE_CONTROL } from "./listing-cache-headers.ts";
+import {
+  LISTING_REWRITE_LOCALES,
+  PARAMETER_ROUTE_SEGMENT,
+} from "./listing-rewrites.ts";
 import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
 
 /**
@@ -109,4 +115,88 @@ export function productRouteHeaderRules(): HeaderRule[] {
       headers: [{ key: NOINDEX_HEADER_NAME, value: PRODUCT_ROUTE_ROBOTS }],
     },
   ];
+}
+
+/* -------------------------------------------------------------------------- */
+/* `?tier=` and `?date=`: the parameter route (spec 009 §14 A10; TASK-128).    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The product page's **parameter rewrite** (spec 009 §14 **A10**, AC-15; memo
+ * `docs/advice/2026-10-03-route-rendering-404-and-pdp-form.md` E-1; TASK-128).
+ *
+ * The product route reads no query string, so it stays prebuilt (A6) and its `dynamicParams`
+ * gate holds. The page's `GET` form submits `?tier=` and `?date=` to the bare product URL; a
+ * request that carries either is sent here instead, to the one route that parses them:
+ * `src/app/[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx`, under the listing
+ * parameter route's own `_query` segment. Its own file, with `-product` below `_query`, and not
+ * the depth-4 listing parameter route, for TASK-228's reason (spec 009 AC-37): a route file that
+ * reached `ProductPage` would load the product island on every parameterised listing.
+ *
+ * **One rule per (locale, key)**, because a `has` key is matched literally: the keys are
+ * `PRODUCT_QUERY_KEYS`, the locales those the product route is routed and prebuilt in (the
+ * launch locales, plus the pseudo-locales where the deployment routes them: the listing
+ * rewrite's set, A10), the third segment that locale's own `product` segment. The rules hold
+ * parameter names only, no catalogue data. A URL with only `utm_*`, `gclid` or `fbclid` matches
+ * none of them and is served the prebuilt page, whose robots directive is the bare page's own.
+ *
+ * **Before `productRewriteRules()`** in `beforeFiles`: Next tries rewrites in order and stops at
+ * the first whose destination resolves, and the unconditional product rule matches every query.
+ *
+ * Next matches sources case-insensitively, so the locale and the `product` segment are captured
+ * and the destination carries the visitor's own spelling: the parameter route's
+ * `resolveLocalePath()` (exact registry lookup, exact segment compare) answers
+ * `/EN/poland/product/{slug}?tier=x` and `/en/poland/PRODUCT/{slug}?tier=x` with a 404, as the
+ * router answers their bare forms (`/break 143` hole 1, the listing rule's lesson).
+ */
+export const PRODUCT_PARAMETER_ROUTE_PREFIX = `${PARAMETER_ROUTE_SEGMENT}/${PRODUCT_ROUTE_SEGMENT}`;
+
+/** One `beforeFiles` rewrite with its query condition. */
+export interface ProductParameterRewriteRule extends ProductRewriteRule {
+  has: [{ type: "query"; key: string }];
+}
+
+/** The locales whose product addresses honour `?tier=` and `?date=` (A10: the listing's set). */
+function parameterLocales(): typeof LOCALES {
+  return LOCALES.filter((locale) =>
+    LISTING_REWRITE_LOCALES.includes(locale.code),
+  );
+}
+
+/** The product address of one locale, with the locale and the segment captured. */
+function productSource(code: string, segment: string): string {
+  return `/:locale(${literal(code)})/:country/:product(${literal(segment)})/:slug`;
+}
+
+/** Fresh objects on every call. */
+export function productParameterRewriteRules(): ProductParameterRewriteRule[] {
+  return parameterLocales().flatMap((locale) =>
+    PRODUCT_QUERY_KEYS.map((key): ProductParameterRewriteRule => ({
+      source: productSource(locale.code, locale.pathSegments.product),
+      destination: `/:locale/${PRODUCT_PARAMETER_ROUTE_PREFIX}/:country/:product/:slug`,
+      has: [{ type: "query", key }],
+    })),
+  );
+}
+
+/**
+ * The shared-cache header on a **parameterised** product response (spec 009 AC-24, §5.4 as A10
+ * restates it; spec 008 §5.4's value, `LISTING_CACHE_CONTROL`, one string). The parameter route
+ * renders per request, and Next answers a per-request render with `private, no-cache, no-store`;
+ * Cloudflare (ADR-0018) may hold this one by full URL for an hour and serve it stale for a day.
+ *
+ * Header sources match the address the visitor asked for, before rewrites, with the same
+ * `has: query` condition the rewrite uses, so exactly the addresses the rewrite sends to the
+ * parameter route carry it: the bare product URL keeps Next's ISR header, and a product URL with
+ * only `?sort=` or `?gclid=` matches nothing here. Keyed from the same registry as
+ * `listing-cache-headers.ts`.
+ */
+export function productParameterCacheHeaderRules(): (HeaderRule & {
+  has: [{ type: "query"; key: string }];
+})[] {
+  return productParameterRewriteRules().map((rule) => ({
+    source: rule.source,
+    has: rule.has,
+    headers: [{ key: "Cache-Control", value: LISTING_CACHE_CONTROL }],
+  }));
 }
