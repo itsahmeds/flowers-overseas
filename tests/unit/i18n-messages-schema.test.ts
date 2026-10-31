@@ -372,7 +372,6 @@ describe("the shipped catalogues and manifests", () => {
     "floristInbox.signOut",
     "footer.link.deliveryAndPayment",
     // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
-    "home.comingUp.more",
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
     "infoPages.contact.heading",
@@ -454,12 +453,6 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
-    "shop.cta.chooseCountry",
-    "shop.price.bandWord.high",
-    "shop.price.bandWord.low",
-    "shop.price.bandWord.mid",
-    "shop.price.choose",
-    "shop.seeAll",
     "shop.toolbar.howWeSort",
   ];
 
