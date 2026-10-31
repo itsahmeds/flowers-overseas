@@ -25,6 +25,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Carry-forwards
 
 - **From `/plan-tasks` (orchestrator, 2026-10-24), keyless strings:** the boards mark several strings `[slot]` with no message key. Do not invent a key or text: list each one this PR needs, with a proposed key and text, in the PR and here as an escalation for the founder's copy batch.
+- From TASK-070 (PR 324, 2026-10-25): `src/modules/catalog/db/catalogue.ts` reads `coreRank` from the static provider by SKU because `product.core_rank` does not exist yet. When this task's migration adds the column, select it in `productRows`, backfill it from `products.data.ts`, drop the repository overlay, and keep `tests/integration/catalog-db-providers.test.ts` (AC-27 parity) green.
 
 ## Escalations
 
