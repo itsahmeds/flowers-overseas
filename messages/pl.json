@@ -206,6 +206,13 @@
       "toCard": "Continue to your details",
       "toReview": "Continue to check"
     },
+    "addons": {
+      "add": "Add",
+      "addLabel": "Add {name}, {price}",
+      "legend": "Add something",
+      "remove": "Remove",
+      "removeLabel": "Remove {name}"
+    },
     "address": {
       "city": "Town or city",
       "fullName": "Recipient's name",
@@ -216,6 +223,7 @@
     "basket": {
       "addOns": "Add-ons · {list}",
       "added": "Added to your basket.",
+      "alsoInBasket": "Your basket also has {count, plural, one {# other bouquet} other {# other bouquets}}. Remove any you do not want before you place your order.",
       "checkout": "Check out",
       "continue": "Continue shopping",
       "dateLater": "You choose the date at checkout.",
@@ -232,15 +240,14 @@
       "total": "Total",
       "unavailable": "This bouquet is no longer available. Please remove it to continue.",
       "unavailableSummary": "{count, plural, one {Jeden bukiet w koszyku jest już niedostępny. Usuń go, aby kontynuować.} few {# bukiety w koszyku są już niedostępne. Usuń je, aby kontynuować.} many {# bukietów w koszyku jest już niedostępnych. Usuń je, aby kontynuować.} other {# bukietu w koszyku jest już niedostępne. Usuń je, aby kontynuować.}}",
-      "useNext": "Use {next}",
-      "alsoInBasket": "Your basket also has {count, plural, one {# other bouquet} other {# other bouquets}}. Remove any you do not want before you place your order."
+      "useNext": "Use {next}"
     },
     "buyer": {
       "country": "Country you live in",
       "email": "Email",
       "fullName": "Your name",
-      "phone": "Your phone",
-      "legend": "Your details"
+      "legend": "Your details",
+      "phone": "Your phone"
     },
     "card": {
       "blank": "Leave it blank and we send the flowers without a card.",
@@ -251,20 +258,25 @@
       "signAs": "Sign as",
       "signAsHint": "Up to {max} characters"
     },
+    "closed": {
+      "back": "Back to the flowers",
+      "opensSoon": "Ordering opens soon.",
+      "title": "We are not taking orders for {country} yet."
+    },
     "date": {
       "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}.",
       "legend": "Delivery date",
-      "useNext": "Use {next}",
-      "offNote": "{date}: {reason}"
+      "offNote": "{date}: {reason}",
+      "useNext": "Use {next}"
     },
     "demo": {
       "bannerBody": "Nothing is charged and nothing is delivered. It shows how ordering works.",
       "bannerTitle": "This is a demo order.",
+      "cap": "The demo has had a lot of orders today. Please try again tomorrow.",
+      "dateHeading": "Pick any date to see how it works. In the demo, nothing is delivered.",
       "place": "Place demo order. Nothing is charged.",
       "placing": "Placing your demo order…",
-      "useSample": "Use sample details",
-      "cap": "The demo has had a lot of orders today. Please try again tomorrow.",
-      "dateHeading": "Pick any date to see how it works. In the demo, nothing is delivered."
+      "useSample": "Use sample details"
     },
     "error": {
       "addonUnavailable": "This extra is not available for this delivery. Please remove it.",
@@ -281,9 +293,13 @@
       "tooLong": "Please shorten this to {max} characters or fewer.",
       "unable": "We could not place this order. Please check the details and try again."
     },
+    "expired": {
+      "link": "Choose flowers",
+      "title": "This order was not started, or it has expired."
+    },
     "field": {
-      "optional": "optional",
-      "namePlaceholder": "First and last name"
+      "namePlaceholder": "First and last name",
+      "optional": "optional"
     },
     "placeKind": {
       "cemetery": "A cemetery",
@@ -311,36 +327,10 @@
       "review": "Check"
     },
     "recipient": {
-      "phoneNonLocal": "This does not look like a phone number in {country}. Our florist may not be able to call it.",
-      "phoneReason": "Our florist calls the recipient if nobody answers the door. We use this number for this delivery only.",
       "deliveryNote": "Delivery note",
-      "deliveryNoteHint": "Up to {max} characters"
-    },
-    "summary": {
-      "delivery": "Delivery",
-      "included": "included",
-      "mini": "Your order · {product}",
-      "title": "Your order",
-      "total": "You pay",
-      "vat": "VAT {rate}",
-      "vatOf": "Of which VAT {rate}",
-      "guaranteeLink": "Our guarantee"
-    },
-    "addons": {
-      "add": "Add",
-      "addLabel": "Add {name}, {price}",
-      "legend": "Add something",
-      "remove": "Remove",
-      "removeLabel": "Remove {name}"
-    },
-    "closed": {
-      "back": "Back to the flowers",
-      "opensSoon": "Ordering opens soon.",
-      "title": "We are not taking orders for {country} yet."
-    },
-    "expired": {
-      "link": "Choose flowers",
-      "title": "This order was not started, or it has expired."
+      "deliveryNoteHint": "Up to {max} characters",
+      "phoneNonLocal": "This does not look like a phone number in {country}. Our florist may not be able to call it.",
+      "phoneReason": "Our florist calls the recipient if nobody answers the door. We use this number for this delivery only."
     },
     "review": {
       "addons": "Add-ons",
@@ -358,6 +348,16 @@
       "deliveryOf": "Delivery {n} of {total}",
       "recipient": "Who are the flowers <em>for?</em>",
       "review": "Check and place <em>your order</em>"
+    },
+    "summary": {
+      "delivery": "Delivery",
+      "guaranteeLink": "Our guarantee",
+      "included": "included",
+      "mini": "Your order · {product}",
+      "title": "Your order",
+      "total": "You pay",
+      "vat": "VAT {rate}",
+      "vatOf": "Of which VAT {rate}"
     }
   },
   "common": {
@@ -376,22 +376,22 @@
     }
   },
   "confirmation": {
+    "demo": {
+      "body": "Nothing was charged and nothing will be delivered.",
+      "next": "In the real service, our florist in {city} makes the bouquet on the morning of delivery and hands it over in person.",
+      "reference": "Order {reference}",
+      "referenceSentence": "Order <b>{reference}</b>.",
+      "title": "Your demo order <em>is in.</em>"
+    },
+    "page": {
+      "gone": "This confirmation is no longer available.",
+      "promise": "Our fresh-flower promise covers the flowers when they arrive."
+    },
     "recap": {
       "card": "Card",
       "date": "Date",
       "nothingCharged": "Nothing was charged.",
       "recipient": "Recipient"
-    },
-    "demo": {
-      "body": "Nothing was charged and nothing will be delivered.",
-      "next": "In the real service, our florist in {city} makes the bouquet on the morning of delivery and hands it over in person.",
-      "reference": "Order {reference}",
-      "title": "Your demo order <em>is in.</em>",
-      "referenceSentence": "Order <b>{reference}</b>."
-    },
-    "page": {
-      "gone": "This confirmation is no longer available.",
-      "promise": "Our fresh-flower promise covers the flowers when they arrive."
     }
   },
   "consent": {
@@ -420,6 +420,9 @@
       "consent": {
         "purpose": "Remembers these cookie choices and when you made them: 12 months if you accept anything, 6 months if you refuse everything."
       },
+      "csrf": {
+        "purpose": "Stops a form you send us being forged by someone else. Not set yet — there is no form."
+      },
       "currency": {
         "purpose": "Remembers the currency you chose to pay in. Not set yet."
       },
@@ -440,9 +443,6 @@
       },
       "stripeSid": {
         "purpose": "Stripe's short-lived companion to the one above, for the same fraud checks. Not set yet."
-      },
-      "csrf": {
-        "purpose": "Stops a form you send us being forged by someone else. Not set yet — there is no form."
       }
     },
     "essentialLocked": "These keep the site working — your language, your basket and the security of your order — so they cannot be switched off. We use them whether or not you accept anything else.",
@@ -1007,6 +1007,10 @@
       "change": "change destination",
       "label": "Where is it going?"
     },
+    "entry": {
+      "addToBasket": "Add to basket",
+      "demo": "Try a demo order"
+    },
     "excludes": "What the price does not include: a vase. The photograph is styled with one and the bouquet is delivered wrapped, so we say it here rather than let the picture imply it.",
     "eyebrow": "{descriptor} · for {country}",
     "eyebrowPhone": "{category} · {country}",
@@ -1035,11 +1039,7 @@
         "title": "If something is unavailable"
       }
     },
-    "vat": "VAT {rate}",
-    "entry": {
-      "addToBasket": "Add to basket",
-      "demo": "Try a demo order"
-    }
+    "vat": "VAT {rate}"
   },
   "shop": {
     "cardNote": {
