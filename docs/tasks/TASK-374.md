@@ -66,6 +66,7 @@ here.
   the two English clauses removed, `en` rows rehashed, `de`/`pl` re-drafted with `i18n:draft`,
   snapshot re-written with `seed:diff --write`; tests green; three mutations red; gates:cheap PASS.
 
+- 2026-11-01 (agent U): rebased onto main `fc74ec5d3` (TASKS.md: main's rows kept, this row set `in_review`); `freshness-claim` 31/31 green; `gates:cheap` on `613a81a5` red only on `seed-check.test.ts` under load 29 to 52 (its AC33 case; the file alone exited 0); CI re-fired by toggling `ci:full`. Paused for machine load; next: read CI on the head, ready.
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
