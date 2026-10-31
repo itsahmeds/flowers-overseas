@@ -8,7 +8,7 @@
  * and the three steps, the recipient form model, phone parsing and the checkout's one currency.
  * TASK-203 adds drafts (`draft.ts`), the `fo_checkout` cookie, pricing over the quote
  * (`pricing.ts`), the start route's contract (`start.ts`) and the step actions (`steps.ts`,
- * `actions.ts`); placement and the payment-step seam arrive with TASK-205, behind this same barrel.
+ * `actions.ts`); TASK-205 adds placement (`place.ts`) and the payment-step seam (`payment-step.ts`).
  *
  * `CHECKOUT_FLAG_KEYS` and `stripeKeyKind()` are deliberately **not** exported (spec 010 AC-1,
  * `/break 201` hole 1): they are the inputs of the mode decision, and a file that could import
@@ -65,6 +65,9 @@ export {
 export {
   parseBuyerPhone,
   parseRecipientPhone,
+  callingCodeOf,
+  internationalPhone,
+  residenceCountryCodes,
   phoneRejections,
   type ParsedPhone,
   type PhoneRejection,
@@ -107,6 +110,8 @@ export {
   draftModes,
   expireDrafts,
   loadDraft,
+  loadDraftForUpdate,
+  markDraftPlaced,
   pendingNotices,
   removeLine,
   saveDraft,
@@ -158,6 +163,8 @@ export {
 } from "./basket";
 export { lineDateStatus, nextDeliveryDate, type LineDateStatus } from "./dates";
 export {
+  CHECKOUT_START_PATH,
+  startFields,
   isSameOrigin,
   methodNotAllowed as checkoutMethodNotAllowed,
   startCheckout,
@@ -184,6 +191,7 @@ export {
   type StepState,
 } from "./steps";
 export {
+  placeOrderAction,
   removeLineAction,
   saveCardAndBuyerStep,
   saveRecipientStep,
@@ -200,3 +208,53 @@ export {
   goneReason,
   loadBasketPage,
 } from "./basket-page";
+
+// TASK-205: placement and the payment seam.
+export {
+  PLACE_WARN_MS,
+  PlaceOrderFormSchema,
+  placeBasket,
+  placementRefusals,
+  runPlaceOrder,
+  type PlaceContext,
+  type PlaceOutcome,
+  type PlacementRefusal,
+} from "./place";
+export {
+  demoPaymentStep,
+  paymentStepFor,
+  registerPaymentStep,
+  type CheckoutPaymentStep,
+  type PaymentStepContext,
+} from "./payment-step";
+
+// TASK-204: what `/{locale}/checkout` draws.
+export {
+  checkoutScreen,
+  selectScreen,
+  type CalendarDay,
+  type CheckoutScreen,
+  type OfferedAddon,
+  type ScreenLine,
+  type ScreenRequest,
+  type StepScreen,
+} from "./screen";
+
+// TASK-206: the confirmation the cookie leads to.
+export {
+  confirmationFor,
+  type Confirmation,
+  type ConfirmedDelivery,
+} from "./confirmation";
+
+// TASK-204: a refused post's one-hop echo (the JavaScript-off path).
+export {
+  CHECKOUT_ECHO_COOKIE_NAME,
+  CHECKOUT_ECHO_MAX_AGE_SECONDS,
+  CheckoutEchoSchema,
+  type CheckoutEchoInput,
+  type CheckoutEchoState,
+  checkoutEchoCookieAttributes,
+  decodeCheckoutEcho,
+  encodeCheckoutEcho,
+} from "./echo";

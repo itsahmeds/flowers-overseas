@@ -1835,6 +1835,16 @@ jobs:
   # runner serving the same `preview` build, with `fail-fast: false` so one red shard does not
   # cancel the evidence of the other two. A matrix leg reports its check as `e2e-shard (1)` and so
   # on, never as a bare name, so it is not the check anybody requires: `e2e` below is.
+  #
+  # The checkout (spec 010, TASK-208) is the one journey that writes: a draft, then a demo order.
+  # It cannot run against the database-less origin, so each shard also starts a Postgres 16
+  # service, migrates it, seeds it insert-only, opens `checkout.open` for `PL` (a CI-only data
+  # flip on a throwaway database, the same flip an admin makes in `/admin/flags`), and serves the
+  # same build a second time on port 3100 with that database. `CHECKOUT_E2E_BASE_URL` names it;
+  # only `tests/e2e/checkout-journey.spec.ts` reads it. The first origin stays database-less, so
+  # every other suite sees exactly what it saw before. Cost: the service start and the migrate
+  # and seed step add about a minute to each shard, and the checkout spec about two; no other job
+  # changes.
   e2e-shard:
     name: e2e-shard
     runs-on: ubuntu-latest
@@ -1844,14 +1854,59 @@ jobs:
       fail-fast: false
       matrix:
         shard: [1, 2, 3]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fo_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      CHECKOUT_E2E_BASE_URL: http://localhost:3100
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       # Unpack the build `preview` published, serve it, and do not proceed until `/api/health`
       # answers 200 (TASK-137).
       - uses: ./.github/actions/preview-origin
+      - name: Migrate and seed the checkout database, and open the demo for PL (TASK-208)
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/fo_e2e
+          DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/fo_e2e
+        run: |
+          set -euo pipefail
+          pnpm db:migrate | tail -n 1
+          pnpm db:seed --insert-only | tail -n 1
+          opened=$(PGPASSWORD=postgres psql -h localhost -U postgres -d fo_e2e -tAc \
+            "UPDATE feature_flag_scope SET enabled = true, updated_at = now()
+              WHERE flag_key = 'checkout.open' AND scope = 'country' AND scope_ref = 'PL'
+             RETURNING scope_ref" | grep -c '^PL$' || true)
+          if [ "$opened" != "1" ]; then
+            echo "::error::expected one checkout.open row for PL to open, found $opened"
+            exit 1
+          fi
+          echo "- checkout database: migrated, seeded insert-only, \`checkout.open\` on for PL" >> "$GITHUB_STEP_SUMMARY"
+      # The same build again, on port 3100, with the database (process env wins over the
+      # `.env.local` placeholders `serve.sh` copies). `next start` is a production Node process,
+      # which never signs a price with the committed development key (`quoteSigningSecret`), so
+      # this origin gets a random quote key of its own, made here and never stored.
+      - name: Serve the database-backed origin for the checkout (TASK-208)
+        env:
+          PREVIEW_PORT: "3100"
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/fo_e2e
+          DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/fo_e2e
+        run: |
+          QUOTE_SIGNING_SECRET="$(openssl rand -hex 32)"
+          export QUOTE_SIGNING_SECRET
+          bash ./.github/actions/preview-origin/serve.sh
       - run: pnpm exec playwright install --with-deps chromium
       - name: pnpm test:e2e (shard ${{ matrix.shard }} of 3)
         env:

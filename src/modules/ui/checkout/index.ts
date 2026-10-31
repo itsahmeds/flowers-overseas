@@ -85,3 +85,15 @@ export {
   NOTICE_CALM,
   buttonClass,
 } from "./styles.ts";
+
+// TASK-204: the checkout forms and the routing fields the page's action reads. The page itself
+// (it resolves checkout keys) lives under the checkout route, `src/app/[locale]/(checkout)/_views/`.
+export {
+  CHECKOUT_FORM_FIELDS,
+  CHECKOUT_FORM_IDS,
+  CHECKOUT_FORM_INTENTS,
+  type CheckoutAction,
+  type CheckoutFormIntent,
+} from "./form-fields.ts";
+export { StepForm, type StepFormProps } from "./StepForm.tsx";
+export { buttonClass as checkoutButtonClass } from "./styles.ts";

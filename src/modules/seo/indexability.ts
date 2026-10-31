@@ -82,6 +82,10 @@ export type SeoPageType =
   // page. `"never"` below is its constant `noindex` rule; `./transactional.ts` adds the `nofollow`
   // half and the header, which a transactional page carries and an indexable one never does.
   | "basket"
+  // Spec 010 §6's checkout and confirmation (TASK-204): transactional, never indexed
+  // (`transactional.ts` holds their `noindex, nofollow` header and meta).
+  | "checkout"
+  | "checkoutDone"
   // Spec 041 §2's ten info pages, by page id (§11: GA4's `page_type` is the page id), registered
   // here rather than branching there (AC-17; TASK-182). A trust page is indexable iff it exists,
   // its content is reviewed, the locale is indexable and this is the indexing environment; a
@@ -98,6 +102,9 @@ export const PAGE_TYPE_POLICY: Readonly<
 > = {
   // spec 004 AC-28: a development affordance, refused in production by the env schema.
   devGallery: "never",
+  // Spec 010 §6, AC-30: a checkout is a transaction, not a page; no data can lift it.
+  checkout: "never",
+  checkoutDone: "never",
   localeHome: "byRule",
   destinationsHub: "byRule",
   corridor: "byRule",

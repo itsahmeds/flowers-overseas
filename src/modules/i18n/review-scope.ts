@@ -84,6 +84,8 @@ const ScopeSchema = z.array(ScopeEntrySchema);
  */
 const CHECKOUT_PATHS = [
   "src/app/[locale]/(checkout)/**",
+  // The checkout's own header slot (TASK-204): it renders on the checkout and done pages only.
+  "src/app/[locale]/@header/(checkout)/**",
   // The start route (TASK-203): a POST handler that answers 303 or an error status and renders
   // nothing, so no checkout key can reach an indexable page through it.
   "src/app/api/checkout/**",
@@ -99,19 +101,26 @@ const PAYMENTS_PATHS = [...CHECKOUT_PATHS, "src/modules/payments/**"];
 const CHECKOUT_SUBTREES = [
   "action",
   // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349): only
-  // `/{locale}/basket`, a `no-store` `noindex` page under `(checkout)`, renders them.
+  // `/{locale}/basket`, a `no-store` `noindex` page under `(checkout)`, renders them. TASK-204:
+  // the checkout page's add-ons, basket notice, closed and expired states, date notice, review
+  // list and step titles render on `/{locale}/checkout` only.
+  "addons",
   "basket",
   "buyer",
   "card",
+  "closed",
   "date",
   "demo",
   "error",
+  "expired",
   "field",
   "placeKind",
   "price",
   "privacy",
   "progress",
   "recipient",
+  "review",
+  "step",
   "summary",
 ];
 

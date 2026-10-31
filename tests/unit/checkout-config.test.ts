@@ -228,8 +228,9 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
   });
 
   it("ships the checkout and confirmation strings unreviewed, but the five approved address labels", () => {
-    // 66, plus the basket page's 19 `checkout.basket.*` and `checkout.date.gone` (TASK-349).
-    expect(checkoutKeys).toHaveLength(86);
+    // 66, plus the basket page's 19 `checkout.basket.*` and `checkout.date.gone` (TASK-349), plus
+    // TASK-204's 43 for the page, its states and the confirmation (`checkout.date.gone` shared).
+    expect(checkoutKeys).toHaveLength(128);
     const metaKeys = Object.keys(enMeta).filter((key) => KEY.test(key));
     expect(metaKeys.toSorted()).toEqual(checkoutKeys.toSorted());
     const reviewed = metaKeys.filter((key) => enMeta[key]?.reviewed === true);
@@ -318,6 +319,57 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         enMeta[key]?.reviewedBy ?? "",
       ),
     );
+    // PR 400 (TASK-204..206): its 42 checkout and confirmation keys are recorded by
+    // `record-approval-204.py`, run by the orchestrator under the founder's delegation
+    // (spec 003 A-founder-2026-10-31a), and by nothing else.
+    const recorded204 = [
+      "checkout.addons.add",
+      "checkout.addons.addLabel",
+      "checkout.addons.legend",
+      "checkout.addons.remove",
+      "checkout.addons.removeLabel",
+      "checkout.basket.alsoInBasket",
+      "checkout.buyer.legend",
+      "checkout.closed.back",
+      "checkout.closed.opensSoon",
+      "checkout.closed.title",
+      "checkout.date.legend",
+      "checkout.date.offNote",
+      "checkout.date.useNext",
+      "checkout.demo.cap",
+      "checkout.demo.dateHeading",
+      "checkout.error.unable",
+      "checkout.expired.link",
+      "checkout.expired.title",
+      "checkout.field.namePlaceholder",
+      "checkout.recipient.deliveryNote",
+      "checkout.recipient.deliveryNoteHint",
+      "checkout.review.addons",
+      "checkout.review.amount",
+      "checkout.review.bouquet",
+      "checkout.review.card",
+      "checkout.review.change",
+      "checkout.review.date",
+      "checkout.review.noCard",
+      "checkout.review.none",
+      "checkout.review.recipient",
+      "checkout.step.card",
+      "checkout.step.deliveryOf",
+      "checkout.step.recipient",
+      "checkout.step.review",
+      "checkout.summary.guaranteeLink",
+      "confirmation.demo.body",
+      "confirmation.demo.next",
+      "confirmation.demo.reference",
+      "confirmation.demo.referenceSentence",
+      "confirmation.demo.title",
+      "confirmation.page.gone",
+      "confirmation.page.promise",
+    ].filter((key) =>
+      /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-204\.py /u.test(
+        enMeta[key]?.reviewedBy ?? "",
+      ),
+    );
     expect(reviewed.toSorted()).toEqual(
       [
         "checkout.address.city",
@@ -328,6 +380,7 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         ...recorded226,
         ...recordedBatch4,
         ...recordedBatch5,
+        ...recorded204,
       ].toSorted(),
     );
     for (const key of reviewed) {

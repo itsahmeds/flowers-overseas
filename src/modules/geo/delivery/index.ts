@@ -59,3 +59,10 @@ export {
   toCountryHolidayRow,
 } from "./projections.ts";
 export type { HolidayProvider } from "./holidays.ts";
+// The product page's entry into checkout (spec 010 §5.3; TASK-206).
+export {
+  type CheckoutDeployment,
+  type CheckoutEntry,
+  checkoutEntries,
+  checkoutEntryFor,
+} from "./checkout-entry.ts";

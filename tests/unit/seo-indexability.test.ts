@@ -156,10 +156,11 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     .filter(([, policy]) => policy === "never")
     .map(([pageType]) => pageType as SeoPageType);
 
-  it("keeps the dev gallery and the basket permanently out of the index, and only them", () => {
+  it("keeps the dev gallery, the basket and the checkout permanently out of the index, and only them", () => {
     // `/` was the other one until spec 003 §14 A16 made it a 308 with no document. The basket is
-    // spec 010 §14 A-founder-2026-10-22 item 12's transactional page (AC-72; TASK-349).
-    expect(never).toEqual(["devGallery", "basket"]);
+    // spec 010 §14 A-founder-2026-10-22 item 12's transactional page (AC-72; TASK-349); spec 010
+    // §6 (TASK-204) added the checkout and its confirmation.
+    expect(never).toEqual(["devGallery", "checkout", "checkoutDone", "basket"]);
   });
 
   it("answers `noindex,follow` for a never-indexable page type in all sixteen cases", () => {
@@ -176,6 +177,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     expect(PAGE_TYPE_POLICY).toStrictEqual({
       // spec 004 AC-28 / spec 007 §6: "`/dev/components` … stay `noindex`".
       devGallery: "never",
+      // spec 010 §6, AC-30 (TASK-204): the checkout and its confirmation are never indexed.
+      checkout: "never",
+      checkoutDone: "never",
       // spec 007 §6: "The locale home lifts to `index,follow` under the same engine".
       localeHome: "byRule",
       // spec 007 §6: "The hub is indexable when at least one corridor in that locale is".

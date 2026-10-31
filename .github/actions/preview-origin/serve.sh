@@ -22,8 +22,9 @@ port="${PREVIEW_PORT:-3000}"
 # `localhost`, not `127.0.0.1`: it is the host `.env.example`'s `NEXT_PUBLIC_SITE_URL` names, so
 # every canonical, hreflang and absolute URL the build inlined matches the origin under test.
 origin="http://localhost:$port"
-log="${RUNNER_TEMP:-/tmp}/preview-origin.log"
-body="${RUNNER_TEMP:-/tmp}/preview-origin-health.json"
+# One log and one health body per port: the e2e job serves the build twice (TASK-208).
+log="${RUNNER_TEMP:-/tmp}/preview-origin-$port.log"
+body="${RUNNER_TEMP:-/tmp}/preview-origin-$port-health.json"
 
 cp .env.example .env.local
 

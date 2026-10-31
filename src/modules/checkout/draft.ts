@@ -489,6 +489,63 @@ export async function loadDraft(
   });
 }
 
+/**
+ * `loadDraft` under the draft's row lock (`FOR UPDATE`), in the caller's open transaction: the
+ * placement's first read (TASK-205, AC-21, AC-65). Two placements of one basket serialise here;
+ * the second reads the `purchase_id` the first set and returns the same confirmation. An expired
+ * draft is answered `expired` and left for the sweep (no delete inside a placement).
+ */
+export async function loadDraftForUpdate(
+  executor: OrderExecutor,
+  token: string | null,
+  now: Date,
+): Promise<DraftLookup> {
+  if (!isDraftToken(token)) return { status: "missing" };
+  const rows = await executor.execute(sql`
+    SELECT ${DRAFT_COLUMNS}
+      FROM checkout_draft d
+     WHERE d.token_sha256 = ${draftTokenHash(token)}
+       FOR UPDATE OF d`);
+  const raw = rows[0];
+  if (raw === undefined) return { status: "missing" };
+  const row = DraftRowSchema.parse(raw);
+  if (now.getTime() >= row.expires_ms.getTime()) return { status: "expired" };
+  return {
+    status: "active",
+    draft: toDraft(row, await linesOf(executor, row.id)),
+  };
+}
+
+/**
+ * Marks a basket placed, in the placement's transaction (§14 A-founder-2026-10-22 item 4): the
+ * purchase on the draft, each order on its line, and the buyer's, recipients' and cards' details
+ * cleared (they now live in the orders' snapshots, §5.1 B). Writes nothing and answers `false`
+ * when the draft was already placed. The draft is read-only from here on (AC-52).
+ */
+export async function markDraftPlaced(
+  executor: OrderExecutor,
+  draftId: string,
+  purchaseId: string,
+  orders: readonly { readonly position: number; readonly orderId: string }[],
+  now: Date,
+): Promise<boolean> {
+  const id = z.uuid().parse(draftId);
+  const placed = await executor.execute(sql`
+    UPDATE checkout_draft
+       SET purchase_id = ${z.uuid().parse(purchaseId)}, buyer = NULL, pending_notice = NULL,
+           last_activity_at = ${timestamptz(now)}
+     WHERE id = ${id} AND purchase_id IS NULL
+    RETURNING id`);
+  if (placed.length === 0) return false;
+  for (const order of orders) {
+    await executor.execute(sql`
+      UPDATE checkout_draft_line
+         SET order_id = ${z.uuid().parse(order.orderId)}, recipient = NULL, card = NULL
+       WHERE draft_id = ${id} AND position = ${order.position}`);
+  }
+  return true;
+}
+
 /* -------------------------------------------------------------------------- */
 /* appendLine                                                                  */
 /* -------------------------------------------------------------------------- */

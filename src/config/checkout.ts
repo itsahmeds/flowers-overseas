@@ -22,7 +22,6 @@
  * here either: whether a checkout is open, a demo or live is `checkoutMode()`'s alone
  * (`src/modules/checkout/mode.ts`, AC-1).
  */
-import type { DeploymentEnvironment } from "../lib/env.schema.ts";
 
 import { CARD_MESSAGE_MAX } from "./card-message.ts";
 
@@ -114,16 +113,5 @@ export const PLACE_KIND_LABEL_KEYS = {
   church: "checkout.placeKind.church",
 } as const satisfies Readonly<Record<PlaceKind, string>>;
 
-/**
- * The deployments whose product pages offer "Try a demo order" in the `preview` picker state
- * (§13 Q1). The founder's answer was the default, **everyone**, so every environment is listed;
- * the alternative ("staging only") is this list without `production`, a one-line data change
- * reviewed like any other (`checkoutEntryFor()` reads it at build time, §5.3, §12).
- */
-export const DEMO_ENTRY_ENVIRONMENTS: readonly DeploymentEnvironment[] = [
-  "development",
-  "test",
-  "preview",
-  "staging",
-  "production",
-];
+/** Where the product page posts and which deployments offer the demo (`./checkout-entry.ts`). */
+export { DEMO_ENTRY_ENVIRONMENTS } from "./checkout-entry.ts";

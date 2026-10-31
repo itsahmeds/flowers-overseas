@@ -540,10 +540,33 @@ describe("the marker keeps the approval (AC-52; T-57)", () => {
     },
   );
 
+  /**
+   * Clause 1's rule applied to later artboards: the spec 010 checkout and confirmation boards draw
+   * these headings' italic phrase (TASK-204, TASK-206). They are new, unreviewed keys, so there is
+   * no approval to keep; each carries exactly one pair around the board's phrase.
+   */
+  const BOARD_MARKED: readonly (readonly [string, string])[] = [
+    ["checkout.step.recipient", "for?"],
+    ["checkout.step.card", "your details"],
+    ["checkout.step.review", "your order"],
+    ["confirmation.demo.title", "is in."],
+  ];
+
+  it.each(BOARD_MARKED)(
+    "`%s`: one pair, around the board's phrase %j",
+    (key, phrase) => {
+      const value = at(catalogue, key);
+      expect(typeof value).toBe("string");
+      expect(pairs(value as string)).toBe(1);
+      expect(value).toContain(`<em>${phrase}</em>`);
+    },
+  );
+
   it("puts no `<em>` in any other `en` value (clause 1)", () => {
     const marked = new Set([
       ...MARKED.map(([key]) => key),
       ...MARKED_AT_BIRTH.map(([key]) => key),
+      ...BOARD_MARKED.map(([key]) => key),
     ]);
     const walk = (node: unknown, path: string): string[] =>
       typeof node === "string"

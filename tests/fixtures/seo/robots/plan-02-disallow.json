@@ -27,6 +27,10 @@
       "because": "plan/02 §4 L89 'cart: noindex + robots disallow'; spec 010 §14 A-founder-2026-10-22 item 12, AC-72 (TASK-349)"
     },
     {
+      "path": "/*/checkout",
+      "because": "plan/02 §7, same row: spec 010 §6 created the locale-prefixed segment (`/{locale}/checkout`, `/{locale}/checkout/done`; AC-30)"
+    },
+    {
       "path": "/track/",
       "because": "plan/02 §7, same row (locale-prefixed forms follow when spec 013 creates the segment)"
     },

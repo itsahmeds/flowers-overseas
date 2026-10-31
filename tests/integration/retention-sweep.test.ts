@@ -795,18 +795,18 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
-    it("reports every retention_policy row: the keep row kept, the spec 010 rows without a handler yet", async () => {
+    it("reports every retention_policy row: the keep row kept, the spec 010 rows applied (TASK-207)", async () => {
       await rolledBack(scratch.sql, async (tx) => {
         const result = await sweep(tx, { now: new Date() });
         expect(result.policies.map(({ key, status }) => [key, status])).toEqual(
           [
             ["buyer_personal", "applied"],
-            ["checkout_draft", "no_handler"],
-            // spec 010 §14 A-founder-2026-10-22 item 2 C (`0020`); its handler is TASK-207's.
-            ["checkout_draft_personal", "no_handler"],
+            ["checkout_draft", "applied"],
+            // spec 010 §14 A-founder-2026-10-22 item 2 C (`0020`); TASK-207's handler.
+            ["checkout_draft_personal", "applied"],
             ["consent_records", "applied"],
             ["delivery_photo", "storage_unavailable"],
-            ["demo_order_personal", "no_handler"],
+            ["demo_order_personal", "applied"],
             ["fraud_signals", "applied"],
             ["invoice_archive", "kept"],
             ["recipient_contact", "applied"],

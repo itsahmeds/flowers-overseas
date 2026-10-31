@@ -9,7 +9,10 @@
  * as well; this rule is what holds when it does not. Cloudflare's bypass of `/basket` is a
  * dashboard rule (spec 040 rule 1), checked on staging by TASK-208.
  */
-import { TRANSACTIONAL_ROBOTS_HEADER } from "../modules/seo/transactional.ts";
+import {
+  TRANSACTIONAL_ROBOTS_HEADER,
+  type TransactionalHeaderRule,
+} from "../modules/seo/transactional.ts";
 
 export const BASKET_ROBOTS_HEADER = {
   key: "X-Robots-Tag",
@@ -20,11 +23,6 @@ export const BASKET_CACHE_HEADER = {
   key: "Cache-Control",
   value: "no-store, private",
 } as const;
-
-export interface TransactionalHeaderRule {
-  readonly source: string;
-  readonly headers: { key: string; value: string }[];
-}
 
 /** Fresh objects on every call, as `adminHeaderRules()` returns them. */
 export function basketHeaderRules(): TransactionalHeaderRule[] {
