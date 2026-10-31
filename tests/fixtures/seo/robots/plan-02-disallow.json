@@ -49,6 +49,22 @@
     {
       "path": "/*?*sort=",
       "because": "plan/02 §7 'Sort: never in indexable URLs' — there is nothing for a crawler to learn by fetching one"
+    },
+    {
+      "path": "/en/choose-country",
+      "because": "spec 004 §14 A-founder-2026-10-24a item 3 and 'SEO': the country chooser is noindex, uncached, linked only with rel=nofollow and robots-disallowed in every locale (TASK-385)"
+    },
+    {
+      "path": "/en-gb/choose-country",
+      "because": "spec 004 §14 A-founder-2026-10-24a item 3 and 'SEO': the country chooser is noindex, uncached, linked only with rel=nofollow and robots-disallowed in every locale (TASK-385)"
+    },
+    {
+      "path": "/de/land-waehlen",
+      "because": "spec 004 §14 A-founder-2026-10-24a item 3 and 'SEO': the country chooser is noindex, uncached, linked only with rel=nofollow and robots-disallowed in every locale (TASK-385)"
+    },
+    {
+      "path": "/pl/wybierz-kraj",
+      "because": "spec 004 §14 A-founder-2026-10-24a item 3 and 'SEO': the country chooser is noindex, uncached, linked only with rel=nofollow and robots-disallowed in every locale (TASK-385)"
     }
   ],
   "mustStayCrawlable": [

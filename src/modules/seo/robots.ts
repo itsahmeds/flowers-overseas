@@ -40,6 +40,8 @@
  */
 import type { MetadataRoute } from "next";
 
+import { LOCALES } from "@/config/locales";
+
 import { absoluteUrl } from "./canonical.ts";
 import {
   CANONICAL_HOST,
@@ -75,7 +77,21 @@ export const DISALLOWED_PATHS: readonly string[] = [
   "/search",
   "/dev/",
   "/*?*sort=",
+  // The country chooser in every locale (spec 004 §14 A-founder-2026-10-24a item 3, "SEO";
+  // TASK-385): `noindex`, uncached, linked only with `rel="nofollow"`, so a crawler has nothing to
+  // learn there, and its path-form links would otherwise be choices made by a bot. From the locale
+  // registry, so a new locale's segment is disallowed with no edit here.
+  ...LOCALES.filter((locale) => locale.isLaunch).map(
+    (locale) => `/${locale.code}/${locale.chooseSegment}`,
+  ),
 ];
+
+/**
+ * The `rel` of every link to the country chooser (spec 004 §14 A-founder-2026-10-24a item 3, "SEO":
+ * "every link to it carries `rel="nofollow"`"), spelled here, in the one module that may spell a
+ * robots word (spec 009 AC-16's scan), and read by every chooser link (TASK-385).
+ */
+export const CHOOSER_LINK_REL = "nofollow";
 
 /** A `robots.txt` policy, before it is printed or handed to Next's metadata route. */
 export interface RobotsPolicy {

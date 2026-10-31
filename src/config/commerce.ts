@@ -46,3 +46,19 @@ export const CHOOSER_NEXT_WORDS = { price: "price", search: "search" } as const;
 
 /** At most this many characters of `next` (item 3's validation); a longer one falls back. */
 export const CHOOSER_NEXT_MAX_CHARS = 256;
+
+/**
+ * At most this many characters of the chooser's typed country (`to`), spec 004 §14
+ * A-founder-2026-10-24a item 3: no country name in any launch locale comes close, and a longer
+ * value is a no match without being compared (TASK-385).
+ */
+export const CHOOSER_INPUT_MAX_CHARS = 64;
+
+/**
+ * The country chooser's choice route (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385):
+ * `/api/choose/{locale}/{next}` takes the form's GET (`to`) and, by `src/proxy.ts`'s rewrite, the
+ * path form `/{locale}/{chooseSegment}/{iso2}/{next}`, and answers every one with a `303`: to the
+ * chosen country's page with one `Set-Cookie: fo_dest`, or back to the chooser page with what was
+ * typed. Under `/api/`, which `robots.txt` disallows.
+ */
+export const CHOICE_ROUTE_PREFIX = "/api/choose";

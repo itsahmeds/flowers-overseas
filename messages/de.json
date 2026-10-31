@@ -370,6 +370,9 @@
       "currency": {
         "purpose": "Remembers the currency you chose to pay in. Not set yet."
       },
+      "dest": {
+        "purpose": "Remembers the country you chose to send flowers to, so we can show that country's prices."
+      },
       "ga": {
         "purpose": "Google Analytics: tells one visit from another so a visit is not counted twice. Not set unless you accept analytics."
       },
@@ -679,6 +682,11 @@
     "occasions": {
       "eyebrow": "Shop by occasion",
       "heading": "What is the <em>occasion?</em>"
+    },
+    "picker": {
+      "label": "Where should the flowers go?",
+      "search": "Search all countries",
+      "submit": "Show prices"
     },
     "proof": {
       "guarantee": {
@@ -990,6 +998,13 @@
       "seoDescription": "{entity}, die unser Florist in {country} binden kann, jeweils mit einem Preis inklusive MwSt. und Lieferung. Noch kann nichts bestellt werden.",
       "seoTitle": "{entity} for {country}: one all-in price",
       "siblingsHeading": "Also for {country}"
+    },
+    "choose": {
+      "all": "Every country we send to",
+      "closest": "Did you mean <countries></countries>?",
+      "continue": "Continue to {country}",
+      "noMatch": "We could not find “{query}”.",
+      "remember": "We will remember this country on this device. Change it any time under Sending to."
     },
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",

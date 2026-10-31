@@ -4591,6 +4591,69 @@
     "reviewed": false,
     "sourceHash": "a18745121bb8af6d1a0c689cfb3c2a2245d10d5fe3b37ff37c8b69fd74773dfa"
   },
+  "home.picker.label": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "f4200dda549249a79fb7aef68b7ac225b449d0e2ea589cec2d62fc736bc0ee57"
+  },
+  "home.picker.search": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "15e3fc957044813806e7d5336b6fa4b7873c76174f32a6ea947f0387e7772537"
+  },
+  "home.picker.submit": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "5133924f3c220d39ddabbe7ebb08ed1cfc78f11a9d5e765f28fa7b306e122ed7"
+  },
+  "shop.choose.continue": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "5872999fd06ee63681b4d0cd515d1b0a214aa59eaa68c954db6c8b5ff13ddbc4"
+  },
+  "shop.choose.remember": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "7a7c4571d5958cd1023edfab190d73c802b1ada675966dad19696a534e22f728"
+  },
+  "shop.choose.noMatch": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "9593661ed5042b11ce2bb2d62e8e02446a5283a7f83a3040ed293440fa635145"
+  },
+  "shop.choose.closest": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "f9ff3292ae81a8480eb567222d2c01a9750145816713f3bfd58eea3332e5b15d"
+  },
+  "shop.choose.all": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "e29c9e47b677371bd5218403b4d12d751bab5c81eb7b27cdaf5f58b20cd31dcd"
+  },
+  "consent.cookies.dest.purpose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-385.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:30Z",
+    "sourceHash": "29e6a6ad40afc0f2afe7e41e53fe8b93d844b2e493d1157671317554c3a2515e"
+  },
   "nav.basketCount": {
     "source": "human",
     "reviewed": false,

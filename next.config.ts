@@ -6,6 +6,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 import { adminHeaderRules } from "./src/lib/admin-headers";
 import { basketHeaderRules } from "./src/lib/transactional-headers";
+import { chooserHeaderRules } from "./src/lib/chooser-routes";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
@@ -119,6 +120,11 @@ const headerRules = [
   // Every basket response: `noindex, nofollow` and `no-store, private` (spec 010 §14
   // A-founder-2026-10-22 item 12, AC-72; TASK-349). After the environment-wide rule, as above.
   ...basketHeaderRules(),
+  // `X-Robots-Tag: noindex, nofollow` and `Cache-Control: private, no-store` on every country
+  // chooser address, its internal page route and its choice route (spec 004 §14
+  // A-founder-2026-10-24a item 3; `src/lib/chooser-routes.ts`; TASK-385). After the listing rules,
+  // whose sources a chooser address also matches, so these values are the ones served.
+  ...chooserHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,
