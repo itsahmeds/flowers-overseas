@@ -30,7 +30,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: needs `manualReroute`, `eligibleCandidates`, `rankCandidates`, `graceEnd` (TASK-327, TASK-329) and `cancelOrder` (TASK-258, `blocked` on the founder's Stripe keys); none exists on any branch. Not started. `open`.
 
 ## Progress
 

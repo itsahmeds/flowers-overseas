@@ -1,5 +1,7 @@
 /**
- * T-05 — `ADMIN_PERMISSIONS` is spec 012 §5.2's v0 matrix, cell by cell (AC-4; TASK-217).
+ * T-05 — `ADMIN_PERMISSIONS` is spec 012 §5.2's v0 matrix, cell by cell (AC-4; TASK-217), plus
+ * spec 020a T-01: the four order-action permissions of §2.1 and §13 Q2 (AC-1; TASK-357), and no
+ * `orders.transition`.
  *
  * The expected table is written out here from the spec, not derived from the constant: a cell
  * flipped in `src/modules/admin/permissions.ts` turns exactly one row red.
@@ -24,6 +26,11 @@ const MATRIX: Record<string, readonly string[]> = {
   "partner.payout": ["admin", "finance"],
   "orders.view": ["admin", "ops", "finance"],
   "orders.view_pii": ["admin", "ops"],
+  // spec 020a §2.1, §13 Q2: money moves admin only; reroute and resend also ops.
+  "orders.reroute": ["admin", "ops"],
+  "orders.cancel": ["admin"],
+  "orders.refund": ["admin"],
+  "orders.resend": ["admin", "ops"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {
@@ -52,5 +59,12 @@ describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {
 
   it("refuses an unknown permission", () => {
     expect(can(["admin"], "orders.transition" as never)).toBe(false);
+  });
+
+  it("has no generic orders.transition permission (spec 020a AC-1)", () => {
+    expect(Object.hasOwn(ADMIN_PERMISSIONS, "orders.transition")).toBe(false);
+    expect(
+      (adminPermissions as readonly string[]).includes("orders.transition"),
+    ).toBe(false);
   });
 });
