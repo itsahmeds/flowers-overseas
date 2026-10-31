@@ -2439,7 +2439,9 @@
   },
   "destinations.state.guideNotDelivering": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-239.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:03:07Z",
     "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "destinationsHub.emptyBody": {
@@ -2458,7 +2460,9 @@
   },
   "destinationsHub.intro": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-239.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:03:07Z",
     "sourceHash": "f886b0aefdff9227ade54619c03c41ec558b60e8e82f077c56ab4c14d4969b37"
   },
   "destinationsHub.noGuide": {
@@ -3057,7 +3061,9 @@
   },
   "home.sentence.notYet": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-239.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:03:07Z",
     "sourceHash": "3d62739fb297609ec1d7dff643dcfcde609fbff7975feb08f0b410a363629a83"
   },
   "home.sentence.occasion": {
@@ -3692,7 +3698,9 @@
   },
   "product.demo.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-239.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T21:03:07Z",
     "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "product.destination.change": {

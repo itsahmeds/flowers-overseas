@@ -505,6 +505,10 @@ const APPROVED = {
     "Every bouquet our florist can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
 } as const;
 
+/** The `reviewedBy` the delegated `record-approval-239.py` run writes (`destinationsHub.intro`). */
+const FOUNDER_239 =
+  /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-239\.py /u;
+
 /** The `reviewedBy` the founder's `record-approval-226.py` run writes, and nothing else may. */
 const FOUNDER_226 =
   /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-226\.py after reading the exact text it printed$/u;
@@ -522,7 +526,9 @@ describe("the approved copy (spec 041 §14 A-founder-2026-10-14; spec 010 §14 A
       expect(at(CATALOGUES["en-gb"], key)).toBeUndefined();
       if (enMeta[key]?.reviewed === true) {
         // Only the founder's own record run may attest it, and only this hash.
-        expect(enMeta[key]?.reviewedBy).toMatch(FOUNDER_226);
+        expect(enMeta[key]?.reviewedBy).toMatch(
+          key === "destinationsHub.intro" ? FOUNDER_239 : FOUNDER_226,
+        );
       } else {
         expect(enMeta[key]?.reviewedBy).toBeUndefined();
       }
