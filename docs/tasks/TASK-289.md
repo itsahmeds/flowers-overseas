@@ -69,6 +69,7 @@ here.
 
 - 2026-10-25: worktree `fo-wt-289` on `task/TASK-289-listing-head`; row `in_progress`; Binding updated to the 2026-10-24 redraw. Next: the head components, the sort island, the copy, the tests.
 - 2026-10-25: head, quiet line, toolbar, sort island, copy and tests built; local build e2e green on the touched files except the /dev gallery and pseudo-locale cases (env flags off locally); row `in_review`, PR 415.
+- 2026-11-01 (finisher F2): Linux baselines from visual-baselines run 41242373892 (head d0b53c72d) copied in and verified (109 match the manifest), commit a770be7e6: the three listing pages at 1440 and 390 and the two laptop shots checked against `country-{shop,category,occasion}-{desktop,mobile}` (breadcrumb or back link, the short H1, the quiet line, Categories and the sort pill on one row, rule, grid); the home, hub, guide, shell and footer shots move only with the destinations' status words (`guideNotDelivering`, Ordering opens soon). Next: CI on the head.
 
 ## Result
 
