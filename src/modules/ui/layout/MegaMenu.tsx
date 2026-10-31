@@ -26,6 +26,7 @@ import type { ReactElement } from "react";
 import { MEGA_MENU_GROUP } from "../../../config/mega-menu.ts";
 import { type LocaleCode, isLocaleCode } from "../../../config/locales.ts";
 import { formatDate, formatMoney } from "../../i18n/index.ts";
+import { CHOOSER_LINK_REL } from "../../seo/index.ts";
 import { MediaAsset } from "../media/MediaAsset.tsx";
 import { MediaProvenanceNote } from "../media/MediaProvenanceNote.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
@@ -96,7 +97,7 @@ function Entry({
       className={className}
       data-fo-mega-entry={entry.id}
       href={entry.href}
-      {...(entry.kind === "chooser" ? { rel: "nofollow" } : {})}
+      {...(entry.kind === "chooser" ? { rel: CHOOSER_LINK_REL } : {})}
     >
       <span>{text}</span>
       {entry.kind === "link" && entry.date !== undefined ? (
@@ -148,7 +149,7 @@ function FeaturedCard({
       <a
         className="group/feat block"
         href={featured.href}
-        {...(featured.chooser ? { rel: "nofollow" } : {})}
+        {...(featured.chooser ? { rel: CHOOSER_LINK_REL } : {})}
       >
         {card.photo.kind === "asset" ? (
           <MediaAsset
