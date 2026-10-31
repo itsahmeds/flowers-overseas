@@ -193,3 +193,39 @@ pays.
 - **Image sitemaps are Phase 4** (`plan/02` §10). The data that makes one a query (asset ↔ entity ↔
   locale ↔ variant) exists now; when it arrives it must obey "nothing `noindex` ever appears in a
   sitemap".
+
+## 7. Originals and the derive worker (Phase 1, TASK-082)
+
+The Phase 0 path above (derive locally, `pnpm media:upload`) is unchanged. Phase 1 adds the path
+spec 006 §2.6 describes, for imagery whose variants are produced once by a job rather than on
+this machine:
+
+1. **The private bucket comes first.** Originals are the pre-strip files (EXIF, GPS, a C2PA
+   manifest), so they live in a private bucket and nowhere else. The founder creates it in the
+   Cloudflare dashboard (R2, EU jurisdiction, **no** public access, **no** custom domain, **no**
+   lifecycle rule; suggested name `flowersoverseas-private`), extends the scoped API token to it,
+   and sets `R2_PRIVATE_BUCKET` in `.env.local` and on Railway `production`. Until then every
+   write that needs a private bucket is refused, never redirected to the public one.
+2. **`pnpm media:upload --originals`** puts every **approved** original found under
+   `.local/imagery/originals/` into the private bucket at `originals/{kind}/{assetId}`, after
+   checking that each file hashes to its `originalSha256` in `seed/data/media.json` (one that does
+   not stops the run before anything is sent). It is idempotent by checksum: an unchanged original
+   is neither sent nor enqueued again. Each changed original gets one `media.derive_variants` job,
+   by the `media_asset` row that names its key; an original with no row yet is listed and skipped.
+   `--dry-run`, `--only <assetId>` and `--force` work as in the variant half. **`--backfill`**
+   enqueues the unchanged originals too, without re-sending them: run it after the importer
+   (TASK-083) has created the rows for originals uploaded before it. It needs
+   `DATABASE_URL_UNPOOLED`, because the jobs are enqueued in the database.
+3. **The worker** (`src/jobs/media-derive-variants.ts`) runs in the minute tick. It derives with
+   the CLI's own function and the committed pipeline header, so the checksums equal
+   `pnpm media:variants`'s for the same original. It puts each variant at
+   `media/{kind}/{assetId}/{width}.{format}`, then writes one `media_variant` row per (asset,
+   variant, format). Only an `approved` public asset is published; anything else derives into the
+   private bucket or is refused. A second run of a derived asset reads, encodes and writes
+   nothing. A refusal is logged as `media.derive_variants.refused` with its reason
+   (`asset_missing`, `not_approved`, `slot_unknown`, `original_checksum_mismatch`,
+   `private_bucket_unconfigured`, …), never with the asset id.
+4. **Which slot.** The ladder depends on the asset's slot, which lives in `seed/data/media.json`,
+   not in the database. The worker reads it by the id in the original's key, so seeded imagery
+   derives and anything the manifest does not know is refused `slot_unknown` until its own task
+   (the admin photo upload, the florist's delivery photo) says how it names a slot.
