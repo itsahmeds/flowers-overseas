@@ -2438,7 +2438,9 @@
   },
   "destinations.state.guideNotDelivering": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
     "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "destinationsHub.emptyBody": {
@@ -3913,17 +3915,23 @@
   },
   "shop.h1.countryCategory": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
     "sourceHash": "b75ff46ef97dd9121ce9d3d2b3965c3f5afcfeb6a4a70769d95150730ab01dc5"
   },
   "shop.h1.countryOccasion": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
     "sourceHash": "de7cf77079de61be33b7a64a51eb63640e25892d92fcbf60cf2e6621831ef873"
   },
   "shop.h1.countryShopRoot": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
     "sourceHash": "9298fc8f5d29215bf5ce40d20087722dff00bb3195b9842ce8c7b00714d473e6"
   },
   "shop.hub.noMoney": {
@@ -4571,7 +4579,9 @@
   },
   "shop.toolbar.howWeSort": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
     "sourceHash": "1241da881d5855ace937d3b972f8993746b00e74aee278b4b87d32ed044d2b0d"
   },
   "nav.basketCount": {
