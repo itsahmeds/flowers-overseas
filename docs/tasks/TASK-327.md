@@ -36,7 +36,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-11-01, the rating band (open, not blocking; to the orchestrator in PR 445).** §5.2's key reads "inside the best-rating band before outside it, then rating descending". Read literally the band is redundant (every in-band rating is above every out-of-band one), so AC-3's "including the 95 % rating band" and T-50's band mutation could never go red. Built as `plan/06` §5.2 rule 2c reads: inside the band ratings count as equal (acceptance, then payout, then round-robin decide); outside it, rating descending. One line to change back (`rankByKey` in `src/modules/orders/routing/candidates.ts`) if the literal reading is wanted.
 
 ## Progress
 
@@ -44,11 +44,13 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-01: pure rules (`src/modules/orders/routing/`), `instantAt` in spec 009's zone helpers, `src/config/routing.ts`; unit tests T-02, T-03, T-04, T-27, T-35, T-50, T-51 with 40 mutations, each red.
+- 2026-11-01: rebased onto PR 408 (`task/TASK-368-reviews-data`, migration 0029) and added `0030_routing_notifications` + down, the Drizzle mirror, `db/rls.ts`, the two flags (registry, admin copy, confirm bodies), `db:check` snapshot; integration T-49 with 10 mutations, each red. PR 445 is stacked on PR 408.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 445 (stacked on PR 408; migration **0030**, renumbered at rebase if the stack order changes). Pure routing rules in `src/modules/orders/routing/` (`eligibleCandidates`, `rankCandidates` with the owner, `ownerOfOrder`, `offerWindow`, `routingDeadline`, `graceEnd`, `expectedFirstOfferAt`, `servability` and `createCanServe`), their numbers in `src/config/routing.ts`, and `instantAt` (wall clock to instant) in `src/modules/geo/delivery/zone.ts`. Migration `0030_routing_notifications` + down: `order_assignment.withdrawn_at`/`withdrawn_reason`, `notification_delivery` (with `purchase_id`, no `attached_invoice_id`, `recipient_ref` checked to `buyer`/`ops`/a user id), `notification_delivery_invoice`, staff-only RLS, `webhook_inbox` accepts `resend`, flags `routing.auto` and `notifications.email` (high-risk, on). Tests: unit 95 in two new files (plus updated registry, shape and migration-list tests), integration 8 in one new file (plus flags and ops counts). AC-2, AC-3, AC-4, AC-27, AC-35, AC-49, AC-50, AC-51.
+Handed on: (1) the database reader behind `createCanServe` (`CoverageReader`: the postcode's zone by longest prefix and the partner snapshots with load, members, rating and last offer) is spec 016 task 1b's (TASK-328), which needs the same read for `order.route`; (2) spec 010's `registerCoverageCheck` seam does not exist yet, so registering `canServe` is TASK-204's; (3) "a cancelled order mid-routing" is not reachable in pure rules: `order.route` must re-read the status after its lock (TASK-328), and the withdrawal columns are here for it; (4) the signature differs from §5.2 in two declared ways: `eligibleCandidates(order, partners, { signInStatuses })` takes spec 011's `signInPolicy` answer instead of `now` (TASK-212 has not built the policy), and the window functions take `{ ianaZone, sameDayCutoffLocal }` because the routing deadline needs the cutoff.
