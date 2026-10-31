@@ -224,3 +224,4 @@ Running, append-only log of decisions. Each entry links its ADR. Summary table l
 | Date | ADR | Decision | Trigger |
 |---|---|---|---|
 | 2026-10-25 | none | Decision files. Founder, verbatim: "log fix ok": each PR writes its decision row to its own file, `docs/decisions/YYYY-MM-DD-<slug>.md`, and CI on `main` collects the files into this log with `pnpm decisions:log`, so docs PRs stop conflicting on the log. The hand-written rows above stay as they are. | TASK-399 |
+| 2026-10-31 | spec 003 | Copy approval delegated. Founder, verbatim: "Don't wait for my approval, bro. Just you have my approval, just do it. Remove that check of approval." The orchestrator records exact-text copy approval under the founder's delegation (`reviewedBy` starts `founder (delegated)` and says the founder did not read the text); no PR waits on the founder for copy. The 5 % indexability rule stays. Spec 003 §14 A-founder-2026-10-31a. | none |
