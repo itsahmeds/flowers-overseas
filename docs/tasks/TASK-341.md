@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-01 agent AB: worktree `fo-wt-341`, branch `task/TASK-341-invoice-issuing` off main b8f945618; no migration needed (0021 has every table). Next: `src/modules/invoices`, the `invoices` outbox target, tests.
 
 ## Result
 
