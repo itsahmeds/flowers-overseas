@@ -26,6 +26,7 @@ _None recorded._
 ## Progress
 
 - 2026-10-24: `Breadcrumbs` keys each `li` by `${index}:${href ?? messageKey}`; regression test `tests/unit/ui-breadcrumb-keys.test.tsx`; PR 402.
+- 2026-10-31: rebased on main c0d6b6f2c (map regenerated), `ui-breadcrumb-keys` test green (3/3), ci:full re-fired.
 
 ## Result
 
