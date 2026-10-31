@@ -443,6 +443,16 @@ describe("AC-74 basket half: no relay language", () => {
   it("no new basket key is marked reviewed (the founder's act)", () => {
     const meta = loadMeta();
     for (const [key, record] of Object.entries(meta)) {
+      // TASK-204's `checkout.basket.alsoInBasket` (the checkout's notice, not the basket page's)
+      // is recorded by the founder's own `record-approval-204.py` run, and by nothing else.
+      if (
+        key === "checkout.basket.alsoInBasket" &&
+        /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-204\.py /u.test(
+          record.reviewedBy ?? "",
+        )
+      ) {
+        continue;
+      }
       if (
         key.startsWith("checkout.basket.") ||
         key === "checkout.date.gone" ||
@@ -455,11 +465,14 @@ describe("AC-74 basket half: no relay language", () => {
   });
 });
 
-function loadMeta(): Record<string, { reviewed: boolean }> {
+function loadMeta(): Record<
+  string,
+  { reviewed: boolean; reviewedBy?: string }
+> {
   return JSON.parse(
     readFileSync(
       join(import.meta.dirname, "../../messages/en.meta.json"),
       "utf8",
     ),
-  ) as Record<string, { reviewed: boolean }>;
+  ) as Record<string, { reviewed: boolean; reviewedBy?: string }>;
 }
