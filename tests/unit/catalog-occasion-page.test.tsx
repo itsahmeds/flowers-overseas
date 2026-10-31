@@ -54,6 +54,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  "nav",
+  "home",
 ] as const;
 
 /**
@@ -124,58 +126,55 @@ describe("the country occasion page (§5.3 row 2)", () => {
 
   it("renders one `<h1>`, and it names the occasion and the destination", () => {
     expect(html.match(/<h1/gu)).toHaveLength(1);
-    expect(text).toContain("Mother's Day flowers for Poland");
+    // The short H1 (spec 043 item 5).
+    expect(readable(/<h1[^>]*>(.*?)<\/h1>/su.exec(html)?.[1] ?? "")).toBe(
+      "Mother's Day flowers to Poland",
+    );
   });
 
-  it("renders N1 twice, one per band: in the hero from `md` up, after the grid below (spec 004 §14 A-founder-2026-10-18c, AC-57)", () => {
-    const notice = "Ordering opens soon.";
-    const notes = [...html.matchAll(/<div[^>]*role="note"[^>]*>/gu)].map(
-      (match) => ({ tag: match[0], at: match.index }),
-    );
-    expect(notes).toHaveLength(2);
-    const [hero, phone] = notes;
+  it("shows the status parts once per band: in the quiet line from `md` up, after the grid below (spec 043 AC-7, AC-36; spec 004 AC-57)", () => {
     const grid = html.indexOf("data-fo-listing-grid=");
     const lede = html.indexOf("data-fo-shop-lede");
-    // The hero's copy precedes the grid; its row is `display: none` below `md`.
-    expect(hero!.at).toBeLessThan(grid);
-    const heroRow = html.lastIndexOf(
-      "<div",
-      html.indexOf("data-fo-hero-note-row"),
-    );
-    expect(heroRow).toBeLessThan(hero!.at);
-    expect(html.slice(heroRow, html.indexOf(">", heroRow))).toMatch(
+    // The quiet line's parts, before the grid, `display: none` below `md`.
+    const head = html.indexOf("data-fo-listing-status-parts");
+    expect(head).toBeGreaterThan(-1);
+    expect(head).toBeLessThan(grid);
+    expect(html.slice(html.lastIndexOf("<span", head), head)).toMatch(
       /class="[^"]*(?<![\w:-])max-md:hidden\b/u,
     );
     // The phone's copy follows the grid, before the lede, and is `display: none` from `md` up.
-    expect(phone!.at).toBeGreaterThan(grid);
-    expect(phone!.at).toBeLessThan(lede);
-    expect(phone!.tag).toMatch(/class="[^"]*(?<![\w:-])md:hidden\b/u);
-    for (const { tag, at } of notes) {
-      expect(tag).toContain('aria-label="A note before you choose"');
-      expect(tag).not.toContain("aria-hidden");
-      expect(readable(html.slice(at, html.indexOf("</div>", at)))).toContain(
-        notice,
-      );
-    }
-    // Nowhere else: N1's sentence appears exactly twice in the document.
-    expect(text.split(notice)).toHaveLength(3);
+    const after = html.indexOf("data-fo-listing-status-after-grid");
+    expect(after).toBeGreaterThan(grid);
+    expect(after).toBeLessThan(lede);
+    expect(html.slice(html.lastIndexOf("<p", after), after)).toMatch(
+      /class="[^"]*(?<![\w:-])md:hidden\b/u,
+    );
+    // The two copies, and no third: no P.S., no demo sentence, no note.
+    expect(text.split("Ordering opens soon")).toHaveLength(3);
+    expect(text.split("Prices include delivery and VAT")).toHaveLength(3);
+    expect(html).not.toContain('role="note"');
+    expect(text).not.toContain("Every price here is the price you will pay");
   });
 
-  it("puts the phone's N1 after the grid and before the pager when one renders (AC-57; E-5: no paged country occasion is built today)", () => {
+  it("puts the phone's status line and the notes after the grid and before the pager (AC-57; spec 043 AC-53)", () => {
     const paged: ListingView = { ...en, pageCount: 2 };
     const out = render(<CountryOccasionPage view={paged} />, "en");
-    const grid = out.indexOf("data-fo-listing-grid=");
-    const phone = out.indexOf('data-fo-listing-note="after-grid"');
+    const lastCard = out.lastIndexOf("data-fo-product-card=");
+    const foot = out.indexOf("data-fo-listing-foot");
     const pager = out.indexOf("data-fo-pagination=");
     expect(pager).toBeGreaterThan(-1);
-    expect(phone).toBeGreaterThan(grid);
-    expect(phone).toBeLessThan(pager);
-    // Page 2 renders no hero and no note (spec 008 §14 A15 (a)).
+    expect(foot).toBeGreaterThan(lastCard);
+    expect(foot).toBeLessThan(pager);
+    expect(out.indexOf("data-fo-listing-status-after-grid")).toBeGreaterThan(
+      foot,
+    );
+    // Page 2: the count with the page, and no status parts anywhere.
     const second = render(
       <CountryOccasionPage view={{ ...paged, page: 2 }} />,
       "en",
     );
-    expect(second).not.toContain('role="note"');
+    expect(second).not.toContain("data-fo-listing-status-after-grid");
+    expect(second).not.toContain("data-fo-listing-status-parts");
   });
 
   it("prints the destination's own date, formatted and never typed", () => {
@@ -186,29 +185,24 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(text).toContain("That is the date Poland keeps for it");
   });
 
-  it("opens with the dated line, then the links out and the sort form, then the grid", () => {
-    // Spec 008 §14 A-founder-2026-10-14c (AC-33; TASK-241): "Also in Poland" and the sort form
-    // sit above the grid at every width, and nothing that narrows or sorts follows it.
+  it('opens with the dated line, then "Also in Poland" and the sort form, then the grid', () => {
+    // Spec 008 §14 A-founder-2026-10-14c (AC-33) and spec 043 item 3: "Also in Poland" and its
+    // one chip at the start of the toolbar row, the sort form at its end, above the grid.
     const dated = html.indexOf("data-fo-occasion-date");
-    const links = html.indexOf("data-fo-listing-chips");
+    const links = html.indexOf("data-fo-listing-also-in");
     const form = html.indexOf("<form");
     const grid = html.indexOf("data-fo-listing-grid=");
     expect(dated).toBeGreaterThan(-1);
     expect(dated).toBeLessThan(links);
     expect(links).toBeLessThan(form);
     expect(form).toBeLessThan(grid);
-    // Named by its drawn label from `md` up (the C3 artboard).
     expect(html).toMatch(
-      /<nav aria-labelledby="listing-chips-label" data-fo-listing-chips/u,
+      /<nav aria-labelledby="listing-also-in"[^>]*data-fo-listing-also-in/u,
     );
-    expect(html).toMatch(/id="listing-chips-label">Also in Poland</u);
+    expect(html).toMatch(/id="listing-also-in">Also in Poland</u);
   });
 
-  it("carries the demo sentence and no purchase affordance (§13 Q8)", () => {
-    // N1 (spec 004 §14 A23 clause 12; TASK-193): the whole sentence, so a reworded notice is red.
-    expect(text).toContain(
-      "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
-    );
+  it("carries no purchase affordance (§13 Q8)", () => {
     // The one button on the page is the sort form's submit (spec 008 §14 A15 (a), TASK-187):
     // a `<form method="get">`, never a basket.
     expect(html.match(/<button/giu) ?? []).toHaveLength(1);
@@ -251,24 +245,19 @@ describe("the country occasion page (§5.3 row 2)", () => {
     );
   });
 
-  it("links out to the shop root and to no page that does not exist", async () => {
+  it("links out to the shop root and to no page that does not exist (spec 043 item 3: its one chip)", async () => {
     expect(html).toContain('href="/en/poland/flowers"');
     expect(text).toContain("Flowers for Poland");
-    // Since spec 008 A-founder-2026-10-21c (TASK-316) every observed Polish occasion clears the
-    // floor, so the page links to each of the other ten Polish country occasion pages, and to no
-    // URL outside the existence set. The count is pinned so the loop cannot be satisfied by
-    // having nothing to iterate.
+    // The toolbar's start is the shop root's chip alone; every href in `<main>` answers in the
+    // existence set or is a product, hub, guide or index page.
     const exists = new Set((await listingPages("en")).map((page) => page.path));
-    const occasionHrefs = [
-      ...new Set(html.match(/href="\/en\/poland\/occasions\/[^"]+"/gu) ?? []),
-    ];
-    expect(occasionHrefs).toHaveLength(10);
-    expect(occasionHrefs).not.toContain(
-      'href="/en/poland/occasions/mothers-day"',
+    const alsoIn = html.slice(
+      html.indexOf("data-fo-listing-also-in"),
+      html.indexOf("</nav>", html.indexOf("data-fo-listing-also-in")),
     );
-    for (const href of occasionHrefs) {
-      expect(exists.has(href.slice('href="'.length, -1)), href).toBe(true);
-    }
+    const hrefs = [...alsoIn.matchAll(/href="([^"]+)"/gu)].map((m) => m[1]);
+    expect(hrefs).toStrictEqual(["/en/poland/flowers"]);
+    expect(exists.has("/en/poland/flowers")).toBe(true);
   });
 
   it("adds no client island and no inline script (§5.4)", () => {

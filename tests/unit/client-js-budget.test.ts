@@ -104,7 +104,9 @@ import {
   ON_INPUT_CHUNK_MARKERS,
   CONSENT_ISLAND_MARKER,
   LANGUAGE_POPUP_MARKER,
+  LISTING_SORT_MARKER,
   onInputChunkMarkers,
+  unmountedIslandMarkers,
   pageLocaleOf,
   measurePages,
   messagesPayloadSizes,
@@ -939,6 +941,19 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     expect(
       onInputChunkMarkers({ NEXT_PUBLIC_GA4_MEASUREMENT_ID: GA4_FIXTURE }),
     ).toEqual(["fo:deferred:home-sentence", "data-fo-consent-panel"]);
+  });
+
+  it("charges the listing sort island only to a document that mounts SortLoader (TASK-289)", () => {
+    expect(LISTING_SORT_MARKER).toBe("fo:deferred:listing-sort");
+    const motion = { id: "1", name: "MotionLoader", chunks: [] };
+    const sort = { id: "2", name: "SortLoader", chunks: [] };
+    // A home, a guide or a product page: no SortLoader, so its chunk is never fetched there.
+    expect(unmountedIslandMarkers([motion])).toEqual([
+      "fo:deferred:listing-sort",
+    ]);
+    expect(unmountedIslandMarkers([])).toEqual(["fo:deferred:listing-sort"]);
+    // A country listing mounts it after paint, so its chunk is page-load there.
+    expect(unmountedIslandMarkers([motion, sort])).toEqual([]);
   });
 
   it("adds the language popup's marker exactly on a page with nothing to offer (TASK-280)", async () => {

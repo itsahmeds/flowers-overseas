@@ -501,6 +501,7 @@ export { GridProvenance } from "./shop/GridProvenance.tsx";
 export { photoFirst } from "./shop/photoFirst.ts";
 export type { GridProvenanceProps } from "./shop/GridProvenance.tsx";
 export {
+  ChevronDown,
   ListingSortForm,
   ListingToolbar,
   SORT_LABEL_KEYS,

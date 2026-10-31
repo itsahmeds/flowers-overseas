@@ -498,6 +498,32 @@ export function onInputChunkMarkers(
   ];
 }
 
+/**
+ * The listing sort island (TASK-289), by its deferred-set marker and the loader that mounts it. A
+ * paint-triggered island, so a page load fetches it wherever `SortLoader` mounts: the country
+ * listings' toolbar. Its loader stub shares the layout's loader chunk, so without this rule every
+ * other page would be charged a chunk no page load of it fetches (the over-count
+ * `tests/e2e/client-js-budget.spec.ts` reports as "charged … and not fetched").
+ */
+const LISTING_SORT = DEFERRED_ISLANDS.find(
+  (island) => island.id === "listing-sort",
+);
+export const LISTING_SORT_MARKER: string =
+  LISTING_SORT?.marker ?? "missing:listing-sort";
+const LISTING_SORT_LOADER: string = LISTING_SORT?.mounts ?? "SortLoader";
+
+/**
+ * The markers of paint islands this document does not mount, read from its own client
+ * references: today the listing sort island on every page without a `SortLoader` reference.
+ */
+export function unmountedIslandMarkers(
+  references: readonly ClientReference[],
+): readonly string[] {
+  return references.some((reference) => reference.name === LISTING_SORT_LOADER)
+    ? []
+    : [LISTING_SORT_MARKER];
+}
+
 /** The locale segment of a URL (`/en-gb/poland/flowers` → `en-gb`), or `undefined` for `/`. */
 export function pageLocaleOf(url: string): string | undefined {
   const segment = url.split("/")[1];
@@ -782,7 +808,10 @@ export function measurePages(
     // Every URL must have a route entry ("cannot tell" is not "none"); the candidate list is read
     // once per marker set per call (the popup's marker depends on the page's locale, TASK-280).
     assertRouteEntry(dist, served);
-    const markers = onInputChunkMarkers(process.env, pageLocaleOf(url));
+    const markers = [
+      ...onInputChunkMarkers(process.env, pageLocaleOf(url)),
+      ...unmountedIslandMarkers(references),
+    ];
     const key = markers.join("\n");
     let candidates = candidatesBy.get(key);
     if (candidates === undefined) {

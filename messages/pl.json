@@ -555,7 +555,7 @@
     },
     "state": {
       "deliveringNow": "Delivering now",
-      "guideNotDelivering": "Guide · not delivering yet"
+      "guideNotDelivering": "Ordering opens soon"
     }
   },
   "destinationsHub": {
@@ -1002,15 +1002,12 @@
       "label": "{count, plural, one {# bukiet na tej stronie} few {# bukiety na tej stronie} many {# bukietów na tej stronie} other {# bukietu na tej stronie}}"
     },
     "h1": {
-      "countryCategory": "{entity} we make for {country}",
-      "countryOccasion": "{occasion} flowers for {country}",
-      "countryShopRoot": "Flowers we make for {country}"
+      "countryCategory": "{entity} to {country}",
+      "countryOccasion": "{occasion} flowers to {country}",
+      "countryShopRoot": "Flowers to {country}"
     },
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
-    },
-    "listing": {
-      "eyebrow": "Sending to {country}"
     },
     "note": {
       "label": "A note before you choose",
@@ -1061,7 +1058,7 @@
     "toolbar": {
       "count": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}}",
       "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
-      "reorderLabel": "Change the order",
+      "howWeSort": "How we sort",
       "sortLabel": "Sort by",
       "submit": "Sort",
       "summary": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}} · strona {page} z {pageCount}"

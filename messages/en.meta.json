@@ -2439,9 +2439,9 @@
   "destinations.state.guideNotDelivering": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (decisions-log 2026-09-15, PR 60 design ruling (f))",
-    "reviewedAt": "2026-09-15T00:00:00Z",
-    "sourceHash": "9687cc0b20837784ae1ed2996a99bfd7dcd36d78695d97557cbef4fb58e1f8bf"
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
+    "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "destinationsHub.emptyBody": {
     "source": "human",
@@ -3916,23 +3916,23 @@
   "shop.h1.countryCategory": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-category-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-110)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "a399a16eca426eb0222c30aebfc60e5ee84d43610d2e2e38023d2fdf335b3522"
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
+    "sourceHash": "b75ff46ef97dd9121ce9d3d2b3965c3f5afcfeb6a4a70769d95150730ab01dc5"
   },
   "shop.h1.countryOccasion": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-occasion-desktop.dc.html, -mobile and country-shop-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-111)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "c60d731e8a5b0bb673360c58ac2cebb4de36e27436f408c9dfe6adf9dd408cd4"
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
+    "sourceHash": "de7cf77079de61be33b7a64a51eb63640e25892d92fcbf60cf2e6621831ef873"
   },
   "shop.h1.countryShopRoot": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "fb10e6e0ef520a1a17e2ef55052654cf6dda14260aabc413c30fc9b801269f97"
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
+    "sourceHash": "9298fc8f5d29215bf5ce40d20087722dff00bb3195b9842ce8c7b00714d473e6"
   },
   "shop.hub.noMoney": {
     "source": "human",
@@ -3940,13 +3940,6 @@
     "reviewedBy": "founder (docs/design/wireframes/category-hub-{desktop,mobile}.dc.html and occasion-hub-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-112)",
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "d6c78659f21708394b63d5fd407783f26e51433cb3559df3339d7f98f7905a68"
-  },
-  "shop.listing.eyebrow": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f",
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
-    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.note.label": {
     "source": "human",
@@ -4213,13 +4206,6 @@
     "reviewedBy": "founder (docs/design/system/components.dc.html § Listing and card blocks and docs/design/wireframes/country-category-desktop.dc.html, 2026-09-16 design round; transcribed by TASK-108)",
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "cc44e3bd92f25ddd462eeaec8a88579c0fe468ac7f22fa4439c2e067655eb0ef"
-  },
-  "shop.toolbar.reorderLabel": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
-    "reviewedAt": "2026-10-18T10:42:45Z",
-    "sourceHash": "55e62a99425a5df4c30472d64e5d03e5bd702172d0fbbb5237a6b1505b2ae8fa"
   },
   "shop.toolbar.sortLabel": {
     "source": "human",
@@ -4590,6 +4576,13 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "a18745121bb8af6d1a0c689cfb3c2a2245d10d5fe3b37ff37c8b69fd74773dfa"
+  },
+  "shop.toolbar.howWeSort": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-289.py under the founder's blanket approval of 2026-10-31 (\"you have my approval, just do it\"); the founder did not read this text",
+    "reviewedAt": "2026-10-31T19:00:46Z",
+    "sourceHash": "1241da881d5855ace937d3b972f8993746b00e74aee278b4b87d32ed044d2b0d"
   },
   "nav.basketCount": {
     "source": "human",

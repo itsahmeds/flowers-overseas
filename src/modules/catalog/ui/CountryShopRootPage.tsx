@@ -63,17 +63,15 @@ import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
-  CountryListingHead,
-  CountryListingResults,
-  ListingPageHead,
+  ListingCategoriesToggle,
+  ListingFootNote,
+  ListingHead,
   ListingProse,
-  ListingStateLine,
   ListingSubsection,
-  ListingChipRow,
   ListingTiles,
   OccasionDatesTable,
-  STATE_KEYS,
 } from "./ListingChrome";
+import { chipGroups, listingCount, listingStatusParts } from "./listingHead";
 import { localeCode, registryLabel } from "./labels";
 
 export interface CountryShopRootPageProps {
@@ -106,7 +104,7 @@ export function CountryShopRootPage({
       data-fo-listing-state={view.items.length === 0 ? "empty" : "populated"}
     >
       <div className="pb-(--section-fluid)">
-        <ListingBreadcrumb crumbs={view.breadcrumb} />
+        <ListingBreadcrumb crumbs={view.breadcrumb} tone="quiet" />
 
         {view.items.length === 0 ? (
           /* AC-8. One sentence and the ways out — and the page stops here: no heading that
@@ -120,32 +118,40 @@ export function CountryShopRootPage({
           </div>
         ) : (
           <>
-            {/* Round 2 (spec 004 §14 A24 clause 2 (a)): the H1, the state line under it and the
-                shop's note as a flat P.S. on the end side. No separate lead figure: the lead is
-                `items[0]`, the grid's first card. Page 2 and later render no hero (A23 clause 5):
-                the H1 alone, then the results. */}
-            {view.page === 1 ? (
-              <CountryListingHead
-                emphasis={country}
-                heading={shop("h1.countryShopRoot", { country })}
-                note={shop("root.demoNotice")}
-                noteLabel={shop("note.label")}
-                noteMark={shop("note.mark")}
-                stateLine={
-                  view.country === undefined ? null : (
-                    <ListingStateLine
-                      state={view.country.state}
-                      text={t(STATE_KEYS[view.country.state])}
-                    />
-                  )
-                }
-              />
-            ) : (
-              <ListingPageHead
-                emphasis={country}
-                heading={shop("h1.countryShopRoot", { country })}
-              />
-            )}
+            {/* The head (spec 043 §14 A-founder-10-22 items 1, 2, 3 and 5, revised by
+                design PR 347; TASK-289): the short H1, one quiet line, one toolbar row. The shop
+                root's categories (its tiles) move into the "Categories" panel above the grid,
+                grouped by kind (§5.3 E); the tiles block under the lede stays. */}
+            <ListingHead
+              count={listingCount(shop, view)}
+              emphasis={country}
+              heading={shop("h1.countryShopRoot", { country })}
+              howWeSort={{
+                label: shop("toolbar.howWeSort"),
+                sentence: shop("toolbar.disclosure"),
+              }}
+              parts={listingStatusParts(t, view)}
+              partsBelowMd="head"
+              sort={<ListingSortForm path={view.path} sort={view.sort} />}
+              start={
+                <ListingCategoriesToggle
+                  groups={chipGroups(
+                    view.tiles.map((tile) => ({
+                      key: tile.key,
+                      name: tile.name,
+                      href: tile.href,
+                    })),
+                    view,
+                    {
+                      what: shop("root.tilesHeading"),
+                      occasion: t("home.occasions.eyebrow"),
+                    },
+                  )}
+                  heading={shop("root.tilesHeading")}
+                  label={t("nav.categories.label")}
+                />
+              }
+            />
 
             {/* Products before prose (§5.3 row 1). The grid's heading names the section for a
                 screen reader; the artboards draw none. */}
@@ -153,69 +159,35 @@ export function CountryShopRootPage({
               <VisuallyHidden as="h2" id="shop-grid-heading">
                 {shop("root.listingHeading", { country })}
               </VisuallyHidden>
-              <CountryListingResults
-                count={{
-                  phone: shop("toolbar.count", { count: view.resultCount }),
-                  desktop:
-                    view.pageCount > 1
-                      ? shop("toolbar.summary", {
-                          count: view.resultCount,
-                          page: view.page,
-                          pageCount: view.pageCount,
-                        })
-                      : shop("toolbar.count", { count: view.resultCount }),
-                }}
-                disclosure={shop("toolbar.disclosure")}
-                /* The categories of this destination, as links to their pages, above the grid at
-                   every width (spec 008 §14 A-founder-2026-10-14c, AC-33). The tiles below the
-                   lede stay the browsing section with counts and prices. */
-                chips={
-                  <ListingChipRow
-                    phoneOnly
-                    chips={view.tiles.map((tile) => ({
-                      key: tile.key,
-                      name: tile.name,
-                      href: tile.href,
-                    }))}
-                    label={shop("root.tilesHeading")}
-                  />
-                }
-                gridProvenance={{ cards: view.items, locale: code }}
-                grid={
-                  <ListingGrid
-                    cards={view.items}
-                    locale={code}
-                    priority
-                    provenance="grid"
-                  />
-                }
-                fx={
-                  view.fxFallback ? (
-                    /* Stale FX (spec 005 §14 A3): one sentence for the page, because one rate
-                       priced all of it. */
-                    <div data-fo-fx-fallback>
-                      <Text measure size="sm" tone="muted">
-                        {catalog("availability.fxUnavailable")}
-                      </Text>
-                    </div>
-                  ) : undefined
-                }
-                pager={
-                  /* Real `<a>`s in a labelled `<nav>`, page 1 linking to the bare URL (AC-10).
-                     The sort is not carried into these hrefs: a sorted URL is `noindex` and may
-                     never be a crawlable link (AC-15). */
-                  <Pagination
-                    baseHref={view.path}
-                    locale={code}
-                    page={view.page}
-                    pageCount={view.pageCount}
-                  />
-                }
-                /* The sort form above the grid, "Change the order" (C3, AC-33); still a
-                   `<form method="get">` that works with JavaScript off (AC-9). */
-                sortForm={<ListingSortForm sort={view.sort} />}
-                toolbar="band"
+              <ListingGrid
+                cards={view.items}
+                locale={code}
+                priority
+                provenance="grid"
               />
+              <ListingFootNote
+                gridProvenance={{ cards: view.items, locale: code }}
+              />
+              {view.fxFallback ? (
+                /* Stale FX (spec 005 §14 A3): one sentence for the page, because one rate priced
+                   all of it. */
+                <div className="mt-[28px]" data-fo-fx-fallback>
+                  <Text measure size="sm" tone="muted">
+                    {catalog("availability.fxUnavailable")}
+                  </Text>
+                </div>
+              ) : null}
+              {/* Real `<a>`s in a labelled `<nav>`, page 1 linking to the bare URL (AC-10). The
+                  sort is not carried into these hrefs: a sorted URL is `noindex` and may never be
+                  a crawlable link (AC-15). */}
+              <div className="mt-[28px]">
+                <Pagination
+                  baseHref={view.path}
+                  locale={code}
+                  page={view.page}
+                  pageCount={view.pageCount}
+                />
+              </div>
             </section>
 
             {/* The lede, directly under the first screen (A24 clause 2: a lede longer than two

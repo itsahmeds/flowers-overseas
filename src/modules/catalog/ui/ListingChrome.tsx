@@ -28,12 +28,12 @@ import type { ReactElement, ReactNode } from "react";
 import type { LocaleCode } from "@/config/locales";
 import { formatDate, formatList } from "@/modules/i18n";
 import {
-  Chip,
+  ChevronDown,
   Display,
   Eyebrow,
   FromPriceChip,
-  HorizontalScroller,
   GridProvenance,
+  Icon,
   Text,
   TextLink,
   type CategoryTileView,
@@ -524,150 +524,20 @@ export function OccasionDatesTable({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Round 2: the country listings' first screens (spec 004 §14 A24 clause 2;   */
-/* spec 008 §14 A15, A16; TASK-187).                                          */
+/* The country listings' head (spec 043 §14 A-founder-10-22 items 1, 2,  */
+/* 3, 5, 6 and 7, revised by design PR 347; the `lh:2026-10-24b` artboards of        */
+/* design PR 347; TASK-289).                                                   */
 /* -------------------------------------------------------------------------- */
 
 /**
- * The destination's state as one quiet text line (spec 004 §14 A23 **R7**, A24 clause 2): the
- * message for `listingView().country.state`, never a postmark. The dot is a 7 px decoration, so
- * it is `aria-hidden` and far under AC-45's 48 px ornament bound.
+ * The key of the not-open state part: the destinations' own state message for a destination that
+ * is not taking orders (`destinationStateKey()`), whose value spec 007 §14 A-founder-2026-10-14c
+ * clause 2 sets to "Ordering opens soon". One key, so the listing and the destinations block can
+ * never say the state in two wordings.
  */
-export function ListingStateLine({
-  state,
-  text,
-}: {
-  readonly state: "guide" | "live";
-  readonly text: string;
-}): ReactElement {
-  return (
-    <p
-      className="text-ink-muted mt-[8px] flex items-center gap-[8px] text-sm"
-      data-fo-listing-state-line={state}
-    >
-      <span
-        aria-hidden="true"
-        className={`size-[7px] flex-none rounded-full ${state === "live" ? "bg-success" : "bg-ink-subtle"}`}
-      />
-      {text}
-    </p>
-  );
-}
+export const NOT_OPEN_STATE_KEY = "destinations.state.guideNotDelivering";
 
-export interface CountryListingHeadProps {
-  /** The page's one heading, already translated. */
-  readonly heading: string;
-  readonly emphasis: string;
-  /** Spec 004 §14 A23 R7's line: `ListingStateLine`, or nothing on page 2 and later. */
-  readonly stateLine?: ReactNode;
-  /** Between the state line and the end of the start column (the occasion's dated line). */
-  readonly children?: ReactNode;
-  /** `shop.root.demoNotice` (N1): a flat P.S. with a rule from `md` up, a muted line on a phone. */
-  readonly note?: string;
-  readonly noteMark?: string;
-  readonly noteLabel?: string;
-}
-
-/**
- * The shop root's and the country category's head (round 2): the H1 with the destination in the
- * poppy italic, the state line directly under it, and the shop's note on the end side as a flat
- * P.S. with a rule, nothing tilted and no tape (the round-2 artboards; A24 clause 2). On a phone
- * the note is the one muted line under the state line (`country-*-mobile`). One rule closes the
- * head from `md` up. No lede and no eyebrow here: a lede longer than two lines moves under the
- * first screen, and the first screen is the H1, the state line, the count and the first row.
- */
-export function CountryListingHead({
-  heading,
-  emphasis,
-  stateLine,
-  children,
-  note,
-  noteMark,
-  noteLabel,
-}: CountryListingHeadProps): ReactElement {
-  return (
-    <div
-      className="md:border-rule md:gap-2xl grid grid-cols-1 items-start gap-[8px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:border-b md:pt-[12px] md:pb-[8px]"
-      data-fo-listing-hero
-    >
-      <div>
-        {/* Spec 004 §14 A-founder-2026-10-18b and -18c: the shop root's and the country
-            category's H1 take `--text-3xl-fluid` below `md` (its 32 px minimum, the phone
-            artboards' size) and `--text-title-fluid` from `md` up (44 px at 768, 53.8 px at
-            1280 × 800, 58 px from 1440), so the toolbar above the grid still leaves the first
-            row's prices on the first screen (rebound AC-34). Only the size changes below `md`:
-            the line height and tracking stay the title step's. */}
-        <Display
-          as="h1"
-          size="title"
-          className="max-md:text-(length:--text-3xl-fluid)"
-        >
-          {emphasise(heading, emphasis)}
-        </Display>
-        {stateLine}
-        {children}
-      </div>
-      {note === undefined ? null : (
-        <div
-          {...(noteLabel === undefined
-            ? {}
-            : { role: "note", "aria-label": noteLabel })}
-          className="md:border-rule md:border-s md:ps-[20px]"
-          data-fo-listing-note
-        >
-          {noteMark === undefined ? null : (
-            <p className="text-ink text-sm font-bold max-md:hidden">
-              {noteMark}
-            </p>
-          )}
-          <Text
-            as="p"
-            size="sm"
-            tone="muted"
-            className="md:text-ui max-w-[52ch] md:mt-[6px]"
-          >
-            {note}
-          </Text>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * The country occasion's N1 below `md` (spec 004 §14 A-founder-2026-10-18c clause 3, AC-57;
- * `country-occasion-mobile`'s `p.pl-note`): one muted line directly after the grid's last card and
- * before the pager. It is `display: none` from `md` up, where the hero's note is the one displayed
- * (and the hero's is `display: none` below `md`), so each band has exactly one note in the
- * accessibility tree, in DOM order equal to visual order. Never `aria-hidden`.
- */
-export function ListingPhoneNote({
-  note,
-  label,
-}: {
-  readonly note: string;
-  readonly label: string;
-}): ReactElement {
-  return (
-    <div
-      aria-label={label}
-      className="mt-[24px] md:hidden"
-      data-fo-listing-note="after-grid"
-      role="note"
-    >
-      <Text
-        as="p"
-        size="xs"
-        tone="subtle"
-        className="max-w-[52ch] leading-[1.45]"
-      >
-        {note}
-      </Text>
-    </div>
-  );
-}
-
-/** One chip of a listing's chip row: a link, or the current page marked and not a link. */
+/** One chip of a listing's Categories panel: a link, or the current page marked and not a link. */
 export interface ListingChip {
   readonly key: string;
   readonly name: string;
@@ -675,320 +545,395 @@ export interface ListingChip {
   readonly current?: boolean | undefined;
 }
 
-/**
- * The listing's chip row (spec 008 §14 A-founder-2026-10-14c, AC-33; spec 004 AC-49; TASK-195's
- * scroller; TASK-241; the C3 artboards of PR 236): the category or occasion links of this
- * destination, above the grid: one horizontal scroller at every width (one line of the first
- * screen), every chip a real link reachable by touch, keyboard and a trackpad's sideways scroll. Phase 0's "category filters" are links to real pages
- * (§13 Q6), never facet parameters.
- *
- * - `phoneOnly`: the shop root, whose desktop draws no chip row (its tiles are the categories),
- *   so the row is `display: none` from `md` up and out of the accessibility tree there.
- * - `labelFromMd`: the country occasion draws its row's name ("Also in Poland") over the chips
- *   from `md` up; elsewhere the name is the `<nav>`'s and is not drawn.
- */
-export function ListingChipRow({
-  label,
-  chips,
-  phoneOnly = false,
-  labelFromMd = false,
-  id = "listing-chips",
+/** One part of the quiet line after the count, each its own element (never one joined string). */
+export interface ListingStatusPart {
+  readonly key: "state" | "prices";
+  readonly text: string;
+}
+
+/** The middle dot between two parts: decoration, `aria-hidden` (item 1). */
+function StatusDot({
+  className,
 }: {
-  readonly label: string;
-  /** The base of the drawn label's id, where `labelFromMd` draws one. */
-  readonly id?: string;
-  readonly chips: readonly ListingChip[];
-  readonly phoneOnly?: boolean;
-  readonly labelFromMd?: boolean;
-}): ReactElement | null {
-  if (chips.length === 0) return null;
+  readonly className?: string | undefined;
+}): ReactElement {
   return (
-    <nav
-      {...(labelFromMd
-        ? { "aria-labelledby": `${id}-label` }
-        : { "aria-label": label })}
-      className={phoneOnly ? "md:hidden" : undefined}
-      data-fo-listing-chips
+    <span
+      aria-hidden="true"
+      className={["text-ink-subtle mx-[7px]", className]
+        .filter(Boolean)
+        .join(" ")}
+      data-fo-sep
     >
-      {labelFromMd ? (
-        <p
-          className="label text-ink-subtle mb-[8px] max-md:hidden"
-          id={`${id}-label`}
-        >
-          {label}
-        </p>
-      ) : null}
-      <HorizontalScroller
-        itemsFocusable
-        items={chips.map((chip) => ({
-          key: chip.key,
-          node:
-            chip.current === true ? (
-              <Chip aria-current="page">{chip.name}</Chip>
-            ) : (
-              <Chip href={chip.href}>{chip.name}</Chip>
-            ),
-        }))}
-        label={label}
-      />
-    </nav>
+      ·
+    </span>
   );
 }
 
 /**
- * The country category's sibling categories, folded at every width into one "Categories" button on
- * the toolbar row (spec 008 §14 A-founder-2026-10-15c, the founder's "A your pick" on TASK-241
- * E-1): a native `<details>`/`<summary>`, closed in the server HTML, so it opens and closes with no
- * client script and every chip link is in the HTML whether the panel is open or not. It is a
- * direct child of `CountryListingResults`' toolbar grid. Where the browser exposes
- * `::details-content`, the `<details>` box is dropped (`display: contents`), so the `<summary>` takes
- * the toolbar row's button cell and the opened panel takes a full-width row under the toolbar row,
- * in normal flow, pushing the grid down: no overlay. Elsewhere the whole `<details>` sits in the
- * button cell and, opened, moves to that full-width row with its panel.
+ * The status parts on their own, for the country occasion's phone, where they follow the grid
+ * (spec 004 AC-57; item 1, "Below `md`"): one 13 px line, the parts as in the quiet line. Displayed
+ * below `md` only, where the quiet line's own parts are not, so each band displays them once.
+ */
+export function ListingStatusAfterGrid({
+  parts,
+}: {
+  readonly parts: readonly ListingStatusPart[];
+}): ReactElement | null {
+  if (parts.length === 0) return null;
+  return (
+    <p
+      className="text-ink-subtle text-xs leading-[1.5] md:hidden"
+      data-fo-listing-status-after-grid
+    >
+      {parts.map((part, index) => (
+        <span key={part.key}>
+          {index === 0 ? null : <StatusDot className="mx-[5px]" />}
+          <span data-fo-listing-status-part={part.key}>{part.text}</span>
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/**
+ * "How we sort" (item 2): one native `<details>`, closed in the server HTML, whose panel holds the
+ * ranking sentence (`shop.toolbar.disclosure`) word for word, in normal flow under the toolbar row,
+ * so it pushes the grid down: no overlay, no script, no focus trap.
+ *
+ * From `md` up its `<summary>` is a small text link directly before the sort pill on the toolbar
+ * row; below `md` it ends the quiet line's count row (a 22 px line inside a 44 px hit area). It is
+ * a direct child of `ListingHead`'s grid. Where the browser exposes `::details-content`, the
+ * `<details>` box is dropped (`display: contents`) so the summary and the panel take their own
+ * cells; elsewhere the whole `<details>` takes the summary's cell and, opened, the panel's row.
+ */
+function HowWeSort({
+  label,
+  sentence,
+}: {
+  readonly label: string;
+  readonly sentence: string;
+}): ReactElement {
+  const place =
+    "col-start-2 row-start-1 self-end justify-self-end md:col-start-3 md:row-start-2 md:mt-[14px] md:self-center";
+  return (
+    <details
+      className={`group ${place} open:col-span-full open:row-start-3 open:justify-self-stretch supports-[selector(::details-content)]:contents [&::details-content]:col-span-full [&::details-content]:row-start-3 [&:not([open])::details-content]:hidden`}
+      data-fo-ranking-disclosure
+    >
+      <summary
+        className={`${place} text-ink-muted group-open:text-ink -my-[11px] inline-flex min-h-[22px] cursor-pointer list-none items-center gap-[7px] py-[11px] text-sm leading-[22px] whitespace-nowrap underline decoration-(--color-border-strong) underline-offset-4 md:my-0 md:min-h-(--target-min) md:px-[4px] md:py-0 md:no-underline [&::-webkit-details-marker]:hidden`}
+      >
+        {label}
+        <ChevronDown className="group-open:-scale-y-100" />
+      </summary>
+      <p
+        className="rounded-field bg-paper-2 text-ink-muted mt-[12px] px-[18px] py-[14px] text-sm leading-[1.5] md:mt-[8px]"
+        data-fo-ranking-sentence
+      >
+        {sentence}
+      </p>
+    </details>
+  );
+}
+
+/** One chip of the Categories panel: a link, or the current page in the selected fill. */
+function PanelChip({ chip }: { readonly chip: ListingChip }): ReactElement {
+  const base =
+    "inline-flex min-h-(--target-min) items-center rounded-full px-[14px] text-sm whitespace-nowrap no-underline";
+  return chip.current === true ? (
+    <span
+      aria-current="page"
+      className={`${base} bg-selected text-on-selected`}
+    >
+      {chip.name}
+    </span>
+  ) : (
+    <a
+      className={`${base} bg-card text-ink shadow-[inset_0_0_0_1px_var(--color-rule)] hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`}
+      href={chip.href}
+    >
+      {chip.name}
+    </a>
+  );
+}
+
+/** A labelled group of the Categories panel (spec 043 §5.3 E). */
+export interface ListingChipGroup {
+  readonly id: string;
+  readonly heading: string;
+  readonly chips: readonly ListingChip[];
+}
+
+/**
+ * The "Categories" disclosure at the start of the toolbar row (spec 008 §14 A-founder-2026-10-15c;
+ * spec 043 item 3 and §5.3 E; `.lh-cats`, `.lh-cpanel`): a pill with a plus, closed in the server
+ * HTML; opened, a panel in normal flow under the toolbar row with the chips in two labelled groups,
+ * what it is first, then the occasions. Every chip is the same crawlable `<a href>` open or
+ * closed. Placed like `HowWeSort`, in its own panel row.
  */
 export function ListingCategoriesToggle({
   label,
   heading,
-  chips,
+  groups,
 }: {
-  /** The button's words, the reviewed `nav.categories.label` ("Categories"; spec 008 §14 A-founder-2026-10-18a). */
+  /** The pill's words, the reviewed `nav.categories.label` ("Categories"). */
   readonly label: string;
-  /** The row's name ("Also for Poland"), on the panel's `<nav>`. */
+  /** The panel's `<nav>` name ("Also for Poland", "By what it is"). */
   readonly heading: string;
-  readonly chips: readonly ListingChip[];
+  readonly groups: readonly ListingChipGroup[];
 }): ReactElement | null {
-  if (chips.length === 0) return null;
+  const shown = groups.filter((group) => group.chips.length > 0);
+  if (shown.length === 0) return null;
+  const place = "col-start-1 row-start-2 mt-[12px] md:mt-[14px]";
   return (
     <details
-      className="group col-start-1 row-start-3 self-end open:col-span-full open:row-start-4 supports-[selector(::details-content)]:contents md:col-start-3 md:row-start-1 md:self-center md:open:row-start-3 [&::details-content]:col-span-full [&::details-content]:row-start-4 md:[&::details-content]:row-start-3 [&:not([open])::details-content]:hidden"
+      className={`group ${place} open:col-span-full open:row-start-4 supports-[selector(::details-content)]:contents [&::details-content]:col-span-full [&::details-content]:row-start-4 [&:not([open])::details-content]:hidden`}
       data-fo-listing-categories
     >
-      <summary className="text-ink text-ui hover:bg-surface-raised col-start-1 row-start-3 flex min-h-(--control-sm) w-fit cursor-pointer list-none items-center gap-[8px] self-end rounded-full px-[16px] font-bold whitespace-nowrap shadow-[inset_0_0_0_1.5px_var(--color-ink)] max-md:mb-[14px] md:col-start-3 md:row-start-1 md:self-center [&::-webkit-details-marker]:hidden">
+      <summary
+        className={`${place} text-ink bg-card group-open:bg-sage-wash md:text-ui flex min-h-(--target-min) w-fit cursor-pointer list-none items-center gap-[8px] rounded-full ps-[14px] pe-[12px] text-sm font-bold whitespace-nowrap shadow-[inset_0_0_0_1.5px_var(--color-ink)] md:gap-[10px] md:ps-[18px] md:pe-[16px] [&::-webkit-details-marker]:hidden`}
+      >
         {label}
-        {/* The FAQ's `+` (`HomeFaq`): the expand affordance, `aria-hidden` because `<details>`
-            exposes the state; turned into a `×` only when open, so the closed first screen holds
-            no rotated element (AC-45). */}
+        {/* The expand affordance, `aria-hidden` because `<details>` exposes the state: a plus
+            closed, a minus open, so nothing on the first screen is rotated (spec 004 AC-45). */}
         <span
           aria-hidden="true"
-          className="motion-fast ease-standard leading-none transition-transform group-open:rotate-45"
+          className="text-[18px] leading-none font-normal group-open:hidden"
         >
           +
+        </span>
+        <span
+          aria-hidden="true"
+          className="hidden text-[18px] leading-none font-normal group-open:inline"
+        >
+          {"−"}
         </span>
       </summary>
       <nav
         aria-label={heading}
-        className="bg-card rounded-field border-rule my-[8px] border p-[16px] md:p-[20px]"
+        className="rounded-field bg-paper-2 mt-[12px] grid grid-cols-1 gap-[8px] p-[14px] md:mt-[8px] md:grid-cols-[max-content_minmax(0,1fr)] md:gap-x-[20px] md:gap-y-[12px] md:px-[18px] md:py-[16px]"
       >
-        <ul className="gap-sm flex list-none flex-wrap p-0">
-          {chips.map((chip) => (
-            <li key={chip.key}>
-              {chip.current === true ? (
-                <Chip aria-current="page">{chip.name}</Chip>
-              ) : (
-                <Chip href={chip.href}>{chip.name}</Chip>
-              )}
-            </li>
-          ))}
-        </ul>
+        {shown.map((group) => (
+          <section
+            aria-labelledby={group.id}
+            className="contents"
+            key={group.id}
+          >
+            <h3 className="label text-ink-subtle md:pt-[10px]" id={group.id}>
+              {group.heading}
+            </h3>
+            <ul className="flex list-none flex-wrap gap-[8px] p-0">
+              {group.chips.map((chip) => (
+                <li key={chip.key}>
+                  <PanelChip chip={chip} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </nav>
     </details>
   );
 }
 
-export interface CountryListingResultsProps {
-  /** The count line: `phone` below `md` ("84 bouquets"), `desktop` from `md` up (with the page). */
-  readonly count: { readonly phone: string; readonly desktop: string };
-  readonly disclosure: string;
-  /** The page's `ListingChipRow`, where it has one. */
-  readonly chips?: ReactNode;
+/**
+ * The country occasion's start control (item 3; `.lh-also`): the "Also in {country}" label and
+ * its one chip, the shop root (`shop.occasion.shopRootLink`). Below `md` the label is visually
+ * hidden and stays the group's accessible name.
+ */
+export function ListingAlsoIn({
+  id,
+  label,
+  chip,
+}: {
+  readonly id: string;
+  readonly label: string;
+  readonly chip: { readonly name: string; readonly href: string } | undefined;
+}): ReactElement | null {
+  if (chip === undefined) return null;
+  return (
+    <nav
+      aria-labelledby={id}
+      className="col-start-1 row-start-2 mt-[12px] flex min-w-0 items-center gap-[10px] md:mt-[14px]"
+      data-fo-listing-also-in
+    >
+      <span
+        className="text-ink-subtle text-sm whitespace-nowrap max-md:sr-only"
+        id={id}
+      >
+        {label}
+      </span>
+      <a
+        className="bg-card text-ink inline-flex min-h-(--target-min) min-w-0 items-center gap-[8px] rounded-full px-[14px] text-sm whitespace-nowrap no-underline shadow-[inset_0_0_0_1px_var(--color-rule)] hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]"
+        href={chip.href}
+      >
+        {chip.name}
+        <Icon name="chevron-end" size={12} />
+      </a>
+    </nav>
+  );
+}
+
+export interface ListingHeadProps {
+  /** The page's one heading, already translated (`shop.h1.*`, item 5). */
+  readonly heading: string;
+  /** The destination, set in the poppy italic inside one `<em>`. */
+  readonly emphasis: string;
+  /** The country occasion's date line, directly under the H1 (item 7). */
+  readonly dateLine?: { readonly text: string; readonly date: string | null };
+  /** The count: `shop.toolbar.count` on page 1, `shop.toolbar.summary` from page 2 (item 1). */
+  readonly count: string;
+  /** After the count, page 1 only: the not-open state while not open, then the prices part. */
+  readonly parts: readonly ListingStatusPart[];
   /**
-   * The country category's `ListingCategoriesToggle`: at every width its chips fold into one
-   * button on the sort form's row, before the sort form, and the page passes no `chips`
-   * (A-founder-2026-10-15c).
+   * `after-grid`: the country occasion, whose status parts follow the grid below `md`
+   * (`ListingStatusAfterGrid`); `head`: everywhere else, where they are the phone's first row.
    */
-  readonly chipsToggle?: ReactNode;
-  /** The sort form (`ListingSortForm`). */
-  readonly sortForm: ReactNode;
-  /**
-   * Where the chip line sits from `md` up: `band` (the shop root and the country category) shows
-   * none there (the shop root's categories are its tiles; the category's fold into
-   * `chipsToggle`); `column` (the country occasion, whose line carries its drawn label) puts it
-   * under the count-and-sort row.
-   */
-  readonly toolbar: "band" | "column";
-  /**
-   * The grid's cards, for its one "Example arrangement" label (spec 004 §14
-   * A-founder-2026-10-19b clause 3): the same cards the page hands `ListingGrid` with
-   * `provenance="grid"`, so the label and the cards' own labels answer one question.
-   */
-  readonly gridProvenance?: GridProvenanceProps;
-  readonly grid: ReactNode;
-  /**
-   * Directly after the grid's last card, before the fx line and the pager: the country occasion's
-   * `ListingPhoneNote` (spec 004 §14 A-founder-2026-10-18c clause 3).
-   */
-  readonly afterGrid?: ReactNode;
-  readonly fx?: ReactNode;
-  readonly pager?: ReactNode;
+  readonly partsBelowMd: "head" | "after-grid";
+  /** The start control: `ListingCategoriesToggle` or `ListingAlsoIn`. */
+  readonly start: ReactNode;
+  readonly howWeSort: { readonly label: string; readonly sentence: string };
+  /** `ListingSortForm`. */
+  readonly sort: ReactNode;
 }
 
 /**
- * `rowGap` is the phone's gap between the toolbar's rows. On the shop root and the country
- * category (`band`) it is `--spacing-sm` (8 px), 2 px under the artboards' 10, so the first row's
- * prices end inside the 390 × 844 viewport in CI's Linux text (the founder's E-6 ruling, option A:
- * "shave about 6 px off the spacing around the filter bar on phones"; rebound AC-34,
- * T-49). The occasion keeps the drawn 10 px. From `md` up both use `md:gap-y-[6px]`.
- */
-const TOOLBAR_PLACEMENT = {
-  band: { chips: "md:hidden", rowGap: "gap-y-[6px]" },
-  column: {
-    chips: "md:col-span-full md:row-start-3 md:pt-[4px]",
-    rowGap: "gap-y-[10px]",
-  },
-} as const;
-
-/**
- * The results block of the three country listings (spec 008 §14 A-founder-2026-10-14c, the
- * founder's C3 ruling, AC-33; TASK-241; the grid label of spec 004 §14 A-founder-2026-10-19b
- * clause 3, TASK-285). One order in the DOM at every width:
+ * The head of the three country listings, every page number (items 1, 2, 3, 5 and 7): the short
+ * H1 at `--text-3xl-fluid`, on the country occasion the date line, then **one quiet line**
+ * (`[data-fo-listing-status]`: the count in bold ink, then while ordering is not open the state,
+ * then the prices part, each its own element with `aria-hidden` dots between them), then **one
+ * toolbar row**: the start control, and at the end "How we sort" and the sort pill, closed from
+ * `md` up by one hairline. Nothing else sits between the H1 and the grid: no destination line,
+ * no eyebrow, no note column, no example label, no lead photograph.
+ *
+ * One grid holds the quiet line and the toolbar's controls, so the one "How we sort" `<details>`
+ * can sit before the sort pill from `md` up and end the quiet line's count row below `md` without
+ * a second copy. The toolbar row's wrapper (`[data-fo-listing-toolbar]`) is `display: contents`,
+ * so its controls are that grid's cells:
  *
  * ```
- * count · label · disclosure · chip row · sort form  ·  grid  ·  fx  ·  pager
+ *  below md   [ state · prices            ]          from md  [ count · state · prices              ]
+ *             [ count        ][ How we sort]                  [ start ][      ][ How we sort ][ sort ]
+ *             [ start        ][   sort pill]                  [ How we sort's panel                 ]
+ *             [ panels                     ]                  [ Categories' panel                   ]
+ *                                                             [ hairline                            ]
  * ```
- *
- * Below `md` each part is its own line, as the phone artboards draw them, and the grid's label is
- * the band's last line (CSS `order`), between the count line and the first row. From `md` up the
- * count and the label share the count line's row (item 7A), with the sort form on the end side;
- * the disclosure takes its own line under them at every width (one line from `lg`, as the
- * artboards' `max-inline-size: none` draws it), and the occasion's chip line
- * and the category's opened panel sit under that. The country category passes no chip line: at
- * every width its chips fold into a "Categories" button before the sort form, on the sort form's
- * row (A-founder-2026-10-15c). All of it ends above the grid. Nothing that sorts or narrows the
- * list follows it, and the ranking disclosure is visible above the grid at every width (§8 L240).
- *
- * **The laptop band (TASK-285, D-1 in the brief).** The label on the count line's row pushes the
- * disclosure, which shared row 1 from `lg`, onto a row of its own: about 20 px of band. Rebound
- * AC-34 holds the first row's prices inside 1280 × 800 and had 15 px of room, so from `lg` the
- * band is 4 px inside its rules (6 drawn), the disclosure's leading is 1.25 and the grid sits
- * 12 px under the band (16 drawn): 796 px against the 800 px bound, measured locally.
  */
-export function CountryListingResults({
+export function ListingHead({
+  heading,
+  emphasis,
+  dateLine,
   count,
-  disclosure,
-  chips,
-  chipsToggle,
-  sortForm,
-  toolbar,
-  gridProvenance,
-  grid,
-  afterGrid,
-  fx,
-  pager,
-}: CountryListingResultsProps): ReactElement {
-  const place = TOOLBAR_PLACEMENT[toolbar];
-  const toggled = chipsToggle !== undefined;
+  parts,
+  partsBelowMd,
+  start,
+  howWeSort,
+  sort,
+}: ListingHeadProps): ReactElement {
   return (
-    <div data-fo-listing-results={toolbar}>
-      <div
-        className={`md:border-rule grid ${place.rowGap} md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 lg:py-[4px] ${toggled ? "grid-cols-[auto_minmax(0,1fr)] gap-x-[12px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)_auto]"}`}
-        data-fo-listing-toolbar-band
+    <div className="pt-[6px]" data-fo-listing-head>
+      {/* Item 5: `--text-3xl-fluid` (46 px at 1440 × 900 and 1280 × 800, 32 px at 390 × 844), the
+          display face with the hero variation, line height 1.06, tracking −0.02em. */}
+      <Display
+        as="h1"
+        size="display-s"
+        className="leading-[1.06] tracking-[-0.02em] [font-variation-settings:var(--font-variation-display-hero)] [&_em]:leading-[1.06]"
       >
-        {/* The count line's row (item 7A): the count and, from `md` up, the grid's one label
-            beside it. Below `md` the row dissolves (`display: contents`) so the count is the
-            band's first line and the label, by `order`, its last. */}
-        <div
-          className="contents md:col-span-1 md:col-start-1 md:row-start-1 md:flex md:flex-wrap md:items-baseline md:gap-x-[16px] md:gap-y-[2px]"
-          data-fo-listing-count-row
+        {emphasise(heading, emphasis)}
+      </Display>
+      {dateLine === undefined ? null : (
+        /* Item 7: the reason this page exists, in the display face at `--text-h3` (21 px) from
+           `md` up and `--text-h3-s` (18 px) below, ink-2. */
+        <p
+          className="font-display text-ink-muted text-h3-s md:text-h3 mt-[6px] leading-[1.3] text-balance [font-variation-settings:var(--font-variation-display-hero)]"
+          data-fo-occasion-date={dateLine.date ?? ""}
         >
-          <p className="col-span-full" data-fo-listing-count>
-            <Text as="span" size="sm" tone="muted" className="md:hidden">
-              {count.phone}
-            </Text>
-            <Text as="span" size="md" className="display text-md max-md:hidden">
-              {count.desktop}
-            </Text>
-          </p>
-          {gridProvenance === undefined ? null : (
-            <GridProvenance
-              {...gridProvenance}
-              className="order-last col-span-full"
-            />
-          )}
-        </div>
-        {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
-        <div
-          className="col-span-full -mt-[6px] max-w-[70ch] md:row-start-2 md:mt-0 md:max-w-none"
-          data-fo-listing-disclosure
-        >
-          <Text
-            as="p"
-            size="xs"
-            tone="subtle"
-            className="md:text-sm lg:leading-[1.25]"
-          >
-            {disclosure}
-          </Text>
-        </div>
-        {chips === undefined ? null : (
-          <div className={`min-w-0 ${place.chips}`}>{chips}</div>
-        )}
-        {toggled ? (
-          <>
-            {/* Below `md` the button and the sort form share one ruled row; the rule is drawn
-                once, across both, by this empty cell (empty, so nothing to hide from assistive
-                technology, and no `aria-hidden` box for AC-45's ornament probe). */}
-            <div className="border-rule col-span-full row-start-3 border-y md:hidden" />
-            {/* A direct child of this grid: its `<summary>` and its opened panel take cells here. */}
-            {chipsToggle}
-          </>
-        ) : null}
-        <div
-          className={`min-w-0 md:row-start-1 ${toggled ? "col-start-2 row-start-3 md:col-start-4" : "md:col-start-3"}`}
-          data-fo-listing-sort
-        >
-          {sortForm}
-        </div>
-      </div>
-      <div
-        className="mt-[8px] md:mt-[16px] lg:mt-[12px]"
-        data-fo-listing-grid-slot
-      >
-        {grid}
-      </div>
-      {afterGrid}
-      {fx === undefined ? null : <div className="mt-[28px]">{fx}</div>}
-      {pager === undefined ? null : (
-        <div className="mt-[28px] md:mt-[32px]">{pager}</div>
+          {dateLine.text}
+        </p>
       )}
+      <div
+        className="mb-[16px] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-[8px] md:mb-[20px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-x-[12px]"
+        data-fo-listing-head-grid
+      >
+        {/* Item 1: one quiet line. Below `md` two rows by `order` (the status parts first, then
+            the count, which "How we sort" ends); from `md` up one row of inline parts. */}
+        <p
+          className="text-ink-muted text-fine col-span-full row-start-1 mt-[6px] flex flex-col gap-[2px] leading-[21px] md:block md:text-sm md:leading-[22px]"
+          data-fo-listing-status
+        >
+          <span
+            className="text-ink self-start font-bold"
+            data-fo-listing-status-part="count"
+          >
+            {count}
+          </span>
+          {parts.length === 0 ? null : (
+            <span
+              className={
+                partsBelowMd === "after-grid"
+                  ? "max-md:hidden"
+                  : "order-first md:order-none"
+              }
+              data-fo-listing-status-parts
+            >
+              {parts.map((part, index) => (
+                <span key={part.key}>
+                  <StatusDot
+                    className={index === 0 ? "max-md:hidden" : undefined}
+                  />
+                  <span data-fo-listing-status-part={part.key}>
+                    {part.text}
+                  </span>
+                </span>
+              ))}
+            </span>
+          )}
+        </p>
+        <div className="contents" data-fo-listing-toolbar>
+          {start}
+          <HowWeSort label={howWeSort.label} sentence={howWeSort.sentence} />
+          <div
+            className="col-start-2 row-start-2 mt-[12px] min-w-0 justify-self-end md:col-start-4 md:mt-[14px]"
+            data-fo-listing-sort
+          >
+            {sort}
+          </div>
+          {/* The one hairline under the toolbar row, from `md` up, under any opened panel. Empty,
+              so nothing to hide from assistive technology. */}
+          <div
+            className="border-rule col-span-full row-start-5 mt-[10px] border-b max-md:hidden"
+            data-fo-listing-toolbar-rule
+          />
+        </div>
+      </div>
     </div>
   );
 }
 
 /**
- * The message each destination state reads (spec 004 §14 A23 R7). The state comes from
- * `listingView().country.state` and nothing else; the words are the destinations hub's own.
+ * Under the grid's last card, before the pager (items 6 and 7; `.lh-foot`): one 13 px block in
+ * ink-3. On the country occasion's phone the status parts come first (`before`); then the grid's
+ * one example label (`GridProvenance`, displayed as its mode says, in the server HTML); then, on
+ * the country occasion, the date note (`after`).
  */
-export const STATE_KEYS = {
-  guide: "destinations.state.guideNotDelivering",
-  live: "destinations.state.deliveringNow",
-} as const satisfies Readonly<Record<"guide" | "live", string>>;
-
-/**
- * Page 2 and later: **no hero** (spec 004 §14 A23 clause 5; spec 008 §14 A15 (a)). The H1 alone,
- * compact, then the results start the page. No state line, no note, no lead figure, no date.
- */
-export function ListingPageHead({
-  heading,
-  emphasis,
+export function ListingFootNote({
+  before,
+  gridProvenance,
+  after,
 }: {
-  readonly heading: string;
-  readonly emphasis: string;
+  readonly before?: ReactNode;
+  readonly gridProvenance: GridProvenanceProps;
+  readonly after?: ReactNode;
 }): ReactElement {
   return (
-    <div className="pt-[12px] pb-[8px] md:pt-[24px]" data-fo-listing-page-head>
-      <Display as="h1" size="2xl">
-        {emphasise(heading, emphasis)}
-      </Display>
+    <div
+      className="text-ink-subtle [&_p]:text-ink-subtle mt-[24px] grid gap-[4px] text-xs leading-[1.5] md:mt-[32px] [&_p]:text-xs [&_p]:leading-[1.5]"
+      data-fo-listing-foot
+    >
+      {before}
+      <GridProvenance {...gridProvenance} />
+      {after}
     </div>
   );
 }
