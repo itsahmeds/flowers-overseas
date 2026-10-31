@@ -27,7 +27,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- **2026-11-01, to the orchestrator: keep lever 2 (fixture encodes on the thread pool) or revert it?** It changes no byte, quality or per-request encode, and removes a queue no server has; with it the homes' spread falls from up to 350 ms to under 60 and the fastest of three sits at 1899 to 1965, but corridors rise to about 1830 and no page reaches 1800. What is left once the queue is gone is the page: the observed first paint (the hero is the LCP) comes about 145 ms of main-thread work after the stylesheet, and in that window the small script chunks and the Fraunces files land and enter Lantern's LCP graph. Reaching 1800 needs less work before first paint (document 222 KB raw, stylesheet 105 KB raw, the whole app's utilities in one sheet), a task larger than S. Open.
+- **2026-11-01, to the orchestrator: keep lever 2 (fixture encodes on the thread pool) or revert it?** It changes no byte, quality or per-request encode, and removes a queue no server has; with it the homes' spread falls from up to 350 ms to under 60 and the fastest of three sits at 1899 to 1965, but corridors rise to about 1830 and no page reaches 1800. What is left once the queue is gone is the page: the observed first paint (the hero is the LCP) comes about 145 ms of main-thread work after the stylesheet, and in that window the small script chunks and the Fraunces files land and enter Lantern's LCP graph. Reaching 1800 needs less work before first paint (document 222 KB raw, stylesheet 105 KB raw, the whole app's utilities in one sheet), a task larger than S. **Answer (orchestrator, 2026-11-01, under the founder's blanket delegation of 2026-10-31; the orchestrator's ruling, not the founder's words): approved.** Encoding on the thread pool with the same bytes and quality is closer to production than one-thread encoding and loosens no assertion; the 2000 ms budget is unchanged. The 1800 ms target and the page-side work become a carry-forward (see Result); the orchestrator writes the new row.
 
 ## Progress
 
@@ -42,7 +42,6 @@ here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR 436. The Lighthouse fixture `scripts/seo/brotli-origin.ts` encodes on libuv's thread pool instead of its one thread (same bytes, quality 11, every response still encoded per request); lever 1 (encode an immutable asset once) was measured worse and reverted. Tests: 2 unit cases in `tests/unit/brotli-origin.test.ts` (byte identity with the synchronous quality-11 encoder; an event-loop turn runs before an encode ends), each red under its mutation. Numbers: run 41230467577 fastest of three, homes 1899 to 1965, `/poland/flowers` 1865 and 1867, every page under the 2000 ms budget with a within-URL spread of 3 to 60 ms (main: up to 350); second run in the PR body. Budget and assertions unchanged.
 
-_Pending._
+**Carry-forward (orchestrator writes the row):** the 1800 ms margin target is not met. With the fixture queue gone, the limit is the page: the observed first paint (the hero is the LCP) comes about 145 ms of main-thread work after the stylesheet, and in that window the small script chunks and the Fraunces files land and enter Lantern's LCP graph. Reaching 1800 needs less work before first paint: the 222 KB raw document and the 105 KB raw stylesheet (every route's utilities in one sheet).
