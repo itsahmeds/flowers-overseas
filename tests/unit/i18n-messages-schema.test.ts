@@ -371,7 +371,6 @@ describe("the shipped catalogues and manifests", () => {
     "floristAuth.signOut",
     "floristAuth.submit",
     "floristAuth.title",
-    "floristInbox.paused.notice",
     // TASK-214's 11 inbox page keys and TASK-215's 13 florist action keys left this queue under
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     "footer.link.deliveryAndPayment",

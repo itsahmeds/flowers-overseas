@@ -6134,7 +6134,9 @@
   },
   "floristInbox.paused.notice": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-354.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T20:31:47Z",
     "sourceHash": "e9a08f4953517408095d9f31c378f2b17bcffbef40202b413bb52b9f6980a2d0"
   },
   "floristInbox.photo.wrongType": {
