@@ -581,6 +581,10 @@ describe("the shipped catalogues and manifests", () => {
       "floristAuth",
       "floristInbox",
       "emails",
+      // Spec 018 §7's namespaces (TASK-338): the tracking page and its not-working page, and the
+      // lookup form's labels. Server Components only; the share island gets strings as props.
+      "tracking",
+      "trackLookup",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

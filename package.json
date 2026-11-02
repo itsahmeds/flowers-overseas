@@ -44,6 +44,7 @@
     "release:rollback": "node scripts/release.ts rollback",
     "admin:grant": "node scripts/admin-grant.ts",
     "jobs:replay-webhooks": "node scripts/jobs-replay-webhooks.ts",
+    "orders:rotate-tracking": "node scripts/orders-rotate-tracking.ts",
     "db:check": "node scripts/db-check.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/db-migrate.ts",

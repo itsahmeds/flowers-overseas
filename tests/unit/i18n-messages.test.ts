@@ -121,6 +121,9 @@ describe("the shell catalogue", () => {
       // `ROUTE_NAMESPACES` entry — every component that reads it is a Server Component and the
       // whole set adds zero client bytes (spec 008 §5.4).
       "shop",
+      // Spec 018 §7 (TASK-338): the tracking page and the lookup form's labels.
+      "trackLookup",
+      "tracking",
       "trust",
     ]);
   });

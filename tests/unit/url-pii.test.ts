@@ -721,6 +721,9 @@ describe("the real tree (T-59)", () => {
         // the chooser's country code and `next` path, slugs and fixed words only.
         "rest",
         "segment",
+        // `/{locale}/track/[token]` (spec 018 AC-2; TASK-338): a signed `{ publicToken, version }`,
+        // no order id, reference, date or personal value.
+        "token",
       ]);
     },
     REAL_TREE_MS,

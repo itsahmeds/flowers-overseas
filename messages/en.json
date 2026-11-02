@@ -1206,5 +1206,67 @@
       "subject": "Your link to sign in to Flowers Overseas",
       "body": "Open your orders: {link}. The link works once, for one hour. If you did not ask for it, you can ignore this email."
     }
+  },
+  "tracking": {
+    "meta": {
+      "title": "Track your order"
+    },
+    "eyebrow": "Order {reference}",
+    "headline": {
+      "placed": "We are confirming your payment",
+      "confirmed": "We have your order",
+      "beingMade": "Being made",
+      "onItsWay": "On its way",
+      "delivered": "Delivered",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "timelineLabel": "Your order, step by step",
+    "lede": {
+      "planned": "Delivery {date}, {city}.",
+      "plannedNoCity": "Delivery {date}.",
+      "delivered": "Delivered {date}, {city}.",
+      "deliveredNoCity": "Delivered {date}."
+    },
+    "floristLine": "Made by our florist {name} in {city}",
+    "floristLineNoName": "Made by our florist in {city}",
+    "substitution": "We made a small change to your bouquet: {note}",
+    "photoAlt": "Photo of your delivered flowers, taken on {date}",
+    "photoCaption": "Taken {time}.",
+    "photoDeleted": "The delivery photo was deleted on {date} under our privacy policy.",
+    "calendar": {
+      "title": "Add to calendar",
+      "when": "{date}, all day",
+      "summary": "Flowers delivered in {city}",
+      "summaryNoCity": "Flowers delivered"
+    },
+    "share": {
+      "title": "Share the tracking link",
+      "body": "Opens your phone's share sheet, or copies the link.",
+      "copied": "Link copied."
+    },
+    "help": {
+      "title": "Need help?",
+      "quote": "Quote your order {reference}.",
+      "whatsapp": "WhatsApp {phone}",
+      "hours": "Message us any time, 24/7. We reply within a few hours."
+    },
+    "demo": {
+      "title": "This is a demo order.",
+      "body": "Nothing is charged and nothing is delivered. It shows how ordering works.",
+      "testTitle": "This is a test order.",
+      "testBody": "No real money moves and nothing is delivered."
+    },
+    "notWorking": {
+      "title": "This tracking link does not work.",
+      "body": "It may be old, or it may have been replaced. Enter your order reference and email, and we send you the current link."
+    }
+  },
+  "trackLookup": {
+    "reference": "Order reference",
+    "referencePlaceholder": "FO-XXXX-XXXX",
+    "email": "Email you ordered with",
+    "emailPlaceholder": "name@example.com",
+    "submit": "Send me the link"
   }
 }

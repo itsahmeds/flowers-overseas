@@ -362,6 +362,12 @@ export function formatPercentFromBasisPoints(
  * `dayMonthYearTime` is the placed instant in the page head ("5 Oct 2026, 11:05"),
  * `dayMonthTimeSeconds` a timeline event ("5 Oct, 11:05:02", where events a second apart must
  * read apart), and `time` an assignment's offer and answer ("11:05").
+ *
+ * Two more, added by TASK-338 for spec 018's tracking page (artboard
+ * `track-order-desktop.dc.html`), each in the **destination's** zone: `stepTime` dates a timeline
+ * step with the short zone name ("Tue 6 Oct, 19:22 CEST", spec 018 §7 "Formatting"), and
+ * `weekdayDayMonth` is the delivery line and the calendar tile ("Thursday 8 October"; no year,
+ * because a tracking link lives 90 days after the delivery date).
  */
 export type DateStyle =
   | "short"
@@ -371,7 +377,9 @@ export type DateStyle =
   | "dayMonthTime"
   | "dayMonthYearTime"
   | "dayMonthTimeSeconds"
-  | "time";
+  | "time"
+  | "stepTime"
+  | "weekdayDayMonth";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
@@ -407,6 +415,16 @@ const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
     hourCycle: "h23",
   },
   time: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+  stepTime: {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZoneName: "short",
+  },
+  weekdayDayMonth: { weekday: "long", day: "numeric", month: "long" },
 };
 
 /**

@@ -1193,6 +1193,68 @@
     },
     "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
   },
+  "trackLookup": {
+    "email": "Email you ordered with",
+    "emailPlaceholder": "name@example.com",
+    "reference": "Order reference",
+    "referencePlaceholder": "FO-XXXX-XXXX",
+    "submit": "Send me the link"
+  },
+  "tracking": {
+    "calendar": {
+      "summary": "Flowers delivered in {city}",
+      "summaryNoCity": "Flowers delivered",
+      "title": "Add to calendar",
+      "when": "{date}, all day"
+    },
+    "demo": {
+      "body": "Nothing is charged and nothing is delivered. It shows how ordering works.",
+      "testBody": "No real money moves and nothing is delivered.",
+      "testTitle": "This is a test order.",
+      "title": "This is a demo order."
+    },
+    "eyebrow": "Order {reference}",
+    "floristLine": "Made by our florist {name} in {city}",
+    "floristLineNoName": "Made by our florist in {city}",
+    "headline": {
+      "beingMade": "Being made",
+      "cancelled": "Cancelled",
+      "closed": "Closed",
+      "confirmed": "We have your order",
+      "delivered": "Delivered",
+      "onItsWay": "On its way",
+      "placed": "We are confirming your payment"
+    },
+    "help": {
+      "hours": "Message us any time, 24/7. We reply within a few hours.",
+      "quote": "Quote your order {reference}.",
+      "title": "Need help?",
+      "whatsapp": "WhatsApp {phone}"
+    },
+    "lede": {
+      "delivered": "Delivered {date}, {city}.",
+      "deliveredNoCity": "Delivered {date}.",
+      "planned": "Delivery {date}, {city}.",
+      "plannedNoCity": "Delivery {date}."
+    },
+    "meta": {
+      "title": "Track your order"
+    },
+    "notWorking": {
+      "body": "It may be old, or it may have been replaced. Enter your order reference and email, and we send you the current link.",
+      "title": "This tracking link does not work."
+    },
+    "photoAlt": "Photo of your delivered flowers, taken on {date}",
+    "photoCaption": "Taken {time}.",
+    "photoDeleted": "The delivery photo was deleted on {date} under our privacy policy.",
+    "share": {
+      "body": "Opens your phone's share sheet, or copies the link.",
+      "copied": "Link copied.",
+      "title": "Share the tracking link"
+    },
+    "substitution": "We made a small change to your bouquet: {note}",
+    "timelineLabel": "Your order, step by step"
+  },
   "trust": {
     "guarantee": {
       "claim": "We redeliver or refund, your choice.",

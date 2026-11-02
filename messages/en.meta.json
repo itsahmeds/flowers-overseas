@@ -5260,5 +5260,299 @@
     "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
     "reviewedAt": "2026-10-31T21:01:22Z",
     "sourceHash": "3f150bc5455830808fa11deb4a528511ac70f35c24f4f09a6c0aadbd4579f3b4"
+  },
+  "tracking.meta.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "cb88fb33b3193636400334aaaca35ee556427bcb49ab2e2599c27f322dc786a7"
+  },
+  "tracking.eyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "342ca923aa50fec3a43e3b93b81d54a8cf33f2f0c43a48799c0e742242171d5f"
+  },
+  "tracking.headline.placed": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "c019e530e49cbd7c6b2b6cfb1b1206bad9df07c4c18ce9fe4927a047879b7fe1"
+  },
+  "tracking.headline.confirmed": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "48db96bc7b521d960651de6fdd3acbfd20b301c10988445e45ac775e7c3c9cbc"
+  },
+  "tracking.headline.beingMade": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "0bbd09f250bdeb17ffc3866c999e5152d75558a61420f49ff599c6299258c750"
+  },
+  "tracking.headline.onItsWay": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "c5d0f5f4b8b8dced4ee0da7564b8beb791395e724dd8fb2837f4b29c04fbb612"
+  },
+  "tracking.headline.delivered": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "906115657390f3675639f46a572eee069155214169a45be4046933527a95c67b"
+  },
+  "tracking.headline.closed": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "c21ead0614e7e1b70edb3759e1d19ca1e12e6036980d10bfb73052fb1a018efa"
+  },
+  "tracking.headline.cancelled": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "tracking.timelineLabel": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "02c2227d04f2cde01ee396edda4803c8da498d97b41c55bcbd946d928244acbb"
+  },
+  "tracking.lede.planned": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "3ae7dc4e480bd0b382153852021cad1b2df2ba4ad8d62120d3430821b0c8767f"
+  },
+  "tracking.lede.plannedNoCity": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "dbc017266f9c2c2789386b49f442fbf567bf4f3c1e035d588ba1c27f7d7c7499"
+  },
+  "tracking.lede.delivered": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "9ca280c28cd66dd84903e57d87818b45e27061dde461a4edacc76e049b0e18af"
+  },
+  "tracking.lede.deliveredNoCity": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "be024bcf8221ae511c44a17c84f8621bbe64593aadc2f23789f13cc69e372263"
+  },
+  "tracking.floristLine": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "089c7dff76d33b51f5aa50fed914ee006f38cd7c7479708a4d2628109dcdd303"
+  },
+  "tracking.floristLineNoName": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "17a3f922031aa01daede424f2ff59fa92b2dd86dba7a8c6144fe68f9e0db68fe"
+  },
+  "tracking.substitution": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "6b4404291687fbe95d0997e91140ccd770a72ef4a92eda8618a90ee2eeb85807"
+  },
+  "tracking.photoAlt": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "0314bcd2daec04b1b7556a119c551f2e72fc834b41b88d76cce51bc20ce14e8f"
+  },
+  "tracking.photoCaption": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "27a3778e51d81697f803fbb776b0b051aa693e37f988cab06419d4d83671483f"
+  },
+  "tracking.photoDeleted": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "11f196188393566eb71ac6858576ed3ab3735556b5ab6c7f53d7afbdfed4d561"
+  },
+  "tracking.calendar.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "d0efffa65ea7d316cde7d7efaee3c978d6cc59961de8bf21ce86e092b5c4521b"
+  },
+  "tracking.calendar.when": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "01173f239092c66fcb77d3b791f79db1d3b7fd00e461efaef4c462d2d8765212"
+  },
+  "tracking.calendar.summary": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "2bbd2d06644db34f4a5ea3817e6e8862de8e7cc8359564395fd79f307abdc236"
+  },
+  "tracking.calendar.summaryNoCity": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "0ec990ab90c3edca5c8f63f455b7a7c0f160ab1bf636eb9e7dc585edf041e18a"
+  },
+  "tracking.share.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "cc8c50da2341513840d90013b3ec7cedc14e241c05bc5327de654c23d487e227"
+  },
+  "tracking.share.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "1e8568a2537247e95e93ec55081063ab2187d2274880e5115a32d18d9518ad2e"
+  },
+  "tracking.share.copied": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "71af38a2d56ba6ab26243788ebafaa7db71e5ecf2b10501b2f7548c4feb2e572"
+  },
+  "tracking.help.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "c225cdfb755fdf38a95e4a782b2a393d9da2b93406e3e45d4797817d788be394"
+  },
+  "tracking.help.quote": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "9548038a476722ed80632d374fdd53d471a63ae04c206af68a5b5b803d62799f"
+  },
+  "tracking.help.whatsapp": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "a9d333524287eb1dcaf2bdb9bb045d8147424a4986e1cda14c5f8368e8056b5d"
+  },
+  "tracking.demo.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "355c9cce443572d57ab8f2363c16f83a860088a00387a1cc0abef77c9b3aee3f"
+  },
+  "tracking.demo.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "88fc72090c529ad4192e5f9592ab776290223708539dd03a0b12243cf433c0e7"
+  },
+  "tracking.demo.testTitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "213d0d60880b77316a57313d2ae781abc81797473c768ba458e34504cf9d3e0b"
+  },
+  "tracking.demo.testBody": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "5cb0d65c7fee87d6533fad2e2d6bd098abecb2f6b47ee0f7da1ac92c9f2bb13b"
+  },
+  "tracking.notWorking.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "a54a3e95bb6fbfa3e031ed51da399d31407dca7587b3252ebe2d57af96d99dac"
+  },
+  "tracking.notWorking.body": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "8868c1845d063e15b650e5a1d55b20c71186db570370244b0396f6ef2a0f437f"
+  },
+  "trackLookup.reference": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "04db5ae332e5dc58d8750474869f7727947fff4d17e4cd46e58acd14a76b018c"
+  },
+  "trackLookup.referencePlaceholder": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "5abd1fb5ae1e92c9e327a27f4c58180276ccd2c09e38ac6aa8f59bbf8bc0af40"
+  },
+  "trackLookup.email": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "6d4f2ef4f7a7d32808da605387e68847a7a055cefd124073383dbf6d160345d4"
+  },
+  "trackLookup.emailPlaceholder": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "7b17fb0bd173f625b58636fb796407c22b3d16fc78302d79f0fd30c2fc2fc068"
+  },
+  "trackLookup.submit": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "84c0e8d4cb4e50b4817e7163dc3e9322fd09b2ca801a12d84685e479bbebe9e7"
+  },
+  "tracking.help.hours": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator with record-approval-338.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-02T15:42:16Z",
+    "sourceHash": "fc8248ce704079354974a401ff112235562b80a73d1154bf6bfcd1242d6e885b"
   }
 }

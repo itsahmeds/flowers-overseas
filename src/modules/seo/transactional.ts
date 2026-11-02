@@ -1,7 +1,8 @@
 /**
  * The head and headers of a **transactional page**: the basket, `/{locale}/basket` (spec 010 §14
- * A-founder-2026-10-22 item 12, AC-72; TASK-349), and the checkout and its confirmation,
- * `/{locale}/checkout` and `/{locale}/checkout/done` (spec 010 §6, AC-30; TASK-204).
+ * A-founder-2026-10-22 item 12, AC-72; TASK-349), the checkout and its confirmation,
+ * `/{locale}/checkout` and `/{locale}/checkout/done` (spec 010 §6, AC-30; TASK-204), and the buyer's
+ * tracking page, `/{locale}/track/{token}` (spec 018 §6, AC-12; TASK-338).
  *
  * A transactional page is never indexable and passes no signal, whatever the environment:
  * `noindex, nofollow` in the robots meta **and** the `X-Robots-Tag` header, no canonical, no
@@ -38,6 +39,7 @@ export const TRANSACTIONAL_PAGE_TYPES = [
   "basket",
   "checkout",
   "checkoutDone",
+  "trackOrder",
 ] as const satisfies readonly SeoPageType[];
 
 export type TransactionalPageType = (typeof TRANSACTIONAL_PAGE_TYPES)[number];

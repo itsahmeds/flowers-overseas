@@ -159,8 +159,14 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
   it("keeps the dev gallery, the basket and the checkout permanently out of the index, and only them", () => {
     // `/` was the other one until spec 003 §14 A16 made it a 308 with no document. The basket is
     // spec 010 §14 A-founder-2026-10-22 item 12's transactional page (AC-72; TASK-349); spec 010
-    // §6 (TASK-204) added the checkout and its confirmation.
-    expect(never).toEqual(["devGallery", "checkout", "checkoutDone", "basket"]);
+    // §6 (TASK-204) added the checkout and its confirmation; spec 018 §6 (TASK-338) the tracking page.
+    expect(never).toEqual([
+      "devGallery",
+      "checkout",
+      "checkoutDone",
+      "basket",
+      "trackOrder",
+    ]);
   });
 
   it("answers `noindex,follow` for a never-indexable page type in all sixteen cases", () => {
@@ -202,6 +208,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       // spec 010 §14 A-founder-2026-10-22 item 12, AC-72: "a registered `SeoPageType` with a
       // constant `noindex` rule" (TASK-349).
       basket: "never",
+      // spec 018 §6, AC-12: the tracking page, `noindex, nofollow` by header and meta, never in a
+      // sitemap (TASK-338).
+      trackOrder: "never",
       // spec 041 §6, AC-17 (TASK-182): the ten info pages, by page id.
       "how-it-works": "byRule",
       guarantee: "byRule",
