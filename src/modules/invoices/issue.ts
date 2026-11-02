@@ -186,7 +186,8 @@ async function readLines(
              '{}'::jsonb) AS names
     FROM order_line l
     WHERE l.order_id = ${orderId}
-    ORDER BY l.created_at, l.id`);
+    ORDER BY l.created_at, array_position(ARRAY['product', 'addon', 'surcharge'], l.kind),
+             l.vat_rate_bp, l.id`);
   return rows.map((row) => LineRow.parse(row));
 }
 
