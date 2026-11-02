@@ -24,13 +24,18 @@ import { describe, expect, it } from "vitest";
 
 import { CONFIG_FILES } from "../../scripts/check-layout.ts";
 import { SCANNED_PATHS } from "../../scripts/check-no-db-imports.ts";
-import {
-  CATEGORIES,
-  CATEGORY_NAV_LABEL_KEY,
-} from "../../src/config/categories.ts";
 import { COMPANY } from "../../src/config/company.ts";
 import { COUNTRIES, destinationStateKey } from "../../src/config/countries.ts";
 import { launchLocales } from "../../src/config/locales.ts";
+import {
+  MEGA_ALL_LABEL_KEYS,
+  MEGA_COLUMN_HEADING_KEYS,
+  MEGA_EXTRAS_HEADING_KEY,
+  MEGA_MENU_ITEM_LABEL_KEYS,
+  MEGA_MENU_NAV_LABEL_KEY,
+  MEGA_PRICE_BAND_LABEL_KEYS,
+  RECIPIENT_GROUPS,
+} from "../../src/config/mega-menu.ts";
 import { SITE_LINKS, SITE_LINK_GROUPS } from "../../src/config/site-links.ts";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -38,7 +43,7 @@ const repoRoot = resolve(__dirname, "../..");
 const REGISTRIES = [
   "src/config/countries.ts",
   "src/config/site-links.ts",
-  "src/config/categories.ts",
+  "src/config/mega-menu.ts",
   "src/config/company.ts",
 ] as const;
 
@@ -80,18 +85,19 @@ const referencedKeys: readonly { key: string; source: string }[] = [
     key: group.headingKey,
     source: `siteLinkGroups[${group.id}].headingKey`,
   })),
-  ...CATEGORIES.flatMap((category) => [
-    { key: category.labelKey, source: `categories[${category.id}].labelKey` },
-    ...(category.shortLabelKey === undefined
-      ? []
-      : [
-          {
-            key: category.shortLabelKey,
-            source: `categories[${category.id}].shortLabelKey`,
-          },
-        ]),
-  ]),
-  { key: CATEGORY_NAV_LABEL_KEY, source: "CATEGORY_NAV_LABEL_KEY" },
+  // The mega menu's keys, each once (TASK-383): a one-column panel's heading **is** its top
+  // item's label (Sympathy, Plants & gifts, By price), one label for one thing named twice.
+  ...[
+    ...new Set([
+      MEGA_MENU_NAV_LABEL_KEY,
+      ...Object.values(MEGA_MENU_ITEM_LABEL_KEYS),
+      ...Object.values(MEGA_COLUMN_HEADING_KEYS),
+      ...Object.values(MEGA_ALL_LABEL_KEYS),
+      MEGA_EXTRAS_HEADING_KEY,
+      ...Object.values(MEGA_PRICE_BAND_LABEL_KEYS),
+      ...RECIPIENT_GROUPS.map((group) => group.labelKey),
+    ]),
+  ].map((key) => ({ key, source: `megaMenu(${key})` })),
   { key: COMPANY.descriptionKey, source: "company.descriptionKey" },
   { key: COMPANY.operatedByKey, source: "company.operatedByKey" },
   { key: COMPANY.contact.labelKey, source: "company.contact.labelKey" },
@@ -157,6 +163,9 @@ describe("§7: every registry key resolves in every launch locale", () => {
         "company",
         "common",
         "breadcrumb",
+        // The mega menu's By price words (TASK-383) are the shop's own band words, so the
+        // listing's price facet and the menu name a band the same way.
+        "shop",
       ]),
     );
   });
@@ -193,29 +202,13 @@ describe("§7: every registry key resolves in every launch locale", () => {
         // A corridor link's label **is** the country's name (spec 007 AC-20): `site-links.ts`
         // says which destination may be linked, `countries.ts` owns what it is called, and
         // pointing both at one key is what stops a second exonym from being authored.
-        !sources.some((source) => /^siteLinks\[corridor-/u.test(source)) &&
-        // A category-row link's label **is** its category's label (spec 008 §14 A14; TASK-173):
-        // `categories.ts` owns what the entry is called and how the row draws it, `site-links.ts`
-        // where it goes. Exactly the pair, and nothing third: one key, one entry, two facts.
-        !isCategoryRowPair(sources),
+        !sources.some((source) => /^siteLinks\[corridor-/u.test(source)),
     );
     // `for-florists` is the one entry the canvas draws twice (header cluster and footer column),
     // and it is one link id with one label — not two rows that could drift.
     expect(shared).toEqual([]);
   });
 });
-
-/** `siteLinks[category-row-X].labelKey` + `categories[X].labelKey`, and nothing else. */
-function isCategoryRowPair(sources: readonly string[]): boolean {
-  if (sources.length !== 2) return false;
-  const link = sources
-    .map((source) =>
-      /^siteLinks\[category-row-([a-z0-9-]+)\]\.labelKey$/u.exec(source),
-    )
-    .find((match) => match !== null);
-  if (link === undefined || link === null) return false;
-  return sources.includes(`categories[${link[1] ?? ""}].labelKey`);
-}
 
 describe("the layout manifest", () => {
   it("lists the four registries as required config modules", () => {

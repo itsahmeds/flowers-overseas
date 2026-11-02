@@ -53,7 +53,8 @@ test.describe("the image state on a real page (AC-23)", () => {
     }) => {
       expect((await page.goto(path))?.status()).toBe(200);
 
-      const images = page.locator("picture img");
+      // The page's own photographs; the mega menu's featured ones wait in closed panels (TASK-383).
+      const images = page.locator("main picture img");
       await expect(images.first()).toBeVisible();
       for (const alt of await images.evaluateAll((nodes) =>
         nodes.map((node) => (node as HTMLImageElement).alt),
@@ -64,9 +65,10 @@ test.describe("the image state on a real page (AC-23)", () => {
       }
 
       // The honesty label is text in the page's own language, in the document before hydration.
-      await expect(page.locator("[data-fo-media-provenance='ai']")).toHaveCount(
-        1,
-      );
+      // The page's own; each mega menu featured card carries its own label in its closed panel.
+      await expect(
+        page.locator("main [data-fo-media-provenance='ai']"),
+      ).toHaveCount(1);
 
       expect(await violations(page)).toEqual([]);
     });

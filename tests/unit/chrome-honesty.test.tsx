@@ -99,9 +99,6 @@ const GATED_PROMISE_KEYS: readonly string[] = [
   // carried `finder.cutoff` was retired by TASK-177).
   "nav.utility.cutoff",
   "nav.utility.cutoffShort",
-  // Header category row — `requiresDeliveryDates` in `headerCategoryItems()`.
-  "nav.category.sameDayDelivery",
-  "nav.category.sameDayShort",
   // Home FAQ's appended second sentence — `anyDeliveryDatesOpen()` in `HomeFaq`.
   "faq.whoDelivers.answerCutoff",
   // Home occasion strip's third line — `anyDeliveryDatesOpen()` in `OccasionDates`.

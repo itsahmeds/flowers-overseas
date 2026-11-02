@@ -95,6 +95,8 @@ export interface MediaAssetProps {
    * so the two still come from one lookup (AC-19).
    */
   readonly sizes?: string;
+  /** The widest variant the box may load (`resolveMedia`'s `maxWidth`): a panel image's cap. */
+  readonly maxWidth?: number;
 }
 
 export function MediaAsset({
@@ -108,10 +110,12 @@ export function MediaAsset({
   className,
   displayedAt,
   sizes,
+  maxWidth,
 }: MediaAssetProps): ReactElement {
   const lookedUp = resolveMedia({
     assetId,
     locale,
+    ...(maxWidth === undefined ? {} : { maxWidth }),
     ...(slot === undefined ? {} : { slot }),
     ...(productName === undefined ? {} : { productName }),
     ...(manifest === undefined ? {} : { manifest }),

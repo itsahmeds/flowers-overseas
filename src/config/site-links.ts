@@ -74,9 +74,8 @@ export const listingLinkPageTypes = [
 export type ListingLinkPageType = (typeof listingLinkPageTypes)[number];
 
 /**
- * The listing page types a **single** chrome entry may name (spec 008 §14 A14; TASK-173): the
- * header's category row points at one hub, one destination's shop root or the occasions index,
- * not at a family. Restated from `ListingPageType` for `linkPageTypes`' reason, and asserted to be
+ * The listing page types a **single** chrome entry may name (spec 008 §14 A14; TASK-173): one
+ * hub, one destination's shop root or the occasions index, not a family. Restated from `ListingPageType` for `linkPageTypes`' reason, and asserted to be
  * a subset of it by `tests/unit/site-links-config.test.ts`.
  */
 export const listingPageLinkTypes = [
@@ -95,9 +94,10 @@ export const transactionalPages = ["basket"] as const;
 export type TransactionalPage = (typeof transactionalPages)[number];
 
 /**
- * The one demo destination the chrome sends a buyer into (spec 008 §14 A14 (d), (e)): "Our
- * selection" is its shop root and the home's trending cards are its product pages. One constant,
- * so the category row and the trending row cannot name two different countries.
+ * The one demo destination the home sends a buyer into (spec 008 §14 A14 (e)): the home's
+ * trending cards are its product pages. The header's "Our selection" entry that also named it went
+ * with the category row (TASK-383); the mega menu is out of context on the home and links no
+ * country. Retired by TASK-386.
  */
 export const DEMO_DESTINATION_ISO2 = "PL";
 
@@ -384,120 +384,6 @@ const siteLinks = [
     target: { kind: "transactional", page: "basket" },
     published: true,
     owningSpec: "010",
-    surfaces: ["header"],
-  },
-  // The header's category row (spec 008 §14 A14 (a)–(c); spec 004 §14 A20; TASK-173), one row per
-  // `src/config/categories.ts` entry, named `category-row-{category id}` so the header asks
-  // `categoryRowLinkId()` and never composes a string. `categories.ts` keeps the row's *drawing*
-  // (order, mobile subset, accent, short label); whether and where an entry links is this
-  // registry's, like every other chrome target. The founder found the row dead on 2026-10-03 while
-  // every page below answered 200; Birthday and Sympathy go to their **occasion** hubs (the row's
-  // own "Occasions" is their parent, and the occasion hub carries the dates), the three product
-  // types to their category hubs, "Our selection" to the demo destination's shop root. Add-ons and
-  // Same-day delivery have no page, so they are not rendered at all.
-  {
-    id: "category-row-our-selection",
-    labelKey: "nav.category.ourSelection",
-    target: {
-      kind: "listingPage",
-      pageType: "countryShopRoot",
-      countryIso: DEMO_DESTINATION_ISO2,
-    },
-    published: true,
-    owningSpec: "008",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-birthday",
-    labelKey: "nav.category.birthday",
-    target: {
-      kind: "listingPage",
-      pageType: "occasionHub",
-      entityKey: "birthday",
-    },
-    published: true,
-    owningSpec: "008",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-sympathy",
-    labelKey: "nav.category.sympathy",
-    target: {
-      kind: "listingPage",
-      pageType: "occasionHub",
-      entityKey: "sympathy",
-    },
-    published: true,
-    owningSpec: "008",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-occasions",
-    labelKey: "nav.category.occasions",
-    target: { kind: "listingPage", pageType: "occasionsIndex" },
-    published: true,
-    owningSpec: "008",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-bouquets",
-    labelKey: "nav.category.bouquets",
-    target: {
-      kind: "listingPage",
-      pageType: "categoryHub",
-      entityKey: "bouquet",
-    },
-    published: true,
-    owningSpec: "008",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-roses",
-    labelKey: "nav.category.roses",
-    target: {
-      kind: "listingPage",
-      pageType: "categoryHub",
-      entityKey: "roses",
-    },
-    published: true,
-    owningSpec: "008",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-plants",
-    labelKey: "nav.category.plants",
-    target: {
-      kind: "listingPage",
-      pageType: "categoryHub",
-      entityKey: "plant",
-    },
-    published: true,
-    owningSpec: "008",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-add-ons",
-    labelKey: "nav.category.addOns",
-    target: { kind: "pending" },
-    published: false,
-    owningSpec: "005",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-same-day-delivery",
-    labelKey: "nav.category.sameDayDelivery",
-    target: { kind: "pending" },
-    published: false,
-    requiresDeliveryDates: true,
-    owningSpec: "009",
-    surfaces: ["header"],
-  },
-  {
-    id: "category-row-destinations",
-    labelKey: "nav.category.destinations",
-    target: { kind: "route", pageType: "destinations" },
-    published: true,
-    owningSpec: "007",
     surfaces: ["header"],
   },
   {
@@ -978,25 +864,6 @@ export const SEARCH_LINK_ID = "search" satisfies SiteLinkId;
 
 /** The product page link id: the trending cards' permission (spec 008 §14 A14 (e)). */
 export const PRODUCT_LINK_ID = "product" satisfies SiteLinkId;
-
-/**
- * The link id of one header category-row entry (spec 008 §14 A14; TASK-173): `category-row-{id}`
- * for a `src/config/categories.ts` id. A caller asks for a category and gets the id, as
- * `corridorLinkId()` does for a country. Throws for a category with no row, which
- * `tests/unit/site-links-config.test.ts` makes unreachable by pinning the two sets equal.
- */
-export function categoryRowLinkId(categoryId: string): SiteLinkId {
-  const id = `category-row-${categoryId}`;
-  if (!isSiteLinkId(id)) {
-    throw new Error(`no category-row link id for category: ${categoryId}`);
-  }
-  return id;
-}
-
-/** Every category-row entry link in registry order — the set the config test pins to `CATEGORIES`. */
-export const CATEGORY_ROW_ENTRY_LINKS: readonly SiteLink[] = SITE_LINKS.filter(
-  (link) => link.id.startsWith("category-row-"),
-);
 
 /** The links of a group, in the canvas's order. Filtering by `isPublished()` is the caller's. */
 export function groupLinks(id: SiteLinkGroupId): readonly SiteLink[] {

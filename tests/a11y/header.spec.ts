@@ -75,7 +75,8 @@ test("the header's keyboard order follows the document order and stops at nothin
 
   // Skip link, then the notice bar (desktop: the help line's WhatsApp link, spec 041 AC-34, and
   // the switcher's one sibling shown locale, spec 003 §14 A-founder-2026-10-14c), then the
-  // banner: the logo and the first category link (v2 chrome, TASK-176). Nothing unpublished is
+  // banner: the logo and the mega menu's first panel summary, "Flowers" (TASK-383; the category
+  // row it replaced is gone). Nothing unpublished is
   // drawn, so nothing inert is a stop (§14 A20). One Tab per expected stop: a hidden locale that
   // came back would shift the list and fail it.
   const expected = [
@@ -83,7 +84,7 @@ test("the header's keyboard order follows the document order and stops at nothin
     "A[https://wa.me/12135925150]",
     "A[/en-gb]",
     "A[/en]",
-    "A[/en/poland/flowers]",
+    "SUMMARY",
   ];
   const stops: string[] = [];
   for (let index = 0; index < expected.length; index += 1) {

@@ -14,12 +14,12 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +12 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +104 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +107 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +7 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +14 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +42 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +115 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +116 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` +1 |
@@ -28,7 +28,7 @@ task actually touches.
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +33 |
-| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +61 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +63 |
 
 ## Config (`src/config/`)
 
@@ -47,7 +47,6 @@ task actually touches.
 | `catalogue/projections.ts` | The dataset's projections onto spec 002 §5.1's… | 002 |
 | `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its… | 005 |
 | `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products… | 005 |
-| `categories.ts` | Category-row registry | 004 |
 | `checkout-samples.ts` | Demo samples | 010 |
 | `checkout.ts` | Checkout limits | 010 |
 | `commerce.ts` | The commerce structure's numbers (spec 004 §14… | 004 |
@@ -66,6 +65,7 @@ task actually touches.
 | `locales-client.data.ts` | The few locale values the browser needs, and… | 003 |
 | `locales.data.ts` | Locale data as plain typed constants — the… | 004 |
 | `locales.ts` | Locale registry | 003 |
+| `mega-menu.ts` | The mega menu's shape as config (spec 004 §14… | 004 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004… | 004 |
 | `orders.ts` | Order timing rules: the destination-local hour… | 013 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2… | 004 |
@@ -249,14 +249,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 414 |
+| `tests/unit/` | 415 |
 | `tests/integration/` | 65 |
 | `tests/contract/` | 28 |
-| `tests/e2e/` | 73 |
+| `tests/e2e/` | 74 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 355 |
+| `tests/fixtures/` | 370 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

@@ -252,7 +252,9 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
     );
     // The other six photographs are lazy, which is the "and nothing else" half.
     await expect(page.locator("[data-fo-product-card] img")).toHaveCount(7);
-    await expect(page.locator('img[loading="lazy"]')).toHaveCount(6);
+    // Scoped to `<main>`: the header's mega menu carries its own lazy featured photographs in its
+    // closed panels (TASK-383), which are not this page's.
+    await expect(page.locator('main img[loading="lazy"]')).toHaveCount(6);
   });
 });
 
