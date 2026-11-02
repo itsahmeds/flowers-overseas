@@ -266,7 +266,7 @@ describe.skipIf(server.url === undefined)(
             () =>
               enqueue(
                 boss,
-                "order.route" as unknown as "retention.sweep",
+                "payout.accrue" as unknown as "retention.sweep",
                 {},
                 { requestId: "system:test" },
               ),

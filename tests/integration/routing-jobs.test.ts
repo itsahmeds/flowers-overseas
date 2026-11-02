@@ -1042,6 +1042,60 @@ describe.skipIf(server.url === undefined)(
       ]);
     });
 
+    it("AC-32 breaker cases: the engine refuses an arrow label as an event and an actor class outside the row's allowed_actors, writing nothing", async () => {
+      const w = await world();
+      await florist(w, { payout: 11000 });
+      const orderId = await securedOrder(w, "test");
+      const offer = await offered(orderId);
+      const before = (await events(orderId)).length;
+      const codeOf = async (
+        run: (executor: OrderExecutor) => Promise<unknown>,
+      ) => {
+        try {
+          await system(run);
+          return "written";
+        } catch (error) {
+          return (error as { code?: string }).code ?? "unknown";
+        }
+      };
+      expect(
+        await codeOf((executor) =>
+          transition(
+            orderId,
+            "timeout" as never,
+            "system:assignment.timeout",
+            { mode: "test" },
+            { executor },
+          ),
+        ),
+      ).toBe("ORDER_EVENT_UNREGISTERED");
+      const timedOut = {
+        mode: "test",
+        assignmentId: offer.assignmentId,
+        partnerId: offer.partnerId,
+        attempt: 1,
+      };
+      expect(
+        await codeOf((executor) =>
+          transition(orderId, "assignment.timed_out", "buyer", timedOut, {
+            executor,
+          }),
+        ),
+      ).toBe("ORDER_ACTOR_NOT_ALLOWED");
+      expect(
+        await codeOf((executor) =>
+          transition(
+            orderId,
+            "order.no_partner_available",
+            `partner:${offer.partnerId}`,
+            { mode: "test" },
+            { executor },
+          ),
+        ),
+      ).toBe("ORDER_ACTOR_NOT_ALLOWED");
+      expect((await events(orderId)).length).toBe(before);
+    });
+
     /* ---------------------------------------------------------------------- */
     /* T-32                                                                   */
     /* ---------------------------------------------------------------------- */
