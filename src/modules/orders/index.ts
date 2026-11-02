@@ -20,6 +20,7 @@ export {
 export type { ModeOutboxRoutes, OutboxTargetName } from "./outbox/routes";
 export {
   dispatchOutbox,
+  heldOutboxTargets,
   isOutboxHandlerRegistered,
   notConfiguredHandler,
   OUTBOX_BATCH_SIZE,
@@ -29,6 +30,7 @@ export {
   OutboxTargetNotConfigured,
   outboxHandlers,
   registerOutboxHandler,
+  registerOutboxHold,
 } from "./outbox/dispatcher";
 export type {
   AlertRaiser,

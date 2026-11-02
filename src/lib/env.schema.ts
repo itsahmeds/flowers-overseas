@@ -352,6 +352,15 @@ export const serverEnvSchema = z.object({
    * no B9 carries a BCC. Not secret, but configuration only, never a literal in code.
    */
   TRUSTPILOT_AFS_ADDRESS: z.preprocess(emptyToUndefined, z.email().optional()),
+  /**
+   * The founder's address for order alerts and WhatsApp-ready copies (spec 016 §5.2 A1 and W, §12
+   * "Env contract"; TASK-331). Not secret, but configuration only, never a literal in code.
+   * **Optional at server start, required at use**: absent in `development` and `test`, a
+   * `.invalid` placeholder is used (the capturing mailer never sends); absent in a deployed
+   * environment, the first ops message throws naming this key (`opsAlertEmail()`), and the
+   * dispatcher retries it.
+   */
+  OPS_ALERT_EMAIL: z.preprocess(emptyToUndefined, z.email().optional()),
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
   /**
@@ -1090,6 +1099,12 @@ export const DEVELOPMENT_SIGNED_LINK_SECRET =
   "phase-0-development-signed-link-secret-not-a-production-key";
 /** The mailer switch's name (spec 012 §2.2; TASK-217). */
 export const MAILER_KEY = "MAILER" as const;
+/** The founder's alert address's name (spec 016 §12; TASK-331). */
+export const OPS_ALERT_EMAIL_KEY = "OPS_ALERT_EMAIL" as const;
+
+/** Where ops messages go in `development` and `test` when `OPS_ALERT_EMAIL` is unset. */
+export const DEVELOPMENT_OPS_ALERT_EMAIL = "ops-alerts@localhost.invalid";
+
 /** The review link's key's name (spec 022a §5.2, AC-33; TASK-368). */
 export const REVIEW_TOKEN_SECRET_KEY = "REVIEW_TOKEN_SECRET" as const;
 

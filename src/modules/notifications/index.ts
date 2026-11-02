@@ -36,3 +36,28 @@ export type {
   NotificationTemplateKey,
   NotificationTrigger,
 } from "./rules";
+export {
+  NOTIFICATIONS_FLAG,
+  NotificationJobInputSchema,
+  NotificationRecipientMissing,
+  NotificationsHeld,
+  deliverNotifications,
+  notificationsOutboxHandler,
+  registerNotificationsOutbox,
+  sendJobNotifications,
+} from "./pipeline";
+export type {
+  NotificationDeps,
+  NotificationJobInput,
+  NotificationRequest,
+} from "./pipeline";
+export {
+  NotificationTemplateMissing,
+  notificationTemplate,
+  registerNotificationTemplate,
+} from "./templates";
+export type {
+  NotificationRenderInput,
+  NotificationRenderer,
+  RenderedNotification,
+} from "./templates";

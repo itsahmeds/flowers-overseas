@@ -40,9 +40,11 @@
  * idempotency key.
  *
  * **Held targets** (spec 016 §5.2 "`notifications.email` off → handler rows wait as `pending`",
- * AC-26; TASK-331). A run given `heldTargets` claims none of their deliveries: they stay `pending`
- * with their attempts untouched (held, never dropped, never `dead`), and the first run without the
- * hold delivers them, oldest first.
+ * AC-26; TASK-331). A run claims no delivery of a held target: it stays `pending` with its
+ * attempts untouched (held, never dropped, never `dead`), and the first run without the hold
+ * delivers it, oldest first. The held targets are `options.heldTargets` when given, else those
+ * whose registered hold (`registerOutboxHold`, e.g. the notifications flag) answers true at the
+ * start of the run.
  *
  * Logs: ids, the event type, the target, the attempt number, the outcome and the duration only
  * (spec 013 §11). `last_error` holds the error's class and message, never a payload.
@@ -141,6 +143,32 @@ export function registerOutboxHandler(
   registered[target] = handler;
 }
 
+const holds: Partial<Record<OutboxTargetName, () => Promise<boolean>>> = {};
+
+/**
+ * Registers the hold of `target`: a check run at the start of every dispatch, true while the
+ * target's deliveries must wait (spec 016: `notifications.email` off). One per target.
+ */
+export function registerOutboxHold(
+  target: OutboxTargetName,
+  held: () => Promise<boolean>,
+): void {
+  if (holds[target] !== undefined) {
+    throw new Error(`outbox hold already registered: ${target}`);
+  }
+  holds[target] = held;
+}
+
+/** The targets whose registered hold is on now. */
+export async function heldOutboxTargets(): Promise<OutboxTargetName[]> {
+  const held: OutboxTargetName[] = [];
+  for (const target of OUTBOX_TARGET_NAMES) {
+    const check = holds[target];
+    if (check !== undefined && (await check())) held.push(target);
+  }
+  return held;
+}
+
 /** True once `target` has a real handler (spec 013 registers its payment steps only then). */
 export function isOutboxHandlerRegistered(target: OutboxTargetName): boolean {
   return registered[target] !== undefined;
@@ -182,7 +210,10 @@ export interface DispatchOptions {
   readonly retryBaseSeconds?: number;
   /** Only this order's deliveries (spec 013's `afterAccept` asks for one order at once). */
   readonly orderId?: string;
-  /** Targets left `pending` and unclaimed this run (spec 016: `notifications.email` off). */
+  /**
+   * Targets left `pending` and unclaimed this run (spec 016: `notifications.email` off). Default:
+   * the registered holds' answer (`registerOutboxHold`).
+   */
   readonly heldTargets?: readonly OutboxTargetName[];
   readonly alert?: AlertRaiser;
   readonly log?: Logger;
@@ -417,7 +448,10 @@ export async function dispatchOutbox(
     options.retryBaseSeconds ?? OUTBOX_RETRY_BASE_SECONDS;
   const alert = options.alert ?? captureAlert;
   const log = options.log ?? defaultLogger;
-  const targets = claimableTargets(handlers, options.heldTargets ?? []);
+  const targets = claimableTargets(
+    handlers,
+    options.heldTargets ?? (await heldOutboxTargets()),
+  );
   let claimed = 0;
   let sent = 0;
   let failed = 0;
