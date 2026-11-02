@@ -1219,7 +1219,10 @@
     "outForDelivery": "Out for delivery",
     "photo": {
       "choose": "Take or choose a photo of the delivered bouquet",
-      "send": "Send the photo"
+      "send": "Send the photo",
+      "wrongType": "This file is not a photo we can use. Please send a JPEG, PNG or WebP image.",
+      "tooLarge": "This photo is too large. Please send one under 15 MB.",
+      "alt": "Your photo of the delivered bouquet"
     },
     "page": {
       "groupDelivered": "Delivered",
@@ -1233,6 +1236,20 @@
       "refreshStopped": "Updates are paused while you are away.",
       "notFoundTitle": "Order not found",
       "notFoundLine": "This order is no longer in your list."
+    },
+    "declineWhy": "Why are you declining?",
+    "declineReason": {
+      "capacity": "We are full that day",
+      "outOfArea": "We do not deliver there",
+      "productUnavailable": "We cannot get these flowers",
+      "closed": "We are closed that day",
+      "other": "Another reason"
+    },
+    "declineSubmit": "Decline the order",
+    "deliveredAddPhoto": "Delivered, add the photo",
+    "notice": {
+      "answered": "This order has already been answered.",
+      "changed": "This order has changed since you opened it."
     }
   },
   "emails": {

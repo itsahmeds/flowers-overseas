@@ -43,6 +43,15 @@ export type {
   InboxRefreshHandle,
   InboxRefreshOptions,
 } from "./ui/inbox/refresh-timer.ts";
+// TASK-215: the order page's actions, notices and the florist's own photo.
+export {
+  DeclineReasons,
+  DeclineStep,
+  DeliveredPhoto,
+  InboxDock,
+  InboxNotice,
+} from "./ui/inbox/OrderActions.tsx";
+export type { DeclineReasonOption } from "./ui/inbox/OrderActions.tsx";
 export { PhotoField } from "./ui/inbox/PhotoField.tsx";
 export type { PhotoFieldProps } from "./ui/inbox/PhotoField.tsx";
 export { PhotoStep } from "./ui/inbox/PhotoStep.tsx";

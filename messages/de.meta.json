@@ -4423,5 +4423,70 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "02c7b2b03bb3511d118ee251677c206e69a39e1551d796038b29d273d6b85ea7"
+  },
+  "floristInbox.declineWhy": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3df8afd11cb400a08408a89a6be9f9fecdaae2944c5cf6f8f9f3ce3e498ad0e4"
+  },
+  "floristInbox.declineReason.capacity": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "298bbb69ee2019af135e4fc00d285c0f1aeefa7d4b9c999d889924ae7bf919ca"
+  },
+  "floristInbox.declineReason.outOfArea": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e1d35cc43ce786f2ba53788d4a06e4c78e8ff60d15698e65cb227fe35cd5e091"
+  },
+  "floristInbox.declineReason.productUnavailable": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2540e14494d278a3a110df29cc7d648e2f3999e27c28e9e1d5bd890e90c669c5"
+  },
+  "floristInbox.declineReason.closed": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6c078bd1c84daad7ee8d4dff30ed25b86f41b5bfee211d3dab97d849c4f7a5fe"
+  },
+  "floristInbox.declineReason.other": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "21ff841a3efdd1d0f1bc2b6aecee0cc0f17c9b70714c7b57b91e74ee13effa5d"
+  },
+  "floristInbox.declineSubmit": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "82ce8243bacf8f5165ba626c9a9b0bba50abdc365a8306d8c1bbb943cca9a602"
+  },
+  "floristInbox.deliveredAddPhoto": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7c5824f1ada8fe32680fe7f75e828180033ca7cb4141d95ff569487dd16dde81"
+  },
+  "floristInbox.notice.answered": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "07a2957c63d0c5c2dd0186f2554048a6ff4c18942f98a882f3f5cba4df276dcb"
+  },
+  "floristInbox.notice.changed": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d50528658bcfa56c16ac369baa4728f43aa281537f0244847f6b0770a9260397"
+  },
+  "floristInbox.photo.wrongType": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "cc475bc417c2d54f3eca022f7bb4bfe9a6c308f48bdb53399648a7bee582a95d"
+  },
+  "floristInbox.photo.tooLarge": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6f9dc5fbcc4e7f2f13568decb90e8b6ccd80050b4215ab97c534898a69975a21"
+  },
+  "floristInbox.photo.alt": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fa6ed30e5f6d3699ae90811a0fd22acab574157eec148e36449d4a56ce8b8712"
   }
 }
