@@ -426,10 +426,9 @@ describe.skipIf(server.url === undefined)(
       const placed = await demoOrder(w.partnerA);
       const florist = member(w.partnerA);
       const id = placed.assignmentId;
-      const store: PrivatePhotoStore = {
-        storage: new InMemoryStorage(),
-        bucket: BUCKET,
-      };
+      const storage = new InMemoryStorage();
+      const putSpy = vi.spyOn(storage, "put");
+      const store: PrivatePhotoStore = { storage, bucket: BUCKET };
       const photoDeps = { ...deps(), store };
 
       expect(await actionsFor(w.partnerA, id)).toEqual(["decline", "accept"]);
@@ -461,6 +460,9 @@ describe.skipIf(server.url === undefined)(
           ),
         ),
       ).toBe("ASSIGNMENT_ALREADY_ANSWERED");
+
+      // No forged photo post so far reached the bucket.
+      expect(putSpy).not.toHaveBeenCalled();
 
       const before = (await eventsAfterPlacement(placed.orderId)).length;
       await markOutForDelivery(florist, id, deps());
@@ -632,6 +634,39 @@ describe.skipIf(server.url === undefined)(
           .slice(mid)
           .map((e) => e.type),
       ).toEqual(["order.photo_uploaded"]);
+      // A second photo for an order that already has one (written outside the commands, say by
+      // an admin, while the order is still `delivered`): refused, nothing stored.
+      const fourth = await onItsWay(w.partnerA);
+      await scratch.sql.begin(async (tx) => {
+        await transition(
+          fourth.orderId,
+          "order.delivered",
+          `partner:${w.partnerA}`,
+          { mode: "demo", assignment_id: fourth.assignmentId },
+          { executor: runnerOf(tx) },
+        );
+        const asset = await make.mediaAsset(tx);
+        await tx`INSERT INTO delivery_proof (order_id, media_asset_id, uploaded_by)
+                 VALUES (${fourth.orderId}, ${asset}, 'admin:0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b')`;
+      });
+      const fourthBefore = (await eventsAfterPlacement(fourth.orderId)).length;
+      expect(
+        await codeOf(
+          addDeliveryPhoto(
+            fourth.florist,
+            fourth.assignmentId,
+            await gpsJpeg(),
+            photoDeps,
+          ),
+        ),
+      ).toBe("ORDER_STATE_CHANGED");
+      expect(await eventsAfterPlacement(fourth.orderId)).toHaveLength(
+        fourthBefore,
+      );
+      const [proofs] = await scratch.sql<{ n: number }[]>`
+        SELECT count(*)::int AS n FROM delivery_proof WHERE order_id = ${fourth.orderId}`;
+      expect(proofs?.n).toBe(1);
+
       // Another florist's post is not found and stores nothing.
       const third = await onItsWay(w.partnerA);
       putSpy.mockClear();

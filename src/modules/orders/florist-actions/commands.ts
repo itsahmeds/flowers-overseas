@@ -431,9 +431,9 @@ async function submitPhoto(
   const limits = deps.limits ?? DEFAULT_PHOTO_LIMITS;
   const visible = await visibleAssignment(runtime, ctx, assignmentId);
   // A cheap look before the upload, so a stale or forged post stores nothing; the lock below
-  // and the engine decide.
+  // and the engine decide. (`partner_order` shows the florist only an open or accepted offer,
+  // and an open one is always at `routed`, so the status alone says "accepted, at this step".)
   if (
-    visible.response !== "accept" ||
     visible.status !== (step === "deliver" ? "out_for_delivery" : "delivered")
   ) {
     throw new FloristActionError("ORDER_STATE_CHANGED");
