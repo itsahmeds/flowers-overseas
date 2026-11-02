@@ -1,8 +1,8 @@
--- 0035_partner_terms_and_retention — a florist's signed terms, the reason an application was
+-- 0033_partner_terms_and_retention — a florist's signed terms, the reason an application was
 -- rejected, and the two retention rows of spec 012 (spec 012 §5.1
 -- `NNNN_partner_terms_and_retention`, §2.5, §13 Q5; AC-16, AC-17; TASK-221).
 --
--- Numbered 0035 (orchestrator, 2026-11-02): 0033 belongs to PR 449 and 0034 to TASK-328.
+-- Numbered 0033 (orchestrator, 2026-11-03): PR 449 renumbers after this merges.
 --
 --   1. `fulfillment_partner.terms_signed_at` (a calendar date) and `terms_version`, set together
 --      or not at all (`fulfillment_partner_terms_pair_check`). Signed terms, with the Art. 28
@@ -23,7 +23,7 @@
 --      younger row, an UPDATE is still refused, TRUNCATE is still refused, and the 0009 carve-out
 --      for the actor's `ON DELETE SET NULL` is kept word for word.
 --
--- Rollback: `0035_partner_terms_and_retention.down.sql` (restores `0009`'s function body).
+-- Rollback: `0033_partner_terms_and_retention.down.sql` (restores `0009`'s function body).
 
 SET LOCAL ROLE app_owner;
 
@@ -78,7 +78,7 @@ BEGIN
       END IF;
     END IF;
   END IF;
-  -- spec 012 §5.1 (0035): the retention sweep deletes a row older than the `audit_log` policy's
+  -- spec 012 §5.1 (0033): the retention sweep deletes a row older than the `audit_log` policy's
   -- period, measured by this database's clock, in its own session and nowhere else.
   IF TG_OP = 'DELETE'
      AND coalesce(current_setting('app.role', true), '') = 'system'

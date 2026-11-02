@@ -5,7 +5,7 @@
  *  - No file under `src/modules/partners` outside spec 011's own `application/` directory, and
  *    no file under `src/app/admin`, imports the `partnerApplication` table or names
  *    `partner_application` in a statement (`FROM`, `JOIN`, `INTO`, `UPDATE`, `DELETE FROM`).
- *  - Migration `0035` adds no `partner_application` and no session retention row: those are spec
+ *  - Migration `0033` adds no `partner_application` and no session retention row: those are spec
  *    011's (`0022`), and spec 012 keeps no copy (§13 Q5, ruling R2).
  *
  * The scan is proved on fixtures first: a planted query is found, so a clean result means
@@ -82,9 +82,9 @@ describe("T-20 (source scan) · no second application query (AC-17)", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("migration 0035 holds no application or session retention row", () => {
+  it("migration 0033 holds no application or session retention row", () => {
     const migration = readFileSync(
-      join(repoRoot, "db/migrations/0035_partner_terms_and_retention.sql"),
+      join(repoRoot, "db/migrations/0033_partner_terms_and_retention.sql"),
       "utf8",
     );
     const insert = migration.slice(

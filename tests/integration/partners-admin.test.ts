@@ -2,7 +2,7 @@
  * Spec 012 T-18 and T-20 against a migrated scratch database (AC-15, AC-16, AC-17; TASK-221):
  * the partner commands and the status graph with its preconditions, applications moved through
  * spec 011's queries (convert, reject with a reason in `status_reason`), the audit rows `0016`'s
- * trigger writes for each, and migration `0035`'s terms pair check.
+ * trigger writes for each, and migration `0033`'s terms pair check.
  *
  * Runs on a disposable local Postgres only (`support/scratch-db.ts`); skips with the reason when
  * none answers.
@@ -621,7 +621,7 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
-    describe("migration 0035 · signed terms are a pair", () => {
+    describe("migration 0033 · signed terms are a pair", () => {
       it("refuses a version without a date and a date without a version", async () => {
         await rolledBack(scratch.sql, async (tx) => {
           const id = await make.partner(tx, countryId, "onboarding");

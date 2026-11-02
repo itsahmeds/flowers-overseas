@@ -1043,7 +1043,7 @@
     "app_partner_owns_payout(target uuid)": "security_definer=true config=search_path=pg_catalog, public md5=d74a8480cadc80e8d0ebb76f900060ff",
     "app_partner_sees_media(target uuid)": "security_definer=true config=search_path=pg_catalog, public md5=9d27ba626c391a8174762160cc663cb2",
     "app_partner_sees_order(target uuid)": "security_definer=true config=search_path=pg_catalog, public md5=a36c0b70b01ad4db00e7a6b81e777724",
-    "audit_log_append_only()": "security_definer=false config= md5=ae18f67f6156541dd61def2105358977",
+    "audit_log_append_only()": "security_definer=false config= md5=1c169f1a901a6a70d58a5120b387c0ad",
     "audit_mark_real()": "security_definer=false config=search_path=pg_catalog, public md5=a5bcfb668579d76069df13475a873968",
     "audit_mask_columns(p_table text)": "security_definer=false config=search_path=pg_catalog, public md5=6174bf595e90d2ff7694191e60d262ce",
     "audit_mask(p_table text, p_row jsonb)": "security_definer=false config=search_path=pg_catalog, public md5=8d7edcf181ff1b0fbcd47aed287d343f",

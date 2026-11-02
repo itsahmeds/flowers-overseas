@@ -982,7 +982,7 @@ describe.skipIf(server.url === undefined)(
           [
             // spec 020a (`0031`): no handler is built yet, and the sweep says so.
             ["admin_order_action", "no_handler"],
-            // spec 012 §5.1 (`0035`, TASK-221).
+            // spec 012 §5.1 (`0033`, TASK-221).
             ["audit_log", "applied"],
             ["auth_email_send", "applied"],
             ["auth_session", "applied"],

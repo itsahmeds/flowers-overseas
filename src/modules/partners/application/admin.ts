@@ -11,7 +11,7 @@
  *    together), and every other status clears it. Spec 012 (TASK-221) adds two options: `from`,
  *    the status the row must still have (the update changes nothing otherwise, so two admins
  *    cannot both decide one application), and `statusReason`, the reason a rejection carries,
- *    written to `status_reason` (`0035`) in the same statement; every other status clears it.
+ *    written to `status_reason` (`0033`) in the same statement; every other status clears it.
  *
  * Both run inside spec 012's `withAdminContext`, whose `audit_row_change()` trigger writes the
  * `audit_log` row of a status change, so this module writes no audit row itself. The runner is a

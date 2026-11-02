@@ -10,7 +10,7 @@
  *    in one admin transaction. The partner insert is audited as `application.convert`, the
  *    status change as spec 011's `applications.status.converted`.
  *  - `rejectApplication` (`ApplicationRejectSchema`) — `contacted → rejected` with a required
- *    reason, which spec 011's query writes to `status_reason` (`0035`) in the same statement as
+ *    reason, which spec 011's query writes to `status_reason` (`0033`) in the same statement as
  *    the status.
  *
  * Each move names the status the row must still have (`from`), so two admins cannot both decide

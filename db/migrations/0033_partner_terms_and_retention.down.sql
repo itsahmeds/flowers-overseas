@@ -1,6 +1,6 @@
 SET LOCAL ROLE app_owner;
 
--- Rollback of 0035_partner_terms_and_retention (spec 012 §5.1), in reverse order. `audit_log` rows
+-- Rollback of 0033_partner_terms_and_retention (spec 012 §5.1), in reverse order. `audit_log` rows
 -- the sweep deleted stay deleted; the rows still there are untouched.
 
 /* 4. audit_log_append_only(): 0009's body, word for word */

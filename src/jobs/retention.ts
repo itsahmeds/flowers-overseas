@@ -68,7 +68,7 @@
  *    its events and its purchase are kept; a `live` order, and anyone with one, is never touched.
  *  - `audit_log` (3 years after the row was written, delete; spec 012 §5.1, §8 item 4, §13 Q5;
  *    TASK-221): `audit_log` rows whose `at` is at or before the cut-off **and** older than the
- *    period by the database's own clock. The table is append-only; its trigger (`0035`) admits
+ *    period by the database's own clock. The table is append-only; its trigger (`0033`) admits
  *    exactly this DELETE in this policy's session (`app.role = 'system'`,
  *    `app.retention_policy = 'audit_log'`), and only of a row the database itself finds old
  *    enough, so an injected clock ahead of real time selects nothing younger.
@@ -808,7 +808,7 @@ const demoOrderPersonal: PolicyHandler = async ({
 
 /**
  * `audit_log` rows due: written at or before `cutoff`, and older than the policy's period by the
- * database's clock too (the bound `0035`'s trigger enforces), so a test clock in the future never
+ * database's clock too (the bound `0033`'s trigger enforces), so a test clock in the future never
  * selects a row the trigger would refuse.
  */
 function auditLogDue(cutoff: Date): SQL {
