@@ -1,12 +1,13 @@
 /**
- * The florist surface's response rules (spec 011 §5.4, §6, §13 Q4, AC-22; TASK-212).
+ * The florist surface's response rules (spec 011 §5.4, §6, AC-22; spec 026a §5.4, AC-4;
+ * TASK-212, TASK-354).
  *
  *  - `floristHeaderRules()` — `Cache-Control: private, no-store` and `X-Robots-Tag: noindex,
  *    nofollow` on every response under `FLORIST_BASE_PATH` (pages, sign-in, `api/auth/*`, the
- *    language form), set in `next.config.ts`'s `headers()` so no response class escapes it. Listed
- *    after the environment-wide `noindex` rule, as the admin rules are.
- *  - `floristGate()` — the proxy's decision: in an environment whose `signInPolicy` is empty
- *    (`production` in Phase 0) every florist path answers 404 before anything renders.
+ *    language form, redirects and 404s), set in `next.config.ts`'s `headers()` so no response
+ *    class escapes it. Listed after the environment-wide `noindex` rule, as the admin rules are.
+ *    Spec 026a removed Phase 0's environment gate: the surface answers in every environment, and
+ *    who gets in is `signInPolicy` read against the partner's status on each request.
  *  - `floristLanguageHeader()` — before sign-in the page's language is `?hl=` (`en`, `pl`, `de`;
  *    default `en`), never `Accept-Language` or an IP (§7). The proxy hands the validated value to
  *    the florist layout, which renders `<html lang>` but cannot read the query itself.
@@ -17,7 +18,6 @@
 import {
   FLORIST_BASE_PATH,
   FLORIST_PATHS,
-  floristSurfaceOpen,
   isFloristPath,
 } from "../config/florists";
 
@@ -44,15 +44,6 @@ export function floristHeaderRules(
     { source: base, headers },
     { source: `${base}/:path*`, headers },
   ];
-}
-
-/** `not_found` when the florist surface is closed in `environment` and `pathname` is under it. */
-export function floristGate(input: {
-  readonly environment: string;
-  readonly pathname: string;
-}): "pass" | "not_found" {
-  if (!isFloristPath(input.pathname)) return "pass";
-  return floristSurfaceOpen(input.environment) ? "pass" : "not_found";
 }
 
 /** The request header that carries the validated `?hl=` to the florist layout. */

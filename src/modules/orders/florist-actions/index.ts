@@ -22,6 +22,7 @@ export type {
   PhotoCommandDeps,
   PhotoCommandResult,
 } from "./commands";
+export { canAcceptFor } from "./can-accept";
 export {
   FLORIST_ACTIONS,
   floristActions,

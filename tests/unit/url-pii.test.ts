@@ -220,21 +220,21 @@ const EXTERNAL_QUERY_KEYS: readonly {
       "the next florist page's language after a sign-in request or a failed confirm (spec 011 §7)",
   },
   {
-    entry: "src/app/demo/vendor-inbox/sign-in/page.tsx#state",
+    entry: "src/app/vendor/sign-in/page.tsx#state",
     reason:
       "the florist sign-in page's language links keep its state (`sent`, `expired`, `signed-out`)",
   },
   {
-    entry: "src/app/demo/vendor-inbox/sign-in/page.tsx#hl",
+    entry: "src/app/vendor/sign-in/page.tsx#hl",
     reason: "the florist sign-in page's language links (spec 011 §7)",
   },
   {
-    entry: "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#t",
+    entry: "src/app/vendor/sign-in/confirm/page.tsx#t",
     reason:
       "the confirm page's language links keep the emailed token on the same page (no address, spec 011 AC-19)",
   },
   {
-    entry: "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#hl",
+    entry: "src/app/vendor/sign-in/confirm/page.tsx#hl",
     reason: "the florist confirm page's language links (spec 011 §7)",
   },
 ];
@@ -679,10 +679,10 @@ describe("the real tree (T-59)", () => {
         "src/modules/admin/orders.ts#placedTo",
         "src/modules/admin/orders.ts#since",
         "src/lib/auth/florist.ts#hl",
-        "src/app/demo/vendor-inbox/sign-in/page.tsx#state",
-        "src/app/demo/vendor-inbox/sign-in/page.tsx#hl",
-        "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#t",
-        "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#hl",
+        "src/app/vendor/sign-in/page.tsx#state",
+        "src/app/vendor/sign-in/page.tsx#hl",
+        "src/app/vendor/sign-in/confirm/page.tsx#t",
+        "src/app/vendor/sign-in/confirm/page.tsx#hl",
       ]);
       expect(urlPiiViolations(repoRoot)).toEqual([]);
     },

@@ -1,14 +1,20 @@
 /**
- * Spec 011's florist surface, the parts a unit can prove (TASK-212):
+ * Spec 011's florist surface, the parts a unit can prove (TASK-212), moved to `/vendor` and opened
+ * on the live site by spec 026a (TASK-354):
  *
- *  - AC-18 (policy half): `signInPolicy` over the five environments (and an unknown one).
+ *  - AC-18 (policy half; spec 026a AC-3, T-03 unit half): `signInPolicy` over the five
+ *    environments, and `"bogus"` and other unknown strings, which read as production.
+ *  - Spec 026a AC-1 (T-01): the base is `/vendor`, the route tree under `src/app` equals it, the
+ *    cookies are `Path=/vendor`. AC-2 (T-02, source scan half): the Phase 0 path is spelled in no
+ *    file under `src/`, and under `tests/` only in the e2e 404 test. AC-4 (T-04, proxy half): the
+ *    proxy passes every florist path in every environment, with no redirect, rewrite or cookie.
  *  - AC-19 (configuration half): the florist instance's cookie names, path and flags, no `__Host-`
  *    name, 30-day database sessions, rolling, surface-bound session tokens.
  *  - AC-21 (proxy half): a florist cookie changes nothing the proxy does on a public path; no
  *    public source reads the florist cookie.
  *  - AC-22: every florist route under `src/app` and every florist path is built from
- *    `FLORIST_BASE_PATH`; the header rules; the production 404 (the proxy itself, every route of
- *    the tree); `robots.txt` disallows `/demo/` and `/vendor/`; the florist tree loads no analytics
+ *    `FLORIST_BASE_PATH`; the header rules; `robots.txt` disallows `/demo/` and `/vendor/` (spec
+ *    026a AC-12, the robots half); the florist tree loads no analytics
  *    or consent code; the source scan finds no second Auth.js configuration.
  *  - AC-32 (unit half): the sign-in email in en, pl and de, no address in it; no florist file reads
  *    `Accept-Language`; `?hl=` reaches the layout only as one of the three.
@@ -24,7 +30,6 @@ import {
   FLORIST_ENVIRONMENTS,
   FLORIST_PATHS,
   floristPaths,
-  floristSurfaceOpen,
   signInPolicy,
 } from "../../src/config/florists";
 import {
@@ -38,12 +43,11 @@ import { isSessionTokenOf, newSessionToken } from "../../src/lib/auth/tokens";
 import {
   FLORIST_LANGUAGE_HEADER,
   FLORIST_SESSION_COOKIE,
-  floristGate,
   floristHeaderRules,
   rollingCookie,
 } from "../../src/lib/florist-headers";
 import { renderFloristSignInEmail } from "../../src/modules/partners/auth/sign-in-email";
-import { DISALLOWED_PATHS } from "../../src/modules/seo/robots";
+import { DISALLOWED_PATHS, robotsTxt } from "../../src/modules/seo/robots";
 
 const ROOT = process.cwd();
 const TREE = join(
@@ -76,18 +80,20 @@ function routePath(file: string): string {
   return `/${segments.join("/")}`;
 }
 
-describe("AC-18 — signInPolicy is a total function of the environment", () => {
+describe("AC-18, spec 026a AC-3 — signInPolicy is a total function of the environment", () => {
   it.each([
     ["development", ["demo"]],
     ["test", ["demo"]],
     ["preview", ["demo"]],
     ["staging", ["demo"]],
-    ["production", []],
-    ["prod", []],
-    ["", []],
+    ["production", ["active", "paused"]],
+    // Anything else is production: fail closed to the live list, never open to `demo`.
+    ["bogus", ["active", "paused"]],
+    ["prod", ["active", "paused"]],
+    ["Production", ["active", "paused"]],
+    ["", ["active", "paused"]],
   ])("%s → %j", (environment, statuses) => {
     expect(signInPolicy(environment)).toEqual(statuses);
-    expect(floristSurfaceOpen(environment)).toBe(statuses.length > 0);
   });
 
   it("covers exactly the five deployment environments", () => {
@@ -116,7 +122,7 @@ describe("AC-19 — the florist instance's cookies and sessions", () => {
       expect(cookie?.options).toEqual({
         httpOnly: true,
         sameSite: "lax",
-        path: "/demo/vendor-inbox",
+        path: "/vendor",
         secure: true,
       });
     }
@@ -125,19 +131,19 @@ describe("AC-19 — the florist instance's cookies and sessions", () => {
   it("is the core's florist surface: base path, pages, mail tag, 30 days rolling, database sessions", () => {
     expect(FLORIST_SURFACE).toMatchObject({
       name: "florist",
-      basePath: "/demo/vendor-inbox/api/auth",
-      cookiePath: "/demo/vendor-inbox",
+      basePath: "/vendor/api/auth",
+      cookiePath: "/vendor",
       cookiePrefix: "__Secure-fo-florist",
       rolling: true,
       mailTag: "florist_sign_in",
       pages: {
-        signIn: "/demo/vendor-inbox/sign-in",
-        confirm: "/demo/vendor-inbox/sign-in/confirm",
-        home: "/demo/vendor-inbox",
+        signIn: "/vendor/sign-in",
+        confirm: "/vendor/sign-in/confirm",
+        home: "/vendor",
       },
     });
     expect(FLORIST_SESSION_MAX_AGE_SECONDS).toBe(2_592_000);
-    expect(config.basePath).toBe("/demo/vendor-inbox/api/auth");
+    expect(config.basePath).toBe("/vendor/api/auth");
     expect(config.session?.strategy).toBe("database");
     expect(config.session?.maxAge).toBe(2_592_000);
     // Rolling: Auth.js may extend once a day; the core's sessionUserId() does the same.
@@ -191,19 +197,41 @@ describe("AC-22 — one mount point, built from FLORIST_BASE_PATH", () => {
     }
   });
 
+  it("spec 026a AC-1: the base is /vendor and the tree lives at src/app/vendor", () => {
+    expect(FLORIST_BASE_PATH).toBe("/vendor");
+    expect(relative(ROOT, TREE)).toBe(join("src", "app", "vendor"));
+    expect(statSync(join(TREE, "page.tsx")).isFile()).toBe(true);
+  });
+
   it("no florist route file spells the mount point: it is read from the config", () => {
     for (const file of walk(TREE)) {
-      expect(read(file), relative(ROOT, file)).not.toContain(
-        "/demo/vendor-inbox",
+      expect(code(file), relative(ROOT, file)).not.toMatch(
+        /["'`]\/vendor(?:["'`/?]|$)/mu,
       );
     }
+  });
+
+  it("spec 026a AC-2: the Phase 0 path is in no source file, and in tests only in the e2e 404 test", () => {
+    // Built, so this file is not itself a match.
+    const old = ["", "demo", "vendor-inbox"].join("/");
+    const spelling = (dir: string) =>
+      walk(join(ROOT, dir))
+        .filter((file) => !file.includes(`${join("tests", "fixtures")}/`))
+        .filter((file) => read(file).includes(old))
+        .map((file) => relative(ROOT, file))
+        .sort();
+    expect(spelling("src")).toEqual([]);
+    expect(spelling("tests")).toEqual([
+      join("tests", "e2e", "florist-surface.spec.ts"),
+    ]);
+    expect(() => statSync(join(ROOT, "src/app/demo"))).toThrow();
   });
 
   it("sets noindex, nofollow and private, no-store on the base and everything under it", () => {
     const rules = floristHeaderRules();
     expect(rules.map((rule) => rule.source)).toEqual([
-      "/demo/vendor-inbox",
-      "/demo/vendor-inbox/:path*",
+      "/vendor",
+      "/vendor/:path*",
     ]);
     for (const rule of rules) {
       expect(rule.headers).toEqual([
@@ -220,39 +248,16 @@ describe("AC-22 — one mount point, built from FLORIST_BASE_PATH", () => {
     );
   });
 
-  it("closes every florist path in production, and nothing else", () => {
-    for (const path of [
-      FLORIST_PATHS.base,
-      FLORIST_PATHS.signIn,
-      FLORIST_PATHS.confirm,
-      FLORIST_PATHS.request,
-      `${FLORIST_PATHS.authBase}/session`,
-      FLORIST_PATHS.order("6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91"),
-    ]) {
-      expect(floristGate({ environment: "production", pathname: path })).toBe(
-        "not_found",
-      );
-      expect(floristGate({ environment: "staging", pathname: path })).toBe(
-        "pass",
-      );
-    }
-    for (const path of [
-      "/",
-      "/en",
-      "/demo",
-      "/demo/vendor-inboxes",
-      "/admin",
-    ]) {
-      expect(
-        floristGate({ environment: "production", pathname: path }),
-        path,
-      ).toBe("pass");
-    }
-  });
-
-  it("robots.txt disallows /demo/ and /vendor/", () => {
+  it("robots.txt disallows /demo/ and /vendor/, and in the indexing environment prints Disallow: /vendor/", () => {
     expect(DISALLOWED_PATHS).toContain("/demo/");
     expect(DISALLOWED_PATHS).toContain("/vendor/");
+    const txt = robotsTxt({
+      environment: "production",
+      siteUrl: "https://flowersoverseas.com",
+    });
+    expect(txt.split("\n")).toContain("Disallow: /vendor/");
+    // The bare `/vendor` is a `noindex` redirect, left crawlable on purpose (spec 026a §6).
+    expect(txt.split("\n")).not.toContain("Disallow: /vendor");
   });
 
   it("the florist tree loads no analytics, consent or GA4 code", () => {
@@ -295,42 +300,74 @@ describe("the proxy on florist paths (AC-21, AC-22, AC-32)", () => {
       proxy(new NextRequest(new Request(`https://example.test${path}`, init)));
   }
 
-  it("answers 404, noindex, in production for every florist path, before anything renders", async () => {
-    const call = await proxyIn("production");
-    for (const path of [
-      "/demo/vendor-inbox",
-      "/demo/vendor-inbox/sign-in?hl=pl",
-      "/demo/vendor-inbox/api/auth/request",
-    ]) {
-      const response = call(path);
-      expect(response.status, path).toBe(404);
-      expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
-      expect(response.headers.get("location")).toBeNull();
+  // `"bogus"` is the policy's case above: `appEnvironment()` refuses to boot on it at all.
+  it.each([...FLORIST_ENVIRONMENTS])(
+    "spec 026a AC-4: in %s the proxy passes every florist path untouched: no 404, redirect, rewrite or cookie",
+    async (environment) => {
+      const call = await proxyIn(environment);
+      for (const path of [
+        "/vendor",
+        "/vendor/",
+        "/vendor/sign-in",
+        "/vendor/sign-in?hl=pl",
+        "/vendor/api/auth/request",
+        "/vendor/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91",
+      ]) {
+        const response = call(path);
+        expect(response.status, path).toBe(200);
+        expect(response.headers.get("location"), path).toBeNull();
+        expect(response.headers.get("x-middleware-rewrite"), path).toBeNull();
+        expect(response.headers.get("set-cookie"), path).toBeNull();
+        expect(response.headers.get("x-middleware-next"), path).toBe("1");
+      }
+    },
+  );
+
+  it("spec 026a AC-2: the Phase 0 paths get no redirect from the proxy in any environment", async () => {
+    for (const environment of FLORIST_ENVIRONMENTS) {
+      const call = await proxyIn(environment);
+      for (const suffix of [
+        "",
+        "/",
+        "/sign-in",
+        "/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91",
+      ]) {
+        const path = `${["", "demo", "vendor-inbox"].join("/")}${suffix}`;
+        const response = call(path);
+        expect(response.headers.get("location"), path).toBeNull();
+        expect(response.headers.get("x-middleware-rewrite"), path).toBeNull();
+      }
     }
-    expect(call("/en").status).toBe(200);
   });
 
-  it("passes the florist paths outside production", async () => {
-    const call = await proxyIn("staging");
-    expect(call("/demo/vendor-inbox/sign-in").status).toBe(200);
+  it("spec 026a AC-4: a locale prefix on /vendor is a public path the proxy does not treat as florist", async () => {
+    const call = await proxyIn("production");
+    const header = (response: Response) =>
+      response.headers.get(`x-middleware-request-${FLORIST_LANGUAGE_HEADER}`);
+    const response = call("/en/vendor?hl=pl", {
+      headers: { cookie: `${FLORIST_SESSION_COOKIE}=florist.abc` },
+    });
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("set-cookie")).toBeNull();
+    expect(header(response)).toBeNull();
   });
 
   it("hands ?hl= to the florist layout only as en, pl or de, and drops a client-sent copy", async () => {
     const call = await proxyIn("staging");
     const header = (response: Response) =>
       response.headers.get(`x-middleware-request-${FLORIST_LANGUAGE_HEADER}`);
-    expect(header(call("/demo/vendor-inbox/sign-in?hl=pl"))).toBe("pl");
-    expect(header(call("/demo/vendor-inbox/sign-in?hl=fr"))).toBeNull();
+    expect(header(call("/vendor/sign-in?hl=pl"))).toBe("pl");
+    expect(header(call("/vendor/sign-in?hl=fr"))).toBeNull();
     expect(
       header(
-        call("/demo/vendor-inbox/sign-in", {
+        call("/vendor/sign-in", {
           headers: { [FLORIST_LANGUAGE_HEADER]: "de", "accept-language": "de" },
         }),
       ),
     ).toBeNull();
     // Not on a public path: the public site's language is the URL's.
     expect(header(call("/en?hl=pl"))).toBeNull();
-    expect(header(call("/demo/vendor-inbox/sign-in?hl=PL"))).toBeNull();
+    expect(header(call("/vendor/sign-in?hl=PL"))).toBeNull();
   });
 
   it("with a florist cookie, a public path gets exactly what it gets without one: no Set-Cookie, no Vary", async () => {
@@ -358,13 +395,13 @@ describe("the proxy on florist paths (AC-21, AC-22, AC-32)", () => {
 
   it("re-issues the florist session cookie for 30 days on a florist page GET only", async () => {
     const call = await proxyIn("staging");
-    const rolled = call("/demo/vendor-inbox", {
+    const rolled = call("/vendor", {
       headers: { cookie: `${FLORIST_SESSION_COOKIE}=florist.abc` },
     }).headers.get("set-cookie");
     expect(rolled).toMatch(
       /^__Secure-fo-florist\.session-token=florist\.abc;/u,
     );
-    expect(rolled).toMatch(/Path=\/demo\/vendor-inbox/u);
+    expect(rolled).toMatch(/Path=\/vendor/u);
     expect(rolled).toMatch(/Max-Age=2592000/u);
     expect(rolled).toMatch(/Secure/u);
     expect(rolled).toMatch(/HttpOnly/u);
@@ -372,14 +409,14 @@ describe("the proxy on florist paths (AC-21, AC-22, AC-32)", () => {
     expect(
       rollingCookie({
         method: "POST",
-        pathname: "/demo/vendor-inbox/api/auth/sign-out",
+        pathname: "/vendor/api/auth/sign-out",
         value: "florist.abc",
       }),
     ).toBeNull();
     expect(
       rollingCookie({
         method: "GET",
-        pathname: "/demo/vendor-inbox/api/auth/confirm",
+        pathname: "/vendor/api/auth/confirm",
         value: "florist.abc",
       }),
     ).toBeNull();
@@ -389,7 +426,7 @@ describe("the proxy on florist paths (AC-21, AC-22, AC-32)", () => {
     expect(
       rollingCookie({
         method: "GET",
-        pathname: "/demo/vendor-inbox",
+        pathname: "/vendor",
         value: undefined,
       }),
     ).toBeNull();
@@ -407,9 +444,9 @@ describe("the proxy on florist paths (AC-21, AC-22, AC-32)", () => {
       .sort();
     expect(readers).toEqual(
       [
-        "src/app/demo/vendor-inbox/request.ts",
+        "src/app/vendor/request.ts",
         // Spec 016 AC-23 (TASK-331): the confirm page sends a member already signed in to the order.
-        "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx",
+        "src/app/vendor/sign-in/confirm/page.tsx",
         "src/lib/auth/florist.ts",
         "src/lib/florist-headers.ts",
         "src/proxy.ts",
@@ -420,7 +457,7 @@ describe("the proxy on florist paths (AC-21, AC-22, AC-32)", () => {
 
 describe("AC-32 — the member's language", () => {
   const LINK =
-    "https://staging.example.test/demo/vendor-inbox/sign-in/confirm?t=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcd";
+    "https://staging.example.test/vendor/sign-in/confirm?t=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcd";
 
   it.each([
     ["en", "Your link to sign in to Flowers Overseas", "Open your orders:"],
@@ -467,31 +504,27 @@ describe("AC-32 — the member's language", () => {
   });
 
   it("carries the page's language to the next page, never an address", () => {
-    expect(withLanguage("/demo/vendor-inbox/sign-in?state=sent", "pl")).toBe(
-      "/demo/vendor-inbox/sign-in?state=sent&hl=pl",
+    expect(withLanguage("/vendor/sign-in?state=sent", "pl")).toBe(
+      "/vendor/sign-in?state=sent&hl=pl",
     );
-    expect(withLanguage("/demo/vendor-inbox/sign-in", "de")).toBe(
-      "/demo/vendor-inbox/sign-in?hl=de",
-    );
-    expect(withLanguage("/demo/vendor-inbox/sign-in?state=sent", "en")).toBe(
-      "/demo/vendor-inbox/sign-in?state=sent",
+    expect(withLanguage("/vendor/sign-in", "de")).toBe("/vendor/sign-in?hl=de");
+    expect(withLanguage("/vendor/sign-in?state=sent", "en")).toBe(
+      "/vendor/sign-in?state=sent",
     );
   });
 
   it("returns from the language form only to a florist page", () => {
-    expect(safeFloristBack("/demo/vendor-inbox/orders/abc")).toBe(
-      "/demo/vendor-inbox/orders/abc",
-    );
+    expect(safeFloristBack("/vendor/orders/abc")).toBe("/vendor/orders/abc");
     for (const hostile of [
       "https://evil.example/",
       "//evil.example",
-      "/demo/vendor-inbox//evil",
-      "/demo/vendor-inboxes",
+      "/vendor//evil",
+      "/vendors",
       "/en",
-      "/demo/vendor-inbox?x=1",
+      "/vendor?x=1",
       "javascript:alert(1)",
     ]) {
-      expect(safeFloristBack(hostile), hostile).toBe("/demo/vendor-inbox");
+      expect(safeFloristBack(hostile), hostile).toBe("/vendor");
     }
   });
 });

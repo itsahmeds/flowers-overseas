@@ -71,7 +71,7 @@ const server = await probeLocalServer();
 
 const ORIGIN = "https://staging.example.test";
 const SECRET = "placeholder-florist-auth-secret-0123456789abcdef";
-const BASE = "/demo/vendor-inbox";
+const BASE = "/vendor";
 const STATUSES = [
   "demo",
   "onboarding",
@@ -284,7 +284,7 @@ describe.skipIf(server.url === undefined)(
         c.startsWith("__Secure-fo-florist.session-token="),
       );
       expect(session).toMatch(/^__Secure-fo-florist\.session-token=florist\./u);
-      expect(session).toMatch(/; Path=\/demo\/vendor-inbox(;|$)/u);
+      expect(session).toMatch(/; Path=\/vendor(;|$)/u);
       expect(session).toMatch(/; Secure(;|$)/u);
       expect(session).toMatch(/; HttpOnly(;|$)/u);
       expect(session).toMatch(/; SameSite=Lax(;|$)/iu);
@@ -292,7 +292,7 @@ describe.skipIf(server.url === undefined)(
         expect(cookie).not.toMatch(/^__Host-/u);
         expect(cookie).not.toMatch(/^authjs\./u);
         expect(cookie).not.toContain("@");
-        expect(cookie).toMatch(/; Path=\/demo\/vendor-inbox(;|$)/u);
+        expect(cookie).toMatch(/; Path=\/vendor(;|$)/u);
       }
       const token = /^[^=]+=([^;]+)/u.exec(session ?? "")?.[1];
       expect(await context(token)).toEqual({

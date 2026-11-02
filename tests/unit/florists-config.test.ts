@@ -166,13 +166,13 @@ describe("florists.ts's other contracts", () => {
     expect([...FLORIST_PARTNER_STATUSES]).toEqual([...partnerStatuses]);
   });
 
-  it("turns the form on (TASK-213, §12) and mounts the inbox at /demo/vendor-inbox", () => {
+  it("turns the form on (TASK-213, §12) and mounts the inbox at /vendor (spec 026a AC-1)", () => {
     expect(floristsConfig.applicationForm).toBe("on");
-    expect(FLORIST_BASE_PATH).toBe("/demo/vendor-inbox");
+    expect(FLORIST_BASE_PATH).toBe("/vendor");
   });
 
-  it("signs nobody in on production in Phase 0, demo members elsewhere (§13 Q4)", () => {
-    expect(signInPolicy("production")).toEqual([]);
+  it("signs active and paused shops in on production, demo members elsewhere (spec 026a AC-3)", () => {
+    expect(signInPolicy("production")).toEqual(["active", "paused"]);
     for (const environment of [
       "development",
       "test",

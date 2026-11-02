@@ -12,7 +12,7 @@
     },
     {
       "path": "/demo/",
-      "because": "spec 011 §6: the Phase 0 florist inbox at /demo/vendor-inbox (noindex, no-store, 404 in production); no locale prefix"
+      "because": "spec 011 §6: the retired Phase 0 florist inbox under /demo/ (its paths answer 404 since spec 026a AC-2); no locale prefix"
     },
     {
       "path": "/vendor/",

@@ -15,7 +15,7 @@ import { fontVariables } from "@/modules/ui";
 
 import { currentFloristLanguage } from "./request";
 
-import "../../globals.css";
+import "../globals.css";
 
 export const dynamic = "force-dynamic";
 

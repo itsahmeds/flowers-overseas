@@ -159,15 +159,15 @@ const FLORIST_FORM_PATHS = [
  * Keys that no page an indexer reads can show. Add the entry in the PR that adds the keys.
  */
 /**
- * Spec 011 (TASK-212): the florist surface under `FLORIST_BASE_PATH` (`noindex`, `no-store`, 404 in
- * production) and the florist sign-in email, which renders on no page at all. `floristAuth` holds
+ * Spec 011 (TASK-212): the florist surface under `FLORIST_BASE_PATH` (`/vendor` since spec 026a;
+ * `noindex`, `no-store`) and the florist sign-in email, which renders on no page at all. `floristAuth` holds
  * the sign-in pages and the surface's own chrome (menu, language, sign-out, demo notice).
  * `floristInbox` is not here (TASK-210): the for-florists walkthrough, an indexable page, prints
  * its labels through the real inbox components in `src/modules/partners/ui/inbox`, so those keys
  * count toward the share like any other.
  */
 const FLORIST_PATHS = [
-  "src/app/demo/vendor-inbox/**",
+  "src/app/vendor/**",
   "src/modules/partners/auth/**",
   "src/lib/auth/florist.ts",
 ];
@@ -224,6 +224,13 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     match: "floristInbox.page.*",
     surface: "florist",
     paths: FLORIST_INBOX_PAGE_PATHS,
+  },
+  // Spec 026a §7 (TASK-354): the paused notice renders on the inbox list and a paused shop's open
+  // offer only, under `FLORIST_BASE_PATH`; the walkthrough prints no paused state.
+  {
+    match: "floristInbox.paused.*",
+    surface: "florist",
+    paths: FLORIST_PATHS,
   },
   // Spec 011 §5.2 (TASK-213): the founder's alert for each florist application, an email that
   // renders on no page at all.

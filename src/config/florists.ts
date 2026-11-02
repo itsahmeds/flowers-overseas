@@ -3,14 +3,15 @@
  * point", §13 Q4; TASK-212). No database (`check:no-db`).
  *
  *  - `basePath` — the one mount point every florist route derives from, `FLORIST_BASE_PATH`:
- *    `/demo/vendor-inbox` in Phase 0; spec 026 moves it to `/vendor`. Pages, the Auth.js base
- *    path, the cookie path and the response-header rules are all built from it
- *    (`floristPaths()`), and `tests/unit/florist-routes.test.ts` holds the route tree under
- *    `src/app` equal to it.
- *  - `signInPolicy(environment)` — which partner statuses' members may receive a sign-in link: a
- *    total function of the deployment environment. Phase 0 is `demo` partners everywhere but
- *    `production`, and nobody in `production` (§13 Q4), which is also what turns every florist
- *    route into a 404 there (`floristSurfaceOpen()`). Spec 026 widens production to `active`.
+ *    `/vendor` (spec 026a §2, AC-1; `plan/02` §4.1, `plan/05` #58). Pages, the Auth.js base path,
+ *    the cookie path and the response-header rules are all built from it (`floristPaths()`), and
+ *    `tests/unit/florist-surface.test.ts` holds the route tree under `src/app` equal to it. The
+ *    Phase 0 mount point is gone: its paths answer 404 with no redirect (spec 026a §13 Q6, AC-2).
+ *  - `signInPolicy(environment)` — which partner statuses' members may sign in: a total function
+ *    of the deployment environment (spec 026a §13 Q1, AC-3). `active` and `paused` partners on
+ *    the live site (a paused shop finishes what it accepted, `canAcceptFor` keeps it from new
+ *    ones), `demo` partners everywhere else; an unknown environment reads as `production` (fail
+ *    closed). The surface answers in every environment: no environment turns it into a 404.
  *  - `languages` — the three languages the florist surface speaks (`partner_member.locale_code`,
  *    `0022_florists_v0`), with `en` the default before sign-in (§7: never `Accept-Language`,
  *    never an IP).
@@ -192,7 +193,7 @@ export function floristsConfigSchemaFor(retail: MinorMoney) {
 }
 
 export const floristsConfig: FloristsConfig = FloristsConfigSchema.parse({
-  basePath: "/demo/vendor-inbox",
+  basePath: "/vendor",
   // On (TASK-213, spec 011 §12): the form posts through the server action into
   // `partner_application`. Production needs `0022_florists_v0` applied and
   // `FLORIST_APPLICATIONS_NOTIFY_EMAIL` set (the founder's address, §13 Q8).
@@ -234,8 +235,8 @@ export const floristsConfig: FloristsConfig = FloristsConfigSchema.parse({
     test: ["demo"],
     preview: ["demo"],
     staging: ["demo"],
-    // §13 Q4: nobody until spec 026 opens production to `active` partners.
-    production: [],
+    // Spec 026a §13 Q1 (founder, 2026-10-22): the live site lets active and paused shops in.
+    production: ["active", "paused"],
   },
 } satisfies z.input<typeof FloristsConfigSchema>);
 
@@ -251,11 +252,6 @@ export function signInPolicy(
 ): readonly FloristPartnerStatus[] {
   const parsed = z.enum(FLORIST_ENVIRONMENTS).safeParse(environment);
   return floristsConfig.signIn[parsed.success ? parsed.data : "production"];
-}
-
-/** Whether the florist surface answers at all in `environment` (§13 Q4: 404 while empty). */
-export function floristSurfaceOpen(environment: string): boolean {
-  return signInPolicy(environment).length > 0;
 }
 
 /** Every florist path, built from `FLORIST_BASE_PATH` and nothing else (AC-22). */

@@ -360,7 +360,7 @@ describe("docs/design/README.md states the rules an agent needs", () => {
  * vocabulary, so it may survive inside an artboard's annotation block — the `<section class="note">`
  * whose label ends `· [internal]` — and nowhere else, not in a state stub and not in a designer's
  * note. Identifiers inside `<code>` are exempt for every word, because a route or a table name is
- * not copy: `/demo/vendor-inbox`, `partner_application` and `corridorPagePublished` are the names
+ * not copy: `/vendor`, `partner_application` and `corridorPagePublished` are the names
  * the code actually uses and renaming them in a drawing would make the drawing wrong.
  *
  * The list itself lives in `src/config/voice.ts` since TASK-087, because `pnpm corridor:check`

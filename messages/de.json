@@ -810,6 +810,9 @@
     "notice": {
       "answered": "Dieser Auftrag wurde bereits beantwortet.",
       "changed": "Dieser Auftrag hat sich geändert, seit Sie ihn geöffnet haben."
+    },
+    "paused": {
+      "notice": "Ihr Geschäft ist pausiert. Sie können die Aufträge abschließen, die Sie bereits angenommen haben. Neue Aufträge erhalten Sie wieder, sobald Ihr Geschäft aktiv ist."
     }
   },
   "footer": {

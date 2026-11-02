@@ -39,6 +39,8 @@ export function noticeOf(code: FloristActionErrorCode): OrderNotice | null {
     case "ASSIGNMENT_EXPIRED":
       return "expired";
     case "ORDER_STATE_CHANGED":
+    // Spec 026a AC-6: a forged accept from a paused shop reads as "changed since you opened it".
+    case "ASSIGNMENT_PARTNER_NOT_ACCEPTING":
       return "changed";
     case "ASSIGNMENT_NOT_FOUND":
       return null;
