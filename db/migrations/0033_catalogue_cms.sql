@@ -142,12 +142,15 @@ GRANT SELECT ON public.saleable_offer TO app_build;
  * media_asset.supplier_partner_id (§2.7)
  * ------------------------------------------------------------------------ */
 
+-- A florist's bouquet photo (`kind = 'product'`, `source = 'partner'`) names its florist. A
+-- delivery proof (specs 018, 027, 029) and an application's photos (spec 011) are partner-sourced
+-- too, but come from no catalogue supplier: the rule binds the catalogue's photos only.
 ALTER TABLE public.media_asset
   ADD COLUMN supplier_partner_id uuid NULL,
   ADD CONSTRAINT media_asset_supplier_partner_id_fulfillment_partner_id_fk
     FOREIGN KEY (supplier_partner_id) REFERENCES public.fulfillment_partner (id) ON DELETE RESTRICT,
   ADD CONSTRAINT media_asset_supplier_partner_check
-    CHECK (source <> 'partner' OR supplier_partner_id IS NOT NULL);
+    CHECK (kind <> 'product' OR source <> 'partner' OR supplier_partner_id IS NOT NULL);
 
 /* ---------------------------------------------------------------------------
  * publish_run (§2.3, AC-6, AC-7)

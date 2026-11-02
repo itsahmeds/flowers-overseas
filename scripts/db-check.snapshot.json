@@ -303,7 +303,7 @@
     "media_asset media_asset_review_state_check": "CHECK ((review_state = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])))",
     "media_asset media_asset_reviewed_check": "CHECK (((review_state <> 'approved'::text) OR ((reviewed_by IS NOT NULL) AND (reviewed_at IS NOT NULL))))",
     "media_asset media_asset_source_check": "CHECK ((source = ANY (ARRAY['ai'::text, 'photo'::text, 'partner'::text])))",
-    "media_asset media_asset_supplier_partner_check": "CHECK (((source <> 'partner'::text) OR (supplier_partner_id IS NOT NULL)))",
+    "media_asset media_asset_supplier_partner_check": "CHECK (((kind <> 'product'::text) OR (source <> 'partner'::text) OR (supplier_partner_id IS NOT NULL)))",
     "media_asset media_asset_supplier_partner_id_fulfillment_partner_id_fk": "FOREIGN KEY (supplier_partner_id) REFERENCES fulfillment_partner(id) ON DELETE RESTRICT",
     "media_asset media_asset_visibility_check": "CHECK ((visibility = ANY (ARRAY['public'::text, 'private'::text])))",
     "media_variant media_variant_bytes_check": "CHECK ((bytes > 0))",
@@ -1050,6 +1050,7 @@
     "review_attestation review_attestation_audit": "CREATE TRIGGER review_attestation_audit AFTER INSERT OR DELETE OR UPDATE ON public.review_attestation FOR EACH ROW EXECUTE FUNCTION audit_row_change('id')",
     "review_attestation review_attestation_no_truncate": "CREATE TRIGGER review_attestation_no_truncate BEFORE TRUNCATE ON public.review_attestation FOR EACH STATEMENT EXECUTE FUNCTION review_attestation_append_only()",
     "review_invite review_invite_set_updated_at": "CREATE TRIGGER review_invite_set_updated_at BEFORE UPDATE ON public.review_invite FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+    "reviewer_locale reviewer_locale_audit": "CREATE TRIGGER reviewer_locale_audit AFTER INSERT OR DELETE OR UPDATE ON public.reviewer_locale FOR EACH ROW EXECUTE FUNCTION audit_row_change('user_id', 'locale_code')",
     "substitution_note substitution_note_set_updated_at": "CREATE TRIGGER substitution_note_set_updated_at BEFORE UPDATE ON public.substitution_note FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
     "tax_registration tax_registration_set_updated_at": "CREATE TRIGGER tax_registration_set_updated_at BEFORE UPDATE ON public.tax_registration FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
     "user_role user_role_audit": "CREATE TRIGGER user_role_audit AFTER INSERT OR DELETE OR UPDATE ON public.user_role FOR EACH ROW EXECUTE FUNCTION audit_row_change('user_id', 'role')",
@@ -1074,7 +1075,7 @@
     "app_partner_sees_order(target uuid)": "security_definer=true config=search_path=pg_catalog, public md5=a36c0b70b01ad4db00e7a6b81e777724",
     "audit_log_append_only()": "security_definer=false config= md5=599a90fbeae6743af58fe511474834bf",
     "audit_mark_real()": "security_definer=false config=search_path=pg_catalog, public md5=a5bcfb668579d76069df13475a873968",
-    "audit_mask_columns(p_table text)": "security_definer=false config=search_path=pg_catalog, public md5=6174bf595e90d2ff7694191e60d262ce",
+    "audit_mask_columns(p_table text)": "security_definer=false config=search_path=pg_catalog, public md5=8591a576ba42e9c35fd8405db7e28d71",
     "audit_mask(p_table text, p_row jsonb)": "security_definer=false config=search_path=pg_catalog, public md5=8d7edcf181ff1b0fbcd47aed287d343f",
     "audit_record_view(p_entity_table text, p_entity_id text)": "security_definer=true config=search_path=pg_catalog, public md5=67150f7fdee5c49be3e0e1b7a377ef1b",
     "audit_row_change()": "security_definer=true config=search_path=pg_catalog, public md5=0d9f4108d7422489a36b65aff37d71fe",
@@ -1320,7 +1321,8 @@
     "customer_order_event": "options=security_barrier=true md5=08ff68aa9830f9439ddbd4501e8abce6",
     "partner_order": "options=security_barrier=true md5=33534437fe00c461eb836e8acbd1c087",
     "partner_order_line": "options=security_barrier=true md5=41916f6b1f05d9c7c8190d15c75e4f84",
-    "public_review": "options=security_barrier=true md5=4ddf449778444dac7723ada94f81cda7"
+    "public_review": "options=security_barrier=true md5=4ddf449778444dac7723ada94f81cda7",
+    "saleable_offer": "options=security_barrier=true md5=81036eea4270a258e0df2011314571a5"
   },
   "defaults": {
     "addon_country_price.created_at": "now()",

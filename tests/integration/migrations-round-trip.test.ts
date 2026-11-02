@@ -116,13 +116,14 @@ const FUNCTIONS = [
   "review_attestation_append_only",
   "review_blog_revision_current_hash",
   "review_blog_revision_hash",
+  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1). In name order,
+  // which is the order the catalogue query returns.
+  "review_content_immutable",
   "review_hash_part",
   "review_product_copy_hash",
   "review_row_is_own",
   "review_subject_hash",
   "review_write_guard",
-  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1).
-  "review_content_immutable",
   "set_updated_at",
   "status_flip_guard",
 ];
