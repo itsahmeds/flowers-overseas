@@ -15,6 +15,8 @@
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import { invoicesOutboxHandler } from "../modules/invoices";
+import { floristAuth } from "../lib/auth/florist";
+import { createSignInLink } from "../lib/auth/surface";
 import { registerNotificationsOutbox } from "../modules/notifications";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
@@ -34,7 +36,11 @@ registerOutboxHandler("invoices", invoicesOutboxHandler());
 
 // Spec 016 §5.2 (TASK-331): the `notifications` target and its hold. While `notifications.email`
 // is off, every notifications delivery stays `pending` and is sent once when it is turned on.
-registerNotificationsOutbox();
+registerNotificationsOutbox({
+  // Spec 016 §5.2, AC-23: each florist email's one-tap link, its callback the order's inbox page.
+  signInLink: (userId, callbackPath) =>
+    createSignInLink(floristAuth, userId, { callbackPath }),
+});
 
 export const JOB_HANDLERS: JobHandlers = {
   // Spec 006 §2.6, AC-25 (TASK-082): the variant ladder of one asset, written once per (asset,

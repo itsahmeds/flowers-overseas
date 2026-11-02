@@ -142,22 +142,23 @@ interface ResolvedDeps {
   readonly log: Logger;
 }
 
-/** The florist surface's link, loaded on first use so the pipeline stays light to import. */
-async function floristSignInLink(
-  userId: string,
-  callbackPath: string,
-): Promise<string | null> {
-  const { floristAuth } = await import("@/lib/auth/florist");
-  const { createSignInLink } = await import("@/lib/auth/surface");
-  return createSignInLink(floristAuth, userId, { callbackPath });
-}
+/**
+ * The deps the process registered (`registerNotificationsOutbox`, in the worker): the florist
+ * surface's `createSignInLink` among them. Kept out of this module's imports so no page that
+ * reaches the notifications barrel pulls the florist sign-in surface in. Without a registered
+ * minter a florist email carries the plain inbox address (no token).
+ */
+let processDeps: NotificationDeps = {};
 
-function resolveDeps(deps: NotificationDeps): ResolvedDeps {
+const noLink = (): Promise<string | null> => Promise.resolve(null);
+
+function resolveDeps(input: NotificationDeps): ResolvedDeps {
+  const deps: NotificationDeps = { ...processDeps, ...input };
   return {
     mailer: deps.mailer ?? getMailer,
     provider: deps.provider ?? (() => mailerConfig(process.env).kind),
     template: deps.template ?? notificationTemplate,
-    signInLink: deps.signInLink ?? floristSignInLink,
+    signInLink: deps.signInLink ?? noLink,
     opsAddress: deps.opsAddress ?? (() => opsAlertEmail(process.env)),
     siteOrigin:
       deps.siteOrigin ??
@@ -654,10 +655,12 @@ export async function sendJobNotifications(
 
 /**
  * Registers the handler and its hold with the dispatcher, once per process (the worker's
- * `src/jobs/handlers.ts`): while `notifications.email` is off every `notifications` delivery stays
+ * `src/jobs/handlers.ts`, which passes the florist surface's link minter; the job entry uses the
+ * same deps): while `notifications.email` is off every `notifications` delivery stays
  * `pending`, and the first dispatch after it is turned on sends them all, once each (AC-26).
  */
 export function registerNotificationsOutbox(deps: NotificationDeps = {}): void {
+  processDeps = deps;
   const resolved = resolveDeps(deps);
   registerOutboxHandler("notifications", notificationsOutboxHandler(deps));
   registerOutboxHold(

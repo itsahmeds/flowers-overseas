@@ -408,6 +408,8 @@ describe("the proxy on florist paths (AC-21, AC-22, AC-32)", () => {
     expect(readers).toEqual(
       [
         "src/app/demo/vendor-inbox/request.ts",
+        // Spec 016 AC-23 (TASK-331): the confirm page sends a member already signed in to the order.
+        "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx",
         "src/lib/auth/florist.ts",
         "src/lib/florist-headers.ts",
         "src/proxy.ts",
