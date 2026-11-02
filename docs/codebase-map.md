@@ -14,16 +14,16 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +12 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +113 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +114 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +9 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +121 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +122 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` +2 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `unit/florist-surface.test.ts` +3 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-inbox.test.ts`, `unit/admin-order-poll.test.ts` +5 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-inbox.test.ts` +5 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
@@ -200,9 +200,12 @@ task actually touches.
 | `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every… | 011 |
 | `demo/vendor-inbox/api/auth/sign-out/route.ts` | POST: florist sign-out | 011 |
 | `demo/vendor-inbox/api/language/route.ts` | POST: store the florist's language (AC-32) | 011 |
+| `demo/vendor-inbox/api/test-order/route.ts` | POST: the demo member's "Send a test order"… | 011 |
 | `demo/vendor-inbox/chrome.tsx` | The florist pages' shared frame: header,… | 011 |
 | `demo/vendor-inbox/layout.tsx` | Florist document: the member's language, noindex | 011 |
-| `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox (signed in; no… | 011 |
+| `demo/vendor-inbox/not-found.tsx` | The florist tree's 404: an order that is not… | 011 |
+| `demo/vendor-inbox/orders/[assignmentId]/page.tsx` | GET {base}/orders/{assignmentId}: one florist… | 011 |
+| `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox list (signed in;… | 011 |
 | `demo/vendor-inbox/request.ts` | The florist request's context and language,… | 011 |
 | `demo/vendor-inbox/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue… | 011 |
 | `demo/vendor-inbox/sign-in/page.tsx` | GET {base}/sign-in: the florist sign-in form… | 011 |
@@ -244,6 +247,7 @@ task actually touches.
 | `decisions-log.ts` | `decisions:log` | Decision files collected into… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11… |
 | `env-check.ts` | `env:check` | `pnpm env:check` |
+| `florists-demo-member.ts` | `florists:demo-member` | Link or unlink an email to a seeded demo… |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed… |
 | `fonts/build-wordmark.ts` | `fonts:wordmark` | `pnpm fonts:wordmark` — outlines the wordmark… |
 | `fx-refresh.ts` | — | Weekday FX rebuild: rebuild each Railway `web`… |
@@ -282,8 +286,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 430 |
-| `tests/integration/` | 68 |
+| `tests/unit/` | 432 |
+| `tests/integration/` | 69 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |

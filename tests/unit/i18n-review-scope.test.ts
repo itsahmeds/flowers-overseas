@@ -298,6 +298,8 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         [
           ["floristAuth", "florist"],
           ["emails.floristSignIn.*", "email"],
+          // TASK-214: the inbox pages' own lines.
+          ["floristInbox.page.*", "florist"],
         ] as const
       ).map(([match, surface]) => ({
         match,
