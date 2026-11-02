@@ -125,8 +125,6 @@ export const REGISTERED_JOBS = {
   },
   "webhook.process": { version: 1, payload: WebhookProcessPayload },
   "order.close_sweep": { version: 1, payload: OrderCloseSweepPayload },
- */
-/**
   "catalogue.publish": { version: 1, payload: CataloguePublishPayload },
   "cache.invalidate": { version: 1, payload: CacheInvalidatePayload },
 } as const satisfies Record<string, RegisteredJob>;

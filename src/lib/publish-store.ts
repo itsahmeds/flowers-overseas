@@ -1,6 +1,6 @@
 /**
  * `publish_run` over Drizzle: the database half of `./publish.ts` (spec 012b §2.3, migration
- * `0026_catalogue_cms`; TASK-295). Every function takes the transaction it runs in, so the admin
+ * `0033_catalogue_cms`; TASK-295). Every function takes the transaction it runs in, so the admin
  * request runs inside `withAdminContext` (audited) and the job and the boot inside
  * `withSystemContext`.
  */

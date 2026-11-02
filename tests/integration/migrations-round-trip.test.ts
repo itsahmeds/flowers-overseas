@@ -81,7 +81,7 @@ const FUNCTIONS = [
   "blog_revision_freeze",
   "blog_revision_hash",
   "blog_slug_lock",
-  // 0026 (TASK-294): `first_live_at`, `first_active_at` and the price-row guard (spec 012b §5.1
+  // 0033 (TASK-294): `first_live_at`, `first_active_at` and the price-row guard (spec 012b §5.1
   // item 3).
   "country_first_live_at",
   "country_price_guard",

@@ -10,7 +10,7 @@
  *    project token in `Project-Access-Token`), `fake` (tests) and `none` (development, preview,
  *    and any host without a target: Publish is absent with the reason shown). No Vercel target
  *    (§13 Q16, C2);
- *  - **the run** (`publish_run`, migration `0026`): `requested → building → deployed → verified`,
+ *  - **the run** (`publish_run`, migration `0033`): `requested → building → deployed → verified`,
  *    or `failed` / `timed_out` from any open state, and nothing else (`canMove()`);
  *  - **`requestPublish()`**: the guards (one open run per environment, at most
  *    `PUBLISH_DAILY_LIMIT` a calendar day, no removal of an indexable URL once the placeholder
@@ -72,7 +72,7 @@ export const PUBLISH_RUN_STATUSES = [
 ] as const;
 export type PublishRunStatus = (typeof PUBLISH_RUN_STATUSES)[number];
 
-/** The open states: the partial unique index of `0026` allows one per environment. */
+/** The open states: the partial unique index of `0033` allows one per environment. */
 export const OPEN_RUN_STATUSES: readonly PublishRunStatus[] = [
   "requested",
   "building",
@@ -468,7 +468,7 @@ export interface RequestPublishInput {
 
 /**
  * Create one run, or refuse and create nothing (AC-6, AC-8). The caller runs it in one admin
- * transaction (the store), so a refusal leaves no row, and `0026`'s partial unique index refuses
+ * transaction (the store), so a refusal leaves no row, and `0033`'s partial unique index refuses
  * a second open run that a race let past `openRun()`. The target is **not** called here: the
  * `catalogue.publish` job calls it exactly once for the run.
  */

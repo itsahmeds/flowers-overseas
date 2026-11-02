@@ -32,7 +32,7 @@ const OTHER_HASH = "b".repeat(64);
 const HEAD = "c".repeat(40);
 const T0 = new Date("2026-11-02T10:00:00Z");
 
-/** `publish_run` in memory, with `0026`'s one-open-run rule. */
+/** `publish_run` in memory, with `0033`'s one-open-run rule. */
 function memoryStore(): PublishStore & { rows: PublishRun[] } {
   const rows: PublishRun[] = [];
   const open = (r: PublishRun) =>
