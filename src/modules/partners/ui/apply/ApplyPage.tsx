@@ -24,7 +24,7 @@ import {
   controllerName,
   whatsappHref,
 } from "@/config/company";
-import { COUNTRIES } from "@/config/countries";
+import { activeCountries } from "@/config/countries";
 import type { ApplicationFormState } from "@/config/florists";
 import { infoPageExists, infoPagePath, infoPageView } from "@/modules/content";
 import { sortBy } from "@/modules/i18n";
@@ -138,7 +138,7 @@ function ApplyForm({
   const language = ["en", "pl", "de"].includes(locale.slice(0, 2))
     ? locale.slice(0, 2)
     : "en";
-  const countries = sortBy(COUNTRIES, localeCode(locale), (country) =>
+  const countries = sortBy(activeCountries(), localeCode(locale), (country) =>
     label(t, country.nameKey),
   );
   return (

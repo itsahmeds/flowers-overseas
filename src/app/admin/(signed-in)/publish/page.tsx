@@ -100,7 +100,8 @@ export default async function PublishPage({
 }: {
   readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
-  const session = await requireAdminPage();
+  // Spec 012b §5.2: `catalogue.publish` (admin, content), as the nav item that links here.
+  const session = await requireAdminPage("catalogue.publish");
   const query = ResultSchema.parse(await searchParams);
   const view = await publishPageView({
     userId: session.userId,
