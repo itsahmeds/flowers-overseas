@@ -515,9 +515,9 @@ describe.skipIf(server.url === undefined)(
         }
         return { rows: rows.length, seen };
       });
-      // A6.3's 73 plus spec 002 §14 A8.1's two (`0021`, TASK-337).
-      expect(outcomes.rows).toBe(75);
-      expect(outcomes.seen).toHaveLength(75 * ACTOR_CLASSES.length);
+      // A6.3's 73, spec 002 §14 A8.1's two (`0021`, TASK-337) and A10's two (TASK-258).
+      expect(outcomes.rows).toBe(77);
+      expect(outcomes.seen).toHaveLength(77 * ACTOR_CLASSES.length);
       const expected = TRANSITIONS.flatMap((row) =>
         ACTOR_CLASSES.map(
           (klass) =>

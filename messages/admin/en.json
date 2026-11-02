@@ -319,6 +319,9 @@
         },
         "invoice": {
           "issue": "Issues an invoice for every paid live order to this country. Turn on only after the accountant has signed off the VAT setup."
+        },
+        "payments": {
+          "stripe": "Lets buyers pay through Stripe wherever checkout is open. Off sends new checkouts back to demo mode."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -341,6 +344,12 @@
           "demo_guard": {
             "off": "Checkouts will stop being demonstrations wherever checkout is open. Type the flag's name to confirm.",
             "on": "Every checkout will be a demonstration again: nothing is charged. Type the flag's name to confirm."
+          }
+        },
+        "payments": {
+          "stripe": {
+            "off": "New checkouts will go back to demo mode. Orders already paid keep moving. Type the flag's name to confirm.",
+            "on": "Checkouts will take payments through Stripe wherever checkout is open. Type the flag's name to confirm."
           }
         }
       },

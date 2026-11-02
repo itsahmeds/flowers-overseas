@@ -163,7 +163,6 @@ describe.skipIf(server.url === undefined)(
         "locale.en-gb",
         "locale.pl",
         "payments.mollie",
-        "payments.stripe",
       ]);
       expect(flags.orphans[0]).toEqual({
         key: "corridor.de",
@@ -175,7 +174,7 @@ describe.skipIf(server.url === undefined)(
     it("refuses an unknown key and an orphaned key, writing nothing", async () => {
       const before = await scopeRows();
       const audits = await auditCount();
-      for (const key of ["checkout.nope", "payments.stripe"]) {
+      for (const key of ["checkout.nope", "payments.mollie"]) {
         expect(
           await toggleFlag(
             admin(),

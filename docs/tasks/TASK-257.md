@@ -45,11 +45,13 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: done and green locally (22 integration cases, mutations M1 to M7 red): `startPayment(purchaseId)`, `reconcile`, `syncFromProvider`, `sweepPayments` (b), (c), and (d) (requested refunds resent with their own key, added with TASK-258), `payments.stripe` flag, events `order.captured`/`order.in_production` registered ahead of TASK-215. Stacked on TASK-350 (PR 403); ships in one feature PR with TASK-258. Next: carry-forwards into TASK-215 (import, do not re-register, the two schemas) and a note that `payments.method.*` flags are not seeded, so `startPayment` fails closed.
+- 2026-10-24: sweep (d) and the immediate refund of a capture after close added with TASK-258 (each order gets one `order.refund_requested`, then the fake settles it). PR 405 ready for CI.
+- 2026-10-25: restacked on TASK-350's new head (PR 403, now on TASK-070). `0029_cancel_window_a10` renumbered `0027` (no gap after `0026_payment_purchase`). Main's `0021` added A8.1 rows 37 and 38: the fixture now has `A8_TRANSITIONS`, `TRANSITIONS` is 77, and every "rows before A10" count adds A8.1. Feature flags merged with spec 018's `account.open` and `invoice.issue`. i18n:check was red on the old head (the jobs tick route traced payments files to an indexable page): the route joins `PAYMENTS_PATHS`. 11 integration and the touched unit files green on a local PG16.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 405 (feature PR with TASK-258, stacked on TASK-350's PR 403). `startPayment(purchaseId)`, `reconcile`, `syncFromProvider`, `sweepPayments` (b), (c), (d), the `payments.stripe` flag. Tests: integration `payments-lifecycle.test.ts` 22 cases (AC-11, AC-12, AC-14 integration half, AC-17, AC-18, AC-49), mutations M1 to M7 red; unit/contract updates in feature-flags, admin-flags, stripe-adapter, payments-types. Handed on: `payments.method.*` flags are not seeded, so `startPayment` answers `payments_unavailable` until they are; TASK-215 imports the two event schemas from `payments/events.ts`.

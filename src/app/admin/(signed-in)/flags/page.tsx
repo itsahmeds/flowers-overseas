@@ -81,6 +81,11 @@ const CONFIRM_BODY = {
     on: "admin.flags.confirmBody.checkout.demo_guard.on",
     off: "admin.flags.confirmBody.checkout.demo_guard.off",
   },
+  // Spec 013 §12 (TASK-257): high-risk, flipped by the founder in admin, never in code.
+  "payments.stripe": {
+    on: "admin.flags.confirmBody.payments.stripe.on",
+    off: "admin.flags.confirmBody.payments.stripe.off",
+  },
 } as const satisfies Partial<
   Record<FlagKey, { readonly on: string; readonly off: string }>
 >;

@@ -46,12 +46,25 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
   it("the barrel has no amount-taking function", () => {
     expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<never>();
     expect(Object.keys(payments).sort()).toEqual([
+      "PAYMENTS_ACTOR",
       "PAYMENT_ERROR_KEYS",
       "PAYMENT_RECORD_STATUSES",
+      "PRODUCTION_START_ACTOR",
       "PaymentRecordSchema",
+      "SWEEP_ACTOR",
+      "cancelOrder",
       "declineMessageKey",
       "paymentForOrder",
       "paymentForPurchase",
+      "paymentsOutboxHandler",
+      "productionStartAt",
+      "refundCancelledOrder",
+      "runProductionStart",
+      "startPayment",
+      "startProduction",
+      "submitRefund",
+      "sweepPayments",
+      "syncFromProvider",
     ]);
   });
 

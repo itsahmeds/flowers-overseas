@@ -47,6 +47,9 @@ import { registerFixtureEventSchemas } from "../fixtures/order-engine.ts";
 import {
   STATUS_PRESERVING_EVENTS,
   TRANSITION_EVENTS,
+  A6_TRANSITIONS,
+  A8_TRANSITIONS,
+  A10_TRANSITIONS,
   TRANSITIONS,
 } from "../fixtures/order-machine.ts";
 import { insertPlacedOrder, walkOrderTo } from "../fixtures/order-state.ts";
@@ -894,16 +897,13 @@ describe.skipIf(server.url === undefined)(
       const [count] = await first.sql<
         { n: number }[]
       >`SELECT count(*)::int AS n FROM order_transition`;
-      // A7 adds no row. The later migrations do: spec 002 §14 A8.1's two rows ship in
-      // `NNNN_post_purchase` (TASK-337), so the database before A7 (which skips A7 and every later
-      // file) holds the fixture's rows without them, and the database after holds all of them.
-      const a8Rows = TRANSITIONS.filter(
-        (row) =>
-          row.event === "order.no_partner_available" && row.from !== "routed",
-      ).length;
-      expect(a8Rows).toBe(2);
+      // A7 adds no row; the rows after it are spec 002 §14 A8.1's two (`0021`, TASK-337) and A10's
+      // two (`0027`, TASK-258).
+      expect(count?.n).toBe(
+        transitionsBefore + A8_TRANSITIONS.length + A10_TRANSITIONS.length,
+      );
+      expect(transitionsBefore).toBe(A6_TRANSITIONS.length);
       expect(count?.n).toBe(TRANSITIONS.length);
-      expect(transitionsBefore).toBe(TRANSITIONS.length - a8Rows);
     });
 
     it("db:check's connected half passes after the forward migration: column drift, RLS coverage, the money pair, the snapshot", async () => {

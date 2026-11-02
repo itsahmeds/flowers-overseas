@@ -230,3 +230,29 @@ for (const [type, entry] of Object.entries(PAYMENT_EVENT_SCHEMAS) as [
 ][]) {
   registerEventSchema(type, entry.version, entry.schema);
 }
+
+/**
+ * Spec 011's `OrderCapturedV1` and `OrderInProductionV1`, registered here **ahead of TASK-215**
+ * (spec 011's florist commands, not built yet), because spec 013 writes both first: row 2
+ * (`placed → paid_unrouted`, `order.captured`, TASK-257), row 14 (TASK-259) and row 16
+ * (`order.in_production`, TASK-258). Spec 011 §5.2 gives their fields: `demo: true` for a
+ * `system:demo` actor; spec 013 §5.2 adds `payment_id` and `provider_call` to `OrderCapturedV1`
+ * (`ORDER_CAPTURED_PAYMENT_FIELDS`). The registry refuses a second registration of one name, so
+ * TASK-215 imports these two schemas from here instead of registering its own (carry-forward in
+ * `docs/tasks/TASK-215.md`).
+ */
+export const OrderCapturedV1 = z
+  .object({
+    mode: OrderModeSchema,
+    demo: z.literal(true).optional(),
+    ...ORDER_CAPTURED_PAYMENT_FIELDS,
+  })
+  .strict();
+
+/** `order.in_production` v1 (row 16): the delivery morning's start, or spec 011's demo effect. */
+export const OrderInProductionV1 = z
+  .object({ mode: OrderModeSchema, demo: z.literal(true).optional() })
+  .strict();
+
+registerEventSchema("order.captured", 1, OrderCapturedV1);
+registerEventSchema("order.in_production", 1, OrderInProductionV1);
