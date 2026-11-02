@@ -77,7 +77,8 @@ export const FloristRecipientSchema = z
     /** `formatAddressBlock()`'s lines for the destination, without the name and phone. */
     addressLines: z.array(z.string().min(1)).min(1),
     deliveryNote: z.string().min(1).optional(),
-    cardMessage: z.string().min(1),
+    /** Absent when the buyer wrote no card (spec 010's card step is optional); never empty. */
+    cardMessage: z.string().min(1).optional(),
   })
   .strict();
 export type FloristRecipient = z.infer<typeof FloristRecipientSchema>;

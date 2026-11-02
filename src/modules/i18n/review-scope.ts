@@ -201,6 +201,10 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   },
   { match: "floristAuth", surface: "florist", paths: FLORIST_PATHS },
   { match: "emails.floristSignIn.*", surface: "email", paths: FLORIST_PATHS },
+  // Spec 011 §5.3 (TASK-214): the inbox pages' own lines (groups, empty state, stage leads, the
+  // test-order control, the refresh line, not found) render only under `FLORIST_BASE_PATH`; the
+  // walkthrough prints none of them, so they reach no indexable page.
+  { match: "floristInbox.page.*", surface: "florist", paths: FLORIST_PATHS },
   // Spec 011 §14 pointer to A17 (TASK-210): the application and its sent page are `noindex,follow`
   // in every combination and have route files of their own, so their keys reach no indexable page.
   // The landing's `forFlorists.status.*` and the walkthrough's `floristInbox.*` labels stay

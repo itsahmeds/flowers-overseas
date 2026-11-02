@@ -101,10 +101,12 @@ export function OrderScreen({
       {recipient === undefined ? null : (
         <>
           <RecipientBlock recipient={recipient} headingLevel={headingLevel} />
-          <CardMessage
-            message={recipient.cardMessage}
-            headingLevel={headingLevel}
-          />
+          {recipient.cardMessage === undefined ? null : (
+            <CardMessage
+              message={recipient.cardMessage}
+              headingLevel={headingLevel}
+            />
+          )}
         </>
       )}
       <OrderFacts

@@ -1220,6 +1220,19 @@
     "photo": {
       "choose": "Take or choose a photo of the delivered bouquet",
       "send": "Send the photo"
+    },
+    "page": {
+      "groupDelivered": "Delivered",
+      "empty": "No orders at the moment. We email you when one arrives.",
+      "expired": "The time to answer has passed.",
+      "beingMade": "Being made",
+      "addPhoto": "Add the photo",
+      "photoReceived": "Photo received. Thank you.",
+      "testOrder": "Send a test order",
+      "refresh": "Refresh",
+      "refreshStopped": "Updates are paused while you are away.",
+      "notFoundTitle": "Order not found",
+      "notFoundLine": "This order is no longer in your list."
     }
   },
   "emails": {

@@ -35,6 +35,14 @@ export type {
 } from "./ui/inbox/InboxList.tsx";
 export { OrderScreen } from "./ui/inbox/OrderScreen.tsx";
 export type { OrderScreenProps } from "./ui/inbox/OrderScreen.tsx";
+// TASK-214: the inbox list's refresh island and the timer rule its fake-timer test drives.
+export { InboxRefresh } from "./ui/inbox/InboxRefresh.tsx";
+export type { InboxRefreshProps } from "./ui/inbox/InboxRefresh.tsx";
+export { startInboxRefresh } from "./ui/inbox/refresh-timer.ts";
+export type {
+  InboxRefreshHandle,
+  InboxRefreshOptions,
+} from "./ui/inbox/refresh-timer.ts";
 export { PhotoField } from "./ui/inbox/PhotoField.tsx";
 export type { PhotoFieldProps } from "./ui/inbox/PhotoField.tsx";
 export { PhotoStep } from "./ui/inbox/PhotoStep.tsx";

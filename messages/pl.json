@@ -709,7 +709,20 @@
       "inProgress": "W realizacji",
       "waiting": "Czeka na Twoją odpowiedź"
     },
-    "youReceive": "Otrzymujesz <strong>{payout}</strong>"
+    "youReceive": "Otrzymujesz <strong>{payout}</strong>",
+    "page": {
+      "groupDelivered": "Dostarczone",
+      "empty": "Na razie nie ma zamówień. Napiszemy do Ciebie, gdy pojawi się nowe.",
+      "expired": "Czas na odpowiedź minął.",
+      "beingMade": "W przygotowaniu",
+      "addPhoto": "Dodaj zdjęcie",
+      "photoReceived": "Zdjęcie otrzymane. Dziękujemy.",
+      "testOrder": "Wyślij zamówienie testowe",
+      "refresh": "Odśwież",
+      "refreshStopped": "Aktualizacje są wstrzymane, gdy Cię nie ma.",
+      "notFoundTitle": "Nie znaleziono zamówienia",
+      "notFoundLine": "Tego zamówienia nie ma już na Twojej liście."
+    }
   },
   "footer": {
     "cookieSettings": "Ustawienia plików cookie",

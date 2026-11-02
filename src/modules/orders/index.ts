@@ -119,3 +119,9 @@ export type {
   TimelineStepKey,
   TrackingView,
 } from "./tracking-view";
+// Spec 011 §5.2 (TASK-214): the florist inbox's read models under partner context. The test
+// order and the after-answer seam live in `./demo` and are imported from there by the florist
+// routes only: `placeDemoOrder` reads spec 010's sample people (`src/config/checkout-samples.ts`),
+// and re-exporting it here would put that scoped config in the import graph of every page that
+// imports this barrel (spec 003 §14 A17, `i18n:check`).
+export * from "./florist";

@@ -1,18 +1,37 @@
 /**
- * @purpose GET {base}: the florist inbox (signed in; no session goes to sign-in)
+ * @purpose GET {base}: the florist inbox list (signed in; no session goes to sign-in)
  * @spec 011
  *
- * The signed-in landing of the florist sign-in (TASK-212): the frame of artboard
- * `florist-inbox-*` (header, menu with language and sign-out, the demo line) and the "Orders"
- * heading. The memberships are read from the database on this request (AC-20). The list itself,
- * its groups and the refresh island are TASK-214's.
+ * The signed-in member's assignments in three groups, rendered with TASK-210's `InboxList`
+ * inside TASK-212's signed-in frame (artboard `florist-inbox-*`). The data is
+ * `listFloristAssignments()` under the member's partner context (AC-23, AC-24); the memberships
+ * are read from the database on this request (AC-20). The refresh island keeps an open inbox
+ * fresh (AC-26); a member of a `demo` partner outside production gets the test-order control
+ * (AC-33). The member's language reaches next-intl through `setRequestLocale`, so TASK-210's
+ * components read the same language as the frame.
  */
+import { randomUUID } from "node:crypto";
+
 import type { Metadata } from "next";
+import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 
-import { FLORIST_PATHS } from "@/config/florists";
+import { FLORIST_PATHS, floristsConfig } from "@/config/florists";
+import { isDemoMember, toDbContext } from "@/lib/auth/florist";
+import { appEnvironment } from "@/lib/env.schema";
+import { listFloristAssignments } from "@/modules/orders";
+import { demoRefusedIn } from "@/modules/orders/demo";
+import {
+  FLORIST_LIST_GROUPS,
+  type FloristAssignmentListItem,
+  InboxList,
+  type InboxListEntry,
+  InboxRefresh,
+  listGroupOf,
+} from "@/modules/partners";
 import { floristTranslator } from "@/modules/partners/auth/copy";
+import { Button } from "@/modules/ui";
 
 import { SignedInFrame } from "./chrome";
 import { currentFloristContext } from "./request";
@@ -23,16 +42,94 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("floristInbox.orders") };
 }
 
+type Translator = ReturnType<typeof floristTranslator>;
+
+/** What an item says in its lead for any stage but an open offer (§5.3 "Inbox list"). */
+function leadOf(
+  item: FloristAssignmentListItem,
+  t: Translator,
+): Pick<InboxListEntry, "lead" | "muted" | "href"> {
+  const href = FLORIST_PATHS.order(item.assignmentId);
+  const chip = (text: string) => (
+    <span className="bg-paper-2 text-ink-2 inline-flex rounded-full px-[10px] py-[3px] text-sm font-bold">
+      {text}
+    </span>
+  );
+  switch (item.stage) {
+    case "offer":
+      return { href };
+    case "expired":
+      return {
+        lead: (
+          <span className="text-ui text-ink-2">
+            {t("floristInbox.page.expired")}
+          </span>
+        ),
+        muted: true,
+      };
+    case "accepted":
+      return { href, lead: chip(t("floristInbox.page.beingMade")) };
+    case "outForDelivery":
+      return { href, lead: chip(t("floristInbox.outForDelivery")) };
+    case "delivered":
+      return { href, lead: chip(t("floristInbox.page.addPhoto")) };
+    case "photoReceived":
+      return { href, lead: chip(t("floristInbox.page.groupDelivered")) };
+    case "withdrawn":
+      return { href, muted: true };
+  }
+}
+
 export default async function FloristInboxPage(): Promise<ReactElement> {
   const context = await currentFloristContext();
   if (context === null) redirect(FLORIST_PATHS.signIn);
+  setRequestLocale(context.locale);
   const t = floristTranslator(context.locale);
+  const items = await listFloristAssignments(
+    { ...toDbContext(context, randomUUID()), role: "partner" },
+    { locale: context.locale },
+  );
+  const headings = {
+    waiting: t("floristInbox.stage.waiting"),
+    inProgress: t("floristInbox.stage.inProgress"),
+    delivered: t("floristInbox.page.groupDelivered"),
+  } as const;
+  const groups = FLORIST_LIST_GROUPS.map((id) => ({
+    id,
+    heading: headings[id],
+    items: items
+      .filter((item) => listGroupOf(item.stage) === id)
+      .map((item) => ({ item, ...leadOf(item, t) })),
+  }));
+  const testOrder =
+    isDemoMember(context) && !demoRefusedIn(appEnvironment(process.env)) ? (
+      <form method="post" action={FLORIST_PATHS.testOrder}>
+        <Button type="submit" variant="secondary" size="sm">
+          {t("floristInbox.page.testOrder")}
+        </Button>
+      </form>
+    ) : undefined;
   return (
     <SignedInFrame t={t} context={context} back={FLORIST_PATHS.base}>
-      <main className="grid content-start gap-[24px] px-[20px] pt-[20px] pb-[28px] md:px-[56px] md:pt-[36px] md:pb-[64px]">
-        <h1 className="font-display tracking-display text-ink text-[34px] leading-[1.08] md:text-[46px]">
-          {t("floristInbox.orders")}
-        </h1>
+      <main className="@container grid content-start gap-[24px] px-[20px] pt-[20px] pb-[28px] md:px-[56px] md:pt-[36px] md:pb-[64px]">
+        <InboxList
+          locale={context.locale}
+          title={t("floristInbox.orders")}
+          titleAction={testOrder}
+          groups={groups}
+          empty={
+            <p className="text-body text-ink-2 m-0" data-fo-inbox-empty>
+              {t("floristInbox.page.empty")}
+            </p>
+          }
+        />
+        <InboxRefresh
+          intervalMs={floristsConfig.inboxRefresh.intervalMs}
+          idleStopMs={floristsConfig.inboxRefresh.idleStopMs}
+          href={FLORIST_PATHS.base}
+          refreshLabel={t("floristInbox.page.refresh")}
+          stoppedLine={t("floristInbox.page.refreshStopped")}
+        />
       </main>
     </SignedInFrame>
   );
