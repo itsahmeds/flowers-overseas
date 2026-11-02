@@ -72,3 +72,20 @@ export { FloristsLanding } from "./ui/public/FloristsLanding.tsx";
 export type { FloristsLandingView } from "./ui/public/FloristsLanding.tsx";
 export { FloristsWalkthrough } from "./ui/public/FloristsWalkthrough.tsx";
 export type { WalkthroughView } from "./ui/public/FloristsWalkthrough.tsx";
+// Spec 011 §5.2 (TASK-213): the admin queries over florist applications, for spec 012's admin
+// pages, which define none of their own. The form's own files (schema, action seams, island) stay
+// unexported: only the apply route reaches them.
+export {
+  APPLICATION_ACTIONS,
+  FLORIST_APPLICATION_STATUSES,
+  FloristApplicationRowSchema,
+  FloristApplicationStatusSchema,
+  listFloristApplications,
+  setFloristApplicationStatus,
+} from "./application/admin.ts";
+export type {
+  ApplicationAdminRunner,
+  FloristApplicationRow,
+  FloristApplicationStatus,
+  SetApplicationStatusResult,
+} from "./application/admin.ts";

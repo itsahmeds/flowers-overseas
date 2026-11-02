@@ -6104,5 +6104,110 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "fa6ed30e5f6d3699ae90811a0fd22acab574157eec148e36449d4a56ce8b8712"
+  },
+  "emails.floristApplicationAlert.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0bd899892d6eb00a88cdc0b231d5b66ee6481446b4866f9569d7e948e9f5baa6"
+  },
+  "emails.floristApplicationAlert.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d04fc0f21aea1eb063a0694985dc2ff5cee4793279074085e8b0b6168279839c"
+  },
+  "emails.floristApplicationAlert.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "be71c56252603aec4aeb947381c4aa680fea7e0ef78108e687c4a55049322fed"
+  },
+  "emails.floristApplicationAlert.field.shop": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d00aae6b7fbf77a4566d8df36805d7ae973894da9f533ec96516b31e028b71eb"
+  },
+  "emails.floristApplicationAlert.field.contact": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ddec0fc313b406145e0bf98b11c000b5fc6980084d57cf94bf00748950effbe6"
+  },
+  "emails.floristApplicationAlert.field.email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "emails.floristApplicationAlert.field.phone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e7bbe4f2b2ea768c329d2b3dcce4595af0d52cce93be5f49bf5d57e83358237"
+  },
+  "emails.floristApplicationAlert.field.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "emails.floristApplicationAlert.field.town": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9ce56586c7281fe1dedb6870e9fd85fb3bbbbaa3837d33417acb1110904fe549"
+  },
+  "emails.floristApplicationAlert.field.area": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "70754e6a1839a70df15c506755a076855a1c178483c7744dc0e183157eac18cb"
+  },
+  "emails.floristApplicationAlert.field.capacity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "89295cca86568a713bb34dfe3fa683dbb5642a21a9d3e45ed97ae6271074d879"
+  },
+  "emails.floristApplicationAlert.field.weekends": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52c81418e6e5280b2a8b6bc51adce4fb501f1c04db086ead0a2439afa96f31d5"
+  },
+  "emails.floristApplicationAlert.field.registration": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5db87da7efd0b9ddbd9b6614b263702039929f76fa9e178f7d43ce0a1a296fad"
+  },
+  "emails.floristApplicationAlert.field.website": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6701bd9ea9f8b4a37fd542df88777ceaabe60443b9b74adff119366e63b6bbfe"
+  },
+  "emails.floristApplicationAlert.field.contactBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e81b7d872cca6590ab5b1f706025615ebab2e5453d89a2ba7ee47a7bcdcee76a"
+  },
+  "emails.floristApplicationAlert.field.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "emails.floristApplicationAlert.field.notice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "efda7a29150b1cd7c178919f2bd9cde52b3257ab423b1034ac7be3a0b31f7ce7"
+  },
+  "forFlorists.apply.error.weekends": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8eb921c16dd126f5a2e96511023fbca6b45e9c113a46a3194122785080e995bb"
+  },
+  "forFlorists.apply.error.registration": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "86a84ec715e6e624eb0f6c606263b207a324585b8bf0865b03bb72d579e8ba98"
+  },
+  "forFlorists.apply.error.contactBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d32721383e34b31f146b122ecc20ec70cf7387e25b9c13b212c056fefa176d74"
+  },
+  "forFlorists.apply.error.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "041075d1c0f5e1a458ec446e4b3e6fbd76a44afdd86822c62fa6deb0971a498c"
   }
 }

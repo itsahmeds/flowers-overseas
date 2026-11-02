@@ -24,6 +24,10 @@ export { signedLinkSecret } from "./env.signed-link";
 export { reviewTokenSecret, trustpilotAfsAddress } from "./env.reviews";
 export { opsAlertEmail } from "./env.notifications";
 export {
+  FLORIST_APPLICATIONS_NOTIFY_EMAIL_KEY,
+  floristApplicationsNotifyEmail,
+} from "./env.florists";
+export {
   APP_ENV_KEY,
   BUILD_ENV_KEYS,
   ENV_KEYS,

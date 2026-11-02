@@ -637,6 +637,27 @@
     "floristSignIn": {
       "body": "Otwórz swoje zamówienia: {link}. Link działa raz, przez godzinę. Jeśli to nie Ty o niego prosiłeś, zignoruj tę wiadomość.",
       "subject": "Twój link do logowania w Flowers Overseas"
+    },
+    "floristApplicationAlert": {
+      "field": {
+        "area": "Where they deliver",
+        "capacity": "Orders a day",
+        "contact": "Contact name",
+        "contactBy": "Contact by",
+        "country": "Country",
+        "email": "Email",
+        "language": "Language",
+        "notice": "Privacy notice shown",
+        "phone": "Phone or WhatsApp",
+        "registration": "Registration number",
+        "shop": "Shop",
+        "town": "Town or city",
+        "website": "Instagram or website",
+        "weekends": "Weekend delivery"
+      },
+      "intro": "A florist applied on the website. Their answers are below. They receive no copy of this email, so the reply is yours to send.",
+      "none": "Not given",
+      "subject": "New florist application: {businessName}"
     }
   },
   "errors": {
@@ -1332,7 +1353,11 @@
         "phone": "Wpisz numer telefonu, pod który możemy zadzwonić.",
         "shopName": "Podaj nazwę swojej kwiaciarni.",
         "town": "Podaj swoją miejscowość.",
-        "website": "Wpisz pełny adres strony zaczynający się od https://."
+        "website": "Wpisz pełny adres strony zaczynający się od https://.",
+        "contactBy": "Please choose how we should contact you.",
+        "language": "Please choose a language.",
+        "registration": "Please keep the registration number to 100 characters.",
+        "weekends": "Please tell us whether you deliver at weekends."
       },
       "errorSummary": "Sprawdź te odpowiedzi",
       "failed": "Nie udało się wysłać zgłoszenia. Twoje odpowiedzi są nadal tutaj. Spróbuj ponownie albo zadzwoń lub napisz do nas pod numer {phoneDisplay}.",

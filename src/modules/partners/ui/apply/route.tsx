@@ -43,12 +43,24 @@ import {
   schemaOptions,
 } from "@/modules/seo";
 
+import type { ApplyFormState } from "../../application/state.ts";
 import { label } from "../inbox/format.ts";
 
 import { ApplyPage } from "./ApplyPage.tsx";
 import { SentPage } from "./SentPage.tsx";
 
 export type FloristFormPage = "florist-apply" | "florist-apply-sent";
+
+/**
+ * The application's server action before the locale is bound
+ * (`src/app/[locale]/florist-application-action.ts`, TASK-213). The apply route files pass it in:
+ * a module may not import from `src/app` (`plan/01` §5).
+ */
+export type LocaleBoundApplyAction = (
+  locale: string,
+  previous: ApplyFormState,
+  form: FormData,
+) => Promise<ApplyFormState>;
 
 interface LocaleParams {
   readonly params: Promise<{ locale: string }>;
@@ -95,6 +107,7 @@ export function floristApplyJsonLd(
 export function floristFormRoute(
   page: FloristFormPage,
   segments: readonly string[],
+  action?: LocaleBoundApplyAction,
 ): FloristFormRoute {
   const owns = (locale: string): boolean =>
     infoPageExists(page, locale) &&
@@ -149,6 +162,9 @@ export function floristFormRoute(
               locale={locale}
               form={floristsConfig.applicationForm}
               company={COMPANY}
+              {...(action === undefined
+                ? {}
+                : { action: action.bind(null, locale) })}
             />
           ) : (
             <SentPage locale={locale} company={COMPANY} />
