@@ -24,6 +24,10 @@
  *    nothing; another florist's assignment is not found.
  *  - T-31: two concurrent accepts give one event; every status change in this file has its
  *    event, every event type written is a registered catalogue name.
+ *  - Spec 026a T-06 (AC-6, integration half; TASK-354): once the shop is `paused`, its open offer
+ *    offers Decline alone and a forged accept is `ASSIGNMENT_PARTNER_NOT_ACCEPTING` with no event
+ *    and no assignment change; an order it accepted before the pause still goes out for delivery,
+ *    delivered and photographed, one event each; Decline still works for the paused shop.
  */
 import { randomUUID } from "node:crypto";
 
@@ -495,6 +499,94 @@ describe.skipIf(server.url === undefined)(
       expect(
         await codeOf(addDeliveryPhoto(florist, id, await gpsJpeg(), photoDeps)),
       ).toBe("ORDER_STATE_CHANGED");
+    });
+
+    it("spec 026a T-06: a paused shop finishes what it accepted, declines, and cannot accept", async () => {
+      const w = await setUp();
+      const florist = member(w.partnerA);
+      // Accepted while the shop was open, and one more offer still open when it pauses.
+      const accepted = await demoOrder(w.partnerA);
+      await respondToOffer(
+        florist,
+        accepted.assignmentId,
+        { response: "accept" },
+        deps(),
+      );
+      const open = await demoOrder(w.partnerA);
+      const declined = await demoOrder(w.partnerA);
+      const flip = (status: string) =>
+        scratch.sql.begin(async (tx) => {
+          await tx`SELECT set_config('app.role', 'admin', true)`;
+          await tx`SELECT set_config('app.audit_action', 'partner.status_changed', true)`;
+          await tx`UPDATE fulfillment_partner SET status = ${status} WHERE id = ${w.partnerA}`;
+        });
+      await flip("paused");
+
+      expect(await actionsFor(w.partnerA, open.assignmentId)).toEqual([
+        "decline",
+      ]);
+      expect(
+        await codeOf(
+          respondToOffer(
+            florist,
+            open.assignmentId,
+            { response: "accept" },
+            deps(),
+          ),
+        ),
+      ).toBe("ASSIGNMENT_PARTNER_NOT_ACCEPTING");
+      expect(await eventsAfterPlacement(open.orderId)).toEqual([]);
+      expect(await assignmentRow(open.assignmentId)).toEqual({
+        response: null,
+        responded_at: null,
+        reason: null,
+      });
+      expect(await status(open.orderId)).toBe("routed");
+
+      // Decline is not gated.
+      await respondToOffer(
+        florist,
+        declined.assignmentId,
+        { response: "decline", reason: "closed" },
+        deps(),
+      );
+      expect((await eventsAfterPlacement(declined.orderId))[0]?.type).toBe(
+        "assignment.declined",
+      );
+
+      // The accepted order: every step after acceptance, one event each.
+      const id = accepted.assignmentId;
+      const store: PrivatePhotoStore = {
+        storage: new InMemoryStorage(),
+        bucket: BUCKET,
+      };
+      const before = (await eventsAfterPlacement(accepted.orderId)).length;
+      expect(await actionsFor(w.partnerA, id)).toEqual(["outForDelivery"]);
+      await markOutForDelivery(florist, id, deps());
+      expect(await actionsFor(w.partnerA, id)).toEqual(["delivered"]);
+      await markDelivered(florist, id, await gpsJpeg(), { ...deps(), store });
+      const after = await eventsAfterPlacement(accepted.orderId);
+      expect(after.slice(before).map((e) => [e.type, e.actor])).toEqual([
+        ["order.out_for_delivery", `partner:${w.partnerA}`],
+        ["order.delivered", `partner:${w.partnerA}`],
+        ["order.photo_uploaded", `partner:${w.partnerA}`],
+      ]);
+
+      // Open again: the same offer can be accepted, so the refusal above was the pause alone.
+      await flip("demo");
+      expect(await actionsFor(w.partnerA, open.assignmentId)).toEqual([
+        "decline",
+        "accept",
+      ]);
+      await respondToOffer(
+        florist,
+        open.assignmentId,
+        { response: "accept" },
+        deps(),
+      );
+      expect((await eventsAfterPlacement(open.orderId))[0]?.type).toBe(
+        "assignment.accepted",
+      );
     });
 
     it("T-30: the photo is stored stripped in the private bucket with its rows and two events; the signed URL expires; a GIF and 16 MiB store nothing", async () => {

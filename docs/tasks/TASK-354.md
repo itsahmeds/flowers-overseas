@@ -43,11 +43,10 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02: base path `/vendor`, route tree moved (`git mv`), production policy `["active", "paused"]`, the proxy's environment 404 and `floristSurfaceOpen`/`floristGate` removed, `canAcceptFor` in `respondToOffer` under the lock and in `floristActionsFor`; unit tests updated. Draft PR 458.
+- 2026-11-02: the paused notice (`InboxNotice tone="note"`, `InboxList` `notice` slot) on the list and on a paused shop's open offer; en/pl/de copy; review scope and queue. Paused by the coordinator (usage limit).
+- 2026-11-03: integration T-03, T-05, T-06 green on a throwaway PG16 with three mutation runs red; the cookie register handed to TASK-356 (orchestrator, 2026-11-03); copy record script `.claude/state/record-approval-354.py`.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR 458. Spec 026a task 1: `FLORIST_BASE_PATH` is `/vendor` (`src/config/florists.ts`), the tree is `src/app/vendor`, the Phase 0 path is spelled nowhere under `src/` and answers 404 with no redirect (Next has no route for it; the proxy passes it untouched). `signInPolicy("production")` is `["active", "paused"]`; the proxy's environment 404 is gone, so the surface answers everywhere with `noindex` and `private, no-store` from `floristHeaderRules()`. `resolveFloristContext` already filtered memberships by status on every request; that filter is now proven under production (T-05). `canAcceptFor(mode, status)` (`src/modules/orders/florist-actions/can-accept.ts`) gates Accept in `floristActionsFor` and in `respondToOffer` under the order and assignment locks (`ASSIGNMENT_PARTNER_NOT_ACCEPTING`, nothing written, the "changed" notice; log `florist_accept_refused`). The paused notice `floristInbox.paused.notice` (en human, pl and de machine, all `reviewed: false`) renders on the list and on a paused shop's open offer. Tests: unit `florist-surface.test.ts` (policy table with `bogus`, tree, source scan, proxy pass-through in five environments, robots), `florist-actions.test.ts` (+3: `canAcceptFor` table, paused offer, paused fulfilment), `florists-config.test.ts`; integration `florist-auth.test.ts` (T-03 production column, T-05 new), `florist-actions.test.ts` (T-06 new); e2e `florist-surface.spec.ts` (AC-2 old paths 404, AC-4 order redirect, AC-12 twelve pages with and without the cookie, link crawl, sitemap scan), written for CI and not run locally (no build, battery rule). No migration. No build or browser run locally. Handed on: the cookie register to TASK-356 (its AC-14); `setPartnerStatus` is TASK-221's and not on main, so T-05 offboards with the same admin `UPDATE` T-20 uses.

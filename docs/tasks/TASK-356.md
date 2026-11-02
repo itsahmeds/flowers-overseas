@@ -25,7 +25,7 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size S
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-03, from TASK-354 (PR 458), orchestrator's ruling: **the cookie register moves here** (AC-14 is this task's). The three `__Secure-fo-florist.*` cookies (`Path=/vendor`, `Secure`, `HttpOnly`, `SameSite=Lax`, session 30 days rolling, essential, `writer: "server"`, `serverScope: "uncached"`, spec `011`) are not yet rows of `src/config/cookies.ts`. Two things block a plain row: `NAME_PATTERN` refuses the `.` in the names (RFC 6265 allows it), and every row needs a public `consent.cookies.<id>.purpose` key in each public catalogue, which renders on the cookie policy and the consent panel (indexable copy, so a delegated copy record and possibly visual baselines). Admin's three `__Secure-fo-admin.*` cookies are unregistered too (TASK-217's carry-forward). Then regenerate `docs/compliance/cookie-register.md` (`node scripts/cookie-register.ts --write`) and run `pnpm cookies:check`.
 
 ## Escalations
 
