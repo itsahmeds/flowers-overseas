@@ -23,10 +23,15 @@ import {
   updatePartner,
 } from "../../src/modules/partners/admin/commands.ts";
 import {
+  listPartners,
+  partnerDetail,
+} from "../../src/modules/partners/admin/queries.ts";
+import {
   convertApplication,
   markApplicationContacted,
   rejectApplication,
 } from "../../src/modules/partners/admin/applications.ts";
+import { setFloristApplicationStatus } from "../../src/modules/partners/application/admin.ts";
 import * as make from "./support/rows.ts";
 import { drizzleOver } from "./support/drizzle-tx.ts";
 import {
@@ -551,6 +556,71 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
+    describe("the reads the pages render", () => {
+      it("lists each partner with its own zone and fulfillable product counts, and reads its record", async () => {
+        const code = await ready();
+        const bare = await onboarding();
+        const list = await listPartners(actor, { country: "PL" }, run);
+        const row = list.items.find((item) => item.code === code);
+        const other = list.items.find((item) => item.code === bare);
+        expect(row).toMatchObject({
+          zones: 1,
+          products: 1,
+          termsVersion: "v1",
+        });
+        expect(other).toMatchObject({
+          zones: 0,
+          products: 0,
+          termsVersion: null,
+        });
+        expect(list.counts.onboarding).toBeGreaterThanOrEqual(2);
+        const onlyActive = await listPartners(actor, { status: "active" }, run);
+        expect(onlyActive.items.every((item) => item.status === "active")).toBe(
+          true,
+        );
+
+        const detail = await partnerDetail(actor, code, run);
+        expect(detail).toMatchObject({
+          code,
+          status: "onboarding",
+          contactPhone: "+48512345678",
+          termsVersion: "v1",
+          preflight: {
+            terms: true,
+            coverage: true,
+            mapping: true,
+            contact: true,
+          },
+          moves: ["active", "offboarded"],
+        });
+        expect(detail?.zones).toEqual([
+          {
+            id: expect.any(String),
+            cityName: "Krakow",
+            prefix: "30-",
+            capacityPerDay: null,
+          },
+        ]);
+        expect(detail?.mappings).toEqual([
+          {
+            id: expect.any(String),
+            productName: "FO-TEST-1",
+            tierKey: null,
+            stems: null,
+            canFulfil: true,
+            payoutMinor: 14900,
+            currency: "PLN",
+          },
+        ]);
+        expect(
+          detail?.options.coverage.map((option) => option.value).sort(),
+        ).toEqual([`city:${cityId}`, `zone:${zoneId}`].sort());
+        expect(
+          await partnerDetail(actor, "no-such-florist", run),
+        ).toBeUndefined();
+      });
+    });
+
     describe("migration 0035 · signed terms are a pair", () => {
       it("refuses a version without a date and a date without a version", async () => {
         await rolledBack(scratch.sql, async (tx) => {
@@ -735,6 +805,22 @@ describe.skipIf(server.url === undefined)(
           status: "rejected",
           status_reason: "Not adding florists in Warszawa this month.",
         });
+      });
+
+      it("spec 011's query changes nothing when the row no longer has the status it names", async () => {
+        const id = await newApplication(make.unique("Kwiaty "));
+        await markApplicationContacted(actor, await appVersion(id), run);
+        const before = await applicationRow(id);
+        expect(
+          await setFloristApplicationStatus(
+            actor,
+            id,
+            "rejected",
+            { from: "new", statusReason: "Too far away." },
+            run,
+          ),
+        ).toEqual({ ok: false, reason: "not_found" });
+        expect(await applicationRow(id)).toEqual(before);
       });
 
       it("a new application cannot be rejected, and a stale form is a conflict", async () => {

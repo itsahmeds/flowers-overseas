@@ -902,12 +902,18 @@ describe.skipIf(server.url === undefined)(
               SELECT id FROM audit_log WHERE id IN ${tx([old, young])} ORDER BY id`
           ).map((row) => row.id);
 
-        // A test clock ten years ahead selects only what the database finds old enough.
-        const dry = await sweep(tx, { now: daysFromNow(3650), dryRun: true });
-        expect(policy(dry, "audit_log").status).toBe("dry_run");
+        const dry = await sweep(tx, { now: new Date(), dryRun: true });
+        expect(policy(dry, "audit_log")).toEqual({
+          key: "audit_log",
+          status: "dry_run",
+          counts: { audit_log: 1 },
+          skipped: {},
+        });
         expect(await left()).toEqual([old, young].sort());
 
-        const real = await sweep(tx, { now: new Date() });
+        // A clock ten years ahead selects only what the database itself finds old enough, so
+        // the sweep never asks the trigger for a delete it refuses.
+        const real = await sweep(tx, { now: daysFromNow(3650) });
         expect(policy(real, "audit_log").status).toBe("applied");
         expect(policy(real, "audit_log").counts).toEqual({ audit_log: 1 });
         expect(await left()).toEqual([young]);
