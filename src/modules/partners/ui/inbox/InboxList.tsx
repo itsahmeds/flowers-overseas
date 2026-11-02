@@ -45,6 +45,8 @@ export interface InboxListProps {
   readonly titleAs?: "h1" | "p";
   /** Beside the title: the test-order control on a demo member's list (TASK-214). */
   readonly titleAction?: ReactNode;
+  /** Under the title, above the groups: the paused notice on a paused shop's list (spec 026a). */
+  readonly notice?: ReactNode;
   readonly groups: readonly InboxListGroup[];
   /** Shown when no group has an item (TASK-214's empty state). */
   readonly empty?: ReactNode;
@@ -128,6 +130,7 @@ export function InboxList({
   title,
   titleAs = "h1",
   titleAction,
+  notice,
   groups,
   empty,
 }: InboxListProps): ReactElement {
@@ -141,6 +144,7 @@ export function InboxList({
         </Title>
         {titleAction}
       </div>
+      {notice}
       {filled.length === 0
         ? empty
         : filled.map((group) => (

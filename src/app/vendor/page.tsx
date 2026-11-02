@@ -8,7 +8,8 @@
  * are read from the database on this request (AC-20). The refresh island keeps an open inbox
  * fresh (AC-26); a member of a `demo` partner outside production gets the test-order control
  * (AC-33). The member's language reaches next-intl through `setRequestLocale`, so TASK-210's
- * components read the same language as the frame.
+ * components read the same language as the frame. A member of a `paused` shop gets the paused
+ * notice under the title (spec 026a AC-6, artboard "Live site · a paused shop").
  */
 import { randomUUID } from "node:crypto";
 
@@ -18,7 +19,7 @@ import { redirect } from "next/navigation";
 import type { ReactElement } from "react";
 
 import { FLORIST_PATHS, floristsConfig } from "@/config/florists";
-import { isDemoMember, toDbContext } from "@/lib/auth/florist";
+import { isDemoMember, isPausedMember, toDbContext } from "@/lib/auth/florist";
 import { appEnvironment } from "@/lib/env.schema";
 import { listFloristAssignments } from "@/modules/orders";
 import { demoRefusedIn } from "@/modules/orders/demo";
@@ -27,6 +28,7 @@ import {
   type FloristAssignmentListItem,
   InboxList,
   type InboxListEntry,
+  InboxNotice,
   InboxRefresh,
   listGroupOf,
 } from "@/modules/partners";
@@ -116,6 +118,13 @@ export default async function FloristInboxPage(): Promise<ReactElement> {
           locale={context.locale}
           title={t("floristInbox.orders")}
           titleAction={testOrder}
+          notice={
+            isPausedMember(context) ? (
+              <InboxNotice tone="note">
+                {t("floristInbox.paused.notice")}
+              </InboxNotice>
+            ) : undefined
+          }
           groups={groups}
           empty={
             <p className="text-body text-ink-2 m-0" data-fo-inbox-empty>
