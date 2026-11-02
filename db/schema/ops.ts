@@ -12,6 +12,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  char,
   boolean,
   check,
   date,
@@ -225,6 +226,89 @@ export const dbUsageSample = pgTable(
     /** One sample per UTC day, so the probe is idempotent for a day (AC-24). */
     uniqueIndex("db_usage_sample_day_idx").on(
       sql`((${table.capturedAt} at time zone 'UTC')::date)`,
+    ),
+  ],
+);
+
+/** The six states of a publish run (spec 012b §2.3, AC-7). */
+export const publishRunStatuses = [
+  "requested",
+  "building",
+  "deployed",
+  "verified",
+  "failed",
+  "timed_out",
+] as const;
+
+/** The environments that publish (spec 012b §5.1 item 3); `development` and `test` never do. */
+export const publishEnvironments = [
+  "production",
+  "staging",
+  "preview",
+] as const;
+
+/**
+ * `publish_run` (migration `0033_catalogue_cms`, spec 012b §2.3, AC-6, AC-7; TASK-295): one
+ * rebuild of the environment's tracked branch head, at most one open per environment.
+ */
+export const publishRun = pgTable(
+  "publish_run",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    environment: text("environment").notNull(),
+    reason: text("reason").notNull(),
+    requestedBy: uuid("requested_by").references(() => users.id, {
+      onDelete: "restrict",
+    }),
+    requestedAt: timestamp("requested_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    targetRef: text("target_ref").notNull(),
+    headSha: char("head_sha", { length: 40 }),
+    expectedHash: char("expected_hash", { length: 64 }).notNull(),
+    addedCount: integer("added_count").notNull(),
+    removedCount: integer("removed_count").notNull(),
+    status: text("status").notNull(),
+    providerDeploymentId: text("provider_deployment_id"),
+    errorCode: text("error_code"),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (table) => [
+    check(
+      "publish_run_environment_check",
+      sql.raw(`environment in ${valueList(publishEnvironments)}`),
+    ),
+    check(
+      "publish_run_status_check",
+      sql.raw(`status in ${valueList(publishRunStatuses)}`),
+    ),
+    check(
+      "publish_run_expected_hash_check",
+      sql.raw(`expected_hash ~ '^[0-9a-f]{64}$'`),
+    ),
+    check(
+      "publish_run_head_sha_check",
+      sql`${table.headSha} is null or ${table.headSha} ~ '^[0-9a-f]{40}$'`,
+    ),
+    check(
+      "publish_run_counts_check",
+      sql`${table.addedCount} >= 0 and ${table.removedCount} >= 0`,
+    ),
+    check("publish_run_reason_check", sql`btrim(${table.reason}) <> ''`),
+    check(
+      "publish_run_error_code_check",
+      sql`${table.errorCode} is null or ${table.errorCode} ~ '^[A-Z][A-Z0-9_]*$'`,
+    ),
+    check(
+      "publish_run_finished_check",
+      sql`(${table.status} in ('verified', 'failed', 'timed_out')) = (${table.finishedAt} is not null)`,
+    ),
+    uniqueIndex("publish_run_open_idx")
+      .on(table.environment)
+      .where(sql`status in ('requested', 'building', 'deployed')`),
+    index("publish_run_environment_requested_idx").on(
+      table.environment,
+      table.requestedAt.desc(),
     ),
   ],
 );
