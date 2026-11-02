@@ -20,7 +20,8 @@ import type { ReactElement } from "react";
 import { FLORIST_PATHS, floristsConfig } from "@/config/florists";
 import { isDemoMember, toDbContext } from "@/lib/auth/florist";
 import { appEnvironment } from "@/lib/env.schema";
-import { demoRefusedIn, listFloristAssignments } from "@/modules/orders";
+import { listFloristAssignments } from "@/modules/orders";
+import { demoRefusedIn } from "@/modules/orders/demo";
 import {
   FLORIST_LIST_GROUPS,
   type FloristAssignmentListItem,

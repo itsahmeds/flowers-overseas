@@ -15,7 +15,7 @@ import {
   DemoOrderRefused,
   demoRefusedIn,
   placeDemoOrder,
-} from "@/modules/orders";
+} from "@/modules/orders/demo";
 
 import { currentFloristContext } from "../../request";
 

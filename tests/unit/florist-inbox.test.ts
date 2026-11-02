@@ -28,10 +28,10 @@ import {
   createDemoOrderEffect,
   DemoOrderRefused,
   demoRefusedIn,
-  floristStageOf,
   placeDemoOrder,
   unconfiguredOrderEffect,
-} from "../../src/modules/orders/index.ts";
+} from "../../src/modules/orders/demo/index.ts";
+import { floristStageOf } from "../../src/modules/orders/index.ts";
 import {
   FloristOrderViewSchema,
   FloristRecipientSchema,

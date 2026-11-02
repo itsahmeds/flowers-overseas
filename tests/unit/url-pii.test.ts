@@ -704,13 +704,16 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "keeps today's seven dynamic segments, none a PII key",
+    "keeps today's eight dynamic segments, none a PII key",
     () => {
       const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
         const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
         return name === undefined ? [] : [name];
       });
       expect([...new Set(names)].sort()).toEqual([
+        // `{FLORIST_BASE_PATH}/orders/[assignmentId]` (spec 011; TASK-214): an assignment's uuid,
+        // never an order reference, a name or an address.
+        "assignmentId",
         "child",
         "grandchild",
         // `/admin/orders/[id]` (TASK-222): an order's uuid.

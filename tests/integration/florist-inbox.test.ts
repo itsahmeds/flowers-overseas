@@ -33,7 +33,6 @@ import {
   demoRoute,
   type OrderExecutor,
   place,
-  placeDemoOrder,
   selectFloristAssignments,
   selectFloristOrderView,
   transition,
@@ -44,6 +43,7 @@ import {
   InboxList,
   OrderScreen,
 } from "../../src/modules/partners/index.ts";
+import { placeDemoOrder } from "../../src/modules/orders/demo/index.ts";
 import { registerFixtureEventSchemas } from "../fixtures/order-engine.ts";
 import * as make from "./support/rows.ts";
 import {

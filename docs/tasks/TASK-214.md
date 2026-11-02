@@ -28,6 +28,16 @@ One dated bullet per `/review`, newest last.
 - **From `/plan-tasks` (2026-10-05):** the same backend agent takes TASK-214 and then TASK-215 (shared florist view models and `src/modules/orders`); one feature PR closing both is allowed (`CLAUDE.md` conventions).
 - **From `/review` round 2 and `/break` round 2 of PR 210 (2026-10-14).** For this task, `listFloristAssignments` and `floristOrderView`: record `timeout` at `sla_expires_at`, because until it does a florist reads an open offer (`response IS NULL`) through `partner_order` and `partner_order_line`; and close partner visibility of a cancelled order whose offer is still open. The engine (TASK-202) writes the `timeout`; this task's views must not assume it has already happened, and must read through `partner_order` and `partner_order_line` only.
 
+- **2026-11-02, from the implementer (self-review, PR 451), left for later tasks:**
+  - *The `withdrawn` stage* is mapped (an assignment with `withdrawn_at` reads `withdrawn`, muted, no payout, no recipient) but has no notice line: its words and V4 are TASK-330's.
+  - *The order page carries no action.* Accept, decline, out for delivery, delivered and the photo (and the photo's signed URL on `photoReceived`) are TASK-215's; `AcceptedOrderEffect`, `demoOrderEffect` and `unconfiguredOrderEffect` are built and unit-tested here for its commands to call. `order.no_partner_available`'s schema is TASK-215's to register; until then the demo effect's decline arm would be refused by the engine.
+  - *`placeDemoOrder` and the effect are not in the `orders` barrel*: they read `src/config/checkout-samples.ts` (scoped checkout config), so the florist routes import `@/modules/orders/demo` and no indexable page's import graph reaches the samples (`i18n:check` check 11).
+  - *No daily cap on the test-order control* (the checkout's `DEMO_DAILY_ORDER_CAP` counts checkout drafts): only signed-in members of a `demo` partner outside production see it.
+  - *AC-26's browser half* (an open inbox shows a new order within 5 s with no reload) is TASK-209's e2e: it needs a database the CI preview does not have. The island and its fake-timer test are here.
+  - *Screenshots against `florist-inbox-*`* were not taken: the pages need a signed-in member and a database, which neither the CI preview nor a local build without the build slot has. The pages compose TASK-210's design-matched components inside TASK-212's frame; the chips and the refresh line use existing tokens.
+  - *Copy for the founder:* eleven `floristInbox.page.*` strings (`en` `reviewed: false`; `pl`/`de` machine drafts): Appendix A's "Delivered", empty state, expired line, "Add the photo", "Photo received. Thank you.", "Send a test order", "Refresh"; the audit's drawn "Being made"; and three slot texts written here (the paused-refresh line, the not-found heading and line).
+  - *`FloristRecipientSchema.cardMessage` is now optional* (spec 010's card step is optional; a card-less order must still render), and `OrderScreen` skips the card block without one.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -41,10 +51,11 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-22: **not started** (dispatched with TASK-211 and TASK-212 as one feature, PR 326). This task's pages render TASK-210's presentational inbox components (`src/modules/partners/ui/inbox/*`, `exampleFloristOrderView`), which do not exist yet: TASK-210 is `todo`. What PR 326 leaves ready for it: `requireFloristContext()`/`toDbContext()` (`src/lib/auth/florist.ts`), the signed-in shell at `{base}` (`src/app/demo/vendor-inbox/page.tsx`, the `Orders` heading where the list goes), `floristsConfig.inboxRefresh`, the `floristInbox` namespace (chrome keys only), the partner read policy on delivery photos (`0022`). The read models, `placeDemoOrder` and `pnpm florists:demo-member` need nothing from TASK-210 and could be split into their own task.
+- 2026-11-02: built on main `bc7f5b2a6` (PR 326 and PR 344 merged), branch `task/TASK-214-florist-inbox`, PR 451. Read models in `src/modules/orders/florist/` (stage rule in `stage.ts`), demo in `src/modules/orders/demo/`, pages `{base}`, `{base}/orders/[assignmentId]`, `not-found.tsx`, `api/test-order`, island `InboxRefresh`, script `scripts/florists-demo-member.ts`. Tests: unit `florist-inbox.test.ts` (19), `florist-inbox-context.test.ts` (1); integration `florist-inbox.test.ts` (5) green on a throwaway PG16. No migration.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 451. `listFloristAssignments` and `floristOrderView` under partner context, built on `selectPartnerOrders` and reading only `partner_order`/`partner_order_line` (the stage rule: expired at the answer-by instant whether or not the timeout is written; an open offer on a moved-on order hidden; fail closed for unnamed states); the list and order pages on TASK-210's components; the refresh island; `placeDemoOrder` over `place`, `order.authorised` and `demoRoute`; the `AcceptedOrderEffect` seam; the test-order control; `pnpm florists:demo-member`. No migration. Tests: unit 20 (stage table, view key set, fake-timer loop, production refusals, source scan, seam, partner context), integration 5 (T-23 cross-tenant over five tables with a non-vacuous control, T-24 DST 12:00 CEST / 11:00 CET, T-25 recipient by stage in rendered HTML, T-33 spies, prices and payout, demo-member add/remove). Twelve mutations each turned a named test red. Carry-forwards above.
