@@ -24,7 +24,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- 2026-11-03 (self-review, TASK-221): a refused save redirects with field codes only, so the typed values are lost and the form shows the saved row again; keeping them needs a client island (`useActionState`). Left for spec 012b's editor work.
+- 2026-11-03 (self-review): `src/modules/admin/home.ts` still counts new applications with its own query (TASK-217's carry-forward names TASK-221); the AC-17 scan covers `src/modules/partners` and `src/app/admin` only, so it stays green. Move it onto `listFloristApplications` when the home page is next touched.
+- 2026-11-03 (self-review): T-19 (e2e, partner names absent from public HTML) and T-24/T-25 (axe and visual for the five new templates) are CI's browser jobs and were not run locally (battery rule, no CI wait). No public page imports the admin partner reads.
+- 2026-11-03 (self-review): pre-existing reds on main, not this diff: `audit-trail.test.ts` (trigger list lacks `admin_order_action` and `review`), `migrations-round-trip.test.ts` (function order of `review_content_immutable`), `i18n:check` (`nav.category.ourSelection`, `nav.send` unused).
 
 ## Escalations
 
@@ -39,10 +42,12 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-02: migration `0035_partner_terms_and_retention` (+ down; numbered by the orchestrator, 0033 is PR 449's and 0034 TASK-328's, so `db:check` reports the gap until both merge), the two retention handlers, `src/modules/partners/admin/` (schemas, commands, applications through spec 011's queries, reads); spec 011's `setFloristApplicationStatus` gains `from` and `statusReason`. Next: admin pages, copy, tests.
+- 2026-11-02: admin pages (`/admin/partners`, `/new`, `/[code]`, `/admin/applications`, `/[id]`), `admin.partners.*` and `admin.applications.*` copy (unreviewed), the new admin primitives in `src/modules/ui/admin` and the sheet; unit, binding and integration tests.
+- 2026-11-03: rebased on 63f50e879; migration renumbered to `0033` (orchestrator: PR 449 renumbers after this), snapshot regenerated, `db:check` passes with no gap; mutation proofs run; self-review in PR 456.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 456](https://github.com/itsahmeds/flowers-overseas/pull/456). Migration `0033_partner_terms_and_retention` (+ down; round trip checked by hand: the down restores `0009`'s `audit_log_append_only()` byte for byte, snapshot md5 `599a90fb…`). `src/modules/partners/admin/` (schemas, commands, applications through spec 011's two queries, reads); spec 011's `setFloristApplicationStatus` gains `from` and `statusReason`; `retention.sweep` gains `audit_log` and `auth_email_send`. Five admin pages, 208 admin keys unreviewed. Tests: unit 55 (validators T-17, graphs, scan T-20), binding 40 cases, integration 28 (T-18, T-20, reads, terms pair) plus 3 retention cases; 15 mutations, each red. A florist goes live only through the status card, after the four conditions hold.
