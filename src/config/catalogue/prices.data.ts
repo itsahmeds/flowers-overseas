@@ -77,7 +77,7 @@
  * first *buyer* market, ADR-0002, and is not a place we deliver to) — the seven are the authority,
  * because a price row for a country that cannot be chosen as a destination would price nothing.
  */
-import { COUNTRIES, countryConfig, isCountryIso2 } from "../countries.ts";
+import { COUNTRIES } from "../countries.ts";
 
 import { ADDONS } from "./addons.data.ts";
 import { PRODUCTS } from "./products.data.ts";
@@ -568,8 +568,9 @@ export function expandRetailRows(
  * with no edit here the day a florist's operations land.
  */
 function emitsSundaySurcharge(iso2: string): boolean {
-  if (!isCountryIso2(iso2)) return true;
-  const country = countryConfig(iso2);
+  // The file registry, not the served one: this is the seed's dataset (spec 012b AC-3).
+  const country = COUNTRIES.find((candidate) => candidate.iso2 === iso2);
+  if (country === undefined) return true;
   if (country.status !== "live") return true;
   return (
     country.operations !== undefined &&

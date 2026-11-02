@@ -20,6 +20,7 @@ import { createDbCatalogueProvider } from "./catalogue";
 import { createDbFxRateProvider } from "./fx";
 import { createDbPriceProvider } from "./price";
 import { type CatalogDbOptions, DEFAULT_CATALOG_DB_OPTIONS } from "./read";
+import { createDbSaleabilityProvider } from "./saleable";
 
 export type { CatalogDbOptions, CatalogDbRead, CatalogReadScope } from "./read";
 
@@ -42,3 +43,8 @@ export const dbCatalogueProvider = production.catalogue;
 export const dbPriceProvider = production.price;
 /** `fx_rate`, every `as_of`. */
 export const dbFxRateProvider = production.fx;
+/** The `saleable_offer` view (spec 012b AC-39; TASK-294). */
+export const dbSaleabilityProvider = createDbSaleabilityProvider(
+  DEFAULT_CATALOG_DB_OPTIONS,
+);
+export { createDbSaleabilityProvider } from "./saleable";

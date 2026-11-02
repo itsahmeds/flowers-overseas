@@ -308,6 +308,32 @@ function notifyInvalidateListeners(tags: readonly string[]): void {
   }
 }
 
+/**
+ * An in-process step `invalidate()` awaits **before** it revalidates anything (spec 012b §2.2,
+ * AC-3; TASK-294): the served country registry is a process-wide snapshot of the `country` table,
+ * so a `country:{iso2}` invalidation must re-read it first, or the page Next regenerates next would
+ * be rendered from the old row and cached for an hour. A hook that throws is logged by
+ * `invalidate()` as an origin failure; the purge still runs.
+ */
+export type BeforeInvalidateHook = (tags: readonly string[]) => Promise<void>;
+
+/**
+ * On `globalThis`, because Next compiles `instrumentation.ts` (which registers the registry's
+ * hook at boot) and each route separately, and a module-level set would be one copy per bundle.
+ */
+const HOOKS_SLOT = Symbol.for("flowers-overseas.before-invalidate-hooks");
+const beforeInvalidateHooks: Set<BeforeInvalidateHook> = ((
+  globalThis as { [HOOKS_SLOT]?: Set<BeforeInvalidateHook> }
+)[HOOKS_SLOT] ??= new Set<BeforeInvalidateHook>());
+
+/** Register `hook` for every later `invalidate()` call in this process; the return removes it. */
+export function onBeforeInvalidate(hook: BeforeInvalidateHook): () => void {
+  beforeInvalidateHooks.add(hook);
+  return () => {
+    beforeInvalidateHooks.delete(hook);
+  };
+}
+
 /** The Sentry signal of a toggle whose change is saved but not yet visible (spec 012 §11). */
 export const CACHE_INVALIDATE_FAILED_SIGNAL = "cache.invalidate.failed";
 
@@ -361,6 +387,13 @@ export async function invalidate(
   const names = [...new Set(tags)];
 
   let origin: InvalidationOutcome["origin"] = "ok";
+  for (const hook of beforeInvalidateHooks) {
+    try {
+      await hook(names);
+    } catch {
+      origin = "failed";
+    }
+  }
   const documents = new Set<string>();
   try {
     for (const tag of names) {

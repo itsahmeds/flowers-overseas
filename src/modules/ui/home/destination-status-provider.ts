@@ -25,7 +25,7 @@
  * this module reads no catalogue, exactly like `./finder-model.ts`.
  */
 import {
-  COUNTRIES,
+  activeCountries,
   type CountryConfig,
   type CountryIso2,
   deliveryDatesOpen,
@@ -125,12 +125,15 @@ function project(
  * data" proof needs to be observable.
  */
 export function destinationStatusProviderOf(
-  countries: readonly CountryConfig[],
+  countries: readonly CountryConfig[] | (() => readonly CountryConfig[]),
   hrefOf: CorridorHrefResolver = defaultCorridorHref,
 ): DestinationStatusProvider {
+  // A function is read on every call: the served registry changes without a restart (spec 012b
+  // AC-3), so the real provider never captures one snapshot of it.
+  const current = typeof countries === "function" ? countries : () => countries;
   return {
     list: (locale, nameOf) => {
-      const named = countries.map((country) => ({
+      const named = current().map((country) => ({
         country,
         name: nameOf(country.nameKey),
       }));
@@ -147,9 +150,12 @@ export function destinationStatusProviderOf(
   };
 }
 
-/** The Phase 0 provider: `src/config/countries.ts`, zod-parsed at its own module load. */
+/**
+ * The real provider: the registry this deployment serves (`activeCountries()`: the database's in
+ * `production`, `staging` and `preview`, `src/config/countries.ts` elsewhere; spec 012b AC-3).
+ */
 export const staticDestinationStatusProvider: DestinationStatusProvider =
-  destinationStatusProviderOf(COUNTRIES);
+  destinationStatusProviderOf(activeCountries);
 
 let active: DestinationStatusProvider = staticDestinationStatusProvider;
 

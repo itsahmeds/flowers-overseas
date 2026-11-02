@@ -229,6 +229,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "TierKeySchema",
         "availability",
         "isProductIndexable",
+        // spec 012b §5.2 (AC-39; TASK-294): the saleability term, for spec 010's placement.
+        "isSaleable",
         "lowestPriceInLast30Days",
         "quote",
         "verifyQuote",
@@ -442,6 +444,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/db/index.ts`,
       `${moduleDir}/db/price.ts`,
       `${moduleDir}/db/read.ts`,
+      // The `saleable_offer` view (spec 012b AC-39; TASK-294).
+      `${moduleDir}/db/saleable.ts`,
       `${moduleDir}/flags.ts`,
       // Deep-frozen provider values, shared by `static/` and `db/` (TASK-148, TASK-070).
       `${moduleDir}/frozen.ts`,

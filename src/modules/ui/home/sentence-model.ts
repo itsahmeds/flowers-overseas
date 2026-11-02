@@ -39,7 +39,7 @@
 import { z } from "zod";
 
 import {
-  COUNTRIES,
+  activeCountries,
   type CountryConfig,
   type CountryIso2,
   countryConfig,
@@ -130,7 +130,7 @@ export function sentenceDestinations(
   nameOf: (nameKey: string) => string,
   shopCountries: ReadonlySet<string>,
 ): readonly SentenceDestination[] {
-  const named = COUNTRIES.map((country: CountryConfig) => ({
+  const named = activeCountries().map((country: CountryConfig) => ({
     country,
     name: nameOf(country.nameKey),
   }));
