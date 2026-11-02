@@ -69,9 +69,14 @@ export type {
   StartProductionOptions,
   StartProductionResult,
 } from "./production.ts";
+// Spec 020a §12 request 1 (TASK-359): the admin order action runs `refund`'s request in its own
+// transaction and submits after its commit, and checks a cancellation's reason against the set.
+export { RefundReasonSchema } from "./events.ts";
+export type { RefundReason } from "./events.ts";
 export {
   refund,
   refundCancelledOrder,
+  requestRefund,
   submitRefund,
   succeededRefunds,
 } from "./refunds.ts";
@@ -80,6 +85,7 @@ export type {
   RefundDeps,
   RefundInput,
   RefundRefusal,
+  RefundRequest,
   RefundResult,
   SubmitOutcome,
   SucceededRefund,
