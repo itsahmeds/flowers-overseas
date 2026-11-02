@@ -54,6 +54,9 @@ export const SCANNED_PATHS = [
   // own manifest and nothing else — no database, no network, no clock — which is why
   // `pnpm media:variants --check` is a CI gate that needs no service (spec 006 AC-1, AC-14).
   "seed/media-variants.ts",
+  // TASK-082: the ladder `seed/media-variants.ts` re-exports, moved out so the derive worker can
+  // share it; the same no-database property, now asserted on the file that holds the code.
+  "seed/derive.ts",
   // spec 006 AC-1 (TASK-075): the dataset gate, its byte budgets and its fixture-overlay tooling.
   // `pnpm seed:check` runs on every pull request with `DATABASE_URL` unset and must keep working
   // that way for as long as spec 002's provisioning is parked — and afterwards, because a gate

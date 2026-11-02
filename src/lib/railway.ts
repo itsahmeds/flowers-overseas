@@ -24,6 +24,7 @@ import { z } from "zod";
 // resolver does not guess extensions (spec 040 AC-34; TASK-155 found the CLI could not start).
 import { ENV_KEYS } from "./env.schema.ts";
 import { STAGING_BASIC_AUTH_KEY } from "./basic-auth.ts";
+import { R2_PRIVATE_BUCKET_KEY } from "./storage-r2.ts";
 
 /** Path of the declaration, relative to the repository root. */
 export const RAILWAY_CONFIG_PATH = "config/railway.json";
@@ -209,12 +210,23 @@ export const DATABASE_BUILD_URL_KEY = "DATABASE_BUILD_URL";
  * schemas and `pnpm env:check` therefore never asks for it), and it is expected on `staging` and
  * on every PR environment, where AC-25 requires the 401 wall. `FX_REFRESH_AT` (above) appears on
  * `staging` and `production` after the first weekday FX rebuild; no PR environment is rebuilt.
+ * `R2_PRIVATE_BUCKET` (`src/lib/storage-r2.ts`, TASK-082) is absent-means-off: the private media
+ * bucket, set once the founder has created it; no PR environment writes to a bucket.
  */
 export const OPTIONAL_VARIABLE_KEYS: Readonly<
   Record<"production" | "staging" | "preview", readonly string[]>
 > = Object.freeze({
-  production: [FX_REFRESH_AT_KEY, DATABASE_BUILD_URL_KEY],
-  staging: [STAGING_BASIC_AUTH_KEY, FX_REFRESH_AT_KEY, DATABASE_BUILD_URL_KEY],
+  production: [
+    FX_REFRESH_AT_KEY,
+    DATABASE_BUILD_URL_KEY,
+    R2_PRIVATE_BUCKET_KEY,
+  ],
+  staging: [
+    STAGING_BASIC_AUTH_KEY,
+    FX_REFRESH_AT_KEY,
+    DATABASE_BUILD_URL_KEY,
+    R2_PRIVATE_BUCKET_KEY,
+  ],
   preview: [STAGING_BASIC_AUTH_KEY],
 });
 
