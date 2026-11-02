@@ -77,6 +77,13 @@ export const HERO_DESKTOP_MIN_WIDTH = 1080;
 /* -------------------------------------------------------------------------- */
 
 /**
+ * The product hero's ladder: 384 / 480 / 640 / 828 (spec 006 §14 A11 clause 1). Named because two
+ * slots ship it: `productHero`, and `productDetail` since TASK-306 (§14 A-founder-2026-10-20b
+ * clause 1, spec 042 AC-20), whose photograph is shown as wide as the hero on the same page.
+ */
+export const PRODUCT_HERO_WIDTHS: readonly number[] = [384, 480, 640, 828];
+
+/**
  * **Which of the eight widths each slot actually ships in Phase 0**, and the single decision in
  * this file that is a *choice* rather than a transcription.
  *
@@ -99,7 +106,14 @@ export const HERO_DESKTOP_MIN_WIDTH = 1080;
  *     | `hero` | 90 000 B | 1200 (WebP 59 878 B) | 1600 → WebP 89 076 B, and the original is 1672 px wide |
  *     | `occasionTile` | 18 000 B | 384 (WebP 17 830 B) | 640 → WebP 41 322 B, 2.3× the cap |
  *     | `productHero` | 90 000 B | 828 (WebP 81 486 B) | 1080 → WebP 116 940 B |
- *     | `productDetail` | 60 000 B | 384 (WebP 38 398 B) | 640 → WebP 82 275 B |
+ *     | `productDetail` | 120 000 B | 828 (WebP 117 920 B, on the 84 detail originals) | — (the ladder is the product hero's, not a measurement: see below) |
+ *
+ *     **`productDetail` is the one slot this rule no longer chooses** (TASK-306, spec 006 §14
+ *     A-founder-2026-10-20b clause 1, spec 042 AC-20): it takes the `productHero` ladder by
+ *     reference, so its cap was raised to fit that ladder's busiest file rather than the ladder cut
+ *     to fit the cap. A close-up is busier than a whole bouquet at the same width (828 WebP:
+ *     117 920 B against the hero's 81 486 B), and the detail photograph is never on a first load:
+ *     it is a lazy gallery slide or a hover layer (§14 A-founder-2026-10-20b clause 5).
  *
  *  2. **No derived file is an enlargement, with one named exception.** The batch-1 originals are
  *     1024–1672 px on the long edge, not the ≥ 2000 px `plan/01` §6 asks for (recorded in the PR
@@ -109,17 +123,19 @@ export const HERO_DESKTOP_MIN_WIDTH = 1080;
  *     below is inside the narrowest original of its slot **except the `productHero` 828 rung for
  *     the 31 xAI Grok Imagine heroes** (spec 006 §14 A7 clause 3; TASK-167): their originals are
  *     784×1168 (2:3), centre-cropped to 4:5 at 784×980 under A6 (3), so the 828 file is enlarged
- *     by about 6 %. That is accepted on A6's terms and the ladder is not cut for them. The 12 Grok
- *     details at 784×1168 take the same crop, but `productDetail` ships only 384, so no detail is
- *     enlarged; the batch-2 ChatGPT originals are 1122×1402, 4:5 and wider than every
+ *     by about 6 %. That is accepted on A6's terms and the ladder is not cut for them. **The same
+ *     exception covers the 12 Grok details at 784×1168** since TASK-306 gave `productDetail` the
+ *     hero ladder: they take the same crop, so their 828 file is enlarged by about 6 % too,
+ *     accepted on the same terms (spec 006 §14 A-founder-2026-10-20b clause 3); the 19 Grok details
+ *     at 912 px and the batch-2 ChatGPT originals at 1122×1402 are wider than every
  *     `productHero` rung, so they need neither. No test pins this rule.
  *
  * **What this costs, stated rather than hidden.** An occasion tile is 195 CSS px at the mobile
  * artboard and ~245 px at the desktop one, so 384 is the 1× file at both and a 2× phone upscales
- * it; `productDetail` ships only its thumbnail step, which is honest because **no Phase-0 page
- * renders a detail asset at all** — spec 009 owns the PDP and does not exist. Both are the
- * consequence of a 6 MB repository budget, and both disappear at TASK-083's R2 flip, which is the
- * row `docs/architecture.md` §4 already carries.
+ * it. That is the consequence of a 6 MB repository budget, and it disappears at TASK-083's R2 flip,
+ * which is the row `docs/architecture.md` §4 already carries. (`productDetail` shipped only its
+ * 384 thumbnail step until TASK-306; it now ships the product hero's ladder, served from the
+ * bucket, because the product page's phone gallery and spec 042's hover layer show it full width.)
  *
  * The table is total over `mediaSlots`: a slot added without a Phase-0 ladder would be an asset
  * the CLI silently derived nothing for.
@@ -135,8 +151,12 @@ export const PHASE0_SLOT_WIDTHS: Readonly<
   // the only step, fetched 640 w and put the locale homes over AC-15's 204 800 B. 480 w is the
   // honest rung for that box (480 / 178 = 2.70 ≥ 2.625). Same crop, same encoders, inside the
   // 1122 px and 784 px originals, so nothing is enlarged.
-  productHero: [384, 480, 640, 828],
-  productDetail: [384],
+  productHero: PRODUCT_HERO_WIDTHS,
+  // The product hero's ladder since TASK-306 (spec 006 §14 A-founder-2026-10-20b clause 1,
+  // spec 042 AC-20): the detail photograph is the phone gallery's second slide and the card's
+  // second photo on hover, both as wide as the hero, so it takes the same rungs by reference
+  // rather than by a copy that could drift. `seed:check`'s `detail-ladder` rule reads the rows.
+  productDetail: PRODUCT_HERO_WIDTHS,
   // No Phase-0 asset uses either slot (`seed/data/media.json` holds productHero, productDetail,
   // occasionTile and hero assets only), so their ladders are the widths they would
   // ship rather than a measurement. Stated, not empty: an empty ladder would read as "this slot
