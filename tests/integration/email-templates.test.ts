@@ -50,14 +50,21 @@ const ORIGIN = "https://staging.example.test";
 const INBOX_BASE = `${ORIGIN}/vendor/orders/`;
 const TOKEN = "MarkerTokenQz81";
 
+const RECIPIENT_NAME = "Markerrecipient Zebedee";
+const RECIPIENT_STREET = "Markerstreet 9";
+const RECIPIENT_PHONE = "+48500333444";
+const CARD_MESSAGE = "Markercard message for Zebedee";
+const BUYER_NAME = "Markerbuyer Quill";
+const BUYER_EMAIL = "marker-buyer-7731@example.test";
+const BUYER_PHONE = "+48500111222";
 const MARKERS = [
-  "Markerrecipient Zebedee",
-  "Markerstreet 9",
-  "+48500333444",
-  "Markercard message for Zebedee",
-  "Markerbuyer Quill",
-  "marker-buyer-7731@example.test",
-  "+48500111222",
+  RECIPIENT_NAME,
+  RECIPIENT_STREET,
+  RECIPIENT_PHONE,
+  CARD_MESSAGE,
+  BUYER_NAME,
+  BUYER_EMAIL,
+  BUYER_PHONE,
 ];
 
 const COPY: OpsCopy = {
@@ -92,12 +99,12 @@ async function fixture(tx: Tx): Promise<Fixture> {
   await tx`UPDATE "order" SET
     delivery_date = DATE '2026-10-08',
     destination_postcode = '00-001',
-    buyer_snapshot = ${tx.json({ name: MARKERS[4], email: MARKERS[5], phoneE164: MARKERS[6] })},
+    buyer_snapshot = ${tx.json({ name: BUYER_NAME, email: BUYER_EMAIL, phoneE164: BUYER_PHONE })},
     recipient_snapshot = ${tx.json({
-      fullName: MARKERS[0],
-      addressLines: [MARKERS[1]],
-      phoneE164: MARKERS[2],
-      cardMessage: MARKERS[3],
+      fullName: RECIPIENT_NAME,
+      addressLines: [RECIPIENT_STREET],
+      phoneE164: RECIPIENT_PHONE,
+      cardMessage: CARD_MESSAGE,
       city: "Warszawa",
       postcode: "00-001",
     })}

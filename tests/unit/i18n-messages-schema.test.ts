@@ -347,6 +347,34 @@ describe("the shipped catalogues and manifests", () => {
     "corridor.calendar.ruleEaster",
     "corridor.calendar.ruleFixed",
     "corridor.calendar.ruleWeekday",
+    // TASK-332, spec 016 §7: the florist emails V1 to V5, the email layout's frames and the
+    // florist's WhatsApp message, shipped `reviewed: false` (founder copy pending on the
+    // artboards); not counted in the unreviewed share (`review-scope.ts`, A17).
+    "emails.florist.confirmed.body",
+    "emails.florist.confirmed.heading",
+    "emails.florist.confirmed.preheader",
+    "emails.florist.confirmed.subject",
+    "emails.florist.label.addOns",
+    "emails.florist.label.bouquet",
+    "emails.florist.label.town",
+    "emails.florist.label.youReceive",
+    "emails.florist.offer.heading",
+    "emails.florist.offer.recipientLater",
+    "emails.florist.offer.subject",
+    "emails.florist.oneTap",
+    "emails.florist.oneTapText",
+    "emails.florist.openOrder",
+    "emails.florist.photoReminder.body",
+    "emails.florist.photoReminder.preheader",
+    "emails.florist.photoReminder.subject",
+    "emails.florist.reminder.heading",
+    "emails.florist.reminder.preheader",
+    "emails.florist.reminder.subject",
+    "emails.florist.timedOut.subject",
+    "emails.florist.withdrawn.body",
+    "emails.florist.withdrawn.heading",
+    "emails.florist.withdrawn.started",
+    "emails.florist.withdrawn.subject",
     "emails.floristApplicationAlert.field.area",
     "emails.floristApplicationAlert.field.capacity",
     "emails.floristApplicationAlert.field.contact",
@@ -371,6 +399,11 @@ describe("the shipped catalogues and manifests", () => {
     // unreviewed share (`review-scope.ts`, A17).
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
+    "emails.layout.audience.florist",
+    "emails.layout.buyerHours",
+    "emails.layout.buyerWhy",
+    "emails.layout.floristHelp",
+    "emails.layout.floristWhy",
     // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the
     // scoped namespace, when the walkthrough made `floristInbox` counted; `floristInbox.orders` is
     // the walkthrough's "Orders" and left this queue with record-approval-210.py.
@@ -503,6 +536,10 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+    "whatsapp.florist.offer.alsoEmail",
+    "whatsapp.florist.offer.open",
+    "whatsapp.florist.offer.title",
+    "whatsapp.florist.stop.body",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
@@ -640,6 +677,9 @@ describe("the shipped catalogues and manifests", () => {
       // lookup form's labels. Server Components only; the share island gets strings as props.
       "tracking",
       "trackLookup",
+      // Spec 016 §7's namespace (TASK-332): the florist's WhatsApp message, pasted by the founder;
+      // read only by the email templates, so in no `ROUTE_NAMESPACES` entry.
+      "whatsapp",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

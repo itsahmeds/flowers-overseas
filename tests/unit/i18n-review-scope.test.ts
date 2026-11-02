@@ -298,8 +298,6 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         [
           ["floristAuth", "florist"],
           ["emails.floristSignIn.*", "email"],
-          // TASK-214: the inbox pages' own lines.
-          ["floristInbox.page.*", "florist"],
         ] as const
       ).map(([match, surface]) => ({
         match,
@@ -310,6 +308,25 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
           "src/lib/auth/florist.ts",
         ],
       })),
+      // TASK-332, spec 016 §5.3: the email layout, the florist emails and the WhatsApp copy.
+      ...["emails.layout.*", "emails.florist.*", "whatsapp.florist.*"].map(
+        (match) => ({
+          match,
+          surface: "email",
+          paths: ["src/modules/notifications/emails/**"],
+        }),
+      ),
+      // TASK-214: the inbox pages' own lines; TASK-332's florist emails reuse them verbatim.
+      {
+        match: "floristInbox.page.*",
+        surface: "florist",
+        paths: [
+          "src/app/demo/vendor-inbox/**",
+          "src/modules/partners/auth/**",
+          "src/lib/auth/florist.ts",
+          "src/modules/notifications/emails/**",
+        ],
+      },
       // TASK-213: the founder's application alert, an email.
       {
         match: "emails.floristApplicationAlert.*",
