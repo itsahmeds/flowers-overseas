@@ -22,7 +22,7 @@ Spec 012b §12 slice A task 4 (second half). Founder approval 2026-10-20, "all d
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- **2026-11-02 (CMS2 finisher):** the home's core range cards stay unfiltered: they link to the chooser, which already asks `productPageExists()`, so no card points at a 404. T-09's preview half (edge HTML within 60 s) is the preview's. TASK-297 to TASK-300 add their commands' rows to `tests/unit/command-tags.test.ts`.
 
 ## Escalations
 
@@ -37,10 +37,11 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 _Not started._
+- 2026-11-02 CMS2 finisher: `productPageAdmitted()` filters the listing grids, category tiles and search results by the running manifest; `urlsForTag` learns `sitemap` (the index and every locale's index and children) and `country:{iso2}` (corridor plus catalogue documents); `pnpm cache:warm` and `src/lib/cache-warm.ts`, which the publish job's warm now uses; the §5.4 command-tag table (T-09) from the first agent.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+In PR [#449](https://github.com/itsahmeds/flowers-overseas/pull/449). The grids' half of AC-5: `productPageAdmitted()` (`src/modules/catalog/listing.ts`) in `productsFor()` (shop root, country category and occasion, hubs per country), the category tiles and `catalogSearchSource().products`, a no-op without a manifest or inside `databaseOnly()`. `urlsForTag`/`pathsForTag` resolve `sitemap` and `country:{iso2}` (spec 012b §5.2). `pnpm cache:warm` (`scripts/cache-warm.ts`, README row). AC-9: `src/lib/command-tags.ts` with `commandOutcome`/`applyCommand` and the table-driven T-09. Tests: unit `command-tags` (T-09, 22 cases), `cache-warm` (6), `cache-cloudflare` and `cache-product-tags` (the two new resolutions), `existence` (the grid and search case); every AC-carrying assertion mutated red.
