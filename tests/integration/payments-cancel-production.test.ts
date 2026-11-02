@@ -299,6 +299,7 @@ describe.skipIf(server.url === undefined)(
         payments: paymentsOutboxHandler(deps),
         routing: () => Promise.resolve(),
         invoices: () => Promise.resolve(),
+        notifications: () => Promise.resolve(),
       };
       for (let run = 0; run < 10; run += 1) {
         const counts = await dispatchOutbox({

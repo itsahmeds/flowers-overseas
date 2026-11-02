@@ -17,8 +17,8 @@
  * second `order.captured` routes nothing; that check is the handler's (spec 016), not the
  * route's, because both rows share one event name.
  *
- * Spec 016 adds `notifications`, spec 023 `analytics`, a later spec `crm`, each with its rows
- * here, its name in `OUTBOX_TARGET_NAMES` and its handler in the dispatcher's registry.
+ * Spec 016 adds `notifications` (below, TASK-331), spec 023 `analytics`, a later spec `crm`, each
+ * with its rows here, its name in `OUTBOX_TARGET_NAMES` and its handler in the dispatcher's registry.
  *
  * Spec 018 §5.2 "Outbox subscriptions" (TASK-341) adds `invoices`, for `live` only (for
  * `mode <> 'live'` every list is empty, so a demo or test walk issues nothing and consumes no
@@ -41,7 +41,12 @@ import type { OutboxTarget } from "../service/outbox";
  * Every target the dispatcher delivers. Adding a name here without a handler in
  * `HandlerRegistry` fails `tsc` (`./dispatcher.ts`; spec 013 AC-20).
  */
-export const OUTBOX_TARGET_NAMES = ["invoices", "payments", "routing"] as const;
+export const OUTBOX_TARGET_NAMES = [
+  "invoices",
+  "payments",
+  "routing",
+  "notifications",
+] as const;
 
 export type OutboxTargetName = (typeof OUTBOX_TARGET_NAMES)[number];
 
@@ -61,6 +66,26 @@ export const ROUTING_TARGET = {
 export const INVOICES_TARGET = {
   name: "invoices",
   audience: "system",
+} as const satisfies OutboxTarget & { name: OutboxTargetName };
+
+/**
+ * The `notifications` target (spec 016 §5.2 "Notifications"; TASK-331): the pipeline that emails
+ * the buyer, the florist's members and the founder. Two audiences of one target name, because
+ * `outboxTargets` filters by audience: on a `live` event that can reach the buyer the target says
+ * so (`buyer`); on every other event, and on every `test` event, it reaches the florist's members
+ * or the founder only (`partner`), so spec 010's people filter (AC-24) passes it for a `test`
+ * order. Which messages go is `notificationsFor` (`@/modules/notifications`), which sends no buyer
+ * row for `test` either.
+ */
+export const NOTIFICATIONS_TARGET = {
+  name: "notifications",
+  audience: "partner",
+} as const satisfies OutboxTarget & { name: OutboxTargetName };
+
+/** The same target on a `live` event with a buyer row (B1 … B6). */
+export const NOTIFICATIONS_BUYER_TARGET = {
+  name: "notifications",
+  audience: "buyer",
 } as const satisfies OutboxTarget & { name: OutboxTargetName };
 
 /** Event → mode → targets. A mode absent from an event's row gets no target. */
@@ -114,4 +139,45 @@ export function invoiceOutboxTargets(
   mode: OrderMode,
 ): readonly OutboxTarget[] {
   return INVOICE_OUTBOX_ROUTES[event]?.[mode] ?? [];
+}
+
+const TRADE_BOTH = {
+  test: [NOTIFICATIONS_TARGET],
+  live: [NOTIFICATIONS_TARGET],
+} as const;
+const BUYER_LIVE_TRADE_TEST = {
+  test: [NOTIFICATIONS_TARGET],
+  live: [NOTIFICATIONS_BUYER_TARGET],
+} as const;
+const BUYER_LIVE = { live: [NOTIFICATIONS_BUYER_TARGET] } as const;
+
+/**
+ * Spec 016's rows (TASK-331): every event `notificationsFor` names, per mode in which it has a
+ * row for some from-status (`tests/unit/notifications-rules.test.ts` holds the two in step).
+ * Jobs (V2, V5, B8) call the pipeline directly and have no route.
+ */
+export const NOTIFICATION_OUTBOX_ROUTES: ModeOutboxRoutes = {
+  // B1 from `placed` (live); V3 from `accepted` (test and live).
+  "order.captured": BUYER_LIVE_TRADE_TEST,
+  "order.in_production": BUYER_LIVE,
+  "order.out_for_delivery": BUYER_LIVE,
+  "order.photo_uploaded": BUYER_LIVE,
+  // B5 (live) and the withdrawal V4 and W (test and live).
+  "order.cancelled": BUYER_LIVE_TRADE_TEST,
+  "order.refunded_partial": BUYER_LIVE,
+  // B6 (live) and the withdrawal V4 and W.
+  "order.refunded_full": BUYER_LIVE_TRADE_TEST,
+  "order.chargeback_opened": TRADE_BOTH,
+  "order.cancelled_refunded": TRADE_BOTH,
+  "assignment.offered": TRADE_BOTH,
+  "assignment.timed_out": TRADE_BOTH,
+  "order.no_partner_available": TRADE_BOTH,
+};
+
+/** The targets spec 016's notification rows give `event` for an order in `mode`. Pure. */
+export function notificationOutboxTargets(
+  event: OrderEventType,
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  return NOTIFICATION_OUTBOX_ROUTES[event]?.[mode] ?? [];
 }

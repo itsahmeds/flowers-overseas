@@ -7,7 +7,8 @@
  *    stops requiring every target (a `Partial`, an index signature), the directive is unused and
  *    `pnpm typecheck` fails.
  *  - **routes:** spec 013's rows of `outboxTargets(event, mode)`, exactly; `demo` gets none; no
- *    route reaches a buyer or a recipient.
+ *    route reaches a buyer or a recipient for a `demo` or `test` order, and for a `live` one only
+ *    spec 016's `notifications` target does (B1 to B6; TASK-331).
  *  - **registry:** a target nobody registered throws `<TARGET>_NOT_CONFIGURED`; a second
  *    registration of one target is refused.
  *
@@ -38,13 +39,28 @@ const noop: OutboxHandler = () => Promise.resolve();
 
 // The type test (AC-20): every target needs a handler.
 // @ts-expect-error -- `routing` has no handler, so this must not compile.
-const missingRouting: HandlerRegistry = { invoices: noop, payments: noop };
+const missingRouting: HandlerRegistry = {
+  invoices: noop,
+  payments: noop,
+  notifications: noop,
+};
 // @ts-expect-error -- `payments` has no handler, so this must not compile.
-const missingPayments: HandlerRegistry = { invoices: noop, routing: noop };
+const missingPayments: HandlerRegistry = {
+  invoices: noop,
+  routing: noop,
+  notifications: noop,
+};
+// @ts-expect-error -- `notifications` has no handler, so this must not compile (spec 016).
+const missingNotifications: HandlerRegistry = {
+  invoices: noop,
+  payments: noop,
+  routing: noop,
+};
 const complete: HandlerRegistry = {
   invoices: noop,
   payments: noop,
   routing: noop,
+  notifications: noop,
 };
 
 const EVENT: OutboxDeliveryEvent = {
@@ -61,6 +77,7 @@ describe("HandlerRegistry (AC-20, type half)", () => {
   it("names exactly the targets of OUTBOX_TARGET_NAMES", () => {
     expect([...OUTBOX_TARGET_NAMES].sort()).toEqual([
       "invoices",
+      "notifications",
       "payments",
       "routing",
     ]);
@@ -68,8 +85,21 @@ describe("HandlerRegistry (AC-20, type half)", () => {
       [...OUTBOX_TARGET_NAMES].sort(),
     );
     // The two incomplete registries exist only for the compiler.
-    expect(Object.keys(missingRouting)).toEqual(["invoices", "payments"]);
-    expect(Object.keys(missingPayments)).toEqual(["invoices", "routing"]);
+    expect(Object.keys(missingRouting)).toEqual([
+      "invoices",
+      "payments",
+      "notifications",
+    ]);
+    expect(Object.keys(missingPayments)).toEqual([
+      "invoices",
+      "routing",
+      "notifications",
+    ]);
+    expect(Object.keys(missingNotifications)).toEqual([
+      "invoices",
+      "payments",
+      "routing",
+    ]);
   });
 });
 
@@ -100,26 +130,30 @@ describe("spec 013's outbox routes (§5.2)", () => {
     }
   });
 
-  it("reaches outboxTargets, once per name, and never a buyer or a recipient (spec 010 AC-24)", () => {
+  it("reaches outboxTargets, once per name, and a buyer only through live notifications (spec 010 AC-24)", () => {
     for (const event of ORDER_EVENT_TYPES) {
       for (const mode of ORDER_MODES) {
         const targets = outboxTargets(event, mode);
         const names = targets.map((t) => t.name);
         expect(new Set(names).size, `${event} ${mode}`).toBe(names.length);
         for (const target of targets) {
+          if (mode === "live" && target.name === "notifications") continue;
           expect(["buyer", "recipient"], `${event} ${mode}`).not.toContain(
             target.audience,
           );
         }
       }
     }
-    // Spec 018 (TASK-341) adds `invoices` to a live order's captures.
+    // Spec 018 (TASK-341) adds `invoices` to a live order's captures, spec 016 (TASK-331)
+    // `notifications` to both modes' (B1 live, V3 test and live).
     expect(outboxTargets("order.captured", "live").map((t) => t.name)).toEqual([
       "routing",
       "invoices",
+      "notifications",
     ]);
     expect(outboxTargets("order.captured", "test").map((t) => t.name)).toEqual([
       "routing",
+      "notifications",
     ]);
     expect(
       outboxTargets("assignment.accepted", "test").map((t) => t.name),
@@ -129,7 +163,7 @@ describe("spec 013's outbox routes (§5.2)", () => {
 
 describe("the handler registry (AC-20; AC-12's ROUTING_NOT_CONFIGURED)", () => {
   const context = (
-    target: "invoices" | "payments" | "routing",
+    target: (typeof OUTBOX_TARGET_NAMES)[number],
   ): OutboxHandlerContext => ({
     deliveryId: "0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b",
     outboxId: "1c9f8e7d-6b5a-4f4e-9d3c-2b1a0f9e8d7c",

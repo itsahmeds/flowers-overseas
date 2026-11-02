@@ -178,6 +178,7 @@ describe.skipIf(server.url === undefined)(
         const routing = throwing();
         const handlers: HandlerRegistry = {
           invoices: recording(),
+          notifications: recording(),
           payments,
           routing,
         };
@@ -304,7 +305,7 @@ describe.skipIf(server.url === undefined)(
         const payments = recording();
         const routing = recording();
         const options = {
-          handlers: { invoices: recording(), payments, routing },
+          handlers: { invoices: recording(), notifications: recording(), payments, routing },
           transaction: savepoints(tx),
           alert: alerts(),
           log: silentLogger(),
@@ -372,6 +373,7 @@ describe.skipIf(server.url === undefined)(
         const a = await ordered();
         const failing: HandlerRegistry = {
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: throwing(),
         };
@@ -386,18 +388,21 @@ describe.skipIf(server.url === undefined)(
         const recovering: (string | undefined)[] = [];
         await run({
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: throwing(),
         });
         recovering.push(await status(b));
         await run({
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: throwing(),
         });
         recovering.push(await status(b));
         await run({
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: recording(),
         });
@@ -438,6 +443,7 @@ describe.skipIf(server.url === undefined)(
         await dispatchOutbox({
           handlers: {
             invoices: recording(),
+            notifications: recording(),
             payments: write("kept", false),
             routing: write("undone", true),
           },
@@ -461,7 +467,7 @@ describe.skipIf(server.url === undefined)(
         const outboxId = await twoTargetRow(tx, orderId);
         const routing = throwing();
         const base = {
-          handlers: { invoices: recording(), payments: recording(), routing },
+          handlers: { invoices: recording(), notifications: recording(), payments: recording(), routing },
           transaction: savepoints(tx),
           alert: alerts(),
           log: silentLogger(),
@@ -503,7 +509,7 @@ describe.skipIf(server.url === undefined)(
           SELECT d.target FROM outbox_delivery d WHERE d.outbox_id = ${paid.outboxId}`;
         const routing = recording();
         const counts = await dispatchOutbox({
-          handlers: { invoices: recording(), payments: recording(), routing },
+          handlers: { invoices: recording(), notifications: recording(), payments: recording(), routing },
           transaction: savepoints(tx),
           orderId: paid.orderId,
           alert: alerts(),
@@ -557,7 +563,7 @@ describe.skipIf(server.url === undefined)(
         const second = await paidTestOrder(tx);
         const routing = recording();
         const counts = await dispatchOutbox({
-          handlers: { invoices: recording(), payments: recording(), routing },
+          handlers: { invoices: recording(), notifications: recording(), payments: recording(), routing },
           transaction: savepoints(tx),
           orderId: second.orderId,
           alert: alerts(),
