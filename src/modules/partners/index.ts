@@ -89,3 +89,75 @@ export type {
   FloristApplicationStatus,
   SetApplicationStatusResult,
 } from "./application/admin.ts";
+// Spec 012 §2.5, §5.2 (TASK-221): the partner commands admin composes, the status graph and its
+// preconditions, and applications moved through spec 011's two queries above. Server only; no
+// public page renders any of it.
+export {
+  ACTIVATION_CONDITIONS,
+  APPLICATION_STATUS_EDGES,
+  ApplicationContactSchema,
+  ApplicationConvertSchema,
+  ApplicationRejectSchema,
+  PARTNER_STATUS_EDGES,
+  PartnerEditFormSchema,
+  PartnerStatusChangeSchema,
+  PartnerVersionSchema,
+  activationPreflight,
+  isApplicationEdge,
+  isPartnerStatusEdge,
+  parseBlackout,
+  parseCoverage,
+  parseMapping,
+  parsePartnerCode,
+  parsePartnerProfile,
+  parseTerms,
+  partnerFieldErrors,
+  partnerPhoneE164,
+  payoutMinorUnits,
+  unmetConditions,
+} from "./admin/schemas.ts";
+export type {
+  ActivationCondition,
+  PartnerFieldError,
+  PartnerFieldErrors,
+  PartnerStatus,
+  PreflightResult,
+} from "./admin/schemas.ts";
+export {
+  PARTNER_ACTIONS,
+  createPartner,
+  partnerAdminRunner,
+  partnerStatusPreflight,
+  recordTerms,
+  saveBlackout,
+  saveCoverage,
+  saveMapping,
+  setPartnerStatus,
+  updatePartner,
+} from "./admin/commands.ts";
+export type {
+  PartnerAdminRunner,
+  PartnerCommandResult,
+  PartnerRefusal,
+} from "./admin/commands.ts";
+export {
+  APPLICATION_CONVERT_ACTION,
+  applicationById,
+  convertApplication,
+  listApplications,
+  markApplicationContacted,
+  rejectApplication,
+} from "./admin/applications.ts";
+export type { ApplicationCommandResult } from "./admin/applications.ts";
+export {
+  PartnerListFilterSchema,
+  listPartners,
+  partnerDetail,
+  partnerFormOptions,
+} from "./admin/queries.ts";
+export type {
+  PartnerDetail,
+  PartnerList,
+  PartnerListFilter,
+  PartnerListItem,
+} from "./admin/queries.ts";

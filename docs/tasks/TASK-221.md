@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02: migration `0035_partner_terms_and_retention` (+ down; numbered by the orchestrator, 0033 is PR 449's and 0034 TASK-328's, so `db:check` reports the gap until both merge), the two retention handlers, `src/modules/partners/admin/` (schemas, commands, applications through spec 011's queries, reads); spec 011's `setFloristApplicationStatus` gains `from` and `statusReason`. Next: admin pages, copy, tests.
 
 ## Result
 

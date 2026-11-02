@@ -8,7 +8,10 @@
  *  - `setFloristApplicationStatus(adminCtx, id, status, options?)` — moves one application. It
  *    sets `decided_at` for `rejected` and `converted` and clears it otherwise; `converted` needs
  *    the partner the applicant became (`0005`'s `partner_application_converted_check` ties the two
- *    together), and every other status clears it.
+ *    together), and every other status clears it. Spec 012 (TASK-221) adds two options: `from`,
+ *    the status the row must still have (the update changes nothing otherwise, so two admins
+ *    cannot both decide one application), and `statusReason`, the reason a rejection carries,
+ *    written to `status_reason` (`0035`) in the same statement; every other status clears it.
  *
  * Both run inside spec 012's `withAdminContext`, whose `audit_row_change()` trigger writes the
  * `audit_log` row of a status change, so this module writes no audit row itself. The runner is a
@@ -16,7 +19,7 @@
  * them against a scratch database; the application passes nothing and gets `withAdminContext`,
  * imported at the first call.
  */
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import type { AdminContextInput, DbActor, DbTransaction } from "@/lib/db";
@@ -82,6 +85,7 @@ export const FloristApplicationRowSchema = z
     privacyNoticeVersion: z.string(),
     convertedPartnerId: z.uuid().nullable(),
     decidedAt: z.date().nullable(),
+    statusReason: z.string().nullable(),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -120,6 +124,7 @@ export async function listFloristApplications(
         privacyNoticeVersion: partnerApplication.privacyNoticeVersion,
         convertedPartnerId: partnerApplication.convertedPartnerId,
         decidedAt: partnerApplication.decidedAt,
+        statusReason: partnerApplication.statusReason,
         createdAt: partnerApplication.createdAt,
         updatedAt: partnerApplication.updatedAt,
       })
@@ -139,6 +144,8 @@ const SetStatusSchema = z
     id: z.uuid(),
     status: FloristApplicationStatusSchema,
     convertedPartnerId: z.uuid().optional(),
+    from: FloristApplicationStatusSchema.optional(),
+    statusReason: z.string().trim().min(1).max(500).optional(),
   })
   .strict()
   .refine(
@@ -146,6 +153,10 @@ const SetStatusSchema = z
       (input.status === "converted") ===
       (input.convertedPartnerId !== undefined),
     { path: ["convertedPartnerId"] },
+  )
+  .refine(
+    (input) => input.statusReason === undefined || input.status === "rejected",
+    { path: ["statusReason"] },
   );
 
 export type SetApplicationStatusResult =
@@ -156,7 +167,11 @@ export async function setFloristApplicationStatus(
   adminCtx: DbActor,
   id: string,
   status: FloristApplicationStatus,
-  options: { readonly convertedPartnerId?: string } = {},
+  options: {
+    readonly convertedPartnerId?: string;
+    readonly from?: FloristApplicationStatus;
+    readonly statusReason?: string;
+  } = {},
   run: ApplicationAdminRunner = applicationAdminRunner,
 ): Promise<SetApplicationStatusResult> {
   const parsed = SetStatusSchema.safeParse({
@@ -165,6 +180,10 @@ export async function setFloristApplicationStatus(
     ...(options.convertedPartnerId === undefined
       ? {}
       : { convertedPartnerId: options.convertedPartnerId }),
+    ...(options.from === undefined ? {} : { from: options.from }),
+    ...(options.statusReason === undefined
+      ? {}
+      : { statusReason: options.statusReason }),
   });
   if (!parsed.success) return { ok: false, reason: "invalid" };
   const input = parsed.data;
@@ -177,8 +196,16 @@ export async function setFloristApplicationStatus(
           status: input.status,
           convertedPartnerId: input.convertedPartnerId ?? null,
           decidedAt: DECIDED.includes(input.status) ? sql`now()` : null,
+          statusReason: input.statusReason ?? null,
         })
-        .where(eq(partnerApplication.id, input.id))
+        .where(
+          input.from === undefined
+            ? eq(partnerApplication.id, input.id)
+            : and(
+                eq(partnerApplication.id, input.id),
+                eq(partnerApplication.status, input.from),
+              ),
+        )
         .returning({ id: partnerApplication.id });
       return updated.length === 1
         ? { ok: true as const }
