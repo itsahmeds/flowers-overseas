@@ -405,6 +405,13 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
         key !== "footer.link.deliveryAndPayment"
       )
         continue;
+      // The one exception is a key recorded by a record-approval run, never by an agent's edit:
+      // `infoPages.status.untranslated`, recorded with record-approval-210b.py (PR 344).
+      if (
+        key === "infoPages.status.untranslated" &&
+        /record-approval-210b\.py/u.test(record.reviewedBy ?? "")
+      )
+        continue;
       expect(record.reviewed, key).toBe(false);
     }
   });

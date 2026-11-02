@@ -24,7 +24,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactElement } from "react";
 
 import { COMPANY } from "@/config/company";
-import { FLORISTS } from "@/config/florists";
+import { floristsConfig } from "@/config/florists";
 import {
   infoPageAlternatePaths,
   infoPageExists,
@@ -147,7 +147,7 @@ export function floristFormRoute(
           {page === "florist-apply" ? (
             <ApplyPage
               locale={locale}
-              form={FLORISTS.applicationForm}
+              form={floristsConfig.applicationForm}
               company={COMPANY}
             />
           ) : (

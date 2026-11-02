@@ -156,11 +156,15 @@ const FLORIST_FORM_PATHS = [
  */
 /**
  * Spec 011 (TASK-212): the florist surface under `FLORIST_BASE_PATH` (`noindex`, `no-store`, 404 in
- * production) and the florist sign-in email, which renders on no page at all.
+ * production) and the florist sign-in email, which renders on no page at all. `floristAuth` holds
+ * the sign-in pages and the surface's own chrome (menu, language, sign-out, demo notice).
+ * `floristInbox` is not here (TASK-210): the for-florists walkthrough, an indexable page, prints
+ * its labels through the real inbox components in `src/modules/partners/ui/inbox`, so those keys
+ * count toward the share like any other.
  */
 const FLORIST_PATHS = [
   "src/app/demo/vendor-inbox/**",
-  "src/modules/partners/**",
+  "src/modules/partners/auth/**",
   "src/lib/auth/florist.ts",
 ];
 
@@ -196,13 +200,11 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     paths: PAYMENTS_PATHS,
   },
   { match: "floristAuth", surface: "florist", paths: FLORIST_PATHS },
-  { match: "floristInbox", surface: "florist", paths: FLORIST_PATHS },
   { match: "emails.floristSignIn.*", surface: "email", paths: FLORIST_PATHS },
   // Spec 011 §14 pointer to A17 (TASK-210): the application and its sent page are `noindex,follow`
   // in every combination and have route files of their own, so their keys reach no indexable page.
-  // The landing's `forFlorists.status.*` stays counted (indexable by rule, AC-5). The walkthrough
-  // also prints `floristInbox.*` labels, which TASK-212's entry above scopes to the florist surface;
-  // `tests/unit/florists-pages.test.tsx` holds every one the walkthrough renders `reviewed: true`.
+  // The landing's `forFlorists.status.*` and the walkthrough's `floristInbox.*` labels stay
+  // counted: those pages are indexable by rule (AC-5).
   ...["forFlorists.apply.*", "forFlorists.sent.*"].map((match) => ({
     match,
     surface: "florist",

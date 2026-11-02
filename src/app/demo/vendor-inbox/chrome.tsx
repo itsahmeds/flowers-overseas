@@ -60,12 +60,12 @@ export function SignedOutFrame({
   readonly children: ReactNode;
 }): ReactElement {
   const options = languageLinks(language, hrefFor);
-  const label = t("floristInbox.language");
+  const label = t("floristAuth.language");
   return (
     <>
       <FloristHeader
         homeHref={FLORIST_PATHS.base}
-        homeLabel={t("floristInbox.homeLabel")}
+        homeLabel={t("floristAuth.homeLabel")}
         brand={TRADING_NAME}
       >
         <FloristLanguageLinks
@@ -97,13 +97,13 @@ export function SignedInFrame({
     <>
       <FloristHeader
         homeHref={FLORIST_PATHS.base}
-        homeLabel={t("floristInbox.homeLabel")}
+        homeLabel={t("floristAuth.homeLabel")}
         brand={TRADING_NAME}
       >
-        <FloristMenu label={t("floristInbox.menu")}>
-          <FloristMenuHeading>{t("floristInbox.language")}</FloristMenuHeading>
+        <FloristMenu label={t("floristAuth.menu")}>
+          <FloristMenuHeading>{t("floristAuth.language")}</FloristMenuHeading>
           <FloristLanguageForm
-            label={t("floristInbox.language")}
+            label={t("floristAuth.language")}
             action={FLORIST_PATHS.language}
             back={back}
             options={FLORIST_LANGUAGES.map((code) => ({
@@ -114,14 +114,14 @@ export function SignedInFrame({
           />
           <form method="post" action={FLORIST_PATHS.signOut}>
             <Button type="submit" variant="secondary" size="sm">
-              {t("floristInbox.signOut")}
+              {t("floristAuth.signOut")}
             </Button>
           </form>
         </FloristMenu>
       </FloristHeader>
       {isDemoMember(context) ? (
         <FloristDemoNotice>
-          {t.rich("floristInbox.demoNotice", {
+          {t.rich("floristAuth.demoNotice", {
             b: (chunks) => <b>{chunks}</b>,
           })}
         </FloristDemoNotice>

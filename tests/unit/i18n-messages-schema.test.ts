@@ -354,19 +354,21 @@ describe("the shipped catalogues and manifests", () => {
     // unreviewed share (`review-scope.ts`, A17).
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
+    // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the
+    // scoped namespace, when the walkthrough made `floristInbox` counted; `floristInbox.orders` is
+    // the walkthrough's "Orders" and left this queue with record-approval-210.py.
     "floristAuth.confirmSubmit",
+    "floristAuth.demoNotice",
     "floristAuth.email",
     "floristAuth.expiredBody",
+    "floristAuth.homeLabel",
+    "floristAuth.language",
+    "floristAuth.menu",
     "floristAuth.sentBody",
     "floristAuth.sentTitle",
+    "floristAuth.signOut",
     "floristAuth.submit",
     "floristAuth.title",
-    "floristInbox.demoNotice",
-    "floristInbox.homeLabel",
-    "floristInbox.language",
-    "floristInbox.menu",
-    "floristInbox.orders",
-    "floristInbox.signOut",
     "footer.link.deliveryAndPayment",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",

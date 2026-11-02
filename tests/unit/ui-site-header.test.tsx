@@ -285,12 +285,13 @@ describe("the rendered header (AC-7, AC-14)", () => {
 
       // Internal: the lockup, the switcher's sibling shown locales (`en`, `en-gb`; spec 003 §14
       // A-founder-2026-10-14c), every link entry of the six panels and each featured card, the
-      // Basket (spec 010 D10, TASK-349), and nothing else: no Send pill (Q-24d), no account item,
-      // no `For florists`, no search (A20).
+      // Basket (spec 010 D10, TASK-349), `For florists` at the row's end (spec 011 AC-9, TASK-210),
+      // and nothing else: no Send pill (Q-24d), no account item, no search (A20).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
           `/${locale}/basket`,
+          localePath(locale, "forFlorists"),
           ...SHOWN.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
@@ -307,13 +308,13 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(external).toEqual([
         `https://wa.me/${COMPANY.contact.phoneE164.slice(1)}`,
       ]);
-      // No end item is published today: the one thing carrying `data-fo-header-item` is the
-      // Basket icon link (spec 010 D10; TASK-349), an `<a>` to its page.
+      // The end cluster's one published item, `For florists` (spec 011 AC-9; TASK-210), and the
+      // Basket icon link (spec 010 D10; TASK-349), each an `<a>` to its page.
       const items = headerItems(html);
       expect(
         items.map(({ id }) => id),
         locale,
-      ).toEqual(["basket"]);
+      ).toEqual(["for-florists", "basket"]);
       for (const { id, tag } of items) {
         expect(tag, `${locale}/${id}`).toMatch(/^<a\s/);
       }
@@ -344,7 +345,6 @@ describe("the rendered header (AC-7, AC-14)", () => {
       account.signIn,
       account.orders,
       "Basket (",
-      en.nav.forFlorists as string,
       search.label,
       search.help,
     ]) {
@@ -463,7 +463,8 @@ describe("the rendered header (AC-7, AC-14)", () => {
     const html = render("en");
     expect(html).not.toMatch(/\border-\d+\b/u);
     // The Basket icon link (spec 010 D10; TASK-349) is the one keyed header item.
-    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(1);
+    // The Basket and, since spec 011 (TASK-210), `For florists`.
+    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(2);
     expect([...html.matchAll(/data-fo-header-item="basket"/g)]).toHaveLength(1);
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.

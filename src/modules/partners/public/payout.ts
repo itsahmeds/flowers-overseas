@@ -14,7 +14,7 @@
  * fails to build rather than print a payout above the price.
  */
 import {
-  FLORISTS,
+  floristsConfig,
   type MinorMoney,
   floristsConfigSchemaFor,
 } from "@/config/florists";
@@ -47,13 +47,13 @@ export async function payoutExampleView(
   locale: string,
   resolveRetail: RetailResolver = catalogueRetail,
 ): Promise<PayoutExampleView> {
-  const example = FLORISTS.payoutExample;
+  const example = floristsConfig.payoutExample;
   const retail = await resolveRetail({
     productId: example.productId,
     tierKey: example.tier,
     countryIso: example.countryIso2,
   });
-  const config = floristsConfigSchemaFor(retail).parse(FLORISTS);
+  const config = floristsConfigSchemaFor(retail).parse(floristsConfig);
   const payout = {
     amountMinor: config.payoutExample.payoutMinor,
     currency: config.payoutExample.currency,

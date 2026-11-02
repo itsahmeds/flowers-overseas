@@ -2214,22 +2214,22 @@
     "reviewed": false,
     "sourceHash": "a1e458797afaecd762789cfdc760295801c451aade22c70790196baa424d9ce1"
   },
-  "floristInbox.demoNotice": {
+  "floristAuth.demoNotice": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "7ff9fa744319819ca7e7540a0ca53799e5d9f26ed333eaad94ac24e96be1199f"
   },
-  "floristInbox.homeLabel": {
+  "floristAuth.homeLabel": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "6d7845f32ecca7176629f4e627a9f24dcad952b8d51e735c5988cf1922e17832"
   },
-  "floristInbox.language": {
+  "floristAuth.language": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
   },
-  "floristInbox.menu": {
+  "floristAuth.menu": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862"
@@ -2239,7 +2239,7 @@
     "reviewed": false,
     "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
   },
-  "floristInbox.signOut": {
+  "floristAuth.signOut": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "48f0d3d397d49f135f116d947a805b49f084f637154a8e9913e7233a11dc16a0"
@@ -4363,5 +4363,10 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "484e8a67ba8675df36c6f9bc1e846edfb71c095485ee6fec14066fb71031f107"
+  },
+  "nav.category.addOns": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
   }
 }

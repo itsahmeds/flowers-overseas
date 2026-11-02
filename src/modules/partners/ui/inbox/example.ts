@@ -8,16 +8,16 @@
  * clock: the delivery date and answer-by instant are fixed values in `src/config/florists.ts`, so
  * the ISR page is the same for every visitor.
  *
- *  - The product, its tier and the add-on are catalogue rows (`FLORISTS.payoutExample`'s product
+ *  - The product, its tier and the add-on are catalogue rows (`floristsConfig.payoutExample`'s product
  *    and tier, the configured add-on), read through the catalogue's public API.
  *  - What the florist receives is the landing's payout example, the one authored figure (§13 Q7).
- *  - The recipient is the shared Polish sample (`FLORISTS.example.recipient`, equal to
+ *  - The recipient is the shared Polish sample (`floristsConfig.example.recipient`, equal to
  *    `src/config/checkout-samples.ts`'s row), plainly fictional, with its address formatted by
  *    `formatAddressBlock()` for Poland and its phone stored as E.164.
  *  - The card message and delivery note are the buyer's own words, so they read the same in every
- *    locale (`FLORISTS.example`).
+ *    locale (`floristsConfig.example`).
  */
-import { FLORISTS } from "@/config/florists";
+import { floristsConfig } from "@/config/florists";
 import type { LocaleCode } from "@/config/locales";
 import { getProduct, listAddons, listTiers } from "@/modules/catalog";
 import { formatAddressBlock } from "@/modules/i18n";
@@ -41,13 +41,13 @@ function e164(phone: string): string {
 
 function exampleRecipient(): FloristRecipient {
   const { fullName, street, postcode, city, phone } =
-    FLORISTS.example.recipient;
+    floristsConfig.example.recipient;
   return {
     fullName,
     phoneE164: e164(phone),
     addressLines: formatAddressBlock({ street, postcode, city }, "PL"),
-    deliveryNote: FLORISTS.example.deliveryNote,
-    cardMessage: FLORISTS.example.cardMessage,
+    deliveryNote: floristsConfig.example.deliveryNote,
+    cardMessage: floristsConfig.example.cardMessage,
   };
 }
 
@@ -61,7 +61,11 @@ export async function exampleFloristOrderView(
   stage: ExampleStage = "offer",
 ): Promise<FloristOrderView> {
   void locale;
-  const { productId, tier: tierKey, countryIso2 } = FLORISTS.payoutExample;
+  const {
+    productId,
+    tier: tierKey,
+    countryIso2,
+  } = floristsConfig.payoutExample;
   const product = await getProduct(productId);
   if (product === null) {
     throw new Error(
@@ -75,14 +79,14 @@ export async function exampleFloristOrderView(
     throw new Error(`\`${productId}\` has no tier \`${tierKey}\``);
   }
   const addon = (await listAddons(countryIso2)).find(
-    (candidate) => candidate.key === FLORISTS.example.addonKey,
+    (candidate) => candidate.key === floristsConfig.example.addonKey,
   );
   if (addon === undefined) {
     throw new Error(
-      `the add-on \`${FLORISTS.example.addonKey}\` is not offered in ${countryIso2}`,
+      `the add-on \`${floristsConfig.example.addonKey}\` is not offered in ${countryIso2}`,
     );
   }
-  const sample = FLORISTS.example.recipient;
+  const sample = floristsConfig.example.recipient;
   const base = {
     assignmentId: EXAMPLE_ASSIGNMENT_ID,
     product: {
@@ -92,20 +96,20 @@ export async function exampleFloristOrderView(
       addonNameKeys: [addon.nameKey],
     },
     delivery: {
-      date: FLORISTS.example.deliveryDate,
-      timeZone: FLORISTS.example.timeZone,
+      date: floristsConfig.example.deliveryDate,
+      timeZone: floristsConfig.example.timeZone,
       countryIso2,
       town: sample.city,
       postcode: sample.postcode,
     },
     payout: {
-      amountMinor: FLORISTS.payoutExample.payoutMinor,
-      currency: FLORISTS.payoutExample.currency,
+      amountMinor: floristsConfig.payoutExample.payoutMinor,
+      currency: floristsConfig.payoutExample.currency,
     },
   };
   return FloristOrderViewSchema.parse(
     stage === "offer"
-      ? { stage, ...base, answerBy: FLORISTS.example.answerBy }
+      ? { stage, ...base, answerBy: floristsConfig.example.answerBy }
       : { stage, ...base, recipient: exampleRecipient() },
   );
 }

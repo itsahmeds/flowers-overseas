@@ -682,15 +682,15 @@
     "sentBody": "Jeśli ten adres należy do jednej z naszych kwiaciarni, wysłaliśmy na niego link. Link działa raz, przez godzinę.",
     "sentTitle": "Sprawdź pocztę",
     "submit": "Wyślij mi link",
-    "title": "Zaloguj się, aby zobaczyć zamówienia"
+    "title": "Zaloguj się, aby zobaczyć zamówienia",
+    "homeLabel": "Flowers Overseas, Twoje zamówienia",
+    "menu": "Menu",
+    "language": "Język",
+    "signOut": "Wyloguj się",
+    "demoNotice": "<b>Demo:</b> to przykładowe zamówienia. Nikt nie płaci i nic nie jest dostarczane."
   },
   "floristInbox": {
-    "demoNotice": "<b>Demo:</b> to przykładowe zamówienia. Nikt nie płaci i nic nie jest dostarczane.",
-    "homeLabel": "Flowers Overseas, Twoje zamówienia",
-    "language": "Język",
-    "menu": "Menu",
     "orders": "Zamówienia",
-    "signOut": "Wyloguj się",
     "accept": "Przyjmij",
     "address": "Adres",
     "answerBy": "Odpowiedz do {time}",
@@ -905,7 +905,8 @@
       "occasions": "Occasions",
       "ourSelection": "Our selection",
       "roses": "Roses",
-      "sympathy": "Sympathy"
+      "sympathy": "Sympathy",
+      "addOns": "Add-ons"
     },
     "currency": {
       "label": "Prices shown in {currency}"

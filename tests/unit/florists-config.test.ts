@@ -15,10 +15,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { partnerStatuses } from "../../db/schema/partners.ts";
 import { CHECKOUT_SAMPLES } from "../../src/config/checkout-samples.ts";
 import {
-  FLORISTS,
+  floristsConfig,
   FLORIST_BASE_PATH,
   FloristsConfigSchema,
-  PARTNER_STATUSES,
+  FLORIST_PARTNER_STATUSES,
   floristsConfigSchemaFor,
   signInPolicy,
 } from "../../src/config/florists.ts";
@@ -27,7 +27,7 @@ import { formatMoney } from "../../src/modules/i18n/index.ts";
 import { payoutExampleView } from "../../src/modules/partners/index.ts";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
-const { productId, tier, countryIso2 } = FLORISTS.payoutExample;
+const { productId, tier, countryIso2 } = floristsConfig.payoutExample;
 
 /** The one active retail row of the configured example, from the dataset itself. */
 async function activeRow() {
@@ -102,7 +102,10 @@ describe("AC-4: the buyer's amount is resolved, never copied", () => {
     vi.spyOn(staticPriceProvider, "countryPrices").mockResolvedValue(
       rows.map((candidate) =>
         candidate === row
-          ? { ...candidate, retailMinor: FLORISTS.payoutExample.payoutMinor }
+          ? {
+              ...candidate,
+              retailMinor: floristsConfig.payoutExample.payoutMinor,
+            }
           : candidate,
       ),
     );
@@ -112,15 +115,17 @@ describe("AC-4: the buyer's amount is resolved, never copied", () => {
 
 describe("AC-4: the config's parse", () => {
   const retail = { amountMinor: 22_900, currency: "PLN" };
-  const withPayout = (payout: Partial<typeof FLORISTS.payoutExample>) => ({
-    ...FLORISTS,
-    payoutExample: { ...FLORISTS.payoutExample, ...payout },
+  const withPayout = (
+    payout: Partial<typeof floristsConfig.payoutExample>,
+  ) => ({
+    ...floristsConfig,
+    payoutExample: { ...floristsConfig.payoutExample, ...payout },
   });
 
   it("accepts the committed config against a retail above the payout", () => {
-    expect(floristsConfigSchemaFor(retail).safeParse(FLORISTS).success).toBe(
-      true,
-    );
+    expect(
+      floristsConfigSchemaFor(retail).safeParse(floristsConfig).success,
+    ).toBe(true);
   });
 
   it.each([
@@ -150,18 +155,19 @@ describe("AC-4: the config's parse", () => {
 
   it("is strict: an unknown key fails", () => {
     expect(
-      FloristsConfigSchema.safeParse({ ...FLORISTS, vatLine: true }).success,
+      FloristsConfigSchema.safeParse({ ...floristsConfig, vatLine: true })
+        .success,
     ).toBe(false);
   });
 });
 
 describe("florists.ts's other contracts", () => {
   it("mirrors fulfillment_partner.status exactly", () => {
-    expect([...PARTNER_STATUSES]).toEqual([...partnerStatuses]);
+    expect([...FLORIST_PARTNER_STATUSES]).toEqual([...partnerStatuses]);
   });
 
   it("ships the form off and mounts the inbox at /demo/vendor-inbox (§12)", () => {
-    expect(FLORISTS.applicationForm).toBe("off");
+    expect(floristsConfig.applicationForm).toBe("off");
     expect(FLORIST_BASE_PATH).toBe("/demo/vendor-inbox");
   });
 
@@ -179,7 +185,7 @@ describe("florists.ts's other contracts", () => {
 
   it("restates the shared Polish sample recipient exactly", () => {
     const sample = CHECKOUT_SAMPLES.PL.recipient.fields;
-    expect(FLORISTS.example.recipient).toEqual({
+    expect(floristsConfig.example.recipient).toEqual({
       fullName: sample.fullName,
       street: sample.street,
       postcode: sample.postcode,

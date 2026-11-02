@@ -81,8 +81,8 @@ const PayoutExampleSchema = z
   .object({
     /** A catalogue `product.sku`. */
     productId: z.string().regex(/^FO-[A-Z]{2}-\d{3}$/u),
-    /** The destination of the example (§13 Q7): data, like every country. */
-    countryIso2: z.string().regex(/^[A-Z]{2}$/u),
+    /** The destination of the example: Poland, the first country (§13 Q7). */
+    countryIso2: z.literal("PL"),
     /** A tier key of that product (`stems_15`). */
     tier: z.string().min(1),
     /** What the florist receives, in minor units: the authored figure of §13 Q7. */

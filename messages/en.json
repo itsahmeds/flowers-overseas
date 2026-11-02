@@ -125,7 +125,8 @@
       "sympathy": "Sympathy",
       "occasions": "Occasions",
       "roses": "Roses",
-      "destinations": "Destinations"
+      "destinations": "Destinations",
+      "addOns": "Add-ons"
     },
     "search": {
       "label": "Search flowers, occasions, a city or a country",
@@ -1192,15 +1193,15 @@
     "sentTitle": "Check your email",
     "sentBody": "If this address belongs to one of our florists, we have sent a link to it. The link works once, for one hour.",
     "confirmSubmit": "Continue to your orders",
-    "expiredBody": "This link has expired or was already used. Ask for a new one."
-  },
-  "floristInbox": {
+    "expiredBody": "This link has expired or was already used. Ask for a new one.",
     "homeLabel": "Flowers Overseas, your orders",
-    "orders": "Orders",
-    "demoNotice": "<b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.",
     "menu": "Menu",
     "language": "Language",
     "signOut": "Sign out",
+    "demoNotice": "<b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered."
+  },
+  "floristInbox": {
+    "orders": "Orders",
     "stage": {
       "waiting": "Waiting for your answer",
       "inProgress": "In progress"
