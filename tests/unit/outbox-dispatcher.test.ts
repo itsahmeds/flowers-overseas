@@ -113,7 +113,12 @@ describe("spec 013's outbox routes (§5.2)", () => {
         }
       }
     }
+    // Spec 018 (TASK-341) adds `invoices` to a live order's captures.
     expect(outboxTargets("order.captured", "live").map((t) => t.name)).toEqual([
+      "routing",
+      "invoices",
+    ]);
+    expect(outboxTargets("order.captured", "test").map((t) => t.name)).toEqual([
       "routing",
     ]);
     expect(
