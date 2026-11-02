@@ -67,6 +67,8 @@ export type {
   RawRow,
   SqlRunner,
 } from "./executor";
+// Spec 013 (TASK-350): the payments read helpers run in the caller's transaction or their own.
+export { withExecutor } from "./executor";
 export {
   OUTBOX_AUDIENCES,
   OUTBOX_ROUTES,

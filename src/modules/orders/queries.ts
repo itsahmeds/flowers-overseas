@@ -678,7 +678,8 @@ export async function selectOrderDetail(
            CASE WHEN p.captured_at IS NULL THEN NULL
                 ELSE ${placedAt(sql`p.captured_at`)} END AS captured_at
     FROM payment p
-    WHERE p.order_id = ${id}
+    JOIN "order" bought ON bought.purchase_id = p.purchase_id
+    WHERE bought.id = ${id}
     ORDER BY p.created_at, p.id`);
   return AdminOrderDetailSchema.parse({
     orderId: order.id,

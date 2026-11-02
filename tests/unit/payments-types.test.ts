@@ -47,7 +47,11 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
     expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<never>();
     expect(Object.keys(payments).sort()).toEqual([
       "PAYMENT_ERROR_KEYS",
+      "PAYMENT_RECORD_STATUSES",
+      "PaymentRecordSchema",
       "declineMessageKey",
+      "paymentForOrder",
+      "paymentForPurchase",
     ]);
   });
 

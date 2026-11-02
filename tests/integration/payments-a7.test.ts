@@ -151,7 +151,11 @@ async function refusal(promise: Promise<unknown>): Promise<OrderErrorCode> {
   throw new Error("expected a refusal, and the call succeeded");
 }
 
-/** A `test` order (PLN 18 900) and its payment, as the lifecycle writes one. */
+/**
+ * A `test` order (PLN 18 900) and its payment, as the lifecycle writes one. Since
+ * `0026_payment_purchase` (TASK-350) a payment belongs to the order's purchase; `shape: "a7"`
+ * writes it the way A7 left the table (`order_id`), for a database rolled back to `0017`.
+ */
 async function orderWithPayment(
   tx: Tx,
   payment: {
@@ -159,10 +163,11 @@ async function orderWithPayment(
     providerRef?: string | null;
     method?: string | null;
     livemode?: boolean;
+    shape?: "purchase" | "a7";
   } = {
     status: "captured",
   },
-): Promise<{ orderId: string; paymentId: string }> {
+): Promise<{ orderId: string; paymentId: string; purchaseId: string }> {
   const orderId = await insertPlacedOrder(tx, {
     ...(await orderParents(tx)),
     mode: "test",
@@ -172,15 +177,31 @@ async function orderWithPayment(
       ? `pi_${crypto.randomUUID().slice(0, 12)}`
       : payment.providerRef;
   const method = payment.method === undefined ? "card" : payment.method;
-  const [row] = await tx<{ id: string }[]>`
-    INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code,
-                         livemode, capture_method, amount_captured_minor, captured_at)
-    VALUES (${orderId}, 'stripe', ${providerRef}, ${payment.status}, ${method}, 18900, 'PLN',
-            ${payment.livemode ?? false}, 'automatic',
+  if (payment.shape === "a7") {
+    const [row] = await tx<{ id: string }[]>`
+      INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
+                           currency_code, livemode, capture_method, amount_captured_minor,
+                           captured_at)
+      VALUES (${orderId}, 'stripe', ${providerRef}, ${payment.status}, ${method}, 18900, 'PLN',
+              ${payment.livemode ?? false}, 'automatic',
+              ${payment.status === "captured" ? 18900 : 0},
+              ${payment.status === "captured" ? new Date() : null})
+      RETURNING id`;
+    return { orderId, paymentId: row?.id ?? "", purchaseId: "" };
+  }
+  const [row] = await tx<{ id: string; purchase_id: string }[]>`
+    INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor,
+                         currency_code, livemode, capture_method, amount_captured_minor, captured_at)
+    VALUES ((SELECT purchase_id FROM "order" WHERE id = ${orderId}), 'stripe', ${providerRef},
+            ${payment.status}, ${method}, 18900, 'PLN', ${payment.livemode ?? false}, 'automatic',
             ${payment.status === "captured" ? 18900 : 0},
             ${payment.status === "captured" ? new Date() : null})
-    RETURNING id`;
-  return { orderId, paymentId: row?.id ?? "" };
+    RETURNING id, purchase_id`;
+  return {
+    orderId,
+    paymentId: row?.id ?? "",
+    purchaseId: row?.purchase_id ?? "",
+  };
 }
 
 describe.skipIf(server.url === undefined)(
@@ -445,15 +466,18 @@ describe.skipIf(server.url === undefined)(
     });
 
     describe("constraints (spec 002 T-39 … T-43)", () => {
-      it("AC-38 (002): payment — pending without ref or method, processing, the money bounds, one live payment per order", async () => {
+      it("AC-38 (002): payment — pending without ref or method, processing, the money bounds, one live payment per purchase (0026)", async () => {
         const result = await rolledBack(scratch.sql, async (tx) => {
           const orderId = await insertPlacedOrder(tx, {
             ...(await orderParents(tx)),
             mode: "test",
           });
+          const [owner] = await tx<{ purchase_id: string }[]>`
+            SELECT purchase_id FROM "order" WHERE id = ${orderId}`;
+          const purchaseId = owner?.purchase_id ?? "";
           const insert = (sp: Tx, fields: Record<string, unknown>) =>
             sp`INSERT INTO payment ${sp({
-              order_id: orderId,
+              purchase_id: purchaseId,
               provider: "stripe",
               status: "pending",
               amount_minor: 18900,
@@ -476,8 +500,8 @@ describe.skipIf(server.url === undefined)(
             await pgFailure(
               tx,
               (sp) =>
-                sp`INSERT INTO payment (order_id, provider, status, amount_minor, currency_code)
-                 VALUES (${orderId}, 'stripe', 'pending', 18900, 'PLN')`,
+                sp`INSERT INTO payment (purchase_id, provider, status, amount_minor, currency_code)
+                 VALUES (${purchaseId}, 'stripe', 'pending', 18900, 'PLN')`,
             )
           ).code;
           out["captured above amount"] = (
@@ -530,18 +554,20 @@ describe.skipIf(server.url === undefined)(
           "refunded above captured": "payment_amount_refunded_minor_check",
           "unknown status": "payment_status_check",
           "capture method hold": "payment_capture_method_check",
-          "second while pending": "payment_one_live_per_order_idx",
-          "second while processing": "payment_one_live_per_order_idx",
+          "second while pending": "payment_one_live_per_purchase_idx",
+          "second while processing": "payment_one_live_per_purchase_idx",
           "second once failed": "inserted",
         });
       });
 
       it("AC-39 (002): refund — requested without ref, succeeded needs ref and succeeded_at, the eleven reasons, requested_by", async () => {
         const result = await rolledBack(scratch.sql, async (tx) => {
-          const { paymentId } = await orderWithPayment(tx);
+          const { orderId, paymentId, purchaseId } = await orderWithPayment(tx);
           const insert = (sp: Tx, fields: Record<string, unknown>) =>
             sp`INSERT INTO refund ${sp({
               payment_id: paymentId,
+              order_id: orderId,
+              purchase_id: purchaseId,
               amount_minor: 500,
               currency_code: "PLN",
               reason: "quality",
@@ -579,8 +605,10 @@ describe.skipIf(server.url === undefined)(
             await pgFailure(
               tx,
               (sp) =>
-                sp`INSERT INTO refund (payment_id, amount_minor, currency_code, reason, status)
-                 VALUES (${paymentId}, 500, 'PLN', 'quality', 'requested')`,
+                sp`INSERT INTO refund (payment_id, order_id, purchase_id, amount_minor,
+                                      currency_code, reason, status)
+                 VALUES (${paymentId}, ${orderId}, ${purchaseId}, 500, 'PLN', 'quality',
+                         'requested')`,
             )
           ).code;
           const [succeeded] = await insert(tx, {
@@ -895,11 +923,17 @@ describe.skipIf(server.url === undefined)(
     it(
       "AC-37 / AC-43 (002): with one live payment the down file raises A7_ROLLBACK_LIVE_PAYMENTS and changes nothing",
       async () => {
+        // The migrations after A7 (0018 on) roll back first, as `pnpm db:rollback --to` would meet
+        // them, so the A7 down file is the newest and the one that must change nothing. They roll
+        // back before the live payment exists: `0026_payment_purchase`'s own guard refuses to
+        // roll back over a live payment (TASK-350), so the row is written in A7's shape.
+        await locked(() => runner(first.url, ["--down", "--to", A7_VERSION]));
         const { orderId } = await (async () => {
           const id = await first.sql.begin(async (tx) => {
             const made = await orderWithPayment(tx, {
               status: "captured",
               livemode: true,
+              shape: "a7",
             });
             await tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason,
                                        status, requested_by)
@@ -909,9 +943,6 @@ describe.skipIf(server.url === undefined)(
           });
           return id;
         })();
-        // The migrations after A7 (0018 on) roll back first, as `pnpm db:rollback --to` would meet
-        // them, so the A7 down file is the newest and the one that must change nothing.
-        await locked(() => runner(first.url, ["--down", "--to", A7_VERSION]));
         const snapshot = await introspect(first.sql);
         const counts = await rowCounts(first.sql);
         let raised = "";
@@ -955,8 +986,10 @@ describe.skipIf(server.url === undefined)(
             providerRef: null,
             method: null,
           });
-          await tx`INSERT INTO refund (payment_id, amount_minor, currency_code, reason, status, requested_by)
-                 VALUES (${processing.paymentId}, 500, 'PLN', 'quality', 'requested', 'system:payments')`;
+          await tx`INSERT INTO refund (payment_id, order_id, purchase_id, amount_minor, currency_code,
+                                     reason, status, requested_by)
+                 VALUES (${processing.paymentId}, ${processing.orderId}, ${processing.purchaseId},
+                         500, 'PLN', 'quality', 'requested', 'system:payments')`;
           await tx`INSERT INTO payment_dispute (payment_id, currency_code, provider_ref, amount_minor,
                                               reason, status, opened_at)
                  VALUES (${processing.paymentId}, 'PLN', 'dp_test', 18900, 'fraudulent', 'open', now())`;
