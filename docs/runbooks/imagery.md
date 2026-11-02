@@ -93,9 +93,20 @@ from the asset id.
 
 | Outcome | Count | Notes |
 |---|---|---|
-| Accepted by the founder against the §2.4 checklist | **31** | `reviewState: "approved"`, `reviewedBy: founder`, 2026-09-18 07:30Z / 07:45Z |
-| Rejected and regenerated from the same prompt with a new seed | **not recorded** | the founder ran the generate/review loop outside this repository and did not record the rejected generations; the number is honestly unknown rather than zero, and ADR-0014's risk measure is therefore unmeasured for this run |
+| Delivered for review, first batch | **27** of 31 | the zip export of 06:03 UTC; four assets were not in it (`fo-ar-001-hero`, `home-occasion-sympathy`, `home-occasion-just-because`, `home-occasion-new-baby`) |
+| Rejected at review against the §2.4 checklist | **1** | `fo-fn-001-hero`: the wreath stood on a black metal easel, not on neutral stone. The rejected file is kept, git-ignored, as `.local/imagery/rejected/fo-fn-001-hero.easel.2026-09-18.png` |
+| Regenerated from the same prompt record | **5** | the rejected wreath hero (second take: lying on neutral stone, no easel) and the four undelivered assets. ChatGPT takes no seed (spec 006 §14 A6), so "regenerate" here is the same prompt record run again |
+| Accepted by the founder against the §2.4 checklist | **31** | `reviewState: "approved"`, `reviewedBy: founder`, 2026-09-18 07:30Z (26) / 07:45Z (5) |
 | Retouched | **0** | forbidden: a checklist failure is a regeneration, never a repair |
+| Discarded inside the generator before delivery | **not recorded** | the founder's ChatGPT session is outside this repository; this count is unknown, not zero |
+
+**The loop as executed, end to end, for one product (spec 006 T-28).** FO-FN-001's hero went
+through every step of §1: prompt record → generated → reviewed and **rejected** (easel) →
+regenerated from the same record → reviewed and accepted → original landed → row approved →
+variants derived by `pnpm media:variants` (TASK-080) → `pnpm seed:check` budgets clean →
+`pnpm media:variants --check` clean → uploaded (TASK-138). Of the 32 files reviewed for the demo
+set, 1 was rejected (3 %), which is ADR-0014's named risk measured once: the generator's misses
+were caught by the checklist, not by a buyer.
 
 **Intake finding, recorded rather than papered over.** `plan/01` §6 asks for originals of ≥ 2000 px
 on the long edge. The approved set is **1024–1672 px** (`home-hero` 1672 × 941, the occasion tiles
@@ -157,7 +168,15 @@ pays.
 - **Withdrawing an image.** Set `reviewState` to `rejected` (or delete the row and its variants).
   The slot returns to the captioned placeholder with no `<img>`; no template changes.
 
-## 6. Five standing notes
+## 6. Six standing notes
+
+- **Watch the bucket's storage beside the database's usage.** Spec 002's daily Neon usage probe
+  (TASK-029, not built yet) is where the R2 storage and operations probe belongs, as one more
+  sample in the same job (`plan/13` D1: the pricing pages change quarterly, so the probe reads
+  the bill rather than trusting a remembered allowance). R2 bills stored bytes and operations,
+  not egress. The derived set is 21 474 748 B across 862 variants
+  (`pnpm media:variants --check`, 2026-10-25); every new batch adds to it, and nothing is ever
+  deleted by the upload.
 
 - **The image origins must stay crawlable.** When spec 007 lifts `Disallow: /`, neither media
   host may be blocked, or Google cannot fetch the images it evaluates for Core Web Vitals. Since
