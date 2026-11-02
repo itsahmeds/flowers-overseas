@@ -12,6 +12,7 @@ import fixture from "../fixtures/resend/send-email.json" with { type: "json" };
 import {
   MailerError,
   RESEND_ENDPOINT,
+  capturingMailer,
   resendMailer,
 } from "../../src/modules/notifications/mailer.ts";
 
@@ -98,5 +99,100 @@ describe("resendMailer (Resend send-email contract)", () => {
       mailer.send({ ...message, to: "not-an-address" }),
     ).rejects.toThrow();
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Spec 016 §5.2 and §12's request on spec 012 (TASK-331, AC-19): an optional idempotency key, sent
+ * as Resend's `Idempotency-Key`, and the two 409s told apart by `MailerError.code`.
+ */
+describe("resendMailer idempotency (spec 016 AC-19)", () => {
+  const key =
+    "outbox:2f1d1c38-0b44-4c55-9a43-6f6f0e1f2a11:offer:6a0d7e2b-3c1f-4f63-8d0e-8b1c5a9e7d21";
+
+  it("sends the key as the Idempotency-Key header and keeps it out of the body", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    await resendMailer(config, fetchImpl).send({
+      ...message,
+      idempotencyKey: key,
+    });
+    const [, init] = fetchImpl.mock.calls[0] ?? [];
+    expect(new Headers(init?.headers).get("idempotency-key")).toBe(key);
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect(Object.keys(body).sort()).toEqual([...fixture.requestFields].sort());
+  });
+
+  it("sends no Idempotency-Key header without a key", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    await resendMailer(config, fetchImpl).send(message);
+    const [, init] = fetchImpl.mock.calls[0] ?? [];
+    expect(new Headers(init?.headers).has("idempotency-key")).toBe(false);
+  });
+
+  it("names invalid_idempotent_request on its 409", async () => {
+    const send = resendMailer(
+      config,
+      respond(409, fixture.response409Invalid),
+    ).send({ ...message, idempotencyKey: key });
+    await expect(send).rejects.toMatchObject({
+      name: "MailerError",
+      code: "invalid_idempotent_request",
+    });
+    await expect(send).rejects.not.toThrow(/founder@example\.test/u);
+  });
+
+  it("names concurrent_idempotent_requests on its 409", async () => {
+    await expect(
+      resendMailer(config, respond(409, fixture.response409Concurrent)).send({
+        ...message,
+        idempotencyKey: key,
+      }),
+    ).rejects.toMatchObject({ code: "concurrent_idempotent_requests" });
+  });
+
+  it("gives every other failure, a 409 without a known name included, no code", async () => {
+    await expect(
+      resendMailer(config, respond(409, { statusCode: 409 })).send(message),
+    ).rejects.toMatchObject({ code: null });
+    await expect(
+      resendMailer(config, respond(500, {})).send(message),
+    ).rejects.toMatchObject({ code: null });
+    await expect(
+      resendMailer(config, respond(422, fixture.response422)).send(message),
+    ).rejects.toMatchObject({ code: null });
+  });
+
+  it("refuses a key longer than Resend's 256 characters before any request", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    await expect(
+      resendMailer(config, fetchImpl).send({
+        ...message,
+        idempotencyKey: "k".repeat(257),
+      }),
+    ).rejects.toThrow();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe("capturingMailer idempotency, as Resend's (spec 016 AC-19)", () => {
+  it("returns the first reference for the same key and body, captures once, and 409s another body", async () => {
+    const mailer = capturingMailer("ops@example.test");
+    mailer.clear();
+    const keyed = {
+      ...message,
+      idempotencyKey: "job:assignment.remind:1:offer-reminder:x",
+    };
+    const first = await mailer.send(keyed);
+    const again = await mailer.send(keyed);
+    expect(again.providerRef).toBe(first.providerRef);
+    expect(mailer.messages()).toHaveLength(1);
+    await expect(
+      mailer.send({ ...keyed, html: "<p>Another token</p>" }),
+    ).rejects.toMatchObject({ code: "invalid_idempotent_request" });
+    expect(mailer.messages()).toHaveLength(1);
+    await mailer.send(message);
+    await mailer.send(message);
+    expect(mailer.messages()).toHaveLength(3);
+    mailer.clear();
   });
 });

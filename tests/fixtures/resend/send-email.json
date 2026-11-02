@@ -1,10 +1,23 @@
 {
   "source": "https://resend.com/docs/api-reference/emails/send-email (request body fields and the 200 response), recorded 2026-10-18; no account was called",
-  "response200": { "id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794" },
+  "response200": {
+    "id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794"
+  },
   "response422": {
     "statusCode": 422,
     "name": "validation_error",
     "message": "Invalid `to` field."
   },
-  "requestFields": ["from", "to", "subject", "text", "html", "tags"]
+  "requestFields": ["from", "to", "subject", "text", "html", "tags"],
+  "idempotencySource": "https://resend.com/docs/dashboard/emails/idempotency-keys (the `Idempotency-Key` header, 1 to 256 characters, a 24-hour window, the two 409 error names), read 2026-11-02; the body shape is the API's error shape of `response422`; no account was called",
+  "response409Invalid": {
+    "statusCode": 409,
+    "name": "invalid_idempotent_request",
+    "message": "This idempotency key has already been used on a request that had a different payload. Retrying this request is useless without changing the idempotency key or payload."
+  },
+  "response409Concurrent": {
+    "statusCode": 409,
+    "name": "concurrent_idempotent_requests",
+    "message": "Same idempotency key used while original request is still in progress."
+  }
 }
