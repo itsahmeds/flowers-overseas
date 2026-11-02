@@ -64,6 +64,7 @@ import {
   isGuidePublished,
 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
+import { PRODUCT_QUERY_KEYS } from "@/config/url-keys";
 import { writeStepSummaryStdout } from "@/lib/step-summary";
 import {
   type DeliveryWindow,
@@ -126,6 +127,8 @@ import {
   MinorUnitsSchema,
   PriceProjectionSchema,
   ProductPageIdentitySchema,
+  ProductSearchParamsSchema,
+  type ProductSearchParams,
   TierKeySchema,
 } from "./schemas";
 import { hasSlug, slugFor } from "./slugs";
@@ -1448,6 +1451,57 @@ export interface ProductViewOptions {
   /** Spec 009's `product` link id: related cards are tiles until it is published (008 §13 Q8). */
   readonly productLinks?: boolean;
   readonly deployment?: DeploymentDescriptor;
+}
+
+/** A request's query, as Next hands a page its `searchParams`. */
+export type ProductQuery = Readonly<
+  Record<string, string | readonly string[] | undefined>
+>;
+
+/** What `productSearchParams()` read from one request's query. */
+export interface ProductSearchRequest {
+  /** Every parameter name the request carried with a value, honoured or not, sorted. */
+  readonly keys: readonly string[];
+  /** The well-formed `tier` and `date`, ready for `ProductViewOptions.selection`. */
+  readonly selection: { readonly tierKey?: string; readonly date?: string };
+}
+
+/**
+ * The product page's query, parsed by **`ProductSearchParamsSchema`** (spec 009 §5.2, §14 A10,
+ * AC-15; TASK-128). It cannot fail: a stale link from a chat message must still show the product.
+ *
+ *  - Each of `tier` and `date` is parsed **on its own**, so a malformed date does not take a valid
+ *    tier with it; a malformed value reads as absent (the default rendering).
+ *  - Every other parameter is **dropped**: the strict schema is handed the two keys alone.
+ *  - A repeated key reads its first value, as the listing's does.
+ *
+ * Whether the tier is one of this product's and the date one the buyer can choose is the data's
+ * question, answered by `productView()` with the same fallback, never a 404 and never an error.
+ * `keys` is what the parameter route's guard reads: a request with neither key did not come
+ * through the rewrite (`src/lib/product-rewrites.ts`).
+ */
+export function productSearchParams(query: ProductQuery): ProductSearchRequest {
+  const keys = Object.entries(query)
+    .filter(([, value]) => value !== undefined)
+    .map(([name]) => name)
+    .sort();
+  const picked: Record<string, string> = {};
+  for (const key of PRODUCT_QUERY_KEYS) {
+    const raw = query[key];
+    const value = typeof raw === "string" ? raw : raw?.[0];
+    if (value === undefined) continue;
+    if (ProductSearchParamsSchema.safeParse({ [key]: value }).success) {
+      picked[key] = value;
+    }
+  }
+  const parsed: ProductSearchParams = ProductSearchParamsSchema.parse(picked);
+  return {
+    keys,
+    selection: {
+      ...(parsed.tier === undefined ? {} : { tierKey: parsed.tier }),
+      ...(parsed.date === undefined ? {} : { date: parsed.date }),
+    },
+  };
 }
 
 /**

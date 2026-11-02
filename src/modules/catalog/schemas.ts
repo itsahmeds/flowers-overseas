@@ -1086,3 +1086,30 @@ export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
     };
   },
 );
+
+/**
+ * A tier key as a query value: lowercase letters, digits and `_`, at most 32 characters. The
+ * shape only; whether it names one of this product's tiers is the data's answer, in
+ * `productView()` (an old `?tier=stems_18` after the odd-count ladder, TASK-240, is well formed
+ * and falls back to the default tier there).
+ */
+export const TIER_PARAMETER_PATTERN = /^[a-z0-9_]{1,32}$/u;
+
+/**
+ * The product page's query string (spec 009 §5.2 **`ProductSearchParamsSchema`**, §14 A10, AC-15;
+ * TASK-128): `{ tier?, date? }`, **strict**. Only the internal parameter route parses it
+ * (`src/app/[locale]/%5Fquery/-product/…`); the product route reads no query string.
+ *
+ * `.strict()`: an unknown key is a parse failure, so nothing but the two keys can reach the view.
+ * `productSearchParams()` (`product.ts`) is the one caller: it hands this schema the two keys
+ * alone, one at a time, so an unknown parameter beside them is dropped and a malformed value of
+ * one key does not take the other with it. Membership is not decided here: an unknown tier, a
+ * date outside the window and a date that is not selectable all parse, and `productView()` falls
+ * back to the default rendering for each (§5.2: "never a 404, never an error page").
+ */
+export const ProductSearchParamsSchema = z.strictObject({
+  tier: z.string().regex(TIER_PARAMETER_PATTERN).optional(),
+  date: IsoDateSchema.optional(),
+});
+
+export type ProductSearchParams = z.output<typeof ProductSearchParamsSchema>;

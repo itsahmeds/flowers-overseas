@@ -77,6 +77,13 @@ const PARSERS: readonly Entry[] = [
     reason:
       "calls the same-file parseSearch(), which runs ListingSearchParamsSchema.parse",
   },
+  // Spec 009 §5.2, §14 A10 (TASK-128): the product parameter route hands its query to the one
+  // parser, which runs the strict schema on `tier` and `date` and drops every other key.
+  {
+    entry: "src/modules/catalog/product.ts#productSearchParams",
+    reason:
+      "ProductSearchParamsSchema.safeParse per key, then ProductSearchParamsSchema.parse",
+  },
   // Spec 010 (TASK-203): the step actions hand the posted FormData to their runner, which builds
   // the destination's strict step schema and parses the form with it before anything reads it.
   {
@@ -970,6 +977,7 @@ describe("T-57: the real tree", () => {
     expect(PARSERS.map((e) => e.entry)).toEqual([
       "src/modules/payments/webhooks.ts#ingestWebhook",
       "src/modules/catalog/params.ts#listingRequest",
+      "src/modules/catalog/product.ts#productSearchParams",
       "src/modules/checkout/steps.ts#runRecipientStep",
       "src/modules/checkout/steps.ts#runCardAndBuyerStep",
       "src/modules/checkout/steps.ts#runUpdateSelection",

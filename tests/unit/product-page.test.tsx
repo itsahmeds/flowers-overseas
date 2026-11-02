@@ -1937,3 +1937,63 @@ describe("TASK-249 (N-07, spec 004 AC-50, §8 WCAG 2.4.3): the trail is the firs
     );
   });
 });
+
+/**
+ * The page's one `GET` form (spec 009 §2, §5.2, §14 A10, AC-15; AC-13's JS-off half is built here
+ * and asserted in TASK-129's T-13; TASK-128). It submits to the **bare** product URL, holds every
+ * size radio and every date radio, holds the submit only in `live`, and draws nothing of its own.
+ */
+describe("the product form (TASK-128)", () => {
+  /** The one `<form …>…</form>` of the markup, and its opening tag. */
+  const formOf = (html: string): { open: string; body: string } => {
+    const forms = html.match(/<form\b[^>]*>[\s\S]*?<\/form>/gu) ?? [];
+    expect(forms).toHaveLength(1);
+    const [form = ""] = forms;
+    return { open: /^<form\b[^>]*>/u.exec(form)?.[0] ?? "", body: form };
+  };
+  const count = (html: string, pattern: RegExp): number =>
+    html.match(pattern)?.length ?? 0;
+
+  for (const [state, make] of [
+    ["live", () => liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK })],
+    ["preview", () => viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK })],
+    ["unavailable", () => viewOf("en", "DE", AMBER, { now: WOMENS_DAY_WEEK })],
+  ] as const) {
+    it(`${state}: one GET form to the bare URL, holding every size and date radio`, async () => {
+      const view = await make();
+      expect(view.delivery.state).toBe(state);
+      const html = render(view);
+      const { open, body } = formOf(html);
+      expect(open).toContain('method="get"');
+      expect(open).toContain(`action="${view.path}"`);
+      expect(view.path).not.toContain("?");
+      // `display: contents`: the buy section's grid places its two blocks as before.
+      expect(open).toMatch(/class="contents"/u);
+      const tiers = count(html, /name="tier"/gu);
+      expect(tiers).toBe(view.tiers.length);
+      expect(count(body, /name="tier"/gu)).toBe(tiers);
+      const dates = count(html, /name="date"/gu);
+      expect(count(body, /name="date"/gu)).toBe(dates);
+      // The submit renders only where a date can be chosen (TASK-126), inside the form.
+      const submits = count(html, /type="submit"/gu);
+      expect(submits).toBe(state === "live" ? 1 : 0);
+      expect(count(body, /type="submit"/gu)).toBe(submits);
+      if (state === "live") expect(dates).toBeGreaterThan(0);
+    });
+  }
+
+  it("is never an `<a href>` carrying `tier` or `date` (AC-15)", async () => {
+    for (const view of [
+      await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK }),
+      await viewOf("de", "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+    ]) {
+      const hrefs = [
+        ...render(view).matchAll(/<a\b[^>]*\bhref="([^"]*)"/gu),
+      ].map((match) => match[1] ?? "");
+      expect(hrefs.length).toBeGreaterThan(5);
+      expect(hrefs.filter((href) => /[?&](?:tier|date)=/u.test(href))).toEqual(
+        [],
+      );
+    }
+  });
+});

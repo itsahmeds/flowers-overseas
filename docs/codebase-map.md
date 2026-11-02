@@ -14,11 +14,11 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +12 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +108 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +111 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +7 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +14 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +116 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
@@ -28,7 +28,7 @@ task actually touches.
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +34 |
-| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +63 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +64 |
 
 ## Config (`src/config/`)
 
@@ -93,12 +93,14 @@ task actually touches.
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec… | 004 |
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six… | 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group —… | 004 |
+| `[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/-product/{segment}/{child}/{gr… | 009 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the… | 008 |
 | `[locale]/(checkout)/basket/BasketView.tsx` | The basket page's body (spec 010 §14… | 010 |
 | `[locale]/(checkout)/basket/page.tsx` | `/{locale}/basket` (spec 010 §14… | 010 |
 | `[locale]/-choose/-next/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchil… | 009 |
+| `[locale]/@header/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | The header of the product parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
 | `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
@@ -127,6 +129,7 @@ task actually touches.
 | `[locale]/layout.tsx` | The document layout for every localised URL… | 003 |
 | `[locale]/listing-json-ld.tsx` | The listing pages' JSON-LD, mounted once per… | 008 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3,… | 003 |
+| `[locale]/product-route.tsx` | The product page's head and body, once, for the… | 009 |
 | `[locale]/route-header.tsx` | The commerce header as one route draws it (spec… | 043 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
 | `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first… | 012 |
@@ -249,10 +252,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 417 |
+| `tests/unit/` | 420 |
 | `tests/integration/` | 65 |
 | `tests/contract/` | 28 |
-| `tests/e2e/` | 74 |
+| `tests/e2e/` | 75 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
