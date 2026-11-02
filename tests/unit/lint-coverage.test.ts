@@ -148,6 +148,7 @@ const SDK_TABLE: readonly {
       "scripts/catalogue-parity.ts",
       "scripts/attestations-import.ts",
       "scripts/orders-rotate-tracking.ts",
+      "scripts/florists-demo-member.ts",
     ],
   },
   {

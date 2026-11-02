@@ -267,6 +267,7 @@ export function floristPaths(base: string = FLORIST_BASE_PATH) {
     signIn: `${base}/sign-in`,
     confirm: `${base}/sign-in/confirm`,
     order: (assignmentId: string) => `${base}/orders/${assignmentId}`,
+    testOrder: `${base}/api/test-order`,
   });
 }
 

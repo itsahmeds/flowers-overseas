@@ -5984,5 +5984,60 @@
     "reviewedBy": "founder",
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
+  },
+  "floristInbox.page.groupDelivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "906115657390f3675639f46a572eee069155214169a45be4046933527a95c67b"
+  },
+  "floristInbox.page.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2a74b71a46a18a9d0de90df09228251fe8a57b0e0955f2cf050ab72cec25e94b"
+  },
+  "floristInbox.page.expired": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ccb51aee5e57959549ec21ea73317f17baf609c5da242685f5043bb5698e3e10"
+  },
+  "floristInbox.page.beingMade": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0bbd09f250bdeb17ffc3866c999e5152d75558a61420f49ff599c6299258c750"
+  },
+  "floristInbox.page.addPhoto": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2dbe2ae2c0e5e4d42f100f24831e25d0a2e19d5fa85011013dec5180824eb17c"
+  },
+  "floristInbox.page.photoReceived": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8b226d82467219955492cc977662b7550c71f1f8a091289cd4824edf28c970ac"
+  },
+  "floristInbox.page.testOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cbe5bc41aad5a33788d15eeb8ed5ecdde3786142c5560b0e87cb9f196d37849d"
+  },
+  "floristInbox.page.refresh": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0e91610117029a62a478b7fa7df0b8598bebe3ab1e192d4b1882e310719c9671"
+  },
+  "floristInbox.page.refreshStopped": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ebde5f3cd051001b9124e6485d6722f612a8ae4d44aabf27def0ca5a47159fe9"
+  },
+  "floristInbox.page.notFoundTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "30658cae73f22632fd76a8595de4ae3af62f75346b34b14fb0543faf0dec3e16"
+  },
+  "floristInbox.page.notFoundLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "02c7b2b03bb3511d118ee251677c206e69a39e1551d796038b29d273d6b85ea7"
   }
 }

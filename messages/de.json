@@ -709,7 +709,20 @@
       "inProgress": "In Arbeit",
       "waiting": "Wartet auf Ihre Antwort"
     },
-    "youReceive": "Sie erhalten <strong>{payout}</strong>"
+    "youReceive": "Sie erhalten <strong>{payout}</strong>",
+    "page": {
+      "groupDelivered": "Zugestellt",
+      "empty": "Im Moment gibt es keine Aufträge. Wir schreiben Ihnen eine E-Mail, sobald einer eingeht.",
+      "expired": "Die Zeit für eine Antwort ist abgelaufen.",
+      "beingMade": "Wird gebunden",
+      "addPhoto": "Foto hinzufügen",
+      "photoReceived": "Foto erhalten. Vielen Dank.",
+      "testOrder": "Testauftrag senden",
+      "refresh": "Aktualisieren",
+      "refreshStopped": "Die Aktualisierung ist pausiert, solange Sie nicht da sind.",
+      "notFoundTitle": "Auftrag nicht gefunden",
+      "notFoundLine": "Dieser Auftrag ist nicht mehr in Ihrer Liste."
+    }
   },
   "footer": {
     "cookieSettings": "Cookie-Einstellungen",
