@@ -367,6 +367,8 @@ describe.skipIf(server.url === undefined)(
           ...AUDITED_TABLES,
           ...BLOG_TABLES,
           "review",
+          // Spec 020a §5.1 (migration `0031_admin_order_actions`, TASK-359).
+          "admin_order_action",
           ...CATALOGUE_CMS_AUDITED_TABLES,
         ].sort(),
       );
