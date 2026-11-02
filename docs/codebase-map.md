@@ -19,11 +19,11 @@ task actually touches.
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +122 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +123 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
-| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +4 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-actions.test.ts`, `integration/florist-inbox.test.ts` +7 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-inbox.test.ts` +5 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-applications.test.ts` +8 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
@@ -150,6 +150,7 @@ task actually touches.
 | `[locale]/dla-kwiaciarni/zglos-sie/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie`: The… | 011 |
 | `[locale]/dla-kwiaciarni/zglos-sie/wyslano/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie/wyslano`:… | 011 |
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
+| `[locale]/for-florists/apply/actions.ts` | The florist application's server action (spec… | 011 |
 | `[locale]/for-florists/apply/page.tsx` | `/{locale}/for-florists/apply`: The… | 011 |
 | `[locale]/for-florists/apply/sent/page.tsx` | `/{locale}/for-florists/apply/sent`: The… | 011 |
 | `[locale]/fuer-floristen/bewerben/gesendet/page.tsx` | `/{locale}/fuer-floristen/bewerben/gesendet`:… | 011 |
@@ -292,8 +293,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 434 |
-| `tests/integration/` | 71 |
+| `tests/unit/` | 436 |
+| `tests/integration/` | 72 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
