@@ -32,6 +32,18 @@ export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     if (!isBuildPhase()) assertRuntimeEnv(process.env);
     await import("./sentry.server.config");
+    // Spec 012b AC-3 (TASK-294): in `production`, `staging` and `preview` the destination registry
+    // is the database's, read here before the first render and before the build prerenders. A
+    // failed read throws; with nothing installed every `countryConfig()` read throws as well.
+    const { primeCountryRegistry } =
+      await import("./src/modules/geo/db/runtime");
+    await primeCountryRegistry();
+    // Spec 012b §2.3 (TASK-295): verify the open publish run against this deployment and purge
+    // what changed while it built. Never during the build, and never blocking the boot.
+    if (!isBuildPhase()) {
+      const { bootPublish } = await import("./src/lib/publish-runtime");
+      void bootPublish();
+    }
   }
   if (process.env.NEXT_RUNTIME === "edge") {
     await import("./sentry.edge.config");

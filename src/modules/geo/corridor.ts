@@ -37,8 +37,9 @@
  * destination hits before 008 ships, exactly as the artboard's state C draws it — and AC-8's
  * live-state assertions drive them from a fixture.
  */
+import { manifestAdmits } from "../../lib/existence.ts";
 import {
-  COUNTRIES,
+  COUNTRY_CODES,
   type CountryIso2,
   type CountryOperations,
   countryConfig,
@@ -72,9 +73,7 @@ import {
 import { hasActivePartners } from "./partners.ts";
 
 /** The seven destinations, as the closed code set this module iterates. */
-const COUNTRY_SET: readonly CountryIso2[] = COUNTRIES.map(
-  (country) => country.iso2,
-);
+const COUNTRY_SET: readonly CountryIso2[] = COUNTRY_CODES.filter(isCountryIso2);
 
 /** How many months of occasions the calendar lists (spec 007 §2, AC-22). */
 export const CORRIDOR_CALENDAR_MONTHS = 12;
@@ -191,9 +190,16 @@ export function corridorPageExists(iso2: string, locale: string): boolean {
   const country = countryConfig(iso2);
   const published = country.status === "live" || isGuidePublished(iso2);
   if (!published) return false;
-  return (
-    corridorContentView(iso2, content, corridorState(iso2, locale)) !==
+  if (
+    corridorContentView(iso2, content, corridorState(iso2, locale)) ===
     undefined
+  ) {
+    return false;
+  }
+  // Spec 012b §2.3, AC-5 (TASK-295): the data says so AND the running build emitted the URL, so
+  // a go-live's new corridor page appears at the publish it requests, never as a 404 link.
+  return manifestAdmits(
+    localePath(locale, "destinations", corridorSlug(iso2, locale)),
   );
 }
 

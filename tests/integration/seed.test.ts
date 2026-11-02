@@ -140,7 +140,8 @@ describe.skipIf(server.url === undefined)(
         const edit: Record<(typeof SOURCE_TABLES)[number], string> = {
           country: "vat_rate_bp = 1234",
           product: "stem_count = 99",
-          country_price: "retail_minor = 12345",
+          // Not `retail_minor`: `0033`'s guard refuses a price change on an active product.
+          country_price: "vat_rate_bp = 1234",
           fulfillment_partner: "capacity_per_day = 3",
           partner_catalog_mapping: "partner_payout_minor = 1",
         };

@@ -29,6 +29,8 @@ export const adminPermissions = [
   // spec 012b §5.2 (TASK-293): the two rows the review ledger reads.
   "translation.attest",
   "media.review",
+  // spec 012b §5.2 (TASK-295): Publish, the rebuild of the tracked branch head.
+  "catalogue.publish",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -53,6 +55,7 @@ export const ADMIN_PERMISSIONS: Readonly<
   // (`attest()` checks the grant); photos need `media.review`.
   "translation.attest": ["admin", "ops", "finance", "content"],
   "media.review": ["admin", "content"],
+  "catalogue.publish": ["admin", "content"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

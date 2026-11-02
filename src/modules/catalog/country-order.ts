@@ -14,7 +14,7 @@
  * spelling the page does not show would look shuffled.
  */
 import {
-  COUNTRIES,
+  activeCountries,
   type CountryConfig,
   type CountryIso2,
   countryConfig,
@@ -92,6 +92,8 @@ export function orderedCountryCodes(
   codes?: readonly CountryIso2[],
 ): CountryIso2[] {
   const rows: readonly CountryConfig[] =
-    codes === undefined ? COUNTRIES : codes.map((iso2) => countryConfig(iso2));
+    codes === undefined
+      ? activeCountries()
+      : codes.map((iso2) => countryConfig(iso2));
   return orderCountries(rows, locale).map((country) => country.iso2);
 }

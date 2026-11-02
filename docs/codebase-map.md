@@ -14,19 +14,19 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +12 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +113 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +116 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +9 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +121 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +45 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +122 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` +2 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `unit/florist-surface.test.ts` +3 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
-| `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
+| `search` | The only import path into the search module:… | 045 | `unit/existence.test.ts`, `unit/search-config.test.ts` +7 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +37 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +66 |
 
@@ -168,7 +168,9 @@ task actually touches.
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
-| `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
+| `admin/(signed-in)/page.tsx` | GET /admin: the three counters, plus spec… | 012 |
+| `admin/(signed-in)/publish/actions.ts` | POST /admin/publish: the Publish button's… | 012 |
+| `admin/(signed-in)/publish/page.tsx` | GET /admin/publish: what a publish would add… | 012 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3,… | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
 | `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint answers 404 | 012 |
@@ -221,8 +223,10 @@ task actually touches.
 | `attestations-import.ts` | `attestations:import` | Recorded approvals into the review ledger… |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the… |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec… |
-| `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next… |
+| `build.ts` | `build` | `pnpm build`: the ECB snapshot step, `next… |
+| `cache-warm.ts` | `cache:warm` | `pnpm cache:warm`: request each given URL once… |
 | `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs,… |
+| `catalogue-parity-catalogue.ts` | — | `pnpm catalogue:parity`, the catalogue and… |
 | `catalogue-parity.ts` | `catalogue:parity` | Static vs database registry parity, read-only… |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` |
@@ -244,6 +248,7 @@ task actually touches.
 | `decisions-log.ts` | `decisions:log` | Decision files collected into… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11… |
 | `env-check.ts` | `env:check` | `pnpm env:check` |
+| `existence-manifest.ts` | — | The existence manifest step of `pnpm build`:… |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed… |
 | `fonts/build-wordmark.ts` | `fonts:wordmark` | `pnpm fonts:wordmark` — outlines the wordmark… |
 | `fx-refresh.ts` | — | Weekday FX rebuild: rebuild each Railway `web`… |
@@ -282,8 +287,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 430 |
-| `tests/integration/` | 68 |
+| `tests/unit/` | 436 |
+| `tests/integration/` | 69 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |

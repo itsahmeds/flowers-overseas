@@ -202,6 +202,11 @@ export const product = pgTable(
     retiredAt: timestamp("retired_at", { withTimezone: true }),
     source: text("source").notNull().default("seed"),
     /**
+     * Set once by a trigger at the first `draft → active`, never cleared (migration
+     * `0033_catalogue_cms`, spec 012b §2.6 F2): from then on a price is only superseded.
+     */
+    firstActiveAt: timestamp("first_active_at", { withTimezone: true }),
+    /**
      * The flower types and colours **after** the primary one, in authored order, and the allergen
      * attribute (`plan/10` §1.1; migration `0025_product_facets`, TASK-070). The primary stays in
      * its own column above, and a check refuses it here, so `[primary, ...others]` is the facet.

@@ -59,6 +59,7 @@
  * too. Making it synchronous would mean re-reading the dataset outside the provider seam, which
  * is the one thing spec 005 §5.2 forbids. `pnpm check:no-db` covers this file.
  */
+import { manifestAdmits, manifestInForce } from "@/lib/existence";
 import { z } from "zod";
 
 import {
@@ -772,6 +773,57 @@ async function occasionsIndexExists(
  */
 export async function listingExists(identity: unknown): Promise<boolean> {
   const parsed = ListingIdentitySchema.parse(identity);
+  if (!(await databaseListingExists(parsed))) return false;
+  // Spec 012b §2.3, AC-5 (TASK-295/296): the database says so AND the running build emitted it.
+  const path = existingListingPath(parsed);
+  return path !== undefined && manifestAdmits(path);
+}
+
+/** The path of the listing `parsed` names, by the builders `listingPages()` uses. */
+function existingListingPath(
+  parsed: z.infer<typeof ListingIdentitySchema>,
+): string | undefined {
+  if (!isLocaleCode(parsed.locale)) return undefined;
+  const locale = parsed.locale;
+  const iso2 =
+    parsed.countryIso !== undefined && isCountryIso2(parsed.countryIso)
+      ? parsed.countryIso
+      : undefined;
+  const key = parsed.entityKey;
+  const kind = (pageType: ListingPageType): "category" | "occasion" =>
+    pageType === "countryCategory" || pageType === "categoryHub"
+      ? "category"
+      : "occasion";
+  switch (parsed.pageType) {
+    case "countryShopRoot":
+      return iso2 === undefined
+        ? undefined
+        : pathOf(locale, "countryShopRoot", corridorSlug(iso2, locale));
+    case "countryCategory":
+    case "countryOccasion": {
+      if (iso2 === undefined || key === undefined) return undefined;
+      const slug = slugFor(kind(parsed.pageType), key, locale);
+      return slug === undefined
+        ? undefined
+        : pathOf(locale, parsed.pageType, corridorSlug(iso2, locale), slug);
+    }
+    case "categoryHub":
+    case "occasionHub": {
+      if (key === undefined) return undefined;
+      const slug = slugFor(kind(parsed.pageType), key, locale);
+      return slug === undefined
+        ? undefined
+        : pathOf(locale, parsed.pageType, undefined, slug);
+    }
+    case "occasionsIndex":
+      return pathOf(locale, "occasionsIndex");
+  }
+}
+
+/** The database half of `listingExists()`: the rules of spec 008 §2, as before publishing. */
+async function databaseListingExists(
+  parsed: z.infer<typeof ListingIdentitySchema>,
+): Promise<boolean> {
   if (!isLocaleCode(parsed.locale)) return false;
   const locale = parsed.locale;
   const iso2 =
@@ -923,7 +975,8 @@ export async function listingPages(
     }
   }
 
-  return pages;
+  // Spec 012b §2.3, AC-5 (TASK-296): the database AND the running manifest.
+  return pages.filter((page) => manifestAdmits(page.path));
 }
 
 /**
@@ -1187,7 +1240,13 @@ export async function listingDatedSources(
 
   const now = options.now ?? new Date();
   const days: (string | undefined)[] = [];
-  for (const product of await productsFor(pageType, entityKey, kind, iso2)) {
+  for (const product of await productsFor(
+    pageType,
+    entityKey,
+    kind,
+    iso2,
+    locale,
+  )) {
     const tier = await defaultTier(product.sku);
     const query = {
       productId: product.sku,
@@ -1332,10 +1391,12 @@ export async function categoryTileView(
   const slug = slugFor("category", category.key, locale);
   if (slug === undefined) return undefined;
 
-  const products = await listProducts({
-    facets: { [category.kind]: [category.key] },
-    countryIso: iso2,
-  });
+  const products = (
+    await listProducts({
+      facets: { [category.kind]: [category.key] },
+      countryIso: iso2,
+    })
+  ).filter((product) => productPageAdmitted(product.sku, iso2, locale));
   if (products.length === 0) return undefined;
 
   // One clock for every candidate: two `new Date()`s could straddle a rate's validity bound and
@@ -1668,7 +1729,7 @@ export async function listingView(
    * the whole set below.
    */
   const sort: ListingSort = hub ? "default" : (options.sort ?? "default");
-  const products = await productsFor(pageType, entityKey, kind, iso2);
+  const products = await productsFor(pageType, entityKey, kind, iso2, locale);
   const ordered = await inDefaultOrder(products, locale, iso2);
   /*
    * **Photographed products first** (spec 043 §5.3 F, AC-13; spec 008 AC-9 as amended; TASK-290):
@@ -2044,26 +2105,52 @@ function resolveEntityKey(
   return undefined;
 }
 
+/**
+ * Whether `sku`'s page in `iso2` and `locale` is one the running build emitted (spec 012b §2.3,
+ * AC-5; TASK-296): a bouquet made active after the build is in no grid until a publish, because its
+ * card would stand for a page that answers 404. Without a manifest (a laptop, the tests, the build
+ * itself, `databaseOnly()`) every product is admitted, exactly as before publishing.
+ */
+export function productPageAdmitted(
+  sku: string,
+  iso2: CountryIso2,
+  locale: LocaleCode,
+): boolean {
+  if (!manifestInForce()) return true;
+  const slug = slugFor("product", sku, locale);
+  if (slug === undefined) return false;
+  return manifestAdmits(productPath(locale, corridorSlug(iso2, locale), slug));
+}
+
 /** Which products a page lists (§2, §5.3). A hub lists the entity's products across destinations. */
 async function productsFor(
   pageType: ListingPageType,
   entityKey: string | undefined,
   kind: "category" | "occasion" | undefined,
   iso2: CountryIso2 | undefined,
+  locale: LocaleCode,
 ): Promise<readonly Product[]> {
   if (pageType === "occasionsIndex") return [];
+  // The database AND the running manifest (spec 012b AC-5, TASK-296).
+  const admitted = (products: readonly Product[], country: CountryIso2) =>
+    products.filter((product) =>
+      productPageAdmitted(product.sku, country, locale),
+    );
   if (pageType === "countryShopRoot" && iso2 !== undefined) {
-    return listProducts({ countryIso: iso2 });
+    return admitted(await listProducts({ countryIso: iso2 }), iso2);
   }
   if (entityKey === undefined || kind === undefined) return [];
 
   const facets = await facetsFor(kind, entityKey);
   if (facets === undefined) return [];
-  if (iso2 !== undefined) return listProducts({ facets, countryIso: iso2 });
+  if (iso2 !== undefined) {
+    return admitted(await listProducts({ facets, countryIso: iso2 }), iso2);
+  }
 
   const seen = new Map<string, Product>();
   for (const country of publishedCountries()) {
-    for (const product of await listProducts({ facets, countryIso: country })) {
+    const listed = await listProducts({ facets, countryIso: country });
+    for (const product of admitted(listed, country)) {
       seen.set(product.sku, product);
     }
   }

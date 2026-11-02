@@ -145,6 +145,8 @@ export interface EnqueueOptions {
    * nothing. The minute tick's sweeps use it (spec 022a §5.2).
    */
   readonly singletonKey?: string;
+  /** Hold the job back this many seconds (a poll's next step; spec 012b §2.3). */
+  readonly startAfterSeconds?: number;
 }
 
 /** The window a `singletonKey` enqueue is unique within: one minute tick. */
@@ -161,11 +163,13 @@ export async function enqueue<Name extends RegisteredJobName>(
   options: EnqueueOptions,
 ): Promise<string | null> {
   const data = buildJobData(name, payload, options.requestId);
-  if (options.singletonKey === undefined) return boss.send(name, data);
-  return boss.send(name, data, {
-    singletonKey: options.singletonKey,
-    singletonSeconds: SINGLETON_SECONDS,
-  });
+  const options_: { singletonKey?: string; singletonSeconds?: number; startAfter?: number } = {};
+  if (options.singletonKey !== undefined) {
+    options_.singletonKey = options.singletonKey;
+    options_.singletonSeconds = SINGLETON_SECONDS;
+  }
+  if (options.startAfterSeconds !== undefined) options_.startAfter = options.startAfterSeconds;
+  return Object.keys(options_).length === 0 ? boss.send(name, data) : boss.send(name, data, options_);
 }
 
 /** What a handler receives besides its payload. */

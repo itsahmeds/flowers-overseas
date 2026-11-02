@@ -246,7 +246,12 @@ describe("/admin/flags — the high-risk confirmation", () => {
   });
 
   it("has a confirmation for every high-risk key in the registry", async () => {
-    const high = FEATURE_FLAGS.filter((flag) => flag.risk === "high");
+    // `catalogue.placeholder_window` is one way (spec 012b §13 Q6): its own control is TASK-297's,
+    // and until then the page shows the key with no switch, so nobody can turn it back on.
+    const high = FEATURE_FLAGS.filter(
+      (flag) =>
+        flag.risk === "high" && flag.key !== "catalogue.placeholder_window",
+    );
     expect(high.length).toBeGreaterThan(0);
     const view: FlagsView = {
       orphans: [],

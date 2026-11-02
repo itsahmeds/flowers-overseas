@@ -56,6 +56,14 @@ export const HealthResponse = z.object({
   // so a body from a deployment before TASK-401 still parses; the route always sends both.
   searchIndexAgeSeconds: z.number().int().nonnegative().nullable().optional(),
   searchIndexDocuments: z.number().int().nonnegative().optional(),
+  // Spec 012b §2.3, AC-5, AC-7 (TASK-295): the SHA-256 of the URL set this build emitted
+  // (`src/lib/existence.ts`), `null` where the deployment has no manifest (a laptop, CI). A
+  // publish run is `verified` only when the new deployment reports the run's expected hash.
+  existenceHash: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/u)
+    .nullable()
+    .optional(),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
@@ -91,6 +99,8 @@ export interface HealthInput {
   };
   /** `cspEnforceState(process.env)` from `./csp-state.ts` (TASK-058). */
   readonly cspEnforce?: CspEnforceState | undefined;
+  /** `runningManifest()?.existenceHash` from `./existence.ts` (spec 012b AC-5; TASK-295). */
+  readonly existenceHash?: string | null;
   /** `searchIndexStats()` from `@/modules/search` (spec 045 §11; TASK-401). */
   readonly search?:
     | {
@@ -124,6 +134,9 @@ export function buildHealthResponse(input: HealthInput): HealthResponse {
     fxAsOf: input.fx.fxAsOf,
     fxSource: input.fx.fxSource,
     ...(input.cspEnforce === undefined ? {} : { cspEnforce: input.cspEnforce }),
+    ...(input.existenceHash === undefined
+      ? {}
+      : { existenceHash: input.existenceHash }),
     ...(input.search === undefined
       ? {}
       : {

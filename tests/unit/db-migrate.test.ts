@@ -196,6 +196,8 @@ describe("the committed migration set", () => {
       "0028_set_c_a9.sql",
       "0029_reviews_close.sql",
       "0030_routing_notifications.sql",
+      "0031_admin_order_actions.sql",
+      "0033_catalogue_cms.sql",
     ]);
   });
 });

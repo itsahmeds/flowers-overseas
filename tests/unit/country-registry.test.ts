@@ -63,7 +63,7 @@ describe("the seed's country projection agrees with countries.ts (AC-2, §5.1 'S
     expect(database).toEqual(COUNTRIES);
     expect(countryRegistryParity(COUNTRIES, database, countryUrls)).toEqual([]);
     expect(parityReport(await seededRows()).lines).toEqual([
-      "catalogue:parity: 7 countries agree on every registry field (country half; the catalogue and price half is TASK-294's)",
+      "catalogue:parity: 7 countries agree on every registry field (country half)",
     ]);
   });
 });

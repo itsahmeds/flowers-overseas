@@ -268,3 +268,19 @@ export async function asApp(
   await tx`SELECT set_config('app.request_id', 'integration-test', true)`;
   await tx.unsafe("SET LOCAL ROLE app_web");
 }
+
+/**
+ * Run `body` in one transaction with row triggers off (`session_replication_role = replica`, the
+ * server's own superuser only). For fixtures that stand for a state the application cannot write
+ * any more, such as a drifted price on a product that has been active, which `0033`'s guard
+ * refuses (spec 012b §2.6, F2; TASK-294). Never for the statement a test asserts on.
+ */
+export async function withoutTriggers(
+  sql: Sql,
+  body: (tx: Tx) => Promise<unknown>,
+): Promise<void> {
+  await sql.begin(async (tx) => {
+    await tx`SET LOCAL session_replication_role = replica`;
+    await body(tx);
+  });
+}

@@ -56,6 +56,22 @@ vi.mock("@/lib/sentry", () => ({
   },
 }));
 
+/** The tables `0033_catalogue_cms` puts under `audit_row_change()` (spec 012b §5.1 item 3). */
+const CATALOGUE_CMS_AUDITED_TABLES = [
+  "country_price",
+  "media_asset",
+  "product",
+  "product_category",
+  "product_media",
+  "product_media_alt",
+  "product_occasion",
+  "product_tier",
+  "product_translation",
+  "publish_run",
+  "review_attestation",
+  "reviewer_locale",
+] as const;
+
 const server = await probeLocalServer();
 
 const FOUNDER_NAME = "Founder Test";
@@ -343,8 +359,18 @@ describe.skipIf(server.url === undefined)(
         ORDER BY 1`;
       // Spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321) attaches the same trigger to the five
       // blog tables; their audit rows are asserted by `tests/integration/blog.test.ts`.
+      // Spec 022a §5.1 (migration `0029_reviews_close`, TASK-368) attaches it to `review`; spec
+      // 012b §5.1 item 3 (migration `0033_catalogue_cms`, TASK-294) to the catalogue, the ledger,
+      // the reviewer grants and the publish runs.
       expect(triggers.map((row) => row.table)).toEqual(
-        [...AUDITED_TABLES, ...BLOG_TABLES].sort(),
+        [
+          ...AUDITED_TABLES,
+          ...BLOG_TABLES,
+          "review",
+          // Spec 020a §5.1 (migration `0031_admin_order_actions`, TASK-359).
+          "admin_order_action",
+          ...CATALOGUE_CMS_AUDITED_TABLES,
+        ].sort(),
       );
     });
 

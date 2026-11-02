@@ -81,6 +81,10 @@ const FUNCTIONS = [
   "blog_revision_freeze",
   "blog_revision_hash",
   "blog_slug_lock",
+  // 0033 (TASK-294): `first_live_at`, `first_active_at` and the price-row guard (spec 012b §5.1
+  // item 3).
+  "country_first_live_at",
+  "country_price_guard",
   "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
@@ -101,6 +105,7 @@ const FUNCTIONS = [
   "partner_application_media_check",
   "partner_coverage_country_check",
   "payout_currency_check",
+  "product_first_active_at",
   // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
   // A-founder-2026-10-22 item 2 A).
   "purchase_total_check",
@@ -111,13 +116,14 @@ const FUNCTIONS = [
   "review_attestation_append_only",
   "review_blog_revision_current_hash",
   "review_blog_revision_hash",
+  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1). In name order,
+  // which is the order the catalogue query returns.
+  "review_content_immutable",
   "review_hash_part",
   "review_product_copy_hash",
   "review_row_is_own",
   "review_subject_hash",
   "review_write_guard",
-  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1).
-  "review_content_immutable",
   "set_updated_at",
   "status_flip_guard",
 ];

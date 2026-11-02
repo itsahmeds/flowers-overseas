@@ -32,7 +32,7 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches and spec 016's two rollback switches", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches and spec 012b's placeholder window", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
@@ -43,7 +43,18 @@ describe("T-16 — the registry", () => {
       "reviews.trustpilot",
       "routing.auto",
       "notifications.email",
+      "catalogue.placeholder_window",
     ]);
+  });
+
+  it("registers spec 012b's placeholder window: global, high risk, dirties nothing", () => {
+    expect(flagDefinition("catalogue.placeholder_window")).toEqual({
+      key: "catalogue.placeholder_window",
+      scopeKinds: ["global"],
+      risk: "high",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
   });
 
   it("registers spec 016's rollback switches as high-risk: routing.auto per country, notifications.email global (§5.1, §12)", () => {

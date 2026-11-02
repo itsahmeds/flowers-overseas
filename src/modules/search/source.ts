@@ -20,7 +20,7 @@ import {
   productTypes,
 } from "@/config/catalogue/schemas";
 import {
-  COUNTRIES,
+  activeCountries,
   type CountryIso2,
   countrySlug,
   isCountryIso2,
@@ -38,6 +38,7 @@ import {
   listProducts,
   listingHref,
   productCardView,
+  productPageAdmitted,
   rankBandsFor,
   topProductsForPrebuild,
 } from "@/modules/catalog";
@@ -235,7 +236,7 @@ export function catalogSearchSource(): SearchSource {
 
     destinations(locale) {
       return Promise.all(
-        COUNTRIES.map(async (country): Promise<SearchDestination> => {
+        activeCountries().map(async (country): Promise<SearchDestination> => {
           const iso2 = country.iso2;
           const words = new Set<string>();
           for (const other of launchCodes()) {
@@ -259,7 +260,11 @@ export function catalogSearchSource(): SearchSource {
 
     async products(locale, iso2) {
       const countryIso = destinationIso2(iso2);
-      const products = await listed(countryIso);
+      // The database AND the running manifest (spec 012b AC-5; TASK-296): a bouquet made active
+      // after the build is no search result until a publish.
+      const products = (await listed(countryIso)).filter((product) =>
+        productPageAdmitted(product.sku, countryIso, locale),
+      );
       const order = await topProductsForPrebuild(
         countryIso,
         locale,

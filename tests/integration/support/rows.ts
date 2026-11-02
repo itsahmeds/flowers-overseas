@@ -86,7 +86,8 @@ export async function mediaAsset(
                              checksum_sha256, visibility, source, depicts, exif_stripped)
     VALUES (${id}, ${kind}, 'fo-media-test', ${`${kind.replace("_", "-")}/${id}/original`},
             'image/jpeg', 1200, 1500, 48213, ${"a".repeat(64)},
-            ${options.visibility ?? "private"}, 'partner',
+            ${options.visibility ?? "private"},
+            ${kind === "product" ? "photo" : "partner"},
             ${kind === "delivery_proof" ? "delivery" : "product"},
             ${options.exifStripped ?? true})
     RETURNING id`;

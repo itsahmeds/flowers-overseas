@@ -26,7 +26,11 @@ Spec 012b §12 slice A task 4 (first half). Founder approval 2026-10-20, "all de
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (orchestrator, 2026-10-20):** the 012b design (PR 296, escalation 3) does not draw the admin home's two counters. Build them in the existing `/admin` home's tile style with zero counts as the empty state, and say so in `## Result` so the designer adds them.
+- **From `/plan-tasks` (orchestrator, 2026-10-20):** the 012b design (PR 296, escalation 3) does not draw the admin home's two counters. Build them in the existing `/admin` home's tile style with zero counts as the empty state, and say so in `
+- 2026-11-02 CMS2 finisher: the admin home shows the two counters (changes waiting to publish, for `catalogue.publish`; per granted locale awaiting review, with photos for a media reviewer; zeros are the empty state, in the existing `AdminCounter` tile); `/admin/publish` bound to `catalogue.publish`; unit tests for `src/lib/existence.ts` and the diff; the resolver half of AC-5 for listings and corridors under test.
+
+## Result` so the designer adds them.
+- **2026-11-02 (CMS2 finisher):** the admin home's two counters are built in the existing `AdminCounter` tile style (no artboard draws them, `/plan-tasks` carry-forward): the designer adds them to `docs/design/`. `publishHomeCounts` has no integration test of its own (its reads are the publish page's diff and two counts); T-05 (e2e, local build) and T-40's preview half are CI's and the preview's. The Railway mutation (first step of the brief) is untested against a live Railway project: `PUBLISH_TARGET` and `RAILWAY_PUBLISH_TOKEN` are not set anywhere yet.
 
 ## Escalations
 
@@ -47,4 +51,4 @@ _Not started._
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+In PR [#449](https://github.com/itsahmeds/flowers-overseas/pull/449). The existence manifest (`src/lib/existence.ts`, written by `scripts/existence-manifest.ts` after `next build`, `existenceHash` on `/api/health`); "database AND manifest" in `productPageExists`, `listingExists`, `listingPages` and `corridorPageExists`, so the resolver, sitemaps and hreflang read it; `src/lib/publish.ts` (Railway, fake, none targets; the run state machine; one open run and ten a day; the indexable-removal refusal through `isRemovalRefused` with spec 044's exemption seam; boot verification and the `dataAsOf` invalidation), `src/lib/publish-store.ts`, `src/lib/publish-runtime.ts`, the `catalogue.publish` and `cache.invalidate` jobs, `/admin/publish` and its action, the admin home's two counters, the `catalogue.placeholder_window` flag. Tests: unit `publish` (T-06, T-07, T-08, T-40: 17 cases), `existence` (21 cases: hash, public paths, manifest schema, the running manifest, the diff, the resolver and grid halves), `admin-permission-binding` (the page and action 403 for ops and finance), jobs and flags registries; integration AC-6's one-open-run index. Every AC-carrying assertion was mutated red (PR self-review).
