@@ -160,10 +160,12 @@ describe("buyerStep (spec 018 §5.2, AC-3)", () => {
     expect(() => buyerStep("accepted")).toThrow();
   });
 
-  it("reads accepted and paid (the fixture's with_florist) as We have your order", () => {
+  it("reads accepted and paid as We have your order, whichever projection the machine stores", () => {
+    // Spec 002 §14 A9.1 moved them from `with_florist` to `confirmed` at the source; the fold
+    // keeps the page right on a database from before it.
     for (const key of ["accepted", "paid"]) {
       const state = STATES.find((row) => row.key === key);
-      expect(state?.buyerProjection).toBe("with_florist");
+      expect(["with_florist", "confirmed"]).toContain(state?.buyerProjection);
       expect(buyerStep(state?.buyerProjection ?? "")).toBe("confirmed");
     }
   });
