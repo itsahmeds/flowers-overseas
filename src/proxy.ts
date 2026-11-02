@@ -15,6 +15,13 @@
  * `fo/no-geo-redirect`, which matches this filename). A path with no launch-locale prefix (`/`,
  * `/robots.txt`, `/api/health`, `/nope`) gets no header and no `locale` log field rather than a
  * guessed one. Still no redirects of any kind.
+ *
+ * **The country chooser** (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385) is the one address
+ * the proxy routes: `/{locale}/{chooseSegment}/...` is served by the chooser page, except the path
+ * form `/{locale}/{chooseSegment}/{iso2}/{next}`, which is a choice and is served by the choice
+ * route (its `303` and its `Set-Cookie: fo_dest`). The split reads the path and the country
+ * registry only (`src/lib/chooser-routes.ts`), and it is a **rewrite**: the proxy redirects
+ * nothing and sets no cookie.
  */
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -24,6 +31,7 @@ import {
   basicAuthDecision,
 } from "@/lib/basic-auth";
 import { FloristQuerySchema, isFloristPath } from "@/config/florists";
+import { chooserAddress, chooserTargetPath } from "@/lib/chooser-routes";
 import { appEnvironment } from "@/lib/env.schema";
 import {
   FLORIST_LANGUAGE_HEADER,
@@ -48,6 +56,13 @@ export const LOCALE_HEADER = "x-fo-locale";
  */
 const environment = appEnvironment(process.env);
 const credential = process.env[STAGING_BASIC_AUTH_KEY];
+
+/** The rewrite's URL: the target path with the request's own query (the form's `to`). */
+function chooserTarget(request: NextRequest, path: string): URL {
+  const target = new URL(path, request.url);
+  target.search = request.nextUrl.search;
+  return target;
+}
 
 export function proxy(request: NextRequest): NextResponse {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
@@ -121,7 +136,16 @@ export function proxy(request: NextRequest): NextResponse {
   if (query?.success === true && query.data.hl !== undefined) {
     headers.set(FLORIST_LANGUAGE_HEADER, query.data.hl);
   }
-  const response = NextResponse.next({ request: { headers } });
+  const chooser = chooserAddress(path);
+  const response =
+    chooser === undefined
+      ? NextResponse.next({ request: { headers } })
+      : NextResponse.rewrite(
+          chooserTarget(request, chooserTargetPath(chooser)),
+          {
+            request: { headers },
+          },
+        );
   response.headers.set(REQUEST_ID_HEADER, requestId);
   // A florist page `GET` re-issues the session cookie for 30 more days (rolling, spec 011 §2).
   const rolled = rollingCookie({

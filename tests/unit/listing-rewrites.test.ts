@@ -91,13 +91,14 @@ describe("the listing rewrite (TASK-170)", () => {
       ].sort(),
     );
     // From the registries, not retyped: a new honoured key or facet brings its rule with it.
+    // `to` is the chooser's field (TASK-385), never a listing's.
     expect(LISTING_REWRITE_KEYS).toStrictEqual([
-      ...QUERY_KEYS,
+      ...QUERY_KEYS.filter((key) => key !== "to"),
       ...Object.values(FACET_PARAMETERS),
     ]);
     // A campaign or click id is answered by the prebuilt page (canonical stripping, spec 007
     // §14 A5): rewriting it would render per request for a page that is byte-for-byte the bare one.
-    for (const key of ["utm_source", "gclid", "fbclid", "q"]) {
+    for (const key of ["utm_source", "gclid", "fbclid", "q", "to"]) {
       expect(LISTING_REWRITE_KEYS, key).not.toContain(key);
     }
   });

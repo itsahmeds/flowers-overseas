@@ -7,6 +7,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 import { adminHeaderRules } from "./src/lib/admin-headers";
 import { basketHeaderRules } from "./src/lib/transactional-headers";
 import { floristHeaderRules } from "./src/lib/florist-headers";
+import { chooserHeaderRules } from "./src/lib/chooser-routes";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
@@ -123,6 +124,11 @@ const headerRules = [
   // Every florist response: `noindex, nofollow` and `private, no-store` (spec 011 §5.4, AC-22;
   // TASK-212), after the environment-wide rule like admin's.
   ...floristHeaderRules(),
+  // `X-Robots-Tag: noindex, nofollow` and `Cache-Control: private, no-store` on every country
+  // chooser address, its internal page route and its choice route (spec 004 §14
+  // A-founder-2026-10-24a item 3; `src/lib/chooser-routes.ts`; TASK-385). After the listing rules,
+  // whose sources a chooser address also matches, so these values are the ones served.
+  ...chooserHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,

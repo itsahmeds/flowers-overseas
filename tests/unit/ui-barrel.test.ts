@@ -270,6 +270,8 @@ describe("src/modules/ui barrel", () => {
         // values, the product page's only since A-founder-2026-10-19b clause 2 (TASK-285).
         "PriceEquivalentsViewSchema",
         "equivalentsMessageValues",
+        // the chooser's form (spec 004 §14 A-founder-2026-10-24a item 3; TASK-385)
+        "CountryPicker",
         "ProductCard",
         "ProductCardPhotoSchema",
         "ProductCardViewSchema",

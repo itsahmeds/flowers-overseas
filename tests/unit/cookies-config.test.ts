@@ -65,6 +65,7 @@ describe("the register itself (AC-22)", () => {
     for (const name of [
       "fo_locale",
       "fo_consent",
+      "fo_dest",
       "fo_session",
       "fo_csrf",
       "fo_currency",
@@ -100,13 +101,23 @@ describe("the register itself (AC-22)", () => {
     );
   });
 
-  it("sets nothing non-essential in Phase 0: every `set` row is essential and browser-written", () => {
+  it("sets nothing non-essential in Phase 0: every `set` row is essential, browser-written or server-written on uncached responses only", () => {
     for (const entry of COOKIE_REGISTRY.filter(
       (candidate) => candidate.status === "set",
     )) {
       expect(entry.category, entry.name).toBe("essential");
-      expect(entry.writer, entry.name).toBe("browser");
+      if (entry.writer === "server") {
+        expect(entry.serverScope, entry.name).toBe("uncached");
+      } else {
+        expect(entry.writer, entry.name).toBe("browser");
+      }
     }
+    // The one server-written row set today is the chooser's (spec 004 §14 A-founder-2026-10-24a).
+    expect(
+      COOKIE_REGISTRY.filter(
+        (entry) => entry.status === "set" && entry.writer === "server",
+      ).map((entry) => entry.name),
+    ).toEqual(["fo_dest"]);
     // The analytics and marketing rows exist so the disclosure is complete before the tag does
     // (spec 004 §2); none of them is set today.
     for (const entry of cookiesRequiringConsent()) {
@@ -187,12 +198,37 @@ describe("what the schema refuses (AC-22)", () => {
     ).toBe(false);
   });
 
-  it("refuses a row the *server* sets while it is already set", () => {
+  it("refuses a row the *server* sets today unless only uncached responses set it", () => {
     expect(
       CookieRegistryEntrySchema.safeParse({
         ...validEntry,
         status: "set",
         writer: "server",
+      }).success,
+    ).toBe(false);
+    expect(
+      CookieRegistryEntrySchema.safeParse({
+        ...validEntry,
+        status: "set",
+        writer: "server",
+        serverScope: "uncached",
+      }).success,
+    ).toBe(true);
+    expect(
+      CookieRegistryEntrySchema.safeParse({
+        ...validEntry,
+        status: "set",
+        writer: "server",
+        serverScope: "cached",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("refuses a server scope on a row the server does not write", () => {
+    expect(
+      CookieRegistryEntrySchema.safeParse({
+        ...validEntry,
+        serverScope: "uncached",
       }).success,
     ).toBe(false);
   });
@@ -305,6 +341,31 @@ describe("the compliance records this task is responsible for (spec 004 §8)", (
     // The runbook must put the paperwork before the variable, not after it.
     expect(runbook.indexOf("## 1. Before the variable is set")).toBeLessThan(
       runbook.indexOf("## 2. Setting it"),
+    );
+  });
+});
+
+describe("the remembered country's row (spec 004 §14 A-founder-2026-10-24a, AC-90; TASK-385)", () => {
+  it("is essential, first party, 180 days, set by the chooser's uncached choice response", () => {
+    expect(cookieRegistryEntry("fo_dest")).toEqual({
+      name: "fo_dest",
+      kind: "cookie",
+      category: "essential",
+      consentRequired: false,
+      party: "first",
+      writer: "server",
+      serverScope: "uncached",
+      status: "set",
+      lifetime: { kind: "maxAge", seconds: 15552000 },
+      purposeKey: "consent.cookies.dest.purpose",
+      spec: "004",
+      scope: "Path=/; SameSite=Lax; Secure",
+    });
+  });
+
+  it("asks no consent: it is not among the rows a visitor must opt into", () => {
+    expect(cookiesRequiringConsent().map((entry) => entry.name)).not.toContain(
+      "fo_dest",
     );
   });
 });
