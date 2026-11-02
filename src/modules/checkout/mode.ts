@@ -41,14 +41,9 @@ import { z } from "zod";
 
 import { isCompanyRegistered } from "@/config/company";
 import { isCountryIso2 } from "@/config/countries";
-import { DEMO_ENTRY_ENVIRONMENTS } from "@/config/checkout";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
-import {
-  type DeploymentEnvironment,
-  appEnvironment,
-  deploymentEnvironments,
-} from "@/lib/env.schema";
-import { type PickerState, pickerState, pickerStates } from "@/modules/geo";
+import { appEnvironment, deploymentEnvironments } from "@/lib/env.schema";
+import { pickerState, pickerStates } from "@/modules/geo";
 
 import { addressFormModel } from "./address";
 
@@ -283,44 +278,15 @@ export function legalReadiness(
 }
 
 /* -------------------------------------------------------------------------- */
-/* checkoutEntryFor()                                                          */
+/* checkoutEntryFor(): in `modules/geo` (the product page may not import this module)    */
 /* -------------------------------------------------------------------------- */
 
-/** What the product page's price summary offers (spec 010 §5.3, the spec 009 amendment). */
-export const checkoutEntries = ["none", "demo", "continue"] as const;
-export type CheckoutEntry = (typeof checkoutEntries)[number];
-
-/** The build-time facts about a deployment the entry depends on (§5.4, §12). */
-export interface CheckoutDeployment {
-  readonly environment: DeploymentEnvironment;
-}
-
-/**
- * The product page's entry into checkout, decided without a database so the cached page stays
- * byte-identical for every visitor (spec 010 §5.3, §5.4, AC-5):
- *
- *  - `unavailable` → `none`: no control at all;
- *  - `preview` → `demo` ("Try a demo order") where the deployment offers the demo
- *    (`DEMO_ENTRY_ENVIRONMENTS`, §13 Q1), otherwise `none`;
- *  - `live` → `continue` ("Continue, {total}").
- *
- * A button drawn here can still lead to the `closed` state: `checkoutMode()` decides at the start
- * route, so a flag flipped after the page was cached is honoured on the click.
- */
-export function checkoutEntryFor(
-  pickerState: PickerState,
-  deployment: CheckoutDeployment,
-): CheckoutEntry {
-  const state = z.enum(pickerStates).parse(pickerState);
-  const environment = z
-    .enum(deploymentEnvironments)
-    .parse(deployment.environment);
-  if (state === "live") return "continue";
-  if (state === "preview" && DEMO_ENTRY_ENVIRONMENTS.includes(environment)) {
-    return "demo";
-  }
-  return "none";
-}
+export {
+  type CheckoutDeployment,
+  type CheckoutEntry,
+  checkoutEntries,
+  checkoutEntryFor,
+} from "@/modules/geo";
 
 /* -------------------------------------------------------------------------- */
 /* currentCheckoutMode(): the inputs read, then the decision (TASK-203)        */

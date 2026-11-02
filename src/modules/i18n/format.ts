@@ -437,21 +437,46 @@ export interface DateParts {
 }
 
 /**
+ * A country's name in the locale's language, through `Intl.DisplayNames` (spec 010 §2 step 2:
+ * the buyer's country of residence, every country selectable). An unknown code reads as itself.
+ */
+export function formatRegionName(
+  countryIso: string,
+  locale: LocaleCode,
+): string {
+  const code = z
+    .string()
+    .regex(/^[A-Z]{2}$/u)
+    .parse(countryIso);
+  return (
+    new Intl.DisplayNames([tagFor(locale)], {
+      type: "region",
+      fallback: "code",
+    }).of(code) ?? code
+  );
+}
+
+/**
  * The day, month, weekday and year of **one** `calendarDate` value, as `Intl` spells each part in
  * that value (spec 004 §14 A23 clause 5; TASK-187). The country occasion page's date card sets them
  * apart ("26" · "May" · "Wednesday" · "2027"); they come from `formatToParts` of the same
  * formatter and options `formatDate(…, "calendarDate", zone)` uses, so the parts can never name a
  * different day from the sentence beside them, and no component touches `Intl`.
+ *
+ * `style` picks the preset the parts come from: `calendarDate` (the default, long weekday) or
+ * `deliveryDate` (short weekday and month), which the checkout's day tiles set apart ("Thu" ·
+ * "8"; spec 010 §5.3, TASK-204).
  */
 export function formatDateParts(
   date: Date,
   locale: LocaleCode,
   timeZone: string,
+  style: "calendarDate" | "deliveryDate" = "calendarDate",
 ): DateParts {
   const instant = InstantSchema.parse(date);
   const zone = TimeZoneSchema.parse(timeZone);
   const parts = dateTimeFormat(tagFor(locale), {
-    ...DATE_STYLE_OPTIONS.calendarDate,
+    ...DATE_STYLE_OPTIONS[style],
     timeZone: zone,
   }).formatToParts(instant);
   const part = (type: Intl.DateTimeFormatPartTypes): string =>

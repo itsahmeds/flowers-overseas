@@ -259,6 +259,27 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
+    "checkout.basket.addOns",
+    "checkout.basket.added",
+    "checkout.basket.checkout",
+    "checkout.basket.continue",
+    "checkout.basket.dateLater",
+    "checkout.basket.empty",
+    "checkout.basket.emptyLink",
+    "checkout.basket.full",
+    "checkout.basket.included",
+    "checkout.basket.otherCurrency",
+    "checkout.basket.otherMode",
+    "checkout.basket.remove",
+    "checkout.basket.removeLabel",
+    "checkout.basket.title",
+    "checkout.basket.to",
+    "checkout.basket.total",
+    "checkout.basket.unavailable",
+    "checkout.basket.unavailableSummary",
+    "checkout.basket.useNext",
+    "checkout.date.gone",
     // Spec 004 §14 A-founder-2026-10-24a, the commerce structure: TASK-385's chooser keys
     // (`home.picker.*`, `shop.choose.*`) and TASK-386/387's home keys (`shop.price.choose`,
     // `shop.cta.chooseCountry`, `shop.seeAll`, `shop.price.bandWord.*`, `shop.toolbar.howWeSort`,
@@ -321,27 +342,6 @@ describe("the shipped catalogues and manifests", () => {
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
-    // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
-    "checkout.basket.addOns",
-    "checkout.basket.added",
-    "checkout.basket.checkout",
-    "checkout.basket.continue",
-    "checkout.basket.dateLater",
-    "checkout.basket.empty",
-    "checkout.basket.emptyLink",
-    "checkout.basket.full",
-    "checkout.basket.included",
-    "checkout.basket.otherCurrency",
-    "checkout.basket.otherMode",
-    "checkout.basket.remove",
-    "checkout.basket.removeLabel",
-    "checkout.basket.title",
-    "checkout.basket.to",
-    "checkout.basket.total",
-    "checkout.basket.unavailable",
-    "checkout.basket.unavailableSummary",
-    "checkout.basket.useNext",
-    "checkout.date.gone",
     "company.controller",
     "consent.privacyLink",
     // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide
@@ -393,8 +393,6 @@ describe("the shipped catalogues and manifests", () => {
     // The header Basket link's name and count (spec 010 D10; TASK-349).
     "nav.basket",
     "nav.basketCount",
-    "nav.mega.byPrice",
-    "nav.mega.comingUp",
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
@@ -453,7 +451,6 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
-    "shop.toolbar.howWeSort",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

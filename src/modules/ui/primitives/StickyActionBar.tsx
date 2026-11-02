@@ -28,6 +28,31 @@ import type { ReactElement, ReactNode } from "react";
 
 import { Button } from "./Button.tsx";
 
+/**
+ * A twin of one of the page form's submits (the checkout entry, spec 010 AC-5): a `<button>` of
+ * that form by its `form` id, posting where the flow's twin posts, so the bar submits the same
+ * selection and adds no control the page lacks. Works with JavaScript off.
+ */
+export interface StickySubmit {
+  /** The `id` of the page's form the twin belongs to. */
+  readonly form: string;
+  readonly formAction: string;
+  readonly name: string;
+  readonly value: string;
+  readonly label: ReactNode;
+  /** `accent` for the live action, `ghost` for every other (the board's `.btn ghost`). */
+  readonly look: "accent" | "ghost";
+  /** As wide as its label (the board's "Add to basket", `flex: none`), not the rest of the bar. */
+  readonly narrow?: boolean;
+}
+
+/** The two looks the board draws in the dock: the poppy action and the ghost outline. */
+const SUBMIT_LOOK = {
+  accent: "bg-accent text-on-accent hover:bg-accent-strong",
+  ghost:
+    "bg-card text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] hover:bg-surface-muted",
+} as const;
+
 export interface StickyActionBarProps {
   /**
    * The action, **an in-page link to its twin in the flow** (`#buy`, `#send`): the bar repeats the
@@ -36,6 +61,12 @@ export interface StickyActionBarProps {
    * slot, so a bar cannot carry a control the page lacks.
    */
   readonly action: { readonly href: `#${string}`; readonly label: ReactNode };
+  /**
+   * In place of `action`'s link, the twins of the page form's submits (the product page's
+   * checkout entry, `product-mobile.dc.html` "the docked bar with Add to basket"): the bar then
+   * draws these buttons and no price. Each must name its form.
+   */
+  readonly submits?: readonly StickySubmit[] | undefined;
   /**
    * The selected price, already formatted by `formatMoney` from the same view the page prints it
    * from (a string, or that string in an element the page keeps in step, as the product page's
@@ -50,6 +81,7 @@ export interface StickyActionBarProps {
 
 export function StickyActionBar({
   action,
+  submits,
   price,
   hidden = false,
   className,
@@ -57,6 +89,44 @@ export function StickyActionBar({
   if (!/^#[^\s#]+$/u.test(action.href)) {
     throw new Error(
       `StickyActionBar: the action must be an in-page link to its twin in the flow (#id), got "${action.href}"`,
+    );
+  }
+  for (const submit of submits ?? []) {
+    if (!/^[A-Za-z][\w-]*$/u.test(submit.form)) {
+      throw new Error(
+        `StickyActionBar: a submit must name the page form it repeats (form id), got "${submit.form}"`,
+      );
+    }
+  }
+  if (submits !== undefined && submits.length > 0) {
+    return (
+      <div
+        className={["action-bar md:hidden", className]
+          .filter(Boolean)
+          .join(" ")}
+        data-fo-action-bar={hidden ? "hidden" : "shown"}
+      >
+        <div className="flex min-w-0 flex-1 gap-[10px]">
+          {submits.map((submit) => (
+            <button
+              className={`inline-grid min-h-[52px] cursor-pointer place-items-center rounded-full text-center leading-[1.15] font-bold ${
+                submit.narrow === true
+                  ? "flex-none px-[16px]"
+                  : "min-w-0 flex-1 px-[20px]"
+              } ${SUBMIT_LOOK[submit.look]}`}
+              form={submit.form}
+              formAction={submit.formAction}
+              formMethod="post"
+              key={submit.value}
+              name={submit.name}
+              type="submit"
+              value={submit.value}
+            >
+              {submit.label}
+            </button>
+          ))}
+        </div>
+      </div>
     );
   }
   return (

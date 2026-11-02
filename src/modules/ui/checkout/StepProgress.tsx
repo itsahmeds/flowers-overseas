@@ -63,7 +63,7 @@ export function StepProgress({
             <li
               aria-current={isCurrent ? "step" : undefined}
               className={[
-                "font-display flex min-h-(--target-min) flex-1 items-center justify-center rounded-full px-[12px] py-[10px] text-center text-[18px] leading-[1.1] font-(--font-weight-display)",
+                "font-display flex min-h-(--target-min) flex-1 items-center justify-center rounded-full px-[12px] py-0 text-center text-[18px] leading-[1.1] font-(--font-weight-display)",
                 isCurrent
                   ? "bg-card text-ink shadow-[var(--shadow-sm),inset_0_0_0_1.5px_var(--color-ink)]"
                   : isDone

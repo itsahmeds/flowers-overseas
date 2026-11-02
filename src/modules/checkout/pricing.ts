@@ -87,6 +87,13 @@ export interface DraftTotals {
   readonly lines: readonly DraftLine[];
   readonly total: IntegerMoney;
   readonly vat: readonly VatSplit[];
+  /**
+   * The same delivery in the destination's own currency (the projections'
+   * `destinationCurrencyPrice`, summed): the order's `base_total_minor` (TASK-205).
+   */
+  readonly base: IntegerMoney;
+  /** The quote's FX rate (destination to display), or `null` when no conversion happened. */
+  readonly ratePpm: number | null;
 }
 
 interface Derived {
@@ -96,6 +103,8 @@ interface Derived {
   readonly addonVatRateBp: ReadonlyMap<string, number>;
   /** The line's add-ons whose current price is 0 (`card`): summary lines, never signed lines. */
   readonly freeAddons: ReadonlySet<string>;
+  /** The bouquet and every add-on in the destination's currency, summed. */
+  readonly base: IntegerMoney;
 }
 
 /**
@@ -156,6 +165,7 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
   ];
   const addonVatRateBp = new Map<string, number>();
   const freeAddons = new Set<string>();
+  let baseMinor: number = bouquet.destinationCurrencyPrice.amountMinor;
   for (const addonKey of selection.addonKeys) {
     const addon = await addonPriceProjection(
       addonKey,
@@ -164,6 +174,7 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
       { now },
     );
     addonVatRateBp.set(addonKey, addon.vatRateBp);
+    baseMinor += addon.destinationCurrencyPrice.amountMinor;
     // A free add-on (`card`, priced 0) adds nothing to the total and a signed line must be
     // positive (spec 005 `QuoteLineSchema`): it is a line of the summary, not of the quote.
     if (addon.displayPrice.amountMinor === 0) {
@@ -181,6 +192,10 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
     productVatRateBp: bouquet.vatRateBp,
     addonVatRateBp,
     freeAddons,
+    base: IntegerMoneySchema.parse({
+      amountMinor: baseMinor,
+      currency: bouquet.destinationCurrencyPrice.currency,
+    }),
   };
 }
 
@@ -445,5 +460,7 @@ export async function lineTotals(
         currency: entry.amount.currency,
       })),
     ),
+    base: rates.base,
+    ratePpm: signed.ratePpm,
   };
 }
