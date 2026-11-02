@@ -3,6 +3,11 @@
  * photo": "The florist sees their photo through a signed URL valid for at most 5 minutes";
  * AC-30; TASK-215).
  *
+ * The page shows it through a same-origin route (`GET {base}/api/orders/{assignmentId}/photo`), as the buyer's
+ * tracking page does (spec 018 §5.4): the route mints the signed URL, reads the object through it
+ * and answers the bytes `private, no-store`, so the florist pages' CSP keeps `img-src 'self'` and
+ * the private bucket's host is never named in a page.
+ *
  * The location is read under the member's **partner context**: `delivery_proof` through
  * `app_partner_sees_order` (`0011`) and `media_asset` through `0022`'s partner policy, so another
  * florist's photo is never found. The URL is minted by the storage seam with
@@ -61,4 +66,40 @@ export async function floristDeliveryPhotoUrl(
     (db) => selectDeliveryPhotoLocation(drizzleExecutor(db), assignmentId),
   );
   return location === null ? null : deliveryPhotoSignedUrl(store, location);
+}
+
+/** What the photo route answers with: the bytes, never cached, never indexed. */
+const PHOTO_HEADERS = {
+  "Content-Type": "image/jpeg",
+  "Cache-Control": "private, no-store",
+  "X-Robots-Tag": "noindex, nofollow",
+  "Referrer-Policy": "no-referrer",
+  "X-Content-Type-Options": "nosniff",
+} as const;
+
+export interface PhotoResponseDeps {
+  readonly store: Pick<PrivatePhotoStore, "storage">;
+  /** Reads the signed URL (tests: the in-memory store's own `fetch`). */
+  readonly fetchObject?: (url: string) => Promise<Response>;
+}
+
+/** `GET {base}/api/orders/{assignmentId}/photo`: the member's photo, or a bare 404. */
+export async function floristDeliveryPhotoResponse(
+  ctx: FloristCommandContext,
+  assignmentId: string,
+  deps: PhotoResponseDeps,
+): Promise<Response> {
+  const notFound = () =>
+    new Response(null, {
+      status: 404,
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  const url = await floristDeliveryPhotoUrl(ctx, assignmentId, deps.store);
+  if (url === null) return notFound();
+  const object = await (deps.fetchObject ?? ((target) => fetch(target)))(url);
+  if (!object.ok) return notFound();
+  return new Response(new Uint8Array(await object.arrayBuffer()), {
+    status: 200,
+    headers: PHOTO_HEADERS,
+  });
 }

@@ -702,7 +702,10 @@
     "outForDelivery": "Unterwegs zur Zustellung",
     "photo": {
       "choose": "Foto des zugestellten Straußes aufnehmen oder auswählen",
-      "send": "Foto senden"
+      "send": "Foto senden",
+      "wrongType": "Diese Datei können wir nicht verwenden. Bitte senden Sie ein JPEG-, PNG- oder WebP-Bild.",
+      "tooLarge": "Dieses Foto ist zu groß. Bitte senden Sie eines unter 15 MB.",
+      "alt": "Ihr Foto des zugestellten Straußes"
     },
     "recipient": "Empfänger",
     "stage": {
@@ -722,6 +725,20 @@
       "refreshStopped": "Die Aktualisierung ist pausiert, solange Sie nicht da sind.",
       "notFoundTitle": "Auftrag nicht gefunden",
       "notFoundLine": "Dieser Auftrag ist nicht mehr in Ihrer Liste."
+    },
+    "declineWhy": "Warum lehnen Sie ab?",
+    "declineReason": {
+      "capacity": "Wir sind an dem Tag ausgebucht",
+      "out_of_area": "Wir liefern nicht dorthin",
+      "product_unavailable": "Wir bekommen diese Blumen nicht",
+      "closed": "Wir haben an dem Tag geschlossen",
+      "other": "Ein anderer Grund"
+    },
+    "declineSubmit": "Auftrag ablehnen",
+    "deliveredAddPhoto": "Zugestellt, Foto hinzufügen",
+    "notice": {
+      "answered": "Dieser Auftrag wurde bereits beantwortet.",
+      "changed": "Dieser Auftrag hat sich geändert, seit Sie ihn geöffnet haben."
     }
   },
   "footer": {

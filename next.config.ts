@@ -235,6 +235,10 @@ const nextConfig: NextConfig = {
 nextConfig.experimental = {
   ...nextConfig.experimental,
   turbopackSharedRuntime: false,
+  // Spec 011 §2 (TASK-215): the proxy (`src/proxy.ts`, every path) buffers a request body and
+  // truncates it past 10 MB by default, which would corrupt a delivery photo between 10 and
+  // 15 MiB. The photo route bounds its own read at 15 MiB plus the form's framing.
+  proxyClientMaxBodySize: "16mb",
 };
 
 // next-intl's *rendering* layer only: the plugin points the library at the request config in

@@ -268,6 +268,16 @@ export function floristPaths(base: string = FLORIST_BASE_PATH) {
     confirm: `${base}/sign-in/confirm`,
     order: (assignmentId: string) => `${base}/orders/${assignmentId}`,
     testOrder: `${base}/api/test-order`,
+    // TASK-215: the decline and photo steps, and the form posts behind each action.
+    decline: (assignmentId: string) => `${base}/orders/${assignmentId}/decline`,
+    photo: (assignmentId: string) => `${base}/orders/${assignmentId}/photo`,
+    respond: (assignmentId: string) =>
+      `${base}/api/orders/${assignmentId}/respond`,
+    dispatch: (assignmentId: string) =>
+      `${base}/api/orders/${assignmentId}/dispatch`,
+    /** `POST` the photo; `GET` it back (the florist's own, through a signed URL). */
+    photoFile: (assignmentId: string) =>
+      `${base}/api/orders/${assignmentId}/photo`,
   });
 }
 

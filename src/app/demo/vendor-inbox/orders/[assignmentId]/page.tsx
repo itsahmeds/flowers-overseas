@@ -5,8 +5,14 @@
  * TASK-210's `OrderScreen` fed by `floristOrderView()` under the member's partner context
  * (AC-23, AC-25): another florist's assignment, a declined one, or an id that is not one is a
  * 404 (`notFound()`, the florist tree's own not-found page). The recipient's name, phone and
- * address are in the view, and so in the HTML, only from acceptance until the photo. The actions
- * (accept, decline, out for delivery, delivered, the photo) are TASK-215's; this page reads.
+ * address are in the view, and so in the HTML, only from acceptance until the photo.
+ *
+ * TASK-215 docks the actions `floristActions()` allows (the events `order_transition` lets a
+ * partner write from the order's status, AC-29): Decline beside Accept on an open offer, "Out for
+ * delivery" while it is being made, "Delivered, add the photo" on its way, "Add the photo" once
+ * delivered without one. Each is a no-JS form post or a link to its step. A refused post comes
+ * back with `?notice=` (already answered, changed, expired); a delivered order with its photo
+ * shows the photo from the same-origin photo route.
  */
 import { randomUUID } from "node:crypto";
 
@@ -18,11 +24,29 @@ import type { ReactElement } from "react";
 import { FLORIST_PATHS } from "@/config/florists";
 import { toDbContext } from "@/lib/auth/florist";
 import { floristOrderView } from "@/modules/orders";
-import { listGroupOf, OrderScreen } from "@/modules/partners";
+import { floristActions } from "@/modules/orders/florist-actions";
+import {
+  DeliveredPhoto,
+  InboxDock,
+  InboxNotice,
+  listGroupOf,
+  OrderScreen,
+} from "@/modules/partners";
 import { floristTranslator } from "@/modules/partners/auth/copy";
+import { Button } from "@/modules/ui";
 
+import { commandContextOf, oneOf, ORDER_NOTICES } from "../../actions";
 import { SignedInFrame } from "../../chrome";
 import { currentFloristContext } from "../../request";
+
+/** The words of each notice (Appendix A). */
+const NOTICE_KEYS = {
+  answered: "floristInbox.notice.answered",
+  changed: "floristInbox.notice.changed",
+  expired: "floristInbox.page.expired",
+} as const;
+
+const DOCK_BUTTON = "min-h-[56px] px-[16px]";
 
 export async function generateMetadata(): Promise<Metadata> {
   const context = await currentFloristContext();
@@ -32,10 +56,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function FloristOrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ assignmentId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const { assignmentId } = await params;
+  const notice = oneOf(ORDER_NOTICES, (await searchParams)["notice"]);
   const context = await currentFloristContext();
   if (context === null) redirect(FLORIST_PATHS.signIn);
   setRequestLocale(context.locale);
@@ -46,17 +73,71 @@ export default async function FloristOrderPage({
     { locale: context.locale },
   );
   if (view === null) notFound();
+  const actions = await floristActions(
+    commandContextOf(context),
+    view.assignmentId,
+  );
   const eyebrows = {
     waiting: t("floristInbox.stage.waiting"),
     inProgress: t("floristInbox.stage.inProgress"),
     delivered: t("floristInbox.page.groupDelivered"),
   } as const;
-  const noticeText =
-    view.stage === "expired"
+  const stageNotice =
+    view.stage === "expired" && notice !== "expired"
       ? t("floristInbox.page.expired")
-      : view.stage === "photoReceived"
-        ? t("floristInbox.page.photoReceived")
-        : null;
+      : null;
+  const id = view.assignmentId;
+  const dock =
+    actions.length === 0 ? null : (
+      <InboxDock wide={actions.includes("accept")}>
+        {actions.includes("decline") ? (
+          <Button
+            variant="secondary"
+            href={FLORIST_PATHS.decline(id)}
+            className={DOCK_BUTTON}
+          >
+            {t("floristInbox.decline")}
+          </Button>
+        ) : null}
+        {actions.includes("accept") ? (
+          <form
+            method="post"
+            action={FLORIST_PATHS.respond(id)}
+            className="contents"
+          >
+            <Button
+              type="submit"
+              name="response"
+              value="accept"
+              className={DOCK_BUTTON}
+            >
+              {t("floristInbox.accept")}
+            </Button>
+          </form>
+        ) : null}
+        {actions.includes("outForDelivery") ? (
+          <form
+            method="post"
+            action={FLORIST_PATHS.dispatch(id)}
+            className="contents"
+          >
+            <Button type="submit" className={DOCK_BUTTON}>
+              {t("floristInbox.outForDelivery")}
+            </Button>
+          </form>
+        ) : null}
+        {actions.includes("delivered") ? (
+          <Button href={FLORIST_PATHS.photo(id)} className={DOCK_BUTTON}>
+            {t("floristInbox.deliveredAddPhoto")}
+          </Button>
+        ) : null}
+        {actions.includes("addPhoto") ? (
+          <Button href={FLORIST_PATHS.photo(id)} className={DOCK_BUTTON}>
+            {t("floristInbox.page.addPhoto")}
+          </Button>
+        ) : null}
+      </InboxDock>
+    );
   return (
     <SignedInFrame
       t={t}
@@ -70,17 +151,35 @@ export default async function FloristOrderPage({
           eyebrow={eyebrows[listGroupOf(view.stage)]}
           back={{ label: t("floristInbox.orders"), href: FLORIST_PATHS.base }}
           notice={
-            noticeText === null ? undefined : (
-              <p
-                className="bg-paper-2 text-body text-ink-2 m-0 rounded-(--radius-field) px-[16px] py-[12px]"
-                data-fo-order-notice={view.stage}
-              >
-                {noticeText}
-              </p>
-            )
+            <>
+              {notice === undefined ? null : (
+                <InboxNotice tone="warn">{t(NOTICE_KEYS[notice])}</InboxNotice>
+              )}
+              {stageNotice === null ? null : (
+                <p
+                  className="bg-paper-2 text-body text-ink-2 m-0 rounded-(--radius-field) px-[16px] py-[12px]"
+                  data-fo-order-notice={view.stage}
+                >
+                  {stageNotice}
+                </p>
+              )}
+              {view.stage === "photoReceived" ? (
+                <InboxNotice tone="ok">
+                  {t("floristInbox.page.photoReceived")}
+                </InboxNotice>
+              ) : null}
+            </>
           }
-        />
+        >
+          {view.stage === "photoReceived" ? (
+            <DeliveredPhoto
+              src={FLORIST_PATHS.photoFile(id)}
+              alt={t("floristInbox.photo.alt")}
+            />
+          ) : null}
+        </OrderScreen>
       </main>
+      {dock}
     </SignedInFrame>
   );
 }

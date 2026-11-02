@@ -30,9 +30,11 @@ export {
 } from "./available";
 export type { ActionFacts, FloristAction } from "./available";
 export {
+  floristDeliveryPhotoResponse,
   floristDeliveryPhotoUrl,
   selectDeliveryPhotoLocation,
 } from "./photo-view";
+export type { PhotoResponseDeps } from "./photo-view";
 export {
   AssignmentAcceptedV1,
   AssignmentDeclinedV1,

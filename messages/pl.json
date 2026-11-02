@@ -702,7 +702,10 @@
     "outForDelivery": "W drodze do odbiorcy",
     "photo": {
       "choose": "Zrób lub wybierz zdjęcie dostarczonego bukietu",
-      "send": "Wyślij zdjęcie"
+      "send": "Wyślij zdjęcie",
+      "wrongType": "Tego pliku nie możemy użyć. Wyślij zdjęcie w formacie JPEG, PNG lub WebP.",
+      "tooLarge": "To zdjęcie jest za duże. Wyślij plik mniejszy niż 15 MB.",
+      "alt": "Twoje zdjęcie dostarczonego bukietu"
     },
     "recipient": "Odbiorca",
     "stage": {
@@ -722,6 +725,20 @@
       "refreshStopped": "Aktualizacje są wstrzymane, gdy Cię nie ma.",
       "notFoundTitle": "Nie znaleziono zamówienia",
       "notFoundLine": "Tego zamówienia nie ma już na Twojej liście."
+    },
+    "declineWhy": "Dlaczego odrzucasz to zamówienie?",
+    "declineReason": {
+      "capacity": "Tego dnia mamy komplet",
+      "out_of_area": "Nie dowozimy w to miejsce",
+      "product_unavailable": "Nie możemy zdobyć tych kwiatów",
+      "closed": "Tego dnia mamy zamknięte",
+      "other": "Inny powód"
+    },
+    "declineSubmit": "Odrzuć zamówienie",
+    "deliveredAddPhoto": "Dostarczone, dodaj zdjęcie",
+    "notice": {
+      "answered": "Na to zamówienie już odpowiedziano.",
+      "changed": "To zamówienie zmieniło się od czasu, gdy je otwarto."
     }
   },
   "footer": {
