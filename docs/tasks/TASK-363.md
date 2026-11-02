@@ -41,6 +41,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-03: migration `0034_payouts_030a` + guarded down written (numbered 0034 on the coordinator's word: TASK-329 and TASK-354 merged with none), schema mirror, `payout_export` staff-only in `db/rls.ts`, snapshot regenerated on a local PG16. Next: config, terms, fixPayoutAtAcceptance, outbox target, F1, tests.
+- 2026-11-03: code committed (terms, fixPayoutAtAcceptance, prepaid + F1 job/template, payouts outbox target, flag, permission); `pnpm typecheck` green at 03556e298. Paused by the founder: `tests/integration/payouts-030a.test.ts` is written but NOT yet run or linted; unit tests (payoutForOrder, terms schema, F1 render, config) not written; self-review and ready still to do. Carry-forwards to record: photo route is TASK-364's; reroute after acceptance keeps the first florist's amounts (spec silent); the Payout terms action/403 is TASK-367's.
 
 ## Result
 
