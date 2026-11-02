@@ -44,7 +44,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02 (agent N, paused for load): branch rebased on main after TASK-327 (d8e09fa81). Done and pushed: Mailer idempotencyKey + 409 codes (contract test); migration 0031_sign_in_callback + `createSignInLink` / `signedInLanding` / confirm landing on the stored callback (T-23 handler cases in florist-auth integration, green); `notificationsFor` table in `src/modules/notifications/rules.ts` (T-18, T-14/T-36/T-39 unit halves, green); `notifications` outbox target + routes + dispatcher `heldTargets`; other suites' registries given `notifications`. Next: `pipeline.ts` (delivery rows, address/locale at send time, idempotency key, 409 rule, W rule, template registry seam, job entry for V2/V5), register handler + hold from `notifications.email` in `src/jobs/handlers.ts`, OPS_ALERT_EMAIL env (+fixtures, counts 38 to 39), logger `svix-signature`, integration T-19/T-20/T-26/T-33/T-36/T-39/T-44/T-58, run outbox-dispatcher and payments integration suites (target count changes), self-review, ready. Local PG: embedded PG16 on port 54331 in scratchpad be-331 (stopped).
 
 ## Result
 
