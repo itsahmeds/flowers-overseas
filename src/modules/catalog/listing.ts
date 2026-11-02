@@ -59,6 +59,7 @@
  * too. Making it synchronous would mean re-reading the dataset outside the provider seam, which
  * is the one thing spec 005 §5.2 forbids. `pnpm check:no-db` covers this file.
  */
+import { manifestAdmits } from "@/lib/existence";
 import { z } from "zod";
 
 import {
@@ -772,6 +773,57 @@ async function occasionsIndexExists(
  */
 export async function listingExists(identity: unknown): Promise<boolean> {
   const parsed = ListingIdentitySchema.parse(identity);
+  if (!(await databaseListingExists(parsed))) return false;
+  // Spec 012b §2.3, AC-5 (TASK-295/296): the database says so AND the running build emitted it.
+  const path = existingListingPath(parsed);
+  return path !== undefined && manifestAdmits(path);
+}
+
+/** The path of the listing `parsed` names, by the builders `listingPages()` uses. */
+function existingListingPath(
+  parsed: z.infer<typeof ListingIdentitySchema>,
+): string | undefined {
+  if (!isLocaleCode(parsed.locale)) return undefined;
+  const locale = parsed.locale;
+  const iso2 =
+    parsed.countryIso !== undefined && isCountryIso2(parsed.countryIso)
+      ? parsed.countryIso
+      : undefined;
+  const key = parsed.entityKey;
+  const kind = (pageType: ListingPageType): "category" | "occasion" =>
+    pageType === "countryCategory" || pageType === "categoryHub"
+      ? "category"
+      : "occasion";
+  switch (parsed.pageType) {
+    case "countryShopRoot":
+      return iso2 === undefined
+        ? undefined
+        : pathOf(locale, "countryShopRoot", corridorSlug(iso2, locale));
+    case "countryCategory":
+    case "countryOccasion": {
+      if (iso2 === undefined || key === undefined) return undefined;
+      const slug = slugFor(kind(parsed.pageType), key, locale);
+      return slug === undefined
+        ? undefined
+        : pathOf(locale, parsed.pageType, corridorSlug(iso2, locale), slug);
+    }
+    case "categoryHub":
+    case "occasionHub": {
+      if (key === undefined) return undefined;
+      const slug = slugFor(kind(parsed.pageType), key, locale);
+      return slug === undefined
+        ? undefined
+        : pathOf(locale, parsed.pageType, undefined, slug);
+    }
+    case "occasionsIndex":
+      return pathOf(locale, "occasionsIndex");
+  }
+}
+
+/** The database half of `listingExists()`: the rules of spec 008 §2, as before publishing. */
+async function databaseListingExists(
+  parsed: z.infer<typeof ListingIdentitySchema>,
+): Promise<boolean> {
   if (!isLocaleCode(parsed.locale)) return false;
   const locale = parsed.locale;
   const iso2 =
@@ -923,7 +975,8 @@ export async function listingPages(
     }
   }
 
-  return pages;
+  // Spec 012b §2.3, AC-5 (TASK-296): the database AND the running manifest.
+  return pages.filter((page) => manifestAdmits(page.path));
 }
 
 /**

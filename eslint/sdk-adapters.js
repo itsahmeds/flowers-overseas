@@ -89,6 +89,9 @@ export const SDK_ADAPTERS = [
     // the recorded approvals into the review ledger over the direct URL (TASK-293).
     // `scripts/orders-rotate-tracking.ts` is spec 018 §5.2's `pnpm orders:rotate-tracking`, one
     // transaction over the direct URL that bumps a token version and audits it (TASK-338).
+    // `scripts/catalogue-parity-catalogue.ts` is the parity's catalogue and price half, inside the
+    // same read-only transaction (TASK-294); `scripts/existence-manifest.ts` reads the database's
+    // `now()` once through `DATABASE_BUILD_URL` before `next build` (spec 012b §2.3 F1, TASK-295).
     files: [
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
@@ -99,6 +102,8 @@ export const SDK_ADAPTERS = [
       "scripts/catalogue-parity.ts",
       "scripts/attestations-import.ts",
       "scripts/orders-rotate-tracking.ts",
+      "scripts/catalogue-parity-catalogue.ts",
+      "scripts/existence-manifest.ts",
     ],
     use: "src/lib/db.ts",
   },

@@ -3,6 +3,9 @@
 
 SET LOCAL ROLE app_owner;
 
+DELETE FROM public.feature_flag_scope WHERE flag_key = 'catalogue.placeholder_window';
+DELETE FROM public.feature_flag WHERE key = 'catalogue.placeholder_window';
+
 CREATE OR REPLACE FUNCTION public.audit_mask_columns(p_table text) RETURNS text[]
   LANGUAGE sql
   IMMUTABLE

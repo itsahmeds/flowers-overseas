@@ -467,7 +467,16 @@ export function corridorCacheTags(
   iso2: string,
   locale: string,
 ): readonly string[] {
-  return [`corridor:${iso2}`, `corridor:${iso2}:${locale}`, SITEMAP_CACHE_TAG];
+  return [
+    corridorCacheTag(iso2),
+    `corridor:${iso2}:${locale}`,
+    SITEMAP_CACHE_TAG,
+  ];
+}
+
+/** `corridor:{iso2}`: a destination's corridor pages in every locale (spec 012b §5.4). */
+export function corridorCacheTag(iso2: string): string {
+  return `corridor:${iso2}`;
 }
 
 /**
@@ -481,7 +490,12 @@ export function corridorCacheTags(
  * the route revalidates on time instead.
  */
 export function hubCacheTags(locale: string): readonly string[] {
-  return [`hub:${locale}`, SITEMAP_CACHE_TAG];
+  return [hubCacheTag(locale), SITEMAP_CACHE_TAG];
+}
+
+/** `hub:{locale}`: the all-destinations hub of one locale (spec 012b §5.4). */
+export function hubCacheTag(locale: string): string {
+  return `hub:${locale}`;
 }
 
 /**

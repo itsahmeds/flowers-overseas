@@ -55,6 +55,7 @@
  * here that reads a clock and the environment, and both are parameters with defaults (`now`,
  * `deployment`), so a test pins them. Its section header states the money rules.
  */
+import { manifestAdmits } from "@/lib/existence";
 import { z } from "zod";
 
 import {
@@ -212,7 +213,12 @@ async function pageExists(
   const product = await productIn(memo, sku);
   if (product === null || product.status !== "active") return false;
   if (!(await pricedIn(memo, sku, iso2))) return false;
-  return hasSlug("product", sku, locale);
+  if (!hasSlug("product", sku, locale)) return false;
+  // Spec 012b §2.3, AC-5 (TASK-295): the database says so AND the running build emitted it, so a
+  // product made active after the build is in no list, link, sitemap or hreflang cluster, and
+  // 404s, until a publish.
+  const record = recordFor(sku, iso2, locale);
+  return record !== undefined && manifestAdmits(record.path);
 }
 
 /**

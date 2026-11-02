@@ -178,6 +178,8 @@ describe("ensureQueues", () => {
     const fake = fakeBoss({});
     await ensureQueues(fake.boss);
     expect(fake.queues.sort()).toEqual([
+      "cache.invalidate",
+      "catalogue.publish",
       "db.backup_verify",
       "media.derive_variants",
       "neon.usage_probe",
@@ -363,9 +365,11 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258) and order.close_sweep (TASK-369), nothing else yet", async () => {
+  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), order.close_sweep (TASK-369), catalogue.publish and cache.invalidate (TASK-295), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
+      "cache.invalidate",
+      "catalogue.publish",
       "media.derive_variants",
       "order.close_sweep",
       "outbox.dispatch",

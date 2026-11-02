@@ -332,6 +332,9 @@
         },
         "notifications": {
           "email": "Sends order emails to buyers, florists and you. Off: every email waits and goes out once this is on again. Nothing is dropped."
+        },
+        "catalogue": {
+          "placeholder_window": "Lets placeholder bouquets be retired, removed and renamed freely before the site opens to search engines. Admin only. It is turned off once, when indexing opens, and never on again."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",

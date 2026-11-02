@@ -18,6 +18,7 @@
 --                               `app_build` read it without reading a partner table.
 --   * `media_asset.supplier_partner_id`  a florist photo names its florist (§2.7).
 --   * `publish_run`             one structural publish (§2.3), at most one open per environment.
+--   * the `catalogue.placeholder_window` flag row, global and on (§12 "Feature flags").
 --   * the audit trigger on the twelve tables §5.1 names (`country` has it from `0016`), and the
 --     attester's name masked in `audit_log` (`review_attestation` is personal data, AC-28).
 --
@@ -263,5 +264,18 @@ AS $fn$
     ELSE ARRAY[]::text[]
   END;
 $fn$;
+
+/* ---------------------------------------------------------------------------
+ * the placeholder window (§2.5, §12 "Feature flags"): global, on from the cutover
+ * ------------------------------------------------------------------------ */
+
+-- The founder turns it off when opening the site to search engines, and it cannot be turned back
+-- on (§13 Q6; the one-way toggle is TASK-297's). While on, removing a `source = 'seed'` product's
+-- URL at a publish is allowed (AC-8).
+INSERT INTO public.feature_flag (key, description, enabled_default) VALUES
+  ('catalogue.placeholder_window', 'Placeholder products may be retired, removed and renamed freely while on (spec 012b). Admin only, one way: off when indexing opens, never on again.', true);
+
+INSERT INTO public.feature_flag_scope (flag_key, scope, scope_ref, enabled) VALUES
+  ('catalogue.placeholder_window', 'global', '*', true);
 
 RESET ROLE;

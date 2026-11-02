@@ -228,9 +228,14 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "QuoteSchema",
         "TierKeySchema",
         "availability",
+        // spec 012b §2.3 (TASK-295): existence now, and a publish's diff.
+        "existenceDiff",
+        "existsNow",
         "isProductIndexable",
         // spec 012b §5.2 (AC-39; TASK-294): the saleability term, for spec 010's placement.
         "isSaleable",
+        // spec 012b §2.3 (TASK-295): the publish diff's family test.
+        "isStructuralPath",
         "lowestPriceInLast30Days",
         "quote",
         "verifyQuote",
@@ -442,6 +447,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/db/read.ts`,
       // The `saleable_offer` view (spec 012b AC-39; TASK-294).
       `${moduleDir}/db/saleable.ts`,
+      // Existence now and the publish diff (spec 012b §2.3; TASK-295).
+      `${moduleDir}/existence.ts`,
       `${moduleDir}/flags.ts`,
       // Deep-frozen provider values, shared by `static/` and `db/` (TASK-148, TASK-070).
       `${moduleDir}/frozen.ts`,

@@ -10,7 +10,6 @@
 import { randomBytes } from "node:crypto";
 import { resolve } from "node:path";
 
-import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -25,6 +24,11 @@ import {
 } from "../../src/modules/catalog/availability.ts";
 import { createDbSaleabilityProvider } from "../../src/modules/catalog/db/saleable.ts";
 import { withSaleability } from "../../src/modules/catalog/providers.ts";
+import {
+  catalogueParity,
+  readCatalogueRows,
+  staticCatalogueRows,
+} from "../../scripts/catalogue-parity-catalogue.ts";
 import { readSeedTree } from "../../seed/check.ts";
 import { runSeed } from "../../seed/index.ts";
 import { buildSeedPlan } from "../../seed/plan.ts";
@@ -35,6 +39,7 @@ import {
   type Sql,
   withoutTriggers,
 } from "./support/scratch-db.ts";
+import { drizzleOver } from "./support/drizzle-tx.ts";
 
 const server = await probeLocalServer();
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -123,6 +128,14 @@ describe.skipIf(server.url === undefined)(
       await build?.end({ timeout: 5 });
       await scratch?.sql.unsafe("ALTER ROLE app_build NOLOGIN PASSWORD NULL");
       await scratch?.drop();
+    });
+
+    it("AC-2 / T-02: a migrated and seeded database hands over exactly the dataset's products, sizes and prices", async () => {
+      const rows = await scratch.sql.begin("read only", (tx) =>
+        readCatalogueRows(tx),
+      );
+      expect(rows.length).toBe(staticCatalogueRows().length);
+      expect(catalogueParity(staticCatalogueRows(), rows)).toEqual([]);
     });
 
     it("AC-39: a seeded demo florist makes nothing saleable; the view is empty on the seed", async () => {
@@ -242,7 +255,7 @@ describe.skipIf(server.url === undefined)(
         max: 1,
         onnotice: () => undefined,
       });
-      const db = drizzle(reader);
+      const db = drizzleOver(reader as never, reader);
       const term = () =>
         createDbSaleabilityProvider({
           read: (query) => query(db as never),

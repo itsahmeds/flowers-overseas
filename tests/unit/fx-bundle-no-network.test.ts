@@ -172,6 +172,8 @@ describe("GET /api/health reports the bundled FX snapshot (AC-33, T-33)", () => 
         // TASK-058 (`/review 196` item 4): the CSP enforcement state, a closed-set value.
         "cspEnforce",
         "env",
+        // Spec 012b AC-5 (TASK-295): the running build's existence hash, null without a manifest.
+        "existenceHash",
         "fxAsOf",
         "fxSource",
         "region",
