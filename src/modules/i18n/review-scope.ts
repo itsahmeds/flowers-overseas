@@ -172,6 +172,15 @@ const FLORIST_PATHS = [
   "src/lib/auth/florist.ts",
 ];
 
+/**
+ * Spec 016 §5.3 (TASK-332): the email layout's frames and the florist emails V1 to V5, with the
+ * florist's WhatsApp message, render in email only, never on a page.
+ */
+const EMAIL_PATHS = ["src/modules/notifications/emails/**"];
+
+/** Spec 011's inbox lines that the florist emails reuse verbatim (spec 016 §7; TASK-332). */
+const FLORIST_INBOX_PAGE_PATHS = [...FLORIST_PATHS, ...EMAIL_PATHS];
+
 const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   ...CHECKOUT_SUBTREES.map((subtree) => ({
     match: `checkout.${subtree}.*`,
@@ -205,10 +214,17 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   },
   { match: "floristAuth", surface: "florist", paths: FLORIST_PATHS },
   { match: "emails.floristSignIn.*", surface: "email", paths: FLORIST_PATHS },
+  { match: "emails.layout.*", surface: "email", paths: EMAIL_PATHS },
+  { match: "emails.florist.*", surface: "email", paths: EMAIL_PATHS },
+  { match: "whatsapp.florist.*", surface: "email", paths: EMAIL_PATHS },
   // Spec 011 §5.3 (TASK-214): the inbox pages' own lines (groups, empty state, stage leads, the
   // test-order control, the refresh line, not found) render only under `FLORIST_BASE_PATH`; the
   // walkthrough prints none of them, so they reach no indexable page.
-  { match: "floristInbox.page.*", surface: "florist", paths: FLORIST_PATHS },
+  {
+    match: "floristInbox.page.*",
+    surface: "florist",
+    paths: FLORIST_INBOX_PAGE_PATHS,
+  },
   // Spec 011 §5.2 (TASK-213): the founder's alert for each florist application, an email that
   // renders on no page at all.
   {

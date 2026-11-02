@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02: layout (`src/modules/notifications/emails/`, escaped strings, not React: `react-dom/server` throws under the `react-server` condition the job tick route runs in), V1 to V5 with facts loader and registration, A1 and W in `src/modules/admin/emails/` (admin catalogue), keys en/pl/de + admin, `email-florist.test.ts` green. Next: ops tests, theme test, relay exemption, review scope, integration test, runbook.
 
 ## Result
 

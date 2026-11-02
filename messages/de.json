@@ -658,6 +658,56 @@
       "intro": "A florist applied on the website. Their answers are below. They receive no copy of this email, so the reply is yours to send.",
       "none": "Not given",
       "subject": "New florist application: {businessName}"
+    },
+    "layout": {
+      "audience": {
+        "florist": "Für unsere Floristen"
+      },
+      "floristHelp": "Rufen Sie uns an, wenn an einem Auftrag etwas unklar ist.",
+      "floristWhy": "Sie erhalten diese E-Mail, weil Ihr Geschäft Aufträge von Flowers Overseas annimmt.",
+      "buyerHours": "Schreiben Sie uns jederzeit, rund um die Uhr. Wir antworten innerhalb weniger Stunden.",
+      "buyerWhy": "Sie erhalten diese E-Mail, weil Sie bei uns die Bestellung {reference} aufgegeben haben."
+    },
+    "florist": {
+      "openOrder": "Auftrag öffnen",
+      "oneTap": "Die Schaltfläche meldet Sie an und öffnet diesen Auftrag. Sie funktioniert einmal, eine Stunde lang.",
+      "oneTapText": "Der Link meldet Sie an und öffnet diesen Auftrag. Er funktioniert einmal, eine Stunde lang.",
+      "label": {
+        "bouquet": "Strauß",
+        "addOns": "Extras",
+        "town": "Ort",
+        "youReceive": "Sie erhalten"
+      },
+      "offer": {
+        "subject": "Neuer Auftrag für {date} · antworten bis {time}",
+        "heading": "Ein neuer Auftrag für Sie",
+        "recipientLater": "Name, Adresse und Telefon der empfangenden Person sehen Sie im Auftrag, sobald Sie ihn annehmen."
+      },
+      "reminder": {
+        "subject": "Erinnerung: antworten bis {time}",
+        "preheader": "Ein Auftrag für {date} wartet noch auf Ihre Antwort.",
+        "heading": "Dieser Auftrag wartet noch auf Ihre Antwort."
+      },
+      "confirmed": {
+        "subject": "Bestätigt: Bitte fertigen Sie den Auftrag für {date}",
+        "preheader": "Öffnen Sie den Auftrag für die Angaben zur empfangenden Person und den Kartentext.",
+        "heading": "Bestätigt. Bitte fertigen Sie diesen Auftrag.",
+        "body": "Öffnen Sie den Auftrag für Name, Adresse und Telefon der empfangenden Person und den Kartentext zum Drucken."
+      },
+      "withdrawn": {
+        "subject": "Bitte fertigen Sie den Auftrag für {date} nicht",
+        "heading": "Dieser Auftrag ist nicht mehr Ihrer.",
+        "body": "Bitte fertigen Sie ihn nicht.",
+        "started": "Wenn Sie schon begonnen haben, rufen Sie uns an: {phone}."
+      },
+      "timedOut": {
+        "subject": "Die Zeit für eine Antwort auf den Auftrag für {date} ist abgelaufen"
+      },
+      "photoReminder": {
+        "subject": "Fügen Sie das Foto zum Auftrag für {date} hinzu",
+        "preheader": "Ein Foto des Straußes, wie Sie ihn übergeben haben.",
+        "body": "Danke für die Lieferung von {product} heute. Bitte fügen Sie ein Foto des Straußes hinzu, wie Sie ihn übergeben haben."
+      }
     }
   },
   "errors": {
@@ -1444,6 +1494,18 @@
     },
     "status": {
       "choosingFirst": "Wir nehmen noch keine Bestellungen an."
+    }
+  },
+  "whatsapp": {
+    "florist": {
+      "offer": {
+        "title": "Neuer Auftrag von Flowers Overseas",
+        "open": "Auftrag öffnen: {url}",
+        "alsoEmail": "Wir haben Ihnen diesen Auftrag auch per E-Mail geschickt."
+      },
+      "stop": {
+        "body": "Dieser Auftrag ist nicht mehr Ihrer. Bitte fertigen Sie ihn nicht."
+      }
     }
   }
 }

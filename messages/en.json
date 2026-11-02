@@ -1277,6 +1277,56 @@
         "language": "Language",
         "notice": "Privacy notice shown"
       }
+    },
+    "layout": {
+      "audience": {
+        "florist": "For our florists"
+      },
+      "floristHelp": "Call us if anything about an order is unclear.",
+      "floristWhy": "You receive this email because your shop takes orders from Flowers Overseas.",
+      "buyerHours": "Message us any time, 24/7. We reply within a few hours.",
+      "buyerWhy": "You receive this email because you placed order {reference} with us."
+    },
+    "florist": {
+      "openOrder": "Open the order",
+      "oneTap": "The button signs you in and opens this order. It works once, for one hour.",
+      "oneTapText": "The link signs you in and opens this order. It works once, for one hour.",
+      "label": {
+        "bouquet": "Bouquet",
+        "addOns": "Add-ons",
+        "town": "Town",
+        "youReceive": "You receive"
+      },
+      "offer": {
+        "subject": "New order for {date} · answer by {time}",
+        "heading": "A new order for you",
+        "recipientLater": "The recipient's name, address and phone appear in the order once you accept it."
+      },
+      "reminder": {
+        "subject": "Reminder: answer by {time}",
+        "preheader": "An order for {date} is still waiting for your answer.",
+        "heading": "This order is still waiting for your answer."
+      },
+      "confirmed": {
+        "subject": "Confirmed: please make the order for {date}",
+        "preheader": "Open the order for the recipient's details and the card message.",
+        "heading": "Confirmed. Please make this order.",
+        "body": "Open the order for the recipient's name, address, phone and the card message to print."
+      },
+      "withdrawn": {
+        "subject": "Please do not make the order for {date}",
+        "heading": "This order is no longer yours.",
+        "body": "Please do not make it.",
+        "started": "If you have already started, call us on {phone}."
+      },
+      "timedOut": {
+        "subject": "The time to answer the order for {date} has passed"
+      },
+      "photoReminder": {
+        "subject": "Add the photo for the order of {date}",
+        "preheader": "One photo of the bouquet as you delivered it.",
+        "body": "Thank you for delivering {product} today. Please add one photo of the bouquet as you handed it over."
+      }
     }
   },
   "tracking": {
@@ -1444,6 +1494,18 @@
       "h1": "Thank you. We have your application.",
       "body": "We read every application and reply, whether the answer is yes or no. If you would like to talk sooner, call or message us on <phone>{phoneDisplay}</phone>.",
       "walkthrough": "See how an order reaches you"
+    }
+  },
+  "whatsapp": {
+    "florist": {
+      "offer": {
+        "title": "New order from Flowers Overseas",
+        "open": "Open the order: {url}",
+        "alsoEmail": "We have also sent you this order by email."
+      },
+      "stop": {
+        "body": "This order is no longer yours. Please do not make it."
+      }
     }
   }
 }
