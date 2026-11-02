@@ -50,11 +50,11 @@ for (const [locale, url, native] of SHOP_ROOTS) {
     expect(response?.status()).toBe(200);
 
     await expect(page.locator("h1")).toHaveCount(1);
-    // Round 2 (spec 004 §14 A24 clause 2; TASK-187): the H1 in the head, the flat P.S., and no
-    // band inside the grid.
-    await expect(page.locator("main [data-fo-listing-hero] h1")).toHaveCount(1);
-    await expect(page.locator("main [data-fo-listing-note]")).toHaveCount(1);
-    await expect(page.locator('main [role="note"][aria-label]')).toHaveCount(1);
+    // The redrawn head (spec 043 §14 A-founder-2026-10-22 as revised 2026-10-24; TASK-289): the
+    // H1 in the head, no P.S. note, and no band inside the grid.
+    await expect(page.locator("main [data-fo-listing-head] h1")).toHaveCount(1);
+    await expect(page.locator("main [data-fo-listing-note]")).toHaveCount(0);
+    await expect(page.locator('main [role="note"]')).toHaveCount(0);
     await expect(page.locator("main [data-fo-listing-interlude]")).toHaveCount(
       0,
     );

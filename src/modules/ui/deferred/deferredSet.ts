@@ -50,7 +50,8 @@
  */
 
 /** Every island id the set declares. */
-export type DeferredIslandId = "motions" | "language-popup" | "home-sentence";
+export type DeferredIslandId =
+  "motions" | "language-popup" | "home-sentence" | "listing-sort";
 
 /** When an island may load (`./paintSignal.ts`). */
 export type DeferredTrigger = "paint" | "interaction";
@@ -140,6 +141,20 @@ export const DEFERRED_ISLANDS: readonly DeferredIsland[] = [
     mountedBy: "src/modules/ui/home/SentencePicker.tsx",
     mounts: "SentenceLoader",
     marker: "fo:deferred:home-sentence",
+  },
+  {
+    id: "listing-sort",
+    status: "deferred",
+    trigger: "paint",
+    control: null,
+    what: "the country listings' sort select, applied on change with the client router (spec 043 §14 A-founder-2026-10-22 item 3, revised 2026-10-24): off the first screen's paint path, and present before a visitor reaches the select",
+    task: "TASK-289",
+    module: "src/modules/ui/shop/SortIsland.tsx",
+    chunk: "src/modules/ui/shop/SortIsland.tsx",
+    loader: "src/modules/ui/shop/SortLoader.tsx",
+    mountedBy: "src/modules/ui/shop/ListingToolbar.tsx",
+    mounts: "SortLoader",
+    marker: "fo:deferred:listing-sort",
   },
 ];
 

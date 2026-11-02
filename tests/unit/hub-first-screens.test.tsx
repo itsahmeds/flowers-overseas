@@ -433,7 +433,7 @@ describe("R5 (T-37): the occasions index's next six, in date order", () => {
 });
 
 describe("R6 (T-37, T-39): the destinations hub's state line", () => {
-  const GUIDE = "Guide · not delivering yet";
+  const GUIDE = "Ordering opens soon";
   const LIVE = "Delivering now";
 
   function renderHub(): string {

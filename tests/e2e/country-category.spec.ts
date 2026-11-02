@@ -141,7 +141,7 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
   }) => {
     await page.goto("/en/poland/flowers/roses");
     await expect(page.locator("h1")).toHaveCount(1);
-    await expect(page.locator("h1")).toHaveText("Roses we make for Poland");
+    await expect(page.locator("h1")).toHaveText("Roses to Poland");
     await expect(page.locator("[data-fo-listing-grid]")).toHaveCount(1);
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
     // The sibling row is the whole browsing affordance (§13 Q6): links to pages that exist, the
@@ -154,18 +154,18 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(page.locator("main [data-fo-listing-chips]")).toHaveCount(0);
     await expect(siblings.locator("a")).not.toHaveCount(0);
     await expect(siblings.locator('[aria-current="page"]')).toHaveCount(1);
-    // The demo sentence, the whole of the Phase 0 state.
+    // The Phase 0 state, said once in the quiet line (spec 043 AC-7).
     await expect(
-      page.getByText(
-        "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
-      ),
+      page
+        .locator("main [data-fo-listing-status]")
+        .getByText("Ordering opens soon"),
     ).toBeVisible();
     // Since spec 008 §14 A15 (TASK-187) the sort form and the pager are here: one `GET` form
-    // above the grid (C3, TASK-241) whose submit can act with no JavaScript, and a pager of real
-    // links. Counted
-    // exactly, so a basket or a second form fails here.
+    // above the grid (C3, TASK-241) whose `<noscript>` submit can act with no JavaScript (none
+    // renders with it on; spec 043 item 3), and a pager of real links. Counted exactly, so a
+    // basket or a second form fails here.
     await expect(page.locator('main form[method="get"]')).toHaveCount(1);
-    await expect(page.locator("main button")).toHaveCount(1);
+    await expect(page.locator("main button")).toHaveCount(0);
     await expect(page.locator("main select")).toHaveCount(1);
     await expect(
       page.locator('main nav[aria-label="Pages of products"]'),

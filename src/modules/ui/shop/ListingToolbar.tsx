@@ -26,9 +26,10 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { VisuallyHidden } from "../primitives/a11y.tsx";
+import { AfterPaint } from "../deferred/AfterPaint.tsx";
 import { Text } from "../primitives/typography.tsx";
 
+import { SortLoader } from "./SortLoader.tsx";
 import { LISTING_SORTS, type ListingSort } from "./viewModel.ts";
 
 /**
@@ -140,71 +141,74 @@ function SortForm({
 
 export interface ListingSortFormProps {
   readonly sort: ListingSort;
+  /**
+   * The listing's bare path (`view.path`): the island's navigation target, handed down from the
+   * server so the island reads no client path hook (spec 043 AC-42).
+   */
+  readonly path: string;
   /** The `<select>`'s id. */
   readonly id?: string;
-  /**
-   * `reorder` (default; the shop root and the country category): one row whose visible label is
-   * "Change the order" (A10), bound to the `<select>`. `bare`: the toolbar's form as the country
-   * occasion has always drawn it, "Sort by" over the `<select>` (the C3 artboards, PR 236).
-   */
-  readonly variant?: "reorder" | "bare";
-  /**
-   * Below `md` the `reorder` form draws its own rule above and below (default). `false` where the
-   * row it sits on draws the rule across it and a neighbour (the country category's "Categories"
-   * button, spec 008 §14 A-founder-2026-10-15c).
-   */
-  readonly framed?: boolean;
+}
+
+/** The chevron the select and "How we sort" draw: a down-pointing stroke, never rotated (AC-45). */
+export function ChevronDown({
+  className,
+}: {
+  readonly className?: string;
+}): ReactElement {
+  return (
+    <svg
+      aria-hidden="true"
+      className={["flex-none", className].filter(Boolean).join(" ")}
+      fill="none"
+      height="6"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+      viewBox="0 0 10 6"
+      width="10"
+    >
+      <path d="M1 1l4 4 4-4" />
+    </svg>
+  );
 }
 
 /**
- * The listing's sort form **above the grid** (spec 008 §14 A-founder-2026-10-14c, the founder's
- * C3 ruling, AC-33; spec 004 §14 A23 Appendix A **A10**; TASK-241): the same `<form method="get">`
- * as the toolbar's. In the `reorder` variant its visible label is "Change the order"
- * (`shop.toolbar.reorderLabel`), which also names the section; the `<label>` keeps "Sort by" for
- * assistive technology, so the control's accessible name contains what a sighted reader sees
- * (WCAG 2.5.3). On a phone the label sits over the control, from `md` up beside it. Still no
- * client script: the submit button does the work with JavaScript off (AC-9).
+ * The listing's compact sort control (spec 043 §14 A-founder-2026-10-22 item 3, revised
+ * 2026-10-24; spec 008 AC-9; `docs/design/wireframes/country-*` `lh:2026-10-24b`, `.lh-sort`;
+ * TASK-289): one 44 px pill with a 1 px `--color-border-strong` ring holding the visible label
+ * "Sort by" as a real `<label for>`, then the `<select name="sort">` showing the current order in
+ * bold ink. No eyebrow, no "Change the order".
+ *
+ * Still a `<form method="get">` that works with JavaScript off: the `shop.toolbar.submit` button
+ * sits inside `<noscript>`, so it is displayed exactly when no script runs and causes no layout
+ * shift when one does. With JavaScript on, `SortIsland` (loaded after paint) applies the order on
+ * `change` through the client router, to the same URL this form would produce.
  */
 export function ListingSortForm({
   sort,
+  path,
   id = "listing-sort",
-  variant = "reorder",
-  framed = true,
 }: ListingSortFormProps): ReactElement {
   const t = useTranslations("shop");
-  if (variant === "bare") {
-    return (
-      <div data-fo-listing-sort-form={sort}>
-        <SortForm id={id} sort={sort} />
-      </div>
-    );
-  }
-  const headingId = `${id}-heading`;
   return (
-    <section
-      aria-labelledby={headingId}
-      className={
-        framed
-          ? "max-md:border-rule max-md:border-y max-md:py-[10px]"
-          : "max-md:py-[10px]"
-      }
+    <form
+      className="border-border-strong bg-card inline-flex min-h-(--target-min) max-w-full items-center gap-[6px] rounded-full border ps-[14px] pe-[12px] md:gap-[8px] md:ps-[16px] md:pe-[14px]"
       data-fo-listing-sort-form={sort}
+      data-fo-sort-form
+      id={`${id}-form`}
+      method="get"
     >
-      <form
-        className="flex flex-wrap items-center gap-x-[10px] gap-y-[6px] md:flex-nowrap md:gap-x-[12px]"
-        method="get"
+      <label
+        className="text-ink-subtle text-fine whitespace-nowrap md:text-sm"
+        htmlFor={id}
       >
-        {/* The visible words are "Change the order" (A10); the `<label>` also carries "Sort by"
-            for assistive technology, so the control's name holds what a sighted reader sees. */}
-        <label
-          className="label text-ink-subtle basis-full md:basis-auto"
-          htmlFor={id}
-        >
-          <span id={headingId}>{t("toolbar.reorderLabel")}</span>{" "}
-          <VisuallyHidden>{t("toolbar.sortLabel")}</VisuallyHidden>
-        </label>
+        {t("toolbar.sortLabel")}
+      </label>
+      <span className="relative inline-flex min-w-0 items-center">
         <select
-          className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 flex-1 border-[1.5px] px-[14px] md:w-[180px] md:flex-none"
+          className="text-ink text-ui min-h-[40px] min-w-0 cursor-pointer appearance-none border-0 bg-transparent py-0 ps-0 pe-[18px] font-bold"
           defaultValue={sort}
           id={id}
           name="sort"
@@ -215,13 +219,24 @@ export function ListingSortForm({
             </option>
           ))}
         </select>
+        <ChevronDown className="text-ink-muted pointer-events-none absolute end-[2px]" />
+      </span>
+      <noscript>
         <button
-          className="text-ink text-ui hover:bg-surface-raised min-h-(--control-sm) flex-none rounded-full px-[20px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
+          className="text-ink bg-card ms-[6px] inline-grid min-h-[36px] place-items-center rounded-full px-[14px] text-sm font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
           type="submit"
         >
           {t("toolbar.submit")}
         </button>
-      </form>
-    </section>
+      </noscript>
+      <AfterPaint island="listing-sort" on="paint">
+        <SortLoader
+          current={sort}
+          defaultSort={LISTING_SORTS[0]}
+          path={path}
+          selectId={id}
+        />
+      </AfterPaint>
+    </form>
   );
 }

@@ -45,6 +45,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  "nav",
+  "home",
 ] as const;
 
 function render(node: ReactElement, locale: string): string {
@@ -97,7 +99,10 @@ describe("the populated shop root (§5.3 row 1)", () => {
 
   it("renders one `<h1>`, and it is the shop root's heading", () => {
     expect(html.match(/<h1/gu)).toHaveLength(1);
-    expect(text).toContain("Flowers we make for Poland");
+    // The short H1 (spec 043 §14 A-founder-2026-10-22 item 5, revised 2026-10-24).
+    expect(textOf(/<h1[^>]*>(.*?)<\/h1>/su.exec(html)?.[1] ?? "")).toBe(
+      "Flowers to Poland",
+    );
   });
 
   it("opens with the priced grid, before any prose block", () => {
@@ -111,18 +116,19 @@ describe("the populated shop root (§5.3 row 1)", () => {
     expect(occasions).toBeLessThan(intro);
   });
 
-  it("carries the demo sentence — the whole of the Phase 0 state (§13 Q8)", () => {
-    // N1 (spec 004 §14 A23 clause 12; TASK-193): the whole sentence, so a reworded notice is red.
-    expect(text).toContain(
-      "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
-    );
+  it("says the Phase 0 state once, in the quiet line, and no demo sentence (§13 Q8; spec 043 AC-7)", () => {
+    // Spec 043 §14 A-founder-2026-10-22 item 1: the quiet line says both halves of the demo
+    // sentence, which leaves the listing (Q-22e keeps its value for the product meta).
+    expect(text.split("Ordering opens soon")).toHaveLength(2);
+    expect(text.split("Prices include delivery and VAT")).toHaveLength(2);
+    expect(text).not.toContain("Every price here is the price you will pay");
     // No **purchase** affordance of any kind, disabled or otherwise. The one `<form>` and the one
     // `<button>` on the page are the sort control TASK-114 added (`method="get"`, submit): a
     // control that only re-renders the same twelve bouquets in another order, and the only way to
     // sort with JavaScript off. Counted exactly, so a second form — a basket, an email capture —
     // fails here.
     expect(html.match(/<form/giu) ?? []).toHaveLength(1);
-    expect(html).toMatch(/<form class="[^"]*" method="get"/u);
+    expect(html).toMatch(/<form class="[^"]*"[^>]*method="get"/u);
     expect(html.match(/<button/giu) ?? []).toHaveLength(1);
     expect(html).toContain('type="submit"');
     expect(html).not.toMatch(/basket|cart|buy now|add to/iu);
@@ -187,15 +193,26 @@ describe("the populated shop root (§5.3 row 1)", () => {
     expect(text).toContain("currency of the delivery country");
   });
 
-  it("renders the round-2 head: the H1, the state line and the P.S., and no printed-card band", () => {
-    // Spec 004 §14 A24 clause 2: the note is a flat P.S. beside the H1; the round-2 artboard
-    // draws no eyebrow and no band inside the grid (TASK-187).
-    expect(html).toMatch(/role="note" aria-label="A note before you choose"/u);
-    expect(text).toContain("P.S.");
+  it("renders the redrawn head: no P.S., no state eyebrow, no band, and the tiles grouped in the Categories panel (spec 043 AC-35, §5.3 E)", () => {
+    expect(html).not.toContain('role="note"');
+    expect(text).not.toContain("P.S.");
     expect(html).not.toContain("data-fo-listing-interlude");
-    expect(html).toContain('data-fo-listing-state-line="guide"');
-    expect(text).toContain("Guide · not delivering yet");
+    expect(html).not.toContain("data-fo-listing-state-line");
+    expect(text).not.toContain("Guide · not delivering yet");
     expect(text).toContain("Narrow it down");
+    // Every tile is also a chip of the closed "Categories" panel, what it is before occasions.
+    const panel = html.slice(
+      html.indexOf("data-fo-listing-categories"),
+      html.indexOf("</details>", html.indexOf("data-fo-listing-categories")),
+    );
+    expect(html).toMatch(/<details[^>]*data-fo-listing-categories[^>]*>/u);
+    expect(html).not.toMatch(
+      /<details[^>]*data-fo-listing-categories[^>]*\bopen\b/u,
+    );
+    for (const tile of en.tiles) {
+      expect(panel, tile.key).toContain(`href="${tile.href}"`);
+    }
+    expect(textOf(panel)).toContain("By what it is");
   });
 
   it("renders the category tiles with their `from` prices and plural counts", () => {

@@ -43,6 +43,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  "nav",
+  "home",
 ] as const;
 
 function render(node: ReactElement, locale: string): string {
@@ -80,6 +82,24 @@ async function view(
   );
   if (result === undefined) throw new Error(`${pageType} ${entity ?? ""}`);
   return result;
+}
+
+/** The slice of `html` from the first `start` to the first `end` after it. */
+function between(html: string, start: string, end: string): string {
+  const at = html.indexOf(start);
+  if (at < 0) return "";
+  return html.slice(at, html.indexOf(end, at));
+}
+
+/**
+ * The quiet line's displayed parts, in DOM order, as `[part, text]` (spec 043 AC-36): each part
+ * is its own element carrying `data-fo-listing-status-part`.
+ */
+function statusParts(html: string): [string, string][] {
+  const line = between(html, "data-fo-listing-status", "</p>");
+  return [
+    ...line.matchAll(/data-fo-listing-status-part="([a-z]+)"[^>]*>([^<]*)</gu),
+  ].map((match) => [match[1] ?? "", readable(match[2] ?? "")]);
 }
 
 /** Every product a page renders, by its card hook, in DOM order. */
@@ -136,55 +156,65 @@ describe("spec 008 T-35: the lead is `items[0]`, and page 1 is twelve products (
     }
   });
 
-  it("draws the country occasion's lead figure from `items[0]` itself: one element, its URL once (A16 (b))", () => {
+  it("draws no lead photograph and no date card on the country occasion: its first `<img>` is the first card's, with `priority` (spec 043 AC-54)", () => {
     const html = render(<CountryOccasionPage view={mothersDay} />, "en-gb");
     const lead = mothersDay.items[0];
-    if (lead === undefined) throw new Error("the occasion must have a lead");
-    // One `<li>` is the lead, it is the grid's first, and it holds `items[0]`'s one card.
-    expect(html.match(/data-fo-lead-item/gu) ?? []).toHaveLength(1);
-    const item = html.slice(html.indexOf("data-fo-lead-item"));
-    expect(
-      item.indexOf(`data-fo-product-card="${lead.productId}"`),
-    ).toBeLessThan(
-      item.indexOf("data-fo-product-card=", item.indexOf("</li>")),
-    );
+    if (lead === undefined) throw new Error("the occasion must have a cards");
+    expect(html).not.toContain("data-fo-lead");
+    expect(html).not.toContain("data-fo-date-card");
+    expect(html).not.toContain("data-fo-listing-hero");
+    // No image between the breadcrumb and the first card.
+    const firstImg = html.indexOf("<img");
+    const firstCard = html.indexOf("data-fo-product-card=");
+    expect(firstImg).toBeGreaterThan(firstCard);
     expect(
       html.match(
         new RegExp(`data-fo-product-card="${lead.productId}"`, "gu"),
       ) ?? [],
     ).toHaveLength(1);
-    expect(html).not.toMatch(/display:\s*none/u);
-    // The figure's box is an empty placeholder, never a second copy of the product.
-    const box = html.slice(
-      html.indexOf("data-fo-lead-box"),
-      html.indexOf("</div>", html.indexOf("data-fo-lead-box")),
-    );
-    expect(box).not.toContain(lead.name);
-    expect(box).not.toContain("<img");
+    const img = html.slice(firstImg, html.indexOf(">", firstImg));
+    expect(img).toMatch(/fetchpriority="high"/iu);
+    expect(img).not.toMatch(/loading="lazy"/iu);
   });
 
-  it("renders no hero on page 2: the H1 alone, then the results (A15 (a), A23 clause 5)", () => {
-    for (const [page, path] of [
-      [<CountryCategoryPage key="c" view={rosesPage2} />, rosesPage2.path],
-      [
-        <CountryShopRootPage key="s" view={shopRootPage2} />,
-        shopRootPage2.path,
-      ],
+  it("renders the same head on page 2, its quiet line the count with the page and nothing else (spec 043 AC-52)", () => {
+    for (const [page, subject] of [
+      [<CountryCategoryPage key="c" view={rosesPage2} />, rosesPage2],
+      [<CountryShopRootPage key="s" view={shopRootPage2} />, shopRootPage2],
     ] as const) {
       const html = render(page, "en-gb");
-      expect(html, path).not.toContain("data-fo-listing-hero");
-      expect(html, path).not.toContain("data-fo-lead");
-      expect(html, path).not.toContain("data-fo-listing-state-line");
-      expect(html, path).toContain("data-fo-listing-page-head");
+      const path = subject.path;
+      expect(html, path).toContain("data-fo-listing-head");
       expect(html.match(/<h1/gu) ?? [], path).toHaveLength(1);
+      expect(statusParts(html), path).toStrictEqual([
+        [
+          "count",
+          `${String(subject.resultCount)} bouquets · page 2 of ${String(subject.pageCount)}`,
+        ],
+      ]);
+      const status = readable(between(html, "data-fo-listing-status", "</p>"));
+      expect(status, path).not.toContain("Ordering opens soon");
+      expect(status, path).not.toContain("Prices include delivery and VAT");
       // The first card of page 2 is the page's one `priority` candidate (spec 008 §14 A11): its
       // photograph if it has one, and nothing at all if it does not.
-      const first = (page.props as { view: ListingView }).view.items[0];
+      const first = subject.items[0];
       const photographed = first?.photo.kind === "asset" ? 1 : 0;
       expect(
         html.match(/<img[^>]*fetchpriority="high"/giu) ?? [],
         path,
       ).toHaveLength(photographed);
+    }
+  });
+
+  it('never shows "page N of M" on page 1 (spec 043 AC-52)', () => {
+    for (const [page, path] of [
+      [<CountryCategoryPage key="c" view={roses} />, roses.path],
+      [<CountryShopRootPage key="s" view={shopRoot} />, shopRoot.path],
+      [<CountryOccasionPage key="o" view={mothersDay} />, mothersDay.path],
+    ] as const) {
+      const html = render(page, "en-gb");
+      const main = readable(html).replace(/Page \d+/gu, "");
+      expect(main, path).not.toMatch(/page \d+ of \d+/u);
     }
   });
 });
@@ -201,45 +231,97 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
     }
   });
 
-  it("prints the state the view carries, and a fixture flipped to `live` prints the other", () => {
-    for (const subject of [roses, shopRoot, mothersDay]) {
-      expect(subject.country?.state, subject.path).toBe("guide");
-      const page = (v: ListingView): ReactElement =>
-        v.pageType === "countryCategory" ? (
-          <CountryCategoryPage view={v} />
-        ) : v.pageType === "countryOccasion" ? (
-          <CountryOccasionPage view={v} />
-        ) : (
-          <CountryShopRootPage view={v} />
-        );
-      const guide = readable(render(page(subject), "en-gb"));
-      expect(guide, subject.path).toContain("Guide · not delivering yet");
-      expect(guide, subject.path).not.toContain("Delivering now");
-      const live: ListingView = {
-        ...subject,
-        country: { ...(subject.country ?? roses.country!), state: "live" },
-      };
-      const html = render(page(live), "en-gb");
-      expect(html, subject.path).toContain('data-fo-listing-state-line="live"');
-      expect(readable(html), subject.path).toContain("Delivering now");
-      expect(readable(html), subject.path).not.toContain(
-        "Guide · not delivering yet",
+  it("prints one quiet line: the count, the not-open state, the prices, each its own element; the open fixture drops the state (spec 043 AC-36, AC-7)", () => {
+    const page = (v: ListingView): ReactElement =>
+      v.pageType === "countryCategory" ? (
+        <CountryCategoryPage view={v} />
+      ) : v.pageType === "countryOccasion" ? (
+        <CountryOccasionPage view={v} />
+      ) : (
+        <CountryShopRootPage view={v} />
       );
+    for (const subject of [roses, shopRoot, mothersDay]) {
+      expect(subject.country?.orderingOpen, subject.path).toBe(false);
+      const html = render(page(subject), "en-gb");
+      expect(statusParts(html), subject.path).toStrictEqual([
+        ["count", `${String(subject.resultCount)} bouquets`],
+        ["state", "Ordering opens soon"],
+        ["prices", "Prices include delivery and VAT"],
+      ]);
+      // Separators are decoration.
+      const line = between(html, "data-fo-listing-status", "</p>");
+      for (const dot of line.match(/<span[^>]*data-fo-sep[^>]*>/gu) ?? []) {
+        expect(dot, subject.path).toContain('aria-hidden="true"');
+      }
+      const text = readable(html);
+      expect(text, subject.path).not.toContain("Guide · not delivering yet");
+      expect(text, subject.path).not.toContain("P.S.");
+      expect(text, subject.path).not.toContain(
+        "Ordering opens soon. Every price",
+      );
+
+      const open: ListingView = {
+        ...subject,
+        country: {
+          ...(subject.country ?? roses.country!),
+          orderingOpen: true,
+          state: "live",
+        },
+      };
+      const openHtml = render(page(open), "en-gb");
+      expect(statusParts(openHtml), subject.path).toStrictEqual([
+        ["count", `${String(subject.resultCount)} bouquets`],
+        ["prices", "Prices include delivery and VAT"],
+      ]);
+      expect(readable(openHtml), subject.path).not.toContain(
+        "Ordering opens soon",
+      );
+      expect(readable(openHtml), subject.path).not.toContain("Delivering now");
     }
   });
 
-  it("puts the state line directly under the H1", () => {
-    for (const [page, path] of [
-      [<CountryCategoryPage key="c" view={roses} />, roses.path],
-      [<CountryShopRootPage key="s" view={shopRoot} />, shopRoot.path],
-      [<CountryOccasionPage key="o" view={mothersDay} />, mothersDay.path],
+  it("puts nothing between the H1 and the toolbar but the quiet line, and the date line before it on the occasion (spec 043 AC-35)", () => {
+    for (const [page, path, expected] of [
+      [<CountryCategoryPage key="c" view={roses} />, roses.path, ["status"]],
+      [
+        <CountryShopRootPage key="s" view={shopRoot} />,
+        shopRoot.path,
+        ["status"],
+      ],
+      [
+        <CountryOccasionPage key="o" view={mothersDay} />,
+        mothersDay.path,
+        ["date", "status"],
+      ],
     ] as const) {
       const html = render(page, "en-gb");
-      const h1End = html.indexOf("</h1>");
-      expect(h1End, path).toBeGreaterThan(-1);
-      expect(html.slice(h1End + 5).trimStart(), path).toMatch(
-        /^<p[^>]*data-fo-listing-state-line=/u,
+      const after = html.slice(
+        html.indexOf("</h1>") + 5,
+        html.indexOf("data-fo-listing-toolbar"),
       );
+      // The direct blocks that open after the H1 and before the toolbar: the date line (the
+      // occasion), the head grid that holds the toolbar, and the quiet line inside it.
+      const blocks = [...after.matchAll(/<(p|div)\b[^>]*>/gu)].map((match) => {
+        const tag = match[0];
+        if (tag.includes("data-fo-occasion-date=")) return "date";
+        if (tag.includes("data-fo-listing-status")) return "status";
+        if (tag.includes("data-fo-listing-head-grid")) return "grid";
+        return tag;
+      });
+      expect(
+        blocks.filter((block) => block !== "grid"),
+        path,
+      ).toStrictEqual(expected);
+      expect(readable(after), path).not.toContain("Where is it going?");
+      expect(readable(after), path).not.toContain("change destination");
+      expect(html, path).not.toContain("data-fo-listing-note");
+      // No eyebrow in the head or on the toolbar row (the subsections under the grid keep theirs).
+      const head = between(
+        html,
+        "data-fo-listing-head",
+        "data-fo-shop-listing",
+      );
+      expect(head, path).not.toMatch(/class="[^"]*\beyebrow\b/u);
     }
   });
 
@@ -272,47 +354,39 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
     }
   });
 
-  it("prints the occasion's date once as a sentence and once as the parts of that value", () => {
+  it("prints the occasion's date once, as the line under the H1, and the date note once, after the grid (spec 043 AC-54)", () => {
     const html = render(<CountryOccasionPage view={mothersDay} />, "en-gb");
     const text = readable(html);
     expect(mothersDay.occasionDates?.[0]?.date).toBe("2027-05-26");
-    expect(text).toContain("Mother's Day in Poland is Wednesday, 26 May 2027.");
-    const card = readable(
-      html.slice(
-        html.indexOf("data-fo-date-card"),
-        html.indexOf("data-fo-listing-note"),
-      ),
+    const sentence = "Mother's Day in Poland is Wednesday, 26 May 2027.";
+    expect(text.split(sentence)).toHaveLength(2);
+    expect(html.slice(html.indexOf("</h1>") + 5).trimStart()).toMatch(
+      /^<p[^>]*data-fo-occasion-date="2027-05-26"/u,
     );
-    expect(card).toContain("26");
-    expect(card).toContain("May · Wednesday · 2027");
-  });
-
-  it("gives the country occasion band its occasion's register from the registry", () => {
-    expect(mothersDay.entity?.register).toBe("dated");
-    const html = render(<CountryOccasionPage view={mothersDay} />, "en-gb");
-    expect(html).toMatch(/data-fo-listing-hero[^>]*data-register="dated"/u);
-    const flipped: ListingView = {
-      ...mothersDay,
-      entity: { ...mothersDay.entity!, register: "quiet" },
-    };
-    expect(render(<CountryOccasionPage view={flipped} />, "en-gb")).toMatch(
-      /data-fo-listing-hero[^>]*data-register="quiet"/u,
+    const note = "That is the date Poland keeps for it";
+    expect(text.split(note)).toHaveLength(2);
+    expect(html.indexOf("data-fo-occasion-date-note")).toBeGreaterThan(
+      html.lastIndexOf("data-fo-product-card="),
     );
   });
 
-  it('prints the "Example arrangement" label once above the grid, at every width, and keeps every card\'s hidden', () => {
+  it('prints the "Example arrangement" label once under the grid, before the pager, and keeps every card\'s hidden (spec 043 AC-53)', () => {
     for (const [page, subject] of [
       [<CountryCategoryPage key="c" view={roses} />, roses],
       [<CountryShopRootPage key="s" view={shopRoot} />, shopRoot],
+      [<CountryOccasionPage key="o" view={mothersDay} />, mothersDay],
     ] as const) {
       const html = render(page, "en-gb");
       const slot = html.indexOf("data-fo-grid-provenance");
-      const grid = html.indexOf("data-fo-listing-grid=");
-      expect(slot, subject.path).toBeGreaterThan(-1);
-      expect(slot, subject.path).toBeLessThan(grid);
-      expect(readable(html.slice(slot, grid)), subject.path).toContain(
-        "Example arrangement",
-      );
+      const lastCard = html.lastIndexOf("data-fo-product-card=");
+      expect(slot, subject.path).toBeGreaterThan(lastCard);
+      const pager = html.indexOf("data-fo-pagination");
+      if (pager > -1) expect(slot, subject.path).toBeLessThan(pager);
+      // Nothing above the first card says it: the per-card labels are inside their cards.
+      expect(
+        readable(html.slice(0, html.indexOf("data-fo-product-card="))),
+        subject.path,
+      ).not.toContain("Example arrangement");
       // One grid label element (spec 004 §14 A-founder-2026-10-19b clause 3; TASK-285).
       expect(
         html.match(/data-fo-grid-provenance=/gu)?.length ?? 0,
@@ -424,13 +498,25 @@ describe("spec 004 T-40: A9 and A10 byte for byte, unreviewed (AC-38)", () => {
     { reviewed: boolean; reviewedBy?: string; sourceHash: string }
   >;
 
-  it('A10: the label of the toolbar under the grid is "Change the order"', () => {
-    expect(messages.shop.toolbar.reorderLabel).toBe("Change the order");
-    const html = render(<CountryCategoryPage view={roses} />, "en-gb");
-    const form = html.indexOf("data-fo-listing-sort-form");
-    expect(readable(html.slice(form, html.indexOf("</form>", form)))).toContain(
-      "Change the order",
-    );
+  it('no "Change the order": the sort pill is a labelled select with the Sort button in `<noscript>` (spec 043 AC-37, AC-39)', () => {
+    expect(messages.shop.toolbar.reorderLabel).toBeUndefined();
+    for (const [page, path] of [
+      [<CountryCategoryPage key="c" view={roses} />, roses.path],
+      [<CountryShopRootPage key="s" view={shopRoot} />, shopRoot.path],
+      [<CountryOccasionPage key="o" view={mothersDay} />, mothersDay.path],
+    ] as const) {
+      const html = render(page, "en-gb");
+      expect(readable(html), path).not.toContain("Change the order");
+      const form = between(html, "<form", "</form>");
+      expect(form, path).toMatch(/method="get"/u);
+      expect(form, path).toMatch(
+        /<label[^>]*for="listing-sort"[^>]*>Sort by<\/label>/u,
+      );
+      expect(form, path).toMatch(/<select[^>]*name="sort"/u);
+      expect(form, path).toMatch(
+        /<noscript><button[^>]*type="submit"[^>]*>Sort<\/button><\/noscript>/u,
+      );
+    }
   });
 
   it('A9: "{count} {noun} we can make for {country}" for the three approved examples', () => {
@@ -453,7 +539,6 @@ describe("spec 004 T-40: A9 and A10 byte for byte, unreviewed (AC-38)", () => {
   it("ships every key it adds or changes `reviewed: false`, with the hash of the value it ships", () => {
     const flat: Record<string, string> = {
       "shop.root.tileCount": messages.shop.root.tileCount ?? "",
-      "shop.toolbar.reorderLabel": messages.shop.toolbar.reorderLabel ?? "",
     };
     for (const [key, value] of Object.entries(flat)) {
       // Unreviewed, unless the founder's own `record-approval-batch4.py` run recorded it.

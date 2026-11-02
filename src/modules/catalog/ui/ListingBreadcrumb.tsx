@@ -31,17 +31,21 @@ export interface ListingBreadcrumbProps {
   readonly crumbs: readonly ListingCrumb[];
   /** Below `md`: the back link (default) or the trail (the product page; spec 004 AC-50). */
   readonly phone?: BreadcrumbsPhone;
+  /** `quiet`: the country listings' head (spec 043 §14 A-founder-10-22 item 1). */
+  readonly tone?: "default" | "quiet";
 }
 
 export function ListingBreadcrumb({
   crumbs,
   phone,
+  tone,
 }: ListingBreadcrumbProps): ReactElement {
   const t = useTranslations();
 
   return (
     <Breadcrumbs
       {...(phone === undefined ? {} : { phone })}
+      {...(tone === undefined ? {} : { tone })}
       label={registryLabel(t, "a11y.breadcrumb")}
       crumbs={crumbs.map((crumb) => ({
         key: crumb.labelKey,

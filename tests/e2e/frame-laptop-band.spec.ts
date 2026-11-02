@@ -96,10 +96,8 @@ function resolveStep(step: Step, width: number, height: number): number {
 const LEAD_PHOTO: Readonly<Partial<Record<PageType, string>>> = {
   // TASK-189: the guide draws no photograph any more (spec 007 §14 A11 (b)); its first screen is
   // the state and the calendar's next three dates, pinned by `corridor-first-screen.spec.ts`.
-  // TASK-187: the country occasion's lead figure is `items[0]`'s own card, the grid's first `<li>`,
-  // placed over the hero from `md` up (spec 008 §14 A16 (b)); the shop root and the country
-  // category draw no lead figure.
-  countryOccasion: "main li[data-fo-lead-item] img",
+  // TASK-289: no country listing draws a lead figure any more; the country occasion's went with
+  // spec 043 §14 A-founder-2026-10-22 item 7 (revised 2026-10-24, AC-54).
   // TASK-188: the hubs' lead figure (R2), from `md` up only (A24 clause 2 (c)).
   occasionHub: "main figure[data-fo-hub-lead] img",
   categoryHub: "main figure[data-fo-hub-lead] img",
@@ -124,15 +122,16 @@ const FIRST_SCREEN: Readonly<
   },
   // The first price line: the amount with "Includes VAT and delivery" beside it from `md` up
   // (spec 004 §14 A-founder-2026-10-19b clause 1; no card carries an equivalents line).
-  // Spec 004 §14 A-founder-2026-10-18b (AC-41 and T-43 amended): the shop root's and the country
-  // category's H1 take the title step, the PR 236 artboards' size, so the first row's prices
-  // stay on the first screen with the toolbar above the grid (rebound AC-34).
-  countryShop: { h1: "title", action: "main [data-fo-price] > :first-child" },
+  // Spec 043 §14 A-founder-2026-10-22 item 5 (revised 2026-10-24, AC-51; TASK-289) amends spec
+  // 004 §14 A-founder-2026-10-18b on the three country listings: the short H1 takes
+  // `--text-3xl-fluid` (46 px at 1280 × 800 and 1440 × 900), so the first row's prices stay on
+  // the first screen (spec 043 AC-41, rebound AC-34).
+  countryShop: { h1: "3xl", action: "main [data-fo-price] > :first-child" },
   countryCategory: {
-    h1: "title",
+    h1: "3xl",
     action: "main [data-fo-price] > :first-child",
   },
-  countryOccasion: { h1: "display", action: "main [data-fo-price]" },
+  countryOccasion: { h1: "3xl", action: "main [data-fo-price]" },
   // TASK-188: a hub's way to a price is its first destination pill from `md` up and the first
   // chip of the phone's chip row below `md`; `:visible` picks the one displayed at the width.
   occasionHub: {
@@ -382,7 +381,20 @@ test.describe("T-33: above the frame's maximum, at 1512 and 1920 px (AC-31)", ()
   }
 });
 
-test.describe("T-34: the breadcrumb is 20 px under the sticky header (AC-32, md and up)", () => {
+/**
+ * The three country listings draw the quiet trail (spec 043 §14 A-founder-2026-10-22 item 1, revised
+ * 2026-10-24, the `lh:2026-10-24b` artboards: 16 px under the header); every other page keeps
+ * AC-32's 20 px.
+ */
+const QUIET_TRAIL: readonly PageType[] = [
+  "countryShop",
+  "countryCategory",
+  "countryOccasion",
+];
+const trailGap = (type: PageType): number =>
+  QUIET_TRAIL.includes(type) ? 16 : 20;
+
+test.describe("T-34: the breadcrumb under the sticky header (AC-32, md and up; 16 px on the country listings)", () => {
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 1024, height: 900 },
@@ -397,8 +409,8 @@ test.describe("T-34: the breadcrumb is 20 px under the sticky header (AC-32, md 
         const header = await boxOf(page, "[data-fo-header]");
         const trail = await boxOf(page, "main [data-fo-breadcrumb]");
         expect(
-          Math.abs(trail.top - header.bottom - 20),
-          `trail top ${String(trail.top)} − header bottom ${String(header.bottom)}`,
+          Math.abs(trail.top - header.bottom - trailGap(type)),
+          `trail top ${String(trail.top)} − header bottom ${String(header.bottom)}, want ${String(trailGap(type))}`,
         ).toBeLessThanOrEqual(1);
       });
     }
@@ -417,14 +429,14 @@ const inViewport = (
 /**
  * Spec 004 §14 A-founder-2026-10-18c (AC-43 and T-43 amended): below `md` the shop root's and the
  * country category's H1 take `--text-3xl-fluid` (its 32 px minimum, the phone artboards' size);
- * from `md` up `--text-title-fluid` (A-founder-2026-10-18b). The band-edge pair proves the switch
- * sits at `md` (768): red with the title step kept below `md` (44 ≠ 32 at 390 and 767), and red
- * with the 3xl step kept from `md` up (32 ≠ 44 at 768; 46 ≠ 53.8 at 1280, in the laptop block).
+ * spec 043 §14 A-founder-2026-10-22 item 2 (revised 2026-10-24, AC-51; TASK-289) keeps
+ * `--text-3xl-fluid` at every width for the short H1, so 768 reads 32 px too (red with the old title
+ * step, 44 ≠ 32), and the laptop block pins 46 px at 1280.
  */
 const PHONE_H1_CASES = [
   { width: 390, height: 844, step: "3xl", expected: 32 },
   { width: 767, height: 1024, step: "3xl", expected: 32 },
-  { width: 768, height: 1024, step: "title", expected: 44 },
+  { width: 768, height: 1024, step: "3xl", expected: 32 },
 ] as const satisfies readonly {
   width: number;
   height: number;

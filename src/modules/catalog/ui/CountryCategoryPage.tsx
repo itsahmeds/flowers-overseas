@@ -57,15 +57,13 @@ import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
-  CountryListingHead,
-  CountryListingResults,
   ListingCategoriesToggle,
-  ListingPageHead,
+  ListingFootNote,
+  ListingHead,
   ListingProse,
-  ListingStateLine,
   ListingSubsection,
-  STATE_KEYS,
 } from "./ListingChrome";
+import { chipGroups, listingCount, listingStatusParts } from "./listingHead";
 import { localeCode, registryLabel } from "./labels";
 
 export interface CountryCategoryPageProps {
@@ -101,33 +99,34 @@ export function CountryCategoryPage({
       data-fo-listing-state="populated"
     >
       <div className="pb-(--section-fluid)">
-        <ListingBreadcrumb crumbs={view.breadcrumb} />
+        <ListingBreadcrumb crumbs={view.breadcrumb} tone="quiet" />
 
-        {/* Round 2 (spec 004 §14 A24 clause 2 (a)): the H1, the state line and the shop's note.
-            No separate lead figure: `items[0]` is the grid's first card. Page 2 and later render
-            no hero (A23 clause 5). */}
-        {view.page === 1 ? (
-          <CountryListingHead
-            emphasis={country}
-            heading={shop("h1.countryCategory", { country, entity })}
-            note={shop("root.demoNotice")}
-            noteLabel={shop("note.label")}
-            noteMark={shop("note.mark")}
-            stateLine={
-              view.country === undefined ? null : (
-                <ListingStateLine
-                  state={view.country.state}
-                  text={t(STATE_KEYS[view.country.state])}
-                />
-              )
-            }
-          />
-        ) : (
-          <ListingPageHead
-            emphasis={country}
-            heading={shop("h1.countryCategory", { country, entity })}
-          />
-        )}
+        {/* The head (spec 043 §14 A-founder-10-22 items 1, 2, 3 and 5, revised by
+            design PR 347; TASK-289): the short H1, one quiet line, one toolbar row with the sibling
+            categories folded into the "Categories" panel (A-founder-2026-10-15c), grouped by
+            kind (§5.3 E), the only place their links render. */}
+        <ListingHead
+          count={listingCount(shop, view)}
+          emphasis={country}
+          heading={shop("h1.countryCategory", { country, entity })}
+          howWeSort={{
+            label: shop("toolbar.howWeSort"),
+            sentence: shop("toolbar.disclosure"),
+          }}
+          parts={listingStatusParts(t, view)}
+          partsBelowMd="head"
+          sort={<ListingSortForm path={view.path} sort={view.sort} />}
+          start={
+            <ListingCategoriesToggle
+              groups={chipGroups(siblings, view, {
+                what: shop("root.tilesHeading"),
+                occasion: t("home.occasions.eyebrow"),
+              })}
+              heading={shop("category.siblingsHeading", { country })}
+              label={t("nav.categories.label")}
+            />
+          }
+        />
 
         <section aria-labelledby="category-grid-heading" data-fo-shop-listing>
           {/* The grid's heading repeats the H1 word for word, so it is visually hidden and stays
@@ -135,60 +134,30 @@ export function CountryCategoryPage({
           <VisuallyHidden as="h2" id="category-grid-heading">
             {shop("h1.countryCategory", { country, entity })}
           </VisuallyHidden>
-          {/* The founder's C3 (spec 008 §14 A-founder-2026-10-14c, AC-33): the count, the ranking
-              disclosure, the sibling categories and the sort form ("Change the order", A10), in
-              that order, above the grid at every width; then the grid; then the pager. At every
-              width the siblings fold into the "Categories" button (A-founder-2026-10-15c), the
-              only place their links render. */}
-          <CountryListingResults
-            count={{
-              phone: shop("toolbar.count", { count: view.resultCount }),
-              desktop:
-                view.pageCount > 1
-                  ? shop("toolbar.summary", {
-                      count: view.resultCount,
-                      page: view.page,
-                      pageCount: view.pageCount,
-                    })
-                  : shop("toolbar.count", { count: view.resultCount }),
-            }}
-            disclosure={shop("toolbar.disclosure")}
-            chipsToggle={
-              <ListingCategoriesToggle
-                chips={siblings}
-                heading={shop("category.siblingsHeading", { country })}
-                label={t("nav.categories.label")}
-              />
-            }
-            gridProvenance={{ cards: view.items, locale: code }}
-            grid={
-              <ListingGrid
-                cards={view.items}
-                locale={code}
-                priority
-                provenance="grid"
-              />
-            }
-            fx={
-              view.fxFallback ? (
-                <div data-fo-fx-fallback>
-                  <Text measure size="sm" tone="muted">
-                    {catalog("availability.fxUnavailable")}
-                  </Text>
-                </div>
-              ) : undefined
-            }
-            pager={
-              <Pagination
-                baseHref={view.path}
-                locale={code}
-                page={view.page}
-                pageCount={view.pageCount}
-              />
-            }
-            sortForm={<ListingSortForm framed={false} sort={view.sort} />}
-            toolbar="band"
+          <ListingGrid
+            cards={view.items}
+            locale={code}
+            priority
+            provenance="grid"
           />
+          <ListingFootNote
+            gridProvenance={{ cards: view.items, locale: code }}
+          />
+          {view.fxFallback ? (
+            <div className="mt-[28px]" data-fo-fx-fallback>
+              <Text measure size="sm" tone="muted">
+                {catalog("availability.fxUnavailable")}
+              </Text>
+            </div>
+          ) : null}
+          <div className="mt-[28px]">
+            <Pagination
+              baseHref={view.path}
+              locale={code}
+              page={view.page}
+              pageCount={view.pageCount}
+            />
+          </div>
         </section>
 
         {/* The lede, under the first screen (A24 clause 2). */}
