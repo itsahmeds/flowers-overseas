@@ -1,8 +1,8 @@
 /**
  * Admin order actions (spec 020a): the availability table, the action schemas, the money input,
  * the suggested refund amounts, `runOrderAction` (lock, replay, `expectedSeq`, the audited action
- * row), the refund action and the refunds list (TASK-359). Reroute, cancel and resend wait for
- * TASK-358 and TASK-360.
+ * row) and the refunds list (TASK-359). The refund action itself is `./refund.ts`, imported by
+ * path (see its header). Reroute, cancel and resend wait for TASK-358 and TASK-360.
  */
 export {
   type AvailableActions,
@@ -76,7 +76,6 @@ export {
   type RunOrderActionRequest,
   type RunOrderActionResult,
 } from "./run.ts";
-export { adminOrderRefund, type AdminOrderRefundDeps } from "./refund.ts";
 export {
   ORDER_REFUNDS_READ_ACTION,
   orderRefunds,

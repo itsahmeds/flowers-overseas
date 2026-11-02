@@ -22,6 +22,11 @@
  * `submitRefund` calls the provider, keyed by the refund row's id.
  *
  * The refund row, its events and the provider call are spec 013's; nothing here writes them.
+ *
+ * Not re-exported from `./index.ts`: this file imports the payments barrel (the Stripe adapter
+ * and its `payments.error.*` checkout copy), and the admin barrel that re-exports `./index.ts` is
+ * imported by every admin page, so `pnpm i18n:check`'s scope rule would count that copy on them.
+ * The server action that calls it imports this file by path (TASK-361).
  */
 import { sql } from "drizzle-orm";
 

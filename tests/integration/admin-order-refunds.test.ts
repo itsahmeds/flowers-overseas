@@ -14,11 +14,13 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { PAYMENT_METHODS } from "@/config/payment-methods";
 import {
-  adminOrderRefund,
-  type AdminOrderRefundDeps,
   type OrderActionTransaction,
   orderRefunds,
 } from "@/modules/admin/order-actions";
+import {
+  adminOrderRefund,
+  type AdminOrderRefundDeps,
+} from "@/modules/admin/order-actions/refund";
 import type { OrderExecutor } from "@/modules/orders";
 import { cancelOrder, refundCancelledOrder } from "@/modules/payments";
 import { FakePaymentProvider } from "@/modules/payments/fake";
@@ -45,7 +47,7 @@ import {
   type ScratchDatabase,
   type Tx,
 } from "./support/scratch-db.ts";
-import { runnerOf } from "./support/sql-runner.ts";
+import { runnerOf, sqlText } from "./support/sql-runner.ts";
 
 const server = await probeLocalServer();
 
@@ -184,6 +186,36 @@ describe.skipIf(server.url === undefined)(
         });
         return fn(runnerOf(tx));
       }) as never;
+
+    /**
+     * `adminTransaction`, except that each caller pauses just before it looks the action id up,
+     * until the other caller arrives there too (or 300 ms pass). With the lock in place the second
+     * caller is still waiting on the lock, so the first times out and goes on; without it both
+     * look up at once and both miss, which is the race T-06 exists to catch.
+     */
+    function racingTransaction(): OrderActionTransaction {
+      let arrived = 0;
+      let release: () => void = () => undefined;
+      const together = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return (context, fn) =>
+        adminTransaction(context, (executor) =>
+          fn({
+            async execute(query) {
+              if (/FROM admin_order_action WHERE id/.test(sqlText(query))) {
+                arrived += 1;
+                if (arrived >= 2) release();
+                await Promise.race([
+                  together,
+                  new Promise((resolve) => setTimeout(resolve, 300)),
+                ]);
+              }
+              return executor.execute(query);
+            },
+          }),
+        );
+    }
 
     function lifecycleOf(provider: PaymentProvider): LifecycleDeps {
       return {
@@ -409,11 +441,12 @@ describe.skipIf(server.url === undefined)(
         await walk(orderId, "delivered");
         const actionId = randomUUID();
         const expectedSeq = await seqOf(orderId);
+        const deps = {
+          ...depsOf(paid.fake),
+          ...(parallel ? { transaction: racingTransaction() } : {}),
+        };
         const submit = () =>
-          act(orderId, partial("12,50"), depsOf(paid.fake), {
-            actionId,
-            expectedSeq,
-          });
+          act(orderId, partial("12,50"), deps, { actionId, expectedSeq });
         const results = parallel
           ? await Promise.all([submit(), submit()])
           : [await submit(), await submit()];
