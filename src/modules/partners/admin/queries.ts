@@ -92,7 +92,7 @@ export interface PartnerList {
 
 /** `country.iso2` and its English name, from the translation table when it has one. */
 const countryName = sql<string>`coalesce((SELECT t.name FROM public.country_translation t
-  WHERE t.country_id = ${country.id} AND t.locale_code = ${ADMIN_LOCALE}), ${country.iso2})`;
+  WHERE t.country_id = ${sql.raw('"country"."id"')} AND t.locale_code = ${ADMIN_LOCALE}), ${sql.raw('"country"."iso2"')})`;
 
 export async function listPartners(
   actor: DbActor,
@@ -113,8 +113,8 @@ export async function listPartners(
         status: fulfillmentPartner.status,
         termsSignedAt: fulfillmentPartner.termsSignedAt,
         termsVersion: fulfillmentPartner.termsVersion,
-        zones: sql<number>`(SELECT count(*)::int FROM public.partner_coverage c WHERE c.partner_id = ${fulfillmentPartner.id})`,
-        products: sql<number>`(SELECT count(*)::int FROM public.partner_catalog_mapping m WHERE m.partner_id = ${fulfillmentPartner.id} AND m.can_fulfil AND m.partner_payout_minor > 0)`,
+        zones: sql<number>`(SELECT count(*)::int FROM public.partner_coverage c WHERE c.partner_id = ${sql.raw('"fulfillment_partner"."id"')})`,
+        products: sql<number>`(SELECT count(*)::int FROM public.partner_catalog_mapping m WHERE m.partner_id = ${sql.raw('"fulfillment_partner"."id"')} AND m.can_fulfil AND m.partner_payout_minor > 0)`,
       })
       .from(fulfillmentPartner)
       .innerJoin(country, eq(country.id, fulfillmentPartner.countryId))
@@ -289,11 +289,12 @@ export async function partnerDetail(
     const zones = await db
       .select({
         id: partnerCoverage.id,
-        cityName: cityName(sql`coalesce(${partnerCoverage.cityId},
-          (SELECT z.city_id FROM public.postcode_zone z WHERE z.id = ${partnerCoverage.postcodeZoneId}))`),
+        cityName:
+          cityName(sql`coalesce(${sql.raw('"partner_coverage"."city_id"')},
+          (SELECT z.city_id FROM public.postcode_zone z WHERE z.id = ${sql.raw('"partner_coverage"."postcode_zone_id"')}))`),
         prefix: sql<
           string | null
-        >`(SELECT z.prefix FROM public.postcode_zone z WHERE z.id = ${partnerCoverage.postcodeZoneId})`,
+        >`(SELECT z.prefix FROM public.postcode_zone z WHERE z.id = ${sql.raw('"partner_coverage"."postcode_zone_id"')})`,
         capacityPerDay: partnerCoverage.capacityPerDay,
       })
       .from(partnerCoverage)
@@ -307,7 +308,7 @@ export async function partnerDetail(
       .orderBy(asc(partnerBlackout.date));
 
     const productName = sql<string>`coalesce((SELECT t.name FROM public.product_translation t
-      WHERE t.product_id = ${product.id} AND t.locale_code = ${ADMIN_LOCALE}), ${product.sku})`;
+      WHERE t.product_id = ${sql.raw('"product"."id"')} AND t.locale_code = ${ADMIN_LOCALE}), ${sql.raw('"product"."sku"')})`;
 
     const mappings = await db
       .select({

@@ -568,8 +568,8 @@ async function preflightIn(
       notificationChannel: fulfillmentPartner.notificationChannel,
       contactEmail: fulfillmentPartner.contactEmail,
       contactPhone: fulfillmentPartner.contactPhone,
-      coverageRows: sql<number>`(SELECT count(*)::int FROM public.partner_coverage c WHERE c.partner_id = ${fulfillmentPartner.id})`,
-      fulfillableMappings: sql<number>`(SELECT count(*)::int FROM public.partner_catalog_mapping m WHERE m.partner_id = ${fulfillmentPartner.id} AND m.can_fulfil AND m.partner_payout_minor > 0)`,
+      coverageRows: sql<number>`(SELECT count(*)::int FROM public.partner_coverage c WHERE c.partner_id = ${partnerId}::uuid)`,
+      fulfillableMappings: sql<number>`(SELECT count(*)::int FROM public.partner_catalog_mapping m WHERE m.partner_id = ${partnerId}::uuid AND m.can_fulfil AND m.partner_payout_minor > 0)`,
     })
     .from(fulfillmentPartner)
     .where(eq(fulfillmentPartner.id, partnerId));
