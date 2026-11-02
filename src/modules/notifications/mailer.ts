@@ -37,6 +37,8 @@ export const mailTags = [
   "order_buyer",
   "order_florist",
   "ops_alert",
+  // Spec 011 §5.2 (TASK-213): the founder's alert for each stored florist application.
+  "florist_application_alert",
 ] as const;
 export type MailTag = (typeof mailTags)[number];
 

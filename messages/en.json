@@ -1256,6 +1256,27 @@
     "floristSignIn": {
       "subject": "Your link to sign in to Flowers Overseas",
       "body": "Open your orders: {link}. The link works once, for one hour. If you did not ask for it, you can ignore this email."
+    },
+    "floristApplicationAlert": {
+      "subject": "New florist application: {businessName}",
+      "intro": "A florist applied on the website. Their answers are below. They receive no copy of this email, so the reply is yours to send.",
+      "none": "Not given",
+      "field": {
+        "shop": "Shop",
+        "contact": "Contact name",
+        "email": "Email",
+        "phone": "Phone or WhatsApp",
+        "country": "Country",
+        "town": "Town or city",
+        "area": "Where they deliver",
+        "capacity": "Orders a day",
+        "weekends": "Weekend delivery",
+        "registration": "Registration number",
+        "website": "Instagram or website",
+        "contactBy": "Contact by",
+        "language": "Language",
+        "notice": "Privacy notice shown"
+      }
     }
   },
   "tracking": {
@@ -1409,7 +1430,11 @@
         "town": "Please tell us your town or city.",
         "area": "Please tell us where you deliver.",
         "capacity": "Please enter a whole number from 1 to 500.",
-        "website": "Please enter a full web address, starting with https://."
+        "website": "Please enter a full web address, starting with https://.",
+        "weekends": "Please tell us whether you deliver at weekends.",
+        "registration": "Please keep the registration number to 100 characters.",
+        "contactBy": "Please choose how we should contact you.",
+        "language": "Please choose a language."
       },
       "failed": "We could not send your application. Your answers are still here. Try again, or call or message us on {phoneDisplay}.",
       "tooMany": "Too many applications are arriving at once. Please try again shortly, or call or message us on {phoneDisplay}."

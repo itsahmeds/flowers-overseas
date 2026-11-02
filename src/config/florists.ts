@@ -16,8 +16,8 @@
  *    never an IP).
  *  - `inboxRefresh` — the list's refresh island: every 5 s while visible, stopping after 10
  *    minutes without interaction (§2, AC-26; TASK-214 reads it).
- *  - `applicationForm` — the apply page's switch (§2 "The form switch"); `off` until the
- *    production database has `0022` and TASK-213 turns it on.
+ *  - `applicationForm` — the apply page's switch (§2 "The form switch"); `on` since TASK-213,
+ *    which needs `0022` on the production database (it is on main since TASK-211).
  *
  *  - `payoutExample` (TASK-210): the for-florists landing's one example (§13 Q7). The **retail**
  *    amount is never written here: it is resolved through the catalogue's price API for
@@ -193,7 +193,10 @@ export function floristsConfigSchemaFor(retail: MinorMoney) {
 
 export const floristsConfig: FloristsConfig = FloristsConfigSchema.parse({
   basePath: "/demo/vendor-inbox",
-  applicationForm: "off",
+  // On (TASK-213, spec 011 §12): the form posts through the server action into
+  // `partner_application`. Production needs `0022_florists_v0` applied and
+  // `FLORIST_APPLICATIONS_NOTIFY_EMAIL` set (the founder's address, §13 Q8).
+  applicationForm: "on",
   payoutExample: {
     // Amber Hour, the 15-stem tier: the artboard's example product (its "18 stems" tier became 15
     // when TASK-240 made every stem count odd).

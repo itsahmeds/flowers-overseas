@@ -361,6 +361,16 @@ export const serverEnvSchema = z.object({
    * dispatcher retries it.
    */
   OPS_ALERT_EMAIL: z.preprocess(emptyToUndefined, z.email().optional()),
+  /**
+   * Where each stored florist application is emailed (spec 011 §2 "The founder alert", §12, §13
+   * Q8; TASK-213). Not secret. Optional at boot, resolved at use by
+   * `floristApplicationsNotifyEmail()`: unset in `production` with the form on, the alert fails
+   * as a Sentry warning and the application is still stored; unset elsewhere, no alert is sent.
+   */
+  FLORIST_APPLICATIONS_NOTIFY_EMAIL: z.preprocess(
+    emptyToUndefined,
+    z.email().max(254).optional(),
+  ),
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
   /**

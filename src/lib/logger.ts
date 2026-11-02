@@ -79,6 +79,11 @@ export const REDACTED_KEYS: readonly string[] = [
   // credential, below), and `*_snapshot` is the suffix rule in `isRedactedKey`.
   "signas",
   "deliverynote",
+  // Spec 011 §8 (TASK-213): the florist application's contact columns. `email`, `identifier`,
+  // `token` (a credential, below), `card_message` and `address_lines` (the prefixes) are already
+  // covered, and `*name` covers `business_name` and `contact_name`.
+  "contactemail",
+  "contactphone",
 ];
 
 /**

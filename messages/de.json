@@ -637,6 +637,27 @@
     "floristSignIn": {
       "body": "Öffnen Sie Ihre Aufträge: {link}. Der Link funktioniert einmal, eine Stunde lang. Wenn Sie ihn nicht angefordert haben, können Sie diese E-Mail ignorieren.",
       "subject": "Ihr Anmeldelink für Flowers Overseas"
+    },
+    "floristApplicationAlert": {
+      "field": {
+        "area": "Where they deliver",
+        "capacity": "Orders a day",
+        "contact": "Contact name",
+        "contactBy": "Contact by",
+        "country": "Country",
+        "email": "Email",
+        "language": "Language",
+        "notice": "Privacy notice shown",
+        "phone": "Phone or WhatsApp",
+        "registration": "Registration number",
+        "shop": "Shop",
+        "town": "Town or city",
+        "website": "Instagram or website",
+        "weekends": "Weekend delivery"
+      },
+      "intro": "A florist applied on the website. Their answers are below. They receive no copy of this email, so the reply is yours to send.",
+      "none": "Not given",
+      "subject": "New florist application: {businessName}"
     }
   },
   "errors": {
@@ -1332,7 +1353,11 @@
         "phone": "Bitte geben Sie eine Telefonnummer ein, unter der wir Sie erreichen.",
         "shopName": "Bitte nennen Sie uns den Namen Ihres Geschäfts.",
         "town": "Bitte nennen Sie uns Ihren Ort.",
-        "website": "Bitte geben Sie eine vollständige Webadresse ein, die mit https:// beginnt."
+        "website": "Bitte geben Sie eine vollständige Webadresse ein, die mit https:// beginnt.",
+        "contactBy": "Please choose how we should contact you.",
+        "language": "Please choose a language.",
+        "registration": "Please keep the registration number to 100 characters.",
+        "weekends": "Please tell us whether you deliver at weekends."
       },
       "errorSummary": "Bitte prüfen Sie diese Angaben",
       "failed": "Wir konnten Ihre Bewerbung nicht senden. Ihre Angaben sind noch hier. Versuchen Sie es erneut, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",

@@ -32,6 +32,7 @@ import {
 } from "@/lib/basic-auth";
 import { FloristQuerySchema, isFloristPath } from "@/config/florists";
 import { chooserAddress, chooserTargetPath } from "@/lib/chooser-routes";
+import { applicationBodyGate } from "@/lib/application-gate";
 import { appEnvironment } from "@/lib/env.schema";
 import {
   FLORIST_LANGUAGE_HEADER,
@@ -120,6 +121,33 @@ export function proxy(request: NextRequest): NextResponse {
       "request end",
     );
     return closed;
+  }
+
+  // The florist application's body bound (spec 011 §2, AC-13; TASK-213): a `POST` to an apply
+  // path declaring more than 64 KB is a 413 before Next's server action runtime reads a byte of
+  // it. The body itself is never read here (`src/lib/application-gate.ts` says why).
+  if (
+    applicationBodyGate({
+      method,
+      pathname: path,
+      contentLength: request.headers.get("content-length"),
+    }) === "too_large"
+  ) {
+    const refused = new NextResponse(null, {
+      status: 413,
+      headers: { "cache-control": "no-store" },
+    });
+    refused.headers.set(REQUEST_ID_HEADER, requestId);
+    log.info(
+      {
+        method,
+        path,
+        status: refused.status,
+        duration_ms: Date.now() - started,
+      },
+      "request end",
+    );
+    return refused;
   }
 
   const headers = new Headers(request.headers);

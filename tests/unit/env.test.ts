@@ -606,8 +606,9 @@ describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
     // `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `MAILER`. Spec 018 (TASK-337) adds
     // `SIGNED_LINK_SECRET`; spec 013 (TASK-260) adds `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`;
     // spec 022a (TASK-368) the two review keys: `REVIEW_TOKEN_SECRET`, `TRUSTPILOT_AFS_ADDRESS`;
-    // spec 016 (TASK-331) `OPS_ALERT_EMAIL`.
-    expect(ENV_KEYS).toHaveLength(39);
+    // spec 016 (TASK-331) `OPS_ALERT_EMAIL`; spec 011 (TASK-213) the application alert's
+    // `FLORIST_APPLICATIONS_NOTIFY_EMAIL`.
+    expect(ENV_KEYS).toHaveLength(40);
     expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
   });
 

@@ -166,8 +166,8 @@ describe("florists.ts's other contracts", () => {
     expect([...FLORIST_PARTNER_STATUSES]).toEqual([...partnerStatuses]);
   });
 
-  it("ships the form off and mounts the inbox at /demo/vendor-inbox (§12)", () => {
-    expect(floristsConfig.applicationForm).toBe("off");
+  it("turns the form on (TASK-213, §12) and mounts the inbox at /demo/vendor-inbox", () => {
+    expect(floristsConfig.applicationForm).toBe("on");
     expect(FLORIST_BASE_PATH).toBe("/demo/vendor-inbox");
   });
 
