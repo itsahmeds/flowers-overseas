@@ -11,6 +11,10 @@
       "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
     },
     {
+      "path": "/demo/",
+      "because": "spec 011 §6: the Phase 0 florist inbox at /demo/vendor-inbox (noindex, no-store, 404 in production); no locale prefix"
+    },
+    {
       "path": "/vendor/",
       "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
     },

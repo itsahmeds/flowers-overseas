@@ -16,7 +16,8 @@ describe("AuthSurfaceSchema", () => {
   });
 
   it.each([
-    ["an unregistered mail tag", { mailTag: "florist_sign_in" }],
+    // `florist_sign_in` joined the registry with TASK-212; the application alert has not yet.
+    ["an unregistered mail tag", { mailTag: "florist_application_alert" }],
     ["a __Host- cookie prefix", { cookiePrefix: "__Host-fo-admin" }],
     ["a base path outside the cookie path", { basePath: "/api/auth" }],
     [

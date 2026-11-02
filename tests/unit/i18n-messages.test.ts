@@ -75,6 +75,10 @@ describe("the shell catalogue", () => {
       // hub's `h1`, intro, region headings and the one state line a destination without a page
       // in this locale carries.
       "destinationsHub",
+      // `emails`, `floristAuth` and `floristInbox` are spec 011 §7's (TASK-212): the florist
+      // sign-in email, the sign-in pages and the inbox chrome, all under `FLORIST_BASE_PATH` or in
+      // email, so in no `ROUTE_NAMESPACES` entry and in no indexable page's share (A17).
+      "emails",
       "errors",
       // `faq`, `occasions` and `trust` are the locale home's lower sections (TASK-053): the five
       // `<details>` questions, the occasion tiles and dated occasions, and the three trust
@@ -83,6 +87,8 @@ describe("the shell catalogue", () => {
       // `finder` and `home` are the locale home's own copy (TASK-052): the hero, the finder card,
       // the destination states and the four-fact proof row.
       "finder",
+      "floristAuth",
+      "floristInbox",
       "footer",
       "home",
       // `infoPages` is spec 041 §7's namespace (TASK-182): the trust pages' not-open line, the

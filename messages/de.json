@@ -574,6 +574,12 @@
     "seoDescription": "Seven countries in Europe, each with a guide we wrote ourselves: what is given, what is never given, and which dates matter in a year there.",
     "seoTitle": "Where we can send flowers"
   },
+  "emails": {
+    "floristSignIn": {
+      "body": "Öffnen Sie Ihre Aufträge: {link}. Der Link funktioniert einmal, eine Stunde lang. Wenn Sie ihn nicht angefordert haben, können Sie diese E-Mail ignorieren.",
+      "subject": "Ihr Anmeldelink für Flowers Overseas"
+    }
+  },
   "errors": {
     "notFound": {
       "body": "That page does not exist. Check the address, or start again from the home page.",
@@ -609,6 +615,23 @@
       "label": "Country"
     },
     "submit": "Continue"
+  },
+  "floristAuth": {
+    "confirmSubmit": "Weiter zu Ihren Aufträgen",
+    "email": "E-Mail",
+    "expiredBody": "Dieser Link ist abgelaufen oder wurde schon verwendet. Fordern Sie einen neuen an.",
+    "sentBody": "Wenn diese Adresse zu einem unserer Floristen gehört, haben wir einen Link an sie gesendet. Der Link funktioniert einmal, eine Stunde lang.",
+    "sentTitle": "Prüfen Sie Ihr Postfach",
+    "submit": "Link senden",
+    "title": "Melden Sie sich an, um Ihre Aufträge zu sehen"
+  },
+  "floristInbox": {
+    "demoNotice": "<b>Demo:</b> Das sind Beispielaufträge. Niemand zahlt und nichts wird geliefert.",
+    "homeLabel": "Flowers Overseas, Ihre Aufträge",
+    "language": "Sprache",
+    "menu": "Menü",
+    "orders": "Aufträge",
+    "signOut": "Abmelden"
   },
   "footer": {
     "cookieSettings": "Cookie-Einstellungen",

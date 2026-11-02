@@ -254,9 +254,12 @@ describe("AC-51: no buyer message value relays, in en, en-gb, de or pl", () => {
     ).toHaveLength(1);
     for (const rule of RELAY_EXEMPT)
       expect(rule.reason.length).toBeGreaterThan(0);
-    // No buyer namespace of today's catalogues is exempt.
+    // No buyer namespace of today's catalogues is exempt: the exempt keys that exist are the
+    // florist surface's own (spec 011, TASK-212), and nothing else.
     expect(
-      leaves(CATALOGUES.en).filter(([key]) => relayExemptKey(key)),
+      leaves(CATALOGUES.en)
+        .filter(([key]) => relayExemptKey(key))
+        .filter(([key]) => !/^(?:floristAuth|floristInbox)\./u.test(key)),
     ).toEqual([]);
   });
 });

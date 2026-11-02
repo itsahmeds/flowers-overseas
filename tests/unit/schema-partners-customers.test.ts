@@ -54,7 +54,9 @@ const customersDown = read("0006_customers.down.sql");
 const both = `${partners}\n${customers}`;
 /**
  * Every forward migration after `0006`, for the columns and checks a later file adds to these
- * tables (spec 018's `fulfillment_partner.display_first_name`, `NNNN_post_purchase`, TASK-337).
+ * tables (spec 018's `fulfillment_partner.display_first_name`, `NNNN_post_purchase`, TASK-337;
+ * spec 011's `partner_member` and `partner_application` columns, `SET NOT NULL`s and CHECKs,
+ * `NNNN_florists_v0`, TASK-211), so the mirror is compared with the database as migrated.
  */
 const LATER = readdirSync(MIGRATIONS_DIR)
   .filter((file) => /^\d{4}_[a-z0-9_]+\.sql$/.test(file))
@@ -62,6 +64,20 @@ const LATER = readdirSync(MIGRATIONS_DIR)
   .sort()
   .map(read)
   .join("\n");
+
+/** The columns a later `ALTER TABLE … ALTER COLUMN … SET NOT NULL` tightens (TASK-211). */
+function tightenedColumns(table: string): Set<string> {
+  return new Set(
+    [
+      ...LATER.matchAll(
+        new RegExp(
+          `ALTER TABLE public\\.${table} ALTER COLUMN (\\w+) SET NOT NULL;`,
+          "g",
+        ),
+      ),
+    ].map((m) => m[1] ?? ""),
+  );
+}
 
 /** `[name, type, the rest of the line]` per column a later `ALTER TABLE … ADD COLUMN` adds. */
 function addedColumns(table: string): [string, string, string][] {
@@ -172,6 +188,7 @@ describe("migrations 0005 and 0006 — shape", () => {
         config.columns.map((column) => column.name),
       );
       const body = tableBody(table);
+      const tightened = tightenedColumns(table);
       for (const column of config.columns) {
         const added = addedColumns(table).find(
           ([name]) => name === column.name,
@@ -182,7 +199,7 @@ describe("migrations 0005 and 0006 — shape", () => {
               "")
             : added[2];
         expect(
-          /NOT NULL|PRIMARY KEY/.test(line),
+          /NOT NULL|PRIMARY KEY/.test(line) || tightened.has(column.name),
           `${table}.${column.name}`,
         ).toBe(column.notNull);
       }
@@ -519,7 +536,7 @@ describe("mirror parity beyond names and nullability (breaker hole 4)", () => {
       ),
       ...LATER.matchAll(
         new RegExp(
-          `ALTER TABLE public\\.${table} ADD CONSTRAINT (\\w+) ${kind}`,
+          `ALTER TABLE public\\.${table} ADD CONSTRAINT (\\w+)\\s+${kind}`,
           "g",
         ),
       ),

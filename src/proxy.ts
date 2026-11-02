@@ -23,7 +23,15 @@ import {
   STAGING_BASIC_AUTH_KEY,
   basicAuthDecision,
 } from "@/lib/basic-auth";
+import { FloristQuerySchema, isFloristPath } from "@/config/florists";
 import { appEnvironment } from "@/lib/env.schema";
+import {
+  FLORIST_LANGUAGE_HEADER,
+  FLORIST_ROBOTS_HEADER,
+  FLORIST_SESSION_COOKIE,
+  floristGate,
+  rollingCookie,
+} from "@/lib/florist-headers";
 import { logger } from "@/lib/logger";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/request-id";
 import { parseLocaleFromPath } from "@/modules/i18n";
@@ -81,11 +89,49 @@ export function proxy(request: NextRequest): NextResponse {
     return challenge;
   }
 
+  // The florist surface (spec 011 §13 Q4, AC-22; TASK-212): every `FLORIST_BASE_PATH` route is a
+  // 404 while the environment's sign-in policy is empty (`production` in Phase 0). Not a redirect.
+  if (floristGate({ environment, pathname: path }) === "not_found") {
+    const closed = new NextResponse(null, {
+      status: 404,
+      headers: {
+        [FLORIST_ROBOTS_HEADER.key]: FLORIST_ROBOTS_HEADER.value,
+        "cache-control": "private, no-store",
+      },
+    });
+    closed.headers.set(REQUEST_ID_HEADER, requestId);
+    log.info(
+      { method, path, status: 404, duration_ms: Date.now() - started },
+      "request end",
+    );
+    return closed;
+  }
+
   const headers = new Headers(request.headers);
   headers.set(REQUEST_ID_HEADER, requestId);
   if (locale !== undefined) headers.set(LOCALE_HEADER, locale);
+  // Before sign-in the florist pages speak `?hl=` (spec 011 §7): handed to the florist layout,
+  // which renders `<html lang>` and cannot read the query. Any client-sent copy is dropped first.
+  headers.delete(FLORIST_LANGUAGE_HEADER);
+  const query = isFloristPath(path)
+    ? FloristQuerySchema.safeParse(
+        Object.fromEntries(request.nextUrl.searchParams),
+      )
+    : undefined;
+  if (query?.success === true && query.data.hl !== undefined) {
+    headers.set(FLORIST_LANGUAGE_HEADER, query.data.hl);
+  }
   const response = NextResponse.next({ request: { headers } });
   response.headers.set(REQUEST_ID_HEADER, requestId);
+  // A florist page `GET` re-issues the session cookie for 30 more days (rolling, spec 011 §2).
+  const rolled = rollingCookie({
+    method,
+    pathname: path,
+    value: request.cookies.get(FLORIST_SESSION_COOKIE)?.value,
+  });
+  if (rolled !== null) {
+    response.cookies.set(rolled.name, rolled.value, rolled.options);
+  }
 
   // No `status` here (`/review 26` nit, TASK-058): `NextResponse.next()` is always 200, because
   // the proxy runs **before** the route, so logging `response.status` reported 200 for every 204,

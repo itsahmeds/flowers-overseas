@@ -410,7 +410,7 @@ describe.skipIf(server.url === undefined)(
     });
 
     it("AC-9: a session of someone who is not an admin (a florist's) authenticates nothing on admin", async () => {
-      const token = `florist-session-${randomUUID()}`;
+      const token = `florist.${randomUUID()}`;
       await scratch.sql`INSERT INTO sessions (session_token, user_id, expires)
                         VALUES (${token}, ${ids[FLORIST] ?? ""}, now() + interval '30 days')`;
       expect(
@@ -422,7 +422,7 @@ describe.skipIf(server.url === undefined)(
     });
 
     it("AC-3: deactivation and the loss of the last role make the next request unauthenticated", async () => {
-      const token = `admin-session-${randomUUID()}`;
+      const token = `admin.${randomUUID()}`;
       await scratch.sql`INSERT INTO sessions (session_token, user_id, expires)
                         VALUES (${token}, ${ids[FOUNDER] ?? ""}, now() + interval '1 hour')`;
       expect(
@@ -450,7 +450,7 @@ describe.skipIf(server.url === undefined)(
     });
 
     it("AC-3: an expired session authenticates nothing", async () => {
-      const token = `old-session-${randomUUID()}`;
+      const token = `admin.old-${randomUUID()}`;
       await scratch.sql`INSERT INTO sessions (session_token, user_id, expires)
                         VALUES (${token}, ${ids[FOUNDER] ?? ""}, now() - interval '1 minute')`;
       expect(
@@ -462,7 +462,7 @@ describe.skipIf(server.url === undefined)(
     });
 
     it("sign-out deletes the session row and expires the cookie on /admin", async () => {
-      const token = `signout-session-${randomUUID()}`;
+      const token = `admin.signout-${randomUUID()}`;
       await scratch.sql`INSERT INTO sessions (session_token, user_id, expires)
                         VALUES (${token}, ${ids[FOUNDER] ?? ""}, now() + interval '1 hour')`;
       const request = new Request(`${ORIGIN}/admin/api/auth/sign-out`, {
