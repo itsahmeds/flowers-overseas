@@ -38,6 +38,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 _Not started._
+- 2026-11-02 WIP: done: migration 0026 (saleable_offer view, price guard, publish_run, audit), DB composition roots and country registry cutover, parity script, existence manifest and `existenceHash` on /api/health, publish state machine, store, runtime and jobs, §5.4 command tags (T-09), unit tests and integration tests (catalogue-cms-schema) green when last run. Left: /admin/publish page and action (written, not typechecked), admin home counters, `urlsForTag` additions, `cache:warm`, listing grid manifest filter, existence.ts unit tests, re-run integration suite, gates:cheap, briefs 295/296 Result, Self-review, ready.
 
 ## Result
 

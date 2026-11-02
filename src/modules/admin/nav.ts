@@ -16,6 +16,7 @@ export interface AdminNavItem {
     | "orders"
     | "applications"
     | "partners"
+    | "publish"
     | "flags"
     | "audit"
     | "users";
@@ -44,6 +45,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     href: "/admin/partners",
     permissions: ["partner.edit", "partner.payout"],
     built: false,
+  },
+  // Spec 012b §2.3 (TASK-295): structural changes go out here.
+  {
+    key: "publish",
+    href: "/admin/publish",
+    permissions: ["catalogue.publish"],
+    built: true,
   },
   {
     key: "flags",

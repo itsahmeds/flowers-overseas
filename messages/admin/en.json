@@ -26,7 +26,8 @@
       "partners": "Florists",
       "flags": "Flags",
       "audit": "Audit log",
-      "users": "Users"
+      "users": "Users",
+      "publish": "Publish"
     },
     "roles": {
       "admin": "admin",
@@ -70,7 +71,13 @@
         "offboarded": "Offboarded"
       },
       "nothingToday": "Nothing yet today.",
-      "noApplications": "No new applications."
+      "noApplications": "No new applications.",
+      "waitingToPublish": "Changes waiting to publish",
+      "publishOpen": "Open publish",
+      "nothingToPublish": "Nothing waiting.",
+      "awaitingReview": "Waiting for your review",
+      "photosAwaiting": "Photos",
+      "noReviewLocales": "No language is granted to you for review."
     },
     "orders": {
       "title": "Orders",
@@ -434,6 +441,60 @@
         "noHeading": "The body has {words} words and no ## heading.",
         "unknownConstruct": "Line {line} has something the editor does not format ({construct}); it shows as plain text."
       }
+    },
+    "publish": {
+      "title": "Publish",
+      "intro": "Price and text changes reach the site within a minute without this. New and removed pages appear only after a publish, which rebuilds the live version on Railway in a few minutes. A release publishes too.",
+      "button": "Publish {count, plural, one {# change} other {# changes}}",
+      "waitingTitle": "Waiting to publish",
+      "waitingIntro": "Compared with the live page list: what the database has now that the live version does not, and the reverse.",
+      "colLanguage": "Language",
+      "colAdded": "Pages added",
+      "colRemoved": "Pages removed",
+      "total": "Total",
+      "listAdded": "{language}: {count} added",
+      "listRemoved": "{language}: {count} removed",
+      "today": "Publishes today: {count} of {limit}. The site keeps serving the live version until the new one is ready and checked.",
+      "liveTitle": "Live now",
+      "version": "Version",
+      "pageList": "Page list",
+      "pageListNote": "the fingerprint of every address this build created",
+      "built": "Built",
+      "none": "None",
+      "historyTitle": "Earlier publishes",
+      "historyZone": "times in {timeZone}",
+      "colAsked": "Asked",
+      "colResult": "Result",
+      "colBy": "By",
+      "colPages": "Pages",
+      "colVersion": "Version",
+      "byRelease": "Release",
+      "byAdmin": "Admin",
+      "status": {
+        "requested": "Asked",
+        "building": "Building",
+        "deployed": "Deployed",
+        "verified": "Live and checked",
+        "failed": "Failed",
+        "timed_out": "Timed out"
+      },
+      "runTitle": "Publishing: {status}",
+      "runOpen": "One publish at a time: the button comes back when this one ends.",
+      "checking": "The new version is up. Checking that its page list is the one we expect.",
+      "verifiedBody": "The new version has the expected page list. Each added page was opened once so the first buyer gets it fast. The sitemaps are refreshed.",
+      "failedTitle": "Publish failed",
+      "failedBody": "Nothing a buyer sees has changed: the site still serves the previous version.",
+      "timedOutBody": "No result after 30 minutes. The site still serves the previous version. Check Railway, then try again.",
+      "nothingTitle": "Nothing to publish",
+      "nothingBody": "The live version has every page the database has. Price and text changes are already live.",
+      "limitTitle": "{limit} publishes today: the limit.",
+      "limitBody": "The next can start tomorrow. Changes keep waiting here; a release also publishes them.",
+      "refused": "These pages are open to search engines, so a publish cannot remove them:",
+      "noTarget": "Publish is not available here: this environment has no publish target. Changes go out with the next release.",
+      "noManifest": "Publish is not available: this version has no page list. The next release creates one.",
+      "noPermission": "Only an admin or a content editor can publish.",
+      "asked": "Publish asked. The new version is being built.",
+      "couldNotStart": "The publish did not start ({code})."
     }
   }
 }
