@@ -17,6 +17,12 @@
  *  - T-32: the email in the member's `locale_code`; the language form stores it and the next
  *    request reads it; `?hl=` rides along to the next page.
  *  - Rolling sessions: a used session is pushed back to 30 days; admin's is never extended.
+ *  - Spec 016 T-23 at the handler level (TASK-331; the e2e half is TASK-336's journey): a one-tap
+ *    link minted by `createSignInLink` for a member carries only `t` (no `@`, no path); the
+ *    confirm page's `GET` read (`signedInLanding`) spends nothing, twice; the `POST` signs in and
+ *    lands on `{base}/orders/{id}`; a member already signed in lands there directly with the
+ *    token unspent; another member's session does not; a used and an expired token land on the
+ *    expired page; a callback outside the pattern is refused when minting and by the database.
  *
  * The core runs as in production except for its runner (one `app_web` transaction with the system
  * role's variables, on a scratch database) and the capturing mailer.
@@ -39,8 +45,13 @@ import {
 } from "../../src/lib/auth/admin.ts";
 import type { AuthRunner } from "../../src/lib/auth/adapter.ts";
 import {
+  SignInCallbackRefused,
+  createSignInLink,
+} from "../../src/lib/auth/surface.ts";
+import {
   confirmFloristSignIn,
   createFloristAuth,
+  isFloristOrderPath,
   requestFloristSignIn,
   resolveFloristContext,
   setFloristLanguage,
@@ -543,6 +554,151 @@ describe.skipIf(server.url === undefined)(
       } finally {
         spy.mockRestore();
       }
+    });
+
+    describe("spec 016 T-23: the one-tap order link (AC-23)", () => {
+      const ORDER = `${BASE}/orders/${randomUUID()}`;
+      const live = async (t: string) => {
+        const [row] = await scratch.sql<{ n: number }[]>`
+          SELECT count(*)::int AS n FROM verification_tokens
+          WHERE expires > now() AND callback_path IS NOT NULL`;
+        return { t, rows: row?.n ?? 0 };
+      };
+
+      it("carries only t, survives two GETs, and the POST lands on the order", async () => {
+        await scratch.sql`DELETE FROM verification_tokens`;
+        const link = await createSignInLink(
+          florist(),
+          ids[MEMBER("demo")] ?? "",
+          { callbackPath: ORDER },
+        );
+        expect(link).not.toBeNull();
+        const url = new URL(link ?? "");
+        expect(link).not.toContain("@");
+        expect(link).not.toContain("orders");
+        expect(url.pathname).toBe(`${BASE}/sign-in/confirm`);
+        expect([...url.searchParams.keys()]).toEqual(["t"]);
+        const t = tokenOf(link ?? "");
+        // The confirm page's GET reads only; with no session it renders "Continue". Twice.
+        expect(await florist().signedInLanding(t, undefined)).toBeNull();
+        expect(await florist().signedInLanding(t, undefined)).toBeNull();
+        expect((await live(t)).rows).toBe(1);
+        const [stored] = await scratch.sql<{ callback_path: string }[]>`
+          SELECT callback_path FROM verification_tokens`;
+        expect(stored?.callback_path).toBe(ORDER);
+
+        const response = await confirmFloristSignIn(
+          form({ t, hl: "pl" }, `${BASE}/api/auth/confirm`),
+          florist(),
+        );
+        expect(response.status).toBe(303);
+        expect(response.headers.get("location")).toBe(ORDER);
+        expect(
+          response.headers
+            .getSetCookie()
+            .some((c) => c.startsWith("__Secure-fo-florist.session-token=")),
+        ).toBe(true);
+        expect((await live(t)).rows).toBe(0);
+
+        const reused = await confirmFloristSignIn(
+          form({ t }, `${BASE}/api/auth/confirm`),
+          florist(),
+        );
+        expect(reused.headers.get("location")).toBe(
+          `${BASE}/sign-in?state=expired`,
+        );
+      });
+
+      it("sends a member already signed in straight to the order, the token unspent; another member stays on the page", async () => {
+        const session = await signIn(MEMBER("demo"));
+        const link = await createSignInLink(
+          florist(),
+          ids[MEMBER("demo")] ?? "",
+          { callbackPath: ORDER },
+        );
+        const t = tokenOf(link ?? "");
+        expect(await florist().signedInLanding(t, session)).toBe(ORDER);
+        expect((await live(t)).rows).toBe(1);
+
+        const other = await signIn(DUAL);
+        expect(await florist().signedInLanding(t, other)).toBeNull();
+        expect(await florist().signedInLanding(t, "florist.forged")).toBeNull();
+      });
+
+      it("lands an expired token on the expired page", async () => {
+        const link = await createSignInLink(
+          florist(),
+          ids[MEMBER("demo")] ?? "",
+          { callbackPath: ORDER },
+        );
+        await scratch.sql`UPDATE verification_tokens SET expires = now() - interval '1 second'`;
+        const response = await confirmFloristSignIn(
+          form({ t: tokenOf(link ?? "") }, `${BASE}/api/auth/confirm`),
+          florist(),
+        );
+        expect(response.headers.get("location")).toBe(
+          `${BASE}/sign-in?state=expired`,
+        );
+      });
+
+      it("mints nothing for a member the policy refuses, or a user with no membership", async () => {
+        const before = await scratch.sql<{ n: number }[]>`
+          SELECT count(*)::int AS n FROM verification_tokens`;
+        expect(
+          await createSignInLink(florist(), ids[MEMBER("active")] ?? "", {
+            callbackPath: ORDER,
+          }),
+        ).toBeNull();
+        expect(
+          await createSignInLink(florist(), ids[STRANGER] ?? "", {
+            callbackPath: ORDER,
+          }),
+        ).toBeNull();
+        expect(
+          await createSignInLink(
+            florist("production"),
+            ids[MEMBER("demo")] ?? "",
+            {
+              callbackPath: ORDER,
+            },
+          ),
+        ).toBeNull();
+        const after = await scratch.sql<{ n: number }[]>`
+          SELECT count(*)::int AS n FROM verification_tokens`;
+        expect(after[0]?.n).toBe(before[0]?.n);
+      });
+
+      it("refuses a callback outside {base}/orders/{uuid}, in code and in the database", async () => {
+        for (const path of [
+          BASE,
+          `${BASE}/orders`,
+          `${BASE}/orders/${randomUUID()}/x`,
+          `${BASE}/orders/${randomUUID().toUpperCase()}`,
+          `/admin/orders/${randomUUID()}`,
+          `//evil.example/orders/${randomUUID()}`,
+          `https://evil.example${BASE}/orders/${randomUUID()}`,
+          `${BASE}/orders/${randomUUID()}?next=/admin`,
+        ]) {
+          expect(isFloristOrderPath(path), path).toBe(false);
+          await expect(
+            createSignInLink(florist(), ids[MEMBER("demo")] ?? "", {
+              callbackPath: path,
+            }),
+            path,
+          ).rejects.toThrow(SignInCallbackRefused);
+        }
+        for (const path of [
+          "https://evil.example/x",
+          "//evil.example",
+          "/a?b=c",
+        ]) {
+          await expect(
+            scratch.sql`INSERT INTO verification_tokens (identifier, token, expires, callback_path)
+                        VALUES ('x@example.test', ${randomUUID()}, now(), ${path})`,
+            path,
+          ).rejects.toThrow(/verification_tokens_callback_path_check/u);
+        }
+      });
     });
   },
 );

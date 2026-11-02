@@ -22,6 +22,16 @@
  *     address no longer allowed, lands on `{signIn}?state=expired`.
  *  4. `signOut` — deletes the session row and expires the cookie.
  *
+ * **A link with a callback (spec 016 §5.2 "One-tap florist link", §12's request on spec 012;
+ * TASK-331).** `createSignInLink(surface, userId, { callbackPath })` mints the same link for a
+ * known member without the form (an order email): the token's hash is stored with the callback
+ * path on the same row (`verification_tokens.callback_path`, `0031`), never in the URL. The path
+ * must pass the surface's `callbackAllowed` (the florist surface: `{base}/orders/{uuid}`) when the
+ * link is minted and again when it is used. `confirm` then lands on that path instead of home, and
+ * `signedInLanding` lets the confirm page send a member who is already signed in (the same user)
+ * straight there without spending the token. A used, unknown or expired token still lands on the
+ * expired page.
+ *
  * Session tokens are surface-bound (`{surface}.{32 random bytes}`, TASK-212): the one `sessions`
  * table serves admin and florists, and a token minted by one surface authenticates nothing on the
  * other, even for a person who is both an admin and a florist member.
@@ -42,7 +52,7 @@ import NextAuth, { type NextAuthConfig } from "next-auth";
 import type { EmailConfig } from "next-auth/providers/email";
 import { NextRequest, after } from "next/server";
 
-import { sessions } from "../../../db/schema/auth";
+import { sessions, users, verificationTokens } from "../../../db/schema/auth";
 import { logger } from "../logger";
 import { type Mailer, getMailer } from "@/modules/notifications/mailer";
 
@@ -65,6 +75,7 @@ import {
   isSessionTokenOf,
   newSessionToken,
   newSignInToken,
+  normaliseEmail,
 } from "./tokens";
 
 /** How long an emailed link is valid: one hour (spec 012 §2.2). */
@@ -197,6 +208,43 @@ export interface AuthSurface {
   sessionUserId(sessionToken: string | undefined): Promise<string | null>;
   /** Where the sign-in page sends a state. */
   signInLocation(state?: SignInState): string;
+  /**
+   * A link for `userId` that lands on `callbackPath` once confirmed (spec 016 §5.2), or `null`
+   * when the user has no address or the surface does not allow it now. Throws when the path is
+   * not one the surface admits.
+   */
+  createSignInLink(
+    userId: string,
+    options: { readonly callbackPath: string },
+  ): Promise<string | null>;
+  /**
+   * Where the confirm page sends a member already signed in, without spending the token: the
+   * token's callback when the session's user is the token's user, else `null`.
+   */
+  signedInLanding(
+    token: string,
+    sessionToken: string | undefined,
+  ): Promise<string | null>;
+}
+
+/** The thrown refusal of a callback the surface does not admit (a programming error). */
+export class SignInCallbackRefused extends Error {
+  constructor(surface: string) {
+    super(`SIGN_IN_CALLBACK_REFUSED: not a ${surface} callback path`);
+    this.name = "SignInCallbackRefused";
+  }
+}
+
+/**
+ * `createSignInLink(surface, userId, { callbackPath })` of spec 016 §12: the link for one member,
+ * landing on `callbackPath` (for the florist surface, `{FLORIST_BASE_PATH}/orders/{assignmentId}`).
+ */
+export function createSignInLink(
+  surface: AuthSurface,
+  userId: string,
+  options: { readonly callbackPath: string },
+): Promise<string | null> {
+  return surface.createSignInLink(userId, options);
 }
 
 export function createAuthSurface(
@@ -335,6 +383,87 @@ export function createAuthSurface(
     return seeOther(signInLocation("sent"));
   }
 
+  const callbackAdmitted = (path: string | null | undefined): path is string =>
+    typeof path === "string" && config.callbackAllowed?.(path) === true;
+
+  async function createSignInLink(
+    userId: string,
+    options: { readonly callbackPath: string },
+  ): Promise<string | null> {
+    if (!callbackAdmitted(options.callbackPath)) {
+      throw new SignInCallbackRefused(config.name);
+    }
+    const email = await run(async (db) => {
+      const [row] = await db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, userId));
+      return row?.email ?? null;
+    });
+    if (email === null || email === "") return null;
+    const address = normaliseEmail(email);
+    if (!(await config.allow(address))) return null;
+    const token = newSignInToken();
+    await run((db) =>
+      db.insert(verificationTokens).values({
+        identifier: address,
+        token: hashSignInToken(token, deps.secret()),
+        expires: new Date(now().getTime() + SIGN_IN_LINK_MAX_AGE_MS),
+        callbackPath: options.callbackPath,
+      }),
+    );
+    // The token is base64url, so it needs no escaping in a query value. No address, no path.
+    return new URL(
+      `${config.pages.confirm}?t=${token}`,
+      deps.siteOrigin(),
+    ).toString();
+  }
+
+  /** The live (unexpired, unused) row of a plain token: its address and its callback. */
+  async function liveToken(
+    token: string,
+  ): Promise<{ identifier: string; callbackPath: string | null } | null> {
+    const hashed = hashSignInToken(token, deps.secret());
+    const at = now();
+    return run(async (db) => {
+      const [row] = await db
+        .select({
+          identifier: verificationTokens.identifier,
+          callbackPath: verificationTokens.callbackPath,
+        })
+        .from(verificationTokens)
+        .where(
+          and(
+            eq(verificationTokens.token, hashed),
+            gt(verificationTokens.expires, at),
+          ),
+        );
+      return row ?? null;
+    });
+  }
+
+  async function signedInLanding(
+    token: string,
+    sessionToken: string | undefined,
+  ): Promise<string | null> {
+    if (!ConfirmSignInSchema.safeParse({ t: token }).success) return null;
+    const userId = await sessionUserId(sessionToken);
+    if (userId === null) return null;
+    const row = await liveToken(token);
+    if (row === null || !callbackAdmitted(row.callbackPath)) return null;
+    const owner = await run(async (db) => {
+      const [user] = await db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, userId));
+      return user?.email ?? null;
+    });
+    if (owner === null || normaliseEmail(owner) !== row.identifier) {
+      return null;
+    }
+    return row.callbackPath;
+  }
+
   async function confirm(request: Request): Promise<Response> {
     const expired = seeOther(signInLocation("expired"));
     if (!sameOrigin(request)) return expired;
@@ -347,6 +476,12 @@ export function createAuthSurface(
       return expired;
     }
     if (!parsed.success) return expired;
+    // Read before Auth.js spends the token (its row, and the path with it, is deleted on use).
+    let landing = config.pages.home;
+    if (config.callbackAllowed !== undefined) {
+      const path = (await liveToken(parsed.data.t))?.callbackPath;
+      if (callbackAdmitted(path)) landing = path;
+    }
     // Built in process and handed to Auth.js directly: never sent, never logged.
     const callback = new URL(
       `${config.basePath}/callback/${EMAIL_PROVIDER_ID}?${new URLSearchParams({ token: parsed.data.t, callbackUrl: config.pages.home }).toString()}`,
@@ -383,7 +518,7 @@ export function createAuthSurface(
         .getSetCookie()
         .some((cookie) => cookie.startsWith(`${names.sessionToken}=`));
     if (!signedIn) return expired;
-    return seeOther(config.pages.home, response.headers);
+    return seeOther(landing, response.headers);
   }
 
   async function signOut(request: Request): Promise<Response> {
@@ -452,5 +587,7 @@ export function createAuthSurface(
     signOut,
     sessionUserId,
     signInLocation,
+    createSignInLink,
+    signedInLanding,
   };
 }

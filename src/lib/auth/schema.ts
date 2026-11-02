@@ -57,6 +57,14 @@ export const AuthSurfaceSchema = z
     allow: z.custom<(email: string) => Promise<boolean>>(
       (value) => typeof value === "function",
     ),
+    /**
+     * The pages a link minted by `createSignInLink` may land on (spec 016 §5.2; TASK-331): the
+     * florist surface admits one order of its inbox. Absent: no callback is accepted, and every
+     * sign-in lands on `pages.home`.
+     */
+    callbackAllowed: z
+      .custom<(path: string) => boolean>((value) => typeof value === "function")
+      .optional(),
   })
   .strict()
   .refine(

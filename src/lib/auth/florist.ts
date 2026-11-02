@@ -54,6 +54,21 @@ import {
 } from "./surface";
 import { normaliseEmail } from "./tokens";
 
+/** One order of the inbox: `{FLORIST_BASE_PATH}/orders/{uuid}` (spec 016 §12's restriction). */
+const ORDER_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u;
+
+/**
+ * Whether `path` is a page a one-tap link may land on (spec 016 §5.2, §12; TASK-331): exactly one
+ * order of the inbox, `{FLORIST_BASE_PATH}/orders/{lower-case uuid}`, nothing after it.
+ */
+export function isFloristOrderPath(path: string): boolean {
+  const prefix = `${FLORIST_PATHS.base}/orders/`;
+  return (
+    path.startsWith(prefix) && ORDER_ID_PATTERN.test(path.slice(prefix.length))
+  );
+}
+
 /** 30 days, rolling (spec 011 §2). */
 export const FLORIST_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
@@ -132,6 +147,7 @@ export const FLORIST_SURFACE: AuthSurfaceConfig = {
   },
   mailTag: "florist_sign_in",
   allow: (email) => isFloristAllowed(email),
+  callbackAllowed: (path) => isFloristOrderPath(path),
 };
 
 /** The florist instance, with injectable seams for the integration suite. */
@@ -389,7 +405,11 @@ export async function confirmFloristSignIn(
   );
   const location =
     response.headers.get("location") ?? auth.signInLocation("expired");
-  if (location === auth.config.pages.home) return response;
+  // Home, or the order a one-tap link names (spec 016 §5.2): the page reads the member's own
+  // language, so no `?hl=` is added to either.
+  if (location === auth.config.pages.home || isFloristOrderPath(location)) {
+    return response;
+  }
   return relocated(response, withLanguage(location, language));
 }
 

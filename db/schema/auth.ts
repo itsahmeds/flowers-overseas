@@ -109,8 +109,17 @@ export const verificationTokens = pgTable(
       withTimezone: true,
       mode: "date",
     }).notNull(),
+    /**
+     * Where a confirmed sign-in from this link lands (spec 016 §5.2 one-tap florist link;
+     * `0031_sign_in_callback`; TASK-331). Null: the surface's home.
+     */
+    callbackPath: text("callback_path"),
   },
   (table) => [
+    check(
+      "verification_tokens_callback_path_check",
+      sql`${table.callbackPath} ~ '^/[A-Za-z0-9/_-]{1,255}$' AND position('//' IN ${table.callbackPath}) = 0`,
+    ),
     primaryKey({
       name: "verification_tokens_pkey",
       columns: [table.identifier, table.token],
