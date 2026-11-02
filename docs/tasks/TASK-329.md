@@ -31,6 +31,12 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (b) (2026-10-22):** spec 020a §12 request 2: `manualReroute` accepts an optional transaction handle (TASK-358 calls it inside `runOrderAction`).
 
+- 2026-11-03 (self-review, TASK-329): the refund at the expiry is asserted as spec 013's `payments` outbox row on the `order.cancelled` event, not by running the fake provider in this suite (spec 013's own suites cover `refundCancelledOrder`).
+- 2026-11-03: a destination with no `same_day_cutoff_local` has no `graceEnd`; exhaustion and the auto-off path then schedule no expiry and the job logs `no_operations`. Spec 009 opens no such country for orders, but if one existed its paid order would wait for the founder.
+- 2026-11-03: `routing.auto` is read only when the payment is secured (§5.2's handler row). An order already in the cascade, or an `order.route` deferred to 07:30, keeps routing after the flag is turned off.
+- 2026-11-03: `manualReroute` past the routing deadline refuses with `ROUTING_DEADLINE_PASSED` (and `NO_OPERATIONS` with no cutoff): codes spec 016 does not name; spec 020a's panel should show them. A night reroute writes its offer with `offered_at` at the next 07:30, as `order.route` would; V1 still goes out at once through the outbox.
+- 2026-11-03: the auto-off path raises the `routing.no_partner` Sentry alert inside the outbox delivery's transaction, so a delivery that rolls back and retries can raise it twice.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -43,11 +49,9 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02: `routing/{no-partner,expiry,reroute}.ts`, `order.no_partner_expire` registered (keyed, `short`) and wired in `src/jobs/handlers.ts`; exhaustion and the auto-off branch of the `routing` handler schedule it at `graceEnd`; `writeOffer` and `lockAndRecount` extracted from `route.ts` for `manualReroute`.
+- 2026-11-03: `tests/integration/routing-no-partner.test.ts` (8 cases, PG16): T-11 x2, T-12 x2 (six graceEnd cases incl. both DST nights), T-13, T-15 x3; unit registry, runtime and handler tables updated; 9 mutations each red. PR 459.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#459](https://github.com/itsahmeds/flowers-overseas/pull/459), with TASK-330. No migration (the A8 rows, `withdrawn_*` columns, `routing.auto` and `payout_adjustment` are on main). `order.no_partner_expire` at `graceEnd`, computed from the order's latest `order.no_partner_available` event (the same instant A1 prints), cancels through spec 013's `cancelOrder(orderId, system:routing.no_partner_expiry, 'no_partner')`; before `graceEnd` it re-enqueues and writes nothing; a moved-on order is a no-op. `routing.auto` off (read in the delivery's transaction, country scope) writes A8's `paid_unrouted` row at once and schedules the same expiry. `manualReroute(orderId, partnerId, actor, { executor? })` from `no_partner_available` only, "already offered" relaxed, refusals write nothing. Tests: integration 8 new cases (PG16) plus the TASK-328 suite adjusted (14 green); unit: registry, runtime, routing handler tables.

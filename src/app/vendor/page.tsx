@@ -78,7 +78,16 @@ function leadOf(
     case "photoReceived":
       return { href, lead: chip(t("floristInbox.page.groupDelivered")) };
     case "withdrawn":
-      return { href, muted: true };
+      // Spec 016 §5.3 (TASK-330): the stage's first sentence is the lead, as the expired line is.
+      return {
+        href,
+        lead: (
+          <span className="text-accent-strong text-sm font-bold">
+            {t("floristInbox.withdrawn.title")}
+          </span>
+        ),
+        muted: true,
+      };
   }
 }
 

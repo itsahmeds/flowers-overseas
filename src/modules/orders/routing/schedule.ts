@@ -4,7 +4,7 @@
  *
  * A step never talks to pg-boss itself: it returns, or hands to `RoutingScheduler`, the jobs it
  * wants, each keyed (`order.route` by order, `assignment.remind` and `assignment.timeout` by
- * assignment, `assignment.photo_remind` by order). The keyed queues are pg-boss `short` queues
+ * assignment, `assignment.photo_remind` and `order.no_partner_expire` by order; TASK-329). The keyed queues are pg-boss `short` queues
  * (`src/jobs/index.ts`): at most one waiting job per key, so an outbox row handled twice, or a
  * decline and a timeout landing together, queue one run.
  *
@@ -21,7 +21,7 @@
  */
 import { z } from "zod";
 
-/** The four keyed routing jobs (spec 016 §5.2). */
+/** The five keyed routing jobs (spec 016 §5.2). */
 export const RoutingJobSchema = z.discriminatedUnion("name", [
   z
     .object({
@@ -51,6 +51,13 @@ export const RoutingJobSchema = z.discriminatedUnion("name", [
       startAfter: z.date(),
     })
     .strict(),
+  z
+    .object({
+      name: z.literal("order.no_partner_expire"),
+      orderId: z.uuid(),
+      startAfter: z.date(),
+    })
+    .strict(),
 ]);
 export type RoutingJob = z.infer<typeof RoutingJobSchema>;
 
@@ -65,6 +72,7 @@ export function routingJobKey(job: RoutingJob): { readonly key: string } {
   switch (job.name) {
     case "order.route":
     case "assignment.photo_remind":
+    case "order.no_partner_expire":
       return { key: job.orderId };
     case "assignment.remind":
     case "assignment.timeout":
@@ -110,6 +118,7 @@ async function enqueueAll(
     switch (job.name) {
       case "order.route":
       case "assignment.photo_remind":
+      case "order.no_partner_expire":
         await enqueue(boss, job.name, { orderId: job.orderId }, options);
         break;
       case "assignment.remind":

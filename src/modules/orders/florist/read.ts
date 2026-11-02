@@ -22,6 +22,9 @@
  * (`placeDemoOrder`), else the florist's `partner_catalog_mapping` for the product and tier (an
  * order from spec 010's checkout), the same figure either way. An order with neither is not
  * listed and logs `florists.inbox_no_payout` with its assignment id only.
+ *
+ * Withdrawn (spec 016 §5.3, TASK-330): an assignment with `withdrawn_at` shows the "no longer
+ * yours" stage with no recipient field and no payout, in the list until its delivery date passes.
  */
 import { randomUUID } from "node:crypto";
 
@@ -30,6 +33,7 @@ import { z } from "zod";
 
 import { type DbContextInput, withDbContext } from "@/lib/db";
 import { logger } from "@/lib/logger";
+import { zonedDate } from "@/modules/geo";
 import { formatAddressBlock } from "@/modules/i18n";
 import {
   type FloristAssignmentListItem,
@@ -290,6 +294,7 @@ export async function selectFloristAssignments(
     if (stage === null) continue;
     const base = baseOf(fact, names.get(fact.order_id) ?? null);
     if (base === null) continue;
+    if (stage === "withdrawn" && withdrawnGone(base.delivery, now)) continue;
     items.push(
       FloristAssignmentListItemSchema.parse({
         assignmentId: base.assignmentId,
@@ -304,6 +309,17 @@ export async function selectFloristAssignments(
     );
   }
   return sortItems(items);
+}
+
+/**
+ * A withdrawn order is listed under "In progress" until its delivery date passes in the
+ * destination's zone, then it is gone from the list (spec 016 §5.3; TASK-330).
+ */
+export function withdrawnGone(
+  delivery: { readonly date: string; readonly timeZone: string },
+  now: Date,
+): boolean {
+  return zonedDate(now, delivery.timeZone) > delivery.date;
 }
 
 /** Within a group: open offers by the time to answer, then by delivery date; stable by id. */

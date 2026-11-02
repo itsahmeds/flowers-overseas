@@ -4474,6 +4474,16 @@
     "reviewed": false,
     "sourceHash": "d50528658bcfa56c16ac369baa4728f43aa281537f0244847f6b0770a9260397"
   },
+  "floristInbox.withdrawn.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ef57bdd46b1d35e3d4e7472a7766a582f86e76af344462ffbcd2aca3cd0f0410"
+  },
+  "floristInbox.withdrawn.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0d0ace416562295582839779517217c29a24e1dd06542a2db1c6f64067ea1184"
+  },
   "floristInbox.paused.notice": {
     "source": "machine",
     "reviewed": false,

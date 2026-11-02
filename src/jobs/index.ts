@@ -15,7 +15,8 @@
  *    (spec 022a §5.2, TASK-369: one run of the close sweep, enqueued by every minute tick), and
  *    spec 016's routing jobs (§5.2 "Jobs", TASK-328): `order.route`, `assignment.remind`,
  *    `assignment.timeout`, `assignment.photo_remind` (each keyed, at most one waiting job per key:
- *    the queue's `short` policy) and `routing.sla_watch` (enqueued by every minute tick);
+ *    the queue's `short` policy) and `routing.sla_watch` (enqueued by every minute tick), and
+ *    TASK-329's `order.no_partner_expire` (keyed by order, `short`);
  *  - **declared only** — the name is reserved for the spec that implements it
  *    (`notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -102,6 +103,14 @@ export const AssignmentPhotoRemindPayload = z
   .object({ orderId: z.uuid() })
   .strict();
 
+/**
+ * `order.no_partner_expire` (spec 016 §5.2, AC-11, AC-12; TASK-329): at `graceEnd`, cancel an order
+ * still `no_partner_available` through spec 013's `cancelOrder`. Keyed by order.
+ */
+export const OrderNoPartnerExpirePayload = z
+  .object({ orderId: z.uuid() })
+  .strict();
+
 /** `routing.sla_watch` (spec 016 §5.2, AC-31): one minute's look for overdue offers. */
 export const RoutingSlaWatchPayload = z.object({}).strict();
 
@@ -150,6 +159,11 @@ export const REGISTERED_JOBS = {
     policy: "short",
   },
   "routing.sla_watch": { version: 1, payload: RoutingSlaWatchPayload },
+  "order.no_partner_expire": {
+    version: 1,
+    payload: OrderNoPartnerExpirePayload,
+    policy: "short",
+  },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */

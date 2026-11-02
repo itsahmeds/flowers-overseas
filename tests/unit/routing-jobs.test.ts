@@ -21,6 +21,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createRoutingDeclineEffect,
   PHOTO_REMIND_AFTER_MINUTES,
+  ROUTING_STEPS,
+  WITHDRAWN_REASON,
   ROUTING_WRITTEN_EVENTS,
   routingOutboxHandler,
   type RoutingJob,
@@ -33,6 +35,7 @@ import {
   type OrderExecutor,
 } from "../../src/modules/orders";
 import type { OutboxDeliveryEvent } from "../../src/modules/orders";
+import { routingOutboxTargets } from "../../src/modules/orders/outbox/routes";
 
 const dialect = new PgDialect();
 const ORDER = "0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b";
@@ -54,6 +57,8 @@ function fakeExecutor(state: {
   return {
     execute: vi.fn(async (query) => {
       const text = dialect.sqlToQuery(query).sql;
+      // `routing.auto` on: the integration suite drives the off path (TASK-329, T-11).
+      if (text.includes("routing.auto")) return [{ enabled: true }];
       if (text.includes("occurred_at")) {
         return state.occurredAt === undefined
           ? []
@@ -161,6 +166,71 @@ describe("the routing outbox handler's dispatch table (AC-1, AC-17)", () => {
         startAfter: new Date("2026-11-03T11:17:00Z"),
       },
     ]);
+  });
+});
+
+describe("the withdrawal rows (AC-15, TASK-330)", () => {
+  const WITHDRAWALS = [
+    "order.cancelled",
+    "order.refunded_full",
+    "order.chargeback_opened",
+    "order.cancelled_refunded",
+  ] as const;
+
+  it("the four withdrawal events reach the routing target for test and live, never demo, and each has a dispatch row and a withdrawn_reason", () => {
+    for (const type of WITHDRAWALS) {
+      for (const mode of ["test", "live"] as const) {
+        expect(
+          routingOutboxTargets(type, mode).map((t) => t.name),
+          `${type} ${mode}`,
+        ).toEqual(["routing"]);
+      }
+      expect(routingOutboxTargets(type, "demo")).toEqual([]);
+      expect(ROUTING_STEPS[type], type).toBeDefined();
+    }
+    expect(WITHDRAWN_REASON).toEqual({
+      "order.cancelled": "order_cancelled",
+      "order.refunded_full": "refunded_full",
+      "order.chargeback_opened": "chargeback_open",
+      "order.cancelled_refunded": "cancelled_refunded",
+    });
+  });
+
+  it("from delivered or later a withdrawal event touches nothing; from routed it withdraws", async () => {
+    for (const type of WITHDRAWALS) {
+      for (const from of [
+        "delivered",
+        "photo_uploaded",
+        "closed",
+        "disputed",
+        "resolved",
+      ]) {
+        const executor = fakeExecutor({});
+        await routingOutboxHandler({ schedule: recorder().schedule })(
+          event(type, { fromStatus: from, toStatus: "closed" }),
+          {
+            deliveryId: EVENT,
+            outboxId: EVENT,
+            target: "routing",
+            attempt: 1,
+            executor,
+          },
+        );
+        expect(executor.execute, `${type} from ${from}`).not.toHaveBeenCalled();
+      }
+      const executor = fakeExecutor({});
+      await routingOutboxHandler({ schedule: recorder().schedule })(
+        event(type, { fromStatus: "routed", toStatus: "cancelled" }),
+        {
+          deliveryId: EVENT,
+          outboxId: EVENT,
+          target: "routing",
+          attempt: 1,
+          executor,
+        },
+      );
+      expect(executor.execute, `${type} from routed`).toHaveBeenCalled();
+    }
   });
 });
 

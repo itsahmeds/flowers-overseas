@@ -30,6 +30,10 @@ One dated bullet per `/review`, newest last.
 
 _None yet._
 
+- 2026-11-03 (self-review, TASK-330): V4 on a withdrawal is TASK-331's `notificationsFor` row on the event's own `notifications` delivery; this suite asserts the row exists for each pre-delivery `from_status` and that the assignment is withdrawn for the pipeline to read, not the send itself (`notifications-pipeline.test.ts` covers the send).
+- 2026-11-03: "the withdrawn stage HTML has no recipient marker" is asserted on the read model the page renders (`selectFloristOrderView`, strict schema) with marker values; no page render or screenshot was taken (no build slot used). The notice and the list lead follow `florist-inbox-*.dc.html`'s withdrawn artboard (warn notice, bold first sentence; accent-strong lead).
+- 2026-11-03: `floristInbox.withdrawn.title` / `.body` added in en, pl, de with `reviewed: false` (pl and de reuse the V4 email's wording).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -42,11 +46,9 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02: `routing/withdrawal.ts` (the four events, `from_status` filter, `withdrawn_at` / `withdrawn_reason`, `payout_adjustment` with `ON CONFLICT DO NOTHING`), the four events added to `ROUTING_OUTBOX_ROUTES`; inbox withdrawn notice, list lead and the delivery-date cut-off (`withdrawnGone`); copy keys.
+- 2026-11-03: T-15 integration (20 event x state cases, the real cancel path handled twice, later jobs, the withdrawn view and list); unit withdrawal table; mutations red. PR 459.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+Shipped in PR [#459](https://github.com/itsahmeds/flowers-overseas/pull/459) with TASK-329. The `routing` handler's withdrawal branch: for `order.cancelled`, `order.refunded_full`, `order.chargeback_opened`, `order.cancelled_refunded` from any state before `delivered`, the open or accepted assignment gets `withdrawn_at` and its reason; one open `payout_adjustment` (`withdrawn_by_buyer_after_acceptance`) only for `order.cancelled` from `accepted` or `paid`, idempotent. The florist inbox shows "This order is no longer yours. Please do not make it." with no recipient or payout, listed under In progress until the delivery date passes. No migration. Tests: integration 3 cases (PG16), unit 2.

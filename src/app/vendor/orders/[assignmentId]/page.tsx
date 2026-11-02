@@ -182,6 +182,12 @@ export default async function FloristOrderPage({
                   {t("floristInbox.page.photoReceived")}
                 </InboxNotice>
               ) : null}
+              {view.stage === "withdrawn" ? (
+                <InboxNotice tone="warn">
+                  <b>{t("floristInbox.withdrawn.title")}</b>{" "}
+                  {t("floristInbox.withdrawn.body")}
+                </InboxNotice>
+              ) : null}
             </>
           }
         >

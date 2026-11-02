@@ -175,12 +175,17 @@ export const NOTIFICATION_OUTBOX_ROUTES: ModeOutboxRoutes = {
 };
 
 /**
- * Spec 016's own rows of the `routing` target (§5.2 "The `routing` outbox handler"; TASK-328):
- * `order.delivered` schedules the photo reminder. `order.captured` reaches `routing` through
- * spec 013's row above; the withdrawal events are TASK-330's to add here.
+ * Spec 016's own rows of the `routing` target (§5.2 "The `routing` outbox handler"; TASK-328,
+ * TASK-330): `order.delivered` schedules the photo reminder; the four withdrawal events stop the
+ * florist (the handler filters on `from_status`). `order.captured` reaches `routing` through
+ * spec 013's row above.
  */
 export const ROUTING_OUTBOX_ROUTES: ModeOutboxRoutes = {
   "order.delivered": PAID_MODES_ROUTING,
+  "order.cancelled": PAID_MODES_ROUTING,
+  "order.refunded_full": PAID_MODES_ROUTING,
+  "order.chargeback_opened": PAID_MODES_ROUTING,
+  "order.cancelled_refunded": PAID_MODES_ROUTING,
 };
 
 /** The targets spec 016's routing rows give `event` for an order in `mode`. Pure. */
