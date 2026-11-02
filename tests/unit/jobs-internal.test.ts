@@ -293,15 +293,14 @@ describe("the route files, as Next loads them", () => {
     );
     expect(allowed.status).toBe(200);
     expect(ensure).toHaveBeenCalledTimes(1);
-    // Spec 013 §5.2 (TASK-254): every tick enqueues one outbox.dispatch, before it ticks, so the
-    // same tick consumes it.
-    expect(enqueue).toHaveBeenCalledTimes(1);
-    expect(enqueue.mock.calls[0]?.slice(1)).toEqual([
-      "outbox.dispatch",
-      {},
-      { requestId: "system:jobs.tick" },
+    // Spec 013 §5.2 (TASK-254, TASK-258): every tick enqueues one outbox.dispatch and one
+    // payments.production_start, before it ticks, so the same tick consumes them.
+    expect(enqueue).toHaveBeenCalledTimes(2);
+    expect(enqueue.mock.calls.map((call) => call.slice(1))).toEqual([
+      ["outbox.dispatch", {}, { requestId: "system:jobs.tick" }],
+      ["payments.production_start", {}, { requestId: "system:jobs.tick" }],
     ]);
-    expect(enqueue.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(enqueue.mock.invocationCallOrder[1]).toBeLessThan(
       tick.mock.invocationCallOrder[0] ?? 0,
     );
     expect(tick).toHaveBeenCalledTimes(1);

@@ -32,6 +32,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "outbox.dispatch",
       "payments.production_start",
       "retention.sweep",
+      "webhook.process",
     ]);
   });
 
@@ -60,7 +61,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(14);
+    expect(new Set(JOB_NAMES).size).toBe(15);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

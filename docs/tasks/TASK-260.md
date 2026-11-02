@@ -34,7 +34,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24 (implementer, to the orchestrator; `open`). AC-24's last two recorded sequences (`refund.updated` before `charge.refunded`; `charge.dispute.closed` before `charge.dispute.created`) need TASK-261's refund and dispute paths, which do not exist yet. Here those types are stored, routed and left `ignored` with `awaiting_handler` (re-processable with `--inbox-id`), and the two payment-intent sequences are proved. Recommended: TASK-261 owns the refund and dispute halves of AC-24 and replaces `awaiting_handler` with its routes. No live event can arrive before TASK-266/267 (no Stripe account).
 
 ## Progress
 
@@ -42,11 +42,13 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: done on PR 410 (stacked on PR 405, which is stacked on PR 403). `webhooks.ts` (ingest, process, replay, the Stripe endpoint and replay bodies), `POST /api/webhooks/stripe`, `POST /api/internal/payments/replay-webhooks`, `pnpm jobs:replay-webhooks`, job `webhook.process` (registered; its handler waits for the Stripe key, TASK-266), env keys `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (optional, 503 without them), the AC-27 fixture scan. Integration 14 cases green on PG16; mutations W1, W2, W4, W5, W6, W8, W9 red.
+- 2026-10-25: restacked on TASK-257's new head (PR 405). Env contract merged with main's `SIGNED_LINK_SECRET`: 36 keys, 32 required. The i18n scope registry test now names the webhook and replay paths (it was red on the old head). Webhook integration suite green on a local PG16.
+- 2026-10-25 (2): audit red on gitleaks (the old fake key, `sk_test_` then the word placeholder, reads as a Stripe token): the webhooks suite uses `sk_test_contract_emulated`. Restacked on PR 405's new head.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 410. Tests: integration `payments-webhooks.test.ts` 14 cases (AC-21 200/400/400/400/413 with row counts, the exact 1 MB cap; AC-22 enqueue after commit, store failure 500, enqueue failure 500 with the row kept and asked again on retry, the endpoint's 503 and declared-length 413; AC-10 livemode mismatch; AC-23 twice in sequence and concurrently: one row, one run, one `order.captured` per order, one intent retrieval; AC-24 the two payment-intent sequences equal in-order runs with the stale one `ignored`/`stale`; AC-25 unknown type, unknown object, schema failure to `dead` on attempt 8 with one `webhook.dead`, provider outage retried; AC-26 replay, second run zero, `--inbox-id`, `--dry-run`, the replay route's 400/503/200/404); unit `stripe-fixtures-pii.test.ts` (AC-27), `jobs-replay-webhooks.test.ts`; env, Railway and job-registry counts updated. Handed on: refund and dispute event routing (AC-24's other two sequences) to TASK-261; the `webhook.process` handler with the production provider to TASK-266; the founder declares `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (empty until keys exist) in Railway so `pnpm railway:check` stays clean.

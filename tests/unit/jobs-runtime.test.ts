@@ -184,6 +184,7 @@ describe("ensureQueues", () => {
       "outbox.dispatch",
       "payments.production_start",
       "retention.sweep",
+      "webhook.process",
     ]);
   });
 });
