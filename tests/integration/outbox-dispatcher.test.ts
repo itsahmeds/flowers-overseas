@@ -179,6 +179,7 @@ describe.skipIf(server.url === undefined)(
         const handlers: HandlerRegistry = {
           invoices: recording(),
           notifications: recording(),
+          payouts: recording(),
           payments,
           routing,
         };
@@ -308,6 +309,7 @@ describe.skipIf(server.url === undefined)(
           handlers: {
             invoices: recording(),
             notifications: recording(),
+            payouts: recording(),
             payments,
             routing,
           },
@@ -379,6 +381,7 @@ describe.skipIf(server.url === undefined)(
         const failing: HandlerRegistry = {
           invoices: recording(),
           notifications: recording(),
+          payouts: recording(),
           payments: recording(),
           routing: throwing(),
         };
@@ -394,6 +397,7 @@ describe.skipIf(server.url === undefined)(
         await run({
           invoices: recording(),
           notifications: recording(),
+          payouts: recording(),
           payments: recording(),
           routing: throwing(),
         });
@@ -401,6 +405,7 @@ describe.skipIf(server.url === undefined)(
         await run({
           invoices: recording(),
           notifications: recording(),
+          payouts: recording(),
           payments: recording(),
           routing: throwing(),
         });
@@ -408,6 +413,7 @@ describe.skipIf(server.url === undefined)(
         await run({
           invoices: recording(),
           notifications: recording(),
+          payouts: recording(),
           payments: recording(),
           routing: recording(),
         });
@@ -449,6 +455,7 @@ describe.skipIf(server.url === undefined)(
           handlers: {
             invoices: recording(),
             notifications: recording(),
+            payouts: recording(),
             payments: write("kept", false),
             routing: write("undone", true),
           },
@@ -475,6 +482,7 @@ describe.skipIf(server.url === undefined)(
           handlers: {
             invoices: recording(),
             notifications: recording(),
+            payouts: recording(),
             payments: recording(),
             routing,
           },
@@ -522,6 +530,7 @@ describe.skipIf(server.url === undefined)(
           handlers: {
             invoices: recording(),
             notifications: recording(),
+            payouts: recording(),
             payments: recording(),
             routing,
           },
@@ -586,6 +595,7 @@ describe.skipIf(server.url === undefined)(
           handlers: {
             invoices: recording(),
             notifications: recording(),
+            payouts: recording(),
             payments: recording(),
             routing,
           },

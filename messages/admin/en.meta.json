@@ -854,6 +854,11 @@
     "reviewed": false,
     "sourceHash": "cd16b17e963856ab502d540c4de6e262a857fe8b207e85034a182e171e402255"
   },
+  "admin.flags.description.payouts.accrue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36abadd8e66000911b12a8bbdad6a9f39a2096dae310e795361de5431bdd8905"
+  },
   "admin.flags.lead": {
     "source": "human",
     "reviewed": false,
@@ -2823,6 +2828,51 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "d04619cb58dfa222d101b60ec11ea3d476237696b6861cf47c570697a01985c9"
+  },
+  "emails.ops.payouts.prepaidReady.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c5e44a30e4fb580b239cf4352f48ddd88dd410b6f82e0dbff9c1465bb5c76490"
+  },
+  "emails.ops.payouts.prepaidReady.preheader": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "60b05b5a2a20a5528213f171fa183cf7d83619e14ba8515d7d29ed72e9ff7512"
+  },
+  "emails.ops.payouts.prepaidReady.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4524b7908decaa7ba8d8fa91c03b5b3a7b09b60a87eba65086a75fdd8ca33833"
+  },
+  "emails.ops.payouts.prepaidReady.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "emails.ops.payouts.prepaidReady.prepaidOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4414bd70760ff90d0e763735515b7f49308fb434c92b3ee3765f131a1b60d03a"
+  },
+  "emails.ops.payouts.prepaidReady.prepaidOrderValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7a544e358639c5c650ef9c3eacc6345cab57d912dea3c71ec2524f22b8ae5673"
+  },
+  "emails.ops.payouts.prepaidReady.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "emails.ops.payouts.prepaidReady.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3d6d57a7e89f9ab85224186b3fe47a8d5c6a0c37092b77acea4e172708515bd2"
+  },
+  "emails.ops.payouts.prepaidReady.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db6c20ce91acd4ca6b69e1c27fb3d680f779a56f71e5151ff556f50ccc6ebc5e"
   },
   "emails.ops.whatsapp.subjectOffer": {
     "source": "human",

@@ -183,3 +183,29 @@ export {
   floristSignInStatus,
 } from "./access/status.ts";
 export type { FloristSignInStatus } from "./access/status.ts";
+// Spec 030a (TASK-363): the payout terms command and the pure money rule. The outbox handler and
+// F1's job are the worker's (`./payouts/index.ts`), not exported here.
+export {
+  PAYOUT_ERROR_CODES,
+  PayoutError,
+  payoutForOrder,
+} from "./payouts/amount.ts";
+export type {
+  OrderPayout,
+  PayoutErrorCode,
+  PayoutOrderLine,
+} from "./payouts/amount.ts";
+export {
+  PAYOUT_TERMS_ACTION,
+  PayoutTermsEditSchema,
+  parsePayoutTerms,
+  payoutTermsFieldErrors,
+  savePayoutTerms,
+} from "./payouts/terms.ts";
+export type {
+  PayoutCadence,
+  PayoutTerms,
+  PayoutTermsFieldError,
+  PayoutTermsFieldErrors,
+  PayoutTermsResult,
+} from "./payouts/terms.ts";

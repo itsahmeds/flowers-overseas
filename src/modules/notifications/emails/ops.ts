@@ -1,7 +1,12 @@
 /**
  * The founder's emails: A1 `alert-no-partner` and W `whatsapp-copy` (spec 016 §5.2 template
  * table, "W", §5.3; AC-10, AC-11, AC-21, AC-22, AC-36; artboard `email-founder-*.dc.html`, "A1"
- * and "W"; TASK-332), in the layout's founder frame.
+ * and "W"; TASK-332), and spec 030a's F1 `payout-prepaid-ready` (§5.2 "Founder emails"; AC-5,
+ * AC-7; the same artboard, "F1"; TASK-363), in the layout's founder frame.
+ *
+ * **F1.** A prepaid payout is ready: the florist's shop code, which prepaid order of its limit
+ * this is with the order reference, the amount in the florist's currency, and the payout's admin
+ * link. Shop codes and order references only, no name or contact data (§5.2).
  *
  * Their words are English only and live in the admin catalogue (`emails.ops.*` in
  * the admin catalogue, spec 012 §2.2), which only `src/modules/admin` may read; the admin
@@ -32,7 +37,13 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { TRADING_NAME } from "@/config/company.data";
-import { formatDate, formatRegionName, zonedClock } from "@/modules/i18n";
+import { isCurrencyCode } from "@/config/currencies";
+import {
+  formatDate,
+  formatMoney,
+  formatRegionName,
+  zonedClock,
+} from "@/modules/i18n";
 import { type OrderExecutor, graceEnd, orderReference } from "@/modules/orders";
 
 import type {
@@ -75,6 +86,8 @@ export interface OpsCopy {
   ) => string;
   /** `/admin/orders/{id}` (spec 012). */
   readonly orderHref: (orderId: string) => string;
+  /** `/admin/payouts/{id}` (spec 030a §2.8); F1 only, so a worker without it sends no F1. */
+  readonly payoutHref?: (payoutId: string) => string;
 }
 
 /** The variable the alert address is read from (`src/lib/env.notifications.ts`), never the address. */
@@ -478,8 +491,162 @@ export function renderWhatsappCopy(
 }
 
 /* -------------------------------------------------------------------------- */
+/* F1                                                                          */
+/* -------------------------------------------------------------------------- */
+
+/** What F1 prints: ids, a shop code, two counts and an amount. Nothing about a person. */
+export const PrepaidPayoutFactsSchema = z
+  .object({
+    payoutId: z.uuid(),
+    orderId: z.uuid(),
+    partnerCode: z.string().min(1),
+    /** This payout's place among the florist's prepaid payouts, 1 for the first. */
+    prepaidNumber: z.number().int().positive(),
+    prepaidLimit: z.number().int().min(0),
+    amountMinor: z.bigint(),
+    currency: z.string().refine(isCurrencyCode, "an ISO 4217 code we support"),
+  })
+  .strict();
+export type PrepaidPayoutFacts = z.infer<typeof PrepaidPayoutFactsSchema>;
+
+/** F1 from its facts: subject, HTML part in the founder frame, plain text. */
+export function renderPrepaidPayoutReady(
+  input: PrepaidPayoutFacts,
+  copy: OpsCopy,
+  siteOrigin: string,
+): RenderedNotification {
+  const { t } = copy;
+  const ready = PrepaidPayoutFactsSchema.parse(input);
+  if (copy.payoutHref === undefined) {
+    throw new Error("EMAIL_FACTS_MISSING: F1 has no payout link");
+  }
+  const link = new URL(copy.payoutHref(ready.payoutId), siteOrigin).toString();
+  if (!isCurrencyCode(ready.currency)) {
+    throw new Error("EMAIL_FACTS_MISSING: F1's currency is not supported");
+  }
+  const amount = formatMoney(
+    { amountMinor: ready.amountMinor, currency: ready.currency },
+    "en",
+  );
+  const counts = {
+    number: String(ready.prepaidNumber),
+    limit: String(ready.prepaidLimit),
+  };
+  const reference = orderReference(ready.orderId);
+  const subject = t("emails.ops.payouts.prepaidReady.subject", {
+    code: ready.partnerCode,
+    amount,
+  });
+  const title = t("emails.ops.payouts.prepaidReady.heading");
+  const open = t("emails.ops.payouts.prepaidReady.open");
+  const what = t("emails.ops.payouts.prepaidReady.note");
+  const prepaidValue = t("emails.ops.payouts.prepaidReady.prepaidOrderValue", {
+    ...counts,
+    reference,
+  });
+  const rows = [
+    {
+      label: t("emails.ops.payouts.prepaidReady.florist"),
+      value: code(ready.partnerCode),
+      text: ready.partnerCode,
+    },
+    {
+      label: t("emails.ops.payouts.prepaidReady.prepaidOrder"),
+      value: fragment(prepaidValue),
+      text: prepaidValue,
+    },
+    {
+      label: t("emails.ops.payouts.prepaidReady.amount"),
+      value: numeric(amount),
+      text: amount,
+    },
+  ];
+  const html = emailDocument({
+    locale: "en",
+    subject,
+    preheader: t("emails.ops.payouts.prepaidReady.preheader", counts),
+    frame: opsFrame(copy),
+    blocks: [
+      heading(title),
+      facts(rows.map(({ label, value }) => ({ label, value }))),
+      button(open, link),
+      note(what),
+    ],
+  });
+  const textPart = [
+    title,
+    rows.map((row) => `${row.label}: ${row.text}`).join("\n"),
+    `${open}:\n${link}`,
+    what,
+    opsFooterText(copy),
+  ].join("\n\n");
+  return { subject, html, text: `${textPart}\n` };
+}
+
+const PrepaidRow = z.object({
+  payout_id: z.uuid(),
+  order_id: z.uuid(),
+  partner_code: z.string(),
+  prepaid_number: z.coerce.number().int(),
+  prepaid_limit: z.coerce.number().int(),
+  total_minor: z.coerce.bigint(),
+  currency_code: z.string(),
+});
+
+/**
+ * F1's facts at send time, through the delivery's transaction: the prepaid payout that holds the
+ * order's `order` line, its florist's code and limit, and its place among the florist's prepaid
+ * payouts. No buyer, recipient or florist contact column.
+ */
+export async function loadPrepaidPayoutFacts(
+  executor: OrderExecutor,
+  orderId: string,
+): Promise<PrepaidPayoutFacts> {
+  const [found] = await executor.execute(sql`
+    SELECT p.id AS payout_id, l.order_id, fp.code AS partner_code,
+           fp.prepaid_order_limit AS prepaid_limit, p.total_minor::text AS total_minor,
+           p.currency_code,
+           (SELECT count(*) FROM payout q
+             WHERE q.partner_id = p.partner_id AND q.kind = 'prepaid'
+               AND (q.created_at, q.id) <= (p.created_at, p.id)) AS prepaid_number
+    FROM payout_line l
+    JOIN payout p ON p.id = l.payout_id
+    JOIN fulfillment_partner fp ON fp.id = p.partner_id
+    WHERE l.order_id = ${orderId} AND l.kind = 'order' AND p.kind = 'prepaid'`);
+  if (found === undefined) {
+    throw new Error("EMAIL_FACTS_MISSING: the order has no prepaid payout");
+  }
+  const row = PrepaidRow.parse(found);
+  return PrepaidPayoutFactsSchema.parse({
+    payoutId: row.payout_id,
+    orderId: row.order_id,
+    partnerCode: row.partner_code,
+    prepaidNumber: row.prepaid_number,
+    prepaidLimit: row.prepaid_limit,
+    amountMinor: row.total_minor,
+    currency: row.currency_code,
+  });
+}
+
+/* -------------------------------------------------------------------------- */
 /* Registration                                                                */
 /* -------------------------------------------------------------------------- */
+
+/** The registered renderer of F1. */
+export async function renderPrepaidPayoutReadyNotification(
+  input: NotificationRenderInput,
+  copy: OpsCopy,
+  siteOrigin: string,
+): Promise<RenderedNotification> {
+  if (input.orderId === null) {
+    throw new Error("EMAIL_FACTS_MISSING: F1 has no order");
+  }
+  return renderPrepaidPayoutReady(
+    await loadPrepaidPayoutFacts(input.executor, input.orderId),
+    copy,
+    siteOrigin,
+  );
+}
 
 /** The registered renderer of A1. */
 export async function renderNoPartnerAlertNotification(
@@ -535,6 +702,11 @@ export function registerOpsEmailTemplates(
   if (notificationTemplate("whatsapp-copy") === undefined) {
     registerNotificationTemplate("whatsapp-copy", (input) =>
       renderWhatsappCopyNotification(input, copy),
+    );
+  }
+  if (notificationTemplate("payout-prepaid-ready") === undefined) {
+    registerNotificationTemplate("payout-prepaid-ready", (input) =>
+      renderPrepaidPayoutReadyNotification(input, copy, siteOrigin()),
     );
   }
 }

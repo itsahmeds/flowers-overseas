@@ -70,9 +70,13 @@ export {
   type NoPartnerAlertFacts,
   NoPartnerAlertFactsSchema,
   type OpsCopy,
+  type PrepaidPayoutFacts,
+  PrepaidPayoutFactsSchema,
   type WhatsappCopyContext,
   loadNoPartnerAlertFacts,
+  loadPrepaidPayoutFacts,
   registerOpsEmailTemplates,
   renderNoPartnerAlert,
+  renderPrepaidPayoutReady,
   renderWhatsappCopy,
 } from "./ops";

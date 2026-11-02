@@ -1,7 +1,7 @@
 /**
  * T-05 — `ADMIN_PERMISSIONS` is spec 012 §5.2's v0 matrix, cell by cell (AC-4; TASK-217), plus
  * spec 020a T-01: the four order-action permissions of §2.1 and §13 Q2 (AC-1; TASK-357), and no
- * `orders.transition`.
+ * `orders.transition`; spec 030a §5.2 "Permissions": `payouts.manage` (TASK-363).
  *
  * The expected table is written out here from the spec, not derived from the constant: a cell
  * flipped in `src/modules/admin/permissions.ts` turns exactly one row red.
@@ -24,6 +24,9 @@ const MATRIX: Record<string, readonly string[]> = {
   "partner.status": ["admin", "ops"],
   "application.manage": ["admin", "ops"],
   "partner.payout": ["admin", "finance"],
+  // spec 030a §5.2 "Permissions" (TASK-363): every payouts command but the terms; ops and content
+  // get 403 (spec 030a AC-1 for the terms through `partner.payout`, AC-29 for the pages).
+  "payouts.manage": ["admin", "finance"],
   "orders.view": ["admin", "ops", "finance"],
   "orders.view_pii": ["admin", "ops"],
   // spec 020a §2.1, §13 Q2: money moves admin only; reroute and resend also ops.

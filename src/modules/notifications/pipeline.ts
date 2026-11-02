@@ -613,6 +613,7 @@ export const NotificationJobInputSchema = z
       "assignment.remind",
       "assignment.photo_remind",
       "invoice.email",
+      "payouts.prepaid_ready",
     ]),
     jobId: z.string().min(1).max(128),
     orderId: z.uuid(),

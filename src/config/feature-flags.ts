@@ -40,6 +40,9 @@
  * orders to the founder instead of to florists) and `notifications.email` (global: off holds every
  * email, never drops one).
  *
+ * Spec 030a (TASK-363, migration `0034_payouts_030a`) adds `payouts.accrue`, global and high-risk,
+ * on by default: off holds the `payouts` outbox rows (nothing is lost) and dirties no page.
+ *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
 import { z } from "zod";
@@ -208,6 +211,14 @@ const REGISTRY = [
     scopeKinds: ["global"],
     description:
       "Order emails are sent (spec 016). Off: every email waits, held and never dropped, until it is on again. Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
+  {
+    key: "payouts.accrue",
+    scopeKinds: ["global"],
+    description:
+      "Florist payouts are written (spec 030a): the amount fixed at acceptance, prepaid payouts and payout lines. Off: the payouts outbox rows wait, held and never dropped, until it is on again. Admin only; type the key to confirm.",
     risk: "high",
     dirties: [],
   },

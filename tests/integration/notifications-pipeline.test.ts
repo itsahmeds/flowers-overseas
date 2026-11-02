@@ -1096,6 +1096,7 @@ describe.skipIf(server.url === undefined)(
           payments: noop,
           routing: noop,
           notifications: notificationsOutboxHandler(deps()),
+          payouts: noop,
         },
         transaction: savepoints,
         orderId: options.orderId,

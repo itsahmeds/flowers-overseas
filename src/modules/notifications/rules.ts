@@ -45,6 +45,8 @@ export const NOTIFICATION_TEMPLATE_KEYS = [
   "photo-reminder",
   "alert-no-partner",
   "whatsapp-copy",
+  // spec 030a §5.2 "Founder emails" (TASK-363): F1.
+  "payout-prepaid-ready",
 ] as const;
 export type NotificationTemplateKey =
   (typeof NOTIFICATION_TEMPLATE_KEYS)[number];
@@ -55,12 +57,14 @@ export type NotificationAudience = (typeof NOTIFICATION_AUDIENCES)[number];
 
 /**
  * The jobs that trigger a message without an event of their own: V2 and V5 (spec 016's routing
- * jobs, TASK-328) and B8 (`invoice.email`, TASK-334). None of them is an event name.
+ * jobs, TASK-328), B8 (`invoice.email`, TASK-334) and spec 030a's F1 (`payouts.prepaid_ready`,
+ * TASK-363). None of them is an event name.
  */
 export const NOTIFICATION_JOBS = [
   "assignment.remind",
   "assignment.photo_remind",
   "invoice.email",
+  "payouts.prepaid_ready",
 ] as const;
 export type NotificationJob = (typeof NOTIFICATION_JOBS)[number];
 
@@ -196,6 +200,16 @@ export const NOTIFICATION_RULES: readonly NotificationRule[] = Object.freeze([
     trigger: "order.no_partner_available",
     from: ANY,
     modes: TEST_AND_LIVE,
+  },
+  // F1 (spec 030a §5.2, TASK-363): a prepaid payout is ready. `live` only: a test or demo order
+  // gets no payout at all (spec 030a AC-4).
+  {
+    code: "F1",
+    template: "payout-prepaid-ready",
+    audience: "ops",
+    trigger: "payouts.prepaid_ready",
+    from: ANY,
+    modes: LIVE,
   },
   // W: V1 and V4 only (founder 16-5).
   whatsappCopy("offer", "assignment.offered"),

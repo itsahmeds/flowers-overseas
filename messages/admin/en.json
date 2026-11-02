@@ -332,6 +332,9 @@
         },
         "notifications": {
           "email": "Sends order emails to buyers, florists and you. Off: every email waits and goes out once this is on again. Nothing is dropped."
+        },
+        "payouts": {
+          "accrue": "Writes what each florist is owed: the price fixed when they accept, their prepaid orders and their payout lines. Off: payout work waits and is done once this is on again. Nothing is dropped."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -772,6 +775,19 @@
         "copyFrom": "----- copy from here -----",
         "copyTo": "----- to here -----",
         "note": "The florist has the same offer by email already. Never accept or decline for them; ask them to open the order."
+      },
+      "payouts": {
+        "prepaidReady": {
+          "subject": "Prepaid payout ready: {code} · {amount}",
+          "preheader": "Prepaid order {number} of {limit}. Send the statement and pay it this week.",
+          "heading": "A prepaid payout is ready to send",
+          "florist": "Florist",
+          "prepaidOrder": "Prepaid order",
+          "prepaidOrderValue": "{number} of {limit} · {reference}",
+          "amount": "Amount",
+          "open": "Open the payout",
+          "note": "Send the statement, then add it to the next Wise export. The florist is paid before they make the bouquet."
+        }
       }
     }
   }
