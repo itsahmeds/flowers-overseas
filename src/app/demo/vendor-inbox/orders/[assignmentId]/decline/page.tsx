@@ -34,8 +34,8 @@ import { currentFloristContext } from "../../../request";
 /** Appendix A's reasons, in the closed list's order. */
 const REASON_KEYS = {
   capacity: "floristInbox.declineReason.capacity",
-  out_of_area: "floristInbox.declineReason.out_of_area",
-  product_unavailable: "floristInbox.declineReason.product_unavailable",
+  out_of_area: "floristInbox.declineReason.outOfArea",
+  product_unavailable: "floristInbox.declineReason.productUnavailable",
   closed: "floristInbox.declineReason.closed",
   other: "floristInbox.declineReason.other",
 } as const satisfies Readonly<Record<DeclineReason, string>>;

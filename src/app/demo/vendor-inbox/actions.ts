@@ -79,3 +79,31 @@ export function commandContextOf(
 
 /** A small url-encoded form, read with a bound (the action posts carry one or two fields). */
 export const SMALL_FORM_MAX_BYTES = 4 * 1024;
+
+/**
+ * The fields of a small `application/x-www-form-urlencoded` post, read chunk by chunk and given
+ * up past `limit` bytes (then: no fields, which every action treats as an invalid post).
+ */
+export async function readSmallForm(
+  request: Request,
+  limit: number = SMALL_FORM_MAX_BYTES,
+): Promise<Record<string, string>> {
+  if (request.body === null) return {};
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel();
+      return {};
+    }
+    chunks.push(value);
+  }
+  const text = new TextDecoder().decode(
+    Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))),
+  );
+  return Object.fromEntries(new URLSearchParams(text));
+}

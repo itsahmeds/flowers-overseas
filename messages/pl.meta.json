@@ -4434,12 +4434,12 @@
     "reviewed": false,
     "sourceHash": "298bbb69ee2019af135e4fc00d285c0f1aeefa7d4b9c999d889924ae7bf919ca"
   },
-  "floristInbox.declineReason.out_of_area": {
+  "floristInbox.declineReason.outOfArea": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "e1d35cc43ce786f2ba53788d4a06e4c78e8ff60d15698e65cb227fe35cd5e091"
   },
-  "floristInbox.declineReason.product_unavailable": {
+  "floristInbox.declineReason.productUnavailable": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "2540e14494d278a3a110df29cc7d648e2f3999e27c28e9e1d5bd890e90c669c5"

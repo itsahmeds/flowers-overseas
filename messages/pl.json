@@ -729,8 +729,8 @@
     "declineWhy": "Dlaczego odrzucasz to zamówienie?",
     "declineReason": {
       "capacity": "Tego dnia mamy komplet",
-      "out_of_area": "Nie dowozimy w to miejsce",
-      "product_unavailable": "Nie możemy zdobyć tych kwiatów",
+      "outOfArea": "Nie dowozimy w to miejsce",
+      "productUnavailable": "Nie możemy zdobyć tych kwiatów",
       "closed": "Tego dnia mamy zamknięte",
       "other": "Inny powód"
     },

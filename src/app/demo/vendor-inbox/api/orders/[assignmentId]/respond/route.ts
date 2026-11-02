@@ -10,7 +10,6 @@
  */
 import { FLORIST_PATHS } from "@/config/florists";
 import { sameOrigin } from "@/lib/auth/surface";
-import { readBoundedBody } from "@/lib/consent";
 import {
   FloristActionError,
   OfferResponseInputSchema,
@@ -20,8 +19,8 @@ import {
 import {
   commandContextOf,
   noticeOf,
+  readSmallForm,
   seeOther,
-  SMALL_FORM_MAX_BYTES,
   withQuery,
 } from "../../../../actions";
 import { currentFloristContext } from "../../../../request";
@@ -37,8 +36,7 @@ export async function POST(
   if (!sameOrigin(request)) return seeOther(FLORIST_PATHS.base);
   const context = await currentFloristContext();
   if (context === null) return seeOther(FLORIST_PATHS.signIn);
-  const raw = await readBoundedBody(request, SMALL_FORM_MAX_BYTES);
-  const fields = Object.fromEntries(new URLSearchParams(raw ?? ""));
+  const fields = await readSmallForm(request);
   const input = OfferResponseInputSchema.safeParse(fields);
   if (!input.success) {
     return seeOther(

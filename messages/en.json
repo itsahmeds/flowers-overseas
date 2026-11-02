@@ -1240,8 +1240,8 @@
     "declineWhy": "Why are you declining?",
     "declineReason": {
       "capacity": "We are full that day",
-      "out_of_area": "We do not deliver there",
-      "product_unavailable": "We cannot get these flowers",
+      "outOfArea": "We do not deliver there",
+      "productUnavailable": "We cannot get these flowers",
       "closed": "We are closed that day",
       "other": "Another reason"
     },

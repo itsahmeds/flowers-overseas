@@ -729,8 +729,8 @@
     "declineWhy": "Warum lehnen Sie ab?",
     "declineReason": {
       "capacity": "Wir sind an dem Tag ausgebucht",
-      "out_of_area": "Wir liefern nicht dorthin",
-      "product_unavailable": "Wir bekommen diese Blumen nicht",
+      "outOfArea": "Wir liefern nicht dorthin",
+      "productUnavailable": "Wir bekommen diese Blumen nicht",
       "closed": "Wir haben an dem Tag geschlossen",
       "other": "Ein anderer Grund"
     },
