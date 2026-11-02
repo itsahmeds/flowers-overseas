@@ -60,7 +60,8 @@
  */
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { brotliCompressSync, constants } from "node:zlib";
+import { promisify } from "node:util";
+import { brotliCompress, constants } from "node:zlib";
 
 import { isMainModule } from "./lib.ts";
 
@@ -87,9 +88,22 @@ export function isCompressible(contentType: string | undefined): boolean {
   return COMPRESSIBLE_TYPES.some((prefix) => value.startsWith(prefix));
 }
 
-/** Brotli at the quality an edge CDN uses, so the measured bytes are the deployed bytes. */
-export function brotli(body: Buffer): Buffer {
-  return brotliCompressSync(body, {
+const brotliCompressAsync = promisify(brotliCompress);
+
+/**
+ * Brotli at the quality an edge CDN uses, so the measured bytes are the deployed bytes.
+ *
+ * Encoded on libuv's thread pool, not on this process's one thread (TASK-427). Quality 11 takes
+ * about 110 ms for the 105 KB stylesheet and 290 ms for the largest chunk (measured locally), and
+ * done synchronously it held every other response behind it: the hero image and the preloaded
+ * fonts, which need no encoding, waited for the stylesheet's. Lighthouse reads that wait as the
+ * origin's server latency (main's runs: 105 to 283 ms, tracking the home's LCP at about 3 ms of LCP
+ * per ms) and its simulation charges it to every request of the origin. No server stops serving
+ * an image while it compresses a stylesheet. The bytes are the synchronous encoder's, byte for byte,
+ * and every response is still encoded per request (`tests/unit/brotli-origin.test.ts`).
+ */
+export function brotli(body: Buffer): Promise<Buffer> {
+  return brotliCompressAsync(body, {
     params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
   });
 }
@@ -156,7 +170,7 @@ async function handle(
     acceptsBrotli(request.headers["accept-encoding"] as string | undefined) &&
     isCompressible(contentType) &&
     payload.length > 0;
-  const out = encode ? brotli(payload) : payload;
+  const out = encode ? await brotli(payload) : payload;
 
   for (const [name, value] of upstreamResponse.headers.entries()) {
     if (name === "content-length" || name === "content-encoding") continue;

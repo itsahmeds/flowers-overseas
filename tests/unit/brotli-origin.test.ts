@@ -18,7 +18,7 @@
  * The end-to-end behaviour (a real request through the proxy) is exercised by the Lighthouse run
  * itself; what a unit test can hold is the policy above.
  */
-import { brotliDecompressSync } from "node:zlib";
+import { brotliCompressSync, brotliDecompressSync, constants } from "node:zlib";
 
 import { describe, expect, it } from "vitest";
 
@@ -58,13 +58,50 @@ describe("what the origin encodes", () => {
     }
   });
 
-  it("round-trips a body through Brotli", () => {
+  it("round-trips a body through Brotli", async () => {
     const body = Buffer.from("self.__next_f.push([1,'x'])".repeat(64), "utf8");
-    const encoded = brotli(body);
+    const encoded = await brotli(body);
     expect(encoded.length).toBeLessThan(body.length);
     expect(brotliDecompressSync(encoded).toString("utf8")).toBe(
       body.toString("utf8"),
     );
+  });
+
+  it("sends the same bytes as a synchronous quality-11 encoder (TASK-427)", async () => {
+    const body = Buffer.from(
+      Array.from(
+        { length: 4000 },
+        (_, i) => `.c${String(i)}{x:${String(i % 97)}}`,
+      ).join(""),
+      "utf8",
+    );
+    const reference = brotliCompressSync(body, {
+      params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+    });
+    expect(Buffer.compare(await brotli(body), reference)).toBe(0);
+  });
+
+  it("encodes off the event loop, so a response that needs no encoding is not held behind one that does (TASK-427)", async () => {
+    // Quality 11 on a few hundred KB takes long enough that, done synchronously, no other
+    // callback of this process runs until it ends. Lighthouse read that queue as the origin's
+    // server latency and charged it to every request on the LCP path.
+    const body = Buffer.from(
+      Array.from(
+        { length: 30000 },
+        (_, i) => `.u${String(i)}{m:${String((i * 7919) % 1009)}px}`,
+      ).join(""),
+      "utf8",
+    );
+    const order: string[] = [];
+    const encoding = brotli(body).then(() => order.push("encoded"));
+    await new Promise<void>((resolve) =>
+      setImmediate(() => {
+        order.push("turn");
+        resolve();
+      }),
+    );
+    await encoding;
+    expect(order).toEqual(["turn", "encoded"]);
   });
 
   it("encodes only when the client advertises `br`", () => {
