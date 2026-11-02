@@ -13,9 +13,16 @@ import { providerIntentStatuses, providerRefundStatuses } from "../provider.ts";
 const unixSeconds = z.number().int().nonnegative();
 const minorUnits = z.number().int().nonnegative();
 
+/** An expandable reference: the id, or the object with its id. */
+const expandable = z.union([
+  z.string().min(1),
+  z.object({ id: z.string().min(1) }),
+]);
+
 export const StripeChargeSchema = z.object({
   id: z.string().min(1),
   object: z.literal("charge"),
+  payment_intent: expandable.nullish(),
   outcome: z.object({ risk_score: z.number().int().nullish() }).nullish(),
   payment_method_details: z
     .object({
@@ -66,8 +73,47 @@ export const StripeRefundSchema = z.object({
     .union([z.string(), z.object({ id: z.string().min(1) })])
     .nullish(),
   failure_reason: z.string().nullish(),
+  /** Ours: `{ order_id, refund_id, reason }` (`adapter.ts` `refund`). */
+  metadata: z.record(z.string(), z.string()).nullish(),
 });
 export type StripeRefund = z.infer<typeof StripeRefundSchema>;
+
+export const StripeRefundListSchema = z.object({
+  object: z.literal("list"),
+  has_more: z.boolean(),
+  data: z.array(StripeRefundSchema),
+});
+
+/** Stripe's dispute states for the pinned version, and the four this spec keeps (`provider.ts`). */
+export const STRIPE_DISPUTE_STATUSES = {
+  warning_needs_response: "open",
+  warning_under_review: "open",
+  needs_response: "open",
+  under_review: "open",
+  won: "won",
+  lost: "lost",
+  warning_closed: "closed",
+  prevented: "closed",
+} as const;
+
+export const StripeDisputeSchema = z.object({
+  id: z.string().min(1),
+  object: z.literal("dispute"),
+  amount: minorUnits,
+  currency: z.string().length(3),
+  status: z.enum(
+    Object.keys(STRIPE_DISPUTE_STATUSES) as [
+      keyof typeof STRIPE_DISPUTE_STATUSES,
+      ...(keyof typeof STRIPE_DISPUTE_STATUSES)[],
+    ],
+  ),
+  reason: z.string().min(1),
+  charge: expandable,
+  payment_intent: expandable.nullish(),
+  created: unixSeconds,
+  evidence_details: z.object({ due_by: unixSeconds.nullish() }).nullish(),
+});
+export type StripeDispute = z.infer<typeof StripeDisputeSchema>;
 
 /** `StripeEventSchema`: the envelope of a webhook or an `events.list` item (spec 013 §5.2). */
 export const StripeEventSchema = z.object({

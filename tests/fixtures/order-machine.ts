@@ -70,9 +70,20 @@ const PROJECTIONS: readonly (readonly [
   ],
 ];
 
-export const STATES: readonly StateRow[] = PROJECTIONS.flatMap(
+/** A6.4's 26 states as `0007` seeds them (`accepted` and `paid` read `with_florist`). */
+export const A6_STATES: readonly StateRow[] = PROJECTIONS.flatMap(
   ([buyerProjection, isTerminal, keys]) =>
     keys.map((key) => ({ key, isTerminal, buyerProjection })),
+);
+
+/** The two states spec 002 §14 A9.1 moves from `with_florist` to `confirmed` (`0028_set_c_a9`). */
+export const A9_CONFIRMED = ["accepted", "paid"] as const;
+
+/** The table after every migration: A6.4's 26 states with A9.1's projection (no `with_florist`). */
+export const STATES: readonly StateRow[] = A6_STATES.map((state) =>
+  (A9_CONFIRMED as readonly string[]).includes(state.key)
+    ? { ...state, buyerProjection: "confirmed" }
+    : state,
 );
 
 /** A6.3 set E: before acceptance (5). */
@@ -105,6 +116,17 @@ export const SET_C = [
   "closed",
   "refunded_full",
 ] as const;
+
+/**
+ * Set C as spec 002 §14 A9.7 amends it (16): A6.3's 13 plus the three states a charged order
+ * waits in for its florist. `0028_set_c_a9` adds their row-34 rows.
+ */
+export const A9_SET_C_ADDED = [
+  "routed",
+  "no_partner_available",
+  "manual_reroute",
+] as const;
+export const SET_C_A9 = [...SET_C, ...A9_SET_C_ADDED] as const;
 
 /** `"same"` marks A6.3's "the same state" (a self-loop on each member of the set). */
 type Target = string | "same";
@@ -275,6 +297,17 @@ const ROWS_A10: typeof ROWS = [
   [40, ["paid"], "order.cancelled", "cancelled", ["buyer", "admin"]],
 ];
 
+/** Spec 002 §14 A9.7: row 34 from the three routing states (`0028_set_c_a9`, TASK-261). */
+const ROWS_A9: typeof ROWS = [
+  [
+    34,
+    A9_SET_C_ADDED,
+    "order.chargeback_opened",
+    "chargeback_open",
+    ["system"],
+  ],
+];
+
 const expand = (rows: typeof ROWS): readonly TransitionRow[] =>
   rows.flatMap(([, froms, event, to, allowedActors]) =>
     froms.map((from) => ({
@@ -294,11 +327,15 @@ export const A8_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A8);
 /** A10's two rows, as `0027_cancel_window_a10` inserts them. */
 export const A10_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A10);
 
-/** The table after every migration: A6.3's 73 rows, A8.1's 2 and A10's 2, 77 in all. */
+/** A9.7's three rows, as `0028_set_c_a9` inserts them. */
+export const A9_TRANSITIONS: readonly TransitionRow[] = expand(ROWS_A9);
+
+/** The table after every migration: A6.3's 73 rows, A8.1's 2, A10's 2 and A9.7's 3, 80 in all. */
 export const TRANSITIONS: readonly TransitionRow[] = [
   ...A6_TRANSITIONS,
   ...A8_TRANSITIONS,
   ...A10_TRANSITIONS,
+  ...A9_TRANSITIONS,
 ];
 
 /** Spec 002 §14 A10.2, set P: the states a buyer may cancel from (set E, `accepted`, `paid`). */

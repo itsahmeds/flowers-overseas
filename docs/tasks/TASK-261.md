@@ -36,7 +36,9 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-25, to the orchestrator (non-blocking, declared in PR 411): **A9 shipped here.** Spec 002 §14 A9.3 says A9 (A9.1's projection and A9.7's three row-34 rows) ships in the first migration of spec 016 or 018; none carries it (`0021_post_purchase` on TASK-070's branch has A8 only), and AC-31 needs A9.7's set C. `0030_set_c_a9` ships A9 whole, as A9.3 words it, with the `A9_ROLLBACK_ROWS_IN_USE` guard. Whoever merges spec 016/018's first migration must not ship A9 again. Answer: open.
+- 2026-10-25, to the founder via the orchestrator: **an inquiry closed without a decision.** Stripe closes an inquiry (`warning_closed`) with no `won`/`lost`; spec 013 §5.2 names rows 35/36 for `won`/`lost` only, and no row leaves `chargeback_open` otherwise. Built: the dispute row becomes `closed` and every order left in `chargeback_open` raises `payment.dispute_outside_machine` for the founder. Question: should a closed inquiry write row 35 (`chargeback_won`), or should inquiries not open a chargeback at all? Answer: open.
+- 2026-10-25, declared: **`adminRefund`/`adminCancel` write no `audit_log` row.** Spec 013 §5.2 says "audit-logged in spec 002's `audit_log`"; no audited table is touched and `audit_write` is revoked from `app_web`, so a row needs spec 020a's `admin_order_action` (TASK-357, carry-forward written there). The refund row's `requested_by` and the order event's actor record the admin meanwhile. Answer: open (TASK-357).
 
 ## Progress
 
@@ -44,11 +46,13 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: provider lookups (`retrieveRefund`, `listChargeRefunds`, `retrieveDispute`) on the interface, the contract suite, the fake (async refunds, disputes) and the Stripe adapter + emulator; `refund`, rows 30/31, `applyProviderRefund`, `succeededRefunds`, `disputes.ts`, webhook routes, `adminRefund`/`adminCancel`, `0030_set_c_a9`; `tests/integration/payments-refunds-disputes.test.ts` 55 green on local PG16 (with the never-committed 0021..0027 placeholders), 17 mutations all red. Next: cheap gates, PR ready, CI.
+- 2026-10-25: PR 411 ready with ci:full. The first run on 9504e33 failed the same jobs as PR 410 (test-unit, test-integration, db-check, audit: the 0021..0027 migration gap) plus commitlint, from the inherited subject "TASK-261 in progress". That commit was reworded (tree unchanged) and force-pushed. The re-fired run on d46c536 was in flight at shutdown. Next: read that run and compare its failures with PR 410's.
+- 2026-10-25: restacked on TASK-260's new head (PR 410). `0030_set_c_a9` renumbered `0028` (PRs 403 and 405 hold `0026` and `0027`) and now pinned in `db-migrate.test.ts`. Main's A8.1 rows counted in every A9 total (80 rows). Admin permissions merged with TASK-293's two rows. 12 integration files, the touched unit and contract files green on a local PG16.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 411 (stacked on PR 410). `refund({ orderId, amount, reason, actor })` with six typed refusals and no destination parameter; rows 30/31 decided by the named order's own succeeded refunds, row 32 on the cancelled states, `payment.refund_state_mismatch` elsewhere; webhook settlement (`refund.*`, `charge.refunded`) and disputes (`charge.dispute.*`, set C of A9.7, rows 34 to 36, `payment.dispute_opened`, `payment.dispute_outside_machine`) converging on the provider's current state; `succeededRefunds`; `adminRefund`/`adminCancel` behind `orders.refund`/`orders.cancel`; provider `retrieveRefund`, `listChargeRefunds`, `retrieveDispute` on the fake and the Stripe adapter; migration `0030_set_c_a9` + guarded down. Tests: integration `payments-refunds-disputes.test.ts` 55 (T-24 refund/dispute sequences, T-28 to T-31, the A9 up/down/guard), contract +2 shared cases x 2 implementations + 2 adapter cases + the dispute fixture parse, unit type test for the refund signature and the AC-9 barrel list; 17 mutations, all red. No build, e2e or browser gate was run locally (no page changed). Handed on: audit row and transaction handle to TASK-357; the closed-inquiry question (Escalations).

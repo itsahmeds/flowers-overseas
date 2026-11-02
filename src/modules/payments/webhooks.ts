@@ -17,8 +17,14 @@
  *  - `payment_intent.*`: the payment is found by the intent's reference (never by an order), the
  *    intent is **retrieved** from the provider and handed to `reconcile`, which applies it to every
  *    order of the purchase. A state the orders have passed is `ignored` with `stale` (AC-24).
- *  - refund and dispute types: the refund and dispute paths are TASK-261's; until they land the
- *    event is kept `received`-free as `ignored` with `awaiting_handler`, and `--inbox-id` replays it.
+ *  - `refund.created`, `refund.updated`, `refund.failed`: the refund is retrieved and applied to
+ *    our refund row (`applyProviderRefund`); `charge.refunded`: every refund of the charge is
+ *    listed and applied. A success settles once (one money fact, one event), so whichever of
+ *    `refund.updated` and `charge.refunded` arrives second is `ignored` with `stale` (AC-24,
+ *    AC-29; TASK-261).
+ *  - `charge.dispute.*`: the dispute is retrieved and applied (`applyProviderDispute`): opened,
+ *    decided, or nothing new (`stale`) (AC-24, AC-31; TASK-261). Rows TASK-260 left `ignored`
+ *    with `awaiting_handler` are re-processed with `pnpm jobs:replay-webhooks --inbox-id`.
  *  - any other type: `ignored` with `unknown_type` (AC-25).
  *
  * A row that fails `InboxEventSchema`, or whose processing throws, is `failed` and retried; on its
@@ -42,12 +48,15 @@ import {
 } from "@/modules/orders";
 
 import type { PaymentTransaction } from "./context.ts";
+import { applyProviderDispute } from "./disputes.ts";
+import { applyProviderRefund, type ProviderRefundApplied } from "./refunds.ts";
 import { createStripeProvider } from "./stripe/adapter.ts";
 import { reconcile, type LifecycleDeps } from "./lifecycle.ts";
 import {
   isProviderFailure,
   type PaymentProvider,
   type ProviderEvent,
+  type ProviderRefund,
   type WebhookHeaders,
 } from "./provider.ts";
 
@@ -63,21 +72,21 @@ export const WEBHOOK_IGNORE_REASONS = [
   "stale",
   "unknown_type",
   "unknown_object",
+  /** TASK-260's interim mark for refund and dispute types; rows that carry it are replayed. */
   "awaiting_handler",
 ] as const;
 export type WebhookIgnoreReason = (typeof WEBHOOK_IGNORE_REASONS)[number];
 
 const PAYMENT_INTENT_PREFIX = "payment_intent.";
-/** The refund and dispute types the endpoint subscribes to: TASK-261's paths. */
-const AWAITING_HANDLER: ReadonlySet<string> = new Set([
-  "charge.refunded",
+/** The refund types, each about one refund (`re_…`). */
+const REFUND_TYPES: ReadonlySet<string> = new Set([
   "refund.created",
   "refund.updated",
   "refund.failed",
-  "charge.dispute.created",
-  "charge.dispute.updated",
-  "charge.dispute.closed",
 ]);
+/** About a charge (`ch_…`): every refund of it is applied. */
+const CHARGE_REFUNDED = "charge.refunded";
+const DISPUTE_PREFIX = "charge.dispute.";
 
 const systemTransaction: PaymentTransaction = (fn) =>
   withExecutor(undefined, "payments.webhook", fn);
@@ -274,6 +283,70 @@ async function routePaymentIntent(
     : { kind: "processed" };
 }
 
+/** One refund-or-dispute application's outcome as the inbox records it. */
+function routedOf(applied: ProviderRefundApplied): Routed {
+  if (applied === "changed") return { kind: "processed" };
+  return {
+    kind: "ignored",
+    reason: applied === "unknown" ? "unknown_object" : "stale",
+  };
+}
+
+async function routeRefund(
+  type: string,
+  objectRef: string,
+  deps: ProcessDeps,
+  lifecycle: LifecycleDeps,
+): Promise<Routed> {
+  const now = lifecycle.now?.() ?? new Date();
+  const alert = lifecycle.alert ?? captureAlert;
+  const transaction = lifecycle.transaction ?? systemTransaction;
+  const remotes =
+    type === CHARGE_REFUNDED
+      ? await deps.provider.listChargeRefunds(objectRef)
+      : await deps.provider.retrieveRefund(objectRef);
+  if (isProviderFailure(remotes)) {
+    if (remotes.failure === "not_found") {
+      return { kind: "ignored", reason: "unknown_object" };
+    }
+    throw new WebhookRetry(`retrieve_${remotes.failure}`);
+  }
+  const list: readonly ProviderRefund[] =
+    "ref" in remotes ? [remotes] : remotes;
+  const applied = await transaction(async (executor) => {
+    const outcomes: ProviderRefundApplied[] = [];
+    for (const remote of list) {
+      outcomes.push(await applyProviderRefund(executor, remote, now, alert));
+    }
+    return outcomes;
+  });
+  if (applied.includes("changed")) return routedOf("changed");
+  if (applied.includes("unchanged")) return routedOf("unchanged");
+  return routedOf("unknown");
+}
+
+async function routeDispute(
+  objectRef: string,
+  deps: ProcessDeps,
+  lifecycle: LifecycleDeps,
+): Promise<Routed> {
+  const remote = await deps.provider.retrieveDispute(objectRef);
+  if (isProviderFailure(remote)) {
+    if (remote.failure === "not_found") {
+      return { kind: "ignored", reason: "unknown_object" };
+    }
+    throw new WebhookRetry(`retrieve_${remote.failure}`);
+  }
+  const now = lifecycle.now?.() ?? new Date();
+  const alert = lifecycle.alert ?? captureAlert;
+  const transaction = lifecycle.transaction ?? systemTransaction;
+  return routedOf(
+    await transaction((executor) =>
+      applyProviderDispute(executor, remote, now, alert),
+    ),
+  );
+}
+
 /**
  * Processes one inbox row (`webhook.process`). Idempotent: a settled row, or one another run
  * holds, is skipped.
@@ -317,8 +390,10 @@ export async function processWebhook(
           lifecycle,
           executor,
         );
-      } else if (AWAITING_HANDLER.has(type)) {
-        routed = { kind: "ignored", reason: "awaiting_handler" };
+      } else if (REFUND_TYPES.has(type) || type === CHARGE_REFUNDED) {
+        routed = await routeRefund(type, row.data.object_ref, deps, lifecycle);
+      } else if (type.startsWith(DISPUTE_PREFIX)) {
+        routed = await routeDispute(row.data.object_ref, deps, lifecycle);
       } else {
         routed = { kind: "ignored", reason: "unknown_type" };
       }

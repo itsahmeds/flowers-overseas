@@ -28,6 +28,7 @@ import {
   providerFailure,
   type CreateIntentInput,
   type PaymentProvider,
+  type ProviderDispute,
   type ProviderEvent,
   type ProviderFailure,
   type ProviderIntent,
@@ -40,11 +41,16 @@ import { fromStripeCurrency, toStripeAmount } from "./amount.ts";
 import { SUBSCRIBED_STRIPE_EVENT_TYPES } from "./events.ts";
 import { stripeCreateIntentParams, toStripeForm } from "./params.ts";
 import {
+  STRIPE_DISPUTE_STATUSES,
+  StripeChargeSchema,
+  StripeDisputeSchema,
   StripeErrorSchema,
   StripeEventListSchema,
   StripePaymentIntentSchema,
+  StripeRefundListSchema,
   StripeRefundSchema,
   type StripeCharge,
+  type StripeDispute,
   type StripePaymentIntent,
   type StripeRefund,
 } from "./schemas.ts";
@@ -134,6 +140,36 @@ function toProviderRefund(
       currency: fromStripeCurrency(refund.currency),
     },
     ...(refund.failure_reason ? { failureCode: refund.failure_reason } : {}),
+    ...(refund.metadata?.["refund_id"]
+      ? { refundId: refund.metadata["refund_id"] }
+      : {}),
+  };
+}
+
+/** The id of an expandable reference. */
+function idOf(
+  value: string | { id: string } | null | undefined,
+): string | null {
+  if (value === null || value === undefined) return null;
+  return typeof value === "string" ? value : value.id;
+}
+
+function toProviderDispute(
+  dispute: StripeDispute,
+  intentRef: string,
+): ProviderDispute {
+  const due = dispute.evidence_details?.due_by;
+  return {
+    ref: dispute.id,
+    intentRef,
+    status: STRIPE_DISPUTE_STATUSES[dispute.status],
+    amount: {
+      amountMinor: dispute.amount,
+      currency: fromStripeCurrency(dispute.currency),
+    },
+    reason: dispute.reason,
+    ...(typeof due === "number" ? { evidenceDueBy: new Date(due * 1000) } : {}),
+    openedAt: new Date(dispute.created * 1000),
   };
 }
 
@@ -312,6 +348,77 @@ export function createStripeProvider(
           : result;
       }
       return toProviderRefund(result, ref);
+    },
+
+    async retrieveRefund(ref: string) {
+      const path = `/refunds/${encodeURIComponent(ref)}`;
+      const result = await request(
+        "GET",
+        path,
+        new URLSearchParams(),
+        StripeRefundSchema,
+      );
+      return isProviderFailure(result) ? result : toProviderRefund(result, "");
+    },
+
+    async listChargeRefunds(
+      chargeRef: string,
+    ): Promise<readonly ProviderRefund[] | ProviderFailure> {
+      const collected: ProviderRefund[] = [];
+      let startingAfter: string | undefined;
+      for (;;) {
+        const form = new URLSearchParams([
+          ["charge", chargeRef],
+          ["limit", String(STRIPE_EVENTS_PAGE_SIZE)],
+        ]);
+        if (startingAfter !== undefined)
+          form.set("starting_after", startingAfter);
+        const page = await request(
+          "GET",
+          "/refunds",
+          form,
+          StripeRefundListSchema,
+        );
+        if (isProviderFailure(page)) return page;
+        collected.push(
+          ...page.data.map((refund) => toProviderRefund(refund, "")),
+        );
+        const last = page.data.at(-1);
+        if (!page.has_more || last === undefined) break;
+        startingAfter = last.id;
+      }
+      // Stripe lists newest first; the interface is oldest first.
+      return collected.reverse();
+    },
+
+    async retrieveDispute(
+      ref: string,
+    ): Promise<ProviderDispute | ProviderFailure> {
+      const path = `/disputes/${encodeURIComponent(ref)}`;
+      const dispute = await request(
+        "GET",
+        path,
+        new URLSearchParams(),
+        StripeDisputeSchema,
+      );
+      if (isProviderFailure(dispute)) return dispute;
+      let intentRef = idOf(dispute.payment_intent);
+      if (intentRef === null) {
+        // An older dispute names only its charge: the charge names the intent it paid.
+        const chargeRef = idOf(dispute.charge) ?? "";
+        const charge = await request(
+          "GET",
+          `/charges/${encodeURIComponent(chargeRef)}`,
+          new URLSearchParams(),
+          StripeChargeSchema,
+        );
+        if (isProviderFailure(charge)) return charge;
+        intentRef = idOf(charge.payment_intent);
+      }
+      if (intentRef === null) {
+        return providerFailure("not_found", "dispute_without_intent");
+      }
+      return toProviderDispute(dispute, intentRef);
     },
 
     verifyAndParseWebhook(

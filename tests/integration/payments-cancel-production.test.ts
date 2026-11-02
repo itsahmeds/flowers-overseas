@@ -51,7 +51,7 @@ import {
 import {
   A6_TRANSITIONS,
   A8_TRANSITIONS,
-  A10_TRANSITIONS,
+  TRANSITIONS,
   SET_E,
 } from "../fixtures/order-machine.ts";
 import { insertPlacedOrder, walkOrderTo } from "../fixtures/order-state.ts";
@@ -622,6 +622,9 @@ describe.skipIf(server.url === undefined)(
           verifyAndParseWebhook: (body, headers) =>
             paid.fake.verifyAndParseWebhook(body, headers),
           listEventsSince: (since) => paid.fake.listEventsSince(since),
+          retrieveRefund: (ref) => paid.fake.retrieveRefund(ref),
+          listChargeRefunds: (ref) => paid.fake.listChargeRefunds(ref),
+          retrieveDispute: (ref) => paid.fake.retrieveDispute(ref),
         };
         await cancel(orderId, "buyer", "buyer_cancel");
         await deliver(orderId, depsOf(flaky));
@@ -866,11 +869,8 @@ describe.skipIf(server.url === undefined)(
         ]);
         const [count] = await scratch.sql<{ n: number }[]>`
           SELECT count(*)::int AS n FROM order_transition`;
-        expect(count?.n).toBe(
-          A6_TRANSITIONS.length +
-            A8_TRANSITIONS.length +
-            A10_TRANSITIONS.length,
-        );
+        // Every row after this branch's migrations: A6, A8.1, A10 and A9.7 (`0028_set_c_a9`).
+        expect(count?.n).toBe(TRANSITIONS.length);
       });
 
       for (const state of ["accepted", "paid"] as const) {
@@ -1213,6 +1213,9 @@ describe.skipIf(server.url === undefined)(
                     'withdrawn_by_buyer_after_acceptance') RETURNING id`;
           return { orderId, adjustmentId: adjustment?.id ?? "" };
         });
+        // Migrations after A10 (`0028_set_c_a9`, TASK-261) are rolled back first, each in its
+        // own transaction, so the guard below is A10's alone.
+        await locked(() => runner(used.url, ["--down", "--to", A10_VERSION]));
         const catalogue = await readCatalogue(used.sql);
         const counts = await rowCounts(used.sql);
         const withAdjustment = await down(used);

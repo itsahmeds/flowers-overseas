@@ -9,7 +9,8 @@
  * `tests/unit/payments-types.test.ts`): every amount a provider charges is read from the order.
  *
  * The lifecycle, refund, dispute and webhook exports of §5.2 join this list in their own tasks
- * (TASK-257 onwards).
+ * (TASK-257 onwards). `refund` and `adminRefund` take a refund amount (§5.2 "Refunds"), checked
+ * against what the order and the payment hold; no export takes an amount to charge.
  *
  * `./events` is imported for its side effect: it registers spec 013's event schemas in spec 010's
  * registry (TASK-254's hand-off), so any process that loads `payments` can write a payment event
@@ -68,12 +69,37 @@ export type {
   StartProductionOptions,
   StartProductionResult,
 } from "./production.ts";
-export { refundCancelledOrder, submitRefund } from "./refunds.ts";
+export {
+  refund,
+  refundCancelledOrder,
+  submitRefund,
+  succeededRefunds,
+} from "./refunds.ts";
 export type {
   CancelRefundOutcome,
   RefundDeps,
+  RefundInput,
+  RefundRefusal,
+  RefundResult,
   SubmitOutcome,
+  SucceededRefund,
 } from "./refunds.ts";
+
+// Spec 013 §5.2 "Refunds", "Disputes" (TASK-261): the admin actions over `refund` and
+// `cancelOrder`, and the sets the money paths branch on. `refund` and `adminRefund` take a
+// *refund* amount, never a charge amount (AC-9, `tests/unit/payments-types.test.ts`).
+export {
+  AdminCancelInputSchema,
+  adminCancel,
+  AdminRefundInputSchema,
+  adminRefund,
+} from "./admin-actions.ts";
+export type { AdminActionDeps } from "./admin-actions.ts";
+export {
+  CANCELLED_STATES,
+  DISPUTABLE_STATES,
+  REFUNDABLE_STATES,
+} from "./states.ts";
 
 // Spec 013 §5.2 "Webhook inbox" (TASK-260): the endpoint's body, the job and the replay.
 export {

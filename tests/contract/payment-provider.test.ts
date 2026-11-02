@@ -31,6 +31,10 @@ describePaymentProviderContract(
       simulateSuccess: (ref) => fake.simulateSuccess(ref),
       simulateHold: (ref) => fake.simulateHold(ref),
       simulateDecline: (ref, code) => fake.simulateDecline(ref, code),
+      chargeRefOf: (ref) => fake.chargeRefOf(ref),
+      simulateDispute: (ref, reason) => fake.simulateDispute(ref, reason),
+      simulateDisputeOutcome: (ref, outcome) =>
+        fake.simulateDisputeOutcome(ref, outcome),
       simulateEvent: (type, ref, at) => fake.simulateEvent(type, ref, at),
       eventBodyOf: (event) => fake.eventBodyOf(event),
       sign: (rawBody, at) => fake.sign(rawBody, at),
@@ -65,6 +69,10 @@ describe("the Stripe adapter against recorded responses", () => {
       simulateSuccess: (ref) => emulator.simulateSuccess(ref),
       simulateHold: (ref) => emulator.simulateHold(ref),
       simulateDecline: (ref, code) => emulator.simulateDecline(ref, code),
+      chargeRefOf: (ref) => emulator.chargeRefOf(ref),
+      simulateDispute: (ref, reason) => emulator.simulateDispute(ref, reason),
+      simulateDisputeOutcome: (ref, outcome) =>
+        emulator.simulateDisputeOutcome(ref, outcome),
       simulateEvent: (type, ref, at) =>
         Promise.resolve(emulator.simulateEvent(type, ref, at)),
       eventBodyOf: (event) => emulator.eventBodyOf(event.id),
@@ -80,7 +88,7 @@ describe("the Stripe adapter against recorded responses", () => {
 });
 
 describe("the contract suite itself", () => {
-  it("covers create, retrieve, capture, cancel, refund, webhook verify and parse, and event listing", () => {
+  it("covers create, retrieve, capture, cancel, refund, refund and dispute lookups, webhook verify and parse, and event listing", () => {
     const names = PAYMENT_PROVIDER_CONTRACT.map(
       (contractCase) => contractCase.name.split(":")[0],
     );
@@ -91,6 +99,8 @@ describe("the contract suite itself", () => {
         "capture",
         "cancel",
         "refund",
+        "refund lookup",
+        "dispute lookup",
         "webhook",
         "events",
       ]),

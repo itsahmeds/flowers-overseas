@@ -14,6 +14,7 @@ import { createHmac } from "node:crypto";
 import { http, HttpResponse, type RequestHandler } from "msw";
 
 import chargeFixture from "../fixtures/stripe/2026-09-30.endive/charge.json" with { type: "json" };
+import disputeFixture from "../fixtures/stripe/2026-09-30.endive/dispute.json" with { type: "json" };
 import eventFixture from "../fixtures/stripe/2026-09-30.endive/event.json" with { type: "json" };
 import intentFixture from "../fixtures/stripe/2026-09-30.endive/payment_intent.json" with { type: "json" };
 import refundFixture from "../fixtures/stripe/2026-09-30.endive/refund.json" with { type: "json" };
@@ -110,6 +111,8 @@ export class StripeEmulator {
   private readonly intents = new Map<string, Json>();
   private readonly charges = new Map<string, Json>();
   private readonly refunded = new Map<string, number>();
+  private readonly refunds = new Map<string, Json>();
+  private readonly disputes = new Map<string, Json>();
   private readonly events: Json[] = [];
   private readonly idempotent = new Map<
     string,
@@ -355,8 +358,47 @@ export class StripeEmulator {
             payment_intent: ref,
             status: "succeeded",
           };
+          this.refunds.set(String(refund["id"]), refund);
           return { status: 200, body: refund };
         });
+      }),
+
+      http.get(`${base}/refunds/:id`, async ({ request, params }) => {
+        await this.read(request);
+        const refund = this.refunds.get(String(params["id"]));
+        return refund === undefined
+          ? this.missing()
+          : HttpResponse.json(clone(refund));
+      }),
+
+      http.get(`${base}/refunds`, async ({ request }) => {
+        const recorded = await this.read(request);
+        const charge = String(recorded.params["charge"] ?? "");
+        const newestFirst = [...this.refunds.values()]
+          .filter((refund) => refund["charge"] === charge)
+          .reverse();
+        return HttpResponse.json({
+          object: "list",
+          url: "/v1/refunds",
+          has_more: false,
+          data: clone(newestFirst),
+        });
+      }),
+
+      http.get(`${base}/disputes/:id`, async ({ request, params }) => {
+        await this.read(request);
+        const dispute = this.disputes.get(String(params["id"]));
+        return dispute === undefined
+          ? this.missing()
+          : HttpResponse.json(clone(dispute));
+      }),
+
+      http.get(`${base}/charges/:id`, async ({ request, params }) => {
+        await this.read(request);
+        const charge = this.charges.get(String(params["id"]));
+        return charge === undefined
+          ? this.missing()
+          : HttpResponse.json(clone(charge));
       }),
 
       http.get(`${base}/events`, async ({ request }) => {
@@ -477,6 +519,49 @@ export class StripeEmulator {
         type: "card",
       },
     };
+    return Promise.resolve();
+  }
+
+  private missing() {
+    return HttpResponse.json(
+      this.errorBody("invalid_request_error", "resource_missing"),
+      { status: 404 },
+    );
+  }
+
+  chargeRefOf(intentRef: string): Promise<string> {
+    const charge = this.intent(intentRef)["latest_charge"];
+    if (typeof charge !== "string") throw new Error(`${intentRef} is unpaid`);
+    return Promise.resolve(charge);
+  }
+
+  /**
+   * The bank opens a dispute on the intent's charge. Like Stripe's published fixture, the
+   * dispute names only its charge (`payment_intent: null`), so the adapter reads the intent from
+   * the charge.
+   */
+  simulateDispute(intentRef: string, reason: string): Promise<string> {
+    const intent = this.intent(intentRef);
+    const id = this.id("dp");
+    this.disputes.set(id, {
+      ...clone(disputeFixture),
+      id,
+      amount: intent["amount"],
+      currency: intent["currency"],
+      charge: intent["latest_charge"],
+      payment_intent: null,
+      created: this.seconds(),
+      livemode: this.options.livemode ?? false,
+      reason,
+      status: "needs_response",
+    });
+    return Promise.resolve(id);
+  }
+
+  simulateDisputeOutcome(ref: string, outcome: "won" | "lost"): Promise<void> {
+    const dispute = this.disputes.get(ref);
+    if (dispute === undefined) throw new Error(`no emulated dispute ${ref}`);
+    dispute["status"] = outcome;
     return Promise.resolve();
   }
 

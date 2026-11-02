@@ -22,11 +22,13 @@ import {
   providerFailure,
   type CreateIntentInput,
   type PaymentProvider,
+  type ProviderDispute,
   type ProviderEvent,
   type ProviderFailure,
   type ProviderIntent,
   type ProviderIntentStatus,
   type ProviderRefund,
+  type ProviderRefundStatus,
   type RefundMetadataInput,
   type SignatureInvalid,
   type SignedWebhook,
@@ -53,7 +55,17 @@ interface FakeIntentState {
   declineCount: number;
   lastDecline?: { code: string; ref: string };
   refundedMinor: number;
+  chargeRef?: string;
   input: CreateIntentInput;
+}
+
+interface FakeDisputeState {
+  ref: string;
+  intentRef: string;
+  status: ProviderDispute["status"];
+  amount: Money;
+  reason: string;
+  openedAt: Date;
 }
 
 interface StoredEvent {
@@ -71,10 +83,24 @@ export interface FakePaymentProviderOptions {
    * integration suite). Defaults to `fake`.
    */
   readonly namespace?: string;
+  /**
+   * `sync` (the default): a refund succeeds in its create response. `async`: it is `pending`
+   * until `simulateRefundOutcome` settles it, as a bank refund does, so the webhook settlement
+   * path can be driven (TASK-261).
+   */
+  readonly refunds?: "sync" | "async";
 }
 
 function pad(value: number): string {
   return String(value).padStart(4, "0");
+}
+
+/** The object a fake reference names, by its prefix. */
+function objectTypeOf(ref: string, namespace: string): string {
+  if (ref.startsWith(`${namespace}_re`)) return "refund";
+  if (ref.startsWith(`${namespace}_dp`)) return "dispute";
+  if (ref.startsWith(`${namespace}_ch`)) return "charge";
+  return "payment_intent";
 }
 
 function minorOf(money: Money): number {
@@ -93,8 +119,11 @@ export class FakePaymentProvider implements PaymentProvider {
     ProviderIntent | ProviderRefund
   >();
   private readonly events: StoredEvent[] = [];
+  private readonly refunds = new Map<string, ProviderRefund>();
+  private readonly disputes = new Map<string, FakeDisputeState>();
   private counter = 0;
   private readonly namespace: string;
+  private readonly refundMode: "sync" | "async";
   /** Every call, in order, for tests that assert what the lifecycle asked for. */
   readonly calls: { method: string; ref?: string; key?: string }[] = [];
 
@@ -103,6 +132,7 @@ export class FakePaymentProvider implements PaymentProvider {
     this.webhookSecret = options.webhookSecret ?? "fake_whsec_contract";
     this.livemode = options.livemode ?? false;
     this.namespace = options.namespace ?? "fake";
+    this.refundMode = options.refunds ?? "sync";
   }
 
   private next(prefix: string): string {
@@ -219,7 +249,6 @@ export class FakePaymentProvider implements PaymentProvider {
     idempotencyKey: string,
     metadata: RefundMetadataInput,
   ): Promise<ProviderRefund | ProviderFailure> {
-    void metadata;
     this.calls.push({ method: "refund", ref, key: idempotencyKey });
     const replayed = this.replay(idempotencyKey);
     if (replayed !== undefined)
@@ -246,11 +275,54 @@ export class FakePaymentProvider implements PaymentProvider {
     const refund: ProviderRefund = {
       ref: this.next(`${this.namespace}_re`),
       intentRef: ref,
-      status: "succeeded",
+      status: this.refundMode === "sync" ? "succeeded" : "pending",
       amount: { amountMinor: requested, currency: state.amount.currency },
+      refundId: metadata.refundId,
     };
+    this.refunds.set(refund.ref, refund);
     this.writeKeys.set(idempotencyKey, refund);
     return Promise.resolve(refund);
+  }
+
+  retrieveRefund(ref: string): Promise<ProviderRefund | ProviderFailure> {
+    this.calls.push({ method: "retrieveRefund", ref });
+    const refund = this.refunds.get(ref);
+    return Promise.resolve(
+      refund === undefined ? providerFailure("not_found") : { ...refund },
+    );
+  }
+
+  listChargeRefunds(
+    chargeRef: string,
+  ): Promise<readonly ProviderRefund[] | ProviderFailure> {
+    this.calls.push({ method: "listChargeRefunds", ref: chargeRef });
+    const intent = [...this.intents.values()].find(
+      (state) => state.chargeRef === chargeRef,
+    );
+    if (intent === undefined) {
+      return Promise.resolve(providerFailure("not_found"));
+    }
+    return Promise.resolve(
+      [...this.refunds.values()]
+        .filter((refund) => refund.intentRef === intent.ref)
+        .map((refund) => ({ ...refund })),
+    );
+  }
+
+  retrieveDispute(ref: string): Promise<ProviderDispute | ProviderFailure> {
+    this.calls.push({ method: "retrieveDispute", ref });
+    const dispute = this.disputes.get(ref);
+    if (dispute === undefined) {
+      return Promise.resolve(providerFailure("not_found"));
+    }
+    return Promise.resolve({
+      ref: dispute.ref,
+      intentRef: dispute.intentRef,
+      status: dispute.status,
+      amount: { ...dispute.amount },
+      reason: dispute.reason,
+      openedAt: dispute.openedAt,
+    });
   }
 
   verifyAndParseWebhook(
@@ -322,6 +394,62 @@ export class FakePaymentProvider implements PaymentProvider {
     const state = this.state(ref);
     state.status = "succeeded";
     state.methodType = "card";
+    state.chargeRef ??= this.next(`${this.namespace}_ch`);
+    return Promise.resolve();
+  }
+
+  chargeRefOf(intentRef: string): Promise<string> {
+    const charge = this.state(intentRef).chargeRef;
+    if (charge === undefined)
+      throw new Error(`fake intent ${intentRef} is unpaid`);
+    return Promise.resolve(charge);
+  }
+
+  /** The bank settles a pending refund (`refunds: 'async'`); a failure gives the money back. */
+  simulateRefundOutcome(
+    ref: string,
+    status: Extract<ProviderRefundStatus, "succeeded" | "failed" | "canceled">,
+    failureCode?: string,
+  ): Promise<void> {
+    const refund = this.refunds.get(ref);
+    if (refund === undefined) throw new Error(`no fake refund ${ref}`);
+    const gaveBack = refund.status === "failed" || refund.status === "canceled";
+    if (status !== "succeeded" && !gaveBack) {
+      const intent = this.state(refund.intentRef);
+      intent.refundedMinor -= minorOf(refund.amount);
+    }
+    this.refunds.set(ref, {
+      ...refund,
+      status,
+      ...(failureCode === undefined ? {} : { failureCode }),
+    });
+    return Promise.resolve();
+  }
+
+  simulateDispute(intentRef: string, reason: string): Promise<string> {
+    const state = this.state(intentRef);
+    if (state.status !== "succeeded") {
+      throw new Error(`fake intent ${intentRef} is unpaid`);
+    }
+    const ref = this.next(`${this.namespace}_dp`);
+    this.disputes.set(ref, {
+      ref,
+      intentRef,
+      status: "open",
+      amount: { ...state.amount },
+      reason,
+      openedAt: this.clock(),
+    });
+    return Promise.resolve(ref);
+  }
+
+  simulateDisputeOutcome(
+    ref: string,
+    outcome: ProviderDispute["status"],
+  ): Promise<void> {
+    const dispute = this.disputes.get(ref);
+    if (dispute === undefined) throw new Error(`no fake dispute ${ref}`);
+    dispute.status = outcome;
     return Promise.resolve();
   }
 
@@ -355,9 +483,7 @@ export class FakePaymentProvider implements PaymentProvider {
       livemode: this.livemode,
       createdAt,
       objectRef,
-      objectType: objectRef.startsWith(`${this.namespace}_re`)
-        ? "refund"
-        : "payment_intent",
+      objectType: objectTypeOf(objectRef, this.namespace),
     };
     const rawBody = JSON.stringify({
       id: event.id,
