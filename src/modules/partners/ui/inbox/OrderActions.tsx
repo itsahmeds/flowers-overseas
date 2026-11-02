@@ -107,19 +107,30 @@ export function DeclineStep({
   );
 }
 
+/** Each notice tone's ground and role (artboard `florist-inbox-*`, `.fm-notice`). */
+const NOTICE_TONES = {
+  warn: { ground: "bg-blush", role: "alert" },
+  ok: { ground: "bg-leaf-wash", role: "status" },
+  // Spec 026a: the paused notice, plain text on the paper ground with the rule, not a colour.
+  note: {
+    ground: "bg-paper-2 shadow-[inset_0_0_0_1px_var(--color-rule)]",
+    role: "note",
+  },
+} as const;
+
 export function InboxNotice({
   tone,
   children,
   id,
 }: {
-  readonly tone: "warn" | "ok";
+  readonly tone: keyof typeof NOTICE_TONES;
   readonly children: ReactNode;
   readonly id?: string;
 }): ReactElement {
   return (
     <p
-      className={`text-ui text-ink m-0 grid gap-[6px] rounded-(--radius-field) px-[18px] py-[16px] leading-(--line-height-tight) ${tone === "warn" ? "bg-blush" : "bg-leaf-wash"}`}
-      role={tone === "warn" ? "alert" : "status"}
+      className={`text-ui text-ink m-0 grid gap-[6px] rounded-(--radius-field) px-[18px] py-[16px] leading-(--line-height-tight) ${NOTICE_TONES[tone].ground}`}
+      role={NOTICE_TONES[tone].role}
       data-fo-order-notice={tone}
       {...(id === undefined ? {} : { id })}
     >

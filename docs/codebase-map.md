@@ -206,32 +206,32 @@ task actually touches.
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
 | `api/webhooks/stripe/route.ts` | POST: Stripe webhook endpoint, verify, store… | 013 |
-| `demo/vendor-inbox/actions.ts` | The florist action posts' shared plumbing:… | 011 |
-| `demo/vendor-inbox/api/auth/[...nextauth]/route.ts` | Every florist Auth.js endpoint answers 404 | 011 |
-| `demo/vendor-inbox/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the… | 011 |
-| `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every… | 011 |
-| `demo/vendor-inbox/api/auth/sign-out/route.ts` | POST: florist sign-out | 011 |
-| `demo/vendor-inbox/api/language/route.ts` | POST: store the florist's language (AC-32) | 011 |
-| `demo/vendor-inbox/api/orders/[assignmentId]/dispatch/route.ts` | POST: the florist marks an accepted order out… | 011 |
-| `demo/vendor-inbox/api/orders/[assignmentId]/photo/route.ts` | POST the delivery photo (deliver, or add it);… | 011 |
-| `demo/vendor-inbox/api/orders/[assignmentId]/respond/route.ts` | POST: the florist accepts or declines an offer… | 011 |
-| `demo/vendor-inbox/api/test-order/route.ts` | POST: the demo member's "Send a test order"… | 011 |
-| `demo/vendor-inbox/chrome.tsx` | The florist pages' shared frame: header,… | 011 |
-| `demo/vendor-inbox/layout.tsx` | Florist document: the member's language, noindex | 011 |
-| `demo/vendor-inbox/not-found.tsx` | The florist tree's 404: an order that is not… | 011 |
-| `demo/vendor-inbox/orders/[assignmentId]/decline/page.tsx` | GET {base}/orders/{assignmentId}/decline: why… | 011 |
-| `demo/vendor-inbox/orders/[assignmentId]/page.tsx` | GET {base}/orders/{assignmentId}: one florist… | 011 |
-| `demo/vendor-inbox/orders/[assignmentId]/photo/page.tsx` | GET {base}/orders/{assignmentId}/photo: the… | 011 |
-| `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox list (signed in;… | 011 |
-| `demo/vendor-inbox/request.ts` | The florist request's context and language,… | 011 |
-| `demo/vendor-inbox/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue… | 011 |
-| `demo/vendor-inbox/sign-in/page.tsx` | GET {base}/sign-in: the florist sign-in form… | 011 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3… | 003 |
 | `layout.tsx` | App-root layout | 003 |
 | `not-found.tsx` | The `.label` metadata line: the status code… | 003 |
 | `robots.ts` | `robots.txt` | 001 |
 | `sitemap.xml/route.ts` | `GET /sitemap.xml` — the sitemap index (spec… | 007 |
 | `sitemaps/[locale]/[child]/route.ts` | `GET /sitemaps/{locale}/{index\|static\|corridor… | 007 |
+| `vendor/actions.ts` | The florist action posts' shared plumbing:… | 011 |
+| `vendor/api/auth/[...nextauth]/route.ts` | Every florist Auth.js endpoint answers 404 | 011 |
+| `vendor/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the… | 011 |
+| `vendor/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every… | 011 |
+| `vendor/api/auth/sign-out/route.ts` | POST: florist sign-out | 011 |
+| `vendor/api/language/route.ts` | POST: store the florist's language (AC-32) | 011 |
+| `vendor/api/orders/[assignmentId]/dispatch/route.ts` | POST: the florist marks an accepted order out… | 011 |
+| `vendor/api/orders/[assignmentId]/photo/route.ts` | POST the delivery photo (deliver, or add it);… | 011 |
+| `vendor/api/orders/[assignmentId]/respond/route.ts` | POST: the florist accepts or declines an offer… | 011 |
+| `vendor/api/test-order/route.ts` | POST: the demo member's "Send a test order"… | 011 |
+| `vendor/chrome.tsx` | The florist pages' shared frame: header,… | 011 |
+| `vendor/layout.tsx` | Florist document: the member's language, noindex | 011 |
+| `vendor/not-found.tsx` | The florist tree's 404: an order that is not… | 011 |
+| `vendor/orders/[assignmentId]/decline/page.tsx` | GET {base}/orders/{assignmentId}/decline: why… | 011 |
+| `vendor/orders/[assignmentId]/page.tsx` | GET {base}/orders/{assignmentId}: one florist… | 011 |
+| `vendor/orders/[assignmentId]/photo/page.tsx` | GET {base}/orders/{assignmentId}/photo: the… | 011 |
+| `vendor/page.tsx` | GET {base}: the florist inbox list (signed in;… | 011 |
+| `vendor/request.ts` | The florist request's context and language,… | 011 |
+| `vendor/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue… | 011 |
+| `vendor/sign-in/page.tsx` | GET {base}/sign-in: the florist sign-in form… | 011 |
 
 ## Scripts (`scripts/`)
 

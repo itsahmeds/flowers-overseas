@@ -8,13 +8,15 @@
  *    `.callback-url`, each `Path={FLORIST_BASE_PATH}`, `Secure`, `HttpOnly`, `SameSite=Lax`, no
  *    `__Host-` name; database sessions of 30 days, rolling; session tokens bound to the surface
  *    (`florist.…`), so an admin session authenticates nothing here and the reverse.
- *  - Who may receive a link (AC-18): an address whose `users` row is a `partner_member` of a
- *    partner whose status `signInPolicy(environment)` allows: `demo` outside production, nobody in
- *    production (§13 Q4). Every other address gets the same page and no email.
- *  - `resolveFloristContext()` / `requireFloristContext()` (AC-20): the session's member and their
- *    memberships, read from the database **on every request**, and only memberships of partners
- *    the policy still allows. No session, or no such membership, is no context: a page redirects
- *    to sign-in. `toDbContext()` turns it into the `partner` database context, so Postgres
+ *  - Who may receive a link (AC-18; spec 026a AC-3): an address whose `users` row is a
+ *    `partner_member` of a partner whose status `signInPolicy(environment)` allows: `demo` outside
+ *    production, `active` and `paused` in production. Every other address gets the same page and
+ *    no email.
+ *  - `resolveFloristContext()` / `requireFloristContext()` (AC-20; spec 026a AC-5): the session's
+ *    member and their memberships, read from the database **on every request**, and only
+ *    memberships of partners whose status the policy allows at that request. No session, or no
+ *    such membership (a partner offboarded since the last request), is no context: a page
+ *    redirects to sign-in. In production a `demo` partner's membership never yields a partner. `toDbContext()` turns it into the `partner` database context, so Postgres
  *    row-level security does the scoping (TASK-023).
  *  - The member's language (AC-32): `partner_member.locale_code`, the email included.
  */
@@ -79,7 +81,7 @@ function currentEnvironment(): string {
 
 /**
  * The statuses the policy allows in `environment`, as a non-empty list, or `null` when nobody may
- * sign in there (production in Phase 0): the query is never run with an empty `IN ()`.
+ * sign in there (no environment since spec 026a, kept so the query never runs an empty `IN ()`).
  */
 function allowedStatuses(environment: string): string[] | null {
   const statuses = [...signInPolicy(environment)];
@@ -309,6 +311,16 @@ export function toDbContext(
 export function isDemoMember(context: FloristContext): boolean {
   return context.memberships.some(
     (membership) => membership.partnerStatus === "demo",
+  );
+}
+
+/**
+ * Whether a membership of a `paused` partner is signed in (spec 026a §2, AC-6): the inbox shows
+ * the paused notice, and an open offer of that shop shows Decline and no Accept.
+ */
+export function isPausedMember(context: FloristContext): boolean {
+  return context.memberships.some(
+    (membership) => membership.partnerStatus === "paused",
   );
 }
 

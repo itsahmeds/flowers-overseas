@@ -36,9 +36,7 @@ import { applicationBodyGate } from "@/lib/application-gate";
 import { appEnvironment } from "@/lib/env.schema";
 import {
   FLORIST_LANGUAGE_HEADER,
-  FLORIST_ROBOTS_HEADER,
   FLORIST_SESSION_COOKIE,
-  floristGate,
   rollingCookie,
 } from "@/lib/florist-headers";
 import { logger } from "@/lib/logger";
@@ -103,24 +101,6 @@ export function proxy(request: NextRequest): NextResponse {
       "request end",
     );
     return challenge;
-  }
-
-  // The florist surface (spec 011 §13 Q4, AC-22; TASK-212): every `FLORIST_BASE_PATH` route is a
-  // 404 while the environment's sign-in policy is empty (`production` in Phase 0). Not a redirect.
-  if (floristGate({ environment, pathname: path }) === "not_found") {
-    const closed = new NextResponse(null, {
-      status: 404,
-      headers: {
-        [FLORIST_ROBOTS_HEADER.key]: FLORIST_ROBOTS_HEADER.value,
-        "cache-control": "private, no-store",
-      },
-    });
-    closed.headers.set(REQUEST_ID_HEADER, requestId);
-    log.info(
-      { method, path, status: 404, duration_ms: Date.now() - started },
-      "request end",
-    );
-    return closed;
   }
 
   // The florist application's body bound (spec 011 §2, AC-13; TASK-213): a `POST` to an apply

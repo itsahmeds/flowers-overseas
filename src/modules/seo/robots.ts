@@ -59,8 +59,9 @@ export const SITEMAP_PATH = "/sitemap.xml";
 export const DISALLOWED_PATHS: readonly string[] = [
   "/api/",
   "/admin/",
-  // Spec 011 §6 (TASK-212): the Phase 0 florist inbox mounts at `/demo/vendor-inbox`; `/vendor/`
-  // is spec 026's mount point, disallowed already so it cannot be forgotten.
+  // Spec 011 §6 (TASK-212): `/demo/` held the Phase 0 florist inbox, whose paths now answer 404
+  // (spec 026a AC-2); `/vendor/` is the florist inbox's mount point (spec 026a §6, AC-12). The bare
+  // `/vendor` stays crawlable on purpose: a `noindex` redirect to the disallowed sign-in page.
   "/demo/",
   "/vendor/",
   "/account/",

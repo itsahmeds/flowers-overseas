@@ -1250,6 +1250,9 @@
     "notice": {
       "answered": "This order has already been answered.",
       "changed": "This order has changed since you opened it."
+    },
+    "paused": {
+      "notice": "Your shop is paused. You can finish the orders you have already accepted. New orders reach you again when your shop is active."
     }
   },
   "emails": {

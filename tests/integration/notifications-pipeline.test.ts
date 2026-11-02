@@ -69,7 +69,7 @@ const server = await probeLocalServer();
 registerFixtureEventSchemas();
 
 const ORIGIN = "https://staging.example.test";
-const BASE = "/demo/vendor-inbox";
+const BASE = "/vendor";
 const OPS = "founder-ops@example.test";
 
 /** Marker values: none may reach a row or a log line. */

@@ -13,6 +13,10 @@
  * delivered without one. Each is a no-JS form post or a link to its step. A refused post comes
  * back with `?notice=` (already answered, changed, expired); a delivered order with its photo
  * shows the photo from the same-origin photo route.
+ *
+ * Spec 026a AC-6 (TASK-354): Accept is docked only when `canAcceptFor` holds for the order's mode
+ * and the shop's status read on this request; a paused shop's open offer docks Decline alone and
+ * shows the paused notice under the head (artboard "a paused shop, an open offer").
  */
 import { randomUUID } from "node:crypto";
 
@@ -22,7 +26,7 @@ import { notFound, redirect } from "next/navigation";
 import type { ReactElement } from "react";
 
 import { FLORIST_PATHS } from "@/config/florists";
-import { toDbContext } from "@/lib/auth/florist";
+import { isPausedMember, toDbContext } from "@/lib/auth/florist";
 import { floristOrderView } from "@/modules/orders";
 import { floristActions } from "@/modules/orders/florist-actions";
 import {
@@ -86,6 +90,11 @@ export default async function FloristOrderPage({
     view.stage === "expired" && notice !== "expired"
       ? t("floristInbox.page.expired")
       : null;
+  const pausedOffer =
+    view.stage === "offer" &&
+    actions.includes("decline") &&
+    !actions.includes("accept") &&
+    isPausedMember(context);
   const id = view.assignmentId;
   const dock =
     actions.length === 0 ? null : (
@@ -155,6 +164,11 @@ export default async function FloristOrderPage({
               {notice === undefined ? null : (
                 <InboxNotice tone="warn">{t(NOTICE_KEYS[notice])}</InboxNotice>
               )}
+              {pausedOffer ? (
+                <InboxNotice tone="note">
+                  {t("floristInbox.paused.notice")}
+                </InboxNotice>
+              ) : null}
               {stageNotice === null ? null : (
                 <p
                   className="bg-paper-2 text-body text-ink-2 m-0 rounded-(--radius-field) px-[16px] py-[12px]"

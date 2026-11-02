@@ -14,7 +14,8 @@
  *   2. opens a **system** transaction, locks the order and then the assignment `FOR UPDATE`, and
  *      re-checks the partner, the answer, the state and the deadline under the lock (the partner
  *      role is read-only on every order table, and the second read closes the gap between check
- *      and write);
+ *      and write); an accept also re-reads the shop's status there and refuses it with
+ *      `ASSIGNMENT_PARTNER_NOT_ACCEPTING` unless `canAcceptFor(mode, status)` (spec 026a AC-6);
  *   3. updates `order_assignment` (`response`, `responded_at`, `reason`) where it applies, and
  *      calls spec 010's `transition` with `partner:{partnerId}` and `payload.by_user_id`;
  *   4. after an answer, hands the order to the `AcceptedOrderEffect` for its mode (TASK-214's
@@ -36,6 +37,10 @@ import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
+import {
+  FLORIST_PARTNER_STATUSES,
+  type FloristPartnerStatus,
+} from "@/config/florists";
 import { withDbContext, withSystemContext } from "@/lib/db";
 import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
@@ -58,6 +63,7 @@ import {
 } from "../photo/process";
 import { type PrivatePhotoStore, storeDeliveryPhoto } from "../photo/store";
 
+import { canAcceptFor } from "./can-accept";
 import { DeclineReasonSchema } from "./events";
 
 /* -------------------------------------------------------------------------- */
@@ -73,12 +79,16 @@ export const OfferResponseInputSchema = z.discriminatedUnion("response", [
 ]);
 export type OfferResponseInput = z.infer<typeof OfferResponseInputSchema>;
 
-/** §5.2's four errors. */
+/**
+ * §5.2's four errors, and spec 026a's fifth: `ASSIGNMENT_PARTNER_NOT_ACCEPTING`, an accept from a
+ * shop whose status does not match the order's mode at that moment (`canAcceptFor`, AC-6).
+ */
 export const FLORIST_ACTION_ERROR_CODES = [
   "ASSIGNMENT_NOT_FOUND",
   "ASSIGNMENT_EXPIRED",
   "ASSIGNMENT_ALREADY_ANSWERED",
   "ORDER_STATE_CHANGED",
+  "ASSIGNMENT_PARTNER_NOT_ACCEPTING",
 ] as const;
 export type FloristActionErrorCode =
   (typeof FLORIST_ACTION_ERROR_CODES)[number];
@@ -263,6 +273,21 @@ async function lockForCommand(
   return { order, assignment, latest: facts.latest, hasPhoto: facts.has_photo };
 }
 
+const PartnerStatusRow = z.object({
+  status: z.enum(FLORIST_PARTNER_STATUSES),
+});
+
+/** The assignment's partner's status, read inside the command's locked transaction. */
+async function lockedPartnerStatus(
+  executor: OrderExecutor,
+  partnerId: string,
+): Promise<FloristPartnerStatus> {
+  const [row] = await executor.execute(sql`
+    SELECT status FROM fulfillment_partner WHERE id = ${partnerId}`);
+  if (row === undefined) throw new FloristActionError("ASSIGNMENT_NOT_FOUND");
+  return PartnerStatusRow.parse(row).status;
+}
+
 /** The accepted assignment a step after acceptance needs, or the refusal. */
 function assertAcceptedAndLive(locked: Locked): void {
   if (
@@ -342,6 +367,25 @@ export async function respondToOffer(
     }
     if (now.getTime() >= assignment.sla_expires_at.getTime()) {
       throw new FloristActionError("ASSIGNMENT_EXPIRED");
+    }
+    // Spec 026a AC-6: the shop's status, read now and under the order's and the assignment's lock,
+    // must match the order's mode for an accept (a paused shop declines but accepts nothing).
+    if (answer.response === "accept") {
+      const partnerStatus = await lockedPartnerStatus(
+        executor,
+        assignment.partner_id,
+      );
+      if (!canAcceptFor(order.mode, partnerStatus)) {
+        logger.info(
+          {
+            assignment_id: assignment.id,
+            partner_id: assignment.partner_id,
+            partner_status: partnerStatus,
+          },
+          "florist_accept_refused",
+        );
+        throw new FloristActionError("ASSIGNMENT_PARTNER_NOT_ACCEPTING");
+      }
     }
 
     const reason = answer.response === "decline" ? answer.reason : null;

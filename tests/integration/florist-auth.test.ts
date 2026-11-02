@@ -2,9 +2,14 @@
  * The florist instance of the sign-in core against migrated tables (spec 011 §2 "Florist
  * sign-in", AC-18, AC-19, AC-20, AC-32; spec 012 AC-9, florist-route half; TASK-212).
  *
- *  - T-18: five environments × five partner statuses × member and non-member: the response is
- *    byte-identical for every address, and an email is captured only where `signInPolicy` allows
- *    (a `demo` partner's member outside production). Production captures none.
+ *  - T-18, spec 026a T-03 (AC-3): five environments × five partner statuses × member and
+ *    non-member: the response is byte-identical for every address, and an email is captured only
+ *    where `signInPolicy` allows (a `demo` partner's member outside production; an `active` or a
+ *    `paused` partner's member in production).
+ *  - Spec 026a T-05 (AC-5): under production, a person who is a member of a `demo` and an `active`
+ *    partner gets a context with the active partner alone; once that partner is offboarded, the
+ *    same session's next request has no context (the page redirects to sign-in) and a new link
+ *    request sends no email.
  *  - T-19 at the handler level (the e2e half needs a database the CI preview does not have, the
  *    precedent of spec 012's T-11): the link carries no address and only `t`; the confirm `POST`
  *    signs in and lands on the inbox with `__Secure-fo-florist.session-token`, `Path=` the base,
@@ -71,7 +76,7 @@ const server = await probeLocalServer();
 
 const ORIGIN = "https://staging.example.test";
 const SECRET = "placeholder-florist-auth-secret-0123456789abcdef";
-const BASE = "/demo/vendor-inbox";
+const BASE = "/vendor";
 const STATUSES = [
   "demo",
   "onboarding",
@@ -238,7 +243,7 @@ describe.skipIf(server.url === undefined)(
       await scratch.sql`DELETE FROM auth_email_send`;
     });
 
-    it("T-18: 5 environments × 5 statuses × member or not: one response for all, a link only to a demo member outside production", async () => {
+    it("T-18, spec 026a T-03: 5 environments × 5 statuses × member or not: one response for all, a link only where the policy allows", async () => {
       for (const environment of ENVIRONMENTS) {
         mailer.clear();
         await scratch.sql`DELETE FROM auth_email_send`;
@@ -257,7 +262,9 @@ describe.skipIf(server.url === undefined)(
         ]);
         const sentTo = mailer.messages().map((message) => message.to);
         expect(sentTo, environment).toEqual(
-          environment === "production" ? [] : [MEMBER("demo")],
+          environment === "production"
+            ? [MEMBER("active"), MEMBER("paused")]
+            : [MEMBER("demo")],
         );
       }
     });
@@ -284,7 +291,7 @@ describe.skipIf(server.url === undefined)(
         c.startsWith("__Secure-fo-florist.session-token="),
       );
       expect(session).toMatch(/^__Secure-fo-florist\.session-token=florist\./u);
-      expect(session).toMatch(/; Path=\/demo\/vendor-inbox(;|$)/u);
+      expect(session).toMatch(/; Path=\/vendor(;|$)/u);
       expect(session).toMatch(/; Secure(;|$)/u);
       expect(session).toMatch(/; HttpOnly(;|$)/u);
       expect(session).toMatch(/; SameSite=Lax(;|$)/iu);
@@ -292,7 +299,7 @@ describe.skipIf(server.url === undefined)(
         expect(cookie).not.toMatch(/^__Host-/u);
         expect(cookie).not.toMatch(/^authjs\./u);
         expect(cookie).not.toContain("@");
-        expect(cookie).toMatch(/; Path=\/demo\/vendor-inbox(;|$)/u);
+        expect(cookie).toMatch(/; Path=\/vendor(;|$)/u);
       }
       const token = /^[^=]+=([^;]+)/u.exec(session ?? "")?.[1];
       expect(await context(token)).toEqual({
@@ -437,6 +444,56 @@ describe.skipIf(server.url === undefined)(
         await scratch.sql`INSERT INTO partner_member (user_id, partner_id, role, locale_code)
                           VALUES (${ids[MEMBER("demo")] ?? ""}, ${partners["demo"] ?? ""}, 'owner', 'pl')`;
       }
+    });
+
+    it("spec 026a T-05: under production a demo membership yields no partner; an offboarded partner ends the session's access and its links", async () => {
+      const email = "demo-and-live@example.test";
+      const userId = randomUUID();
+      const live = await scratch.sql.begin(async (tx) => {
+        const [row] = await tx<{ country_id: string }[]>`
+          SELECT country_id FROM fulfillment_partner WHERE id = ${partners["demo"] ?? ""}`;
+        const partnerId = await make.partner(
+          tx,
+          row?.country_id ?? "",
+          "active",
+        );
+        await tx`INSERT INTO users (id, email) VALUES (${userId}, ${email})`;
+        await tx`INSERT INTO partner_member (user_id, partner_id, role, locale_code)
+                 VALUES (${userId}, ${partners["demo"] ?? ""}, 'staff', 'en'),
+                        (${userId}, ${partnerId}, 'owner', 'en')`;
+        return partnerId;
+      });
+      // Signed in where the demo membership lets them (staging), then read under production.
+      const token = await signIn(email);
+      const resolved = await context(token, "production");
+      expect(
+        resolved?.memberships.map((membership) => membership.partnerId),
+      ).toEqual([live]);
+      expect(
+        resolved === null ? null : toDbContext(resolved, "r").partnerIds,
+      ).toEqual([live]);
+      // And the reverse outside production: the demo partner alone.
+      expect(
+        (await context(token, "staging"))?.memberships.map((m) => m.partnerId),
+      ).toEqual([partners["demo"]]);
+
+      // While the shop is active, a link request under production sends one email.
+      mailer.clear();
+      await scratch.sql`DELETE FROM auth_email_send`;
+      await request(email, "production");
+      expect(mailer.messages(email)).toHaveLength(1);
+
+      // The founder offboards the shop: an admin act (`0016`'s `status_flip_guard`).
+      await scratch.sql.begin(async (tx) => {
+        await tx`SELECT set_config('app.role', 'admin', true)`;
+        await tx`SELECT set_config('app.audit_action', 'partner.status_changed', true)`;
+        await tx`UPDATE fulfillment_partner SET status = 'offboarded' WHERE id = ${live}`;
+      });
+      expect(await context(token, "production")).toBeNull();
+      mailer.clear();
+      await scratch.sql`DELETE FROM auth_email_send`;
+      await request(email, "production");
+      expect(mailer.messages(email)).toEqual([]);
     });
 
     it("T-20: the database context is the partner role with exactly the member's partners", async () => {

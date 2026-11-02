@@ -14,6 +14,8 @@
  *    XMP, IPTC or ICC block, rotated, at most 2000 px on its long edge; a GIF, a renamed PDF and
  *    a file over 15 MiB are refused; the multipart read stops at its bound.
  *  - The source scan: no file this task adds writes a status, an event or an outbox row.
+ *  - Spec 026a AC-6 (T-06 unit half; TASK-354): `canAcceptFor` over every mode and status, and
+ *    an open offer of a shop it refuses shows Decline and no Accept.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -21,7 +23,9 @@ import { join, resolve } from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
+import { FLORIST_PARTNER_STATUSES } from "../../src/config/florists.ts";
 import {
+  canAcceptFor,
   DECLINE_REASONS,
   FLORIST_EVENT_TYPES,
   floristActionsFor,
@@ -45,6 +49,65 @@ import { STATES, TRANSITIONS } from "../fixtures/order-machine.ts";
 const ROOT = resolve(import.meta.dirname, "../..");
 const UUID = "6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91";
 const MIB = 1024 * 1024;
+
+describe("canAcceptFor: a shop accepts only an order of its mode (spec 026a AC-6)", () => {
+  it("is live with active, demo and test with demo, and nothing else", () => {
+    const accepted = (["live", "demo", "test"] as const).flatMap((mode) =>
+      FLORIST_PARTNER_STATUSES.filter((status) =>
+        canAcceptFor(mode, status),
+      ).map((status) => `${mode}:${status}`),
+    );
+    expect(accepted).toEqual(["live:active", "demo:demo", "test:demo"]);
+  });
+
+  it("a paused shop's open offer shows Decline and no Accept; an active shop's shows both", () => {
+    const routed = partnerEvents("routed");
+    expect(
+      floristActionsFor(
+        facts({ response: null, partnerStatus: "paused" }),
+        routed,
+        NOW,
+      ),
+    ).toEqual(["decline"]);
+    expect(
+      floristActionsFor(
+        facts({ response: null, partnerStatus: "active" }),
+        routed,
+        NOW,
+      ),
+    ).toEqual(["decline", "accept"]);
+    expect(
+      floristActionsFor(
+        facts({ response: null, mode: "demo", partnerStatus: "demo" }),
+        routed,
+        NOW,
+      ),
+    ).toEqual(["decline", "accept"]);
+    for (const partnerStatus of ["onboarding", "offboarded", "demo"] as const) {
+      expect(
+        floristActionsFor(
+          facts({ response: null, partnerStatus }),
+          routed,
+          NOW,
+        ),
+        partnerStatus,
+      ).toEqual(["decline"]);
+    }
+  });
+
+  it("a paused shop keeps every step after acceptance", () => {
+    const paused = { partnerStatus: "paused" } as const;
+    expect(
+      floristActionsFor(facts(paused), partnerEvents("in_production"), NOW),
+    ).toEqual(["outForDelivery"]);
+    expect(
+      floristActionsFor(facts(paused), partnerEvents("out_for_delivery"), NOW),
+    ).toEqual(["delivered"]);
+    expect(
+      floristActionsFor(facts(paused), partnerEvents("delivered"), NOW),
+    ).toEqual(["addPhoto"]);
+  });
+});
 
 /* -------------------------------------------------------------------------- */
 /* Events (AC-31, R1)                                                         */
@@ -186,6 +249,8 @@ function facts(over: Partial<ActionFacts>): ActionFacts {
     withdrawn: false,
     hasPhoto: false,
     slaExpiresAt: LATER,
+    mode: "live",
+    partnerStatus: "active",
     ...over,
   };
 }
@@ -485,9 +550,9 @@ describe("no direct status, event or outbox write (AC-31)", () => {
   const files = [
     ...walk(join(ROOT, "src/modules/orders/florist-actions")),
     ...walk(join(ROOT, "src/modules/orders/photo")),
-    ...walk(join(ROOT, "src/app/demo/vendor-inbox/api/orders")),
-    ...walk(join(ROOT, "src/app/demo/vendor-inbox/orders")),
-    join(ROOT, "src/app/demo/vendor-inbox/actions.ts"),
+    ...walk(join(ROOT, "src/app/vendor/api/orders")),
+    ...walk(join(ROOT, "src/app/vendor/orders")),
+    join(ROOT, "src/app/vendor/actions.ts"),
   ];
 
   it("scans the files this task adds", () => {

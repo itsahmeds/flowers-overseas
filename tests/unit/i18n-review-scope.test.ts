@@ -303,7 +303,7 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         match,
         surface,
         paths: [
-          "src/app/demo/vendor-inbox/**",
+          "src/app/vendor/**",
           "src/modules/partners/auth/**",
           "src/lib/auth/florist.ts",
         ],
@@ -321,10 +321,20 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         match: "floristInbox.page.*",
         surface: "florist",
         paths: [
-          "src/app/demo/vendor-inbox/**",
+          "src/app/vendor/**",
           "src/modules/partners/auth/**",
           "src/lib/auth/florist.ts",
           "src/modules/notifications/emails/**",
+        ],
+      },
+      // Spec 026a (TASK-354): the paused notice, on the florist pages only.
+      {
+        match: "floristInbox.paused.*",
+        surface: "florist",
+        paths: [
+          "src/app/vendor/**",
+          "src/modules/partners/auth/**",
+          "src/lib/auth/florist.ts",
         ],
       },
       // TASK-213: the founder's application alert, an email.
