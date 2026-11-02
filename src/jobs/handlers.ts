@@ -14,7 +14,8 @@
  */
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
-import { dispatchOutbox } from "../modules/orders";
+import { invoicesOutboxHandler } from "../modules/invoices";
+import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
 // The close is not in the `orders` barrel: importing it registers `OrderClosedV1`, and only the
 // processes that close orders need that (spec 022a §5.2, TASK-369).
@@ -25,6 +26,10 @@ import type { JobHandlers } from "./runtime";
 
 /** One read of an original by the derive worker: a large original on a slow link, not a hang. */
 const DERIVE_READ_TIMEOUT_MS = 60_000;
+
+// Spec 018 §5.2 (TASK-341): the `invoices` outbox target issues invoices and credit notes in the
+// delivery's transaction. Registered once, where the dispatcher's job is defined.
+registerOutboxHandler("invoices", invoicesOutboxHandler());
 
 export const JOB_HANDLERS: JobHandlers = {
   // Spec 006 §2.6, AC-25 (TASK-082): the variant ladder of one asset, written once per (asset,

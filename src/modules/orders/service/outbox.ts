@@ -17,7 +17,7 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { paymentOutboxTargets } from "../outbox/routes";
+import { invoiceOutboxTargets, paymentOutboxTargets } from "../outbox/routes";
 
 import type { OrderEventType, OrderMode } from "./events";
 import { jsonb, textArray, type OrderExecutor } from "./executor";
@@ -73,8 +73,8 @@ export function resolveOutboxTargets(
 }
 
 /**
- * `outboxTargets(event, mode)` of §5.2: this spec's (empty) routes plus spec 013's rows
- * (`../outbox/routes.ts`), each target name once (the `AFTER INSERT ON outbox` trigger of `0017`
+ * `outboxTargets(event, mode)` of §5.2: this spec's (empty) routes plus spec 013's and spec
+ * 018's rows (`../outbox/routes.ts`), each target name once (the `AFTER INSERT ON outbox` trigger of `0017`
  * makes one delivery per element, and refuses a name twice), people filtered for `demo`/`test`.
  */
 export function outboxTargets(
@@ -86,6 +86,7 @@ export function outboxTargets(
   for (const target of [
     ...resolveOutboxTargets(OUTBOX_ROUTES, event, mode),
     ...withoutPeopleUnlessLive(paymentOutboxTargets(event, mode), mode),
+    ...withoutPeopleUnlessLive(invoiceOutboxTargets(event, mode), mode),
   ]) {
     if (seen.has(target.name)) continue;
     seen.add(target.name);

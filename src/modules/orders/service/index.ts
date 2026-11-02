@@ -61,6 +61,8 @@ export type {
   OrderMode,
   TransitionEventType,
 } from "./events";
+// Spec 018 (TASK-341): the invoices module runs in the engine's transaction seam.
+export { jsonb, withExecutor } from "./executor";
 export type {
   EngineConnection,
   OrderExecutor,
