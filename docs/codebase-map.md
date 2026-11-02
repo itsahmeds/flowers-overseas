@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +12 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +99 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +101 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +7 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +14 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
@@ -237,8 +237,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 401 |
-| `tests/integration/` | 55 |
+| `tests/unit/` | 402 |
+| `tests/integration/` | 56 |
 | `tests/contract/` | 27 |
 | `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |
