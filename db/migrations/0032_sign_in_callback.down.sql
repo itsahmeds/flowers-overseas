@@ -1,4 +1,4 @@
--- Rollback of 0031_sign_in_callback (spec 016 §12; TASK-331). Links minted with a callback still
+-- Rollback of 0032_sign_in_callback (spec 016 §12; TASK-331). Links minted with a callback still
 -- sign in afterwards; they land on the surface's home instead of the order.
 
 SET LOCAL ROLE app_owner;

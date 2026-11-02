@@ -1,4 +1,4 @@
--- 0031_sign_in_callback — the page an emailed sign-in link opens, stored beside its hashed token
+-- 0032_sign_in_callback — the page an emailed sign-in link opens, stored beside its hashed token
 -- (spec 016 §5.2 "One-tap florist link", §12's request on spec 012: `createSignInLink(surface,
 -- userId, { callbackPath })`; AC-23; TASK-331).
 --
@@ -12,7 +12,7 @@
 -- The row is deleted when the token is used (the adapter's `useVerificationToken`), so the path
 -- lives exactly as long as the token: one hour at most, single use.
 --
--- Rollback: `0031_sign_in_callback.down.sql`.
+-- Rollback: `0032_sign_in_callback.down.sql`.
 
 SET LOCAL ROLE app_owner;
 

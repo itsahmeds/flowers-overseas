@@ -111,7 +111,7 @@ export const verificationTokens = pgTable(
     }).notNull(),
     /**
      * Where a confirmed sign-in from this link lands (spec 016 §5.2 one-tap florist link;
-     * `0031_sign_in_callback`; TASK-331). Null: the surface's home.
+     * `0032_sign_in_callback`; TASK-331). Null: the surface's home.
      */
     callbackPath: text("callback_path"),
   },
