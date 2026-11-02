@@ -147,6 +147,16 @@ export function manifestAdmits(path: string): boolean {
   return manifest === null || urls.has(path);
 }
 
+/**
+ * Whether the manifest half applies here: a manifest is running and this async context is not
+ * inside `databaseOnly()`. A caller that must build a path to ask `manifestAdmits()` asks this
+ * first, so that without a manifest nothing changes, not even for a page with no path.
+ */
+export function manifestInForce(): boolean {
+  if (databaseOnlyScope.getStore() === true) return false;
+  return loaded().manifest !== null;
+}
+
 const databaseOnlyScope = new AsyncLocalStorage<boolean>();
 
 /**

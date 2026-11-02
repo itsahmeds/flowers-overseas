@@ -413,6 +413,8 @@ export {
   listingPages,
   listingView,
   productCardView,
+  // A grid's half of "the database AND the running manifest" (spec 012b AC-5; TASK-296).
+  productPageAdmitted,
   // Photographed products first, stable within each group (spec 043 §5.2, AC-13; TASK-290): the
   // design system's partition, re-exported here as §5.2 names it.
   photoFirst,
