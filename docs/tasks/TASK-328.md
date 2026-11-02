@@ -27,11 +27,19 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 - specs/013 §5.2 (dispatcher, `sla.watch` / `payments.monitor`); `docs/tasks/TASK-254.md`, `docs/tasks/TASK-264.md`
 - `docs/codebase-map.md` (where everything lives); `.claude/state/wo-1022-common.md`
 
+
 ## Carry-forwards
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+
+- 2026-11-02 (self-review, TASK-328): exhaustion writes `order.no_partner_available` but does not yet schedule `order.no_partner_expire` at `graceEnd`; `routing.auto` off and `manualReroute` are TASK-329's, the withdrawal rows of `ROUTING_STEPS` / `ROUTING_OUTBOX_ROUTES` TASK-330's.
+- 2026-11-02: `routeOrder` ranks with `ownerPartnerId = null`; owner first (`catalog.productOwners`) is task 1d.
+- 2026-11-02: spec 013's "secured but not routed" check (the consumer of `expectedFirstOfferAt`) does not exist yet; an `order.route` job that exhausts pg-boss's retries leaves a `paid_unrouted` order that only that check would see. `routing.sla_watch` is its own minute job and sees open offers only.
+- 2026-11-02: a destination with no `same_day_cutoff_local` makes `order.route` skip with a `warn` (`routing.skipped`, `no_operations`) rather than guess a deadline; the order waits at `paid_unrouted`.
+- 2026-11-02: spec 010's `demoRoute` still accepts a `test` order (only `live` is refused); nothing calls it for one (checkout calls it for `demo` only). Narrowing it to `demo` is a spec 010 change.
+- 2026-11-02: production's `signInPolicy` is empty until spec 026, so a `live` order in production exhausts at its first run (`no_candidate`); that is the spec's go-live dependency, not a code gap.
+- 2026-11-02: `routing.sla_watch` raises one Sentry event per overdue offer per minute (Sentry groups them); no per-assignment dedupe.
 
 ## Escalations
 
@@ -45,11 +53,18 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02: `src/modules/orders/routing/{route,assignment-jobs,handler,effect,events,schedule,jobs}.ts`, the five jobs registered (`src/jobs/index.ts`, keyed ones on pg-boss `short` queues), the worker wiring and the tick's `routing.sla_watch`; draft PR 455.
+- 2026-11-02: tests: `tests/integration/routing-jobs.test.ts` (14, PG16), `tests/unit/routing-jobs.test.ts` (9), registry, runtime, tick and effect unit tests updated; 19 mutations each red.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR [#455](https://github.com/itsahmeds/flowers-overseas/pull/455). The cascade: the `routing`
+outbox handler (test and live; `order.captured` to `paid_unrouted` enqueues `order.route`,
+`order.delivered` the photo reminder, row 14 nothing), `routeOrder` (order lock, ranked
+candidates, partner `FOR UPDATE` then the recount, first offer `order.routed` + `assignment.offered`,
+re-offer `assignment.offered` alone, exhaustion `order.no_partner_available` + `routing.no_partner`
+alert, night deferral with `startAfter` and no write), `remindAssignment`, `timeoutAssignment`,
+`photoRemind`, `watchRoutingSla`, and spec 016's `afterDecline` inside `acceptedOrderEffectFor` for
+test and live. Event schemas `assignment.timed_out` and `order.manual_reroute` v1. No migration.
+Tests: integration 14 (T-01, T-05 to T-10, T-16 50 runs, T-17, T-31, T-32 and the actor/arrow
+breaker cases), unit 9 new plus the updated registry, runtime, tick and effect units.

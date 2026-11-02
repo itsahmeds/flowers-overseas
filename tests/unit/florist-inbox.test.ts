@@ -29,7 +29,6 @@ import {
   DemoOrderRefused,
   demoRefusedIn,
   placeDemoOrder,
-  unconfiguredOrderEffect,
 } from "../../src/modules/orders/demo/index.ts";
 import { floristStageOf } from "../../src/modules/orders/index.ts";
 import {
@@ -340,16 +339,54 @@ describe("T-33 — the demo entry points refuse in production", () => {
 describe("the after-answer seam", () => {
   const ORDER = "0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b";
 
-  it("demo and test orders outside production get the demo effect; live and production the unconfigured one", () => {
-    const demo = createDemoOrderEffect({ transition: vi.fn() });
-    const unconfigured = unconfiguredOrderEffect;
+  it("demo orders get the demo effect outside production and the unconfigured one in it; test and live keep that accept half and take spec 016's router for the decline half (TASK-328)", async () => {
+    const demo = {
+      afterAccept: vi.fn(async () => undefined),
+      afterDecline: vi.fn(async () => undefined),
+    };
+    const unconfigured = {
+      afterAccept: vi.fn(async () => undefined),
+      afterDecline: vi.fn(async () => undefined),
+    };
+    const routed = { afterDecline: vi.fn(async () => undefined) };
     const choose = (mode: "demo" | "test" | "live", environment: string) =>
-      acceptedOrderEffectFor(mode, environment, { demo, unconfigured });
+      acceptedOrderEffectFor(mode, environment, {
+        demo,
+        unconfigured,
+        routed,
+      });
     expect(choose("demo", "staging")).toBe(demo);
-    expect(choose("test", "preview")).toBe(demo);
-    expect(choose("live", "staging")).toBe(unconfigured);
     expect(choose("demo", "production")).toBe(unconfigured);
-    expect(choose("test", "production")).toBe(unconfigured);
+
+    const cases = [
+      ["test", "preview", demo],
+      ["live", "staging", unconfigured],
+      ["test", "production", unconfigured],
+      ["live", "production", unconfigured],
+    ] as const;
+    for (const [mode, environment, acceptHalf] of cases) {
+      for (const spy of [demo, unconfigured]) {
+        spy.afterAccept.mockClear();
+        spy.afterDecline.mockClear();
+      }
+      routed.afterDecline.mockClear();
+      const effect = choose(mode, environment);
+      await effect.afterAccept({ orderId: ORDER, mode });
+      await effect.afterDecline({ orderId: ORDER, mode });
+      expect(
+        acceptHalf.afterAccept,
+        `${mode}/${environment}`,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        routed.afterDecline,
+        `${mode}/${environment}`,
+      ).toHaveBeenCalledWith({
+        orderId: ORDER,
+        mode,
+      });
+      expect(demo.afterDecline).not.toHaveBeenCalled();
+      expect(unconfigured.afterDecline).not.toHaveBeenCalled();
+    }
   });
 
   it("after an accept the demo effect writes captured then in_production by system:demo; after a decline no_partner_available", async () => {

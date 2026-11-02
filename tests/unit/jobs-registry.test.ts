@@ -19,36 +19,65 @@ import {
   buildJobData,
   isDeclaredJob,
   isRegisteredJob,
+  jobQueuePolicy,
+  OrderRoutePayload,
+  AssignmentJobPayload,
   parseJobData,
 } from "../../src/jobs/index";
 
 const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
-  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, and spec 022a's order.close_sweep", () => {
+  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, spec 022a's order.close_sweep and spec 016's five routing jobs", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
+      "assignment.photo_remind",
+      "assignment.remind",
+      "assignment.timeout",
       "db.backup_verify",
       "media.derive_variants",
       "neon.usage_probe",
       "order.close_sweep",
+      "order.route",
       "outbox.dispatch",
       "payments.production_start",
       "retention.sweep",
+      "routing.sla_watch",
       "webhook.process",
     ]);
   });
 
-  it("declares exactly the eight names later specs implement", () => {
+  it("declares exactly the six names later specs implement", () => {
     expect([...DECLARED_JOBS].sort()).toEqual([
-      "assignment.timeout",
       "fx.refresh",
       "notification.deliver",
       "occasion.reminders",
-      "order.route",
       "payout.accrue",
       "review.request",
       "sitemap.regenerate",
     ]);
+  });
+
+  it("spec 016's keyed routing jobs are short queues (one waiting job per key); every other queue is standard", () => {
+    const short = REGISTERED_JOB_NAMES.filter(
+      (name) => jobQueuePolicy(name) === "short",
+    ).sort();
+    expect(short).toEqual([
+      "assignment.photo_remind",
+      "assignment.remind",
+      "assignment.timeout",
+      "order.route",
+    ]);
+    expect(jobQueuePolicy("routing.sla_watch")).toBe("standard");
+    expect(OrderRoutePayload.parse({ orderId: REQUEST_ID })).toEqual({
+      orderId: REQUEST_ID,
+    });
+    expect(OrderRoutePayload.safeParse({ orderId: "nope" }).success).toBe(
+      false,
+    );
+    expect(
+      AssignmentJobPayload.safeParse({ assignmentId: REQUEST_ID, extra: 1 })
+        .success,
+    ).toBe(false);
   });
 
   it("keeps the two sets disjoint and JOB_NAMES their union", () => {
@@ -63,7 +92,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(16);
+    expect(new Set(JOB_NAMES).size).toBe(19);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 
@@ -244,7 +273,7 @@ describe("parseJobData — the consuming half (T-21: refused before the handler 
   });
 
   it("refuses a name that is not registered", () => {
-    expect(parseJobData("order.route" as never, valid)).toEqual({
+    expect(parseJobData("payout.accrue" as never, valid)).toEqual({
       ok: false,
       reason: "not_registered",
       issues: [],

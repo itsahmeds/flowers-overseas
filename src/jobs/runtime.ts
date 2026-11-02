@@ -34,6 +34,7 @@ import { logger as defaultLogger, type Logger } from "../lib/logger";
 import {
   REGISTERED_JOB_NAMES,
   buildJobData,
+  jobQueuePolicy,
   parseJobData,
   type JobPayload,
   type JobPayloadInput,
@@ -126,13 +127,27 @@ export async function withBoss<T>(
 }
 
 /**
+ * Creates the queue of one registered job with its registry policy (`short` for spec 016's keyed
+ * routing jobs). Idempotent: an existing queue is left as it is.
+ */
+export async function ensureQueue(
+  boss: PgBoss,
+  name: RegisteredJobName,
+): Promise<void> {
+  const policy = jobQueuePolicy(name);
+  await (policy === "standard"
+    ? boss.createQueue(name)
+    : boss.createQueue(name, { policy }));
+}
+
+/**
  * Creates the queue of every **registered** job and of nothing else; declared-only names get a
  * queue when their spec implements them. Idempotent (`ON CONFLICT DO NOTHING` in pg-boss), and no
  * DDL: every queue shares `pgboss.job_common`.
  */
 export async function ensureQueues(boss: PgBoss): Promise<void> {
   for (const name of REGISTERED_JOB_NAMES) {
-    await boss.createQueue(name);
+    await ensureQueue(boss, name);
   }
 }
 
@@ -140,11 +155,14 @@ export interface EnqueueOptions {
   /** The enqueuing request's `x-request-id`, or `system:{job}`. */
   readonly requestId: string;
   /**
-   * At most one job of this name and key per minute (pg-boss `singletonKey` with
-   * `singletonSeconds: 60`): a second enqueue in the same minute returns `null` and writes
-   * nothing. The minute tick's sweeps use it (spec 022a §5.2).
+   * On a `standard` queue: at most one job of this name and key per minute (pg-boss
+   * `singletonKey` with `singletonSeconds: 60`): a second enqueue in the same minute returns
+   * `null` and writes nothing. The minute tick's sweeps use it (spec 022a §5.2). On a `short`
+   * queue (spec 016's routing jobs): at most one **waiting** job per key, whenever it was sent.
    */
   readonly singletonKey?: string;
+  /** Not fetched before this instant (spec 016: a deferred offer, a reminder, a timeout). */
+  readonly startAfter?: Date;
 }
 
 /** The window a `singletonKey` enqueue is unique within: one minute tick. */
@@ -161,10 +179,23 @@ export async function enqueue<Name extends RegisteredJobName>(
   options: EnqueueOptions,
 ): Promise<string | null> {
   const data = buildJobData(name, payload, options.requestId);
-  if (options.singletonKey === undefined) return boss.send(name, data);
+  const startAfter =
+    options.startAfter === undefined ? {} : { startAfter: options.startAfter };
+  if (options.singletonKey === undefined) {
+    return options.startAfter === undefined
+      ? boss.send(name, data)
+      : boss.send(name, data, startAfter);
+  }
+  if (jobQueuePolicy(name) === "short") {
+    return boss.send(name, data, {
+      singletonKey: options.singletonKey,
+      ...startAfter,
+    });
+  }
   return boss.send(name, data, {
     singletonKey: options.singletonKey,
     singletonSeconds: SINGLETON_SECONDS,
+    ...startAfter,
   });
 }
 

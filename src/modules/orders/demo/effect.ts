@@ -12,10 +12,19 @@
  *  - `acceptedOrderEffectFor(mode, environment)` picks one. Nothing here reads `source`, which
  *    spec 002 keeps for telling seed rows from real ones. Specs 013/015 replace the `test` and
  *    `live` choices without a change to the commands.
+ *  - **Spec 016's `afterDecline`** (its §12 request on spec 011; TASK-328): for a `test` or
+ *    `live` order the decline half is always the router's (`routingDeclineEffect`: the next
+ *    offer through `order.route`), in every environment; the accept half stays what the mode
+ *    had. So a `test` decline never records the demo's `order.no_partner_available`, and the
+ *    demo effect serves `demo` orders' declines only.
  */
 import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
 
+import {
+  routingDeclineEffect,
+  type RoutingDeclineEffect,
+} from "../routing/effect";
 import { ActorSchema } from "../service/actor";
 import type { OrderMode } from "../service/events";
 import type { OrderExecutor } from "../service/executor";
@@ -98,9 +107,10 @@ export const unconfiguredOrderEffect: AcceptedOrderEffect = {
 };
 
 /**
- * The effect for an order of `mode` in `environment`: the demo effect for a `demo` or `test`
- * order outside production, the unconfigured one otherwise (a `live` order, or anything in
- * production, where no demo write may happen).
+ * The effect for an order of `mode` in `environment`. The accept half: the demo effect's for a
+ * `demo` or `test` order outside production, the unconfigured one otherwise (a `live` order, or
+ * anything in production, where no demo write may happen). The decline half: the same for a
+ * `demo` order; spec 016's router for a `test` or `live` one.
  */
 export function acceptedOrderEffectFor(
   mode: OrderMode,
@@ -108,10 +118,19 @@ export function acceptedOrderEffectFor(
   effects: {
     readonly demo?: AcceptedOrderEffect;
     readonly unconfigured?: AcceptedOrderEffect;
+    readonly routed?: RoutingDeclineEffect;
   } = {},
 ): AcceptedOrderEffect {
   const demo = effects.demo ?? demoOrderEffect;
   const unconfigured = effects.unconfigured ?? unconfiguredOrderEffect;
-  if (environment === "production") return unconfigured;
-  return mode === "demo" || mode === "test" ? demo : unconfigured;
+  const base =
+    environment !== "production" && (mode === "demo" || mode === "test")
+      ? demo
+      : unconfigured;
+  if (mode === "demo") return base;
+  const routed = effects.routed ?? routingDeclineEffect;
+  return {
+    afterAccept: (context) => base.afterAccept(context),
+    afterDecline: (context) => routed.afterDecline(context),
+  };
 }

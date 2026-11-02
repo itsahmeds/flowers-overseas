@@ -30,6 +30,15 @@ import { runProductionStart } from "../modules/payments";
 // The close is not in the `orders` barrel: importing it registers `OrderClosedV1`, and only the
 // processes that close orders need that (spec 022a §5.2, TASK-369).
 import { runCloseSweep } from "../modules/orders/close";
+// Spec 016's routing jobs: not in the barrel either (they register `assignment.timed_out`).
+import {
+  photoRemind,
+  registerRoutingOutbox,
+  remindAssignment,
+  routeOrder,
+  timeoutAssignment,
+  watchRoutingSla,
+} from "../modules/orders/routing/jobs";
 
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
@@ -40,6 +49,11 @@ const DERIVE_READ_TIMEOUT_MS = 60_000;
 // Spec 018 §5.2 (TASK-341): the `invoices` outbox target issues invoices and credit notes in the
 // delivery's transaction. Registered once, where the dispatcher's job is defined.
 registerOutboxHandler("invoices", invoicesOutboxHandler());
+
+// Spec 016 §5.2 (TASK-328): the `routing` target, for `test` and `live` orders: a secured
+// payment enqueues `order.route`, a delivery the photo reminder. Replaces the stand-in that made
+// every routing delivery end `dead`.
+registerRoutingOutbox();
 
 // Spec 016 §5.2 (TASK-331): the `notifications` target and its hold. While `notifications.email`
 // is off, every notifications delivery stays `pending` and is sent once when it is turned on.
@@ -123,6 +137,24 @@ export const JOB_HANDLERS: JobHandlers = {
   // `closed` and skips it.
   "order.close_sweep": async () => {
     await runCloseSweep();
+  },
+  // Spec 016 §5.2 (TASK-328): the cascade. Each is idempotent: it locks and re-reads what it
+  // acts on, and a state it does not expect (an answered or withdrawn offer, an order that has
+  // moved on, an offer already open) makes it a no-op, so a re-run writes nothing twice.
+  "order.route": async (payload) => {
+    await routeOrder(payload.orderId);
+  },
+  "assignment.remind": async (payload) => {
+    await remindAssignment(payload.assignmentId);
+  },
+  "assignment.timeout": async (payload) => {
+    await timeoutAssignment(payload.assignmentId);
+  },
+  "assignment.photo_remind": async (payload) => {
+    await photoRemind(payload.orderId);
+  },
+  "routing.sla_watch": async () => {
+    await watchRoutingSla();
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.

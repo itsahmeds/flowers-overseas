@@ -21,6 +21,7 @@ import {
   invoiceOutboxTargets,
   notificationOutboxTargets,
   paymentOutboxTargets,
+  routingOutboxTargets,
 } from "../outbox/routes";
 
 import type { OrderEventType, OrderMode } from "./events";
@@ -92,6 +93,7 @@ export function outboxTargets(
     ...withoutPeopleUnlessLive(paymentOutboxTargets(event, mode), mode),
     ...withoutPeopleUnlessLive(invoiceOutboxTargets(event, mode), mode),
     ...withoutPeopleUnlessLive(notificationOutboxTargets(event, mode), mode),
+    ...withoutPeopleUnlessLive(routingOutboxTargets(event, mode), mode),
   ]) {
     if (seen.has(target.name)) continue;
     seen.add(target.name);

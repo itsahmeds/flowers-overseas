@@ -174,6 +174,23 @@ export const NOTIFICATION_OUTBOX_ROUTES: ModeOutboxRoutes = {
   "order.no_partner_available": TRADE_BOTH,
 };
 
+/**
+ * Spec 016's own rows of the `routing` target (§5.2 "The `routing` outbox handler"; TASK-328):
+ * `order.delivered` schedules the photo reminder. `order.captured` reaches `routing` through
+ * spec 013's row above; the withdrawal events are TASK-330's to add here.
+ */
+export const ROUTING_OUTBOX_ROUTES: ModeOutboxRoutes = {
+  "order.delivered": PAID_MODES_ROUTING,
+};
+
+/** The targets spec 016's routing rows give `event` for an order in `mode`. Pure. */
+export function routingOutboxTargets(
+  event: OrderEventType,
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  return ROUTING_OUTBOX_ROUTES[event]?.[mode] ?? [];
+}
+
 /** The targets spec 016's notification rows give `event` for an order in `mode`. Pure. */
 export function notificationOutboxTargets(
   event: OrderEventType,
