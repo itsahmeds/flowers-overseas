@@ -610,6 +610,49 @@ export async function refund(
   input: RefundInput,
   deps: RefundDeps,
 ): Promise<RefundResult> {
+  const d = resolve(deps);
+  const requested = await d.transaction((executor) =>
+    requestRefund(input, executor),
+  );
+  if (requested.kind === "refused") return requested;
+  const submitted = await submitRefund(requested.refundId, deps);
+  logger.info(
+    {
+      order_id: requested.orderId,
+      refund_id: requested.refundId,
+      submitted: submitted.kind,
+    },
+    "payments.refund_requested",
+  );
+  return { kind: "requested", refundId: requested.refundId, submitted };
+}
+
+/** What `requestRefund` decided: a `requested` row to submit after commit, or a refusal. */
+export type RefundRequest =
+  | {
+      readonly kind: "requested";
+      readonly refundId: string;
+      readonly orderId: string;
+      readonly amountMinor: number;
+      readonly currency: string;
+    }
+  | {
+      readonly kind: "refused";
+      readonly code: RefundRefusal;
+      readonly status?: string;
+    };
+
+/**
+ * `refund`'s first step on the **caller's** open transaction (spec 020a §12 request 1: the admin
+ * action writes its `admin_order_action` row and the refund row in one transaction): every check
+ * and lock of `refund`, the `requested` row and `order.refund_requested`, and no provider call.
+ * The caller commits, then calls `submitRefund(refundId)`; a crash between the two is recovered
+ * by `payments.sweep` (d), exactly as for `refund`.
+ */
+export async function requestRefund(
+  input: RefundInput,
+  executor: OrderExecutor,
+): Promise<RefundRequest> {
   const orderId = z.uuid().parse(input.orderId);
   const reason = RefundReasonSchema.parse(input.reason);
   const actor = ActorSchema.parse(input.actor);
@@ -618,111 +661,104 @@ export async function refund(
     return { kind: "refused", code: "REFUND_AMOUNT_INVALID" };
   }
   const currency: string = input.amount.currency;
-  const d = resolve(deps);
-
-  const requested = await d.transaction(
-    async (executor): Promise<RequestDecision> => {
-      const [paymentRaw] = await executor.execute(sql`
+  const decision = await (async (): Promise<RequestDecision> => {
+    const [paymentRaw] = await executor.execute(sql`
         SELECT p.id, p.purchase_id, p.status, p.currency_code, p.amount_captured_minor
         FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
         WHERE o.id = ${orderId} AND p.status = 'captured'
         FOR UPDATE OF p`);
-      const [orderRaw] = await executor.execute(sql`
+    const [orderRaw] = await executor.execute(sql`
         SELECT status, mode, buyer_total_minor, buyer_currency_code
         FROM "order" WHERE id = ${orderId} FOR UPDATE`);
-      if (orderRaw === undefined) {
-        return { kind: "refused", code: "NOT_REFUNDABLE" };
-      }
-      const order = OrderRow.parse(orderRaw);
-      if (paymentRaw === undefined) {
-        return {
-          kind: "refused",
-          code: "NOT_REFUNDABLE",
-          status: order.status,
-        };
-      }
-      const payment = PaymentRow.parse(paymentRaw);
-      if (currency !== payment.currency_code) {
-        return { kind: "refused", code: "CURRENCY_MISMATCH" };
-      }
+    if (orderRaw === undefined) {
+      return { kind: "refused", code: "NOT_REFUNDABLE" };
+    }
+    const order = OrderRow.parse(orderRaw);
+    if (paymentRaw === undefined) {
+      return {
+        kind: "refused",
+        code: "NOT_REFUNDABLE",
+        status: order.status,
+      };
+    }
+    const payment = PaymentRow.parse(paymentRaw);
+    if (currency !== payment.currency_code) {
+      return { kind: "refused", code: "CURRENCY_MISMATCH" };
+    }
 
-      let balanceOnly: boolean;
-      if (IN_SET_F.has(order.status)) {
-        balanceOnly = false;
-      } else if (CANCELLED_STATES.has(order.status)) {
-        balanceOnly = true;
-      } else if (
-        CLOSED_UNPAID.has(order.status) &&
-        reason === "other" &&
-        anomalyActor(actor)
-      ) {
-        balanceOnly = true;
-      } else {
-        return {
-          kind: "refused",
-          code: "NOT_REFUNDABLE",
-          status: order.status,
-        };
-      }
+    let balanceOnly: boolean;
+    if (IN_SET_F.has(order.status)) {
+      balanceOnly = false;
+    } else if (CANCELLED_STATES.has(order.status)) {
+      balanceOnly = true;
+    } else if (
+      CLOSED_UNPAID.has(order.status) &&
+      reason === "other" &&
+      anomalyActor(actor)
+    ) {
+      balanceOnly = true;
+    } else {
+      return {
+        kind: "refused",
+        code: "NOT_REFUNDABLE",
+        status: order.status,
+      };
+    }
 
-      const [orderAsked] = await executor.execute(sql`
+    const [orderAsked] = await executor.execute(sql`
         SELECT coalesce(sum(amount_minor), 0) AS total FROM refund
         WHERE order_id = ${orderId} AND status IN ${counted}`);
-      const remaining = order.buyer_total_minor - sumOf(orderAsked);
-      if (balanceOnly && amountMinor !== remaining) {
-        return { kind: "refused", code: "REFUND_AMOUNT_NOT_BALANCE" };
-      }
-      if (amountMinor > remaining) {
-        return { kind: "refused", code: "REFUND_EXCEEDS_ORDER" };
-      }
-      const [paymentAsked] = await executor.execute(sql`
+    const remaining = order.buyer_total_minor - sumOf(orderAsked);
+    if (balanceOnly && amountMinor !== remaining) {
+      return { kind: "refused", code: "REFUND_AMOUNT_NOT_BALANCE" };
+    }
+    if (amountMinor > remaining) {
+      return { kind: "refused", code: "REFUND_EXCEEDS_ORDER" };
+    }
+    const [paymentAsked] = await executor.execute(sql`
         SELECT coalesce(sum(amount_minor), 0) AS total FROM refund
         WHERE payment_id = ${payment.id} AND status IN ${counted}`);
-      if (amountMinor > payment.amount_captured_minor - sumOf(paymentAsked)) {
-        return { kind: "refused", code: "REFUND_EXCEEDS_CAPTURED" };
-      }
+    if (amountMinor > payment.amount_captured_minor - sumOf(paymentAsked)) {
+      return { kind: "refused", code: "REFUND_EXCEEDS_CAPTURED" };
+    }
 
-      const [inserted] = await executor.execute(sql`
+    const [inserted] = await executor.execute(sql`
         INSERT INTO refund (payment_id, order_id, purchase_id, amount_minor, currency_code, reason,
                             status, requested_by)
         VALUES (${payment.id}, ${orderId}, ${payment.purchase_id}, ${amountMinor},
                 ${payment.currency_code}, ${reason}, 'requested', ${actor})
         RETURNING id`);
-      const refundId = z.uuid().parse(inserted?.["id"]);
-      await appendEvent(
-        orderId,
-        "order.refund_requested",
-        actor,
-        {
-          mode: order.mode,
-          refund_id: refundId,
-          amount_minor: amountMinor,
-          currency_code: payment.currency_code,
-          reason,
-        },
-        { executor },
-      );
-      return { kind: "requested", refundId };
-    },
-  );
+    const refundId = z.uuid().parse(inserted?.["id"]);
+    await appendEvent(
+      orderId,
+      "order.refund_requested",
+      actor,
+      {
+        mode: order.mode,
+        refund_id: refundId,
+        amount_minor: amountMinor,
+        currency_code: payment.currency_code,
+        reason,
+      },
+      { executor },
+    );
+    return { kind: "requested", refundId };
+  })();
 
-  if (requested.kind === "refused") {
+  if (decision.kind === "refused") {
     logger.info(
-      { order_id: orderId, outcome: requested.code },
+      { order_id: orderId, outcome: decision.code },
       "payments.refund_refused",
     );
-    return requested;
+    return decision;
   }
-  const submitted = await submitRefund(requested.refundId, deps);
-  logger.info(
-    {
-      order_id: orderId,
-      refund_id: requested.refundId,
-      submitted: submitted.kind,
-    },
-    "payments.refund_requested",
-  );
-  return { ...requested, submitted };
+  return {
+    kind: "requested",
+    refundId: decision.refundId,
+    orderId,
+    amountMinor,
+    currency,
+  };
 }
 
 // ---------------------------------------------------------------------------------------------

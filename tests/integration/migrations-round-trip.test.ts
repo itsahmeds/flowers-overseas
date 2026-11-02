@@ -46,6 +46,8 @@ const VIEWS = [
 
 /** Functions the migrations create (trigger functions and `set_updated_at`). */
 const FUNCTIONS = [
+  // 0031 (TASK-359): admin_order_action is append-only (spec 020a §5.1).
+  "admin_order_action_append_only",
   "app_current_partner_ids",
   "app_current_role",
   "app_current_user_id",

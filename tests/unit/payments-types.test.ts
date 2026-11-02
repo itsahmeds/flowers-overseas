@@ -46,8 +46,12 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
   it("the barrel has no charge-amount-taking function: the two that take an amount take a refund amount", () => {
     // `refund({ orderId, amount, reason, actor })` and `adminRefund` are spec 013 §5.2's refund
     // service and its admin action: the amount is a refund, capped by the order's and the
-    // payment's own totals (AC-28). Every other export takes no amount at all.
-    expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<"refund">();
+    // payment's own totals (AC-28). `requestRefund` is `refund`'s first step on the caller's
+    // transaction (spec 020a §12 request 1, TASK-359): the same refund amount, the same checks.
+    // Every other export takes no amount at all.
+    expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<
+      "refund" | "requestRefund"
+    >();
     expect(Object.keys(payments).sort()).toEqual([
       "AdminCancelInputSchema",
       "AdminRefundInputSchema",
@@ -59,6 +63,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "PRODUCTION_START_ACTOR",
       "PaymentRecordSchema",
       "REFUNDABLE_STATES",
+      "RefundReasonSchema",
       "SWEEP_ACTOR",
       "WEBHOOK_MAX_ATTEMPTS",
       "WEBHOOK_MAX_BYTES",
@@ -76,6 +81,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "refundCancelledOrder",
       "replayStripeWebhooks",
       "replayWebhooks",
+      "requestRefund",
       "runProductionStart",
       "startPayment",
       "startProduction",

@@ -126,6 +126,10 @@ export const adminOrderActionCodes = [
   "NOT_REFUNDABLE",
   "RESEND_NOT_ALLOWED",
   "RESEND_RATE_LIMITED",
+  // Not in §5.2's list: a form that fails its schema (a forged reason, `other` without a note), a
+  // missing order, or an action id reused on another order. The engine's own errors pass through
+  // under their own names (§5.2), and this is the action layer's (TASK-359).
+  "INPUT_INVALID",
 ] as const;
 export type AdminOrderActionCode = (typeof adminOrderActionCodes)[number];
 
@@ -136,4 +140,12 @@ export type AdminOrderActionResult =
       readonly resultRef: string;
       readonly replayed: boolean;
     }
-  | { readonly ok: false; readonly code: AdminOrderActionCode };
+  | {
+      readonly ok: false;
+      readonly code: AdminOrderActionCode;
+      /** A partial refund of exactly the remaining balance: "use Refund in full" (AC-18). */
+      readonly hint?: AdminOrderActionHint;
+    };
+
+/** The one refusal hint (spec 020a AC-18): the panel shows its message instead of the code's. */
+export type AdminOrderActionHint = "use_full_refund";
