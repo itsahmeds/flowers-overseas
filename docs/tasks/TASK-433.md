@@ -37,10 +37,17 @@ _None recorded._
 ## Progress
 
 - 2026-11-02: row and brief; the 13 `floristInbox.*` keys of PR 452 added to the pinned queue so it matches main.
+- 2026-11-02: 79 `en` keys recorded under the delegation and dropped from the queue; i18n tests green.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+79 English keys recorded reviewed under spec 003 A-founder-2026-10-31a, each
+`sourceHash` kept: PR 451's 11 `floristInbox.page.*`, PR 452's 13 `floristInbox.*`, PR 453's 21
+(`forFlorists.apply.error.*` and `emails.floristApplicationAlert.*`), PR 454's 34 (`emails.layout.*`,
+`emails.florist.*`, `whatsapp.florist.*`). None has an em or en dash or an `en-gb` override; the one
+"accept" (`emails.florist.offer.recipientLater`) is florist-only. `unreviewedShare("en")` 0.0635
+(40/630) on main e24763822, 0.0429 (27/630) after; `en-gb` 0.0651 to 0.0444. `de`/`pl` untouched.
+Not recorded: PR 454's 43 `emails.ops.*` keys in `messages/admin/en.meta.json`: the admin catalogue is
+never counted in a public share (spec 012 §2 AC-7) and `admin-scans.test.ts` pins every admin key
+`reviewed: false`, so recording them would change another spec's pin for no share effect. Tests:
+`i18n-messages-schema`, `i18n-review`, `i18n-review-scope` 59/59; `pnpm typecheck` 0. No build slot.
