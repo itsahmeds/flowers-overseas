@@ -453,3 +453,25 @@ describe("the value scan (T-58, AC-54)", () => {
     });
   });
 });
+
+/** Spec 016 §8 (TASK-331): the Resend webhook's signature header never reaches a log line. */
+describe("svix-signature redaction (spec 016 §8, AC-33)", () => {
+  it("redacts svix-signature in every spelling, at any depth, and keeps signature_verified", () => {
+    for (const key of [
+      "svix-signature",
+      "svix_signature",
+      "svixSignature",
+      "Svix-Signature",
+    ]) {
+      const out = JSON.stringify(
+        redact({
+          headers: { [key]: "v1,g0hM9SsE+OTPJTGt/tmIKtSyZlE3uFJELVlNIOLJ1OE=" },
+        }),
+      );
+      expect(out, key).not.toContain("g0hM9SsE");
+    }
+    expect(
+      JSON.stringify(redact({ signature_verified: true, svix_id: "msg_1" })),
+    ).toBe('{"signature_verified":true,"svix_id":"msg_1"}');
+  });
+});
