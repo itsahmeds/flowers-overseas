@@ -298,6 +298,7 @@ describe.skipIf(server.url === undefined)(
       const handlers: HandlerRegistry = {
         payments: paymentsOutboxHandler(deps),
         routing: () => Promise.resolve(),
+        invoices: () => Promise.resolve(),
       };
       for (let run = 0; run < 10; run += 1) {
         const counts = await dispatchOutbox({

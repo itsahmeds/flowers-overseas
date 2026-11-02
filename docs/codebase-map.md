@@ -20,6 +20,7 @@ task actually touches.
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +42 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +114 |
+| `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` +1 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `unit/florist-surface.test.ts` |
@@ -245,8 +246,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 409 |
-| `tests/integration/` | 64 |
+| `tests/unit/` | 410 |
+| `tests/integration/` | 65 |
 | `tests/contract/` | 28 |
 | `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |

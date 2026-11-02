@@ -38,10 +38,14 @@ const noop: OutboxHandler = () => Promise.resolve();
 
 // The type test (AC-20): every target needs a handler.
 // @ts-expect-error -- `routing` has no handler, so this must not compile.
-const missingRouting: HandlerRegistry = { payments: noop };
+const missingRouting: HandlerRegistry = { invoices: noop, payments: noop };
 // @ts-expect-error -- `payments` has no handler, so this must not compile.
-const missingPayments: HandlerRegistry = { routing: noop };
-const complete: HandlerRegistry = { payments: noop, routing: noop };
+const missingPayments: HandlerRegistry = { invoices: noop, routing: noop };
+const complete: HandlerRegistry = {
+  invoices: noop,
+  payments: noop,
+  routing: noop,
+};
 
 const EVENT: OutboxDeliveryEvent = {
   eventId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
@@ -55,13 +59,17 @@ const EVENT: OutboxDeliveryEvent = {
 
 describe("HandlerRegistry (AC-20, type half)", () => {
   it("names exactly the targets of OUTBOX_TARGET_NAMES", () => {
-    expect([...OUTBOX_TARGET_NAMES].sort()).toEqual(["payments", "routing"]);
+    expect([...OUTBOX_TARGET_NAMES].sort()).toEqual([
+      "invoices",
+      "payments",
+      "routing",
+    ]);
     expect(Object.keys(complete).sort()).toEqual(
       [...OUTBOX_TARGET_NAMES].sort(),
     );
     // The two incomplete registries exist only for the compiler.
-    expect(Object.keys(missingRouting)).toEqual(["payments"]);
-    expect(Object.keys(missingPayments)).toEqual(["routing"]);
+    expect(Object.keys(missingRouting)).toEqual(["invoices", "payments"]);
+    expect(Object.keys(missingPayments)).toEqual(["invoices", "routing"]);
   });
 });
 
@@ -105,7 +113,12 @@ describe("spec 013's outbox routes (§5.2)", () => {
         }
       }
     }
+    // Spec 018 (TASK-341) adds `invoices` to a live order's captures.
     expect(outboxTargets("order.captured", "live").map((t) => t.name)).toEqual([
+      "routing",
+      "invoices",
+    ]);
+    expect(outboxTargets("order.captured", "test").map((t) => t.name)).toEqual([
       "routing",
     ]);
     expect(
@@ -115,7 +128,9 @@ describe("spec 013's outbox routes (§5.2)", () => {
 });
 
 describe("the handler registry (AC-20; AC-12's ROUTING_NOT_CONFIGURED)", () => {
-  const context = (target: "payments" | "routing"): OutboxHandlerContext => ({
+  const context = (
+    target: "invoices" | "payments" | "routing",
+  ): OutboxHandlerContext => ({
     deliveryId: "0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b",
     outboxId: "1c9f8e7d-6b5a-4f4e-9d3c-2b1a0f9e8d7c",
     target,

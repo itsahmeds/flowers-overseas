@@ -19,6 +19,20 @@
  *
  * Spec 016 adds `notifications`, spec 023 `analytics`, a later spec `crm`, each with its rows
  * here, its name in `OUTBOX_TARGET_NAMES` and its handler in the dispatcher's registry.
+ *
+ * Spec 018 §5.2 "Outbox subscriptions" (TASK-341) adds `invoices`, for `live` only (for
+ * `mode <> 'live'` every list is empty, so a demo or test walk issues nothing and consumes no
+ * number, AC-15):
+ *
+ * | Event                    | `live`     | Step                              |
+ * |--------------------------|------------|-----------------------------------|
+ * | `order.captured`         | `invoices` | `invoice.issue {orderId}`         |
+ * | `order.refunded_partial` | `invoices` | `invoice.credit {refundId}`       |
+ * | `order.refunded_full`    | `invoices` | `invoice.credit {refundId}`       |
+ *
+ * Row 14's second `order.captured` reaches the same target; the step is idempotent on the order,
+ * so it issues nothing. `order.chargeback_lost` has no row (§13 Q12), and no row names the
+ * removed `order.refunded`.
  */
 import type { OrderEventType, OrderMode } from "../service/events";
 import type { OutboxTarget } from "../service/outbox";
@@ -27,7 +41,7 @@ import type { OutboxTarget } from "../service/outbox";
  * Every target the dispatcher delivers. Adding a name here without a handler in
  * `HandlerRegistry` fails `tsc` (`./dispatcher.ts`; spec 013 AC-20).
  */
-export const OUTBOX_TARGET_NAMES = ["payments", "routing"] as const;
+export const OUTBOX_TARGET_NAMES = ["invoices", "payments", "routing"] as const;
 
 export type OutboxTargetName = (typeof OUTBOX_TARGET_NAMES)[number];
 
@@ -41,6 +55,12 @@ export const PAYMENTS_TARGET = {
 export const ROUTING_TARGET = {
   name: "routing",
   audience: "partner",
+} as const satisfies OutboxTarget & { name: OutboxTargetName };
+
+/** The `invoices` target: spec 018's invoice and credit-note steps (`src/modules/invoices`). */
+export const INVOICES_TARGET = {
+  name: "invoices",
+  audience: "system",
 } as const satisfies OutboxTarget & { name: OutboxTargetName };
 
 /** Event → mode → targets. A mode absent from an event's row gets no target. */
@@ -77,4 +97,21 @@ export function paymentOutboxTargets(
   mode: OrderMode,
 ): readonly OutboxTarget[] {
   return PAYMENT_OUTBOX_ROUTES[event]?.[mode] ?? [];
+}
+
+const LIVE_ONLY_INVOICES = { live: [INVOICES_TARGET] } as const;
+
+/** Spec 018 §5.2's subscriptions, exactly: `live` only. */
+export const INVOICE_OUTBOX_ROUTES: ModeOutboxRoutes = {
+  "order.captured": LIVE_ONLY_INVOICES,
+  "order.refunded_partial": LIVE_ONLY_INVOICES,
+  "order.refunded_full": LIVE_ONLY_INVOICES,
+};
+
+/** The targets spec 018's rows give `event` for an order in `mode`. Pure. */
+export function invoiceOutboxTargets(
+  event: OrderEventType,
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  return INVOICE_OUTBOX_ROUTES[event]?.[mode] ?? [];
 }

@@ -29,13 +29,16 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-02 (self-review, TASK-341): **for TASK-342** `invoice.render` is not enqueued by `issueInvoice`: its queue, payload and handler are 342's; it picks up every `invoice` row whose render columns are null (the "not rendered 15 minutes after issue" alert covers the same rows). The NBP adapter plugs into `setVatRateProvider` (`src/modules/invoices/vat-rate.ts`); until then a profile with `vat_currency_code` different from the invoice currency fails the issue with `VAT_RATE_PROVIDER_NOT_CONFIGURED` (retried, then `outbox.dead`). The PLN conversion of VAT per rate (and its rounding) is printed from the stored `vatRate`; the snapshot does not hold converted amounts.
+- 2026-11-02 (self-review): **for the invoices runbook (TASK-342)** an invoice issued after 31 December under a profile still pointing at the old year's series prints the old year (`FO-PL/2026/...`): the runbook must repoint the profile to the new series row before midnight. A refusal for "series year is not the issue year" would be a new code; not added without the spec.
+- 2026-11-02 (self-review): spec 005's `vatBreakdown` rounds VAT half up, spec 018 half to even. They agree on every gross at 800 and 2 300 bp (no exact half exists; unit test walks 0 to 200 000), so `principal/PL` is unaffected. At 2 000 bp (FR, UK) a gross of 3, 9, 15, ... differs by one minor unit between the order record and the invoice; the invoice checks gross per rate only. Decide one rule before a 20 % destination is invoiced.
+- 2026-11-02 (self-review): the issuer address prints `company.ts`'s `RegisteredAddressSchema` (lines, postal code, city, country); spec 018 §14 A-founder-2026-10-23 names "region": that schema has no region field (the region goes in an address line until `company.ts` gains one).
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-02, to the orchestrator (accountant question): **how is a partial refund of a mixed-rate order divided between VAT rates on its credit note?** Spec 018 AC-21 says only "negative per-rate amounts summing to the refund amount". Pro rata by gross, by the line refunded (needs a line on the refund row), or the higher rate first are each a VAT treatment. Built meanwhile: a partial refund whose remaining amount is at one rate is credited at that rate; across two or more rates `issueCreditNote` refuses `INVOICE_CREDIT_SPLIT_OPEN` with an alert and consumes no number (no document is invented). A full refund (or a refund of all that is left) nets every rate to zero and needs no answer. **open**.
 
 ## Progress
 
@@ -43,11 +46,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-01 agent AB: worktree `fo-wt-341`, branch `task/TASK-341-invoice-issuing` off main b8f945618; no migration needed (0021 has every table). Next: `src/modules/invoices`, the `invoices` outbox target, tests.
+- 2026-11-02 agent AB: module, outbox target, unit and integration suites written and green on a local PG16; 12 mutations each red; rebased on origin/main, no migration. Next: gates, self-review, ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 447 (https://github.com/itsahmeds/flowers-overseas/pull/447). `src/modules/invoices`: `issueInvoice` (order row locked, refusals in a savepoint, `SELECT ... FOR UPDATE` on the series, `InvoiceSnapshotV1`), `issueCreditNote` (`CreditNoteSnapshotV1`, credit series of the invoice's profile), round-half-even VAT per rate from `order.vat_breakdown`, the typed refusals and `invoice.refused` alerts, the `VatRateProvider` seam; the `invoices` outbox target (`order.captured`, `order.refunded_partial`, `order.refunded_full`, `live` only) registered in `src/jobs/handlers.ts`. No migration (0021 holds every table). Tests: unit `tests/unit/invoices-vat.test.ts` (17), integration `tests/integration/invoices.test.ts` (13, incl. 20 concurrent issues), and the dispatcher suites updated for the third target. Declared deviation: the steps run in the outbox delivery, not separate pg-boss jobs. Open: the escalation above; carry-forwards for TASK-342.

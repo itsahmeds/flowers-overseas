@@ -176,7 +176,11 @@ describe.skipIf(server.url === undefined)(
 
         const payments = recording();
         const routing = throwing();
-        const handlers: HandlerRegistry = { payments, routing };
+        const handlers: HandlerRegistry = {
+          invoices: recording(),
+          payments,
+          routing,
+        };
         const alert = alerts();
         const log = silentLogger();
         const runs = [];
@@ -300,7 +304,7 @@ describe.skipIf(server.url === undefined)(
         const payments = recording();
         const routing = recording();
         const options = {
-          handlers: { payments, routing },
+          handlers: { invoices: recording(), payments, routing },
           transaction: savepoints(tx),
           alert: alerts(),
           log: silentLogger(),
@@ -367,6 +371,7 @@ describe.skipIf(server.url === undefined)(
         // Row A: payments sent, routing fails 8 times.
         const a = await ordered();
         const failing: HandlerRegistry = {
+          invoices: recording(),
           payments: recording(),
           routing: throwing(),
         };
@@ -379,11 +384,23 @@ describe.skipIf(server.url === undefined)(
         // Row B: payments sent, routing fails once, then succeeds.
         const b = await ordered();
         const recovering: (string | undefined)[] = [];
-        await run({ payments: recording(), routing: throwing() });
+        await run({
+          invoices: recording(),
+          payments: recording(),
+          routing: throwing(),
+        });
         recovering.push(await status(b));
-        await run({ payments: recording(), routing: throwing() });
+        await run({
+          invoices: recording(),
+          payments: recording(),
+          routing: throwing(),
+        });
         recovering.push(await status(b));
-        await run({ payments: recording(), routing: recording() });
+        await run({
+          invoices: recording(),
+          payments: recording(),
+          routing: recording(),
+        });
         recovering.push(await status(b));
         return { dying, recovering, deliveries: await deliveries(tx, b) };
       });
@@ -420,6 +437,7 @@ describe.skipIf(server.url === undefined)(
           };
         await dispatchOutbox({
           handlers: {
+            invoices: recording(),
             payments: write("kept", false),
             routing: write("undone", true),
           },
@@ -443,7 +461,7 @@ describe.skipIf(server.url === undefined)(
         const outboxId = await twoTargetRow(tx, orderId);
         const routing = throwing();
         const base = {
-          handlers: { payments: recording(), routing },
+          handlers: { invoices: recording(), payments: recording(), routing },
           transaction: savepoints(tx),
           alert: alerts(),
           log: silentLogger(),
@@ -485,7 +503,7 @@ describe.skipIf(server.url === undefined)(
           SELECT d.target FROM outbox_delivery d WHERE d.outbox_id = ${paid.outboxId}`;
         const routing = recording();
         const counts = await dispatchOutbox({
-          handlers: { payments: recording(), routing },
+          handlers: { invoices: recording(), payments: recording(), routing },
           transaction: savepoints(tx),
           orderId: paid.orderId,
           alert: alerts(),
@@ -539,7 +557,7 @@ describe.skipIf(server.url === undefined)(
         const second = await paidTestOrder(tx);
         const routing = recording();
         const counts = await dispatchOutbox({
-          handlers: { payments: recording(), routing },
+          handlers: { invoices: recording(), payments: recording(), routing },
           transaction: savepoints(tx),
           orderId: second.orderId,
           alert: alerts(),
