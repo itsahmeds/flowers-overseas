@@ -991,6 +991,7 @@
     "partner_coverage partner_coverage_audit": "CREATE TRIGGER partner_coverage_audit AFTER INSERT OR DELETE OR UPDATE ON public.partner_coverage FOR EACH ROW EXECUTE FUNCTION audit_row_change('id')",
     "partner_coverage partner_coverage_country_check": "CREATE TRIGGER partner_coverage_country_check BEFORE INSERT OR UPDATE OF partner_id, city_id, postcode_zone_id ON public.partner_coverage FOR EACH ROW EXECUTE FUNCTION partner_coverage_country_check()",
     "partner_coverage partner_coverage_set_updated_at": "CREATE TRIGGER partner_coverage_set_updated_at BEFORE UPDATE ON public.partner_coverage FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+    "partner_member partner_member_audit": "CREATE TRIGGER partner_member_audit AFTER INSERT OR DELETE OR UPDATE ON public.partner_member FOR EACH ROW EXECUTE FUNCTION audit_row_change('user_id', 'partner_id')",
     "partner_member partner_member_set_updated_at": "CREATE TRIGGER partner_member_set_updated_at BEFORE UPDATE ON public.partner_member FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
     "partner_translation partner_translation_set_updated_at": "CREATE TRIGGER partner_translation_set_updated_at BEFORE UPDATE ON public.partner_translation FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
     "payment payment_set_updated_at": "CREATE TRIGGER payment_set_updated_at BEFORE UPDATE ON public.payment FOR EACH ROW EXECUTE FUNCTION set_updated_at()",

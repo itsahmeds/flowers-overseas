@@ -364,8 +364,15 @@ describe.skipIf(server.url === undefined)(
         ORDER BY 1`;
       // Spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321) attaches the same trigger to the five
       // blog tables; their audit rows are asserted by `tests/integration/blog.test.ts`.
+      // Spec 022a's `0029_reviews_close` (`review`) and spec 020a's `0031_admin_order_actions`
+      // (`admin_order_action`) attach it too; their audit rows are asserted by their own suites.
       expect(triggers.map((row) => row.table)).toEqual(
-        [...AUDITED_TABLES, ...BLOG_TABLES].sort(),
+        [
+          ...AUDITED_TABLES,
+          ...BLOG_TABLES,
+          "review",
+          "admin_order_action",
+        ].sort(),
       );
     });
 
