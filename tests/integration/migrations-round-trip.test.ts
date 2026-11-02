@@ -81,6 +81,10 @@ const FUNCTIONS = [
   "blog_revision_freeze",
   "blog_revision_hash",
   "blog_slug_lock",
+  // 0026 (TASK-294): `first_live_at`, `first_active_at` and the price-row guard (spec 012b §5.1
+  // item 3).
+  "country_first_live_at",
+  "country_price_guard",
   "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
@@ -101,6 +105,7 @@ const FUNCTIONS = [
   "partner_application_media_check",
   "partner_coverage_country_check",
   "payout_currency_check",
+  "product_first_active_at",
   // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
   // A-founder-2026-10-22 item 2 A).
   "purchase_total_check",

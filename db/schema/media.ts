@@ -119,10 +119,20 @@ export const mediaAsset = pgTable(
     depicts: text("depicts").notNull(),
     reviewedBy: text("reviewed_by"),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    /**
+     * The florist a `source = 'partner'` photo came from (`0033_catalogue_cms`, spec 012b §2.7).
+     * The foreign key to `fulfillment_partner` is the migration's: `partners.ts` imports this
+     * module's neighbour `catalog.ts`, and a reference here would close the cycle.
+     */
+    supplierPartnerId: uuid("supplier_partner_id"),
     ...timestamps,
   },
   (table) => [
     unique("media_asset_object_key_key").on(table.objectKey),
+    check(
+      "media_asset_supplier_partner_check",
+      sql`${table.source} <> 'partner' or ${table.supplierPartnerId} is not null`,
+    ),
     check(
       "media_asset_object_key_check",
       sql.raw(`object_key ~ '${OBJECT_KEY_PATTERN}'`),
