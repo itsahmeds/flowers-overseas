@@ -15,8 +15,6 @@
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import { invoicesOutboxHandler } from "../modules/invoices";
-import { floristAuth } from "../lib/auth/florist";
-import { createSignInLink } from "../lib/auth/surface";
 import { registerNotificationsOutbox } from "../modules/notifications";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
@@ -38,8 +36,14 @@ registerOutboxHandler("invoices", invoicesOutboxHandler());
 // is off, every notifications delivery stays `pending` and is sent once when it is turned on.
 registerNotificationsOutbox({
   // Spec 016 §5.2, AC-23: each florist email's one-tap link, its callback the order's inbox page.
-  signInLink: (userId, callbackPath) =>
-    createSignInLink(floristAuth, userId, { callbackPath }),
+  // Loaded at the first florist email, so loading the job table builds no sign-in surface.
+  signInLink: async (userId, callbackPath) => {
+    const [{ floristAuth }, { createSignInLink }] = await Promise.all([
+      import("../lib/auth/florist"),
+      import("../lib/auth/surface"),
+    ]);
+    return createSignInLink(floristAuth, userId, { callbackPath });
+  },
 });
 
 export const JOB_HANDLERS: JobHandlers = {
