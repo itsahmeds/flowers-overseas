@@ -15,7 +15,9 @@ export {
   PAYMENT_OUTBOX_ROUTES,
   PAYMENTS_TARGET,
   paymentOutboxTargets,
+  ROUTING_OUTBOX_ROUTES,
   ROUTING_TARGET,
+  routingOutboxTargets,
 } from "./outbox/routes";
 export type { ModeOutboxRoutes, OutboxTargetName } from "./outbox/routes";
 export {

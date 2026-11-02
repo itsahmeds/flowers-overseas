@@ -12,9 +12,12 @@
  *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick),
  *    `payments.production_start` (spec 013 §5.2, TASK-258: row 16 on the delivery morning),
  *    `webhook.process` (spec 013 §5.2, TASK-260: one stored webhook), `order.close_sweep`
- *    (spec 022a §5.2, TASK-369: one run of the close sweep, enqueued by every minute tick);
- *  - **declared only** — the name is reserved for the spec that implements it (`order.route`,
- *    `assignment.timeout`, `notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
+ *    (spec 022a §5.2, TASK-369: one run of the close sweep, enqueued by every minute tick), and
+ *    spec 016's routing jobs (§5.2 "Jobs", TASK-328): `order.route`, `assignment.remind`,
+ *    `assignment.timeout`, `assignment.photo_remind` (each keyed, at most one waiting job per key:
+ *    the queue's `short` policy) and `routing.sla_watch` (enqueued by every minute tick);
+ *  - **declared only** — the name is reserved for the spec that implements it
+ *    (`notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
  *    implementing spec writes the payload, so nothing here guesses its shape, and `enqueue`
  *    refuses the name until then.
@@ -80,10 +83,41 @@ export const WebhookProcessPayload = z.object({ inboxId: z.uuid() }).strict();
  */
 export const OrderCloseSweepPayload = z.object({}).strict();
 
+/**
+ * `order.route` (spec 016 §5.2 "Jobs", AC-1, TASK-328): offer the order to its next florist, or
+ * exhaust it. Keyed by the order (`singletonKey = orderId`): at most one waiting run per order.
+ */
+export const OrderRoutePayload = z.object({ orderId: z.uuid() }).strict();
+
+/**
+ * `assignment.remind` and `assignment.timeout` (spec 016 §5.2, AC-7): V2 at half the answer
+ * window, the timeout at its end. Keyed by the assignment.
+ */
+export const AssignmentJobPayload = z
+  .object({ assignmentId: z.uuid() })
+  .strict();
+
+/** `assignment.photo_remind` (spec 016 §5.2, AC-17): V5 an hour after delivery. Keyed by order. */
+export const AssignmentPhotoRemindPayload = z
+  .object({ orderId: z.uuid() })
+  .strict();
+
+/** `routing.sla_watch` (spec 016 §5.2, AC-31): one minute's look for overdue offers. */
+export const RoutingSlaWatchPayload = z.object({}).strict();
+
+/**
+ * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
+ * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
+ * already running may enqueue its own successor (a deferred offer, the next offer).
+ */
+export type JobQueuePolicy = "standard" | "short";
+
 /** One registered job: its payload schema and that schema's version. */
 export interface RegisteredJob<Schema extends z.ZodType = z.ZodType> {
   readonly version: number;
   readonly payload: Schema;
+  /** The queue's policy; `standard` when absent. */
+  readonly policy?: JobQueuePolicy;
 }
 
 /** The registered jobs (spec 002 §5.2 "Implemented here"). */
@@ -99,12 +133,27 @@ export const REGISTERED_JOBS = {
   },
   "webhook.process": { version: 1, payload: WebhookProcessPayload },
   "order.close_sweep": { version: 1, payload: OrderCloseSweepPayload },
+  "order.route": { version: 1, payload: OrderRoutePayload, policy: "short" },
+  "assignment.remind": {
+    version: 1,
+    payload: AssignmentJobPayload,
+    policy: "short",
+  },
+  "assignment.timeout": {
+    version: 1,
+    payload: AssignmentJobPayload,
+    policy: "short",
+  },
+  "assignment.photo_remind": {
+    version: 1,
+    payload: AssignmentPhotoRemindPayload,
+    policy: "short",
+  },
+  "routing.sla_watch": { version: 1, payload: RoutingSlaWatchPayload },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */
 export const DECLARED_JOBS = [
-  "order.route",
-  "assignment.timeout",
   "notification.deliver",
   "fx.refresh",
   "sitemap.regenerate",
@@ -137,6 +186,12 @@ export type JobPayload<Name extends RegisteredJobName> = z.output<
 export type JobPayloadInput<Name extends RegisteredJobName> = z.input<
   (typeof REGISTERED_JOBS)[Name]["payload"]
 >;
+
+/** The queue policy of a registered job (`standard` unless the registry names another). */
+export function jobQueuePolicy(name: RegisteredJobName): JobQueuePolicy {
+  const job: RegisteredJob = REGISTERED_JOBS[name];
+  return job.policy ?? "standard";
+}
 
 /** True for a name with a queue and a payload schema. */
 export function isRegisteredJob(name: string): name is RegisteredJobName {
