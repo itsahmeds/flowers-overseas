@@ -27,7 +27,16 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-03 (self-review, PR 461): no 1280/390 screenshot of the admin block was taken locally
+  (the page needs an admin session and a database); the block is built from the artboard's own
+  primitives (`.ad-sec`, `.ad-card`, `.ad-chip`/`ok`, `.ad-note`). Compare it on the first
+  preview or production deploy.
+- 2026-11-03: `tests/integration/migrations-round-trip.test.ts` is red on main independently of
+  this PR (its `FUNCTIONS` list has `review_content_immutable` out of sorted order); not touched
+  here.
+- 2026-11-03: until TASK-363's `0034` merges, `db:check` and every integration suite refuse the
+  gap before `0035` (the runner checks the sequence). Locally the suites were run with the pair
+  renamed to `0034`, never committed.
 
 ## Escalations
 
@@ -45,10 +54,24 @@ here.
   0034 is TASK-363's), `src/modules/partners/access/` (language, sync, first-sign-in, status),
   the sync wired into `createPartner`, `updatePartner`, `convertApplication`, the stamp in
   `confirmFloristSignIn`, the admin block, unit tests. Next: integration tests on a local PG16.
+- 2026-11-03: integration suite `florist-access` (17), the confirm-stamp case in `florist-auth`,
+  `partner_member` in the audit-trail suite; migrate, roll back, migrate on PG16; snapshot
+  regenerated; mutations recorded in the PR. Done; PR 461 ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 461. Migration `0035_florist_access` (+ down) attaches `audit_row_change('user_id',
+'partner_id')` to `partner_member`; `src/modules/partners/access/` holds `FloristSignInEmailSchema`
+and `floristLanguageFor` (pure), `syncPartnerOwnerMember` (run by `createPartner`, `updatePartner`
+and `convertApplication` in their admin transaction, actions `partner.member.grant` / `.revoke`),
+`recordFirstFloristSignIn` (called after a successful florist confirm) and `floristSignInStatus`
+(the admin block under Profile). `partner_member` joins `AUDITED_TABLES`. Tests: unit 14
+(`partners-access-language`), integration 17 (`florist-access`) + 1 (`florist-auth`) + 1 case
+(`audit-trail`); `partners-admin` and `florist-auth` green with the sync in place. No new copy
+outside `admin.partners.signIn.*` (English only, admin keys ship unreviewed by rule, so no
+approval script). One reading to note: `updatePartner` also syncs when a non-demo partner has no
+owner yet (partners created before this task), so a legacy partner gains access on its next save.
+Records of AC-14 (RoPA, runbook, pointers) are TASK-356's.
