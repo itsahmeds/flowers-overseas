@@ -59,3 +59,12 @@ export {
   toCountryHolidayRow,
 } from "./projections.ts";
 export type { HolidayProvider } from "./holidays.ts";
+// Zone arithmetic for spec 016's routing windows (`offerWindow`, `graceEnd`; TASK-327): the
+// destination's calendar day and wall clock at an instant, and the instant of a wall-clock time.
+export {
+  addDays,
+  instantAt,
+  minuteOfDay,
+  zonedDate,
+  zonedMinuteOfDay,
+} from "./zone.ts";

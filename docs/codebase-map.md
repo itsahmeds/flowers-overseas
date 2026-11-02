@@ -70,6 +70,7 @@ task actually touches.
 | `payment-methods.ts` | Payment-method registry (spec 004 §2… | 004 |
 | `payments.ts` | Payment lifecycle timings: the unpaid-purchase… | 013 |
 | `reviews.ts` | Review constants: invite timing, text cap,… | 022 |
+| `routing.ts` | The routing rules' numbers (spec 016 §5.2… | 016 |
 | `search.ts` | Site search's numbers and word lists | 045 |
 | `site-links.ts` | Site-link registry | 004 |
 | `trending.ts` | The florists' picks the "Most sent this week"… | 004 |
@@ -244,8 +245,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 407 |
-| `tests/integration/` | 63 |
+| `tests/unit/` | 409 |
+| `tests/integration/` | 64 |
 | `tests/contract/` | 28 |
 | `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |

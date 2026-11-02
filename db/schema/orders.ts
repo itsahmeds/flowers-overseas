@@ -69,6 +69,15 @@ export const orderLineKinds = ["product", "addon", "surcharge"] as const;
 
 export const assignmentResponses = ["accept", "decline", "timeout"] as const;
 
+/** `order_assignment.withdrawn_reason` (spec 016 §5.1, migration `0030`): why we stopped an offer. */
+export const assignmentWithdrawnReasons = [
+  "order_cancelled",
+  "payment_failed",
+  "refunded_full",
+  "chargeback_open",
+  "cancelled_refunded",
+] as const;
+
 export const substitutionResolutions = [
   "accepted",
   "rejected",
@@ -515,6 +524,9 @@ export const orderAssignment = pgTable(
     reason: text("reason"),
     attempt: integer("attempt").notNull(),
     ...timestamps,
+    /** Spec 016 §5.1 (`0030`): an open or accepted offer we stopped; both null or both set. */
+    withdrawnAt: timestamp("withdrawn_at", { withTimezone: true }),
+    withdrawnReason: text("withdrawn_reason"),
   },
   (table) => [
     unique("order_assignment_order_id_attempt_key").on(
@@ -534,6 +546,14 @@ export const orderAssignment = pgTable(
       sql`${table.slaExpiresAt} > ${table.offeredAt}`,
     ),
     check("order_assignment_attempt_check", sql`${table.attempt} >= 1`),
+    check(
+      "order_assignment_withdrawn_reason_check",
+      sql.raw(`withdrawn_reason in ${valueList(assignmentWithdrawnReasons)}`),
+    ),
+    check(
+      "order_assignment_withdrawn_check",
+      sql`(${table.withdrawnAt} is null) = (${table.withdrawnReason} is null)`,
+    ),
     index("order_assignment_partner_id_idx").on(table.partnerId),
   ],
 );

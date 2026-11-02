@@ -111,6 +111,12 @@ export {
   pickerStates,
   reasonFor,
   toCountryHolidayRow,
+  // Zone arithmetic (spec 016 §5.2 routing windows; TASK-327).
+  addDays,
+  instantAt,
+  minuteOfDay,
+  zonedDate,
+  zonedMinuteOfDay,
 } from "./delivery/index.ts";
 // The corridor page: existence rule, states, view model and blocks (spec 007 §5.2; TASK-091).
 export {

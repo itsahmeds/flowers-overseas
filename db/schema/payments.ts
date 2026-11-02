@@ -43,6 +43,9 @@ import { order, purchase } from "./orders.ts";
 
 export const paymentProviders = ["stripe", "mollie"] as const;
 
+/** `webhook_inbox.provider`: the payment providers, and Resend from `0030` (spec 016 §5.1). */
+export const webhookInboxProviders = [...paymentProviders, "resend"] as const;
+
 /** `payment.status`: §5.1 leaves it open; AC-7 needs a list. A7.3 adds `processing`. */
 export const paymentStatuses = [
   "pending",
@@ -323,7 +326,7 @@ export const webhookInbox = pgTable(
     ),
     check(
       "webhook_inbox_provider_check",
-      sql.raw(`provider in ${valueList(paymentProviders)}`),
+      sql.raw(`provider in ${valueList(webhookInboxProviders)}`),
     ),
     check("webhook_inbox_attempts_check", sql`${table.attempts} >= 0`),
     check(

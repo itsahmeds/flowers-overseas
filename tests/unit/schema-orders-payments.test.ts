@@ -68,7 +68,7 @@ const a8 = readMigration(
  * `refund.purchase_id` with their keys, `"order" UNIQUE (id, purchase_id)`. `0029` (spec 022a
  * §5.1, TASK-368) adds `review`'s moderation, display and routing columns.
  */
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0026_payment_purchase.sql")}\n${readMigration("0029_reviews_close.sql")}`;
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0026_payment_purchase.sql")}\n${readMigration("0029_reviews_close.sql")}\n${readMigration("0030_routing_notifications.sql")}`;
 
 const TABLES = [
   "order_status",

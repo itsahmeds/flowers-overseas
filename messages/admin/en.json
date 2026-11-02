@@ -326,6 +326,12 @@
         "reviews": {
           "invite": "Sends one review email to every delivered order, a day after the photo.",
           "trustpilot": "Copies each review email to Trustpilot, which then invites the buyer too."
+        },
+        "routing": {
+          "auto": "Offers each paid order to florists automatically, per country. Off: paid orders there come to you instead, and are cancelled and refunded at the end of their grace time if nobody acts."
+        },
+        "notifications": {
+          "email": "Sends order emails to buyers, florists and you. Off: every email waits and goes out once this is on again. Nothing is dropped."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -364,6 +370,18 @@
           "trustpilot": {
             "on": "Each review email will be copied to Trustpilot's invitation address. Type the flag's name to confirm.",
             "off": "Review emails will no longer be copied to Trustpilot. Type the flag's name to confirm."
+          }
+        },
+        "routing": {
+          "auto": {
+            "off": "Paid orders to this country will no longer be offered to florists. Each one comes to you, and is cancelled and refunded at the end of its grace time if nobody acts. Type the flag's name to confirm.",
+            "on": "Paid orders to this country will be offered to florists automatically again. Type the flag's name to confirm."
+          }
+        },
+        "notifications": {
+          "email": {
+            "off": "No order email will be sent until this is on again. Emails wait and are not lost. Type the flag's name to confirm.",
+            "on": "Order emails will be sent again, including the ones that waited. Type the flag's name to confirm."
           }
         }
       },
