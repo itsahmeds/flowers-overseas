@@ -32,6 +32,8 @@ export const reviewSubjectKinds = [
   "corridor_file",
   "info_page_file",
   "media_asset",
+  // spec 044 §5.1 item 6 (migration `0024_blog`, TASK-321): one post revision in its locale.
+  "blog_post_revision",
 ] as const;
 
 export const reviewDecisions = [

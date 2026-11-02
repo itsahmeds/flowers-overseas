@@ -39,8 +39,10 @@ import {
 } from "vitest";
 
 import {
+  BUILD_ROLE_BLOG_TABLES,
   BUILD_ROLE_FILTERED_TABLES,
   BUILD_ROLE_READ_TABLES,
+  PUBLIC_VIEWS,
 } from "../../db/rls.ts";
 import * as schema from "../../db/schema/index.ts";
 import { readSeedTree } from "../../seed/check.ts";
@@ -62,6 +64,8 @@ const run = promisify(execFile);
 const BUILD_SET = [
   ...BUILD_ROLE_READ_TABLES,
   ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
+  // spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321).
+  ...BUILD_ROLE_BLOG_TABLES,
 ].sort();
 
 const MIRROR_TABLES = Object.values(schema)
@@ -203,9 +207,13 @@ describe.skipIf(server.url === undefined)(
         WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p', 'v', 'm')
           AND relname <> 'schema_migrations'
         ORDER BY 1`;
+      // The column-limited public views the build also reads (spec 044 §5.1 item 7, `0024_blog`).
+      const readableViews: readonly string[] = Object.keys(PUBLIC_VIEWS);
       const outside = relations
         .map((r) => r.name)
-        .filter((name) => !BUILD_SET.includes(name));
+        .filter(
+          (name) => !BUILD_SET.includes(name) && !readableViews.includes(name),
+        );
       for (const table of NAMED_PRIVATE) expect(outside).toContain(table);
       expect(outside).toContain("partner_catalog_mapping");
       expect(outside).toContain("partner_coverage");
