@@ -185,6 +185,7 @@ describe("ensureQueues", () => {
       "media.derive_variants",
       "neon.usage_probe",
       "order.close_sweep",
+      "order.no_partner_expire",
       "order.route",
       "outbox.dispatch",
       "payments.production_start",
@@ -204,6 +205,7 @@ describe("ensureQueues", () => {
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
+      "order.no_partner_expire",
       "order.route",
     ]);
   });
@@ -382,7 +384,7 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), order.close_sweep (TASK-369) and spec 016's five routing jobs (TASK-328), nothing else yet", async () => {
+  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), order.close_sweep (TASK-369) and spec 016's six routing jobs (TASK-328, TASK-329) (TASK-328), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
       "assignment.photo_remind",
@@ -390,6 +392,7 @@ describe("runTick — each job settled exactly once", () => {
       "assignment.timeout",
       "media.derive_variants",
       "order.close_sweep",
+      "order.no_partner_expire",
       "order.route",
       "outbox.dispatch",
       "payments.production_start",

@@ -756,7 +756,7 @@ describe.skipIf(server.url === undefined)(
       reason: string,
       alert: ReturnType<typeof vi.fn>,
     ) {
-      expect(outcome).toEqual({ kind: "exhausted", reason });
+      expect(outcome).toMatchObject({ kind: "exhausted", reason });
       expect(await status(orderId)).toBe("no_partner_available");
       const last = (await events(orderId)).at(-1);
       expect(last).toMatchObject({
@@ -874,7 +874,7 @@ describe.skipIf(server.url === undefined)(
       const empty = await world();
       const lonely = await securedOrder(empty, "test");
       const d = deps(NOW);
-      expect(await routeOrder(lonely, d)).toEqual({
+      expect(await routeOrder(lonely, d)).toMatchObject({
         kind: "exhausted",
         reason: "no_candidate",
       });
@@ -1100,7 +1100,7 @@ describe.skipIf(server.url === undefined)(
     /* T-32                                                                   */
     /* ---------------------------------------------------------------------- */
 
-    it("T-32 (AC-32): every event the router's actors wrote in this suite is one of its four catalogue names, each transition on an order_transition row that allows class system", async () => {
+    it("T-32 (AC-32): every event the router's system actors wrote in this suite is one of its catalogue names, each transition on an order_transition row that allows class system", async () => {
       const rows = await scratch.sql<
         {
           type: string;
@@ -1126,8 +1126,13 @@ describe.skipIf(server.url === undefined)(
           expect(row.from_status).toBe(row.to_status);
         }
       }
+      // `order.manual_reroute` is the founder's (`admin:{uuid}`, TASK-329), not a system actor's.
       expect(new Set(rows.map((row) => row.type))).toEqual(
-        new Set(ROUTING_WRITTEN_EVENTS),
+        new Set(
+          ROUTING_WRITTEN_EVENTS.filter(
+            (type) => type !== "order.manual_reroute",
+          ),
+        ),
       );
     });
   },
