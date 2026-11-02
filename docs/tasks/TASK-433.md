@@ -38,10 +38,11 @@ _None recorded._
 
 - 2026-11-02: row and brief; the 13 `floristInbox.*` keys of PR 452 added to the pinned queue so it matches main.
 - 2026-11-02: 79 `en` keys recorded under the delegation and dropped from the queue; i18n tests green.
+- 2026-11-02: PR 457 opened, row `in_review`.
 
 ## Result
 
-79 English keys recorded reviewed under spec 003 A-founder-2026-10-31a, each
+PR 457. 79 English keys recorded reviewed under spec 003 A-founder-2026-10-31a, each
 `sourceHash` kept: PR 451's 11 `floristInbox.page.*`, PR 452's 13 `floristInbox.*`, PR 453's 21
 (`forFlorists.apply.error.*` and `emails.floristApplicationAlert.*`), PR 454's 34 (`emails.layout.*`,
 `emails.florist.*`, `whatsapp.florist.*`). None has an em or en dash or an `en-gb` override; the one
