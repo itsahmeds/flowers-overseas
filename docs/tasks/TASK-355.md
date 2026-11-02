@@ -41,7 +41,10 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-03: migration `0035_florist_access` (+ down; renumbered from 0036 by the orchestrator,
+  0034 is TASK-363's), `src/modules/partners/access/` (language, sync, first-sign-in, status),
+  the sync wired into `createPartner`, `updatePartner`, `convertApplication`, the stamp in
+  `confirmFloristSignIn`, the admin block, unit tests. Next: integration tests on a local PG16.
 
 ## Result
 

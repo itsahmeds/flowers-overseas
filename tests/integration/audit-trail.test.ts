@@ -313,6 +313,27 @@ const CASES: readonly TableCase[] = [
     changed: "display_name",
     source: false,
   },
+  {
+    // Spec 026a AC-8 (`0035_florist_access`, TASK-355): the row id is `{user_id}:{partner_id}`.
+    table: "partner_member",
+    parents: async (tx) => ({
+      userId: await user(tx),
+      partnerId: await partner(tx, await insertCountry(tx)),
+    }),
+    insert: async (tx, p) => {
+      await tx`INSERT INTO partner_member (user_id, partner_id, role, locale_code)
+               VALUES (${p["userId"] ?? ""}, ${p["partnerId"] ?? ""}, 'owner', 'en')`;
+      return `${p["userId"] ?? ""}:${p["partnerId"] ?? ""}`;
+    },
+    update: (tx, _id, p) =>
+      tx`UPDATE partner_member SET locale_code = 'pl'
+         WHERE user_id = ${p["userId"] ?? ""} AND partner_id = ${p["partnerId"] ?? ""}`,
+    remove: (tx, _id, p) =>
+      tx`DELETE FROM partner_member
+         WHERE user_id = ${p["userId"] ?? ""} AND partner_id = ${p["partnerId"] ?? ""}`,
+    changed: "locale_code",
+    source: false,
+  },
 ];
 
 describe.skipIf(server.url === undefined)(
@@ -333,7 +354,7 @@ describe.skipIf(server.url === undefined)(
       await scratch?.drop();
     });
 
-    it("covers exactly the ten tables of §5.1", async () => {
+    it("covers exactly the tables of spec 012 §5.1 and spec 026a §5.1", async () => {
       expect(CASES.map((c) => c.table)).toEqual([...AUDITED_TABLES]);
       const triggers = await scratch.sql<{ table: string }[]>`
         SELECT c.relname AS table FROM pg_trigger t

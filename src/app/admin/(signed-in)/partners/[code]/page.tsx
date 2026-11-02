@@ -8,6 +8,9 @@
  * role cannot change renders read only, with no buttons: profile, terms, zones and days off need
  * `partner.edit`, products `partner.payout`, the status `partner.status`.
  *
+ * Under Profile, the "Florist sign-in" block (spec 026a AC-10): the contact email as the one
+ * sign-in address, and "Not signed in yet" or the day of the first sign-in in the viewer's zone.
+ *
  * The status card offers exactly the moves the §2.5 graph allows from this status (AC-16).
  * **Make active is absent, not disabled**, until all four conditions hold, and the card lists
  * each, met or missing (decision 6); the command reads the preflight again under the row lock.
@@ -28,7 +31,9 @@ import { formatDate, formatMoney, formatNumber } from "@/modules/i18n";
 import { currencyConfig, isCurrencyCode } from "@/config/currencies";
 import {
   ACTIVATION_CONDITIONS,
+  type FloristSignInStatus,
   type PartnerDetail,
+  floristSignInStatus,
   partnerDetail,
 } from "@/modules/partners";
 import {
@@ -37,6 +42,7 @@ import {
 } from "@/modules/ui/admin/AdminControls";
 import {
   AdminCell,
+  AdminChip,
   AdminEmpty,
   AdminField,
   AdminRow,
@@ -264,6 +270,57 @@ function RemoveForm({
   );
 }
 
+/** A stand-in the address is swapped for, so it renders bold inside the verbatim sentence. */
+const ADDRESS_SLOT = "\u0000";
+
+/**
+ * The "Florist sign-in" block (spec 026a §2, AC-10; artboards `admin-partner-detail-*`, under
+ * Profile): the one address that may sign in, whether it has, and the help line. It reads only;
+ * the Profile form is where access moves.
+ */
+function SignInBlock({
+  status,
+  timeZone,
+}: {
+  readonly status: FloristSignInStatus;
+  readonly timeZone: string;
+}): ReactElement {
+  const [before = "", after = ""] = adminT("admin.partners.signIn.address", {
+    email: ADDRESS_SLOT,
+  }).split(ADDRESS_SLOT);
+  const first =
+    status.firstSignedInAt === null
+      ? undefined
+      : adminT("admin.audit.when", {
+          time: formatDate(
+            new Date(status.firstSignedInAt),
+            "en",
+            "dayMonthYear",
+            timeZone,
+          ),
+          zone: zoneCity(timeZone),
+        });
+  return (
+    <AdminCard>
+      <p className="text-[14px]">
+        {before}
+        <b>{status.email}</b>
+        {after}
+      </p>
+      <p>
+        {first === undefined ? (
+          <AdminChip>{adminT("admin.partners.signIn.notYet")}</AdminChip>
+        ) : (
+          <AdminChip tone="ok">
+            {adminT("admin.partners.signIn.firstSignedIn", { date: first })}
+          </AdminChip>
+        )}
+      </p>
+      <AdminQuiet>{adminT("admin.partners.signIn.help")}</AdminQuiet>
+    </AdminCard>
+  );
+}
+
 /** The statuses the graph ever moves to; nothing moves into `demo` or `onboarding`. */
 type Move = "active" | "paused" | "offboarded";
 
@@ -377,6 +434,10 @@ export default async function AdminPartnerPage({
     code,
   );
   if (partner === undefined) notFound();
+  const signIn = await floristSignInStatus(
+    { userId: session.userId, requestId: await adminRequestId() },
+    partner.id,
+  );
   const zone = zoneCity(session.timeZone);
   const updated = formatDate(
     partner.updatedAtInstant,
@@ -814,6 +875,11 @@ export default async function AdminPartnerPage({
                 <PartnerMessage result={result} form="profile" />
                 {profile}
               </AdminSection>
+              {signIn === undefined ? null : (
+                <AdminSection title={adminT("admin.partners.signIn.heading")}>
+                  <SignInBlock status={signIn} timeZone={session.timeZone} />
+                </AdminSection>
+              )}
               <AdminSection title={adminT("admin.partners.terms.title")}>
                 <PartnerMessage result={result} form="terms" />
                 {termsBlock}

@@ -41,6 +41,8 @@ import {
   isApplicationEdge,
   partnerPhoneE164,
 } from "./schemas";
+import { asFloristLanguage } from "../access/language";
+import { syncPartnerOwnerMember } from "../access/sync";
 
 /** The audit action of the partner a conversion creates. */
 export const APPLICATION_CONVERT_ACTION = "application.convert";
@@ -304,6 +306,11 @@ export async function convertApplication(
       within(db),
     );
     if (!moved.ok) throw new Rollback({ ok: false, reason: "conflict" });
+    // Spec 026a AC-7, AC-9: the contact email becomes the one sign-in address, its member
+    // starting in the application's language, in this transaction.
+    await syncPartnerOwnerMember(db, partner.id, {
+      applicationLanguage: asFloristLanguage(application.languageCode),
+    });
     return { ok: true, partnerCode: code };
   });
 }

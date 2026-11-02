@@ -38,12 +38,14 @@ import {
   FloristLanguageSchema,
   signInPolicy,
 } from "@/config/florists";
+import { recordFirstFloristSignIn } from "@/modules/partners/access/first-sign-in";
 import { floristLanguageOf } from "@/modules/partners/auth/copy";
 import { renderFloristSignInEmail } from "@/modules/partners/auth/sign-in-email";
 
 import type { DbContext } from "../db";
 import { authSecret } from "../env.auth";
 import { appEnvironment } from "../env.schema";
+import { logger } from "../logger";
 
 import { type AuthRunner, systemAuthRunner } from "./adapter";
 import type { AuthSurfaceConfig } from "./schema";
@@ -152,16 +154,24 @@ export const FLORIST_SURFACE: AuthSurfaceConfig = {
   callbackAllowed: (path) => isFloristOrderPath(path),
 };
 
+/**
+ * The florist instance: the core's surface, plus the first-sign-in stamp (spec 026a AC-10) run
+ * with the instance's own runner and environment.
+ */
+export interface FloristAuthSurface extends AuthSurface {
+  recordFirstSignIn(userId: string): Promise<void>;
+}
+
 /** The florist instance, with injectable seams for the integration suite. */
 export function createFloristAuth(
   overrides: Partial<Parameters<typeof createAuthSurface>[1]> & {
     allow?: AuthSurfaceConfig["allow"];
     environment?: string;
   } = {},
-): AuthSurface {
+): FloristAuthSurface {
   const run = overrides.run ?? systemAuthRunner;
   const environment = overrides.environment;
-  return createAuthSurface(
+  const surface = createAuthSurface(
     {
       ...FLORIST_SURFACE,
       allow:
@@ -190,10 +200,17 @@ export function createFloristAuth(
       ...(overrides.defer === undefined ? {} : { defer: overrides.defer }),
     },
   );
+  return Object.assign(surface, {
+    recordFirstSignIn: (userId: string) =>
+      recordFirstFloristSignIn(userId, {
+        run,
+        ...(environment === undefined ? {} : { environment }),
+      }),
+  });
 }
 
 /** The process-wide florist instance. */
-export const floristAuth: AuthSurface = createFloristAuth();
+export const floristAuth: FloristAuthSurface = createFloristAuth();
 
 export const FloristMembershipSchema = z
   .object({
@@ -403,12 +420,37 @@ export async function requestFloristSignIn(
 }
 
 /**
+ * After a successful confirm: stamps the member's first sign-in (spec 026a AC-10). Best effort: a
+ * failure is logged by name and never turns a sign-in into an error.
+ */
+async function stampFirstSignIn(
+  response: Response,
+  auth: FloristAuthSurface,
+): Promise<void> {
+  const cookie = response.headers
+    .getSetCookie()
+    .find((value) => value.startsWith(`${auth.cookies.sessionToken}=`));
+  const token =
+    cookie === undefined ? undefined : /^[^=]+=([^;]*)/u.exec(cookie)?.[1];
+  try {
+    const userId = await auth.sessionUserId(token);
+    if (userId !== null) await auth.recordFirstSignIn(userId);
+  } catch (error) {
+    logger.error(
+      { error_name: error instanceof Error ? error.name : "unknown" },
+      "florist_first_sign_in_failed",
+    );
+  }
+}
+
+/**
  * `POST {base}/api/auth/confirm`: the core consumes the token (AC-19); a failure lands on the
- * expired page in the language the confirm page was shown in.
+ * expired page in the language the confirm page was shown in. A success stamps the member's first
+ * sign-in (spec 026a AC-10).
  */
 export async function confirmFloristSignIn(
   request: Request,
-  auth: AuthSurface = floristAuth,
+  auth: FloristAuthSurface = floristAuth,
 ): Promise<Response> {
   const parsed = await readForm(request, FloristConfirmFormSchema);
   const language = parsed.success ? parsed.data.hl : "en";
@@ -420,6 +462,7 @@ export async function confirmFloristSignIn(
   // Home, or the order a one-tap link names (spec 016 §5.2): the page reads the member's own
   // language, so no `?hl=` is added to either.
   if (location === auth.config.pages.home || isFloristOrderPath(location)) {
+    await stampFirstSignIn(response, auth);
     return response;
   }
   return relocated(response, withLanguage(location, language));

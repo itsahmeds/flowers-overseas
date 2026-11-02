@@ -486,6 +486,13 @@
         "phoneHint": "With the country code, for example +{callingCode}.",
         "choose": "Choose"
       },
+      "signIn": {
+        "heading": "Florist sign-in",
+        "address": "Signs in with {email}",
+        "notYet": "Not signed in yet",
+        "firstSignedIn": "First signed in on {date}",
+        "help": "This is the contact email above. It is the one address that can sign in to the florist inbox at flowersoverseas.com/vendor, and only while the florist is active or paused. Changing it moves access to the new address at once."
+      },
       "channel": {
         "email": "Email",
         "whatsapp": "WhatsApp"
