@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-- 2026-11-03: migration `0035_payouts_030a` + guarded down written, schema mirror, `payout_export` staff-only in `db/rls.ts`, snapshot regenerated (on a local PG16 with an uncommitted empty `0034` placeholder: TASK-329 holds 0034, so `db:check` shows the gap until it merges). Next: config, terms, fixPayoutAtAcceptance, outbox target, F1, tests.
+- 2026-11-03: migration `0034_payouts_030a` + guarded down written (numbered 0034 on the coordinator's word: TASK-329 and TASK-354 merged with none), schema mirror, `payout_export` staff-only in `db/rls.ts`, snapshot regenerated on a local PG16. Next: config, terms, fixPayoutAtAcceptance, outbox target, F1, tests.
 
 ## Result
 

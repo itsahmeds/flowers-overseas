@@ -1,4 +1,4 @@
--- Rollback of 0035_payouts_030a (spec 030a §5.1 "Down file, guard first", AC-31; TASK-363).
+-- Rollback of 0034_payouts_030a (spec 030a §5.1 "Down file, guard first", AC-31; TASK-363).
 --
 -- Guard first. If any `payout` is not `weekly` (a prepaid or per-order payout), carries a
 -- statement number or sits in an export, or any `payout_export` row exists, a florist's statement
@@ -17,7 +17,7 @@ BEGIN
     SELECT 1 FROM public.payout
     WHERE kind <> 'weekly' OR statement_number IS NOT NULL OR export_id IS NOT NULL
   ) OR EXISTS (SELECT 1 FROM public.payout_export) THEN
-    RAISE EXCEPTION 'PAYOUTS_030A_ROLLBACK_ROWS_IN_USE: a prepaid or per-order payout, a statement number or a Wise export exists; 0035_payouts_030a is not rolled back'
+    RAISE EXCEPTION 'PAYOUTS_030A_ROLLBACK_ROWS_IN_USE: a prepaid or per-order payout, a statement number or a Wise export exists; 0034_payouts_030a is not rolled back'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END
