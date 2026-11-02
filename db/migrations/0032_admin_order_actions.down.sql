@@ -16,3 +16,5 @@ ALTER TABLE public.notification_delivery DROP COLUMN IF EXISTS resend_of;
 /* 5, 3, 2, 1. admin_order_action: its policy, triggers and index go with it */
 DROP TABLE IF EXISTS public.admin_order_action;
 DROP FUNCTION IF EXISTS public.admin_order_action_append_only();
+
+RESET ROLE;

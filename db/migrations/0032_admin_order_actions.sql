@@ -142,3 +142,5 @@ CREATE POLICY admin_order_action_staff ON public.admin_order_action FOR ALL TO a
 INSERT INTO public.retention_policy (key, entity_table, basis, retention_days, action, legal_note)
 VALUES ('admin_order_action', 'admin_order_action', 'Art. 6(1)(c) legal obligation and 6(1)(f) legitimate interest', 1095, 'delete',
         'Spec 020a §5.1: the record of each admin order action is deleted after 3 years, spec 012''s audit_log period; the money facts stay on refund and order_event.');
+
+RESET ROLE;
