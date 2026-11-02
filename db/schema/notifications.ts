@@ -180,7 +180,7 @@ export const notificationDelivery = pgTable(
     providerMessageId: text("provider_message_id"),
     status: text("status").notNull(),
     statusAt: timestamp("status_at", { withTimezone: true }).notNull(),
-    /** The row this one repeats (spec 020a §2.5, `0032`); only an `admin:` source key may set it. */
+    /** The row this one repeats (spec 020a §2.5, `0031`); only an `admin:` source key may set it. */
     resendOf: uuid("resend_of").references(
       (): AnyPgColumn => notificationDelivery.id,
       { onDelete: "restrict" },

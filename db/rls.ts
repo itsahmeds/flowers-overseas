@@ -268,7 +268,7 @@ export const STAFF_ONLY_TABLES = [
   // spec 012 (migration `0014_admin_identity`, TASK-217): the admin profile and the sign-in
   // core's send log. RLS and the staff policy are in `0014` itself, not in `0011`.
   "admin_profile",
-  // spec 020a §5.1 (migration `0032_admin_order_actions`, TASK-359): the record of each admin
+  // spec 020a §5.1 (migration `0031_admin_order_actions`, TASK-359): the record of each admin
   // order action, append-only and audited. No partner, customer or public policy.
   "admin_order_action",
   "audit_log",

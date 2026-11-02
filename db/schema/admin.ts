@@ -6,7 +6,7 @@
  * `auth_email_send` is the sign-in core's send log, keyed by the SHA-256 of the normalised
  * address, for both surfaces.
  *
- * `admin_order_action` (spec 020a §5.1, migration `0032_admin_order_actions.sql`; TASK-359) is the
+ * `admin_order_action` (spec 020a §5.1, migration `0031_admin_order_actions.sql`; TASK-359) is the
  * record of each admin order action that took effect: its primary key is the form's `actionId`
  * (the idempotency key), it is append-only by trigger and audited by spec 012's trigger, and it
  * holds ids, a reason code and money only.

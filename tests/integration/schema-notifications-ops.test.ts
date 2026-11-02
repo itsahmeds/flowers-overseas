@@ -61,14 +61,14 @@ describe.skipIf(server.url === undefined)(
       ]);
     });
 
-    it("§8: retention_policy carries the fourteen rows, each with a basis and a legal note (spec 010 §14 A-founder-2026-10-22 item 2 C: 30 days and checkout_draft_personal; spec 011 §8's three in 0022; spec 012b's review_attestation in 0023; spec 020a's admin_order_action in 0032)", async () => {
+    it("§8: retention_policy carries the fourteen rows, each with a basis and a legal note (spec 010 §14 A-founder-2026-10-22 item 2 C: 30 days and checkout_draft_personal; spec 011 §8's three in 0022; spec 012b's review_attestation in 0023; spec 020a's admin_order_action in 0031)", async () => {
       const rows = await scratch.sql<
         { key: string; retention_days: number | null; action: string }[]
       >`SELECT key, retention_days, action FROM retention_policy ORDER BY key`;
       expect(
         rows.map((r) => `${r.key}:${String(r.retention_days)}:${r.action}`),
       ).toEqual([
-        // spec 020a §5.1 (TASK-359; migration `0032`): 3 years, spec 012's audit_log period.
+        // spec 020a §5.1 (TASK-359; migration `0031`): 3 years, spec 012's audit_log period.
         "admin_order_action:1095:delete",
         "auth_session:1:delete",
         "auth_verification_token:1:delete",

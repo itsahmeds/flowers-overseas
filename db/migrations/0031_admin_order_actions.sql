@@ -1,9 +1,8 @@
--- 0032_admin_order_actions — the record of every admin order action (spec 020a §5.1
+-- 0031_admin_order_actions — the record of every admin order action (spec 020a §5.1
 -- `NNNN_admin_order_actions`; AC-5, AC-6, AC-7, AC-32; TASK-357's action core, built in TASK-359
 -- by the orchestrator's ruling of 2026-11-02).
 --
--- Numbered 0032: `0031` is held by PR 450 (TASK-331, `0031_sign_in_callback`); `pnpm db:check`
--- reports the gap until that one merges.
+-- Numbered 0031 (orchestrator, 2026-11-02): this merges before PR 450, which takes the next number.
 --
 --   1. `admin_order_action`: one row per action that took effect. Its primary key is the form's
 --      `actionId`, so a second submission of one form finds the row and does nothing (AC-5). It
@@ -20,7 +19,7 @@
 --   6. `retention_policy` row `admin_order_action`: deleted after 3 years, spec 012's `audit_log`
 --      period. The money facts stay on `refund` and `order_event`.
 --
--- Rollback: `0032_admin_order_actions.down.sql`. `audit_log` rows written for past actions stay
+-- Rollback: `0031_admin_order_actions.down.sql`. `audit_log` rows written for past actions stay
 -- (that table is append-only), so the trail outlives a rollback (AC-32).
 
 SET LOCAL ROLE app_owner;

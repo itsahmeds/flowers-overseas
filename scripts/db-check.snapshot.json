@@ -659,7 +659,6 @@
     "users users_email_check": "CHECK (((email = lower(email)) AND (email ~ '^[^[:space:]@]+@[^[:space:]@]+$'::text)))",
     "users users_email_key": "UNIQUE (email)",
     "users users_pkey": "PRIMARY KEY (id)",
-    "verification_tokens verification_tokens_callback_path_check": "CHECK (((callback_path ~ '^/[A-Za-z0-9/_-]{1,255}$'::text) AND (POSITION(('//'::text) IN (callback_path)) = 0)))",
     "verification_tokens verification_tokens_pkey": "PRIMARY KEY (identifier, token)",
     "webhook_inbox webhook_inbox_attempts_check": "CHECK ((attempts >= 0))",
     "webhook_inbox webhook_inbox_pkey": "PRIMARY KEY (id)",

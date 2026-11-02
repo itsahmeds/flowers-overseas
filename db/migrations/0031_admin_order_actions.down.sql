@@ -1,6 +1,6 @@
 SET LOCAL ROLE app_owner;
 
--- Rollback of 0032_admin_order_actions (spec 020a §5.1; AC-32), in reverse order.
+-- Rollback of 0031_admin_order_actions (spec 020a §5.1; AC-32), in reverse order.
 --
 -- `audit_log` rows written for past actions stay: that table is append-only (spec 012), so the
 -- trail outlives the rollback.
