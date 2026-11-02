@@ -7,7 +7,7 @@
  * where a fixture must step past spec 012's status-flip guard (a florist's status changes only in
  * admin); every assertion then reads with triggers on, as the application does.
  */
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -402,6 +402,31 @@ describe.skipIf(server.url === undefined)(
       } finally {
         await scratch.sql`ALTER TABLE public.country ENABLE TRIGGER country_status_flip_guard`;
       }
+    });
+
+    it("§2.7: a florist's bouquet photo names its florist; a partner delivery proof needs none", async () => {
+      const insert = (
+        kind: string,
+        depicts: string,
+        supplier: string | null,
+      ) => {
+        const id = randomUUID();
+        return scratch.sql`
+          INSERT INTO public.media_asset (id, kind, bucket, object_key, mime, width, height, bytes,
+            checksum_sha256, visibility, source, depicts, exif_stripped, supplier_partner_id)
+          VALUES (${id}, ${kind}, 'fo-media-test',
+            ${`${kind.replace("_", "-")}/${id}/original`}, 'image/jpeg', 1200, 1500, 48213,
+            ${"a".repeat(64)}, 'private', 'partner', ${depicts}, true, ${supplier})`;
+      };
+      const missing = await failure(insert("product", "product", null));
+      expect(missing?.code).toBe("23514");
+      expect(missing?.message).toContain("media_asset_supplier_partner_check");
+      expect(
+        await failure(insert("product", "product", fixture.partnerId)),
+      ).toBeUndefined();
+      expect(
+        await failure(insert("delivery_proof", "delivery", null)),
+      ).toBeUndefined();
     });
 
     it("AC-6: one open publish run per environment; a finished run needs finished_at", async () => {

@@ -61,6 +61,22 @@ vi.mock("@/lib/sentry", () => ({
   },
 }));
 
+/** The tables `0033_catalogue_cms` puts under `audit_row_change()` (spec 012b §5.1 item 3). */
+const CATALOGUE_CMS_AUDITED_TABLES = [
+  "country_price",
+  "media_asset",
+  "product",
+  "product_category",
+  "product_media",
+  "product_media_alt",
+  "product_occasion",
+  "product_tier",
+  "product_translation",
+  "publish_run",
+  "review_attestation",
+  "reviewer_locale",
+] as const;
+
 const server = await probeLocalServer();
 
 const FOUNDER_NAME = "Founder Test";
@@ -371,6 +387,8 @@ describe.skipIf(server.url === undefined)(
       // blog tables; their audit rows are asserted by `tests/integration/blog.test.ts`.
       // Spec 022a's `0029_reviews_close` (`review`) and spec 020a's `0031_admin_order_actions`
       // (`admin_order_action`) attach it too; their audit rows are asserted by their own suites.
+      // Spec 012b §5.1 item 3 (migration `0044_catalogue_cms`, TASK-294) attaches it to the
+      // catalogue, the ledger, the reviewer grants and the publish runs.
       expect(triggers.map((row) => row.table)).toEqual(
         [
           ...AUDITED_TABLES,
@@ -382,6 +400,7 @@ describe.skipIf(server.url === undefined)(
           "partner_contact_log",
           // Spec 030b's `0041_partner_contracts` (TASK-442): the florist contract register.
           "partner_contract",
+          ...CATALOGUE_CMS_AUDITED_TABLES,
         ].sort(),
       );
     });
