@@ -30,7 +30,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: the wording selectors live in TASK-263 (confirmation), TASK-333 (B5) and TASK-339 (tracking), none built, and the admin cancel path needs TASK-258. Not started. `open`.
 
 ## Progress
 
