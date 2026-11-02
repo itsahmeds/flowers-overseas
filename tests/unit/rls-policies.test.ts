@@ -81,7 +81,8 @@ interface Policy {
   check: string;
 }
 
-const POLICIES: Policy[] = [
+/** Every `TO app_web` policy any forward migration creates, in file order. */
+const CREATED_POLICIES: Policy[] = [
   ...up.matchAll(
     /CREATE POLICY (\w+) ON public\.(?:"(\w+)"|(\w+)) FOR (\w+) TO app_web\s+USING \(([\s\S]*?)\)(?:\s+WITH CHECK \(([\s\S]*?)\))?;/g,
   ),
@@ -92,6 +93,28 @@ const POLICIES: Policy[] = [
   using: (m[5] ?? "").replace(/\s+/g, " "),
   check: (m[6] ?? "").replace(/\s+/g, " "),
 }));
+
+/**
+ * The policies in force after every forward migration: a later migration's `DROP POLICY` removes
+ * one an earlier file created (spec 022a's `0029` drops `0011`'s `review_read`). A drop is matched
+ * against the creations of the files before it, so a drop and re-create keeps the new one.
+ */
+const DROPPED = new Set(
+  LATER_MIGRATIONS.flatMap((file) =>
+    [
+      ...readMigration(file).matchAll(
+        /^DROP POLICY (?:IF EXISTS )?(\w+) ON public\.(?:"(\w+)"|(\w+));/gm,
+      ),
+    ].map((m) => `${m[2] ?? m[3] ?? ""}.${m[1] ?? ""}`),
+  ),
+);
+const POLICIES: Policy[] = CREATED_POLICIES.filter(
+  (policy) =>
+    !DROPPED.has(`${policy.table}.${policy.name}`) ||
+    CREATED_POLICIES.filter(
+      (other) => other.table === policy.table && other.name === policy.name,
+    ).length > 1,
+);
 
 /** `0018`'s `TO app_build` read policies (spec 012b §5.1 item 1; TASK-292). */
 const BUILD_POLICIES: Policy[] = [
@@ -154,7 +177,7 @@ describe("migration 0011 — coverage", () => {
     // The build role's policies (`0018`, spec 012b) and the insert-only ones (`0022`, spec 011)
     // are read by their own blocks below.
     expect(
-      POLICIES.length + BUILD_POLICIES.length + INSERT_POLICIES.length,
+      CREATED_POLICIES.length + BUILD_POLICIES.length + INSERT_POLICIES.length,
     ).toBe([...up.matchAll(/CREATE POLICY/g)].length);
   });
 
@@ -269,14 +292,15 @@ describe("migration 0011 — each class gets exactly its policies", () => {
     }
   });
 
-  it("media_asset, media_variant and review are public only where their condition holds", () => {
+  it("media_asset and media_variant are public only where their condition holds; review is not public at all", () => {
     expect(
       policiesOf("media_asset").find((p) => p.name === "media_asset_read")
         ?.using,
     ).toBe("visibility = 'public'");
-    expect(
-      policiesOf("review").find((p) => p.name === "review_read")?.using,
-    ).toBe("moderation_status = 'published'");
+    // Spec 022a §5.1 (`0029`, AC-19): the public reads published reviews through
+    // `public_review`, never the table.
+    expect(DROPPED.has("review.review_read")).toBe(true);
+    expect(policiesOf("review").map((p) => p.name)).toEqual(["review_staff"]);
     expect(
       policiesOf("media_variant").find((p) => p.name === "media_variant_read")
         ?.using,
@@ -362,20 +386,29 @@ describe("migration 0011 — each class gets exactly its policies", () => {
     expect(up).toMatch(/AND \(a\.response IS NULL OR a\.response = 'accept'\)/);
   });
 
-  it("the three views are security_barrier, list exactly db/rls.ts's columns, and are read-only to app_web", () => {
+  it("the five views are security_barrier, list exactly db/rls.ts's columns, and are read-only to app_web", () => {
     for (const [view, columns] of Object.entries({
       ...PARTNER_VIEWS,
       ...CUSTOMER_VIEWS,
+      ...PUBLIC_VIEWS,
     })) {
       const match = new RegExp(
         `CREATE VIEW public\\.${view} WITH \\(security_barrier = true\\) AS\\s+SELECT ([\\s\\S]*?)\\s+FROM`,
       ).exec(up);
       expect(match, view).not.toBeNull();
       expect(
-        (match?.[1] ?? "").split(",").map((c) => c.trim().replace(/^\w\./, "")),
+        (match?.[1] ?? "").split(/,(?![^(]*\))/).map((c) =>
+          c
+            .trim()
+            .replace(/^\w\./, "")
+            .replace(/^[\s\S]* AS (\w+)$/, "$1"),
+        ),
         view,
       ).toEqual([...columns]);
     }
+    expect(up).toMatch(
+      /REVOKE INSERT, UPDATE, DELETE ON public\.public_review FROM app_web;/,
+    );
     expect(up).toMatch(
       /REVOKE INSERT, UPDATE, DELETE ON public\.partner_order, public\.partner_order_line,\s+public\.customer_order_event FROM app_web;/,
     );
@@ -451,8 +484,10 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
     for (const policy of BUILD_POLICIES) {
       expect(policy.name).toBe(`${policy.table}_build_read`);
       expect(policy.command).toBe("SELECT");
-      const publicRead = policiesOf(policy.table).find(
-        (p) => p.name === `${policy.table}_read`,
+      // As the public render's policy was written: `review_read` (`0011`) is dropped by `0029`,
+      // whose `public_review` view filters on the same condition.
+      const publicRead = CREATED_POLICIES.find(
+        (p) => p.table === policy.table && p.name === `${policy.table}_read`,
       );
       // The flag tables have no public read for app_web: the build's is unconditional.
       expect(policy.using, policy.table).toBe(publicRead?.using ?? "true");

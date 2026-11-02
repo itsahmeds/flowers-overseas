@@ -397,10 +397,18 @@ describe("the verified-reviews copy is unreachable, which is why the grep excuse
       await import("../../src/modules/ui/home/reviews-provider.ts");
     expect(staticReviewsProvider.list()).toEqual([]);
 
-    // There is no `src/config/reviews.*`: a review can only arrive through spec 016's provider,
-    // which is what the founder's 2026-09-08 "real-only, never seeded" ruling requires.
+    // No review **data** lives in `src/config`: a review can only arrive from a buyer, which is
+    // what the founder's 2026-09-08 "real-only, never seeded" ruling requires. The one
+    // `src/config/reviews.*` is spec 022a's constants file (TASK-368), and every export of it is a
+    // number (a delay, a cap, a threshold), never a review.
     const { readdir } = await import("node:fs/promises");
     const config = await readdir(resolve(repoRoot, "src/config"));
-    expect(config.filter((entry) => entry.startsWith("reviews"))).toEqual([]);
+    expect(config.filter((entry) => entry.startsWith("reviews"))).toEqual([
+      "reviews.ts",
+    ]);
+    const constants = await import("../../src/config/reviews.ts");
+    for (const [name, value] of Object.entries(constants)) {
+      expect(typeof value, name).toBe("number");
+    }
   });
 });

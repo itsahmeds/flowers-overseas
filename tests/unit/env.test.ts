@@ -604,8 +604,9 @@ describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
     // AC-3 is about the count agreeing from both sides, and `.env.example` is checked against
     // this same list above (T-03). Spec 012 (TASK-217) adds the sign-in core's four:
     // `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `MAILER`. Spec 018 (TASK-337) adds
-    // `SIGNED_LINK_SECRET`; spec 013 (TASK-260) adds `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
-    expect(ENV_KEYS).toHaveLength(36);
+    // `SIGNED_LINK_SECRET`; spec 013 (TASK-260) adds `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`;
+    // spec 022a (TASK-368) the two review keys: `REVIEW_TOKEN_SECRET`, `TRUSTPILOT_AFS_ADDRESS`.
+    expect(ENV_KEYS).toHaveLength(38);
     expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
   });
 
