@@ -151,6 +151,10 @@ export const fulfillmentPartner = pgTable(
      * made, set with the florist's agreement; null reads "Made by our florist in {city}".
      */
     displayFirstName: text("display_first_name"),
+    // `0033_partner_terms_and_retention` (spec 012 §5.1; TASK-221): the signed partner agreement.
+    /** The day the florist signed the agreement; set with `termsVersion` or not at all. */
+    termsSignedAt: date("terms_signed_at", { mode: "string" }),
+    termsVersion: text("terms_version"),
   },
   (table) => [
     unique("fulfillment_partner_code_key").on(table.code),
@@ -184,6 +188,10 @@ export const fulfillmentPartner = pgTable(
     check(
       "fulfillment_partner_payout_currency_code_check",
       sql.raw(`payout_currency_code ~ '${CURRENCY_PATTERN}'`),
+    ),
+    check(
+      "fulfillment_partner_terms_pair_check",
+      sql`(${table.termsSignedAt} is null) = (${table.termsVersion} is null)`,
     ),
     check(
       "fulfillment_partner_display_first_name_check",
@@ -459,6 +467,9 @@ export const partnerApplication = pgTable(
     privacyNoticeVersion: text("privacy_notice_version").notNull(),
     /** Set when the row is rejected or converted. */
     decidedAt: timestamp("decided_at", { withTimezone: true }),
+    // `0033_partner_terms_and_retention` (spec 012 §2.5; TASK-221).
+    /** Why the application was rejected, written with the status. */
+    statusReason: text("status_reason"),
   },
   (table) => [
     foreignKey({

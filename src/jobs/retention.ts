@@ -66,6 +66,14 @@
  *    order is such an order, as `recipient_contact` leaves one; a `customer` with no account
  *    whose every order is such an order, as `buyer_personal` leaves one. The order, its lines,
  *    its events and its purchase are kept; a `live` order, and anyone with one, is never touched.
+ *  - `audit_log` (3 years after the row was written, delete; spec 012 §5.1, §8 item 4, §13 Q5;
+ *    TASK-221): `audit_log` rows whose `at` is at or before the cut-off **and** older than the
+ *    period by the database's own clock. The table is append-only; its trigger (`0033`) admits
+ *    exactly this DELETE in this policy's session (`app.role = 'system'`,
+ *    `app.retention_policy = 'audit_log'`), and only of a row the database itself finds old
+ *    enough, so an injected clock ahead of real time selects nothing younger.
+ *  - `auth_email_send` (7 days after the send, delete; spec 012 §2.2, §8 item 1; TASK-221): the
+ *    sign-in send log of both surfaces, whose rows hold a hashed address and a time.
  *  A key with no handler here is reported `no_handler` and nothing is written for it.
  *
  * `dryRun` writes nothing — no row, no object — and reports the same counts, because every count
@@ -798,6 +806,57 @@ const demoOrderPersonal: PolicyHandler = async ({
   };
 };
 
+/**
+ * `audit_log` rows due: written at or before `cutoff`, and older than the policy's period by the
+ * database's clock too (the bound `0033`'s trigger enforces), so a test clock in the future never
+ * selects a row the trigger would refuse.
+ */
+function auditLogDue(cutoff: Date): SQL {
+  return sql`a.at <= ${ts(cutoff)}
+    AND a.at <= (SELECT now() - make_interval(days => p.retention_days)
+                   FROM public.retention_policy p WHERE p.key = 'audit_log')`;
+}
+
+const auditLog: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = await rows<{ count: number }>(
+    db,
+    sql`SELECT count(*)::int AS count FROM public.audit_log a WHERE ${auditLogDue(cutoff)}`,
+  );
+  const count = due[0]?.count ?? 0;
+  if (!dryRun && count > 0) {
+    await db.execute(
+      sql`SELECT set_config('app.retention_policy', 'audit_log', true)`,
+    );
+    await db.execute(
+      sql`DELETE FROM public.audit_log a WHERE ${auditLogDue(cutoff)}`,
+    );
+    await db.execute(sql`SELECT set_config('app.retention_policy', '', true)`);
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { audit_log: count },
+    skipped: {},
+  };
+};
+
+const authEmailSend: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = await rows<{ count: number }>(
+    db,
+    sql`SELECT count(*)::int AS count FROM public.auth_email_send
+        WHERE sent_at <= ${ts(cutoff)}`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`DELETE FROM public.auth_email_send WHERE sent_at <= ${ts(cutoff)}`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { auth_email_send: due[0]?.count ?? 0 },
+    skipped: {},
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -812,6 +871,8 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   checkout_draft_personal: checkoutDraftPersonal,
   checkout_draft: checkoutDraft,
   demo_order_personal: demoOrderPersonal,
+  audit_log: auditLog,
+  auth_email_send: authEmailSend,
 };
 
 /**

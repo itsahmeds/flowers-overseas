@@ -23,7 +23,7 @@ task actually touches.
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +9 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-actions.test.ts`, `integration/florist-inbox.test.ts` +9 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-applications.test.ts` +8 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-applications.test.ts` +10 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
@@ -161,6 +161,10 @@ task actually touches.
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3,… | 003 |
 | `[locale]/product-route.tsx` | The product page's head and body, once, for the… | 009 |
 | `[locale]/route-header.tsx` | The commerce header as one route draws it (spec… | 043 |
+| `admin/(signed-in)/applications/[id]/page.tsx` | GET /admin/applications/[id]: one application,… | 012 |
+| `admin/(signed-in)/applications/actions.ts` | /admin/applications actions, each guarded first… | 012 |
+| `admin/(signed-in)/applications/page.tsx` | GET /admin/applications: florist applications,… | 012 |
+| `admin/(signed-in)/applications/view.tsx` | The application pages' shared pieces: status… | 012 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
 | `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first… | 012 |
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
@@ -170,6 +174,12 @@ task actually touches.
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
+| `admin/(signed-in)/partners/[code]/page.tsx` | GET /admin/partners/[code]: one florist, its… | 012 |
+| `admin/(signed-in)/partners/actions.ts` | /admin/partners actions, each guarded first… | 012 |
+| `admin/(signed-in)/partners/new/page.tsx` | GET /admin/partners/new: add a florist in… | 012 |
+| `admin/(signed-in)/partners/page.tsx` | GET /admin/partners: the florists, by status… | 012 |
+| `admin/(signed-in)/partners/profile-form.tsx` | The florist profile form, for create and edit… | 012 |
+| `admin/(signed-in)/partners/view.tsx` | The florist pages' shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3,… | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
 | `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint answers 404 | 012 |
@@ -293,8 +303,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 440 |
-| `tests/integration/` | 74 |
+| `tests/unit/` | 442 |
+| `tests/integration/` | 75 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |

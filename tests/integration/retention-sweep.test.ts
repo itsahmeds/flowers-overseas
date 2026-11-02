@@ -882,11 +882,109 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
+    it("spec 012 §5.1 (TASK-221): deletes audit rows older than 3 years by the database's clock, keeps a younger one, and refuses every other delete", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const insert = async (daysAgo: number): Promise<string> => {
+          const [row] = await tx<{ id: string }[]>`
+            INSERT INTO audit_log (actor_label, action, entity_table, entity_id, after,
+                                   request_id, at)
+            VALUES ('it', 'partner.update', 'fulfillment_partner', ${randomUUID()},
+                    '{"city_label": "Krakow"}'::jsonb, 'it',
+                    now() - make_interval(days => ${daysAgo}))
+            RETURNING id`;
+          return row?.id ?? "";
+        };
+        const old = await insert(1096);
+        const young = await insert(1094);
+        const left = async (): Promise<string[]> =>
+          (
+            await tx<{ id: string }[]>`
+              SELECT id FROM audit_log WHERE id IN ${tx([old, young])} ORDER BY id`
+          ).map((row) => row.id);
+
+        const dry = await sweep(tx, { now: new Date(), dryRun: true });
+        expect(policy(dry, "audit_log")).toEqual({
+          key: "audit_log",
+          status: "dry_run",
+          counts: { audit_log: 1 },
+          skipped: {},
+        });
+        expect(await left()).toEqual([old, young].sort());
+
+        // A clock ten years ahead selects only what the database itself finds old enough, so
+        // the sweep never asks the trigger for a delete it refuses.
+        const real = await sweep(tx, { now: daysFromNow(3650) });
+        expect(policy(real, "audit_log").status).toBe("applied");
+        expect(policy(real, "audit_log").counts).toEqual({ audit_log: 1 });
+        expect(await left()).toEqual([young]);
+
+        // Outside the sweep's session the log stays append-only, the old row included.
+        const second = await insert(2000);
+        await asApp(tx, { role: "system" });
+        const noPolicy = await pgFailure(
+          tx,
+          (sp) => sp`DELETE FROM audit_log WHERE id = ${second}`,
+        );
+        expect(noPolicy.raised).toBe("AUDIT_LOG_APPEND_ONLY");
+        await tx`SELECT set_config('app.retention_policy', 'audit_log', true)`;
+        const tooYoung = await pgFailure(
+          tx,
+          (sp) => sp`DELETE FROM audit_log WHERE id = ${young}`,
+        );
+        expect(tooYoung.raised).toBe("AUDIT_LOG_APPEND_ONLY");
+        const update = await pgFailure(
+          tx,
+          (sp) =>
+            sp`UPDATE audit_log SET action = 'partner.renamed' WHERE id = ${second}`,
+        );
+        expect(update.raised).toBe("AUDIT_LOG_APPEND_ONLY");
+        await tx`SELECT set_config('app.retention_policy', '', true)`;
+        await tx.unsafe("RESET ROLE");
+        await asApp(tx, { role: "admin" });
+        await tx`SELECT set_config('app.retention_policy', 'audit_log', true)`;
+        const asAdmin = await pgFailure(
+          tx,
+          (sp) => sp`DELETE FROM audit_log WHERE id = ${second}`,
+        );
+        expect(asAdmin.raised).toBe("AUDIT_LOG_APPEND_ONLY");
+        await tx.unsafe("RESET ROLE");
+      });
+    });
+
+    it("spec 012 §2.2 (TASK-221): deletes sign-in send rows older than 7 days and keeps a newer one", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const hash = (n: number) => String(n).repeat(64).slice(0, 64);
+        await tx`INSERT INTO auth_email_send (identifier_hash, sent_at) VALUES
+                   (${hash(1)}, now() - interval '7 days 1 hour'),
+                   (${hash(2)}, now() - interval '6 days 23 hours')`;
+        const dry = await sweep(tx, { now: new Date(), dryRun: true });
+        expect(policy(dry, "auth_email_send")).toEqual({
+          key: "auth_email_send",
+          status: "dry_run",
+          counts: { auth_email_send: 1 },
+          skipped: {},
+        });
+        const real = await sweep(tx, { now: new Date() });
+        expect(policy(real, "auth_email_send").counts).toEqual({
+          auth_email_send: 1,
+        });
+        const kept = await tx<{ identifier_hash: string }[]>`
+          SELECT identifier_hash FROM auth_email_send
+          WHERE identifier_hash IN ${tx([hash(1), hash(2)])}`;
+        expect(kept.map((row) => row.identifier_hash)).toEqual([hash(2)]);
+      });
+    });
+
     it("reports every retention_policy row: the keep row kept, the spec 010 rows applied (TASK-207)", async () => {
       await rolledBack(scratch.sql, async (tx) => {
         const result = await sweep(tx, { now: new Date() });
         expect(result.policies.map(({ key, status }) => [key, status])).toEqual(
           [
+            // spec 020a (`0031`): no handler is built yet, and the sweep says so.
+            ["admin_order_action", "no_handler"],
+            // spec 012 §5.1 (`0033`, TASK-221).
+            ["audit_log", "applied"],
+            ["auth_email_send", "applied"],
             ["auth_session", "applied"],
             ["auth_verification_token", "applied"],
             ["buyer_personal", "applied"],

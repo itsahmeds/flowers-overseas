@@ -431,6 +431,280 @@
         "noHeading": "The body has {words} words and no ## heading.",
         "unknownConstruct": "Line {line} has something the editor does not format ({construct}); it shows as plain text."
       }
+    },
+    "partners": {
+      "title": "Florists",
+      "lead": "Names and contacts never appear on a public page.",
+      "add": "Add a florist",
+      "filter": {
+        "label": "Filter florists",
+        "country": "Country",
+        "countryAny": "Any country",
+        "apply": "Apply",
+        "summary": "Filters"
+      },
+      "tabs": {
+        "label": "Status",
+        "all": "All"
+      },
+      "status": {
+        "demo": "Demo",
+        "onboarding": "Onboarding",
+        "active": "Active",
+        "paused": "Paused",
+        "offboarded": "Offboarded"
+      },
+      "column": {
+        "florist": "Florist",
+        "city": "City",
+        "status": "Status",
+        "zones": "Zones",
+        "products": "Products"
+      },
+      "termsLine": "Terms {version}, {date}",
+      "termsNone": "Not recorded",
+      "counts": "{zones, plural, one {# zone} other {# zones}} · {products, plural, one {# product} other {# products}}",
+      "empty": {
+        "title": "{status, select, demo {No demo florists} onboarding {No florists in onboarding} active {No active florists yet} paused {No paused florists} offboarded {No offboarded florists} other {No florists yet}}",
+        "body": "A florist becomes active once their terms are recorded, a delivery zone and a product with a payout are set, and their contact is complete."
+      },
+      "back": "Florists",
+      "updated": "Updated {when} ({zone})",
+      "profile": {
+        "title": "Profile",
+        "legalName": "Legal name",
+        "cityLabel": "City label",
+        "country": "Country",
+        "channel": "Notification channel",
+        "contactEmail": "Contact email",
+        "contactPhone": "Contact phone",
+        "currency": "Payout currency",
+        "capacity": "Orders a day",
+        "save": "Save profile",
+        "saveNote": "Saved changes are in the audit log; contact values are recorded as “changed”.",
+        "readOnly": "Only admin and ops can change this florist.",
+        "phoneHint": "With the country code, for example +{callingCode}.",
+        "choose": "Choose"
+      },
+      "channel": {
+        "email": "Email",
+        "whatsapp": "WhatsApp"
+      },
+      "new": {
+        "title": "Add a florist",
+        "lead": "The florist starts in onboarding. Record their terms, zones and products on the next page.",
+        "code": "Code",
+        "codeHint": "Lowercase letters, digits and hyphens, for example pl-krk-01. It appears in admin addresses and the audit log, never to buyers.",
+        "submit": "Add florist"
+      },
+      "terms": {
+        "title": "Terms",
+        "signedOn": "Signed on",
+        "version": "Version",
+        "record": "Record terms",
+        "note": "The signed florist agreement, with its data-processing clauses.",
+        "recorded": "Signed on {date}, version {version}."
+      },
+      "zones": {
+        "title": "Delivery zones",
+        "add": "Add a zone",
+        "zone": "Zone",
+        "kind": "Kind",
+        "capacity": "Orders a day",
+        "capacityOptional": "Orders a day, if fewer than the florist's own",
+        "city": "City",
+        "postcodes": "Postcodes",
+        "zoneLabel": "{city} · {prefix}",
+        "own": "Florist's own",
+        "remove": "Remove",
+        "removeLabel": "Remove {zone}",
+        "empty": "No delivery zones yet.",
+        "none": "No city or postcode zone of this country is in the database yet."
+      },
+      "daysOff": {
+        "title": "Days off",
+        "add": "Add a day",
+        "date": "Day",
+        "reason": "Reason, if any",
+        "empty": "No days off recorded.",
+        "remove": "Remove",
+        "removeLabel": "Remove {date}"
+      },
+      "products": {
+        "title": "Products and payouts",
+        "product": "Product",
+        "size": "Size",
+        "allSizes": "All sizes",
+        "stems": "{count, plural, one {# stem} other {# stems}}",
+        "canMake": "Can make",
+        "yes": "Yes",
+        "no": "No",
+        "payout": "Payout",
+        "payoutField": "Payout ({currency} minor units)",
+        "hint": "Whole minor units, in the florist's payout currency: {example} is entered as {minor}.",
+        "add": "Add product",
+        "empty": "No products mapped yet.",
+        "readOnly": "Only admin and finance can change products and payouts.",
+        "remove": "Remove",
+        "removeLabel": "Remove {product}"
+      },
+      "state": {
+        "title": "Status",
+        "before": "Before this florist can be active",
+        "appears": "Make active appears when all four are met.",
+        "met": "Met",
+        "missing": "Missing",
+        "condition": {
+          "terms": {
+            "met": "Signed terms recorded",
+            "missing": "Signed terms are not recorded"
+          },
+          "coverage": {
+            "met": "At least one delivery zone",
+            "missing": "At least one delivery zone"
+          },
+          "mapping": {
+            "met": "At least one product with a payout",
+            "missing": "No product with a payout yet"
+          },
+          "contact": {
+            "met": "{channel, select, whatsapp {WhatsApp number for the chosen channel} other {Email for the chosen channel}}",
+            "missing": "{channel, select, whatsapp {WhatsApp number for the chosen channel} other {Email for the chosen channel}}"
+          }
+        },
+        "move": {
+          "active": "Make active",
+          "paused": "Pause",
+          "offboarded": "Offboard"
+        },
+        "demo": "A demo florist can only be offboarded. Demo florists exist for staging and demo calls; they never receive a real order.",
+        "offboarded": "This florist is offboarded. Its status cannot change again.",
+        "readOnly": "Only admin and ops can change a florist's status."
+      },
+      "result": {
+        "saved": "Saved.",
+        "status": "{status, select, active {The florist is active.} paused {The florist is paused.} offboarded {The florist is offboarded.} other {Status saved.}}",
+        "created": "Florist added in onboarding.",
+        "conflict": "Someone changed this florist after you opened it. Nothing was saved. Reload to see their changes, then make yours again.",
+        "invalid": "Nothing was saved. Check the fields marked below.",
+        "code_taken": "That code is already taken. Nothing was saved.",
+        "duplicate": "That is already on the list. Nothing was saved.",
+        "country_has_zones": "Remove the delivery zones before changing the country. Nothing was saved.",
+        "currency_has_mappings": "Remove the products before changing the payout currency. Nothing was saved.",
+        "currency_mismatch": "Payouts are in the florist's payout currency. Nothing was saved.",
+        "outside_country": "That zone is not in the florist's country. Nothing was saved.",
+        "illegal_edge": "That status change is not allowed from the florist's status. Nothing was saved.",
+        "preflight": "The florist cannot be made active yet. The status card lists what is missing.",
+        "not_found": "That was already removed. Nothing was saved."
+      },
+      "error": {
+        "required": "Fill this in.",
+        "tooLong": "This is too long.",
+        "email": "Enter an email address, for example name@example.com.",
+        "phone": "Enter a number of the florist's country, with its country code.",
+        "phoneForChannel": "WhatsApp needs a phone number.",
+        "currency": "Choose a currency.",
+        "country": "Choose a country.",
+        "capacity": "Enter a whole number from 1 to 500.",
+        "payout": "Enter a whole number above zero, in minor units.",
+        "code": "Use lowercase letters, digits and single hyphens.",
+        "date": "Enter a date.",
+        "dateFuture": "That date is in the future.",
+        "dateFar": "Choose a day within the next two years.",
+        "datePast": "That day has passed.",
+        "version": "Use letters, digits, dots and hyphens, for example v1.",
+        "reason": "Give a reason of at least 3 characters.",
+        "target": "Choose one.",
+        "product": "Choose a product."
+      },
+      "where": "{city}, {country}"
+    },
+    "applications": {
+      "title": "Applications",
+      "lead": "From the apply form on the for-florists page. Kept 12 months after the last change unless converted.",
+      "tabs": {
+        "label": "Status",
+        "all": "All"
+      },
+      "status": {
+        "new": "New",
+        "contacted": "Contacted",
+        "converted": "Converted",
+        "rejected": "Rejected"
+      },
+      "column": {
+        "shop": "Shop",
+        "contact": "Contact",
+        "where": "Where",
+        "perDay": "A day",
+        "weekends": "Weekends",
+        "received": "Received ({zone})",
+        "status": "Status"
+      },
+      "where": "{city}, {country}",
+      "weekend": {
+        "yes": "Yes",
+        "sometimes": "Sometimes",
+        "no": "No"
+      },
+      "notGiven": "Not given",
+      "empty": {
+        "title": "{status, select, new {No new applications} contacted {No contacted applications} converted {No converted applications} rejected {No rejected applications} other {No applications yet}}",
+        "body": "Applications arrive from the apply form on the for-florists page."
+      },
+      "back": "Applications",
+      "received": "Received {when} ({zone})",
+      "notice": "Notice version {version}",
+      "field": {
+        "shop": "Shop",
+        "contact": "Contact",
+        "email": "Email",
+        "phone": "Phone or WhatsApp",
+        "country": "Country",
+        "town": "Town",
+        "area": "Where they deliver",
+        "perDay": "Orders a day",
+        "weekends": "Weekends",
+        "registration": "Registration",
+        "web": "Instagram or website",
+        "contactBy": "Contact by",
+        "language": "Language"
+      },
+      "contactBy": {
+        "email": "Email",
+        "whatsapp": "WhatsApp",
+        "phone": "Phone"
+      },
+      "viewLogged": "Opening this application is recorded in the audit log.",
+      "next": {
+        "title": "Next step",
+        "contactHint": "Call or message them first, then mark it.",
+        "markContacted": "Mark as contacted",
+        "convert": "Convert to a florist",
+        "convertHint": "Creates an onboarding florist from these details and links it.",
+        "reject": "Reject",
+        "rejectTitle": "Reject this application",
+        "reason": "Reason, kept with the application",
+        "rejectSubmit": "Reject application",
+        "cancel": "Cancel",
+        "rejectNote": "The applicant is not emailed by the system; reply to them yourself."
+      },
+      "state": {
+        "title": "Status",
+        "converted": "Converted. {shop} is now an onboarding florist.",
+        "openFlorist": "Open the florist",
+        "rejected": "Rejected.",
+        "reason": "Reason: {reason}"
+      },
+      "result": {
+        "contacted": "Marked as contacted.",
+        "converted": "Converted into an onboarding florist.",
+        "rejected": "Application rejected.",
+        "conflict": "Someone changed this application after you opened it. Nothing was saved. Reload, then try again.",
+        "illegal_edge": "That step is not allowed from the application's status. Nothing was saved.",
+        "invalid": "Give a reason of at least 3 characters. Nothing was saved.",
+        "not_found": "That application no longer exists."
+      }
     }
   },
   "emails": {

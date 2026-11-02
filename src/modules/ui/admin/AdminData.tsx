@@ -561,3 +561,119 @@ export function AdminEmpty({
     </div>
   );
 }
+
+/* ---------------------------------------------------------------- status tabs */
+
+/** One tab of the status tabs: a link to a filtered view, with its count. */
+export interface AdminTab {
+  readonly key: string;
+  readonly label: string;
+  readonly count: string;
+  readonly href: string;
+  readonly current: boolean;
+}
+
+/**
+ * The status tabs (`.ad-tabs`, TASK-221): links, never buttons, so each tab is a URL; the
+ * current one carries `aria-current="page"` and the ink underline. One line that scrolls
+ * sideways at 390.
+ */
+export function AdminTabs({
+  label,
+  tabs,
+}: {
+  readonly label: string;
+  readonly tabs: readonly AdminTab[];
+}): ReactElement {
+  return (
+    <nav
+      aria-label={label}
+      className="border-rule flex gap-[2px] overflow-x-auto border-b md:flex-wrap"
+    >
+      {tabs.map((tab) => (
+        <a
+          key={tab.key}
+          href={tab.href}
+          {...(tab.current ? { "aria-current": "page" as const } : {})}
+          className={`-mb-px inline-flex min-h-[38px] flex-none items-center gap-[6px] border-b-2 px-[12px] text-[14px] no-underline ${
+            tab.current
+              ? "border-ink text-ink font-bold"
+              : "text-ink-2 border-transparent"
+          }`}
+        >
+          {tab.label}
+          <span className="text-ink-3 text-[12px] font-normal tabular-nums">
+            {tab.count}
+          </span>
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+/* ---------------------------------------------------------------- form fields */
+
+/** The control classes of a 36 px admin field (`.ad-in`); `bad` adds the danger edge. */
+export function adminControlClass(bad: boolean): string {
+  return `${FIELD_CONTROL} w-full min-w-0 ${bad ? "border-danger shadow-[inset_0_0_0_1px_var(--color-danger)]" : ""}`;
+}
+
+/**
+ * One labelled form field (`.ad-f`): the uppercase label, the control, a quiet hint and the
+ * field error (`.ad-ferr`), each tied to the control by `aria-describedby` and, for the error,
+ * `aria-invalid`. `full` spans the form's two columns (`.ad-f.full`).
+ */
+export function AdminField({
+  id,
+  label,
+  hint,
+  error,
+  full = false,
+  children,
+}: {
+  readonly id: string;
+  readonly label: string;
+  readonly hint?: string | undefined;
+  readonly error?: string | undefined;
+  readonly full?: boolean;
+  readonly children: ReactNode;
+}): ReactElement {
+  return (
+    <div
+      className={`grid min-w-0 content-start gap-[4px] ${full ? "col-span-full" : ""}`}
+    >
+      <label htmlFor={id} className={FIELD_LABEL}>
+        {label}
+      </label>
+      {children}
+      {error === undefined ? null : (
+        <p id={`${id}-error`} className="text-danger text-[13px] font-bold">
+          {error}
+        </p>
+      )}
+      {hint === undefined ? null : (
+        <p id={`${id}-hint`} className="text-ink-3 text-[13px] leading-[1.45]">
+          {hint}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** The `aria-describedby` and `aria-invalid` a control inside `AdminField` carries. */
+export function adminFieldAria(
+  id: string,
+  hint: string | undefined,
+  error: string | undefined,
+): { "aria-describedby"?: string; "aria-invalid"?: true } {
+  const described = [
+    error === undefined ? undefined : `${id}-error`,
+    hint === undefined ? undefined : `${id}-hint`,
+  ].filter((entry) => entry !== undefined);
+  return {
+    ...(described.length === 0
+      ? {}
+      : { "aria-describedby": described.join(" ") }),
+    ...(error === undefined ? {} : { "aria-invalid": true as const }),
+  };
+}

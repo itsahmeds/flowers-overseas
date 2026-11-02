@@ -37,13 +37,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "applications",
     href: "/admin/applications",
     permissions: ["application.manage"],
-    built: false,
+    built: true,
   },
   {
     key: "partners",
     href: "/admin/partners",
     permissions: ["partner.edit", "partner.payout"],
-    built: false,
+    built: true,
   },
   {
     key: "flags",
