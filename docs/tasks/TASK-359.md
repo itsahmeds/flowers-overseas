@@ -32,6 +32,7 @@ _None yet._
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 - 2026-10-24, backend implementer (feature PR 398) to the orchestrator: the refund effects (AC-17 to AC-19, AC-21, AC-23) need spec 013's `refund`/`adminRefund` (TASK-261) and the per-order ceiling (TASK-350); neither exists. `parseMinorUnits`, `remainingRefundable` and `suggestedRefunds` are built in PR 398. `open`.
+- 2026-11-02, backend implementer (agent R) to the orchestrator: still blocked. TASK-350 is merged; TASK-261 is not (PR 443 open, based on TASK-260's PR 442, not restacked onto main: it lacks TASK-357's and TASK-350's merged commits). AC-17 to AC-21 also run through `runOrderAction` (§5.2 steps 1 to 7: order lock, `actionId` replay, `expectedSeq`/`ORDER_CHANGED`, the `admin_order_action` row and its audit row) and migration `NNNN_admin_order_actions`: TASK-357's remaining scope, built on no branch (TASK-357's 2026-10-24 escalation is still `open`; PR 398 merged only its dependency-free layer). Building either here is a second task's scope plus a schema change. Needed: TASK-261 merged, then TASK-357's `runOrderAction` and migration (or the orchestrator moves them into this task). `open`.
 
 ## Progress
 
@@ -40,6 +41,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-24: `parseMinorUnits` (AC-16 in full, T-17), `remainingRefundable`, `suggestedRefunds` with half-to-even (T-23) and the schema half of AC-20 (T-21) built in PR 398, mutation-checked. Next: the refund effects once TASK-261 and TASK-350 merge.
+- 2026-11-02: agent R checked origin/main bdbc5d0b3: TASK-350 merged, TASK-261 open, `runOrderAction` absent everywhere; no code written, escalation added. Next: once TASK-261 and `runOrderAction` land, `adminRefund` through it (full, partial, cancelled retry, anomaly) and T-18 to T-20, T-22, T-24 on embedded PG16.
 
 ## Result
 
