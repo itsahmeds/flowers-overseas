@@ -166,6 +166,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       "checkoutDone",
       "basket",
       "trackOrder",
+      // Spec 011 §6 (TASK-210): the application and its sent page, `noindex,follow` always.
+      "florist-apply",
+      "florist-apply-sent",
     ]);
   });
 

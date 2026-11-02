@@ -600,6 +600,9 @@ describe("the shipped catalogues and manifests", () => {
       "floristAuth",
       "floristInbox",
       "emails",
+      // Spec 011 §7's public pages (TASK-210): the for-florists landing, application and sent
+      // pages. `floristInbox` above also carries the walkthrough's example-screen labels.
+      "forFlorists",
       // Spec 018 §7's namespaces (TASK-338): the tracking page and its not-working page, and the
       // lookup form's labels. Server Components only; the share island gets strings as props.
       "tracking",
