@@ -214,10 +214,15 @@ export interface RoutingFacts {
   readonly live: boolean;
 }
 
-/** Locks the order and reads its routing facts; undefined when there is no such order. */
+/**
+ * Locks the order and reads its routing facts; undefined when there is no such order. `lock:
+ * false` reads the same facts without the row lock (spec 020a's `rerouteCandidates`, a page
+ * render that writes nothing).
+ */
 export async function lockRoutingFacts(
   executor: OrderExecutor,
   orderId: string,
+  options: { readonly lock?: boolean } = {},
 ): Promise<RoutingFacts | undefined> {
   if (!z.uuid().safeParse(orderId).success) return undefined;
   const [row] = await executor.execute(sql`
@@ -234,7 +239,7 @@ export async function lockRoutingFacts(
     JOIN country c ON c.id = o.destination_country_id
     LEFT JOIN city ci ON ci.id = o.destination_city_id
     WHERE o.id = ${orderId}
-    FOR UPDATE OF o`);
+    ${options.lock === false ? sql`` : sql`FOR UPDATE OF o`}`);
   if (row === undefined) return undefined;
   const order = OrderRow.parse(row);
   const lines = (

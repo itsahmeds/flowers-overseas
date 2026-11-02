@@ -130,6 +130,10 @@ export const adminOrderActionCodes = [
   // missing order, or an action id reused on another order. The engine's own errors pass through
   // under their own names (§5.2), and this is the action layer's (TASK-359).
   "INPUT_INVALID",
+  // Spec 016's `manualReroute` refusals beyond §5.2's list, passed through under their own names
+  // (TASK-358): the order can no longer arrive on its date, or its country has no agreed cutoff.
+  "ROUTING_DEADLINE_PASSED",
+  "NO_OPERATIONS",
 ] as const;
 export type AdminOrderActionCode = (typeof adminOrderActionCodes)[number];
 

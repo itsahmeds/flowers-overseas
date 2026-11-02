@@ -39,6 +39,12 @@ export type {
   RoutingOrder,
   RoutingPartner,
 } from "./candidates";
+export { graceEndDisplay } from "./grace-display";
+export type {
+  GraceEndDisplay,
+  GraceEndInput,
+  ZonedReading,
+} from "./grace-display";
 export {
   expectedFirstOfferAt,
   graceEnd,

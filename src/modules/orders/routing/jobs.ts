@@ -2,7 +2,8 @@
  * Spec 016's routing jobs, for the worker's job table (§5.2 "Jobs", "The `routing` outbox
  * handler"; TASK-328, TASK-329, TASK-330): `order.route`, `assignment.remind`,
  * `assignment.timeout`, `assignment.photo_remind`, `routing.sla_watch`, `order.no_partner_expire`,
- * the `routing` outbox handler (withdrawal included), and `manualReroute` for spec 020a.
+ * the `routing` outbox handler (withdrawal included), and `manualReroute`, `rerouteCandidates`
+ * and `rerouteGraceEnd` for spec 020a.
  *
  * Not in `./index.ts` (the pure rules) nor in the `orders` barrel: importing this registers the
  * router's event schemas (`assignment.timed_out`, `order.manual_reroute`) and spec 011's, which
@@ -57,6 +58,12 @@ export {
 } from "./no-partner";
 export type { Exhaustion } from "./no-partner";
 export { manualReroute } from "./reroute";
+export { rerouteCandidates, rerouteGraceEnd } from "./reroute-candidates";
+export type {
+  EarlierResponse,
+  RerouteCandidate,
+  RerouteReadOptions,
+} from "./reroute-candidates";
 export type {
   ManualRerouteOptions,
   ManualRerouteRefusal,
