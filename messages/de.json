@@ -672,9 +672,7 @@
   },
   "home": {
     "dates": {
-      "eyebrow": "Coming up in Poland",
-      "heading": "Dates worth <em>sending for</em>",
-      "orderBy": "Order by {date}, {time}"
+      "heading": "Dates worth <em>sending for</em>"
     },
     "destinations": {
       "body": "Wir öffnen ein Land nach dem anderen, und nur, wenn wir dieselben Sträuße und dieselbe Sorgfalt versprechen können.",
@@ -745,8 +743,10 @@
       "who": "{who, select, mum {meine Mama} dad {meinen Papa} grandma {meine Oma} grandad {meinen Opa} friend {jemanden aus dem Freundeskreis} someoneILove {einen lieben Menschen} other {meinen Schatz}}"
     },
     "trending": {
-      "basis": "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",
       "heading": "Beliebte <em>Auswahl</em>"
+    },
+    "comingUp": {
+      "more": "and {count} more"
     }
   },
   "infoPages": {
@@ -1117,7 +1117,8 @@
       "howWeSort": "How we sort",
       "sortLabel": "Sort by",
       "submit": "Sort",
-      "summary": "{count, plural, one {# Strauß} other {# Sträuße}} · Seite {page} von {pageCount}"
+      "summary": "{count, plural, one {# Strauß} other {# Sträuße}} · Seite {page} von {pageCount}",
+      "howWeSort": "How we sort"
     },
     "cta": {
       "chooseCountry": "Choose where to send"
@@ -1129,7 +1130,8 @@
         "mid": "Middle prices"
       },
       "choose": "Choose a country to see the price"
-    }
+    },
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
   },
   "trust": {
     "guarantee": {

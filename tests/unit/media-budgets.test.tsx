@@ -345,8 +345,8 @@ describe("T-22: rendering a photograph costs zero client bytes (AC-22)", () => {
       ),
       "src/modules/ui/home/HomeHero.tsx",
       "src/modules/ui/home/OccasionTiles.tsx",
-      "src/modules/ui/home/TrendingRow.tsx",
-      "src/modules/ui/home/HomeProvenanceNote.tsx",
+      "src/modules/ui/home/HomeSelection.tsx",
+      "src/modules/ui/home/HomeCardGrid.tsx",
     ];
     for (const path of files) {
       const source = await readFile(join(repoRoot, path), "utf8");

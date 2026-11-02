@@ -1,27 +1,16 @@
 /**
- * T-12 / AC-10 and **T-13 / AC-11** (TASK-052, v2 by TASK-177): the locale home's hero,
- * sentence picker and promise band, served. The v1 finder, its type-ahead and their tests were
- * retired with the island; the sentence picker's JavaScript-off submission is the last block.
+ * T-12 / AC-10 (TASK-052, v2 by TASK-177, v3 by TASK-386 and TASK-387): the locale home, served.
+ * The v1 finder, the v2 sentence picker, its promise band, occasion tiles, dated stamps and
+ * trending row were retired with spec 004 §14 A-founder-2026-10-24a; the v3 home's own browser
+ * cases (the picker, the first screen, the sections, the tabs, the labels) are
+ * `tests/e2e/home-v3-products.spec.ts`. What stays here is what every version of the home owes:
  *
- * Everything here needs a browser, a real response or both, which is what separates it from
- * `tests/unit/ui-home.test.tsx`:
- *
- *  - **one `<h1>` per document in all four locales**, inside the `main` landmark, with the hero
- *    slot present and holding no `<img>` (AC-10);
- *  - **the finder works with JavaScript disabled** (AC-11's hard requirement), asserted in a
- *    `javaScriptEnabled: false` context: the three fields are labelled, the country field is a
- *    native `<input list>` over a `<datalist>` of all seven destinations, and `Continue` submits
- *    to a **200** document — which is the property the whole "no `action` to a non-200 URL" rule
- *    exists for;
- *  - **the type-ahead enhancement**: with JavaScript on, typing filters the list, the matching
- *    name appears beneath the field with its typed prefix in bold, the count is announced through
- *    a polite live region, and picking a match fills the field (design round 7);
- *  - **keyboard operability** (WCAG 2.1.1): tab reaches every field and the submit control, in
- *    document order, and each is focusable;
- *  - **no cookie is written** by any of it — the finder is a `get` form, and the document is one
- *    cache entry (`plan/02` §14, spec 001 AC-15, spec 003 AC-12);
- *  - **the promise band** renders three facts and no photograph (AC-15's trap: "We
- *    photograph it at the door" is a promise, not a gallery).
+ *  - **one `<h1>` per document in all four locales**, inside the `main` landmark, and the hero
+ *    photograph from `md` up (on a phone none is drawn above the first product, item 4.2);
+ *  - the landmarks and the named sections;
+ *  - the destinations, each with its state, a link exactly where its guide exists;
+ *  - no verified-reviews section (AC-15), the FAQ's native disclosures, no cookie written;
+ *  - the display-face swaps of the hero copy and the picker stay small.
  *
  * Both projects run every test: `e2e-desktop` is 1280 px and `e2e-mobile` is a Pixel 7 at 412 px,
  * so the two artboard geometries are covered without a second config.
@@ -30,7 +19,8 @@ import { expect, test } from "@playwright/test";
 
 import {
   HERO_COPY_REGION,
-  SENTENCE_REGION,
+  ITALIC_PHRASE_REGION,
+  PICKER_REGION,
   recordLayoutShifts,
   shiftInside,
 } from "../support/layout-shift.ts";
@@ -38,48 +28,16 @@ import {
 const LOCALES = ["/en", "/en-gb", "/de", "/pl"] as const;
 
 const HERO = "[data-fo-hero]";
-/** The v2 sentence picker (spec 004 §14 A21 clause 4; TASK-177), which replaced the finder. */
-const SENTENCE = "[data-fo-sentence]";
-const PROOF = "[data-fo-proof-row]";
 /** TASK-054 replaced TASK-052's stand-in list with the artboards' grid, at the same id. */
 const DESTINATIONS = "[data-fo-destinations]";
-const TRENDING = "[data-fo-trending]";
 const REVIEWS = "[data-fo-reviews]";
-/** TASK-053's five sections, in the order they appear down the page. */
-const OCCASION_DATES = "[data-fo-occasion-dates]";
-const OCCASIONS = "[data-fo-occasions]";
+/** The v3 home's product sections (`data-fo-home-section`), in DOM order. */
+const SELECTION = '[data-fo-home-section="selection"]';
+const OCCASIONS = '[data-fo-home-section="occasions"]';
+const PRICE = '[data-fo-home-section="price"]';
 const HOW_IT_WORKS = "[data-fo-how-it-works]";
 const FAQ = "[data-fo-faq]";
-/** v2: the promise band carries AC-10's trust strip (`data-fo-trust-strip`). */
-const TRUST = "[data-fo-trust-strip]";
-
 /** The seven Phase-0 destinations of `src/config/countries.ts`, restated (AC-11). */
-/**
- * The trending row's heading and basis line per locale path (TASK-140): the founder's `en`
- * wording of 2026-10-03, inherited by `en-gb`, and the unreviewed `de` and `pl` drafts.
- */
-const TRENDING_COPY = {
-  "/en": {
-    heading: "Popular choices",
-    basis: "Our picks until real orders start.",
-  },
-  "/en-gb": {
-    heading: "Popular choices",
-    basis: "Our picks until real orders start.",
-  },
-  "/de": {
-    heading: "Beliebte Auswahl",
-    basis: "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",
-  },
-  "/pl": {
-    heading: "Popularne wybory",
-    basis: "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",
-  },
-} as const satisfies Record<
-  (typeof LOCALES)[number],
-  { heading: string; basis: string }
->;
-
 const DESTINATION_CODES = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
 const DESTINATIONS_COUNT = DESTINATION_CODES.length;
 
@@ -87,12 +45,18 @@ test.describe("the locale home, above the fold", () => {
   for (const path of LOCALES) {
     test(`${path} renders one h1 and the hero band's photograph`, async ({
       page,
+      isMobile,
     }) => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
 
       await expect(page.locator("main#main h1")).toHaveCount(1);
       await expect(page.locator("h1")).toHaveCount(1);
+      // v3 (item 4.2): below `md` no photograph is drawn above the first product.
+      if (isMobile) {
+        await expect(page.locator("[data-fo-home-photo]")).toBeHidden();
+        return;
+      }
       await expect(
         page.locator(`${HERO} [data-fo-media-slot="hero"]`),
       ).toHaveCount(1);
@@ -112,7 +76,9 @@ test.describe("the locale home, above the fold", () => {
 
     test(`${path} reserves the hero slot's box before paint`, async ({
       page,
+      isMobile,
     }) => {
+      test.skip(isMobile, "no hero photograph below md (item 4.2)");
       await page.goto(path);
       const box = await page
         .locator(`${HERO} [data-fo-media-slot="hero"]`)
@@ -131,42 +97,23 @@ test.describe("the locale home, above the fold", () => {
           page.locator(`${DESTINATIONS} [data-fo-destination="${iso2}"]`),
         ).toHaveCount(1);
       }
-      // The sentence picker itself never links: it is a form submission (A21 clause 4).
-      await expect(page.locator(`${SENTENCE} a[href]`)).toHaveCount(0);
+      // The picker itself never links: it is a form submission (item 4.2).
+      await expect(page.locator(`[data-fo-home-picker] a[href]`)).toHaveCount(
+        0,
+      );
       // Spec 007 AC-20: a destination is a link exactly where its guide exists in this locale.
       // `/de` and `/pl` have none (§13 Q1), so they still link nothing at all — same markup,
       // one element different.
-      // v2 (TASK-177, review R2): every chip links its guide where the guide exists; on `/de` and
-      // `/pl`, which have none, Poland's chip links its shop root instead, so the delivering
-      // destination is never a dead end.
-      const expected = path === "/de" || path === "/pl" ? 1 : 7;
+      // v3 (AC-73): a chip links its guide and nothing else; countries are data, so no one
+      // destination gets a shop link of its own. `/de` and `/pl` have no guide, so no link.
+      const expected = path === "/de" || path === "/pl" ? 0 : 7;
       await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(
         expected,
       );
-      const poland = page.locator(
-        `${DESTINATIONS} [data-fo-destination="PL"] a`,
-      );
-      await expect(poland).toHaveAttribute(
-        "href",
-        path === "/en" || path === "/en-gb"
-          ? `${path}/send-flowers-to/poland`
-          : path === "/de"
-            ? "/de/polen/blumen"
-            : "/pl/polska/kwiaty",
-      );
-    });
-
-    test(`${path} renders the three-fact promise band and no photo in it`, async ({
-      page,
-    }) => {
-      await page.goto(path);
-
-      // v2 (TASK-177): three facts; the price fact left the home (founder, 2026-10-04).
-      await expect(page.locator(`${PROOF} li`)).toHaveCount(3);
-      await expect(page.locator(`${PROOF} img`)).toHaveCount(0);
-      await expect(page.locator(`${PROOF} [data-fo-media-slot]`)).toHaveCount(
-        0,
-      );
+      if (expected > 0)
+        await expect(
+          page.locator(`${DESTINATIONS} [data-fo-destination="PL"] a`),
+        ).toHaveAttribute("href", `${path}/send-flowers-to/poland`);
     });
 
     test(`${path} closes AC-10: the landmarks, the sections and one h1`, async ({
@@ -174,128 +121,23 @@ test.describe("the locale home, above the fold", () => {
     }) => {
       await page.goto(path);
 
-      // The three named landmarks of §5.3, on a document that now carries nine sections.
+      // The three named landmarks of §5.3.
       await expect(page.locator("body > header[role='banner']")).toHaveCount(1);
       await expect(page.locator("main#main")).toHaveCount(1);
       await expect(page.locator("footer")).toHaveCount(1);
       await expect(page.locator("h1")).toHaveCount(1);
 
-      // The sections of TASK-053 and TASK-054, in the artboards' order down the page.
+      // The v3 sections (TASK-386, TASK-387), each once.
       for (const selector of [
-        TRENDING,
-        OCCASION_DATES,
+        SELECTION,
         OCCASIONS,
+        PRICE,
+        DESTINATIONS,
         HOW_IT_WORKS,
         FAQ,
-        TRUST,
-        DESTINATIONS,
       ]) {
         await expect(page.locator(selector), selector).toHaveCount(1);
       }
-    });
-
-    test(`${path} renders six occasion tiles, each a link to a hub that answers 200`, async ({
-      page,
-      request,
-    }) => {
-      await page.goto(path);
-
-      await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
-      // Spec 004 §14 A20 (TASK-177): a tile whose occasion hub exists is a link to it. The tiles
-      // only: since TASK-232 the section's head also links the occasions index ("Occasions →").
-      const tiles = await page
-        .locator(`${OCCASIONS} li a[href]`)
-        .evaluateAll((nodes) =>
-          nodes.map((node) => node.getAttribute("href") ?? ""),
-        );
-      expect(tiles).toHaveLength(6);
-      for (const href of tiles) {
-        const response = await request.get(href, { maxRedirects: 0 });
-        expect(response.status(), href).toBe(200);
-      }
-      // Six photographs since TASK-080, every one of them lazy: the grid is below the fold on
-      // both artboards, so none of them may compete with the hero for the LCP.
-      await expect(page.locator(`${OCCASIONS} img`)).toHaveCount(6);
-      await expect(
-        page.locator(`${OCCASIONS} img[loading="lazy"]`),
-      ).toHaveCount(6);
-      await expect(
-        page.locator(`${OCCASIONS} [data-fo-media-slot="tile"]`),
-      ).toHaveCount(6);
-    });
-
-    test(`${path} renders the dated occasions, the explainer and the trust strip`, async ({
-      page,
-    }) => {
-      await page.goto(path);
-
-      await expect(page.locator(`${OCCASION_DATES} li`)).toHaveCount(4);
-      await expect(page.locator("[data-fo-how-it-works-step]")).toHaveCount(3);
-      await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(3);
-      // Neither the explainer nor the promise band links anywhere (no page for the guarantee).
-      for (const selector of [HOW_IT_WORKS, TRUST]) {
-        await expect(page.locator(`${selector} a[href]`), selector).toHaveCount(
-          0,
-        );
-      }
-    });
-
-    test(`${path} renders the trending row with the founder's label and no price`, async ({
-      page,
-      request,
-    }) => {
-      await page.goto(path);
-
-      // Five named picks, each with a reserved photo box and **no price element of any kind**:
-      // spec 004 §3 ships nothing that knows what a product is (TASK-054). The box is the row's
-      // own `trending` slot, whose `sizes` states the card's rendered width (TASK-168).
-      await expect(page.locator(`${TRENDING} li`)).toHaveCount(5);
-      await expect(
-        page.locator(`${TRENDING} [data-fo-media-slot="trending"]`),
-      ).toHaveCount(5);
-      // Since batch 2 (TASK-168) every pick has approved, alt-texted imagery, so all five boxes
-      // are photographs and none is the captioned placeholder: one `<img>` per card, no broken
-      // image, no photograph of a different bouquet. The placeholder arm is `MediaAsset`'s own,
-      // covered by `tests/unit/ui-media.test.tsx`.
-      await expect(page.locator(`${TRENDING} img`)).toHaveCount(5);
-      await expect(
-        page.locator(`${TRENDING} [data-fo-media-slot="trending"] img`),
-      ).toHaveCount(5);
-      await expect(
-        page.locator(`${TRENDING} [data-fo-media-placeholder]`),
-      ).toHaveCount(0);
-      // Each card links to its product page in the demo destination, Poland, and the page answers
-      // 200 (spec 008 §14 A14 (e); TASK-173 — the founder clicked these and went nowhere).
-      const cards = await page
-        .locator(`${TRENDING} li a[href]`)
-        .evaluateAll((nodes) =>
-          nodes.map((node) => node.getAttribute("href") ?? ""),
-        );
-      expect(cards).toHaveLength(5);
-      for (const href of cards) {
-        expect(href, href).toMatch(
-          new RegExp(
-            `^${path}/(?:poland|polen|polska)/(?:product|produkt)/[a-z0-9-]+$`,
-            "u",
-          ),
-        );
-        const response = await request.get(href, { maxRedirects: 0 });
-        expect(response.status(), href).toBe(200);
-      }
-      await expect(page.locator(TRENDING)).toHaveAttribute(
-        "data-fo-trending-basis",
-        "picks",
-      );
-      const row = (await page.locator(TRENDING).innerText()).replaceAll(
-        /\s+/g,
-        " ",
-      );
-      // The row's heading and basis line, the one value each locale serves (TASK-140).
-      await expect(page.locator(`${TRENDING} h2`)).toHaveText(
-        TRENDING_COPY[path].heading,
-      );
-      expect(row).toContain(TRENDING_COPY[path].basis);
-      expect(row).not.toMatch(/starting at|€|z\u0142|£/iu);
     });
 
     test(`${path} renders no verified-reviews section at all (AC-15)`, async ({
@@ -320,7 +162,7 @@ test.describe("the locale home, above the fold", () => {
       // `tests/e2e/destinations-hub.spec.ts` crawl them for their status (spec 007 AC-17).
       await expect(
         page.locator(`${DESTINATIONS} a[href^="/"]:not([href*="#"])`),
-      ).toHaveCount(path === "/de" || path === "/pl" ? 1 : 7);
+      ).toHaveCount(path === "/de" || path === "/pl" ? 0 : 7);
       // Copy only: a waiting-list capture is a personal-data flow spec 010/016 owns, and an
       // inert field would be a dark pattern.
       await expect(
@@ -363,63 +205,30 @@ test.describe("the locale home, above the fold", () => {
         .map((header) => header.name.toLowerCase())
         .filter((name) => name === "set-cookie"),
     ).toEqual([]);
-    // Choosing in the sentence writes nothing either: no island stores a preference. The one
-    // cookie in the jar is the returning visitor's `fo_locale` the config seeds
+    // Choosing an occasion tab writes nothing either: the tabs are a radio group with no
+    // script. The one cookie in the jar is the returning visitor's `fo_locale` the config seeds
     // (`tests/support/locale-choice.ts`), unchanged.
-    await page.locator('select[name="occasion"]').selectOption("sympathy");
+    await page.locator('[data-fo-occasion-tab="1"]').check({ force: true });
     expect(
       (await context.cookies()).map(({ name, value }) => ({ name, value })),
     ).toEqual([{ name: "fo_locale", value: "en" }]);
   });
 });
 
-test.describe("the sentence picker (A21 clause 4, T-12, T-13)", () => {
-  test("names only `country` and `occasion`, and lists seven destinations, six not yet", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-
-    const names = await page
-      .locator(`${SENTENCE} [name]`)
-      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("name")));
-    expect(names).toEqual(["country", "occasion"]);
-    await expect(
-      page.locator(`${SENTENCE} select[name="country"] option`),
-    ).toHaveCount(7);
-    await expect(
-      page.locator(`${SENTENCE} select[name="country"] option[disabled]`),
-    ).toHaveCount(6);
-    await expect(
-      page.locator(`${SENTENCE} option[value="PL"]:not([disabled])`),
-    ).toHaveCount(1);
-  });
-
-  test("its route answers 303, no-store and noindex, and sends an unknown country to the hub", async ({
-    request,
-  }) => {
-    const response = await request.get(
-      "/api/send/en?country=XX&occasion=birthday",
-      {
-        maxRedirects: 0,
-      },
-    );
-
-    expect(response.status()).toBe(303);
-    expect(response.headers()["location"]).toBe("/en/send-flowers-to");
-    expect(response.headers()["cache-control"]).toBe("no-store");
-    expect(response.headers()["x-robots-tag"]).toBe("noindex");
-  });
-});
-
-test.describe("the home names no VAT or delivery inclusion (founder, 2026-10-04)", () => {
+test.describe("the home names VAT and delivery only in the one no-money line (spec 004 item 2)", () => {
   for (const path of LOCALES) {
-    test(`${path} carries no inclusion sentence anywhere in main`, async ({
+    test(`${path} carries no other inclusion sentence anywhere in main`, async ({
       page,
     }) => {
       await page.goto(path);
-      // "Every price includes VAT and delivery. dont write this on home." The header strip is
-      // the chrome's (TASK-176), so the assertion is over the page's own content.
-      const main = await page.locator("main#main").innerText();
+      // The founder's 2026-10-04 "dont write this on home" gave way, on 2026-10-24, to item 2:
+      // `shop.hub.noMoney` once, beside the picker, says why no price shows. Nowhere else.
+      await expect(page.locator("main#main [data-fo-no-money]")).toHaveCount(1);
+      const main = await page.locator("main#main").evaluate((node) => {
+        const copy = node.cloneNode(true) as HTMLElement;
+        copy.querySelector("[data-fo-no-money]")?.remove();
+        return copy.innerText || copy.textContent || "";
+      });
       expect(main).not.toMatch(
         /\bVAT\b|MwSt|Mehrwertsteuer|delivery and VAT|VAT and delivery/iu,
       );
@@ -427,73 +236,17 @@ test.describe("the home names no VAT or delivery inclusion (founder, 2026-10-04)
   }
 });
 
-test.describe("the sentence keeps its possessive in step (the home's one island)", () => {
-  test("choosing my dad relabels the occasions his …; choosing a friend, their …", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-    const birthday = page.locator('#send-occasion option[value="birthday"]');
-    await expect(birthday).toHaveText("her birthday");
-
-    await page.locator("#send-who").selectOption("dad");
-    await expect(birthday).toHaveText("his birthday");
-    await page.locator("#send-who").selectOption("partner");
-    await expect(birthday).toHaveText("their birthday");
-    await page.locator("#send-who").selectOption("friend");
-    await expect(birthday).toHaveText("their birthday");
-    // A neutral occasion has one form for everybody.
-    await expect(
-      page.locator('#send-occasion option[value="newBaby"]'),
-    ).toHaveText("a new baby");
-    // Nothing the reader chose about the person is submitted.
-    await expect(page.locator("#send-who")).not.toHaveAttribute("name");
-  });
-});
-
-test.describe("the sentence picker with JavaScript disabled (AC-11, T-12)", () => {
-  test.use({ javaScriptEnabled: false });
-
-  test("Poland + birthday lands on Poland's birthday page, with no query string", async ({
-    page,
-  }) => {
-    await page.goto("/pl");
-    // With no script the default person's possessive is the server's (moja mama → "jej").
-    await expect(
-      page.locator('#send-occasion option[value="birthday"]'),
-    ).toHaveText("na jej urodziny");
-    await page.locator('select[name="country"]').selectOption("PL");
-    await page.locator('select[name="occasion"]').selectOption("birthday");
-    await page.locator(`${SENTENCE} button[type="submit"]`).click();
-
-    await page.waitForURL("**/pl/polska/kwiaty/kwiaty-na-urodziny");
-    const landed = new URL(page.url());
-    expect(landed.pathname).toBe("/pl/polska/kwiaty/kwiaty-na-urodziny");
-    expect(landed.search).toBe("");
-    await expect(page.locator("h1")).toHaveCount(1);
-  });
-});
-
 /**
- * The sentence's webfont swap stays small (spec 004 §14 A21 clause 3; TASK-177 escalation 7,
- * orchestrator ruling 2026-10-04).
- *
- * The selects are set in Fraunces 300 italic and the frame in Fraunces roman, neither of which
- * A21 clause 3 lets the home preload, and each select sizes to its choice
- * (`field-sizing: content`). When the webfont swaps in, a select whose fallback is not
- * metric-matched changes width and moves the words after it. `src/app/globals.css` gives both
- * styles a matched fallback, so the swap moves them by a fraction of a pixel; this case pins that
- * the shift attributed to the sentence stays at or below 0.001 on every home, at both artboard
- * widths. The header, banner and consent tests exclude the sentence, so this is the one place its
- * swap is measured.
+ * The display face's swap stays small (spec 004 §14 A21 clause 3; TASK-177 escalation 7,
+ * orchestrator ruling 2026-10-04). Measured first on the v2 sentence picker; since TASK-386 the
+ * region is the v3 picker card, whose question is set in Fraunces, which the home never preloads.
  *
  * Why 0.001 and not the ruling's 0.005 (measured on `next start`, 2026-10-04, at 1280 and 390):
  * - matched fallbacks: at most 0.000055;
  * - the italic falling back to the roman face, i.e. main's fallbacks: up to 0.0030 (/pl at 1280);
- * - the selects set in an unmatched stack (Georgia): up to 0.0033;
- * - one select widened by 40 px after load: 0.0004 to 0.0158.
+ * - an unmatched stack (Georgia): up to 0.0033.
  * At 0.005 the second and third stay green, so the bound would not notice the fallback metrics
- * going away; at 0.001 all three go red on at least one home, with 18 times headroom over the
- * matched value.
+ * going away; at 0.001 they go red on at least one home.
  */
 const SENTENCE_SHIFT_BOUND = 0.001;
 const SENTENCE_VIEWPORTS = [
@@ -512,7 +265,8 @@ const SENTENCE_VIEWPORTS = [
  * is the one place that swap is measured.
  */
 const SWAP_REGIONS = [
-  ["the sentence", SENTENCE_REGION],
+  ["the picker", PICKER_REGION],
+  ["the headings' italic phrases", ITALIC_PHRASE_REGION],
   ["the hero copy", HERO_COPY_REGION],
 ] as const;
 
@@ -534,7 +288,7 @@ test.describe("the home's display-face swaps stay small", () => {
 
           const response = await page.goto(path);
           expect(response?.status()).toBe(200);
-          await expect(page.locator(region)).toBeVisible();
+          await expect(page.locator(region).first()).toBeVisible();
           // Every face the page asked for has arrived, so the swap has happened, then two frames
           // and a settle for the entries to be reported.
           await page.evaluate(async () => {

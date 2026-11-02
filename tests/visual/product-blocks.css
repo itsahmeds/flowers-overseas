@@ -29,18 +29,8 @@
  * v3 (TASK-197 review round 1): a closed day's reason is a caption line under the row, naming the
  * dates it closes ("Sun, 18 Oct and Sun, 25 Oct · …"), so it moves with the window exactly as the
  * grid does and leaves the layout with it. The row and its lines are photographed on fixed dates
- * by the `product-*-picker-*` shots (`./picker-row.css`).
+ * by the `product-*-picker-*` shots.
  */
-
-/*
- * The `gallery-placeholder` block is photographed on `/dev/components`, below the home's "Coming
- * up" band, whose dates come from today's date (`./dated-blocks.css` says why that moves every
- * block under it). The band is not on any product page, so this changes no other block's shot.
- */
-[data-fo-occasion-dates] {
-  display: none !important;
-}
-
 /*
  * The FX-dependent lines leave the layout, so the summary shots do not flip with the rate's age.
  * `[data-fo-price-equivalents]` (the approximate equivalents under the price and the total) is

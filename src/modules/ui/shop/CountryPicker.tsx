@@ -14,8 +14,11 @@
  * the field also submits, and a button's code wins when nothing was typed.
  *
  * `variant="page"` is the chooser page's skin: no card, the label is the page's `<h1>` at 48 px
- * (32 px on a phone). The home's card and the selector's flat panel are the same form in another
- * skin; their tasks (TASK-386, TASK-384) add them here.
+ * (32 px on a phone). `variant="home"` is the home's (TASK-386; `home-*.dc.html` `.cm-picker`): a
+ * white card with the airmail edge (the home's one device), the label a 25 px line (20 px on a
+ * phone) under the page's own `<h1>`, the country buttons one sideways row on a phone, and no
+ * history hook: Back from the shop root returns to the home, which the chooser's replace would
+ * skip. The selector's flat panel is TASK-384's skin.
  *
  * `data-fo-choose` is the motion module's hook: with JavaScript on, the submit becomes
  * `location.replace()` of the same GET, so the chooser leaves the history (AC-79). With a
@@ -28,6 +31,7 @@ import type { ReactElement } from "react";
 import { QUERY_KEY } from "@/config/url-keys";
 
 import { Icon } from "../icons/Icon.tsx";
+import { Mark } from "../icons/Mark.tsx";
 import { PILL_ACCENT, PILL_SECONDARY } from "../primitives/Button.tsx";
 
 /** One country button: its lowercase code (the form value) and its name in the page's locale. */
@@ -39,7 +43,7 @@ export interface CountryPickerChoice {
 export interface CountryPickerProps {
   /** The chooser path of the page the visitor wanted, no country and no query. */
   readonly action: string;
-  readonly variant: "page";
+  readonly variant: "page" | "home";
   /** `home.picker.label`. */
   readonly label: string;
   /** `home.picker.search`: the field's label and its placeholder. */
@@ -72,6 +76,7 @@ const CHIP =
 
 export function CountryPicker({
   action,
+  variant,
   label,
   searchLabel,
   submitLabel,
@@ -82,6 +87,7 @@ export function CountryPicker({
   typed,
   idPrefix,
 }: CountryPickerProps): ReactElement {
+  const home = variant === "home";
   const headingId = `${idPrefix}-l`;
   const fieldId = `${idPrefix}-to`;
   const listId = "fo-countries";
@@ -90,14 +96,29 @@ export function CountryPicker({
       action={action}
       method="get"
       aria-labelledby={headingId}
-      data-fo-choose=""
+      {...(home
+        ? {
+            className:
+              "airmail-edge bg-surface-card rounded-letter shadow-letter relative overflow-hidden px-[16px] pt-[18px] pb-[16px] md:px-[26px] md:pt-[24px] md:pb-[22px]",
+            "data-fo-home-picker": "",
+          }
+        : { "data-fo-choose": "" })}
     >
-      <h1
-        id={headingId}
-        className="display mb-[16px] block text-[32px] leading-[1.05] [font-variation-settings:var(--font-variation-display)] md:mb-[22px] md:text-[48px]"
-      >
-        {label}
-      </h1>
+      {home ? (
+        <p
+          id={headingId}
+          className="display m-0 mb-[8px] block text-[20px] leading-[1.2] [font-variation-settings:var(--font-variation-display)] md:mb-[12px] md:text-[25px]"
+        >
+          {label}
+        </p>
+      ) : (
+        <h1
+          id={headingId}
+          className="display mb-[16px] block text-[32px] leading-[1.05] [font-variation-settings:var(--font-variation-display)] md:mb-[22px] md:text-[48px]"
+        >
+          {label}
+        </h1>
+      )}
       {continueTo === undefined ? null : (
         <div className="mb-[12px]">
           <button
@@ -112,14 +133,20 @@ export function CountryPicker({
           </button>
         </div>
       )}
-      <div className="flex flex-wrap gap-[8px]">
+      <div
+        className={
+          home
+            ? "-mx-[16px] flex [scrollbar-width:none] gap-[8px] overflow-x-auto px-[16px] md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
+            : "flex flex-wrap gap-[8px]"
+        }
+      >
         {chips.map((chip) => (
           <button
             key={chip.code}
             type="submit"
             name={QUERY_KEY.to}
             value={chip.code}
-            className={CHIP}
+            className={home ? `${CHIP} max-md:min-h-[40px]` : CHIP}
             data-fo-choose-chip={chip.code}
           >
             {chip.name}
@@ -144,15 +171,26 @@ export function CountryPicker({
             autoComplete="off"
             placeholder={searchLabel}
             defaultValue={typed}
-            className="rounded-field border-field-edge bg-card text-ui text-ink placeholder:text-ink-3 block min-h-(--field-height) w-full border-[1.5px] border-solid ps-[42px] pe-[14px]"
+            className={`rounded-field border-field-edge bg-card text-ui text-ink placeholder:text-ink-3 block min-h-(--field-height) w-full border-[1.5px] border-solid ps-[42px] pe-[14px] ${home ? "max-md:min-h-[44px] max-md:[&::-webkit-calendar-picker-indicator]:hidden! max-md:[&::-webkit-search-cancel-button]:hidden" : ""}`}
           />
         </div>
         <button
           type="submit"
-          className={`${continueTo === undefined ? ACCENT : OUTLINE} min-h-[46px] px-[24px]`}
+          className={`${continueTo === undefined ? ACCENT : OUTLINE} min-h-[46px] px-[24px] ${home ? "flex-none max-md:min-h-[44px]" : ""}`}
           data-fo-pending=""
         >
-          {submitLabel}
+          {/* Motion 3 (spec 004 §14 A24 clause 9): the bloom `Button` draws on every primary
+              action, in the label's inline-end padding, so the pill keeps its width. */}
+          <span className="relative">
+            {submitLabel}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute start-full top-1/2 size-[22px] -translate-y-1/2 opacity-0"
+              data-fo-pending-bloom=""
+            >
+              <Mark size={22} tone="current" />
+            </span>
+          </span>
         </button>
       </div>
       <datalist id={listId}>
@@ -160,7 +198,9 @@ export function CountryPicker({
           <option key={name} value={name} />
         ))}
       </datalist>
-      <p className="text-ink-3 mt-[10px] max-w-[76ch] text-xs leading-[1.4]">
+      <p
+        className={`text-ink-3 mb-0 max-w-[76ch] leading-[1.4] ${home ? "mt-[8px] text-xs md:mt-[10px]" : "mt-[10px] text-xs"}`}
+      >
         {rememberLine}
       </p>
     </form>

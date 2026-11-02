@@ -49,9 +49,10 @@ const tags = (html: string, name: string): string[] =>
 const has = (tag: string | undefined, ...attributes: string[]): boolean =>
   tag !== undefined && attributes.every((attribute) => tag.includes(attribute));
 
+/** Each button's text; "Show prices" holds motion 3's bloom, an `aria-hidden` mark (TASK-386). */
 const buttons = (html: string): string[] =>
-  [...html.matchAll(/<button[^>]*>([^<]*)<\/button>/gu)].map(
-    (match) => match[1] ?? "",
+  [...html.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/gu)].map((match) =>
+    (match[1] ?? "").replaceAll(/<svg[\s\S]*?<\/svg>|<[^>]*>/gu, ""),
   );
 
 describe("the chooser page (AC-77)", () => {

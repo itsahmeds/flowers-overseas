@@ -12,14 +12,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { NextIntlClientProvider } from "next-intl";
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { loadMessages } from "../../src/modules/i18n";
-import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import {
-  COVER_FADE_RAMP_PX,
   COVER_FADE_TOKEN,
   COVER_TEXT,
   coverFadeContrast,
@@ -88,57 +83,9 @@ describe("the cover fade's contrast over pure white (T-51 unit, AC-46)", () => {
   });
 });
 
-describe("HomeHero paints what the unit case measures (AC-46)", () => {
-  const html = renderToStaticMarkup(
-    <NextIntlClientProvider
-      locale="en"
-      messages={loadMessages("en", [
-        "home",
-        "finder",
-        "destinations",
-        "corridor",
-        "media",
-      ])}
-      timeZone="UTC"
-    >
-      <HomeHero locale="en" />
-    </NextIntlClientProvider>,
-  );
-  const copy = /<div[^>]*data-fo-hero-copy[^>]*>/u.exec(html)?.[0] ?? "";
-
-  it("draws the fade from the token, its ramp inside the copy's block-start padding", () => {
-    const classes = (/class="([^"]*)"/u.exec(copy)?.[1] ?? "").split(/\s+/u);
-    // The gradient's full-alpha stop and the padding the text starts below are one number: a
-    // longer ramp would put the eyebrow and the H1 on partial alpha (`/break` 212, hole 1).
-    const gradient = classes.find((name) =>
-      name.startsWith("max-md:bg-[linear-gradient("),
-    );
-    expect(gradient, classes.join(" ")).toBeDefined();
-    const stop = /var\(--color-cover-fade\)_(\d+(?:\.\d+)?)px\)\]$/u.exec(
-      gradient ?? "",
-    )?.[1];
-    expect(stop, gradient).toBe(String(COVER_FADE_RAMP_PX));
-    const padding = classes
-      .map((name) => /^pt-\[(\d+(?:\.\d+)?)px\]$/u.exec(name)?.[1])
-      .filter((value) => value !== undefined);
-    expect(padding).toEqual([String(COVER_FADE_RAMP_PX)]);
-  });
-
-  it("sets the H1, the line and the eyebrow in the measured tokens below `md`", () => {
-    const h1 = /<h1[^>]*class="([^"]*)"/u.exec(html)?.[1] ?? "";
-    const line =
-      /<p[^>]*data-fo-hero-line[^>]*class="([^"]*)"|<p[^>]*class="([^"]*)"[^>]*data-fo-hero-line/u.exec(
-        html,
-      );
-    const eyebrow =
-      /<p class="([^"]*)"><span data-fo-hero-eyebrow=/u.exec(html)?.[1] ?? "";
-    expect(h1.split(/\s+/u)).toContain("max-md:text-on-inverse");
-    expect((line?.[1] ?? line?.[2] ?? "").split(/\s+/u)).toContain(
-      "max-md:text-on-inverse",
-    );
-    expect(eyebrow.split(/\s+/u)).toContain("max-md:text-on-inverse-accent");
-  });
-});
+// The v3 home has no phone cover (spec 004 §14 A-founder-2026-10-24a item 4.2; TASK-386): the
+// markup half that tied `HomeHero` to these tokens left with it. The token and its measured
+// contrast stay, for any surface that paints the fade again.
 
 describe("the fade's exemption from the pair manifest points here", () => {
   // `--color-cover-fade` is translucent, so `tests/unit/contrast.test.ts` cannot pair it; its entry

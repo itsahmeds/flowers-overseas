@@ -459,13 +459,10 @@
       }
     },
     "trending": {
-      "heading": "Popular <em>choices</em>",
-      "basis": "Our picks until real orders start."
+      "heading": "Popular <em>choices</em>"
     },
     "dates": {
-      "eyebrow": "Coming up in Poland",
-      "heading": "Dates worth <em>sending for</em>",
-      "orderBy": "Order by {date}, {time}"
+      "heading": "Dates worth <em>sending for</em>"
     },
     "occasions": {
       "eyebrow": "Shop by occasion",
@@ -515,6 +512,9 @@
       "label": "Where should the flowers go?",
       "search": "Search all countries",
       "submit": "Show prices"
+    },
+    "comingUp": {
+      "more": "and {count} more"
     }
   },
   "finder": {
@@ -812,7 +812,8 @@
     },
     "cta": {
       "chooseCountry": "Choose where to send"
-    }
+    },
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
   },
   "categoryHub": {
     "h1": "{entity} to send abroad",

@@ -19,30 +19,25 @@
  * otherwise), so none of it is reachable from a real page.
  */
 import type { DestinationStatusProvider } from "@/modules/ui";
-import type { ReviewsProvider, TrendingProvider } from "@/modules/ui";
-import {
-  destinationStatusProviderOf,
-  reviewsProviderOf,
-  trendingProviderOf,
-} from "@/modules/ui";
+import type { HomeView, ReviewsProvider } from "@/modules/ui";
+import { destinationStatusProviderOf, reviewsProviderOf } from "@/modules/ui";
 
 import { COUNTRIES } from "@/config/countries";
 import { localePath } from "@/modules/i18n";
 
-/** The picks, ranked by real orders — the branch spec 008/016 reaches. */
-export const GALLERY_TRENDING_RANKED: TrendingProvider = trendingProviderOf(
-  [
-    { id: "gallery-1", name: "Amber Hour", assetId: "fo-bq-001-hero" },
-    { id: "gallery-2", name: "Vistula Red", assetId: "fo-bq-002-hero" },
-    { id: "gallery-3", name: "Baltic Dawn", assetId: "fo-bq-003-hero" },
-    { id: "gallery-4", name: "Quiet Blush", assetId: "fo-bq-004-hero" },
-    { id: "gallery-5", name: "Northern Light", assetId: "fo-bq-005-hero" },
-  ],
-  "orders",
-);
-
-/** A provider with nothing in it: the section is absent, not empty. */
-export const GALLERY_TRENDING_EMPTY: TrendingProvider = trendingProviderOf([]);
+/**
+ * The home picker's state for the gallery (TASK-386): the chooser's form with an empty `next` in
+ * `en`, three country buttons and their names from the registry's own message keys. The gallery
+ * renders `HomeHero` with it because `homeView()` is the catalogue's and a page file holds no data.
+ */
+export const GALLERY_HOME_PICKER: HomeView["picker"] = {
+  action: "/api/choose/en",
+  chips: COUNTRIES.slice(0, 3).map((country) => ({
+    code: country.iso2.toLowerCase(),
+    name: country.iso2,
+  })),
+  datalist: COUNTRIES.map((country) => country.iso2),
+};
 
 /** Reviews that announce themselves as fixtures — see the header. */
 export const GALLERY_REVIEWS: ReviewsProvider = reviewsProviderOf([

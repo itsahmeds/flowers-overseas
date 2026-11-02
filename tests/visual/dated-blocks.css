@@ -37,7 +37,6 @@
 [data-fo-country-occasion] div[data-fo-occasion-date] > :first-child,
 [data-fo-hub-dates] tbody,
 [data-fo-shop-occasions] tbody,
-[data-fo-occasion-dates] > ul,
 [data-fo-date-face],
 [data-fo-corridor-first-dates] {
   display: none !important;
