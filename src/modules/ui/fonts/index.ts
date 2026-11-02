@@ -156,10 +156,21 @@ export const bodyFontExt = localFont({
  * The `className` every document's `<html>` carries: the four page-face variables in scope.
  *
  * A single string so no layout has to remember the set, and so adding a face is one edit here.
+ *
+ * Each face is read as possibly absent. `next/font` is compiled only in the page graph; a route
+ * handler that reaches this file through the `ui` barrel (via `catalog` or `geo`: `/api/health`,
+ * `POST /api/checkout/start`) evaluates `localFont()` as a plain call, which under `next dev`
+ * returns `undefined`, and reading `.variable` from it failed every such request at load. A route
+ * handler renders no document, so the string it gets is never used; a page always gets all four.
+ * `tests/unit/fonts-outside-pages.test.ts` loads this file with `localFont()` returning nothing.
  */
-export const fontVariables = [
-  displayFont.variable,
-  displayFontExt.variable,
-  bodyFont.variable,
-  bodyFontExt.variable,
-].join(" ");
+const faces: readonly (typeof displayFont | undefined)[] = [
+  displayFont,
+  displayFontExt,
+  bodyFont,
+  bodyFontExt,
+];
+export const fontVariables = faces
+  .map((face) => face?.variable)
+  .filter((variable): variable is string => variable !== undefined)
+  .join(" ");

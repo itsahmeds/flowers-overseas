@@ -16,12 +16,15 @@ export interface DemoBannerProps {
   /** `demo.bannerBody` (checkout catalogue). */
   readonly body: string;
   readonly className?: string;
+  /** The line's own frame, so its text aligns with the page's content column. */
+  readonly innerClassName?: string;
 }
 
 export function DemoBanner({
   title,
   body,
   className,
+  innerClassName,
 }: DemoBannerProps): ReactElement {
   return (
     <div
@@ -34,7 +37,7 @@ export function DemoBanner({
       data-fo-demo-banner=""
       role="note"
     >
-      <p className="m-0">
+      <p className={["m-0", innerClassName].filter(Boolean).join(" ")}>
         <strong className="text-ink font-bold">{title}</strong> {body}
       </p>
     </div>

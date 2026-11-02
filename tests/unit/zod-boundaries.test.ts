@@ -110,6 +110,11 @@ const PARSERS: readonly Entry[] = [
     reason:
       "LinePositionSchema (through linePrelude) and UpdateLineSchema.safeParse(formValues(form))",
   },
+  // Spec 010 §2 step 3 (TASK-205): placement reads only the total the buyer saw.
+  {
+    entry: "src/modules/checkout/place.ts#runPlaceOrder",
+    reason: "PlaceOrderFormSchema.safeParse of the seen total and currency",
+  },
   {
     entry: "src/modules/checkout/steps.ts#runUseNextDate",
     reason:
@@ -983,6 +988,7 @@ describe("T-57: the real tree", () => {
       "src/modules/checkout/steps.ts#runUpdateSelection",
       "src/modules/checkout/steps.ts#runRemoveLine",
       "src/modules/checkout/steps.ts#runUpdateLine",
+      "src/modules/checkout/place.ts#runPlaceOrder",
       "src/modules/checkout/steps.ts#runUseNextDate",
     ]);
   });

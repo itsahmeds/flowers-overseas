@@ -49,7 +49,12 @@ function blocks(pattern: string, url: string): boolean {
 describe("the basket page type (AC-72)", () => {
   it("is registered, transactional and never indexable", () => {
     expect(PAGE_TYPE_POLICY.basket).toBe("never");
-    expect([...TRANSACTIONAL_PAGE_TYPES]).toEqual(["basket"]);
+    // TASK-204 adds the checkout and its confirmation beside it.
+    expect([...TRANSACTIONAL_PAGE_TYPES]).toEqual([
+      "basket",
+      "checkout",
+      "checkoutDone",
+    ]);
   });
 
   it("answers noindex even with every data term true, in the indexing environment", () => {

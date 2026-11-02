@@ -321,27 +321,6 @@ describe("the shipped catalogues and manifests", () => {
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
-    // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
-    "checkout.basket.addOns",
-    "checkout.basket.added",
-    "checkout.basket.checkout",
-    "checkout.basket.continue",
-    "checkout.basket.dateLater",
-    "checkout.basket.empty",
-    "checkout.basket.emptyLink",
-    "checkout.basket.full",
-    "checkout.basket.included",
-    "checkout.basket.otherCurrency",
-    "checkout.basket.otherMode",
-    "checkout.basket.remove",
-    "checkout.basket.removeLabel",
-    "checkout.basket.title",
-    "checkout.basket.to",
-    "checkout.basket.total",
-    "checkout.basket.unavailable",
-    "checkout.basket.unavailableSummary",
-    "checkout.basket.useNext",
-    "checkout.date.gone",
     "company.controller",
     "consent.privacyLink",
     // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide

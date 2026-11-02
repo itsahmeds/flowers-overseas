@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactElement } from "react";
 
+import { CHECKOUT_START_PATH } from "@/config/checkout-entry";
 import { isPublished } from "@/config/site-links";
+import { appEnvironment } from "@/lib/env.schema";
 import {
   ListingBreadcrumb,
   type LocalePathResolution,
@@ -15,6 +17,7 @@ import {
   resolveLocalePath,
 } from "@/modules/catalog";
 import { infoPageExists, infoPagePath } from "@/modules/content";
+import { checkoutEntryFor } from "@/modules/geo";
 import { LanguageAlternates } from "@/modules/i18n";
 import {
   type BreadcrumbLabel,
@@ -172,6 +175,15 @@ export async function productRouteBody(
   return (
     <>
       <ProductPage
+        // The checkout entry, decided without a database so the cached page is the same for
+        // every visitor (spec 010 §5.3, §5.4, AC-5; TASK-206): the start route re-decides the
+        // mode on the click.
+        checkout={{
+          entry: checkoutEntryFor(product.delivery.state, {
+            environment: appEnvironment(process.env),
+          }),
+          action: CHECKOUT_START_PATH,
+        }}
         breadcrumb={
           // The product page keeps its trail on the phone and shows no back link (spec 004
           // §14 A24 clause 4 (e)); `ProductPage` displays it below the buy section there.

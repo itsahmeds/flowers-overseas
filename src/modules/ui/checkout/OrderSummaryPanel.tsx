@@ -76,6 +76,15 @@ export interface OrderSummaryPanelProps {
   readonly action?: ReactNode;
   /** The fresh-flower promise line and its link. */
   readonly footer?: ReactNode;
+  /**
+   * Steps 1 and 2 label the lines in small capitals (`.recap .rsum`); step 3 in sentence case
+   * beside the VAT lines (`.s10-lines`). Default `plain`.
+   */
+  readonly lineLabels?: "caps" | "plain";
+  /** Extra classes on the panel (the page hides or flattens it on a phone, per the boards). */
+  readonly className?: string;
+  /** Extra classes on the title and the bouquet row (step 3 on a phone draws neither). */
+  readonly headClassName?: string;
 }
 
 function amountText(
@@ -102,19 +111,35 @@ export function OrderSummaryPanel({
   currencyLine,
   action,
   footer,
+  lineLabels = "plain",
+  className,
+  headClassName,
 }: OrderSummaryPanelProps): ReactElement {
   const titleId = `${id}-title`;
+  const join = (...parts: (string | undefined)[]): string =>
+    parts.filter(Boolean).join(" ");
   return (
     <aside
       aria-labelledby={titleId}
-      className="bg-card rounded-field relative bg-[repeating-linear-gradient(to_bottom,transparent_0_39px,var(--color-paper-2)_39px_40px)] px-[26px] pt-[34px] pb-[26px] shadow-md"
+      className={join(
+        "bg-card rounded-field relative bg-[repeating-linear-gradient(to_bottom,transparent_0_39px,var(--color-paper-2)_39px_40px)] px-[26px] pt-[34px] pb-[26px] shadow-md",
+        className,
+      )}
       data-fo-order-summary=""
       id={id}
     >
-      <h2 className="text-ink m-0 text-xl" id={titleId}>
+      <h2
+        className={join("display text-ink m-0 text-xl", headClassName)}
+        id={titleId}
+      >
         {title}
       </h2>
-      <div className="mt-[18px] grid grid-cols-[84px_minmax(0,1fr)] items-start gap-[16px]">
+      <div
+        className={join(
+          "mt-[18px] grid grid-cols-[84px_minmax(0,1fr)] items-start gap-[16px]",
+          headClassName,
+        )}
+      >
         <div className="bg-photo aspect-[4/5] w-[84px] overflow-hidden rounded-[12px]">
           {item.image}
         </div>
@@ -147,7 +172,15 @@ export function OrderSummaryPanel({
             data-fo-line={line.id}
             key={line.id}
           >
-            <dt className="text-ink-2">{line.label}</dt>
+            <dt
+              className={
+                lineLabels === "caps"
+                  ? "text-ink-2 pt-[4px] text-xs font-bold tracking-[0.12em] uppercase"
+                  : "text-ink-2"
+              }
+            >
+              {line.label}
+            </dt>
             <dd
               className={
                 line.amount.kind === "included"

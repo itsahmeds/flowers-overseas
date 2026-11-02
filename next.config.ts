@@ -8,6 +8,7 @@ import { adminHeaderRules } from "./src/lib/admin-headers";
 import { basketHeaderRules } from "./src/lib/transactional-headers";
 import { floristHeaderRules } from "./src/lib/florist-headers";
 import { chooserHeaderRules } from "./src/lib/chooser-routes";
+import { checkoutHeaderRules } from "./src/modules/seo/transactional";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
@@ -136,6 +137,9 @@ const headerRules = [
   // A-founder-2026-10-24a item 3; `src/lib/chooser-routes.ts`; TASK-385). After the listing rules,
   // whose sources a chooser address also matches, so these values are the ones served.
   ...chooserHeaderRules(),
+  // Every checkout address under every locale: `noindex, nofollow` and `no-store` (spec 010 §6,
+  // AC-30; TASK-204). After the environment-wide rule, so its value wins.
+  ...checkoutHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,

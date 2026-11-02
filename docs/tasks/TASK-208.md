@@ -40,11 +40,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: orchestrator ruling: the checkout e2e runs in CI's `e2e` job against a Postgres 16 service (migrate, `db:seed --insert-only`, `checkout.open` on for PL by a CI-only SQL step), serving the same build a second time on port 3100. `tests/e2e/checkout-journey.spec.ts`: product page to confirmation in `en-gb` and `pl`, JS on and off, both e2e projects (12 cases), axe (wcag2a/aa, 21a/aa) on each step and the confirmation on desktop with JS on, the URL scan for personal values and query keys, the gone state, Enter continues. Run locally against `next dev` with a local PG: 12 passed; Enter case red with the default button removed. Not done: visual baselines per step, the four-locale axe matrix (de, ar-XB), `budget:client-js` for the checkout route, the log and Sentry PII scan, the Cloudflare staging check, the 20-run p95, and the basket additions (TASK-349).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Partial, on PR 400 (https://github.com/itsahmeds/flowers-overseas/pull/400): the CI e2e job with a Postgres-backed origin and `checkout-journey.spec.ts` (AC-34 URL half, T-29, T-33, T-68 single delivery, axe in `en-gb` and `pl`). Adds about a minute (service, migrate, seed) plus about two (the spec) to the `e2e` job only. Left for this task: visual baselines (AC-39), the four-locale axe matrix and keyboard-only run (AC-37), `budget:client-js` (AC-38), the log and Sentry scan (AC-34, AC-50), the Cloudflare staging check (AC-31), the p95, and the basket additions after TASK-349.

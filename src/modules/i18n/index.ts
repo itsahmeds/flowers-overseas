@@ -161,6 +161,7 @@ export {
   formatMoney,
   formatNumber,
   formatPercentFromBasisPoints,
+  formatRegionName,
   formatRange,
   formatRelativeTime,
   formatTimeInZone,
