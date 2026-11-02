@@ -402,7 +402,14 @@ const countries = [
   },
 ] as const;
 
-/** Parsed at module load: a malformed registry throws on first import, never at request time. */
+/**
+ * Parsed at module load: a malformed registry throws on first import, never at request time.
+ *
+ * **The file registry**: the seed's source, the static providers' answer and the overlay base of
+ * the database registry (spec 012b §2.2). Code that renders or prices reads `activeCountries()` or
+ * `countryConfig()` instead, which answer from the database in `production`, `staging` and
+ * `preview` (AC-3); `tests/unit/country-registry-cutover.test.ts` scans for any other reader.
+ */
 export const COUNTRIES = CountryRegistrySchema.parse(
   countries,
 ) as readonly CountryConfig[];
@@ -418,9 +425,104 @@ const byIso2 = new Map<string, CountryConfig>(
   COUNTRIES.map((country) => [country.iso2, country]),
 );
 
+/* -------------------------------------------------------------------------- */
+/* The registry a deployment serves (spec 012b §2.2, AC-3; TASK-294).          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The environments whose registry is the database's (spec 012b AC-3): `production`, `staging`
+ * and `preview`. `development` and `test` serve this file.
+ */
+export const DATABASE_REGISTRY_ENVIRONMENTS = [
+  "production",
+  "staging",
+  "preview",
+] as const;
+
+/**
+ * The slot the database registry is installed in, on `globalThis` so that every bundle of one
+ * server process (Next compiles `instrumentation.ts`, route handlers and pages separately) reads
+ * the one copy `src/modules/geo/db/runtime.ts` installed.
+ */
+const REGISTRY_SLOT = Symbol.for("flowers-overseas.country-registry");
+
+interface InstalledRegistry {
+  readonly countries: readonly CountryConfig[];
+  readonly byIso2: ReadonlyMap<string, CountryConfig>;
+}
+
+type RegistryHolder = { [REGISTRY_SLOT]?: InstalledRegistry };
+
+function installed(): InstalledRegistry | undefined {
+  return (globalThis as RegistryHolder)[REGISTRY_SLOT];
+}
+
+/**
+ * Whether this process must serve the database's registry: `APP_ENV` (spec 040 §5.2's signal) is
+ * one of `DATABASE_REGISTRY_ENVIRONMENTS`. Read raw rather than through `appEnvironment()` so this
+ * file keeps no dependency on `src/lib`; a value that is not one of the three is not a database
+ * environment, and `appEnvironment()` refuses an unparseable one at boot anyway.
+ */
+function databaseRegistryRequired(): boolean {
+  const environment = process.env["APP_ENV"];
+  return (
+    DATABASE_REGISTRY_ENVIRONMENTS as readonly (string | undefined)[]
+  ).includes(environment);
+}
+
+/**
+ * Put `countries` in place as the registry every `countryConfig()` read answers from (spec 012b
+ * AC-3). Refused unless it holds exactly this file's destinations, each once, because a new
+ * destination is a code change (slugs, region; `src/modules/geo/registry.ts`).
+ */
+export function installCountryRegistry(
+  countries: readonly CountryConfig[],
+): void {
+  const codes = countries.map((country) => country.iso2);
+  if (
+    new Set(codes).size !== codes.length ||
+    codes.length !== COUNTRIES.length ||
+    codes.some((iso2) => !byIso2.has(iso2))
+  ) {
+    throw new Error(
+      "installCountryRegistry: the registry must hold exactly the destinations of src/config/countries.ts, each once",
+    );
+  }
+  (globalThis as RegistryHolder)[REGISTRY_SLOT] = {
+    countries,
+    byIso2: new Map(countries.map((country) => [country.iso2, country])),
+  };
+}
+
+/** Remove an installed registry (tests only; a deployment installs once and refreshes). */
+export function uninstallCountryRegistry(): void {
+  delete (globalThis as RegistryHolder)[REGISTRY_SLOT];
+}
+
+/**
+ * The destination registry this process serves: the installed database registry, or, where none
+ * is required (`development`, `test`), this file. In `production`, `staging` and `preview` an
+ * absent registry **throws** rather than answering from the file: a page built from the file while
+ * checkout charges from the database is the "shown ≠ charged" failure spec 012b §2.0 item 2
+ * forbids, so there is no fallback.
+ */
+export function activeCountries(): readonly CountryConfig[] {
+  const registry = installed();
+  if (registry !== undefined) return registry.countries;
+  if (databaseRegistryRequired()) {
+    throw new Error(
+      "COUNTRY_REGISTRY_NOT_LOADED: this environment serves the database's country registry and none is installed (spec 012b AC-3)",
+    );
+  }
+  return COUNTRIES;
+}
+
 /** Look a destination up by ISO code. Throws on an unknown code: the set is closed data. */
 export function countryConfig(iso2: CountryIso2): CountryConfig {
-  const country = byIso2.get(iso2);
+  const registry = installed();
+  // Where a database registry is required and absent, `activeCountries()` throws: no file answer.
+  if (registry === undefined) activeCountries();
+  const country = (registry?.byIso2 ?? byIso2).get(iso2);
   if (country === undefined) {
     throw new Error(`unknown country code: ${iso2}`);
   }
@@ -503,7 +605,7 @@ export function deliveryDatesOpen(iso2: CountryIso2): boolean {
  * `tests/e2e/chrome-honesty.spec.ts` green.
  */
 export function anyDeliveryDatesOpen(): boolean {
-  return COUNTRIES.some((country) => deliveryDatesOpen(country.iso2));
+  return activeCountries().some((country) => deliveryDatesOpen(country.iso2));
 }
 
 /**
@@ -562,5 +664,5 @@ export function toCountryRow(country: CountryConfig): CountryRow {
 export function countriesInRegion(
   region: CountryRegion,
 ): readonly CountryConfig[] {
-  return COUNTRIES.filter((country) => country.region === region);
+  return activeCountries().filter((country) => country.region === region);
 }

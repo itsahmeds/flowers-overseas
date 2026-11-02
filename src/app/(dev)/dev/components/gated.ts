@@ -22,7 +22,7 @@ import type { DestinationStatusProvider } from "@/modules/ui";
 import type { HomeView, ReviewsProvider } from "@/modules/ui";
 import { destinationStatusProviderOf, reviewsProviderOf } from "@/modules/ui";
 
-import { COUNTRIES } from "@/config/countries";
+import { activeCountries } from "@/config/countries";
 import { localePath } from "@/modules/i18n";
 
 /**
@@ -74,6 +74,6 @@ export const GALLERY_REVIEWS: ReviewsProvider = reviewsProviderOf([
  * TASK-092, because a corridor URL carries a per-locale slug (spec 007 AC-20).
  */
 export const GALLERY_DESTINATIONS_PUBLISHED: DestinationStatusProvider =
-  destinationStatusProviderOf(COUNTRIES, (iso2, locale) =>
+  destinationStatusProviderOf(activeCountries, (iso2, locale) =>
     iso2 === "PL" ? localePath(locale, "destinations", "poland") : undefined,
   );

@@ -38,7 +38,7 @@
  * live-state assertions drive them from a fixture.
  */
 import {
-  COUNTRIES,
+  COUNTRY_CODES,
   type CountryIso2,
   type CountryOperations,
   countryConfig,
@@ -72,9 +72,7 @@ import {
 import { hasActivePartners } from "./partners.ts";
 
 /** The seven destinations, as the closed code set this module iterates. */
-const COUNTRY_SET: readonly CountryIso2[] = COUNTRIES.map(
-  (country) => country.iso2,
-);
+const COUNTRY_SET: readonly CountryIso2[] = COUNTRY_CODES.filter(isCountryIso2);
 
 /** How many months of occasions the calendar lists (spec 007 §2, AC-22). */
 export const CORRIDOR_CALENDAR_MONTHS = 12;

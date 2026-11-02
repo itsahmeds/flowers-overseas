@@ -10,9 +10,21 @@
 import { randomBytes } from "node:crypto";
 import { resolve } from "node:path";
 
+import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import {
+  COUNTRIES,
+  installCountryRegistry,
+  uninstallCountryRegistry,
+} from "../../src/config/countries.ts";
+import {
+  availability,
+  isSaleable,
+} from "../../src/modules/catalog/availability.ts";
+import { createDbSaleabilityProvider } from "../../src/modules/catalog/db/saleable.ts";
+import { withSaleability } from "../../src/modules/catalog/providers.ts";
 import { readSeedTree } from "../../seed/check.ts";
 import { runSeed } from "../../seed/index.ts";
 import { buildSeedPlan } from "../../seed/plan.ts";
@@ -202,6 +214,72 @@ describe.skipIf(server.url === undefined)(
         }
       });
       expect(await offeredTiers()).toEqual(expected);
+    });
+
+    it("AC-39: through the module, only the active florist's product is saleable in a live country, and pausing it ends that", async () => {
+      // Poland live for this case (the registry the deployment would install), the fixture
+      // florist active (left so by the case above), the database's saleability term composed.
+      installCountryRegistry(
+        COUNTRIES.map((country) =>
+          country.iso2 === "PL" ? { ...country, status: "live" } : country,
+        ),
+      );
+      const [{ sku } = { sku: "" }] = await scratch.sql<{ sku: string }[]>`
+        SELECT sku FROM public.product WHERE id = ${fixture.productId}`;
+      // A second product of the same florist, which it cannot make: the placeholder of the case.
+      const [{ other, otherId } = { other: "", otherId: "" }] =
+        await scratch.sql<{ other: string; otherId: string }[]>`
+        SELECT p.sku AS other, p.id AS "otherId" FROM public.product p
+        WHERE p.status = 'active' AND p.id <> ${fixture.productId}
+          AND EXISTS (SELECT 1 FROM public.country_price cp
+                      WHERE cp.product_id = p.id AND cp.country_id = ${fixture.countryId}
+                        AND cp.active_to IS NULL)
+        ORDER BY p.sku LIMIT 1`;
+      await scratch.sql`
+        UPDATE public.partner_catalog_mapping SET can_fulfil = false WHERE product_id = ${otherId}`;
+      // Its own client: drizzle sets its type parsers on the client it wraps.
+      const reader = postgres(scratch.url, {
+        max: 1,
+        onnotice: () => undefined,
+      });
+      const db = drizzle(reader);
+      const term = () =>
+        createDbSaleabilityProvider({
+          read: (query) => query(db as never),
+          scope: () => new Map(),
+        });
+      try {
+        await withSaleability(term(), async () => {
+          expect(await isSaleable(sku, undefined, "PL")).toBe(true);
+          expect(await isSaleable(other, undefined, "PL")).toBe(false);
+          expect(await isSaleable(sku, undefined, "DE")).toBe(false);
+          const placeholder = await availability({
+            productId: other,
+            countryIso: "PL",
+          });
+          expect(placeholder).toEqual({
+            schemaAvailability: "OutOfStock",
+            reasonKey: "catalog.availability.outOfStock",
+            saleable: false,
+          });
+        });
+        await asFixture(
+          (tx) => tx`
+          UPDATE public.fulfillment_partner SET status = 'paused' WHERE id = ${fixture.partnerId}`,
+        );
+        await withSaleability(term(), async () => {
+          expect(await isSaleable(sku, undefined, "PL")).toBe(false);
+        });
+      } finally {
+        await asFixture(
+          (tx) => tx`
+          UPDATE public.fulfillment_partner SET status = 'active' WHERE id = ${fixture.partnerId}`,
+        );
+        await scratch.sql`
+          UPDATE public.partner_catalog_mapping SET can_fulfil = true WHERE product_id = ${otherId}`;
+        uninstallCountryRegistry();
+        await reader.end({ timeout: 5 });
+      }
     });
 
     it("AC-39: app_build reads the view and is refused fulfillment_partner, partner_catalog_mapping and partner_coverage", async () => {

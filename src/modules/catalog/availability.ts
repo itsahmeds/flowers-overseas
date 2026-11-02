@@ -41,6 +41,7 @@
  */
 import { type CountryIso2, countryConfig } from "@/config/countries";
 
+import { saleabilityProvider } from "./providers";
 import { getProduct, hasActivePrice } from "./read";
 import { AvailabilityQuerySchema, AvailabilitySchema } from "./schemas";
 import {
@@ -258,5 +259,38 @@ export async function availability(query: {
     return verdict("OutOfStock", catalogAvailabilityKeys.noPartner, false);
   }
 
+  // Spec 012b §2.5 (advisor F3, AC-39; TASK-294): in `production` and `staging` a product is
+  // saleable only when a real florist can make it. The verdict is the product-level "not
+  // available to order", an existing reviewed key, so no public message key is added and no
+  // florist is named (founder ruling 2026-10-14).
+  if (!(await isSaleable(productId, undefined, countryIso))) {
+    return verdict("OutOfStock", catalogAvailabilityKeys.outOfStock, false);
+  }
+
   return verdict("InStock", catalogAvailabilityKeys.inStock, true);
+}
+
+/**
+ * `isSaleable(productId, tier, iso2)` (spec 012b §5.2, AC-39): whether a non-demo `active` florist
+ * with a fulfilling mapping and coverage in the destination can make this product, in this size
+ * when `tierKey` is given, in any size when it is not. It reads the `saleable_offer` view through
+ * the composition root (`saleabilityProvider()`), which has the term in `production` and `staging`
+ * only; everywhere
+ * else the term is absent and this answers `true`, so the demo shop keeps answering from the
+ * destination's status and coverage as before. Spec 010's placement re-checks it per line.
+ */
+export async function isSaleable(
+  productId: string,
+  tierKey: string | undefined,
+  countryIso: CountryIso2,
+): Promise<boolean> {
+  const provider = saleabilityProvider();
+  if (provider === undefined) return true;
+  const offers = await provider.saleableOffers();
+  return offers.some(
+    (offer) =>
+      offer.sku === productId &&
+      offer.countryIso2 === countryIso &&
+      (tierKey === undefined || offer.tierKey === tierKey),
+  );
 }

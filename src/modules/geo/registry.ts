@@ -26,12 +26,31 @@ import {
   COUNTRIES,
   type CountryConfig,
   type CountryOperations,
+  DATABASE_REGISTRY_ENVIRONMENTS,
   countryStatuses,
 } from "../../config/countries.ts";
 
 /** A source of the destination registry. Both answer the same shape (`CountryConfig`). */
 export interface CountryRegistryProvider {
   countries(): Promise<readonly CountryConfig[]>;
+}
+
+/** Where a deployment's destination registry comes from (spec 012b AC-3). */
+export type CountryRegistrySource = "static" | "database";
+
+/**
+ * The composition root's rule (spec 012b §2.2, AC-3; TASK-294): `production`, `staging` and
+ * `preview` serve the database's registry (`dbCountryRegistry`), `development` and `test` the
+ * file's. One list, `DATABASE_REGISTRY_ENVIRONMENTS`, which the file registry's own guard reads too.
+ */
+export function countryRegistrySourceFor(
+  environment: string,
+): CountryRegistrySource {
+  return (DATABASE_REGISTRY_ENVIRONMENTS as readonly string[]).includes(
+    environment,
+  )
+    ? "database"
+    : "static";
 }
 
 /** The file registry, as a provider. */
