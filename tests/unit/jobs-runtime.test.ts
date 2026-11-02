@@ -178,14 +178,33 @@ describe("ensureQueues", () => {
     const fake = fakeBoss({});
     await ensureQueues(fake.boss);
     expect(fake.queues.sort()).toEqual([
+      "assignment.photo_remind",
+      "assignment.remind",
+      "assignment.timeout",
       "db.backup_verify",
       "media.derive_variants",
       "neon.usage_probe",
       "order.close_sweep",
+      "order.route",
       "outbox.dispatch",
       "payments.production_start",
       "retention.sweep",
+      "routing.sla_watch",
       "webhook.process",
+    ]);
+    // Spec 016's keyed jobs are `short` queues: one waiting job per key (TASK-328).
+    const create = fake.raw.createQueue as unknown as {
+      mock: { calls: [string, { policy?: string } | undefined][] };
+    };
+    const shortQueues = create.mock.calls
+      .filter(([, options]) => options?.policy === "short")
+      .map(([name]) => name)
+      .sort();
+    expect(shortQueues).toEqual([
+      "assignment.photo_remind",
+      "assignment.remind",
+      "assignment.timeout",
+      "order.route",
     ]);
   });
 });
@@ -363,14 +382,19 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258) and order.close_sweep (TASK-369), nothing else yet", async () => {
+  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), order.close_sweep (TASK-369) and spec 016's five routing jobs (TASK-328), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
+      "assignment.photo_remind",
+      "assignment.remind",
+      "assignment.timeout",
       "media.derive_variants",
       "order.close_sweep",
+      "order.route",
       "outbox.dispatch",
       "payments.production_start",
       "retention.sweep",
+      "routing.sla_watch",
     ]);
   });
 
@@ -414,6 +438,37 @@ describe("enqueue — the minute tick's singletonKey (spec 022a §5.2, TASK-369)
         { singletonKey: "order.close_sweep", singletonSeconds: 60 },
       ],
       ["outbox.dispatch", { v: 1, requestId: "system:jobs.tick", payload: {} }],
+    ]);
+  });
+
+  it("on spec 016's short queues the key alone dedupes (no one-minute window) and startAfter is passed through (TASK-328)", async () => {
+    const send = vi.fn(async () => "job-id");
+    const boss = { send } as never;
+    const orderId = "0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b";
+    const at = new Date("2026-11-03T06:30:00Z");
+    await runtime.enqueue(
+      boss,
+      "order.route",
+      { orderId },
+      { requestId: "system:routing", singletonKey: orderId, startAfter: at },
+    );
+    await runtime.enqueue(
+      boss,
+      "order.route",
+      { orderId },
+      { requestId: "system:routing", singletonKey: orderId },
+    );
+    expect(send.mock.calls).toEqual([
+      [
+        "order.route",
+        { v: 1, requestId: "system:routing", payload: { orderId } },
+        { singletonKey: orderId, startAfter: at },
+      ],
+      [
+        "order.route",
+        { v: 1, requestId: "system:routing", payload: { orderId } },
+        { singletonKey: orderId },
+      ],
     ]);
   });
 });

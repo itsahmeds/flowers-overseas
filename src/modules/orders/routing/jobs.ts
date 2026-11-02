@@ -54,6 +54,7 @@ export type {
   RoutingTransaction,
 } from "./route";
 export {
+  createPgBossRoutingScheduler,
   pgBossRoutingScheduler,
   ROUTING_REQUEST_ID,
   RoutingJobSchema,

@@ -295,8 +295,9 @@ describe("the route files, as Next loads them", () => {
     expect(ensure).toHaveBeenCalledTimes(1);
     // Spec 013 §5.2 (TASK-254, TASK-258): every tick enqueues one outbox.dispatch and one
     // payments.production_start, and spec 022a §5.2 (TASK-369) one order.close_sweep under its
-    // singletonKey, before it ticks, so the same tick consumes them.
-    expect(enqueue).toHaveBeenCalledTimes(3);
+    // singletonKey, and spec 016 §5.2 (TASK-328) one routing.sla_watch under its own, before it
+    // ticks, so the same tick consumes them.
+    expect(enqueue).toHaveBeenCalledTimes(4);
     expect(enqueue.mock.calls.map((call) => call.slice(1))).toEqual([
       ["outbox.dispatch", {}, { requestId: "system:jobs.tick" }],
       ["payments.production_start", {}, { requestId: "system:jobs.tick" }],
@@ -304,6 +305,11 @@ describe("the route files, as Next loads them", () => {
         "order.close_sweep",
         {},
         { requestId: "system:jobs.tick", singletonKey: "order.close_sweep" },
+      ],
+      [
+        "routing.sla_watch",
+        {},
+        { requestId: "system:jobs.tick", singletonKey: "routing.sla_watch" },
       ],
     ]);
     for (const order of enqueue.mock.invocationCallOrder) {

@@ -73,37 +73,58 @@ export function routingJobKey(job: RoutingJob): { readonly key: string } {
 }
 
 /**
- * The production scheduler: one pg-boss instance for the batch (`withBoss`), each job's queue
- * made sure of (a web request may enqueue before the first tick after a deploy), then one keyed
- * `enqueue` per job.
+ * A pg-boss scheduler: one instance for the batch (`withBoss`), each job's queue made sure of (a
+ * web request may enqueue before the first tick after a deploy), then one keyed `enqueue` per
+ * job. `connectionString` defaults to `DATABASE_URL_UNPOOLED` (the suites pass a scratch one).
  */
-export const pgBossRoutingScheduler: RoutingScheduler = async (jobs) => {
-  const parsed = jobs.map((job) => RoutingJobSchema.parse(job));
-  if (parsed.length === 0) return;
-  const { enqueue, ensureQueue, withBoss } = await import("@/jobs/runtime");
-  await withBoss(async (boss) => {
-    for (const job of parsed) {
-      const options = {
-        requestId: ROUTING_REQUEST_ID,
-        singletonKey: routingJobKey(job).key,
-        ...(job.startAfter === undefined ? {} : { startAfter: job.startAfter }),
-      };
-      await ensureQueue(boss, job.name);
-      switch (job.name) {
-        case "order.route":
-        case "assignment.photo_remind":
-          await enqueue(boss, job.name, { orderId: job.orderId }, options);
-          break;
-        case "assignment.remind":
-        case "assignment.timeout":
-          await enqueue(
-            boss,
-            job.name,
-            { assignmentId: job.assignmentId },
-            options,
-          );
-          break;
-      }
+export function createPgBossRoutingScheduler(
+  options: { readonly connectionString?: string } = {},
+): RoutingScheduler {
+  return async (jobs) => {
+    const parsed = jobs.map((job) => RoutingJobSchema.parse(job));
+    if (parsed.length === 0) return;
+    const { enqueue, ensureQueue, withBoss } = await import("@/jobs/runtime");
+    await withBoss(
+      (boss) => enqueueAll(boss, parsed, { enqueue, ensureQueue }),
+      options.connectionString === undefined
+        ? {}
+        : { connectionString: options.connectionString },
+    );
+  };
+}
+
+type Runtime = typeof import("@/jobs/runtime");
+
+async function enqueueAll(
+  boss: Parameters<Runtime["enqueue"]>[0],
+  parsed: readonly RoutingJob[],
+  { enqueue, ensureQueue }: Pick<Runtime, "enqueue" | "ensureQueue">,
+): Promise<void> {
+  for (const job of parsed) {
+    const options = {
+      requestId: ROUTING_REQUEST_ID,
+      singletonKey: routingJobKey(job).key,
+      ...(job.startAfter === undefined ? {} : { startAfter: job.startAfter }),
+    };
+    await ensureQueue(boss, job.name);
+    switch (job.name) {
+      case "order.route":
+      case "assignment.photo_remind":
+        await enqueue(boss, job.name, { orderId: job.orderId }, options);
+        break;
+      case "assignment.remind":
+      case "assignment.timeout":
+        await enqueue(
+          boss,
+          job.name,
+          { assignmentId: job.assignmentId },
+          options,
+        );
+        break;
     }
-  });
-};
+  }
+}
+
+/** The production scheduler, over `DATABASE_URL_UNPOOLED`. */
+export const pgBossRoutingScheduler: RoutingScheduler =
+  createPgBossRoutingScheduler();
