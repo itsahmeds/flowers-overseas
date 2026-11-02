@@ -14,12 +14,12 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +12 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +101 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +104 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +7 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +14 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +42 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +114 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +115 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` +1 |
@@ -97,10 +97,12 @@ task actually touches.
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the… | 008 |
 | `[locale]/(checkout)/basket/BasketView.tsx` | The basket page's body (spec 010 §14… | 010 |
 | `[locale]/(checkout)/basket/page.tsx` | `/{locale}/basket` (spec 010 §14… | 010 |
+| `[locale]/-choose/-next/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchil… | 009 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
 | `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
+| `[locale]/@header/-choose/-next/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot… | 043 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{chi… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{chi… | 043 |
@@ -150,6 +152,7 @@ task actually touches.
 | `admin/sign-in/page.tsx` | GET /admin/sign-in: form and its states | 012 |
 | `admin/unauthorized.tsx` | Admin 401, noindex (AC-1) | 012 |
 | `api/checkout/start/route.ts` | `POST /api/checkout/start`: the product page's… | 010 |
+| `api/choose/[locale]/[[...rest]]/route.ts` | The chooser's 303 and its one fo_dest cookie | 004 |
 | `api/consent/route.ts` | `POST /api/consent` | 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` | 004 |
 | `api/health/route.ts` | `GET /api/health` | 001 |
@@ -246,10 +249,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 410 |
+| `tests/unit/` | 414 |
 | `tests/integration/` | 65 |
 | `tests/contract/` | 28 |
-| `tests/e2e/` | 72 |
+| `tests/e2e/` | 73 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
