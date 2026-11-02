@@ -101,18 +101,15 @@ describe("the committed tree (AC-38)", () => {
 describe("T-38's mutations each turn the scan red, at the planted key", () => {
   it('"partner" added to a value', () => {
     const problems = relayLanguageProblems(
-      planted(
-        "en",
-        "tracking.headline.confirmed",
-        "Our partner has your order",
-      ),
+      planted("en", "tracking.relayProbe", "Our partner has your order"),
     );
-    // No locale translates the key yet, so the English sentence reaches all four.
+    // A key no locale translates (the tracking keys have de and pl drafts since TASK-338, so the
+    // probe is a new one), so the English sentence reaches all four.
     expect(keysOf(problems)).toEqual([
-      "en tracking.headline.confirmed",
-      "en-gb tracking.headline.confirmed",
-      "de tracking.headline.confirmed",
-      "pl tracking.headline.confirmed",
+      "en tracking.relayProbe",
+      "en-gb tracking.relayProbe",
+      "de tracking.relayProbe",
+      "pl tracking.relayProbe",
     ]);
     expect(problems[0]?.reason).toContain("partner");
   });

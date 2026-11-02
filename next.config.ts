@@ -5,7 +5,10 @@ import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import { adminHeaderRules } from "./src/lib/admin-headers";
-import { basketHeaderRules } from "./src/lib/transactional-headers";
+import {
+  basketHeaderRules,
+  trackHeaderRules,
+} from "./src/lib/transactional-headers";
 import { floristHeaderRules } from "./src/lib/florist-headers";
 import { chooserHeaderRules } from "./src/lib/chooser-routes";
 import { checkoutHeaderRules } from "./src/modules/seo/transactional";
@@ -145,6 +148,10 @@ const headerRules = [
     ga4: ga4MeasurementId(process.env) !== undefined,
     platform,
   }),
+  // The tracking routes (spec 018 §6, AC-12; TASK-338): `noindex, nofollow`, `private, no-store`
+  // and `Referrer-Policy: no-referrer` on the token routes. **After** the security rules, because
+  // the last rule to set a key wins and the site-wide referrer policy must lose on a token URL.
+  ...trackHeaderRules(),
 ];
 
 const nextConfig: NextConfig = {

@@ -32,3 +32,43 @@ export function basketHeaderRules(): TransactionalHeaderRule[] {
     { source: "/:locale/basket", headers },
   ];
 }
+
+/**
+ * The headers of the tracking routes (spec 018 §5.4, §6, AC-12; TASK-338).
+ *
+ * The token page and its calendar file: `X-Robots-Tag: noindex, nofollow`, `Cache-Control:
+ * private, no-store` and `Referrer-Policy: no-referrer`, so the credential in the address never
+ * leaves in a `Referer` header. The photo route sets its own `private, max-age=300` (AC-6), so its
+ * rule carries the robots and referrer headers only. The lookup page, `/{locale}/track`, has no
+ * credential and keeps the site's referrer policy. These rules sit **after**
+ * `securityHeaderRules()` in `next.config.ts`: for one key, the last matching rule wins, and the
+ * site-wide `Referrer-Policy` must lose here.
+ */
+export const TRACK_CACHE_HEADER = {
+  key: "Cache-Control",
+  value: "private, no-store",
+} as const;
+
+export const TRACK_REFERRER_HEADER = {
+  key: "Referrer-Policy",
+  value: "no-referrer",
+} as const;
+
+/** Fresh objects on every call. */
+export function trackHeaderRules(): TransactionalHeaderRule[] {
+  const robots = { ...BASKET_ROBOTS_HEADER };
+  const full = [
+    robots,
+    { ...TRACK_CACHE_HEADER },
+    { ...TRACK_REFERRER_HEADER },
+  ];
+  return [
+    { source: "/:locale/track", headers: [robots, { ...TRACK_CACHE_HEADER }] },
+    { source: "/:locale/track/:token", headers: full },
+    { source: "/:locale/track/:token/calendar.ics", headers: full },
+    {
+      source: "/:locale/track/:token/photo",
+      headers: [robots, { ...TRACK_REFERRER_HEADER }],
+    },
+  ];
+}

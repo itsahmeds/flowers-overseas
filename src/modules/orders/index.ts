@@ -95,3 +95,27 @@ export type {
   TrackingOptions,
   TrackingResolution,
 } from "./tracking";
+// Spec 018 §5.2 (TASK-338): the buyer's tracking view model and its photo's location.
+export {
+  BUYER_STEPS,
+  BuyerStepSchema,
+  buyerStep,
+  foldTimeline,
+  getTrackingView,
+  PhotoStateSchema,
+  TIMELINE_STEPS,
+  TimelineSchema,
+  TimelineStepSchema,
+  TRACKING_VIEW_KEYS,
+  trackingPhotoLocation,
+  TrackingViewSchema,
+} from "./tracking-view";
+export type {
+  BuyerStep,
+  PhotoState,
+  ProjectedEvent,
+  Timeline,
+  TimelineStep,
+  TimelineStepKey,
+  TrackingView,
+} from "./tracking-view";

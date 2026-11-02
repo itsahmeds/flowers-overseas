@@ -147,6 +147,7 @@ const SDK_TABLE: readonly {
       "scripts/admin-grant.ts",
       "scripts/catalogue-parity.ts",
       "scripts/attestations-import.ts",
+      "scripts/orders-rotate-tracking.ts",
     ],
   },
   {

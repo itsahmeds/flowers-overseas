@@ -87,6 +87,8 @@ export const SDK_ADAPTERS = [
     // one `READ ONLY` transaction against the `--target` it is given (TASK-292).
     // `scripts/attestations-import.ts` is spec 012b's `pnpm attestations:import`, which carries
     // the recorded approvals into the review ledger over the direct URL (TASK-293).
+    // `scripts/orders-rotate-tracking.ts` is spec 018 §5.2's `pnpm orders:rotate-tracking`, one
+    // transaction over the direct URL that bumps a token version and audits it (TASK-338).
     files: [
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
@@ -96,6 +98,7 @@ export const SDK_ADAPTERS = [
       "scripts/admin-grant.ts",
       "scripts/catalogue-parity.ts",
       "scripts/attestations-import.ts",
+      "scripts/orders-rotate-tracking.ts",
     ],
     use: "src/lib/db.ts",
   },

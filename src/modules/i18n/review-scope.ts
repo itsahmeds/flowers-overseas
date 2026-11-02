@@ -107,6 +107,13 @@ const PAYMENTS_PATHS = [
   // The minute tick (TASK-258): its job handlers run the production start; it answers counts.
   "src/app/api/internal/jobs/**",
 ];
+/**"];
+/**
+ * Spec 018 tracking copy (TASK-338): only the `(track)` routes read it. Every one of them is
+ * `noindex, nofollow` and `no-store` (the tracking page, its not-working page, its photo and its
+ * calendar file; TASK-339 adds the lookup page there).
+ */
+const TRACK_PATHS = ["src/app/[locale]/(track)/**"];
 const CHECKOUT_SUBTREES = [
   "action",
   // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349): only
@@ -157,6 +164,8 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     surface: "orderConfirmation",
     paths: CHECKOUT_PATHS,
   },
+  { match: "tracking", surface: "orderTracking", paths: TRACK_PATHS },
+  { match: "trackLookup", surface: "orderTracking", paths: TRACK_PATHS },
   // Spec 013 §7 (TASK-255): the pay step's errors and labels render on step 3 only, and the
   // payment lines of the confirmation states on the confirmation page only; both are `no-store`,
   // `noindex` checkout routes. `src/modules/payments/**` names the keys (`declineMessageKey`).

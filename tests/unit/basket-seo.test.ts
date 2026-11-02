@@ -49,11 +49,12 @@ function blocks(pattern: string, url: string): boolean {
 describe("the basket page type (AC-72)", () => {
   it("is registered, transactional and never indexable", () => {
     expect(PAGE_TYPE_POLICY.basket).toBe("never");
-    // TASK-204 adds the checkout and its confirmation beside it.
+    // TASK-204 adds the checkout and its confirmation beside it; TASK-338 the tracking page.
     expect([...TRANSACTIONAL_PAGE_TYPES]).toEqual([
       "basket",
       "checkout",
       "checkoutDone",
+      "trackOrder",
     ]);
   });
 

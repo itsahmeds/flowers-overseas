@@ -268,6 +268,12 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         paths,
       })),
       { match: "confirmation", surface: "orderConfirmation", paths },
+      // Spec 018 §7 (TASK-338): the tracking routes alone read the tracking copy.
+      ...["tracking", "trackLookup"].map((match) => ({
+        match,
+        surface: "orderTracking",
+        paths: ["src/app/[locale]/(track)/**"],
+      })),
       // Spec 013 §7 (TASK-255): the payments module names the decline keys.
       ...(
         [

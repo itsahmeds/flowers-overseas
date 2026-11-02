@@ -86,6 +86,9 @@ export type SeoPageType =
   // (`transactional.ts` holds their `noindex, nofollow` header and meta).
   | "checkout"
   | "checkoutDone"
+  // Spec 018 §6 (AC-12; TASK-338): the buyer's tracking page and its not-working page, a
+  // transactional page whose URL carries a credential. `"never"` below, as the basket.
+  | "trackOrder"
   // Spec 041 §2's ten info pages, by page id (§11: GA4's `page_type` is the page id), registered
   // here rather than branching there (AC-17; TASK-182). A trust page is indexable iff it exists,
   // its content is reviewed, the locale is indexable and this is the indexing environment; a
@@ -124,6 +127,10 @@ export const PAGE_TYPE_POLICY: Readonly<
   // Spec 010 §14 A-founder-2026-10-22 item 12: `noindex, nofollow` by header and meta, never in a
   // sitemap, disallowed in `robots.txt` (AC-72). No data flip can lift it.
   basket: "never",
+  // Spec 018 §6: `noindex, nofollow` by header and meta, never in a sitemap, `/*/track/` disallowed
+  // in `robots.txt`, no canonical and no alternate (a token page with alternates would advertise
+  // a credential in four locales; AC-12).
+  trackOrder: "never",
   // Spec 041 §6: all ten are `byRule`. Every Phase 0 legal page is `noindex,follow` by data
   // (`lawyerReviewed: false`), every `de`/`pl` draft by data (`reviewed: false`), not by policy.
   "how-it-works": "byRule",
