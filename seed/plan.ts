@@ -467,7 +467,7 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
       ],
       sourceGuarded: true,
       // A price amount is written on insert only (spec 012b §2.6, F2): from a product's first
-      // activation `0026`'s guard refuses any change to it, and a price is corrected by
+      // activation `0033`'s guard refuses any change to it, and a price is corrected by
       // superseding the row, never by the seed rewriting it.
       insertOnlyColumns: ["retail_minor"],
       rows: datasetTable(dataset, "country_price", (row) =>

@@ -1,5 +1,6 @@
 -- Rollback of 0033_catalogue_cms (TASK-294): detach the triggers, drop `saleable_offer`, drop
--- `publish_run`, drop the three columns and the functions, restore `0016`'s mask list.
+-- `publish_run`, drop the three columns and the functions, restore the mask list
+-- `0029_reviews_close` left.
 
 SET LOCAL ROLE app_owner;
 
@@ -13,6 +14,8 @@ AS $fn$
       ARRAY['legal_name', 'contact_email', 'contact_phone']
     WHEN 'partner_application' THEN
       ARRAY['business_name', 'contact_name', 'contact_email', 'contact_phone', 'registration_number']
+    WHEN 'review' THEN
+      ARRAY['text', 'display_name']
     ELSE ARRAY[]::text[]
   END;
 $fn$;

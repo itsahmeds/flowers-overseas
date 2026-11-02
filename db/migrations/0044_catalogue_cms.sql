@@ -247,7 +247,7 @@ CREATE TRIGGER country_price_audit_source
   FOR EACH ROW EXECUTE FUNCTION public.audit_mark_real();
 
 -- The attester's name is personal data with its own retention (AC-28): `audit_log` keeps the
--- mask, never the name. Every other table keeps `0016`'s list exactly.
+-- mask, never the name. Every other table keeps its list exactly as `0029_reviews_close` left it.
 CREATE OR REPLACE FUNCTION public.audit_mask_columns(p_table text) RETURNS text[]
   LANGUAGE sql
   IMMUTABLE
@@ -258,6 +258,8 @@ AS $fn$
       ARRAY['legal_name', 'contact_email', 'contact_phone']
     WHEN 'partner_application' THEN
       ARRAY['business_name', 'contact_name', 'contact_email', 'contact_phone', 'registration_number']
+    WHEN 'review' THEN
+      ARRAY['text', 'display_name']
     WHEN 'review_attestation' THEN
       ARRAY['attester_name']
     ELSE ARRAY[]::text[]

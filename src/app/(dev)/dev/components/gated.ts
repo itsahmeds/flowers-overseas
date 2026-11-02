@@ -22,7 +22,7 @@ import type { DestinationStatusProvider } from "@/modules/ui";
 import type { HomeView, ReviewsProvider } from "@/modules/ui";
 import { destinationStatusProviderOf, reviewsProviderOf } from "@/modules/ui";
 
-import { activeCountries } from "@/config/countries";
+import { activeCountries, COUNTRIES } from "@/config/countries";
 import { localePath } from "@/modules/i18n";
 
 /**

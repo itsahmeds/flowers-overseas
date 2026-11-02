@@ -137,7 +137,7 @@ export const country = pgTable(
     guidePublished: boolean("guide_published").notNull().default(false),
     supplyModel: text("supply_model"),
     source: text("source").notNull().default("seed"),
-    /** Set once by a trigger when `status` becomes `live`, never cleared (`0026`, spec 012b §2.5). */
+    /** Set once by a trigger when `status` becomes `live`, never cleared (`0033`, spec 012b §2.5). */
     firstLiveAt: timestamp("first_live_at", { withTimezone: true }),
     ...timestamps,
   },

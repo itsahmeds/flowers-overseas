@@ -1,7 +1,7 @@
 /**
  * `dbSaleabilityProvider`: what a real florist can make and deliver, read from the `saleable_offer`
  * view (spec 012b §2.5 "A bouquet is saleable only if a real florist can make it", advisor F3,
- * §5.2 `isSaleable`, AC-39; migration `0026_catalogue_cms`; TASK-294).
+ * §5.2 `isSaleable`, AC-39; migration `0033_catalogue_cms`; TASK-294).
  *
  * The view lists ids only and runs with its owner's rights, so the public roles (`app_web` in the
  * public context, `app_build` during a build) read it without reading any partner table. One read
