@@ -61,7 +61,8 @@ export type {
   OrderMode,
   TransitionEventType,
 } from "./events";
-// Spec 018 (TASK-341): the invoices module runs in the engine's transaction seam.
+// Spec 018 (TASK-341): the invoices module runs in the engine's transaction seam; spec 013
+// (TASK-350): the payments read helpers run in the caller's transaction or their own.
 export { jsonb, withExecutor } from "./executor";
 export type {
   EngineConnection,
@@ -69,8 +70,6 @@ export type {
   RawRow,
   SqlRunner,
 } from "./executor";
-// Spec 013 (TASK-350): the payments read helpers run in the caller's transaction or their own.
-export { withExecutor } from "./executor";
 export {
   OUTBOX_AUDIENCES,
   OUTBOX_ROUTES,
