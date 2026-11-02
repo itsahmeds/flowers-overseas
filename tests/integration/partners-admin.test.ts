@@ -132,7 +132,7 @@ describe.skipIf(server.url === undefined)(
           actor,
           {
             ...(await version(code)),
-            product: `${productId}:`,
+            product: productId,
             canFulfil: "yes",
             payoutMinor: "14900",
             currency: "PLN",
@@ -212,7 +212,7 @@ describe.skipIf(server.url === undefined)(
               actor,
               {
                 ...(await version(code)),
-                product: `${productId}:`,
+                product: productId,
                 canFulfil: "yes",
                 payoutMinor: payout,
                 currency: "PLN",
@@ -257,7 +257,7 @@ describe.skipIf(server.url === undefined)(
             actor,
             {
               ...(await version(code)),
-              product: `${productId}:`,
+              product: productId,
               canFulfil: "yes",
               payoutMinor: "3900",
               currency: "EUR",
@@ -396,7 +396,7 @@ describe.skipIf(server.url === undefined)(
               actor,
               {
                 ...(await version(code)),
-                product: `${productId}:`,
+                product: productId,
                 canFulfil: "yes",
                 payoutMinor: "100",
                 currency: "PLN",
@@ -418,7 +418,7 @@ describe.skipIf(server.url === undefined)(
               actor,
               {
                 ...(await version(code)),
-                product: `${productId}:`,
+                product: productId,
                 canFulfil: "yes",
                 payoutMinor: "100",
                 currency: "PLN",
@@ -446,7 +446,7 @@ describe.skipIf(server.url === undefined)(
               actor,
               {
                 ...(await version(code)),
-                product: `${productId}:`,
+                product: productId,
                 canFulfil: "no",
                 payoutMinor: "100",
                 currency: "PLN",

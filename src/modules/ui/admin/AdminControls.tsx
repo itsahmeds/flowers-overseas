@@ -97,3 +97,40 @@ export function AdminRefusal({
     </p>
   );
 }
+
+/** The button tones of the sheet (`.ad-btn`): ink, the one primary, ghost, danger outline. */
+export type AdminButtonTone = "ink" | "primary" | "ghost" | "danger";
+
+const BUTTON_TONES: Readonly<Record<AdminButtonTone, string>> = {
+  ink: "bg-ink text-paper",
+  primary: "bg-accent text-accent-ink",
+  ghost: "bg-card text-ink shadow-[inset_0_0_0_1px_var(--color-field-edge)]",
+  danger: "bg-card text-danger shadow-[inset_0_0_0_1px_var(--color-danger)]",
+};
+
+/** The classes of an admin button, for a link that looks like one. */
+export function adminButtonClass(tone: AdminButtonTone = "ink"): string {
+  return `inline-flex min-h-[36px] cursor-pointer items-center justify-center gap-[6px] rounded-[8px] px-[14px] text-[14px] font-bold whitespace-nowrap no-underline ${BUTTON_TONES[tone]}`;
+}
+
+/** A submit button (`.ad-btn`, TASK-221); `primary` is the screen's one primary action. */
+export function AdminButton({
+  tone = "ink",
+  label,
+  children,
+}: {
+  readonly tone?: AdminButtonTone;
+  /** An accessible name when the visible words are not enough ("Remove" → "Remove 30-"). */
+  readonly label?: string;
+  readonly children: ReactNode;
+}): ReactElement {
+  return (
+    <button
+      type="submit"
+      {...(label === undefined ? {} : { "aria-label": label })}
+      className={adminButtonClass(tone)}
+    >
+      {children}
+    </button>
+  );
+}

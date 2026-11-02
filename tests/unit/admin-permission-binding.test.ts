@@ -142,11 +142,16 @@ describe("/admin/users is bound to users.manage (AC-4)", () => {
       });
     })("src/app/admin/(signed-in)");
     expect(pages.sort()).toEqual([
+      "src/app/admin/(signed-in)/applications/[id]/page.tsx",
+      "src/app/admin/(signed-in)/applications/page.tsx",
       "src/app/admin/(signed-in)/audit/page.tsx",
       "src/app/admin/(signed-in)/flags/page.tsx",
       "src/app/admin/(signed-in)/orders/[id]/page.tsx",
       "src/app/admin/(signed-in)/orders/page.tsx",
       "src/app/admin/(signed-in)/page.tsx",
+      "src/app/admin/(signed-in)/partners/[code]/page.tsx",
+      "src/app/admin/(signed-in)/partners/new/page.tsx",
+      "src/app/admin/(signed-in)/partners/page.tsx",
       "src/app/admin/(signed-in)/users/page.tsx",
     ]);
   });
@@ -248,4 +253,100 @@ describe("/admin/orders, its detail and its head are bound to orders.view (AC-4;
     expect(digest).not.toBe(FORBIDDEN);
     expect(digest).not.toMatch(/;401$/u);
   });
+});
+
+describe("/admin/partners and /admin/applications are bound to the §5.2 matrix (AC-4; TASK-221)", () => {
+  const APPLICATION = "0b7e1c2d-3e4f-4a5b-8c6d-7e8f9a0b1c2d";
+  const search = { searchParams: Promise.resolve({}) };
+  const pages = {
+    partners: async () =>
+      (
+        await import("../../src/app/admin/(signed-in)/partners/page.tsx")
+      ).default(search),
+    partner: async () =>
+      (
+        await import("../../src/app/admin/(signed-in)/partners/[code]/page.tsx")
+      ).default({ params: Promise.resolve({ code: "pl-test-1" }), ...search }),
+    newPartner: async () =>
+      (
+        await import("../../src/app/admin/(signed-in)/partners/new/page.tsx")
+      ).default(search),
+    applications: async () =>
+      (
+        await import("../../src/app/admin/(signed-in)/applications/page.tsx")
+      ).default(search),
+    application: async () =>
+      (
+        await import("../../src/app/admin/(signed-in)/applications/[id]/page.tsx")
+      ).default({ params: Promise.resolve({ id: APPLICATION }), ...search }),
+  };
+  /** Who may open each page: `partner.edit` or `partner.payout`; `partner.edit`; `application.manage`. */
+  const allowed: Record<keyof typeof pages, readonly string[]> = {
+    partners: ["admin", "ops", "finance"],
+    partner: ["admin", "ops", "finance"],
+    newPartner: ["admin", "ops"],
+    applications: ["admin", "ops"],
+    application: ["admin", "ops"],
+  };
+  const cases = (["admin", "ops", "finance", "content"] as const).flatMap(
+    (role) =>
+      (Object.keys(pages) as (keyof typeof pages)[]).map(
+        (page) => [role, page, allowed[page].includes(role)] as const,
+      ),
+  );
+
+  it.each(cases)("%s opening %s: allowed %s", async (role, page, ok) => {
+    session.current = as(role);
+    const digest = await digestOf(pages[page]);
+    if (ok) {
+      expect(digest).not.toBe(FORBIDDEN);
+      expect(digest).not.toMatch(/;401$/u);
+    } else {
+      expect(digest).toBe(FORBIDDEN);
+    }
+  });
+
+  /** The permission each action asks for, and so the roles it lets in. */
+  const actionRoles: Record<string, readonly string[]> = {
+    createPartnerAction: ["admin", "ops"],
+    updatePartnerAction: ["admin", "ops"],
+    recordTermsAction: ["admin", "ops"],
+    saveCoverageAction: ["admin", "ops"],
+    saveBlackoutAction: ["admin", "ops"],
+    saveMappingAction: ["admin", "finance"],
+    setPartnerStatusAction: ["admin", "ops"],
+    markContactedAction: ["admin", "ops"],
+    convertApplicationAction: ["admin", "ops"],
+    rejectApplicationAction: ["admin", "ops"],
+  };
+
+  async function allActions(): Promise<Record<string, unknown>> {
+    return {
+      ...(await import("../../src/app/admin/(signed-in)/partners/actions.ts")),
+      ...(await import("../../src/app/admin/(signed-in)/applications/actions.ts")),
+    };
+  }
+
+  it("covers every action the two files export", async () => {
+    expect(Object.keys(await allActions()).sort()).toEqual(
+      Object.keys(actionRoles).sort(),
+    );
+  });
+
+  it.each(["admin", "ops", "finance", "content"] as const)(
+    "each action answers %s by the matrix",
+    async (role) => {
+      session.current = as(role);
+      for (const [name, action] of Object.entries(await allActions())) {
+        const digest = await digestOf(() =>
+          (action as (f: FormData) => unknown)(new FormData()),
+        );
+        if (actionRoles[name]?.includes(role) === true) {
+          expect(digest, name).not.toBe(FORBIDDEN);
+        } else {
+          expect(digest, name).toBe(FORBIDDEN);
+        }
+      }
+    },
+  );
 });

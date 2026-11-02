@@ -295,7 +295,7 @@ export async function convertApplication(
       })
       .returning({ id: fulfillmentPartner.id });
     if (partner === undefined)
-      throw new Error("convertApplication: no partner row");
+      throw new Error("convertApplication: the insert returned no row");
     const moved = await setFloristApplicationStatus(
       actor,
       applicationId,

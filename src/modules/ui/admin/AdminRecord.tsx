@@ -356,3 +356,61 @@ export function AdminTimeline({
     </ol>
   );
 }
+
+/* ---------------------------------------------------------------- checklist */
+
+/** One condition of the checklist: met or missing, in words. */
+export interface AdminCheck {
+  readonly key: string;
+  readonly met: boolean;
+  readonly text: string;
+}
+
+/**
+ * The status card's condition list (`.ad-pre-list`, TASK-221): a stem tick for a met condition
+ * and a danger cross for a missing one, each also said in words (`metLabel`, `missingLabel`) to a
+ * screen reader, so the state is never colour or glyph alone.
+ */
+export function AdminChecklist({
+  checks,
+  metLabel,
+  missingLabel,
+}: {
+  readonly checks: readonly AdminCheck[];
+  readonly metLabel: string;
+  readonly missingLabel: string;
+}): ReactElement {
+  return (
+    <ul className="grid gap-[6px] text-[14px]">
+      {checks.map((check) => (
+        <li key={check.key} className="text-ink flex items-baseline gap-[10px]">
+          <span
+            aria-hidden="true"
+            className={`w-[18px] flex-none text-center font-bold ${check.met ? "text-stem" : "text-danger"}`}
+          >
+            {check.met ? "✓" : "×"}
+          </span>
+          <span>
+            <span className="sr-only">
+              {check.met ? metLabel : missingLabel}:{" "}
+            </span>
+            {check.text}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** A small uppercase label inside a card (`.ad-lbl`). */
+export function AdminLabel({
+  children,
+}: {
+  readonly children: ReactNode;
+}): ReactElement {
+  return (
+    <span className="text-ink-3 text-[12px] font-bold tracking-[0.08em] uppercase">
+      {children}
+    </span>
+  );
+}

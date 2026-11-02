@@ -150,7 +150,8 @@ describe("T-17 · partner validators (AC-15)", () => {
       expect(
         parseMapping(
           {
-            product: `${PRODUCT}:stems_21`,
+            product: PRODUCT,
+            size: "stems_21",
             canFulfil: "yes",
             payoutMinor: payout,
             currency: "PLN",
@@ -165,7 +166,7 @@ describe("T-17 · partner validators (AC-15)", () => {
     expect(
       parseMapping(
         {
-          product: `${PRODUCT}:`,
+          product: PRODUCT,
           canFulfil: "yes",
           payoutMinor: "14900",
           currency: "ZZZ",
@@ -179,7 +180,7 @@ describe("T-17 · partner validators (AC-15)", () => {
     expect(
       parseMapping(
         {
-          product: `${PRODUCT}:`,
+          product: PRODUCT,
           canFulfil: "yes",
           payoutMinor: "14900",
           currency: "pln",

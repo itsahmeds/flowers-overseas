@@ -68,6 +68,7 @@ export const partnerFieldErrors = [
   "code",
   "date",
   "dateFuture",
+  "dateFar",
   "datePast",
   "version",
   "reason",
@@ -107,6 +108,12 @@ export function partnerPhoneE164(
   return phone.countryCallingCode === getCountryCallingCode(plan)
     ? phone.number
     : undefined;
+}
+
+/** The calling code of a country's numbering plan without the plus ("48"), for the field hint. */
+export function partnerCallingCode(countryIso2: string): string | undefined {
+  const plan = planFor(countryIso2);
+  return plan === undefined ? undefined : getCountryCallingCode(plan);
 }
 
 /** Positive whole minor units from their typed form, or `undefined` (AC-15). */
@@ -415,7 +422,7 @@ export function parseBlackout(input: unknown, now: Date): Parsed<BlackoutEdit> {
   if (date < utcDate(now, -1))
     return { ok: false, errors: { date: "datePast" } };
   if (date > utcDate(now, 731))
-    return { ok: false, errors: { date: "dateFuture" } };
+    return { ok: false, errors: { date: "dateFar" } };
   const reason = text(values.reason) ?? null;
   if (reason !== null && reason.length > 200) {
     return { ok: false, errors: { reason: "tooLong" } };
@@ -436,11 +443,15 @@ export type MappingEdit =
     }
   | { readonly op: "remove"; readonly mappingId: string };
 
-const PRODUCT_TIER = /^([0-9a-f-]{36}):([a-z0-9_-]{0,40})$/u;
+/** A size the form names: empty for every size, else a `product_tier.tier_key`. */
+const TIER_KEY = /^[a-z0-9_-]{1,40}$/u;
 
 /**
- * Parses a mapping form. `currency` must be one of `currencies` (the `currency` table) and is
- * the partner's payout currency, which the command checks against the row it locked.
+ * Parses a mapping form: `product` (an id), `size` (empty for every size, a null `tier_key`,
+ * which spec 016's routing reads as covering every tier; else a tier key, which the command
+ * checks exists for that product), `canFulfil`, `payoutMinor` and `currency`. `currency` must be
+ * one of `currencies` (the `currency` table) and is the partner's payout currency, which the
+ * command checks against the row it locked.
  */
 export function parseMapping(
   input: unknown,
@@ -450,6 +461,7 @@ export function parseMapping(
     .object({
       op: z.unknown(),
       product: z.unknown(),
+      size: z.unknown(),
       canFulfil: z.unknown(),
       payoutMinor: z.unknown(),
       currency: z.unknown(),
@@ -465,9 +477,10 @@ export function parseMapping(
       : { ok: false, errors: { mappingId: "target" } };
   }
   const errors: Record<string, PartnerFieldError> = {};
-  const match = PRODUCT_TIER.exec(text(values.product) ?? "");
-  const productId = z.uuid().safeParse(match?.[1]);
+  const productId = z.uuid().safeParse(text(values.product));
   if (!productId.success) errors["product"] = "product";
+  const size = text(values.size) ?? "";
+  if (size !== "" && !TIER_KEY.test(size)) errors["size"] = "product";
   const payoutMinor = payoutMinorUnits(values.payoutMinor);
   if (payoutMinor === undefined) errors["payoutMinor"] = "payout";
   const currency = text(values.currency)?.toUpperCase();
@@ -487,13 +500,12 @@ export function parseMapping(
   ) {
     return { ok: false, errors };
   }
-  const tierKey = match?.[2] ?? "";
   return {
     ok: true,
     value: {
       op: "save",
       productId: productId.data,
-      tierKey: tierKey === "" ? null : tierKey,
+      tierKey: size === "" ? null : size,
       canFulfil,
       payoutMinor,
       currency,

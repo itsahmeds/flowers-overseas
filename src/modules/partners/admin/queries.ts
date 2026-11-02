@@ -184,10 +184,9 @@ export interface CoverageOption {
   readonly prefix: string | null;
 }
 
-export interface ProductOption {
-  readonly value: string;
-  readonly productName: string;
-  readonly tierKey: string | null;
+export interface SizeOption {
+  readonly tierKey: string;
+  /** The stem count every product's tier of this key shares, or `null`. */
   readonly stems: number | null;
 }
 
@@ -219,7 +218,8 @@ export interface PartnerDetail {
     readonly countries: readonly PartnerOption[];
     readonly currencies: readonly string[];
     readonly coverage: readonly CoverageOption[];
-    readonly products: readonly ProductOption[];
+    readonly products: readonly PartnerOption[];
+    readonly sizes: readonly SizeOption[];
   };
 }
 
@@ -347,41 +347,21 @@ export async function partnerDetail(
       prefix: z.string().nullable(),
     });
 
-    // One option per product for every size (a null `tier_key` covers every tier, spec 016's
-    // candidates), then one per size.
     const products = await db
-      .select({
-        productId: product.id,
-        productName,
-        tierKey: productTier.tierKey,
-        stems: productTier.stems,
-      })
+      .select({ value: product.id, label: productName })
       .from(product)
-      .leftJoin(productTier, eq(productTier.productId, product.id))
-      .orderBy(asc(productName), asc(product.id), asc(productTier.sort));
-    const productOptions: ProductOption[] = [];
-    for (const entry of products) {
-      const previous = productOptions[productOptions.length - 1];
-      if (
-        previous === undefined ||
-        !previous.value.startsWith(`${entry.productId}:`)
-      ) {
-        productOptions.push({
-          value: `${entry.productId}:`,
-          productName: String(entry.productName),
-          tierKey: null,
-          stems: null,
-        });
-      }
-      if (entry.tierKey !== null) {
-        productOptions.push({
-          value: `${entry.productId}:${entry.tierKey}`,
-          productName: String(entry.productName),
-          tierKey: entry.tierKey,
-          stems: entry.stems,
-        });
-      }
-    }
+      .orderBy(asc(productName), asc(product.id));
+    // The sizes the catalogue names, each with its stem count when every product agrees on it.
+    const sizes = await db
+      .select({
+        tierKey: productTier.tierKey,
+        stems: sql<
+          number | null
+        >`CASE WHEN min(${productTier.stems}) = max(${productTier.stems}) THEN min(${productTier.stems}) END`,
+      })
+      .from(productTier)
+      .groupBy(productTier.tierKey)
+      .orderBy(asc(productTier.tierKey));
 
     const preflight = activationPreflight({
       termsSignedAt: row.termsSignedAt,
@@ -445,8 +425,32 @@ export async function partnerDetail(
             prefix: parsed.prefix,
           };
         }),
-        products: productOptions,
+        products: products.map((entry) => ({
+          value: entry.value,
+          label: String(entry.label),
+        })),
+        sizes: sizes.map((entry) => ({
+          tierKey: entry.tierKey,
+          stems: entry.stems === null ? null : Number(entry.stems),
+        })),
       },
     };
+  });
+}
+
+/** A partner's code by its id (a converted application links to its florist); `undefined` if none. */
+export async function partnerCodeById(
+  actor: DbActor,
+  partnerId: string,
+  run: PartnerAdminRunner = partnerAdminRunner,
+): Promise<string | undefined> {
+  const id = z.uuid().safeParse(partnerId);
+  if (!id.success) return undefined;
+  return run({ ...actor, action: PARTNER_ACTIONS.read }, async (db) => {
+    const [row] = await db
+      .select({ code: fulfillmentPartner.code })
+      .from(fulfillmentPartner)
+      .where(eq(fulfillmentPartner.id, id.data));
+    return row?.code;
   });
 }

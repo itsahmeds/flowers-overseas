@@ -375,6 +375,7 @@ export type DateStyle =
   | "calendarDate"
   | "dayMonth"
   | "dayMonthTime"
+  | "dayMonthYear"
   | "dayMonthYearTime"
   | "dayMonthTimeSeconds"
   | "time"
@@ -398,6 +399,8 @@ const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
     month: "long",
     year: "numeric",
   },
+  // Spec 012 (TASK-221): a calendar day with its year, "2 Oct 2026" (signed terms, days off).
+  dayMonthYear: { day: "numeric", month: "short", year: "numeric" },
   dayMonthYearTime: {
     day: "numeric",
     month: "short",

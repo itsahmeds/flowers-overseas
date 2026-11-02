@@ -470,6 +470,18 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       variable: "OPS_ALERT_EMAIL",
       reference: "FO-7K2M-9QXA",
       shop: "Kwiaciarnia Przykładowa",
+      // TASK-221's `admin.partners.*` and `admin.applications.*`.
+      version: "v1",
+      zones: 2,
+      products: 4,
+      prefix: "30-",
+      when: "5 Oct, 12:02",
+      example: "1.00 zł",
+      minor: "100",
+      currency: "PLN",
+      channel: "email",
+      product: "Amber Hour",
+      callingCode: "48",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

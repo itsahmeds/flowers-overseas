@@ -111,6 +111,7 @@ export {
   parsePartnerCode,
   parsePartnerProfile,
   parseTerms,
+  partnerCallingCode,
   partnerFieldErrors,
   partnerPhoneE164,
   payoutMinorUnits,
@@ -152,6 +153,7 @@ export type { ApplicationCommandResult } from "./admin/applications.ts";
 export {
   PartnerListFilterSchema,
   listPartners,
+  partnerCodeById,
   partnerDetail,
   partnerFormOptions,
 } from "./admin/queries.ts";
