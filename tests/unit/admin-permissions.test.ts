@@ -31,6 +31,9 @@ const MATRIX: Record<string, readonly string[]> = {
   "orders.cancel": ["admin"],
   "orders.refund": ["admin"],
   "orders.resend": ["admin", "ops"],
+  // spec 012b §5.2 "Permission rows" (TASK-293): the two the review ledger reads.
+  "translation.attest": ["admin", "ops", "finance", "content"],
+  "media.review": ["admin", "content"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

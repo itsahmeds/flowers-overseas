@@ -8,6 +8,7 @@
  * not "the column I looked at". Local, disposable server only (`support/scratch-db.ts`).
  */
 import { execFile } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
 
@@ -15,7 +16,13 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { readSeedTree } from "../../seed/check.ts";
 import {
+  formatAttestationsFile,
+  readImportedLedger,
+} from "../../scripts/attestations-import.ts";
+import {
+  ATTESTATIONS_FILE,
   PRODUCTION_REFUSAL,
+  readAttestations,
   runSeed,
   type SeedReport,
 } from "../../seed/index.ts";
@@ -89,12 +96,29 @@ describe.skipIf(server.url === undefined)(
     beforeAll(async () => {
       scratch = await scratchDatabase(server.url as string, "seedins");
       plan = buildSeedPlan(await readSeedTree(REPO_ROOT));
-      await runSeed(scratch.sql, plan);
+      // Seeded as the CLI seeds, the review ledger's replay included (spec 012b AC-13), so the
+      // CLI runs below find nothing of it missing.
+      await runSeed(scratch.sql, plan, {
+        attestations: readAttestations(REPO_ROOT),
+      });
     }, 600_000);
 
     afterAll(async () => {
       await scratch.drop();
     });
+
+    it("AC-13: the seed's last step replays seed/data/attestations.json, so the ledger equals the file", async () => {
+      expect(
+        formatAttestationsFile(await readImportedLedger(scratch.sql)),
+      ).toBe(readFileSync(resolve(REPO_ROOT, ATTESTATIONS_FILE), "utf8"));
+      const again = await runSeed(scratch.sql, plan, {
+        attestations: readAttestations(REPO_ROOT),
+        insertOnly: true,
+      });
+      const ledger = again.tables.find((t) => t.table === "review_attestation");
+      expect(ledger?.rows).toBeGreaterThan(0);
+      expect([ledger?.inserted, ledger?.updated]).toEqual([0, 0]);
+    }, 120_000);
 
     it("AC-1: with APP_ENV=production a plain seed exits non-zero naming --insert-only and writes nothing; --insert-only runs", async () => {
       // A missing row, so a run that wrote anything would show.

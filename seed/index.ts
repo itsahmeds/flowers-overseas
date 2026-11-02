@@ -33,14 +33,30 @@
  * One statement per table: the rows go in as one `jsonb` array, typed by `jsonb_to_recordset` with
  * the table's own column types, and a data-modifying CTE updates what differs and inserts what is
  * missing. Logs counts per table, never a row.
+ *
+ * **Last step: the review ledger** (spec 012b §2.4, AC-13; TASK-293). When the run includes the
+ * `catalog` group, every row of `seed/data/attestations.json` (written by `pnpm
+ * attestations:import`) is replayed through `attest()`'s import channel — the one writer of the
+ * ledger and of the review columns — so a fresh database carries the same recorded approvals as
+ * the one the file came from. A row already in the ledger is counted unchanged; a replayed
+ * approval is mirrored onto its subject's row only when that row serves the approved hash, and
+ * never under `--insert-only` (which changes no existing row). The ledger is append-only, so
+ * nothing in it is ever updated.
  */
-import { resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import postgres from "postgres";
 import { z } from "zod";
 
 import { appEnvironment, type EnvSource } from "../src/lib/env.schema.ts";
+
+import {
+  AttestationsFileSchema,
+  type LedgerEntry,
+} from "../src/modules/i18n/attestation.ts";
+import { attest, executorOf } from "../src/modules/i18n/db/ledger.ts";
 
 import { readSeedTree } from "./check.ts";
 import {
@@ -87,6 +103,22 @@ export interface SeedOptions {
   readonly dryRun?: boolean;
   /** Insert missing rows, update none (spec 012b AC-1). */
   readonly insertOnly?: boolean;
+  /**
+   * The review ledger rows to replay as the last step (spec 012b AC-13): the CLI passes
+   * `seed/data/attestations.json`'s; absent, nothing is replayed.
+   */
+  readonly attestations?: readonly LedgerEntry[];
+}
+
+/** Where `pnpm attestations:import` writes the ledger's seed, relative to the repository root. */
+export const ATTESTATIONS_FILE = join("seed", "data", "attestations.json");
+
+/** The ledger rows of `seed/data/attestations.json`, or none when the file is absent. */
+export function readAttestations(repoRoot: string): readonly LedgerEntry[] {
+  const path = join(repoRoot, ATTESTATIONS_FILE);
+  if (!existsSync(path)) return [];
+  return AttestationsFileSchema.parse(JSON.parse(readFileSync(path, "utf8")))
+    .rows;
 }
 
 const OptionsSchema = z.object({
@@ -413,6 +445,37 @@ async function upsertCities(
   };
 }
 
+/** The last step: the ledger's seed, through `attest()`'s import channel (see the header). */
+async function replayAttestations(
+  tx: Tx,
+  entries: readonly LedgerEntry[],
+  insertOnly: boolean,
+): Promise<SeedTableReport> {
+  const db = executorOf((text, parameters) =>
+    tx.unsafe(text, parameters as never[]),
+  );
+  let inserted = 0;
+  for (const entry of entries) {
+    const outcome = await attest({
+      channel: "import",
+      entry,
+      db,
+      mirror: !insertOnly,
+    });
+    if (!outcome.ok) throw new Error(`${CLI_NAME}: ${outcome.refusal}`);
+    if (outcome.created) inserted += 1;
+  }
+  return {
+    table: "review_attestation",
+    rows: entries.length,
+    inserted,
+    updated: 0,
+    unchanged: entries.length - inserted,
+    real: 0,
+    underReal: 0,
+  };
+}
+
 class DryRunRollback extends Error {}
 
 /** Runs the plan against `sql`. The CLI's whole job, minus argument parsing and printing. */
@@ -436,6 +499,11 @@ export async function runSeed(
           table.table === "city"
             ? await upsertCities(tx, table, rows, insertOnly)
             : await upsertTable(tx, table, rows, insertOnly),
+        );
+      }
+      if (options.attestations !== undefined && groups.includes("catalog")) {
+        reports.push(
+          await replayAttestations(tx, options.attestations, insertOnly),
         );
       }
       if (dryRun) throw new DryRunRollback();
@@ -482,7 +550,10 @@ async function main(): Promise<void> {
     onnotice: () => undefined,
   });
   try {
-    const report = await runSeed(sql, plan, options);
+    const report = await runSeed(sql, plan, {
+      ...options,
+      attestations: readAttestations(repoRoot),
+    });
     process.stdout.write(`${formatSeedReport(report)}\n`);
   } finally {
     await sql.end({ timeout: 5 });

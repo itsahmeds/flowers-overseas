@@ -34,7 +34,7 @@ import {
 } from "@/lib/florist-headers";
 import { logger } from "@/lib/logger";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/request-id";
-import { parseLocaleFromPath } from "@/modules/i18n";
+import { parseLocaleFromPath } from "@/modules/i18n/routing";
 
 /** Downstream request header carrying the locale parsed from the path (spec 003 §11). */
 export const LOCALE_HEADER = "x-fo-locale";

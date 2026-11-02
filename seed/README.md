@@ -143,6 +143,12 @@ pnpm db:seed --insert-only      # adds missing rows, updates none (spec 012b AC-
   inserted and never updated: once the row exists the status is admin's go-live flip. `pnpm
   catalogue:parity --target=<postgres url>` (read-only) reports any country whose database row
   disagrees with the registry, naming every URL and field (spec 012b AC-2's country half).
+- **Review is the ledger's** (spec 012b §2.4, AC-13; TASK-293). A product translation goes in
+  unreviewed and its review columns are never updated by the seed; the last step of every run that
+  includes `catalog` replays `seed/data/attestations.json` through `attest()`'s import channel, so
+  a fresh database carries the recorded approvals. That file is written by `pnpm
+  attestations:import --only=catalogue,media` (the recorded approvals of `copy/*/products.json`
+  and `media.json`, with their names and dates verbatim) and is never edited by hand.
 
 ## The diff: `pnpm seed:diff`
 

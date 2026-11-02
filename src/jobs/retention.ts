@@ -45,6 +45,14 @@
  *    TASK-211): `sessions` and `verification_tokens` rows of both sign-in surfaces whose `expires`
  *    is at or before the cut-off. A live session or an unexpired link is never touched. The only
  *    copy of the session rule (spec 012 keeps none).
+ *  - `review_attestation` (3 years after the attester's `admin_profile.deactivated_at`,
+ *    pseudonymise; spec 012b §8, AC-28): every ledger row of a deactivated signed-in attester has
+ *    `attester_name` replaced by "Reviewer {n}", n the same for every row of that user — the n
+ *    already on any of their rows, else one more than the highest n in the ledger, assigned in
+ *    user-id order. Nothing else in the row changes: the ledger is append-only, and its trigger
+ *    (`0023`) admits exactly this update, once per row, in this policy's session
+ *    (`app.role = 'system'`, `app.retention_policy = 'review_attestation'`). Imported rows carry
+ *    no user and are never selected.
  *  - `invoice_archive` (`keep`): nothing.
  *  - `checkout_draft`, `demo_order_personal`: their handlers are spec 010's (TASK-207). Until a key
  *    has a handler here it is reported `no_handler` and nothing is written for it.
@@ -554,6 +562,67 @@ function expiredAuthRows(
   };
 }
 
+/** The pseudonym the ledger's retention writes (spec 012b AC-28), as a Postgres regex. */
+const PSEUDONYM = "^Reviewer [1-9][0-9]*$";
+
+/** `Reviewer {n}` for the n-th pseudonymised attester. */
+export function reviewerPseudonym(n: number): string {
+  return `Reviewer ${String(n)}`;
+}
+
+const reviewAttestationNames: PolicyHandler = async ({
+  db,
+  cutoff,
+  dryRun,
+}) => {
+  const due = await rows<{
+    user_id: string;
+    rows: number;
+    existing: number | null;
+  }>(
+    db,
+    sql`SELECT a.attester_user_id AS user_id, count(*)::int AS rows,
+               (SELECT max(substring(b.attester_name FROM '^Reviewer ([0-9]+)$')::int)
+                  FROM public.review_attestation b
+                 WHERE b.attester_user_id = a.attester_user_id
+                   AND b.attester_name ~ ${PSEUDONYM}) AS existing
+        FROM public.review_attestation a
+        JOIN public.admin_profile p ON p.user_id = a.attester_user_id
+        WHERE p.deactivated_at IS NOT NULL AND p.deactivated_at <= ${ts(cutoff)}
+          AND a.attester_name !~ ${PSEUDONYM}
+        GROUP BY a.attester_user_id
+        ORDER BY a.attester_user_id`,
+  );
+  const [highest] = await rows<{ n: number | null }>(
+    db,
+    sql`SELECT max(substring(attester_name FROM '^Reviewer ([0-9]+)$')::int) AS n
+        FROM public.review_attestation WHERE attester_name ~ ${PSEUDONYM}`,
+  );
+  let next = (highest?.n ?? 0) + 1;
+  if (!dryRun && due.length > 0) {
+    await db.execute(
+      sql`SELECT set_config('app.retention_policy', 'review_attestation', true)`,
+    );
+    for (const attester of due) {
+      const n = attester.existing === null ? next++ : Number(attester.existing);
+      await db.execute(
+        sql`UPDATE public.review_attestation SET attester_name = ${reviewerPseudonym(n)}
+            WHERE attester_user_id = ${attester.user_id}::uuid
+              AND attester_name !~ ${PSEUDONYM}`,
+      );
+    }
+    await db.execute(sql`SELECT set_config('app.retention_policy', '', true)`);
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: {
+      attesters: due.length,
+      review_attestation: due.reduce((total, row) => total + row.rows, 0),
+    },
+    skipped: {},
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -564,6 +633,7 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   partner_application: partnerApplication,
   auth_session: expiredAuthRows("sessions"),
   auth_verification_token: expiredAuthRows("verification_tokens"),
+  review_attestation: reviewAttestationNames,
 };
 
 /**
