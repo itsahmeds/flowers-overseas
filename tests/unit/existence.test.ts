@@ -19,6 +19,7 @@ import {
   useExistenceManifest,
 } from "../../src/lib/existence";
 import {
+  listingExists,
   listingPages,
   listingView,
   listProductPages,
@@ -29,6 +30,7 @@ import {
   diffAgainst,
   isStructuralPath,
 } from "../../src/modules/catalog/existence";
+import { corridorPageExists, listCorridorPages } from "../../src/modules/geo";
 import { localePath } from "../../src/modules/i18n";
 import { catalogSearchSource } from "../../src/modules/search/source";
 
@@ -297,5 +299,41 @@ describe("AC-5, the grids' half: a product the build did not emit is in no grid"
       (await shopRoot()).items.map((item) => item.productId),
     );
     expect(inside).toContain(sku);
+  });
+});
+
+describe("AC-5, the resolver's half: a listing or corridor page the build did not emit does not exist", () => {
+  it("the Poland shop root in en-gb exists without a manifest and not with one that lacks it", async () => {
+    const identity = {
+      pageType: "countryShopRoot",
+      locale: "en-gb",
+      countryIso: "PL",
+    } as const;
+    expect(await listingExists(identity)).toBe(true);
+    const root = (await listingPages()).find(
+      (page) =>
+        page.locale === "en-gb" &&
+        page.pageType === "countryShopRoot" &&
+        page.countryIso === "PL",
+    );
+    if (root === undefined) throw new Error("no en-gb PL shop root");
+    const others = (await listingPages())
+      .map((page) => page.path)
+      .filter((path) => path !== root.path);
+    useExistenceManifest(manifestOf(others));
+    expect(await listingExists(identity)).toBe(false);
+    useExistenceManifest(manifestOf([...others, root.path]));
+    expect(await listingExists(identity)).toBe(true);
+  });
+
+  it("a corridor page exists only while the running manifest has its URL", () => {
+    const page = listCorridorPages()[0];
+    if (page === undefined) throw new Error("no corridor page");
+    const path = localePath(page.locale, "destinations", page.slug);
+    expect(corridorPageExists(page.iso2, page.locale)).toBe(true);
+    useExistenceManifest(manifestOf(["/en"]));
+    expect(corridorPageExists(page.iso2, page.locale)).toBe(false);
+    useExistenceManifest(manifestOf(["/en", path]));
+    expect(corridorPageExists(page.iso2, page.locale)).toBe(true);
   });
 });
