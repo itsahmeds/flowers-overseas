@@ -139,7 +139,16 @@ export async function ensureQueues(boss: PgBoss): Promise<void> {
 export interface EnqueueOptions {
   /** The enqueuing request's `x-request-id`, or `system:{job}`. */
   readonly requestId: string;
+  /**
+   * At most one job of this name and key per minute (pg-boss `singletonKey` with
+   * `singletonSeconds: 60`): a second enqueue in the same minute returns `null` and writes
+   * nothing. The minute tick's sweeps use it (spec 022a §5.2).
+   */
+  readonly singletonKey?: string;
 }
+
+/** The window a `singletonKey` enqueue is unique within: one minute tick. */
+export const SINGLETON_SECONDS = 60;
 
 /**
  * Enqueues one job after validating its payload against the registry. Throws `JobPayloadError`
@@ -152,7 +161,11 @@ export async function enqueue<Name extends RegisteredJobName>(
   options: EnqueueOptions,
 ): Promise<string | null> {
   const data = buildJobData(name, payload, options.requestId);
-  return boss.send(name, data);
+  if (options.singletonKey === undefined) return boss.send(name, data);
+  return boss.send(name, data, {
+    singletonKey: options.singletonKey,
+    singletonSeconds: SINGLETON_SECONDS,
+  });
 }
 
 /** What a handler receives besides its payload. */

@@ -12,6 +12,7 @@ import {
   JobPayloadError,
   MediaDeriveVariantsPayload,
   NeonUsageProbePayload,
+  OrderCloseSweepPayload,
   REGISTERED_JOBS,
   REGISTERED_JOB_NAMES,
   RetentionSweepPayload,
@@ -24,11 +25,12 @@ import {
 const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
-  it("registers exactly the four queues the Binding names, and spec 013's outbox.dispatch and payments.production_start", () => {
+  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, and spec 022a's order.close_sweep", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
       "db.backup_verify",
       "media.derive_variants",
       "neon.usage_probe",
+      "order.close_sweep",
       "outbox.dispatch",
       "payments.production_start",
       "retention.sweep",
@@ -61,7 +63,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(15);
+    expect(new Set(JOB_NAMES).size).toBe(16);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 
@@ -82,6 +84,15 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       version: 1,
       payload: BackupVerifyPayload,
     });
+    expect(REGISTERED_JOBS["order.close_sweep"]).toEqual({
+      version: 1,
+      payload: OrderCloseSweepPayload,
+    });
+  });
+
+  it("OrderCloseSweepPayload takes nothing (spec 022a §5.2: `{}`)", () => {
+    expect(OrderCloseSweepPayload.parse({})).toEqual({});
+    expect(OrderCloseSweepPayload.safeParse({ limit: 5 }).success).toBe(false);
   });
 });
 
