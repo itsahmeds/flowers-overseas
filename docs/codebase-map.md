@@ -22,7 +22,7 @@ task actually touches.
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +122 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-inbox.test.ts`, `unit/admin-order-poll.test.ts` +5 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-actions.test.ts`, `integration/florist-inbox.test.ts` +7 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-inbox.test.ts` +5 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
@@ -195,16 +195,22 @@ task actually touches.
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
 | `api/webhooks/stripe/route.ts` | POST: Stripe webhook endpoint, verify, store… | 013 |
+| `demo/vendor-inbox/actions.ts` | The florist action posts' shared plumbing:… | 011 |
 | `demo/vendor-inbox/api/auth/[...nextauth]/route.ts` | Every florist Auth.js endpoint answers 404 | 011 |
 | `demo/vendor-inbox/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the… | 011 |
 | `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every… | 011 |
 | `demo/vendor-inbox/api/auth/sign-out/route.ts` | POST: florist sign-out | 011 |
 | `demo/vendor-inbox/api/language/route.ts` | POST: store the florist's language (AC-32) | 011 |
+| `demo/vendor-inbox/api/orders/[assignmentId]/dispatch/route.ts` | POST: the florist marks an accepted order out… | 011 |
+| `demo/vendor-inbox/api/orders/[assignmentId]/photo/route.ts` | POST the delivery photo (deliver, or add it);… | 011 |
+| `demo/vendor-inbox/api/orders/[assignmentId]/respond/route.ts` | POST: the florist accepts or declines an offer… | 011 |
 | `demo/vendor-inbox/api/test-order/route.ts` | POST: the demo member's "Send a test order"… | 011 |
 | `demo/vendor-inbox/chrome.tsx` | The florist pages' shared frame: header,… | 011 |
 | `demo/vendor-inbox/layout.tsx` | Florist document: the member's language, noindex | 011 |
 | `demo/vendor-inbox/not-found.tsx` | The florist tree's 404: an order that is not… | 011 |
+| `demo/vendor-inbox/orders/[assignmentId]/decline/page.tsx` | GET {base}/orders/{assignmentId}/decline: why… | 011 |
 | `demo/vendor-inbox/orders/[assignmentId]/page.tsx` | GET {base}/orders/{assignmentId}: one florist… | 011 |
+| `demo/vendor-inbox/orders/[assignmentId]/photo/page.tsx` | GET {base}/orders/{assignmentId}/photo: the… | 011 |
 | `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox list (signed in;… | 011 |
 | `demo/vendor-inbox/request.ts` | The florist request's context and language,… | 011 |
 | `demo/vendor-inbox/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue… | 011 |

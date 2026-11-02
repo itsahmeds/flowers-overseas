@@ -40,11 +40,20 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02: built on main `cef7c35e6`, branch `task/TASK-215-florist-actions`, PR 452. Commands in `src/modules/orders/florist-actions/` (not in the `orders` barrel: importing it registers six event schemas and imports `payments` for spec 013's two), the photo pipeline in `src/modules/orders/photo/`, routes under `{base}/api/orders/[assignmentId]/{respond,dispatch,photo}`, pages `{base}/orders/[assignmentId]/{decline,photo}`, actions docked on the order page. No migration. Tests: unit `florist-actions.test.ts` (16), integration `florist-actions.test.ts` (6) green on a throwaway PG16.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 452. `respondToOffer`, `markOutForDelivery`, `markDelivered` and `addDeliveryPhoto`: a partner-context read (404 when hidden), then one system transaction that locks the order and the assignment `FOR UPDATE`, re-checks partner, answer, state and deadline, updates `order_assignment`, calls spec 010's `transition` with `partner:{id}` and `by_user_id`, and runs TASK-214's `AcceptedOrderEffect` in the same transaction. Six event schemas registered (`assignment.accepted`, `assignment.declined`, `order.no_partner_available`, `order.out_for_delivery`, `order.delivered`, `order.photo_uploaded`), spec 013's `order.captured` and `order.in_production` reused. The photo: MIME by magic bytes (JPEG, PNG, WebP), 15 MiB bounded while streaming, `sharp` rotate, 2000 px, JPEG with no metadata, `originals/delivery_proof/{assetId}` in `R2_PRIVATE_BUCKET` (read through `r2EnvironmentFrom()`), orphan deleted if the write fails; the florist sees it through a 300 s signed URL read by a same-origin route (CSP keeps `img-src 'self'`). The actions offered are read off `order_transition` (partner rows from the current status). `proxyClientMaxBodySize` raised to 16 MB (the proxy truncated bodies at 10 MB). No migration. Tests: unit 16, integration 6; 17 mutations each turned a named test red. No local build, no browser run (no CI wait, founder 2026-11-02).
+
+**Carry-forwards (2026-11-02, from the implementer's self-review, PR 452):**
+- *T-30's staging e2e half* (the signed URL on real R2 works and expires; the public origin answers 404 for the key) is TASK-216's close-out run: it needs staging's `R2_PRIVATE_BUCKET` and a signed-in demo member.
+- *Screenshots against `florist-inbox-*`* (decline step, dock, photo step, photo received) were not taken: the pages need a signed-in member and a database; no build was run locally (battery rule). TASK-216's visual baselines cover them.
+- *`R2_PRIVATE_BUCKET` in `env.schema.ts`*: not added. The key is already declared by TASK-082 in `.env.example` (commented, optional) and read only by `r2EnvironmentFrom()`; the orchestrator's dispatch said to read it through that seam and add no key. TASK-216 still adds it to `config/railway.json`.
+- *Event registration lives outside the `orders` barrel.* Any other process that writes `order.no_partner_available` or the florist events (TASK-328's routing jobs) must import `@/modules/orders/florist-actions` (or move the registration) first.
+- *An answer between `sla_expires_at` and spec 016's `timeout`* is `ASSIGNMENT_EXPIRED` and writes nothing, settled against spec 011 §3 ("nothing moves it"); the command does not record the timeout.
+- *Copy for the founder:* thirteen new `floristInbox.*` strings, all Appendix A verbatim except "Delivered, add the photo" (no em dash, the audit's decision 3) and the photo's alt text "Your photo of the delivered bouquet" (the artboard's drawn label); `en` `reviewed: false`, `pl`/`de` machine drafts.
+- *`i18n:check` reports `nav.category.ourSelection` and `nav.send` unused*: both are on main already, not from this diff.
