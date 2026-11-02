@@ -22,7 +22,7 @@ import {
   INFO_PAGE_IDS,
   type InfoPageId,
   infoPage,
-  infoPageLocation,
+  infoPageSegments,
 } from "@/config/info-pages";
 import {
   availablePaymentMethods,
@@ -43,10 +43,12 @@ import {
   staticInfoContentProvider,
 } from "./provider.ts";
 import type {
+  FloristLabels,
   HonestyAllow,
   InfoLinkTarget,
   InfoPageContent,
   InfoSectionBlock,
+  InfoSectionScreen,
 } from "./schemas.ts";
 
 /** What a caller may substitute: a fixture provider, a company, the registration flag. */
@@ -141,9 +143,15 @@ export function infoPageExists(
   options: InfoPageOptions = {},
 ): boolean {
   if (routableLocale(locale) === undefined) return false;
+  const entry = infoPage(pageId);
+  // Spec 011's apply and sent pages carry no content file: they exist exactly where their parent
+  // does, so deleting the landing's file removes the whole florists set in that locale.
+  if (entry.prose === false && entry.parent !== undefined) {
+    return infoPageExists(entry.parent, locale, options);
+  }
   const identity =
     options.registered ?? isTraderIdentityComplete(options.company ?? COMPANY);
-  if (infoPage(pageId).requiresRegistration && !identity) return false;
+  if (entry.requiresRegistration && !identity) return false;
   return hasContent(
     pageId,
     locale,
@@ -153,10 +161,8 @@ export function infoPageExists(
 
 /** The page's path in a locale, composed by `localePath()` (spec 041 §6). */
 export function infoPagePath(pageId: InfoPageId, locale: string): string {
-  const location = infoPageLocation(pageId, locale);
-  return location.leaf === undefined
-    ? localePath(locale, location.segmentKey)
-    : localePath(locale, "legal", location.leaf);
+  const { segmentKey, leaves } = infoPageSegments(pageId, locale);
+  return localePath(locale, segmentKey, ...leaves);
 }
 
 export interface InfoPageRef {
@@ -211,13 +217,28 @@ export function infoPageForSegment(
   locale: string,
   segment: string,
 ): InfoPageId | undefined {
-  return INFO_PAGE_IDS.find((pageId) => {
-    const location = infoPageLocation(pageId, locale);
-    return (
-      location.leaf === undefined &&
-      infoPagePath(pageId, locale) === `/${locale}/${segment}`
-    );
-  });
+  return INFO_PAGE_IDS.find(
+    (pageId) =>
+      infoPageSegments(pageId, locale).leaves.length === 0 &&
+      infoPagePath(pageId, locale) === `/${locale}/${segment}`,
+  );
+}
+
+/**
+ * The page nested under a top-level page whose path this is, if any: spec 011's walkthrough,
+ * `/{locale}/{forFlorists}/{leaf}` (TASK-210). The resolver's depth-3 question.
+ */
+export function infoPageForPath(
+  locale: string,
+  segments: readonly string[],
+): InfoPageId | undefined {
+  const path = `/${[locale, ...segments].join("/")}`;
+  return INFO_PAGE_IDS.find(
+    (pageId) =>
+      infoPage(pageId).parent !== undefined &&
+      infoPage(pageId).family === "florists" &&
+      infoPagePath(pageId, locale) === path,
+  );
 }
 
 /**
@@ -230,13 +251,13 @@ export function infoPageForLeaf(
   segment: string,
   leaf: string,
 ): InfoPageId | undefined {
-  return INFO_PAGE_IDS.find((pageId) => {
-    const location = infoPageLocation(pageId, locale);
-    return (
-      location.leaf !== undefined &&
-      infoPagePath(pageId, locale) === `/${locale}/${segment}/${leaf}`
-    );
-  });
+  // A page nested under another page (spec 011's walkthrough) is `infoPageForPath()`'s question.
+  return INFO_PAGE_IDS.find(
+    (pageId) =>
+      infoPage(pageId).parent === undefined &&
+      infoPageSegments(pageId, locale).leaves.length === 1 &&
+      infoPagePath(pageId, locale) === `/${locale}/${segment}/${leaf}`,
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -248,8 +269,20 @@ export interface InfoSectionView {
   readonly heading: string;
   readonly paragraphs: readonly string[];
   readonly items: readonly { readonly title: string; readonly text: string }[];
+  /** A plain list of sentences (spec 011's landing); empty elsewhere. */
+  readonly bullets: readonly string[];
   readonly ordered: boolean;
   readonly block: InfoSectionBlock | undefined;
+  /** A walkthrough step's inbox screen and its caption (spec 011 AC-3). */
+  readonly screen: InfoSectionScreen | undefined;
+  readonly caption: string | undefined;
+}
+
+/** A country guide the florists' landing links to: one that exists in this locale (AC-9). */
+export interface GuideLinkView {
+  readonly iso2: string;
+  readonly nameKey: string;
+  readonly href: string;
 }
 
 export interface InfoLinkView {
@@ -304,9 +337,17 @@ export interface InfoPageView {
   readonly path: string;
   readonly seoTitle: string;
   readonly seoDescription: string;
+  /** The heading as text: `*emphasis*` marks removed (the breadcrumb and JSON-LD read this). */
   readonly h1: string;
+  /** The heading as authored, `*…*` marking the one emphasised phrase (spec 011's landing). */
+  readonly h1Marked: string;
   readonly intro: string | undefined;
   readonly reviewed: boolean;
+  /**
+   * A machine draft nobody has checked yet (`source: machine`, `reviewed: false`): the page says
+   * so under its `<h1>` with `infoPages.status.untranslated` (spec 041 §2, spec 011 AC-5).
+   */
+  readonly untranslated: boolean;
   readonly updatedAt: string;
   /** `infoPages.status.notYetOpen` renders under the `<h1>` while this is true (AC-6). */
   readonly notYetOpen: boolean;
@@ -321,22 +362,36 @@ export interface InfoPageView {
   readonly paymentMethods: readonly PaymentMethod[] | undefined;
   readonly breadcrumb: readonly InfoCrumbView[];
   readonly honestyAllow: readonly HonestyAllow[];
+  /** The florists family's landing labels; `undefined` on every other page. */
+  readonly florists: FloristLabels | undefined;
+  /** The country guides that exist in this locale, for a `guides` block (spec 011 AC-9). */
+  readonly guides: readonly GuideLinkView[] | undefined;
+}
+
+/** `*made by you*` → `made by you`: the plain text of a heading that marks its emphasis. */
+export function withoutEmphasis(text: string): string {
+  return text.replaceAll(/\*([^*]+)\*/gu, "$1");
 }
 
 /**
  * `{legalName}` is data, never copy: the one token a trust file may carry (the parser refuses any
  * other). It resolves only while the company is registered; `undefined` otherwise, and the section
  * that carries it does not render, so neither the token nor an empty name can appear (spec 041
- * §14 A-founder-2026-10-23 clause 3, About).
+ * §14 A-founder-2026-10-23 clause 3, About). The florists family may also carry `{phoneDisplay}`,
+ * spec 011's "talk to us first" line, from `company.ts` (the parser allows it there only).
  */
 function interpolate(
   text: string,
   company: Company,
   registered: boolean,
 ): string | undefined {
-  if (!text.includes("{legalName}")) return text;
+  const filled = text.replaceAll(
+    "{phoneDisplay}",
+    company.contact.phoneDisplay,
+  );
+  if (!filled.includes("{legalName}")) return filled;
   if (!registered || company.legalName === undefined) return undefined;
-  return text.replaceAll("{legalName}", company.legalName);
+  return filled.replaceAll("{legalName}", company.legalName);
 }
 
 function paragraphsOf(body: string | undefined): readonly string[] {
@@ -360,10 +415,12 @@ function sectionView(
     title: fill(item.title),
     text: fill(item.text),
   }));
+  const bullets = (section.bullets ?? []).map(fill);
   if (
     heading === undefined ||
     paragraphs.some((paragraph) => paragraph === undefined) ||
-    items.some((item) => item.title === undefined || item.text === undefined)
+    items.some((item) => item.title === undefined || item.text === undefined) ||
+    bullets.some((bullet) => bullet === undefined)
   ) {
     return undefined;
   }
@@ -376,8 +433,11 @@ function sectionView(
         ? []
         : [{ title: item.title, text: item.text }],
     ),
+    bullets: bullets.filter((bullet) => bullet !== undefined),
     ordered: section.ordered ?? false,
     block: section.block,
+    screen: section.screen,
+    caption: section.caption,
   };
 }
 
@@ -420,7 +480,8 @@ export function infoPageView(
   locale: string,
   options: InfoPageOptions = {},
 ): InfoPageView | undefined {
-  if (infoPage(pageId).family !== "trust") return undefined;
+  const entry = infoPage(pageId);
+  if (entry.family === "legal" || entry.prose === false) return undefined;
   if (!infoPageExists(pageId, locale, options)) return undefined;
   const provider = options.provider ?? staticInfoContentProvider;
   const content = trustContent(pageId, locale, provider);
@@ -446,9 +507,14 @@ export function infoPageView(
     path,
     seoTitle: content.seoTitle,
     seoDescription: content.seoDescription,
-    h1: content.h1,
-    intro: content.intro,
+    h1: withoutEmphasis(content.h1),
+    h1Marked: content.h1,
+    intro:
+      content.intro === undefined
+        ? undefined
+        : interpolate(content.intro, company, registered),
     reviewed: content.reviewed,
+    untranslated: content.source === "machine" && !content.reviewed,
     updatedAt: content.updatedAt,
     notYetOpen: !(options.datesOpen ?? anyDeliveryDatesOpen()),
     sections: content.sections.flatMap(
@@ -457,7 +523,7 @@ export function infoPageView(
     faq: content.faq ?? [],
     links,
     contact:
-      pageId === "help"
+      pageId === "help" || blocks.has("contact")
         ? {
             phoneDisplay: company.contact.phoneDisplay,
             telHref: `tel:${company.contact.phoneE164}`,
@@ -490,8 +556,41 @@ export function infoPageView(
         href: localePath(locale, "home"),
         current: false,
       },
-      { labelKey: "breadcrumb.entity", labelValue: content.h1, current: true },
+      // A nested page (spec 011's walkthrough) crumbs through its parent: Home › For florists ›
+      // How an order reaches you, as the walkthrough and apply artboards draw it.
+      ...(entry.parent === undefined
+        ? []
+        : [
+            {
+              labelKey: "nav.forFlorists",
+              href: infoPagePath(entry.parent, locale),
+              current: false,
+            },
+          ]),
+      // The florists' landing names itself "For florists" in its trail, as the header link does
+      // and the artboard draws it; every other page's current crumb is its own heading.
+      pageId === "for-florists"
+        ? { labelKey: "nav.forFlorists", current: true }
+        : {
+            labelKey: "breadcrumb.entity",
+            labelValue: withoutEmphasis(content.h1),
+            current: true,
+          },
     ],
     honestyAllow: content.honestyAllow,
+    florists: content.florists,
+    guides: blocks.has("guides")
+      ? hubView(locale, options.nameOf).destinations.flatMap((destination) =>
+          destination.href === undefined
+            ? []
+            : [
+                {
+                  iso2: destination.iso2,
+                  nameKey: destination.nameKey,
+                  href: destination.href,
+                },
+              ],
+        )
+      : undefined,
   };
 }

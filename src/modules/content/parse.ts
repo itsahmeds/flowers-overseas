@@ -40,7 +40,7 @@ export interface InfoParseIssue {
 }
 
 export interface InfoPathFacts {
-  readonly family: "trust" | "legal";
+  readonly family: "trust" | "legal" | "florists";
   readonly locale: string;
   readonly pageId: InfoPageId;
 }
@@ -84,9 +84,15 @@ export function infoPathFacts(relativePath: string): InfoPathFacts | undefined {
     return undefined;
   }
   const id = pageId as InfoPageId;
-  const family = dir === "pages" ? "trust" : "legal";
-  // A trust page filed under `legal/` (or the reverse) is a misfiled page, not a page.
-  if (infoPage(id).family !== family) return undefined;
+  const entry = infoPage(id);
+  // A trust page filed under `legal/` (or the reverse) is a misfiled page, not a page. Spec 011's
+  // florists family files its prose under `pages/` with the trust frontmatter (§2); its apply and
+  // sent pages have no content file at all, so a file for one is a misfiled page too.
+  const family = entry.family;
+  if (dir === "legal" ? family !== "legal" : family === "legal") {
+    return undefined;
+  }
+  if (entry.prose === false) return undefined;
   return { family, locale, pageId: id };
 }
 
@@ -190,11 +196,11 @@ export function parseInfoFile(
     return { ok: true, file: { ...facts, kind: "extends", parent: "en" } };
   }
 
-  if (facts.family === "trust") {
+  if (facts.family !== "legal") {
     const parsed = InfoPageContentSchema.safeParse(frontmatter);
     if (!parsed.success)
       return { ok: false, issues: zodIssues(file, parsed.error) };
-    const tokenIssues = trustTokenIssues(file, yamlText);
+    const tokenIssues = trustTokenIssues(file, yamlText, facts.family);
     if (tokenIssues.length > 0) return { ok: false, issues: tokenIssues };
     return {
       ok: true,
@@ -220,16 +226,21 @@ export function parseInfoFile(
 function trustTokenIssues(
   file: string,
   yamlText: string,
+  family: InfoPathFacts["family"],
 ): readonly InfoParseIssue[] {
+  // Spec 011's landing prints the phone in its "talk to us first" line: `{phoneDisplay}` is data
+  // from `company.ts`, allowed in the florists family only (TASK-210).
+  const allowed: readonly string[] =
+    family === "florists" ? ["legalName", "phoneDisplay"] : ["legalName"];
   return tokensIn(yamlText)
-    .filter((token) => token !== "legalName")
+    .filter((token) => !allowed.includes(token))
     .map((token) => ({
       file,
       field: "-",
       message:
         token === "representativeName"
           ? "`{representativeName}` is withdrawn: no person's name appears on the site (spec 041 §14 A-founder-2026-10-23 clause 4)"
-          : `\`{${token}}\` is not a data slot a trust page may carry (only \`{legalName}\`)`,
+          : `\`{${token}}\` is not a data slot a ${family} page may carry (only ${allowed.map((name) => `\`{${name}}\``).join(" and ")})`,
     }));
 }
 

@@ -25,6 +25,7 @@ import {
   InfoPageRegistrySchema,
   INFO_PAGES,
   TRUST_PAGE_IDS,
+  infoPage,
 } from "../../src/config/info-pages.ts";
 import {
   LAUNCH_LOCALE_DATA,
@@ -404,6 +405,13 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
         key !== "footer.link.deliveryAndPayment"
       )
         continue;
+      // The one exception is a key recorded by a record-approval run, never by an agent's edit:
+      // `infoPages.status.untranslated`, recorded with record-approval-210b.py (PR 344).
+      if (
+        key === "infoPages.status.untranslated" &&
+        /record-approval-210b\.py/u.test(record.reviewedBy ?? "")
+      )
+        continue;
       expect(record.reviewed, key).toBe(false);
     }
   });
@@ -623,7 +631,11 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
 
 describe("T-17 / AC-17: the ten page types are byRule", () => {
   it("registers every page id as byRule", () => {
-    for (const pageId of INFO_PAGE_IDS)
+    // Spec 041's ten; spec 011's florists family states its own answers (TASK-210): its
+    // application and sent pages are `never`, pinned in `tests/unit/florists-seo.test.ts`.
+    for (const pageId of INFO_PAGE_IDS.filter(
+      (id) => infoPage(id).family !== "florists",
+    ))
       expect(PAGE_TYPE_POLICY[pageId]).toBe("byRule");
   });
 
@@ -716,7 +728,11 @@ describe("T-21 / AC-21: the infoPage link kind and the footer", () => {
 
 describe("T-32 / AC-30: no relay language in the content or in infoPages.*", () => {
   it("relayMatches finds nothing in any content file or infoPages value", () => {
-    for (const page of listInfoPages()) {
+    // Spec 011's florists pages address florists, on routes `RELAY_EXEMPT` lists as non-buyer
+    // (TASK-210): a florist accepts and declines orders by design. Every buyer page is read.
+    for (const page of listInfoPages().filter(
+      (candidate) => infoPage(candidate.pageId).family !== "florists",
+    )) {
       expect(
         relayMatches(proseOf(page.pageId, page.locale), page.locale),
         `${page.pageId} ${page.locale}`,

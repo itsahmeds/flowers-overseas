@@ -253,13 +253,16 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
         /<(?:a\s[^>]*|[a-z]+\s[^>]*aria-current="[^"]*"[^>]*)>/gu,
       ),
     ].map((match) => ({ tag: match[0], at: match.index }));
-    // Every menu entry (all links out of context), one sibling shown locale, the current locale,
-    // the help line.
+    // Every menu entry (all links out of context), `For florists` (spec 011 AC-9; TASK-210), one
+    // sibling shown locale, the current locale, the help line.
     const entries = (MENUS.en?.panels ?? []).flatMap((item) =>
       panelEntries(item),
     );
     expect(entries.every((entry) => entry.kind !== "facet")).toBe(true);
-    expect(elements).toHaveLength(entries.length + 1 + 1 + 1);
+    expect(elements).toHaveLength(entries.length + 1 + 1 + 1 + 1);
+    expect(
+      elements.filter(({ tag }) => tag.includes('href="/en/for-florists"')),
+    ).toHaveLength(1);
     expect(
       elements.filter(({ tag }) => tag.includes('href="https://wa.me/')),
     ).toHaveLength(1);

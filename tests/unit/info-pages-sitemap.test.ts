@@ -76,7 +76,13 @@ describe("T-20 / AC-20: a reviewed trust page is announced", () => {
     const locs = ["en", "en-gb"].flatMap((locale) =>
       staticSitemapEntries(locale, INDEXING).map((row) => row.loc),
     );
-    expect(locs.filter((loc) => !loc.includes("send-flowers-to"))).toEqual([
+    // The florists family (spec 011, TASK-210) follows its own rule in `florists-seo.test.ts`.
+    expect(
+      locs.filter(
+        (loc) =>
+          !loc.includes("send-flowers-to") && !loc.includes("/for-florists"),
+      ),
+    ).toEqual([
       "https://flowersoverseas.com/en/help",
       "https://flowersoverseas.com/en-gb/help",
     ]);

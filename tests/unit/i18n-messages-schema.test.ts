@@ -344,9 +344,6 @@ describe("the shipped catalogues and manifests", () => {
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     "company.controller",
     "consent.privacyLink",
-    // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide
-    // calendar's Rule column in words, approved in the 2026-10-04 batch ("approve copy") and
-    // shipped `reviewed: false` until the founder's own record run attests the exact values.
     "corridor.calendar.ruleEaster",
     "corridor.calendar.ruleFixed",
     "corridor.calendar.ruleWeekday",
@@ -357,21 +354,80 @@ describe("the shipped catalogues and manifests", () => {
     // unreviewed share (`review-scope.ts`, A17).
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
+    // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the
+    // scoped namespace, when the walkthrough made `floristInbox` counted; `floristInbox.orders` is
+    // the walkthrough's "Orders" and left this queue with record-approval-210.py.
     "floristAuth.confirmSubmit",
+    "floristAuth.demoNotice",
     "floristAuth.email",
     "floristAuth.expiredBody",
+    "floristAuth.homeLabel",
+    "floristAuth.language",
+    "floristAuth.menu",
     "floristAuth.sentBody",
     "floristAuth.sentTitle",
+    "floristAuth.signOut",
     "floristAuth.submit",
     "floristAuth.title",
-    "floristInbox.demoNotice",
-    "floristInbox.homeLabel",
-    "floristInbox.language",
-    "floristInbox.menu",
-    "floristInbox.orders",
-    "floristInbox.signOut",
     "footer.link.deliveryAndPayment",
-    // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
+    "forFlorists.apply.crumb",
+    "forFlorists.apply.error.area",
+    "forFlorists.apply.error.capacity",
+    "forFlorists.apply.error.contactName",
+    "forFlorists.apply.error.country",
+    "forFlorists.apply.error.email",
+    "forFlorists.apply.error.phone",
+    "forFlorists.apply.error.shopName",
+    "forFlorists.apply.error.town",
+    "forFlorists.apply.error.website",
+    "forFlorists.apply.errorSummary",
+    "forFlorists.apply.failed",
+    "forFlorists.apply.field.area.help",
+    "forFlorists.apply.field.area.label",
+    "forFlorists.apply.field.capacity.help",
+    "forFlorists.apply.field.capacity.label",
+    "forFlorists.apply.field.contactBy.email",
+    "forFlorists.apply.field.contactBy.label",
+    "forFlorists.apply.field.contactBy.phone",
+    "forFlorists.apply.field.contactBy.whatsapp",
+    "forFlorists.apply.field.contactName.label",
+    "forFlorists.apply.field.country.choose",
+    "forFlorists.apply.field.country.label",
+    "forFlorists.apply.field.email.label",
+    "forFlorists.apply.field.language.de",
+    "forFlorists.apply.field.language.en",
+    "forFlorists.apply.field.language.label",
+    "forFlorists.apply.field.language.pl",
+    "forFlorists.apply.field.phone.help",
+    "forFlorists.apply.field.phone.label",
+    "forFlorists.apply.field.registration.help",
+    "forFlorists.apply.field.registration.label",
+    "forFlorists.apply.field.shopName.help",
+    "forFlorists.apply.field.shopName.label",
+    "forFlorists.apply.field.town.label",
+    "forFlorists.apply.field.website.label",
+    "forFlorists.apply.field.weekends.label",
+    "forFlorists.apply.field.weekends.no",
+    "forFlorists.apply.field.weekends.sometimes",
+    "forFlorists.apply.field.weekends.yes",
+    "forFlorists.apply.formOff",
+    "forFlorists.apply.h1",
+    "forFlorists.apply.honeypot",
+    "forFlorists.apply.intro",
+    "forFlorists.apply.next.body",
+    "forFlorists.apply.next.heading",
+    "forFlorists.apply.notice.body",
+    "forFlorists.apply.notice.controller",
+    "forFlorists.apply.notice.heading",
+    "forFlorists.apply.notice.privacyLink",
+    "forFlorists.apply.optional",
+    "forFlorists.apply.submit",
+    "forFlorists.apply.title",
+    "forFlorists.apply.tooMany",
+    "forFlorists.sent.body",
+    "forFlorists.sent.h1",
+    "forFlorists.sent.title",
+    "forFlorists.sent.walkthrough",
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
     "infoPages.contact.heading",
@@ -394,43 +450,6 @@ describe("the shipped catalogues and manifests", () => {
     "nav.basket",
     "nav.basketCount",
     "occasionHub.dateUnknown",
-    // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
-    // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
-    // these two are the implementer's generalisation of the artboard's name-day-specific prose
-    // into a heading and a sentence that hold for every occasion whose date we cannot compute
-    // (Sant Jordi, Grandmothers' Day in France, the May Day lily of the valley). No `<head>` pair
-    // waits here, because the page has none: its `<title>` is its own `h1` and its description is
-    // its own intro, both of them artboard copy.
-    // `/review 98` round 1 moved `occasionsIndex.datedCaption` back here: its transcribed
-    // "— the one destination we have published" stopped being true when TASK-091 published all
-    // seven guides, so the implementer cut the count and the string waits for the founder again.
-    // `undatedNote` was reworded in the same round ("a country we have not published yet" →
-    // "another country") and was already waiting.
-    // On 2026-10-03 the founder signed off `datedCaption` and `undatedNote` as written (chat, "go
-    // ahead whatever u feel is good"; TASK-171), so they left this queue; `undatedHeading` was
-    // not in that sign-off and still waits.
-    // TASK-179, the v2 product page: the eyebrow "{descriptor} · for {country}" was attested with
-    // the 2026-10-04 copy batch by mistake. It is not one of the batch's 14 items (orchestrator
-    // check, 2026-10-04), so it waits here for the founder.
-    // TASK-197, product v3: spec 004 §14 A24 clause 10's P2 (the phone sheet's eyebrow) and P1
-    // ("Read more"), proposed copy that ships `reviewed: false` until the founder attests it.
-    // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
-    // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
-    // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
-    // the implementer composed — the generalised date note in place of the drawing's
-    // Poland-specific sentence, the honest blank for an occasion with no computable rule
-    // (§14 design round Q6), the lede, the two `<head>` strings and the third column's link
-    // label — so they wait here until he ticks them. No `reviewedBy`, by the rule above.
-    // TASK-187 (spec 004 §14 A23 clause 6, Appendix A A9 and A10; A24 clause 10 P3): the tile noun,
-    // "Change the order" and the phone pager's page line ("Next" reuses the reviewed key, so
-    // `en-gb` stays under spec 003's 5 %). A9 and A10 are approved English text;
-    // each still ships `reviewed: false` until the founder's own script attests the exact value.
-    // TASK-172 (spec 009 §14 A11): the trust strip's guarantee name retired as "Fresh-flower
-    // promise". The words are in the founder's 2026-10-04 batch (decisions log, item 2) for the
-    // header and the home; this key's value waits for his own attestation all the same.
-    // TASK-255, spec 013 §7 and Appendix A: the pay step's errors and labels and the confirmation
-    // states' payment lines, 20 strings waiting for the founder's copy batch. Not counted in the
-    // unreviewed share (`review-scope.ts`, A17), but not exempt from his tick (A17 clause 5).
     "payments.confirmation.arrival",
     "payments.confirmation.cancelled",
     "payments.confirmation.cancelledByYouRefunded",
@@ -581,6 +600,9 @@ describe("the shipped catalogues and manifests", () => {
       "floristAuth",
       "floristInbox",
       "emails",
+      // Spec 011 §7's public pages (TASK-210): the for-florists landing, application and sent
+      // pages. `floristInbox` above also carries the walkthrough's example-screen labels.
+      "forFlorists",
       // Spec 018 §7's namespaces (TASK-338): the tracking page and its not-working page, and the
       // lookup form's labels. Server Components only; the share island gets strings as props.
       "tracking",

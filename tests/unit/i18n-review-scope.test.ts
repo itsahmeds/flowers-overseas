@@ -293,10 +293,10 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         ],
       })),
       // Spec 011 §7 (TASK-212): the florist surface under `FLORIST_BASE_PATH` and its email.
+      // `floristInbox` is counted since TASK-210: the indexable walkthrough prints its labels.
       ...(
         [
           ["floristAuth", "florist"],
-          ["floristInbox", "florist"],
           ["emails.floristSignIn.*", "email"],
         ] as const
       ).map(([match, surface]) => ({
@@ -304,8 +304,19 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         surface,
         paths: [
           "src/app/demo/vendor-inbox/**",
-          "src/modules/partners/**",
+          "src/modules/partners/auth/**",
           "src/lib/auth/florist.ts",
+        ],
+      })),
+      // Spec 011 (TASK-210): the application and sent pages, noindex, on route files of their own.
+      ...["forFlorists.apply.*", "forFlorists.sent.*"].map((match) => ({
+        match,
+        surface: "florist",
+        paths: [
+          "src/app/[locale]/for-florists/apply/**",
+          "src/app/[locale]/fuer-floristen/bewerben/**",
+          "src/app/[locale]/dla-kwiaciarni/zglos-sie/**",
+          "src/modules/partners/ui/apply/**",
         ],
       })),
     ]);

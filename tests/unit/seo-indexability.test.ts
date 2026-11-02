@@ -156,7 +156,7 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     .filter(([, policy]) => policy === "never")
     .map(([pageType]) => pageType as SeoPageType);
 
-  it("keeps the dev gallery, the basket and the checkout permanently out of the index, and only them", () => {
+  it("keeps the dev gallery, the basket, the checkout and spec 011's application pages permanently out of the index, and only them", () => {
     // `/` was the other one until spec 003 §14 A16 made it a 308 with no document. The basket is
     // spec 010 §14 A-founder-2026-10-22 item 12's transactional page (AC-72; TASK-349); spec 010
     // §6 (TASK-204) added the checkout and its confirmation; spec 018 §6 (TASK-338) the tracking page.
@@ -166,6 +166,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       "checkoutDone",
       "basket",
       "trackOrder",
+      // Spec 011 §6 (TASK-210): the application and its sent page, `noindex,follow` always.
+      "florist-apply",
+      "florist-apply-sent",
     ]);
   });
 
@@ -222,6 +225,12 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       privacy: "byRule",
       cookies: "byRule",
       cancellation: "byRule",
+      // spec 011 §6 (TASK-210): the landing and the walkthrough by rule; the application and its
+      // sent page "always `noindex,follow`, rendered, linked and crawlable, never in a sitemap".
+      "for-florists": "byRule",
+      "how-orders-work": "byRule",
+      "florist-apply": "never",
+      "florist-apply-sent": "never",
     });
   });
 });
