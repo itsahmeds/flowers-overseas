@@ -811,6 +811,10 @@
       "answered": "Na to zamówienie już odpowiedziano.",
       "changed": "To zamówienie zmieniło się od czasu, gdy je otwarto."
     },
+    "withdrawn": {
+      "title": "To zamówienie nie jest już Twoje.",
+      "body": "Prosimy go nie przygotowywać."
+    },
     "paused": {
       "notice": "Twoja kwiaciarnia jest wstrzymana. Możesz dokończyć zamówienia, które już przyjęto. Nowe zamówienia znów do Ciebie trafią, gdy kwiaciarnia będzie aktywna."
     }

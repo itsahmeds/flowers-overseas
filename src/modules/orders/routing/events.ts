@@ -10,7 +10,8 @@
  * | first offer                    | `order.routed`, then `assignment.offered` | 6 | `system:order.route` |
  * | re-offer                       | `assignment.offered`          | —   | `system:order.route`       |
  * | an offer's time runs out       | `assignment.timed_out`        | 9   | `system:assignment.timeout`|
- * | no florist left                | `order.no_partner_available`  | 10, A8 | `system:order.route`    |
+ * | no florist left, `routing.auto` off | `order.no_partner_available` | 10, A8 | `system:order.route` |
+ * | the founder reroutes (TASK-329) | `order.manual_reroute`, `order.routed`, `assignment.offered` | 11, 12 | `admin:{uuid}` |
  *
  * Registered **here**: `assignment.timed_out` and `order.manual_reroute` (§5.2: "This spec
  * registers versioned schemas for `assignment.timed_out` and `order.manual_reroute`"). The others
@@ -57,10 +58,15 @@ export const OrderManualRerouteV1 = z
 registerEventSchema("assignment.timed_out", 1, AssignmentTimedOutV1);
 registerEventSchema("order.manual_reroute", 1, OrderManualRerouteV1);
 
-/** Every event this task's jobs write (AC-32): four catalogue names, nothing else. */
+/**
+ * Every event the router writes itself (AC-32): five catalogue names, nothing else. TASK-329's
+ * `manualReroute` adds `order.manual_reroute` (row 11); the expiry's `order.cancelled` is written
+ * by spec 013's `cancelOrder`, never here.
+ */
 export const ROUTING_WRITTEN_EVENTS = [
   "order.routed",
   "assignment.offered",
   "assignment.timed_out",
   "order.no_partner_available",
+  "order.manual_reroute",
 ] as const satisfies readonly OrderEventType[];

@@ -32,6 +32,7 @@ import { runProductionStart } from "../modules/payments";
 import { runCloseSweep } from "../modules/orders/close";
 // Spec 016's routing jobs: not in the barrel either (they register `assignment.timed_out`).
 import {
+  expireNoPartner,
   photoRemind,
   registerRoutingOutbox,
   remindAssignment,
@@ -155,6 +156,11 @@ export const JOB_HANDLERS: JobHandlers = {
   },
   "routing.sla_watch": async () => {
     await watchRoutingSla();
+  },
+  // Spec 016 §5.2 (TASK-329): the end of the grace window. Idempotent: it locks and re-reads the
+  // order; one that has moved on (rerouted, cancelled) or is not yet due writes nothing.
+  "order.no_partner_expire": async (payload) => {
+    await expireNoPartner(payload.orderId);
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.

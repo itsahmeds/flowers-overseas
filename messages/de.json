@@ -811,6 +811,10 @@
       "answered": "Dieser Auftrag wurde bereits beantwortet.",
       "changed": "Dieser Auftrag hat sich geändert, seit Sie ihn geöffnet haben."
     },
+    "withdrawn": {
+      "title": "Dieser Auftrag ist nicht mehr Ihrer.",
+      "body": "Bitte fertigen Sie ihn nicht."
+    },
     "paused": {
       "notice": "Ihr Geschäft ist pausiert. Sie können die Aufträge abschließen, die Sie bereits angenommen haben. Neue Aufträge erhalten Sie wieder, sobald Ihr Geschäft aktiv ist."
     }

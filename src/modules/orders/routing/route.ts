@@ -25,8 +25,8 @@
  *
  * **Exhausted** is `order.no_partner_available` (row 10 from `routed`, spec 002 §14 A8's row from
  * `paid_unrouted`), then, once committed, the Sentry alert `routing.no_partner`. The founder's
- * email (A1) is the `notifications` outbox row the event writes (TASK-331 sends it); the grace
- * window's `order.no_partner_expire` is TASK-329's.
+ * email (A1) is the `notifications` outbox row the event writes (TASK-331 sends it), and the
+ * same transaction schedules `order.no_partner_expire` at `graceEnd` (TASK-329, `./no-partner`).
  *
  * Status changes only through `transition`, events only through the engine. Logs: ids, counts,
  * rule names and the outcome; never a postcode, an address or a name.
@@ -65,6 +65,7 @@ import {
   RoutingPartnerSchema,
 } from "./candidates";
 import { ORDER_ROUTE_ACTOR } from "./events";
+import { scheduleNoPartnerExpiry } from "./no-partner";
 import { pgBossRoutingScheduler, type RoutingScheduler } from "./schedule";
 import { offerWindow, type RoutingDestination } from "./windows";
 
@@ -386,7 +387,12 @@ export type RouteOutcome =
       readonly slaExpiresAt: Date;
     }
   | { readonly kind: "deferred"; readonly offerAt: Date }
-  | { readonly kind: "exhausted"; readonly reason: ExhaustionReason }
+  | {
+      readonly kind: "exhausted";
+      readonly reason: ExhaustionReason;
+      /** When `order.no_partner_expire` cancels it (`graceEnd`); null with no cutoff. */
+      readonly expiresAt: Date | null;
+    }
   | { readonly kind: "skipped"; readonly reason: RouteSkipReason };
 
 const MINUTE_MS = 60_000;
@@ -394,11 +400,16 @@ const MINUTE_MS = 60_000;
 /** The statuses a run may route from: the first offer, and every next one. */
 const ROUTABLE = new Set(["paid_unrouted", "routed"]);
 
-/** Writes `order.no_partner_available` (row 10 from `routed`, A8's row from `paid_unrouted`). */
+/**
+ * Writes `order.no_partner_available` (row 10 from `routed`, A8's row from `paid_unrouted`) and,
+ * in the same transaction, schedules `order.no_partner_expire` at `graceEnd` (TASK-329): no
+ * charged order waits without an end.
+ */
 async function exhaust(
   executor: OrderExecutor,
   facts: RoutingFacts,
   reason: ExhaustionReason,
+  deps: ResolvedRoutingDeps,
 ): Promise<RouteOutcome> {
   await transition(
     facts.orderId,
@@ -407,7 +418,12 @@ async function exhaust(
     { mode: facts.mode },
     { executor },
   );
-  return { kind: "exhausted", reason };
+  const expiresAt = await scheduleNoPartnerExpiry(
+    executor,
+    facts.orderId,
+    deps.schedule,
+  );
+  return { kind: "exhausted", reason, expiresAt };
 }
 
 /**
@@ -427,12 +443,7 @@ async function lockFirstThatFits(
       (snapshot) => snapshot.partnerId === candidate.partnerId,
     );
     if (partner === undefined) continue;
-    await executor.execute(sql`
-      SELECT id FROM fulfillment_partner WHERE id = ${partner.partnerId} FOR UPDATE`);
-    const [counted] = await executor.execute(
-      loadSql(partner.partnerId, facts.deliveryDate),
-    );
-    const fresh = { ...partner, loadOnDate: LoadRow.parse(counted).load };
+    const fresh = await lockAndRecount(executor, facts.deliveryDate, partner);
     if (
       eligibleCandidates(facts.order, [fresh], signIn).candidates.length === 1
     ) {
@@ -440,6 +451,23 @@ async function lockFirstThatFits(
     }
   }
   return undefined;
+}
+
+/**
+ * Locks `partner`'s row `FOR UPDATE`, **then** recounts its accepted plus open offers on the
+ * delivery date: the snapshot with the fresh load (step 4; `manualReroute` uses the same lock).
+ */
+export async function lockAndRecount(
+  executor: OrderExecutor,
+  deliveryDate: string,
+  partner: RoutingPartner,
+): Promise<RoutingPartner> {
+  await executor.execute(sql`
+    SELECT id FROM fulfillment_partner WHERE id = ${partner.partnerId} FOR UPDATE`);
+  const [counted] = await executor.execute(
+    loadSql(partner.partnerId, deliveryDate),
+  );
+  return { ...partner, loadOnDate: LoadRow.parse(counted).load };
 }
 
 function excludedCounts(
@@ -465,7 +493,7 @@ async function routeWithin(
   }
   if (facts.live) return { kind: "skipped", reason: "offer_open" };
   if (facts.attempts >= ROUTING_WINDOWS.maxOffers) {
-    return exhaust(executor, facts, "max_offers");
+    return exhaust(executor, facts, "max_offers", deps);
   }
   if (facts.destination === null) {
     // A country with no agreed cutoff is not open for orders (spec 009 `unavailable`); refusing
@@ -474,7 +502,7 @@ async function routeWithin(
   }
   const window = offerWindow(now, facts.deliveryDate, facts.destination);
   if (window.kind === "deadline_passed") {
-    return exhaust(executor, facts, "deadline");
+    return exhaust(executor, facts, "deadline", deps);
   }
   if (window.deferred) {
     await deps.schedule([
@@ -511,14 +539,48 @@ async function routeWithin(
     },
     "routing.evaluated",
   );
-  if (chosen === undefined) return exhaust(executor, facts, "no_candidate");
+  if (chosen === undefined)
+    return exhaust(executor, facts, "no_candidate", deps);
 
-  const partnerId = chosen.partnerId;
-  if (facts.status === "paid_unrouted") {
+  return writeOffer(executor, {
+    facts,
+    partnerId: chosen.partnerId,
+    window,
+    actor: ORDER_ROUTE_ACTOR,
+    firstOffer: facts.status === "paid_unrouted",
+    schedule: deps.schedule,
+  });
+}
+
+/** What `writeOffer` needs: the locked order, the florist, the window and who acts. */
+export interface OfferInput {
+  readonly facts: RoutingFacts;
+  readonly partnerId: string;
+  readonly window: { readonly offerAt: Date; readonly slaEndsAt: Date };
+  /** `system:order.route`, or the founder's `admin:{uuid}` for a manual reroute. */
+  readonly actor: string;
+  /** Write `order.routed` first (the order is not `routed` yet). */
+  readonly firstOffer: boolean;
+  readonly schedule: RoutingScheduler;
+}
+
+/**
+ * The offer steps (step 5), shared by `order.route` and `manualReroute`: `order.routed` through
+ * `transition` on a first offer, one `order_assignment` (`attempt` + 1, `offered_at`,
+ * `sla_expires_at`), `assignment.offered` through `appendEvent`, and the reminder and the timeout
+ * enqueued for the assignment.
+ */
+export async function writeOffer(
+  executor: OrderExecutor,
+  input: OfferInput,
+): Promise<Extract<RouteOutcome, { kind: "offered" }>> {
+  const { facts, partnerId, window, actor } = input;
+  const orderId = facts.orderId;
+  if (input.firstOffer) {
     await transition(
       orderId,
       "order.routed",
-      ORDER_ROUTE_ACTOR,
+      actor,
       { mode: facts.mode, partnerId },
       { executor },
     );
@@ -534,7 +596,7 @@ async function routeWithin(
   await appendEvent(
     orderId,
     "assignment.offered",
-    ORDER_ROUTE_ACTOR,
+    actor,
     {
       mode: facts.mode,
       assignmentId,
@@ -544,7 +606,7 @@ async function routeWithin(
     },
     { executor },
   );
-  await deps.schedule([
+  await input.schedule([
     {
       name: "assignment.remind",
       assignmentId,
