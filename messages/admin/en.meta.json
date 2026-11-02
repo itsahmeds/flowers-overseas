@@ -1638,5 +1638,220 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "6b0cc904d081a8c11cfdaec667f05132cbfa8a57f5040d27d5fc0f2fc50d0dc6"
+  },
+  "emails.ops.layout.audience": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2ea1842b445b0c813cc619b6d4740a41c2127a66b306a363d761ed4258862cc0"
+  },
+  "emails.ops.layout.sentTo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b1df3bea3993f37babf2272ab4c2afad090cc90e8276635c9bd92ba5c02e50a5"
+  },
+  "emails.ops.noFlorist.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a65b7a66762d1e9a5160a395915f1edf1ba10a99ef5864ccd071b6b39de90bad"
+  },
+  "emails.ops.noFlorist.band": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b689a4ecf12069939c4fafed08c7e67041c25162bee408539ec25950a625b1fe"
+  },
+  "emails.ops.noFlorist.bandTomorrow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "817d2b78dad59e2e076d44f855ed2a691ad8b14c3ff598a04c578a9455bac213"
+  },
+  "emails.ops.noFlorist.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "28d6f859edc507152d4e4f85254de02d20100720436c20d47082ea2e2ef100c7"
+  },
+  "emails.ops.noFlorist.destination": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "293d404a500f5f9a149916d810ff4f4231bd5d6ecd25eb0f55a867e2095eca48"
+  },
+  "emails.ops.noFlorist.destinationValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c1da53047cea3973071e512ce3d9cfb1c57e01876dc4d8769333bdcdb856a555"
+  },
+  "emails.ops.noFlorist.deliveryDate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
+  },
+  "emails.ops.noFlorist.today": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7514544ffd8f202be859b0b0b6be844bf274a93e9e3fa7c91293fc213eeb553f"
+  },
+  "emails.ops.noFlorist.cancelsAt": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0c90275d15d741b0a047fd1fe7e39eb557e101eb1f0e42e932b670c759c2f2e3"
+  },
+  "emails.ops.noFlorist.offersMade": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8628b06b5a0d3d8a359debb24bfecacfec9fe028a563ac358a4f21e9dee3cbfc"
+  },
+  "emails.ops.noFlorist.column.number": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "334359b90efed75da5f0ada1d5e6b256f4a6bd0aee7eb39c0f90182a021ffc8b"
+  },
+  "emails.ops.noFlorist.column.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "emails.ops.noFlorist.column.outcome": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e80abb5b14656d4eed8fd93705fd4c774d7653b05162763770bd23f1755db1a"
+  },
+  "emails.ops.noFlorist.outcome.declined": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fcbac500eab92b0154cb23e19ca46ca4ec00eb3a3a947d3e87557e9ede2816ba"
+  },
+  "emails.ops.noFlorist.outcome.noAnswer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5145f3a5c46b22ead52eb08ff92d5ad86e2b505442004a71d90c0c5768f92be"
+  },
+  "emails.ops.noFlorist.outcome.withdrawn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "00c0b03fcfa2ac02fc0be8f640ccb282dc899197395335c38f2051f36f25d98b"
+  },
+  "emails.ops.noFlorist.outcome.accepted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a00fb0c50741f81bb51d35b4475a4357f8039aabd896a21036bc516839401595"
+  },
+  "emails.ops.noFlorist.outcome.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db6a34e107f9c70b05ad26f436a0f1a57ca20f0aa5674be391a56a80fee1eade"
+  },
+  "emails.ops.noFlorist.reason.capacity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "298bbb69ee2019af135e4fc00d285c0f1aeefa7d4b9c999d889924ae7bf919ca"
+  },
+  "emails.ops.noFlorist.reason.out_of_area": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e1d35cc43ce786f2ba53788d4a06e4c78e8ff60d15698e65cb227fe35cd5e091"
+  },
+  "emails.ops.noFlorist.reason.product_unavailable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2540e14494d278a3a110df29cc7d648e2f3999e27c28e9e1d5bd890e90c669c5"
+  },
+  "emails.ops.noFlorist.reason.closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6c078bd1c84daad7ee8d4dff30ed25b86f41b5bfee211d3dab97d849c4f7a5fe"
+  },
+  "emails.ops.noFlorist.reason.other": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "21ff841a3efdd1d0f1bc2b6aecee0cc0f17c9b70714c7b57b91e74ee13effa5d"
+  },
+  "emails.ops.noFlorist.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "emails.ops.noFlorist.noCandidate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4c714dddd5aefdbd1ed702d7837b79b58e6b998b34aa3301ce3e83339bdb6f80"
+  },
+  "emails.ops.noFlorist.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e8117a51829da44b406c1b2bbf76fded1dc49128bc891bf1e7e8b1f0762a564f"
+  },
+  "emails.ops.noFlorist.what": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d04619cb58dfa222d101b60ec11ea3d476237696b6861cf47c570697a01985c9"
+  },
+  "emails.ops.whatsapp.subjectOffer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "76100dc28a8150e51464586ee98458a85c9c45aa0823b80c1c8b8926ebba965d"
+  },
+  "emails.ops.whatsapp.subjectStop": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ff6570c19aef93085bd45436387141234ba542bc052d8c1e73d3e9d824dad89c"
+  },
+  "emails.ops.whatsapp.preheader": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e0d4f34f241d6fa845cc3e6a71eee7b1f5bf6bc2c460c8efc6d6d4368ccc1529"
+  },
+  "emails.ops.whatsapp.headingOffer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9b2bb006476036f629661c620d6518d32e2e367d8d0760fbd4e794c010cd03f9"
+  },
+  "emails.ops.whatsapp.headingStop": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2588dcf6c52affe7b6c1005daa31e945d8f4b859894af171bb804e0de175b5c5"
+  },
+  "emails.ops.whatsapp.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "emails.ops.whatsapp.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "emails.ops.whatsapp.pasteBefore": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4c7079caf5da5b051927f3674a44fedddbd6dab6b8b5a5a28dd18535f4ea9262"
+  },
+  "emails.ops.whatsapp.languageName.en": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ba118bf7fc9c1aedc1edb28a0aa86e0b43b681f222af6616e13c43be87815b06"
+  },
+  "emails.ops.whatsapp.languageName.pl": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a5989ca14f3485cc842e6f10754944e5deb2f50b171d35e25cb62bae89032316"
+  },
+  "emails.ops.whatsapp.languageName.de": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "801cfe0fa1182664d16f4aaf7856cc73412f79ef508a866eebc2e5ccf125ff0a"
+  },
+  "emails.ops.whatsapp.copyFrom": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f19c33430ab46157e77f5f279eba7839cceb3622ade6536754ccb864cc7c0997"
+  },
+  "emails.ops.whatsapp.copyTo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dab92403e032d2d6764f4061c0af285af04a2462f59ab2e22e59f16c8ea1b55d"
+  },
+  "emails.ops.whatsapp.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6ed5c1b68fe800d5677041667469829c52eeff09510c0f3c4b68371ac0eeb8a6"
   }
 }

@@ -432,5 +432,66 @@
         "unknownConstruct": "Line {line} has something the editor does not format ({construct}); it shows as plain text."
       }
     }
+  },
+  "emails": {
+    "ops": {
+      "layout": {
+        "audience": "Internal",
+        "sentTo": "Sent to {variable}. Internal: never forwarded to a buyer or a florist."
+      },
+      "noFlorist": {
+        "subject": "No florist: {reference} · {city} · {date}",
+        "band": "Cancels automatically at {time} {zone} time unless you act.",
+        "bandTomorrow": "Cancels automatically at {time} tomorrow, {date}, {zone} time, unless you act.",
+        "heading": "No florist took order {reference}",
+        "destination": "Destination",
+        "destinationValue": "{city}, {country}",
+        "deliveryDate": "Delivery date",
+        "today": "{date} (today)",
+        "cancelsAt": "Cancels at",
+        "offersMade": "Offers made",
+        "column": {
+          "number": "#",
+          "florist": "Florist",
+          "outcome": "Outcome"
+        },
+        "outcome": {
+          "declined": "Declined · {reason}",
+          "noAnswer": "No answer by {time}",
+          "withdrawn": "Withdrawn",
+          "accepted": "Accepted",
+          "open": "Waiting for an answer"
+        },
+        "reason": {
+          "capacity": "We are full that day",
+          "out_of_area": "We do not deliver there",
+          "product_unavailable": "We cannot get these flowers",
+          "closed": "We are closed that day",
+          "other": "Another reason"
+        },
+        "none": "None",
+        "noCandidate": "No florist covers this date and place",
+        "open": "Open the order in admin",
+        "what": "Reroute to a florist you have phoned, or cancel, from the order page. The buyer has paid; a cancel refunds in full."
+      },
+      "whatsapp": {
+        "subjectOffer": "WhatsApp: new order for {florist} · answer by {time}",
+        "subjectStop": "WhatsApp: stop message for {florist}",
+        "preheader": "Paste the message below into the chat with {shop}.",
+        "headingOffer": "Paste this offer into WhatsApp",
+        "headingStop": "Paste this stop message into WhatsApp",
+        "florist": "Florist",
+        "language": "Language",
+        "pasteBefore": "Paste before",
+        "languageName": {
+          "en": "English",
+          "pl": "Polski",
+          "de": "Deutsch"
+        },
+        "copyFrom": "----- copy from here -----",
+        "copyTo": "----- to here -----",
+        "note": "The florist has the same offer by email already. Never accept or decline for them; ask them to open the order."
+      }
+    }
   }
 }

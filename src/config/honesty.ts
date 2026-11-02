@@ -529,6 +529,21 @@ export const RELAY_EXEMPT: readonly RelayExemption[] = [
     reason:
       "Founder and ops screens show assignment, offers and acceptance (spec 012).",
   },
+  // Spec 016 §5.2 (TASK-332): the florist emails V1 to V5 and the florist's WhatsApp message are
+  // addressed to florists, who accept and decline offers by design. `emails.layout.*` stays
+  // scanned: the layout's frames reach buyers too (AC-38).
+  {
+    kind: "non-buyer-namespace",
+    namespace: "emails.florist.",
+    reason:
+      "Florist emails (spec 016 V1 to V5): offers, acceptance and withdrawal, sent only to florists.",
+  },
+  {
+    kind: "non-buyer-namespace",
+    namespace: "whatsapp.florist.",
+    reason:
+      "The florist's WhatsApp message (spec 016 W), pasted by the founder into a florist's chat.",
+  },
   {
     kind: "non-buyer-route",
     route: "admin",

@@ -126,6 +126,9 @@ describe("the shell catalogue", () => {
       "trackLookup",
       "tracking",
       "trust",
+      // `whatsapp` is spec 016 §7's (TASK-332): the florist's WhatsApp message, read only by the
+      // email templates, so in no `ROUTE_NAMESPACES` entry and in no indexable page's share.
+      "whatsapp",
     ]);
   });
 

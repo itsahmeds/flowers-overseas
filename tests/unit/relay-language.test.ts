@@ -230,10 +230,15 @@ describe("AC-51: no buyer message value relays, in en, en-gb, de or pl", () => {
   it("exempts the one decided string and nothing broader (decisions-log 2026-10-04, spec 004 §14 A22 clause 2)", () => {
     const who = at(CATALOGUES.en, "home.sentence.who");
     expect(who).toContain("partner {my partner}");
-    // Without the exemption, the who option is a match: the exemption is doing the work.
-    expect(catalogueFindings("en", CATALOGUES.en, [])).toEqual([
-      "en › home.sentence.who › partner",
-    ]);
+    // Without the exemption, the who option is a match: the exemption is doing the work. The
+    // florist namespaces stay exempt here (spec 016's florist emails say "accept" by design).
+    expect(
+      catalogueFindings(
+        "en",
+        CATALOGUES.en,
+        RELAY_EXEMPT.filter((rule) => rule.kind === "non-buyer-namespace"),
+      ),
+    ).toEqual(["en › home.sentence.who › partner"]);
     // The same text under another key, a longer case, or another locale is not exempt.
     for (const [locale, key, value] of [
       ["en", "home.howItWorks.make.title", String(who)],
@@ -258,14 +263,17 @@ describe("AC-51: no buyer message value relays, in en, en-gb, de or pl", () => {
     for (const rule of RELAY_EXEMPT)
       expect(rule.reason.length).toBeGreaterThan(0);
     // No buyer namespace of today's catalogues is exempt: every exempt key is a florist-facing
-    // (spec 011: the for-florists pages and the inbox) or an admin one.
+    // (spec 011: the for-florists pages and the inbox; spec 016: the florist emails and the
+    // florist's WhatsApp message) or an admin one.
     const exempt = leaves(CATALOGUES.en)
       .map(([key]) => key)
       .filter((key) => relayExemptKey(key));
     expect(
       exempt.filter(
         (key) =>
-          !/^(?:forFlorists|floristAuth|floristInbox|admin)\./u.test(key),
+          !/^(?:forFlorists|floristAuth|floristInbox|admin|emails\.florist|whatsapp\.florist)\./u.test(
+            key,
+          ),
       ),
     ).toEqual([]);
   });

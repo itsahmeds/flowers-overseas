@@ -369,6 +369,9 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       "src/lib/auth/",
       "src/modules/admin/",
       "emails/admin-",
+      // Spec 016 (TASK-332): the job worker hands the founder's emails (A1, W) their English copy
+      // and the admin order path. It renders no page; the tick route that loads it is internal.
+      "src/jobs/handlers.ts",
     ];
     const importers = sources.filter(
       (f) =>
@@ -463,6 +466,10 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       label: "review",
       line: 3,
       construct: "quote",
+      // TASK-332's `emails.ops.*`.
+      variable: "OPS_ALERT_EMAIL",
+      reference: "FO-7K2M-9QXA",
+      shop: "Kwiaciarnia Przykładowa",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

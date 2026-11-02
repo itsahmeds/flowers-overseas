@@ -658,6 +658,56 @@
       "intro": "A florist applied on the website. Their answers are below. They receive no copy of this email, so the reply is yours to send.",
       "none": "Not given",
       "subject": "New florist application: {businessName}"
+    },
+    "layout": {
+      "audience": {
+        "florist": "Dla naszych kwiaciarni"
+      },
+      "floristHelp": "Zadzwoń do nas, jeśli coś w zamówieniu jest niejasne.",
+      "floristWhy": "Otrzymujesz tę wiadomość, ponieważ Twoja kwiaciarnia przyjmuje zamówienia od Flowers Overseas.",
+      "buyerHours": "Napisz do nas o każdej porze, 24/7. Odpowiadamy w ciągu kilku godzin.",
+      "buyerWhy": "Otrzymujesz tę wiadomość w związku z zamówieniem {reference} złożonym u nas."
+    },
+    "florist": {
+      "openOrder": "Otwórz zamówienie",
+      "oneTap": "Przycisk zaloguje Cię i otworzy to zamówienie. Działa raz, przez godzinę.",
+      "oneTapText": "Link zaloguje Cię i otworzy to zamówienie. Działa raz, przez godzinę.",
+      "label": {
+        "bouquet": "Bukiet",
+        "addOns": "Dodatki",
+        "town": "Miejscowość",
+        "youReceive": "Otrzymujesz"
+      },
+      "offer": {
+        "subject": "Nowe zamówienie na {date} · odpowiedz do {time}",
+        "heading": "Nowe zamówienie dla Ciebie",
+        "recipientLater": "Imię i nazwisko, adres i telefon odbiorcy zobaczysz w zamówieniu po jego przyjęciu."
+      },
+      "reminder": {
+        "subject": "Przypomnienie: odpowiedz do {time}",
+        "preheader": "Zamówienie na {date} wciąż czeka na Twoją odpowiedź.",
+        "heading": "To zamówienie wciąż czeka na Twoją odpowiedź."
+      },
+      "confirmed": {
+        "subject": "Potwierdzone: przygotuj zamówienie na {date}",
+        "preheader": "Otwórz zamówienie, aby zobaczyć dane odbiorcy i treść bileciku.",
+        "heading": "Potwierdzone. Prosimy przygotować to zamówienie.",
+        "body": "Otwórz zamówienie, aby zobaczyć imię i nazwisko, adres i telefon odbiorcy oraz treść bileciku do wydruku."
+      },
+      "withdrawn": {
+        "subject": "Prosimy nie przygotowywać zamówienia na {date}",
+        "heading": "To zamówienie nie jest już Twoje.",
+        "body": "Prosimy go nie przygotowywać.",
+        "started": "Jeśli już zaczęto, zadzwoń do nas: {phone}."
+      },
+      "timedOut": {
+        "subject": "Czas na odpowiedź na zamówienie na {date} minął"
+      },
+      "photoReminder": {
+        "subject": "Dodaj zdjęcie do zamówienia na {date}",
+        "preheader": "Jedno zdjęcie bukietu w chwili dostawy.",
+        "body": "Dziękujemy za dzisiejszą dostawę: {product}. Prosimy dodać jedno zdjęcie bukietu w chwili przekazania."
+      }
     }
   },
   "errors": {
@@ -1444,6 +1494,18 @@
     },
     "status": {
       "choosingFirst": "Nie przyjmujemy jeszcze zamówień."
+    }
+  },
+  "whatsapp": {
+    "florist": {
+      "offer": {
+        "title": "Nowe zamówienie od Flowers Overseas",
+        "open": "Otwórz zamówienie: {url}",
+        "alsoEmail": "To zamówienie wysłaliśmy Ci też e-mailem."
+      },
+      "stop": {
+        "body": "To zamówienie nie jest już Twoje. Prosimy go nie przygotowywać."
+      }
     }
   }
 }

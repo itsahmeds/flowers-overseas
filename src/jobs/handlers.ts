@@ -15,7 +15,16 @@
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import { invoicesOutboxHandler } from "../modules/invoices";
+// Spec 016 §5.3 (TASK-332): the founder's emails read their English copy and the admin order path
+// from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
+import { adminT } from "../modules/admin/messages";
+import { orderDetailHref } from "../modules/admin/orders";
 import { registerNotificationsOutbox } from "../modules/notifications";
+// The email templates are not in the notifications barrel: no page may reach their copy.
+import {
+  registerFloristEmailTemplates,
+  registerOpsEmailTemplates,
+} from "../modules/notifications/emails";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
 // The close is not in the `orders` barrel: importing it registers `OrderClosedV1`, and only the
@@ -44,6 +53,17 @@ registerNotificationsOutbox({
     ]);
     return createSignInLink(floristAuth, userId, { callbackPath });
   },
+});
+
+// Spec 016 §5.3 (TASK-332): the florist emails V1 to V5 and the founder's A1 and W. Until a
+// template is registered, a delivery that needs it throws `TEMPLATE_NOT_BUILT` and is retried.
+registerFloristEmailTemplates();
+registerOpsEmailTemplates({
+  t: adminT as unknown as (
+    key: string,
+    values?: Readonly<Record<string, string>>,
+  ) => string,
+  orderHref: orderDetailHref,
 });
 
 export const JOB_HANDLERS: JobHandlers = {
