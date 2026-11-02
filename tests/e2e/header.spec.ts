@@ -330,10 +330,13 @@ test.describe("the site header (AC-7)", () => {
     )) {
       expect(tag).toBe("A");
     }
-    // No end item has a page yet: the one keyed item is the Basket icon link (spec 010 §14
-    // A-founder-2026-10-22 D10; TASK-349), whose page answers 200 and which is drawn with
-    // `rel="nofollow"`.
-    await expect(page.locator("[data-fo-header-item]")).toHaveCount(1);
+    // The keyed items: the end cluster's `For florists` (spec 011 AC-9; TASK-210) and the Basket
+    // icon link (spec 010 §14 A-founder-2026-10-22 D10; TASK-349), whose page answers 200 and
+    // which is drawn with `rel="nofollow"`.
+    await expect(page.locator("[data-fo-header-item]")).toHaveCount(2);
+    await expect(
+      page.locator('[data-fo-header-item="for-florists"]'),
+    ).toHaveAttribute("href", "/en/for-florists");
     const basket = page.locator('[data-fo-header-item="basket"]');
     await expect(basket).toHaveAttribute("href", "/en/basket");
     await expect(basket).toHaveAttribute("rel", "nofollow");
@@ -411,12 +414,13 @@ test.describe("the site header (AC-7)", () => {
       ).filter((link) => link.rendered);
 
       // At 1 440 px the logo, the help line, the switcher's one sibling shown locale (§14 A4;
-      // spec 003 §14 A-founder-2026-10-14c) and the Basket icon link (spec 010 D10; TASK-349):
+      // spec 003 §14 A-founder-2026-10-14c), `For florists` (spec 011 AC-9; TASK-210, hidden below
+      // `md`) and the Basket icon link (spec 010 D10; TASK-349):
       // the mega menu's entries are inside closed `<details>`, and its six summaries are measured
       // below. At 390 px the logo and the Basket link are the rendered links (spec 010 §13 Q26):
       // the Menu is closed, and its summary is measured below (§14 A24 clause 3).
       expect(measured.length, String(viewport.width)).toBe(
-        viewport.width >= XL_BREAKPOINT ? 4 : 2,
+        viewport.width >= XL_BREAKPOINT ? 5 : 2,
       );
       if (viewport.width >= MD_BREAKPOINT) {
         for (const box of await page

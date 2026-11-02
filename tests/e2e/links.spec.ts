@@ -371,8 +371,8 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         for (const word of [
           "Sign in",
           "My orders",
-          // "Basket" has a page since TASK-349 and is a live header link above.
-          "For florists",
+          // "Basket" has a page since TASK-349 and is a live header link above; so has "For
+          // florists" since TASK-210.
           "Add-ons",
           "Imprint",
           // "Withdrawal and refunds" has a page since TASK-183 and is a live footer link above.
