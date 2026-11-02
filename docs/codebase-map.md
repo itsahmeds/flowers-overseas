@@ -292,8 +292,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 433 |
-| `tests/integration/` | 70 |
+| `tests/unit/` | 434 |
+| `tests/integration/` | 71 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
