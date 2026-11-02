@@ -426,7 +426,6 @@ describe("the shipped catalogues and manifests", () => {
     "forFlorists.sent.h1",
     "forFlorists.sent.title",
     "forFlorists.sent.walkthrough",
-    "forFlorists.status.choosingFirst",
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
     "infoPages.contact.heading",
@@ -445,7 +444,6 @@ describe("the shipped catalogues and manifests", () => {
     "infoPages.legal.unreviewed",
     "infoPages.legal.version",
     "infoPages.status.notYetOpen",
-    "infoPages.status.untranslated",
     // The header Basket link's name and count (spec 010 D10; TASK-349).
     "nav.basket",
     "nav.basketCount",

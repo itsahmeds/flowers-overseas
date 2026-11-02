@@ -5559,12 +5559,16 @@
   },
   "forFlorists.status.choosingFirst": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "orchestrator under the founder's copy delegation (spec 003 A-founder-2026-10-31a), 2026-11-02: ran record-approval-210b.py (PR 344 Part B) after reading the exact text it printed",
+    "reviewedAt": "2026-11-02T14:53:24Z",
     "sourceHash": "a631f35ec09b680ca88b5e9004aba4d601dbdf21d7c5ad756441195a2fde8fa3"
   },
   "infoPages.status.untranslated": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "orchestrator under the founder's copy delegation (spec 003 A-founder-2026-10-31a), 2026-11-02: ran record-approval-210b.py (PR 344 Part B) after reading the exact text it printed",
+    "reviewedAt": "2026-11-02T14:53:24Z",
     "sourceHash": "484e8a67ba8675df36c6f9bc1e846edfb71c095485ee6fec14066fb71031f107"
   },
   "floristInbox.stage.waiting": {
