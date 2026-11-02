@@ -22,6 +22,7 @@ export { assertBuildEnv, assertEnv, envReport } from "./env.assert";
 export { type MailerConfig, authSecret, mailerConfig } from "./env.auth";
 export { signedLinkSecret } from "./env.signed-link";
 export { reviewTokenSecret, trustpilotAfsAddress } from "./env.reviews";
+export { opsAlertEmail } from "./env.notifications";
 export {
   APP_ENV_KEY,
   BUILD_ENV_KEYS,

@@ -15,6 +15,7 @@
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import { invoicesOutboxHandler } from "../modules/invoices";
+import { registerNotificationsOutbox } from "../modules/notifications";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
 // The close is not in the `orders` barrel: importing it registers `OrderClosedV1`, and only the
@@ -30,6 +31,20 @@ const DERIVE_READ_TIMEOUT_MS = 60_000;
 // Spec 018 §5.2 (TASK-341): the `invoices` outbox target issues invoices and credit notes in the
 // delivery's transaction. Registered once, where the dispatcher's job is defined.
 registerOutboxHandler("invoices", invoicesOutboxHandler());
+
+// Spec 016 §5.2 (TASK-331): the `notifications` target and its hold. While `notifications.email`
+// is off, every notifications delivery stays `pending` and is sent once when it is turned on.
+registerNotificationsOutbox({
+  // Spec 016 §5.2, AC-23: each florist email's one-tap link, its callback the order's inbox page.
+  // Loaded at the first florist email, so loading the job table builds no sign-in surface.
+  signInLink: async (userId, callbackPath) => {
+    const [{ floristAuth }, { createSignInLink }] = await Promise.all([
+      import("../lib/auth/florist"),
+      import("../lib/auth/surface"),
+    ]);
+    return createSignInLink(floristAuth, userId, { callbackPath });
+  },
+});
 
 export const JOB_HANDLERS: JobHandlers = {
   // Spec 006 §2.6, AC-25 (TASK-082): the variant ladder of one asset, written once per (asset,

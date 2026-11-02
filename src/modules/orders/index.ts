@@ -7,6 +7,10 @@ export {
   INVOICE_OUTBOX_ROUTES,
   INVOICES_TARGET,
   invoiceOutboxTargets,
+  NOTIFICATION_OUTBOX_ROUTES,
+  NOTIFICATIONS_BUYER_TARGET,
+  NOTIFICATIONS_TARGET,
+  notificationOutboxTargets,
   OUTBOX_TARGET_NAMES,
   PAYMENT_OUTBOX_ROUTES,
   PAYMENTS_TARGET,
@@ -16,6 +20,7 @@ export {
 export type { ModeOutboxRoutes, OutboxTargetName } from "./outbox/routes";
 export {
   dispatchOutbox,
+  heldOutboxTargets,
   isOutboxHandlerRegistered,
   notConfiguredHandler,
   OUTBOX_BATCH_SIZE,
@@ -25,6 +30,7 @@ export {
   OutboxTargetNotConfigured,
   outboxHandlers,
   registerOutboxHandler,
+  registerOutboxHold,
 } from "./outbox/dispatcher";
 export type {
   AlertRaiser,

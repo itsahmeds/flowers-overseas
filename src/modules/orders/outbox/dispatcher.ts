@@ -39,6 +39,13 @@
  * handler's provider call and the commit runs it again). Spec 013's are, by status check and
  * idempotency key.
  *
+ * **Held targets** (spec 016 §5.2 "`notifications.email` off → handler rows wait as `pending`",
+ * AC-26; TASK-331). A run claims no delivery of a held target: it stays `pending` with its
+ * attempts untouched (held, never dropped, never `dead`), and the first run without the hold
+ * delivers it, oldest first. The held targets are `options.heldTargets` when given, else those
+ * whose registered hold (`registerOutboxHold`, e.g. the notifications flag) answers true at the
+ * start of the run.
+ *
  * Logs: ids, the event type, the target, the attempt number, the outcome and the duration only
  * (spec 013 §11). `last_error` holds the error's class and message, never a payload.
  */
@@ -136,6 +143,32 @@ export function registerOutboxHandler(
   registered[target] = handler;
 }
 
+const holds: Partial<Record<OutboxTargetName, () => Promise<boolean>>> = {};
+
+/**
+ * Registers the hold of `target`: a check run at the start of every dispatch, true while the
+ * target's deliveries must wait (spec 016: `notifications.email` off). One per target.
+ */
+export function registerOutboxHold(
+  target: OutboxTargetName,
+  held: () => Promise<boolean>,
+): void {
+  if (holds[target] !== undefined) {
+    throw new Error(`outbox hold already registered: ${target}`);
+  }
+  holds[target] = held;
+}
+
+/** The targets whose registered hold is on now. */
+export async function heldOutboxTargets(): Promise<OutboxTargetName[]> {
+  const held: OutboxTargetName[] = [];
+  for (const target of OUTBOX_TARGET_NAMES) {
+    const check = holds[target];
+    if (check !== undefined && (await check())) held.push(target);
+  }
+  return held;
+}
+
 /** True once `target` has a real handler (spec 013 registers its payment steps only then). */
 export function isOutboxHandlerRegistered(target: OutboxTargetName): boolean {
   return registered[target] !== undefined;
@@ -177,6 +210,11 @@ export interface DispatchOptions {
   readonly retryBaseSeconds?: number;
   /** Only this order's deliveries (spec 013's `afterAccept` asks for one order at once). */
   readonly orderId?: string;
+  /**
+   * Targets left `pending` and unclaimed this run (spec 016: `notifications.email` off). Default:
+   * the registered holds' answer (`registerOutboxHold`).
+   */
+  readonly heldTargets?: readonly OutboxTargetName[];
   readonly alert?: AlertRaiser;
   readonly log?: Logger;
 }
@@ -213,11 +251,21 @@ const PendingRow = z.object({
   dead: z.coerce.number().int().nonnegative(),
 });
 
-/** The handled targets as a SQL list (`'payments', 'routing'`). */
-function targetList(handlers: HandlerRegistry): SQL {
+/** The claimable targets as a SQL list (`'payments', 'routing'`). Never empty when called. */
+function targetList(targets: readonly OutboxTargetName[]): SQL {
   return sql.join(
-    (Object.keys(handlers) as OutboxTargetName[]).map((name) => sql`${name}`),
+    targets.map((name) => sql`${name}`),
     sql`, `,
+  );
+}
+
+/** The registry's targets minus the held ones: what a run may claim. */
+function claimableTargets(
+  handlers: HandlerRegistry,
+  held: readonly OutboxTargetName[],
+): readonly OutboxTargetName[] {
+  return (Object.keys(handlers) as OutboxTargetName[]).filter(
+    (name) => !held.includes(name),
   );
 }
 
@@ -237,7 +285,7 @@ function errorClass(error: unknown): string {
 /** Claims the oldest due pending delivery, locked, with its event; undefined when none is due. */
 async function claim(
   executor: OrderExecutor,
-  handlers: HandlerRegistry,
+  targets: readonly OutboxTargetName[],
   now: Date,
   retryBaseSeconds: number,
   orderId: string | undefined,
@@ -250,7 +298,7 @@ async function claim(
     LEFT JOIN order_event e ON e.id = x.event_id
     LEFT JOIN "order" o ON o.id = e.order_id
     WHERE d.status = 'pending'
-      AND d.target IN (${targetList(handlers)})
+      AND d.target IN (${targetList(targets)})
       AND (${orderId ?? null}::uuid IS NULL OR x.order_id = ${orderId ?? null}::uuid)
       AND (d.attempts = 0
            OR d.updated_at + make_interval(secs => least(
@@ -336,13 +384,14 @@ type DeliveryOutcome =
 async function deliverOne(
   executor: OrderExecutor,
   handlers: HandlerRegistry,
+  targets: readonly OutboxTargetName[],
   now: Date,
   retryBaseSeconds: number,
   orderId: string | undefined,
 ): Promise<DeliveryOutcome> {
   const claimed = await claim(
     executor,
-    handlers,
+    targets,
     now,
     retryBaseSeconds,
     orderId,
@@ -399,15 +448,26 @@ export async function dispatchOutbox(
     options.retryBaseSeconds ?? OUTBOX_RETRY_BASE_SECONDS;
   const alert = options.alert ?? captureAlert;
   const log = options.log ?? defaultLogger;
+  const targets = claimableTargets(
+    handlers,
+    options.heldTargets ?? (await heldOutboxTargets()),
+  );
   let claimed = 0;
   let sent = 0;
   let failed = 0;
   let dead = 0;
 
-  for (let index = 0; index < batchSize; index += 1) {
+  for (let index = 0; index < batchSize && targets.length > 0; index += 1) {
     const startedAt = Date.now();
     const outcome = await transaction((executor) =>
-      deliverOne(executor, handlers, now(), retryBaseSeconds, options.orderId),
+      deliverOne(
+        executor,
+        handlers,
+        targets,
+        now(),
+        retryBaseSeconds,
+        options.orderId,
+      ),
     );
     if (outcome.kind === "none") break;
     claimed += 1;

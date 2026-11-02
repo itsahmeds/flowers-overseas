@@ -178,6 +178,7 @@ describe.skipIf(server.url === undefined)(
         const routing = throwing();
         const handlers: HandlerRegistry = {
           invoices: recording(),
+          notifications: recording(),
           payments,
           routing,
         };
@@ -304,7 +305,12 @@ describe.skipIf(server.url === undefined)(
         const payments = recording();
         const routing = recording();
         const options = {
-          handlers: { invoices: recording(), payments, routing },
+          handlers: {
+            invoices: recording(),
+            notifications: recording(),
+            payments,
+            routing,
+          },
           transaction: savepoints(tx),
           alert: alerts(),
           log: silentLogger(),
@@ -372,6 +378,7 @@ describe.skipIf(server.url === undefined)(
         const a = await ordered();
         const failing: HandlerRegistry = {
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: throwing(),
         };
@@ -386,18 +393,21 @@ describe.skipIf(server.url === undefined)(
         const recovering: (string | undefined)[] = [];
         await run({
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: throwing(),
         });
         recovering.push(await status(b));
         await run({
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: throwing(),
         });
         recovering.push(await status(b));
         await run({
           invoices: recording(),
+          notifications: recording(),
           payments: recording(),
           routing: recording(),
         });
@@ -438,6 +448,7 @@ describe.skipIf(server.url === undefined)(
         await dispatchOutbox({
           handlers: {
             invoices: recording(),
+            notifications: recording(),
             payments: write("kept", false),
             routing: write("undone", true),
           },
@@ -461,7 +472,12 @@ describe.skipIf(server.url === undefined)(
         const outboxId = await twoTargetRow(tx, orderId);
         const routing = throwing();
         const base = {
-          handlers: { invoices: recording(), payments: recording(), routing },
+          handlers: {
+            invoices: recording(),
+            notifications: recording(),
+            payments: recording(),
+            routing,
+          },
           transaction: savepoints(tx),
           alert: alerts(),
           log: silentLogger(),
@@ -503,7 +519,12 @@ describe.skipIf(server.url === undefined)(
           SELECT d.target FROM outbox_delivery d WHERE d.outbox_id = ${paid.outboxId}`;
         const routing = recording();
         const counts = await dispatchOutbox({
-          handlers: { invoices: recording(), payments: recording(), routing },
+          handlers: {
+            invoices: recording(),
+            notifications: recording(),
+            payments: recording(),
+            routing,
+          },
           transaction: savepoints(tx),
           orderId: paid.orderId,
           alert: alerts(),
@@ -530,10 +551,15 @@ describe.skipIf(server.url === undefined)(
           demoOutbox: demoOutbox?.n,
         };
       });
-      expect(result.created).toEqual([{ target: "routing" }]);
+      // Spec 016 (TASK-331) routes row 2 to `notifications` too (V3 shares the event name); for a
+      // `test` order from `placed` that delivery sends nothing.
+      expect(result.created.map((d) => d.target).sort()).toEqual([
+        "notifications",
+        "routing",
+      ]);
       expect(result.counts).toEqual({
-        claimed: 1,
-        sent: 1,
+        claimed: 2,
+        sent: 2,
         failed: 0,
         dead: 0,
       });
@@ -557,7 +583,12 @@ describe.skipIf(server.url === undefined)(
         const second = await paidTestOrder(tx);
         const routing = recording();
         const counts = await dispatchOutbox({
-          handlers: { invoices: recording(), payments: recording(), routing },
+          handlers: {
+            invoices: recording(),
+            notifications: recording(),
+            payments: recording(),
+            routing,
+          },
           transaction: savepoints(tx),
           orderId: second.orderId,
           alert: alerts(),
@@ -571,9 +602,10 @@ describe.skipIf(server.url === undefined)(
           left,
         };
       });
-      expect(result.counts.claimed).toBe(1);
+      // Two deliveries per row 2 since spec 016 (routing and notifications; TASK-331).
+      expect(result.counts.claimed).toBe(2);
       expect(result.orders).toEqual([result.second.orderId]);
-      expect(result.left.map((d) => d.status)).toEqual(["pending"]);
+      expect(result.left.map((d) => d.status)).toEqual(["pending", "pending"]);
     });
 
     it("an admin's transaction fans out deliveries it cannot read (SECURITY DEFINER trigger, system-only table)", async () => {

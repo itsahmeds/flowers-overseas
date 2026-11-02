@@ -17,7 +17,11 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { invoiceOutboxTargets, paymentOutboxTargets } from "../outbox/routes";
+import {
+  invoiceOutboxTargets,
+  notificationOutboxTargets,
+  paymentOutboxTargets,
+} from "../outbox/routes";
 
 import type { OrderEventType, OrderMode } from "./events";
 import { jsonb, textArray, type OrderExecutor } from "./executor";
@@ -87,6 +91,7 @@ export function outboxTargets(
     ...resolveOutboxTargets(OUTBOX_ROUTES, event, mode),
     ...withoutPeopleUnlessLive(paymentOutboxTargets(event, mode), mode),
     ...withoutPeopleUnlessLive(invoiceOutboxTargets(event, mode), mode),
+    ...withoutPeopleUnlessLive(notificationOutboxTargets(event, mode), mode),
   ]) {
     if (seen.has(target.name)) continue;
     seen.add(target.name);

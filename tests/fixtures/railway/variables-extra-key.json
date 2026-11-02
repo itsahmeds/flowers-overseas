@@ -19,6 +19,7 @@
       "MAILER": "resend",
       "REVIEW_TOKEN_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "TRUSTPILOT_AFS_ADDRESS": "",
+      "OPS_ALERT_EMAIL": "ops@example.test",
       "LOG_LEVEL": "SENTINEL-VALUE",
       "NEON_API_KEY": "SENTINEL-VALUE",
       "NEON_BRANCH": "SENTINEL-VALUE",

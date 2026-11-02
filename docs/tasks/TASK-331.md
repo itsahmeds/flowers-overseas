@@ -32,6 +32,15 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (b) (2026-10-22):** spec 020a §12 request 2: the pipeline accepts a `notification_delivery` row created outside the outbox (`source_key = admin:{id}`, `resend_of` set) and renders it from its original's context. Spec 010 §13 Q25 (approved): B1 is sent once per purchase when row 2 is written for its orders; B2 to B6 stay per order; a florist message never names another order of the purchase.
 
+- **From the implementer's self-review (2026-11-02, PR 450), for the tasks that follow:**
+  - TASK-332 / TASK-333: register each template with `registerNotificationTemplate(key, renderer)` (`src/modules/notifications/templates.ts`). Until a template is registered its deliveries throw `TEMPLATE_NOT_BUILT`, retry and end `dead` with `outbox.dead`; keep `notifications.email` off in an environment that has live or test orders before they land.
+  - TASK-328: the remind and photo-remind jobs call `sendJobNotifications(executor, { job, jobId, orderId, assignmentId })` after their own "still unanswered / still no photo" check; V4 on a timeout is sent by this pipeline on the `assignment.timed_out` event (register its schema with `assignmentId` in the payload; without it the pipeline falls back to the latest timed-out assignment). AC-58's 07:30 part is `offerWindow` deferring `order.route` (no event, no V1 before then); T-58 here covers "in the run, no job, two separate sends".
+  - TASK-330: V4 on the four withdrawal events is sent by this pipeline (the open or accepted assignment not withdrawn before the event); the routing handler only sets `withdrawn_at` and writes `payout_adjustment`.
+  - TASK-334: B1's invoice wait and the B8 job (`invoice.email` calls `sendJobNotifications` with `invoiceId`).
+  - TASK-336: T-23's e2e half (two GETs and a POST through the browser).
+  - TASK-360: an admin resend row (`source_key = admin:{id}`, `resend_of`) is not handled here yet.
+  - Pre-existing on main, not this diff: `tests/integration/invoices.test.ts` fails on `payment.order_id` (column gone since `0026`), and the AC-12 case of `payments-lifecycle.test.ts` sees a second `outbox.dead` for the `invoices` target its registry stubs as not configured.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -44,11 +53,9 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-02 (agent N, paused for load): branch rebased on main after TASK-327 (d8e09fa81). Done and pushed: Mailer idempotencyKey + 409 codes (contract test); migration 0031_sign_in_callback + `createSignInLink` / `signedInLanding` / confirm landing on the stored callback (T-23 handler cases in florist-auth integration, green); `notificationsFor` table in `src/modules/notifications/rules.ts` (T-18, T-14/T-36/T-39 unit halves, green); `notifications` outbox target + routes + dispatcher `heldTargets`; other suites' registries given `notifications`. Next: `pipeline.ts` (delivery rows, address/locale at send time, idempotency key, 409 rule, W rule, template registry seam, job entry for V2/V5), register handler + hold from `notifications.email` in `src/jobs/handlers.ts`, OPS_ALERT_EMAIL env (+fixtures, counts 38 to 39), logger `svix-signature`, integration T-19/T-20/T-26/T-33/T-36/T-39/T-44/T-58, run outbox-dispatcher and payments integration suites (target count changes), self-review, ready. Local PG: embedded PG16 on port 54331 in scratchpad be-331 (stopped).
+- 2026-11-02 (agent N, resumed): rebased on d117cb384, migration renumbered 0032; pipeline, hold registration, OPS_ALERT_EMAIL, svix-signature redaction, integration suite (11 cases) and mutations done; PR ready.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR 450. `notificationsFor` as data (`src/modules/notifications/rules.ts`), the `notifications` outbox target and routes, the dispatcher's hold (`registerOutboxHold`, `notifications.email`), the pipeline (`pipeline.ts`: delivery rows queued under the unique key, addresses and locales at send time, the idempotency key and the 409 rule, the W rule, one-tap links per member, the job entry), the template registry seam (`templates.ts`), spec 012's two additive changes (`MailMessageSchema.idempotencyKey` with the 409 codes; `createSignInLink` with the callback stored on the token row, migration `0032_sign_in_callback`), `OPS_ALERT_EMAIL` (39 env keys), `svix-signature` redaction. Tests: contract 12 (resend-mailer), unit 7 (notifications-rules) + logger + outbox-dispatcher + db-migrate + env, integration 11 (notifications-pipeline) + 5 (florist-auth T-23). No templates (TASK-332/333); handed on in Carry-forwards.

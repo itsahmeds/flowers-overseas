@@ -43,6 +43,13 @@ const a8 = readMigration(
   ) ?? "NNNN_post_purchase.sql",
 );
 
+// Spec 016 §12 (TASK-331): `verification_tokens.callback_path` and its check.
+const callback = readMigration(
+  readdirSync(MIGRATIONS_DIR).find((name) =>
+    /^\d{4}_sign_in_callback\.sql$/.test(name),
+  ) ?? "NNNN_sign_in_callback.sql",
+);
+
 const OPS_TABLES = [
   "outbox",
   "outbox_attempt",
@@ -186,7 +193,9 @@ describe("migrations 0009 and 0010 — shape", () => {
   });
   for (const table of AUTH_TABLES) {
     it(`${table} equals its mirror`, () => {
-      expect(mirrorShape(table)).toEqual(sqlShape(auth, table, a8));
+      expect(mirrorShape(table)).toEqual(
+        sqlShape(auth, table, `${a8}\n${callback}`),
+      );
     });
   }
 
@@ -331,8 +340,9 @@ describe("§13 Q1 — the Auth.js adapter's names", () => {
     expect(props(schema.sessions).sort()).toEqual(
       ["sessionToken", "userId", "expires", "createdAt"].sort(),
     );
+    // `callbackPath` is spec 016's (TASK-331, `0032`): nullable, so the adapter never names it.
     expect(props(schema.verificationTokens).sort()).toEqual(
-      ["identifier", "token", "expires"].sort(),
+      ["identifier", "token", "expires", "callbackPath"].sort(),
     );
   });
 });

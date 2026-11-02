@@ -97,7 +97,12 @@ export const REDACTED_KEY_PREFIXES: readonly string[] = ["address", "card"];
  * `?token=` in process). A credential in a URL is spec 012's decision; a credential in a log line
  * is never anyone's.
  */
-export const REDACTED_CREDENTIAL_KEYS: readonly string[] = ["token"];
+export const REDACTED_CREDENTIAL_KEYS: readonly string[] = [
+  "token",
+  // Spec 016 §8 (TASK-331): the Resend webhook's `svix-signature` header (and `svix_signature`,
+  // `svixSignature`), a credential over the body. Compared after `_`, `-` and spaces are dropped.
+  "svixsignature",
+];
 
 /** What `redact()` and Sentry's scrub treat as a key whose value never leaves the process. */
 export function isRedactedLogKey(key: string): boolean {
