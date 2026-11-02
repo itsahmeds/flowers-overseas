@@ -5987,397 +5987,555 @@
   },
   "floristInbox.page.groupDelivered": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "906115657390f3675639f46a572eee069155214169a45be4046933527a95c67b"
   },
   "floristInbox.page.empty": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "2a74b71a46a18a9d0de90df09228251fe8a57b0e0955f2cf050ab72cec25e94b"
   },
   "floristInbox.page.expired": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "ccb51aee5e57959549ec21ea73317f17baf609c5da242685f5043bb5698e3e10"
   },
   "floristInbox.page.beingMade": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "0bbd09f250bdeb17ffc3866c999e5152d75558a61420f49ff599c6299258c750"
   },
   "floristInbox.page.addPhoto": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "2dbe2ae2c0e5e4d42f100f24831e25d0a2e19d5fa85011013dec5180824eb17c"
   },
   "floristInbox.page.photoReceived": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "8b226d82467219955492cc977662b7550c71f1f8a091289cd4824edf28c970ac"
   },
   "floristInbox.page.testOrder": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "cbe5bc41aad5a33788d15eeb8ed5ecdde3786142c5560b0e87cb9f196d37849d"
   },
   "floristInbox.page.refresh": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "0e91610117029a62a478b7fa7df0b8598bebe3ab1e192d4b1882e310719c9671"
   },
   "floristInbox.page.refreshStopped": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "ebde5f3cd051001b9124e6485d6722f612a8ae4d44aabf27def0ca5a47159fe9"
   },
   "floristInbox.page.notFoundTitle": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "30658cae73f22632fd76a8595de4ae3af62f75346b34b14fb0543faf0dec3e16"
   },
   "floristInbox.page.notFoundLine": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "02c7b2b03bb3511d118ee251677c206e69a39e1551d796038b29d273d6b85ea7"
   },
   "floristInbox.declineWhy": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "3df8afd11cb400a08408a89a6be9f9fecdaae2944c5cf6f8f9f3ce3e498ad0e4"
   },
   "floristInbox.declineReason.capacity": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "298bbb69ee2019af135e4fc00d285c0f1aeefa7d4b9c999d889924ae7bf919ca"
   },
   "floristInbox.declineReason.outOfArea": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "e1d35cc43ce786f2ba53788d4a06e4c78e8ff60d15698e65cb227fe35cd5e091"
   },
   "floristInbox.declineReason.productUnavailable": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "2540e14494d278a3a110df29cc7d648e2f3999e27c28e9e1d5bd890e90c669c5"
   },
   "floristInbox.declineReason.closed": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "6c078bd1c84daad7ee8d4dff30ed25b86f41b5bfee211d3dab97d849c4f7a5fe"
   },
   "floristInbox.declineReason.other": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "21ff841a3efdd1d0f1bc2b6aecee0cc0f17c9b70714c7b57b91e74ee13effa5d"
   },
   "floristInbox.declineSubmit": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "82ce8243bacf8f5165ba626c9a9b0bba50abdc365a8306d8c1bbb943cca9a602"
   },
   "floristInbox.deliveredAddPhoto": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "7c5824f1ada8fe32680fe7f75e828180033ca7cb4141d95ff569487dd16dde81"
   },
   "floristInbox.notice.answered": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "07a2957c63d0c5c2dd0186f2554048a6ff4c18942f98a882f3f5cba4df276dcb"
   },
   "floristInbox.notice.changed": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "d50528658bcfa56c16ac369baa4728f43aa281537f0244847f6b0770a9260397"
   },
   "floristInbox.photo.wrongType": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "cc475bc417c2d54f3eca022f7bb4bfe9a6c308f48bdb53399648a7bee582a95d"
   },
   "floristInbox.photo.tooLarge": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "6f9dc5fbcc4e7f2f13568decb90e8b6ccd80050b4215ab97c534898a69975a21"
   },
   "floristInbox.photo.alt": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "fa6ed30e5f6d3699ae90811a0fd22acab574157eec148e36449d4a56ce8b8712"
   },
   "emails.floristApplicationAlert.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "0bd899892d6eb00a88cdc0b231d5b66ee6481446b4866f9569d7e948e9f5baa6"
   },
   "emails.floristApplicationAlert.intro": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "d04fc0f21aea1eb063a0694985dc2ff5cee4793279074085e8b0b6168279839c"
   },
   "emails.floristApplicationAlert.none": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "be71c56252603aec4aeb947381c4aa680fea7e0ef78108e687c4a55049322fed"
   },
   "emails.floristApplicationAlert.field.shop": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "d00aae6b7fbf77a4566d8df36805d7ae973894da9f533ec96516b31e028b71eb"
   },
   "emails.floristApplicationAlert.field.contact": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "ddec0fc313b406145e0bf98b11c000b5fc6980084d57cf94bf00748950effbe6"
   },
   "emails.floristApplicationAlert.field.email": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
   },
   "emails.floristApplicationAlert.field.phone": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "8e7bbe4f2b2ea768c329d2b3dcce4595af0d52cce93be5f49bf5d57e83358237"
   },
   "emails.floristApplicationAlert.field.country": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
   },
   "emails.floristApplicationAlert.field.town": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "9ce56586c7281fe1dedb6870e9fd85fb3bbbbaa3837d33417acb1110904fe549"
   },
   "emails.floristApplicationAlert.field.area": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "70754e6a1839a70df15c506755a076855a1c178483c7744dc0e183157eac18cb"
   },
   "emails.floristApplicationAlert.field.capacity": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "89295cca86568a713bb34dfe3fa683dbb5642a21a9d3e45ed97ae6271074d879"
   },
   "emails.floristApplicationAlert.field.weekends": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "52c81418e6e5280b2a8b6bc51adce4fb501f1c04db086ead0a2439afa96f31d5"
   },
   "emails.floristApplicationAlert.field.registration": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "5db87da7efd0b9ddbd9b6614b263702039929f76fa9e178f7d43ce0a1a296fad"
   },
   "emails.floristApplicationAlert.field.website": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "6701bd9ea9f8b4a37fd542df88777ceaabe60443b9b74adff119366e63b6bbfe"
   },
   "emails.floristApplicationAlert.field.contactBy": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "e81b7d872cca6590ab5b1f706025615ebab2e5453d89a2ba7ee47a7bcdcee76a"
   },
   "emails.floristApplicationAlert.field.language": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
   },
   "emails.floristApplicationAlert.field.notice": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "efda7a29150b1cd7c178919f2bd9cde52b3257ab423b1034ac7be3a0b31f7ce7"
   },
   "forFlorists.apply.error.weekends": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "8eb921c16dd126f5a2e96511023fbca6b45e9c113a46a3194122785080e995bb"
   },
   "forFlorists.apply.error.registration": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "86a84ec715e6e624eb0f6c606263b207a324585b8bf0865b03bb72d579e8ba98"
   },
   "forFlorists.apply.error.contactBy": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "d32721383e34b31f146b122ecc20ec70cf7387e25b9c13b212c056fefa176d74"
   },
   "forFlorists.apply.error.language": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "041075d1c0f5e1a458ec446e4b3e6fbd76a44afdd86822c62fa6deb0971a498c"
   },
   "emails.layout.audience.florist": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "ee3823214e1c52078fe7ecfd1bc7901b176d9540a2d2a435bb01ce7949b7a31d"
   },
   "emails.layout.floristHelp": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "73b288ea5c644d528dd48ac954fb0dc0de3b7ee13e4e8fdc15d5859f2ebde344"
   },
   "emails.layout.floristWhy": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "e16a8bcb412d0871e0f159b04fcd97917fcee1c951b50d7d50872cbc61d2cc7d"
   },
   "emails.layout.buyerHours": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "fc8248ce704079354974a401ff112235562b80a73d1154bf6bfcd1242d6e885b"
   },
   "emails.layout.buyerWhy": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "16e8b5994ae3b76f6e9c39bd3daf16e020668c0cdac5a39a34c582d870cafef1"
   },
   "emails.florist.openOrder": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "57cf1d9a2436cf07b51786e8fc71bb590e5ce44a7a7399ddfebe115874ddd9de"
   },
   "emails.florist.oneTap": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "edbdd8fb149431a31cb79895d9a928a68a3a4d36c1227da5f68a0fcb6315dbdc"
   },
   "emails.florist.oneTapText": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "64869751d276ed70c96630e3a085bebaf4482d71b56b2e0ebb456160f38c1b8c"
   },
   "emails.florist.label.bouquet": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
   },
   "emails.florist.label.addOns": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
   },
   "emails.florist.label.town": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "390f25134ba04a8eff7bfd0ff9d2eede5f8b139fb6af326732f2f57c2b210e83"
   },
   "emails.florist.label.youReceive": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "edba66381115b24ba0b2d3d17d5fd1b38234da21466ab20d1e1c135d89ae4c2a"
   },
   "emails.florist.offer.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "f24d531b60d1ef90a45d5c40a0e93cac7dc874df81a4638435ae774b7273ff63"
   },
   "emails.florist.offer.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "b5652f495776f0d34b012b6b2907d5b1d74e9eed56e67a720e1c4ea326e33f20"
   },
   "emails.florist.offer.recipientLater": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "057b0e6c2ef8910ea385abb3d70e21b75225462ed86ae022e7bdec8a79ecceb0"
   },
   "emails.florist.reminder.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "18f68cd036c08ebfbaea10cca895fe1499cfe6ac48e52e7de6299ba84ddf1b2d"
   },
   "emails.florist.reminder.preheader": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "3866e087e44cf5f41582b81fe5bfe3e9c0a162bcf7cc3c910b3bca5501e89ee8"
   },
   "emails.florist.reminder.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "6bfccadd95e8cf8b82e264764c387341965515c98300fbc814dce9ed5ef16264"
   },
   "emails.florist.confirmed.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "80576bfd311174fb63bbe2c994e6fa008a315631c6a07d9b0f03711e351e139b"
   },
   "emails.florist.confirmed.preheader": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "7597b6a3a81284df5f9decd23e7468b32c6886ddee81728380cf7dba00d170d7"
   },
   "emails.florist.confirmed.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "6499f54d0dbac12c4dcf87a2cc51df4ab07ae1173a61415a0cff349bb12a4672"
   },
   "emails.florist.confirmed.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "885c83cde074926235f8f726f8194e29b7cb36fd4d290b135078a10a6eba4dd3"
   },
   "emails.florist.withdrawn.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "d6ca4c2b5cc5b29c79995016c90231a9e5c927afb5bac8960240f22d190e91b4"
   },
   "emails.florist.withdrawn.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "ef57bdd46b1d35e3d4e7472a7766a582f86e76af344462ffbcd2aca3cd0f0410"
   },
   "emails.florist.withdrawn.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "0d0ace416562295582839779517217c29a24e1dd06542a2db1c6f64067ea1184"
   },
   "emails.florist.withdrawn.started": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "c49e445c92753c100b375b75c8cbd7a6c5f96b48da4b1cd6b24d24d22f8fae13"
   },
   "emails.florist.timedOut.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "fe1d79c108a6fcd458b88f0192287f4359c6f6d326fd3130084d21b74eb029f0"
   },
   "emails.florist.photoReminder.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "d27eea6f9b6b763610499645008bbbf8319b2cd71786cb7880dc71308512479d"
   },
   "emails.florist.photoReminder.preheader": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "0b9a19a45b01b112634a5d6d7d404331fee9a0d291134ea6b043ab4da559fa66"
   },
   "emails.florist.photoReminder.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "a06da82e033f390979a294e1c2ac66e701f6555d5850a8138772e8ec4b603c47"
   },
   "whatsapp.florist.offer.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "b036451d692ac1a78c832a182e32d3713383ef9da32f51df8ed073658a64f99e"
   },
   "whatsapp.florist.offer.open": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "617fd1e21b2b8a5da23bd36b60b3b96b199a23045bb3ac5a075ac1c5cc5ab0f5"
   },
   "whatsapp.florist.offer.alsoEmail": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "d3c6141a5717b4d6f5b06dd12ac5b0e916ca6abec7d1084d6708adbc839f43a7"
   },
   "whatsapp.florist.stop.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-02: recorded by the orchestrator under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text; the founder did not read this text (written to en.meta.json by the TASK-433 builder from the orchestrator's dispatch)",
+    "reviewedAt": "2026-11-02T17:37:04Z",
     "sourceHash": "ca21df292c9e91074bc4a8549ccdf2f0396c014e75d82d30a399255643615801"
   }
 }
