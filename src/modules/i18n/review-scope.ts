@@ -149,6 +149,10 @@ const FLORIST_FORM_PATHS = [
   "src/app/[locale]/fuer-floristen/bewerben/**",
   "src/app/[locale]/dla-kwiaciarni/zglos-sie/**",
   "src/modules/partners/ui/apply/**",
+  // TASK-213: the form's schema (its error keys) and the founder alert (the option labels). Named
+  // file by file: the module's admin queries are exported to spec 012 through the barrel.
+  "src/modules/partners/application/schema.ts",
+  "src/modules/partners/application/alert.ts",
 ];
 
 /**
@@ -205,6 +209,13 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   // test-order control, the refresh line, not found) render only under `FLORIST_BASE_PATH`; the
   // walkthrough prints none of them, so they reach no indexable page.
   { match: "floristInbox.page.*", surface: "florist", paths: FLORIST_PATHS },
+  // Spec 011 §5.2 (TASK-213): the founder's alert for each florist application, an email that
+  // renders on no page at all.
+  {
+    match: "emails.floristApplicationAlert.*",
+    surface: "email",
+    paths: ["src/modules/partners/application/alert.ts"],
+  },
   // Spec 011 §14 pointer to A17 (TASK-210): the application and its sent page are `noindex,follow`
   // in every combination and have route files of their own, so their keys reach no indexable page.
   // The landing's `forFlorists.status.*` and the walkthrough's `floristInbox.*` labels stay

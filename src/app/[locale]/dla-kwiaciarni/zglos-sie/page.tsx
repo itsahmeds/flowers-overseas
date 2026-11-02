@@ -1,6 +1,6 @@
 import { floristFormRoute } from "@/modules/partners/ui/apply/route";
 
-import { submitFloristApplicationAction } from "../../florist-application-action";
+import { submitFloristApplicationAction } from "../../for-florists/apply/actions";
 
 /**
  * `/{locale}/dla-kwiaciarni/zglos-sie`: The application (spec 011 §2, AC-1, AC-10; TASK-210). A route file of its own,

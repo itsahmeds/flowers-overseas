@@ -310,7 +310,14 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
           "src/lib/auth/florist.ts",
         ],
       })),
-      // Spec 011 (TASK-210): the application and sent pages, noindex, on route files of their own.
+      // TASK-213: the founder's application alert, an email.
+      {
+        match: "emails.floristApplicationAlert.*",
+        surface: "email",
+        paths: ["src/modules/partners/application/alert.ts"],
+      },
+      // Spec 011 (TASK-210): the application and sent pages, noindex, on route files of their own;
+      // TASK-213 adds the form's schema and the alert, which read `forFlorists.apply.*` keys.
       ...["forFlorists.apply.*", "forFlorists.sent.*"].map((match) => ({
         match,
         surface: "florist",
@@ -319,6 +326,8 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
           "src/app/[locale]/fuer-floristen/bewerben/**",
           "src/app/[locale]/dla-kwiaciarni/zglos-sie/**",
           "src/modules/partners/ui/apply/**",
+          "src/modules/partners/application/schema.ts",
+          "src/modules/partners/application/alert.ts",
         ],
       })),
     ]);

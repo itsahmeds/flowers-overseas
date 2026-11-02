@@ -36,6 +36,7 @@ import { Button } from "@/modules/ui";
 
 import { label, localeCode } from "../inbox/format.ts";
 import { APPLICATION_ERROR_KEYS } from "../../application/schema.ts";
+import type { ApplyFormState } from "../../application/state.ts";
 import { PageHeadBand } from "../public/PageHead.tsx";
 
 import {
@@ -50,6 +51,8 @@ export interface ApplyPageProps {
   readonly company?: Company;
   /** The server action bound to the locale (TASK-213); absent in unit tests and the gallery. */
   readonly action?: ApplyFormAction;
+  /** A refused post's state, drawn without posting (unit tests and the gallery). */
+  readonly initialState?: ApplyFormState;
 }
 
 type T = Awaited<ReturnType<typeof getTranslations>>;
@@ -166,11 +169,13 @@ function ApplyFormSection({
   locale,
   company,
   action,
+  initialState,
 }: {
   readonly t: T;
   readonly locale: string;
   readonly company: Company;
   readonly action: ApplyFormAction | undefined;
+  readonly initialState: ApplyFormState | undefined;
 }): ReactElement {
   const language = (FLORIST_LANGUAGES as readonly string[]).includes(
     locale.slice(0, 2),
@@ -186,6 +191,7 @@ function ApplyFormSection({
   return (
     <ApplyForm
       {...(action === undefined ? {} : { action })}
+      {...(initialState === undefined ? {} : { initialState })}
       copy={applyFormCopy(t)}
       countries={countries}
       defaultLanguage={language}
@@ -208,6 +214,7 @@ export async function ApplyPage({
   form,
   company = COMPANY,
   action,
+  initialState,
 }: ApplyPageProps): Promise<ReactElement> {
   const t = await getTranslations({ locale });
   const landing = infoPageView("for-florists", locale);
@@ -272,6 +279,7 @@ export async function ApplyPage({
             locale={locale}
             company={company}
             action={action}
+            initialState={initialState}
           />
         ) : (
           <div

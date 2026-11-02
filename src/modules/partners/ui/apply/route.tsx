@@ -53,7 +53,7 @@ export type FloristFormPage = "florist-apply" | "florist-apply-sent";
 
 /**
  * The application's server action before the locale is bound
- * (`src/app/[locale]/florist-application-action.ts`, TASK-213). The apply route files pass it in:
+ * (`src/app/[locale]/for-florists/apply/actions.ts`, TASK-213). The apply route files pass it in:
  * a module may not import from `src/app` (`plan/01` §5).
  */
 export type LocaleBoundApplyAction = (

@@ -81,6 +81,8 @@ export interface ApplyFormProps {
   }[];
   /** The page locale's language, prefilled (§2). */
   readonly defaultLanguage: string;
+  /** The state before the first post; a refused state only in unit tests and the gallery. */
+  readonly initialState?: ApplyFormState;
   readonly failedNotice: ReactNode;
   readonly tooManyNotice: ReactNode;
   readonly submit: ReactNode;
@@ -230,13 +232,14 @@ export function ApplyForm({
   copy,
   countries,
   defaultLanguage,
+  initialState = INITIAL_APPLY_STATE,
   failedNotice,
   tooManyNotice,
   submit,
 }: ApplyFormProps): ReactElement {
   const [state, formAction] = useActionState(
     action ?? passThrough,
-    INITIAL_APPLY_STATE,
+    initialState,
   );
   const value = (name: string): string => state.values[name] ?? "";
   const error = (name: string): string | undefined => {
