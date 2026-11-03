@@ -21,9 +21,10 @@
  * nothing else. The florist card reads the partner of the order's accepted
  * `order_assignment` row, and only once the history holds a production event (AC-5).
  *
- * **Refunds and the cancelled state (TASK-339; AC-10, AC-42).** `refundLines` is
- * `buyerRefundLines` (spec 013's `succeededRefunds`): one line per succeeded refund, in every
- * state, dated by `refund.succeeded_at`. On a cancelled order, `cancelledBy` is `buyer` when the
+ * **Refunds and the cancelled state (TASK-339; AC-10, AC-42).** `refundLines` comes from the
+ * caller's `refundLines` source, `buyerRefundLines` (`./buyer-refund-lines.ts`, over spec 013's
+ * `succeededRefunds`), handed in so this barrel-exported file never imports `payments`: one line
+ * per succeeded refund, in every state, dated by `refund.succeeded_at`. On a cancelled order, `cancelledBy` is `buyer` when the
  * latest cancellation was the buyer's own, or an admin's with reason `buyer_cancel` (spec 020a
  * request 3), and `us` for every other actor, whatever the cause; `refundPending` is the sum of
  * the order's `requested` and `pending` refunds, so "We are refunding {amount}" shows until the
@@ -36,9 +37,9 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import {
-  buyerRefundLines,
   BuyerRefundLineSchema,
   CurrencyCodeSchema,
+  type RefundLinesSource,
 } from "./refund-lines";
 import { type EngineConnection, withExecutor } from "./service/executor";
 import { ORDER_REFERENCE_PATTERN, orderReference } from "./service/reference";
@@ -268,10 +269,16 @@ function text(value: string | null): string | null {
 
 const DAY_MS = 86_400_000;
 
+/** What `getTrackingView` reads with: the connection, and where the refund lines come from. */
+export interface TrackingViewOptions extends EngineConnection {
+  /** `buyerRefundLines` (`./buyer-refund-lines.ts`) in production. */
+  readonly refundLines: RefundLinesSource;
+}
+
 /** The tracking view of an order. Throws when the order does not exist. */
 export async function getTrackingView(
   orderId: string,
-  options?: EngineConnection,
+  options: TrackingViewOptions,
 ): Promise<TrackingView> {
   const id = z.uuid().parse(orderId);
   return withExecutor(options, "orders.tracking_view", async (executor) => {
@@ -324,7 +331,7 @@ export async function getTrackingView(
     const facts = FactsRow.parse(factsRaw);
 
     const projection = buyerStep(order.projection);
-    const refundLines = await buyerRefundLines(id, { executor });
+    const refundLines = await options.refundLines(id, { executor });
 
     let cancelledBy: CancelledBy | null = null;
     let refundPending: z.infer<typeof MinorAmountSchema> | null = null;

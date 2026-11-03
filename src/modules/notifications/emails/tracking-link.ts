@@ -43,17 +43,20 @@ export function renderTrackingLinkEmail(
   input: TrackingLinkEmailInput,
 ): RenderedTrackingLinkEmail {
   const t = emailTranslator(input.locale);
-  const key = (leaf: string): string => `emails.account.trackingLink.${leaf}`;
-  const subject = t(key("subject"), { reference: input.reference });
-  const title = t(key("heading"));
-  const body = t(key("body"), { reference: input.reference });
-  const action = t(key("button"));
-  const paste = t(key("paste"));
-  const ignore = t(key("ignore"));
+  const subject = t("emails.account.trackingLink.subject", {
+    reference: input.reference,
+  });
+  const title = t("emails.account.trackingLink.heading");
+  const body = t("emails.account.trackingLink.body", {
+    reference: input.reference,
+  });
+  const action = t("emails.account.trackingLink.button");
+  const paste = t("emails.account.trackingLink.paste");
+  const ignore = t("emails.account.trackingLink.ignore");
   const html = emailDocument({
     locale: input.locale,
     subject,
-    preheader: t(key("preheader")),
+    preheader: t("emails.account.trackingLink.preheader"),
     frame: buyerFrame(t, input.reference),
     blocks: [
       heading(title),

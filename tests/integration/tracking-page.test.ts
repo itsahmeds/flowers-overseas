@@ -45,6 +45,7 @@ import { InMemoryStorage } from "@/lib/storage";
 import { sign } from "@/lib/signed-link";
 import { loadMessages } from "@/modules/i18n";
 import { MESSAGE_NAMESPACES } from "@/modules/i18n/messages";
+import { buyerRefundLines } from "@/modules/orders/buyer-refund-lines";
 import { cancelOrder } from "@/modules/payments";
 import {
   type Actor,
@@ -120,6 +121,7 @@ const MARKERS = {
 const opts = (tx: Tx, now?: Date) => ({
   executor: runnerOf(tx),
   secret: SECRET,
+  refundLines: buyerRefundLines,
   ...(now === undefined ? {} : { now: () => now }),
 });
 

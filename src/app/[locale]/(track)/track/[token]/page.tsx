@@ -6,6 +6,8 @@ import type { ReactElement } from "react";
 import { isLocaleCode } from "@/config/locales";
 import { localePath, routableLocale } from "@/modules/i18n";
 import { getTrackingView } from "@/modules/orders";
+// Outside the barrel: it reads spec 013's `succeededRefunds` (TASK-339).
+import { buyerRefundLines } from "@/modules/orders/buyer-refund-lines";
 import { transactionalMetadata } from "@/modules/seo";
 
 import { orderForToken } from "./tracking-routes";
@@ -54,7 +56,9 @@ export default async function TrackRoute({
   setRequestLocale(locale);
   const orderId = await orderForToken(token);
   if (orderId === null) notFound();
-  const view = await getTrackingView(orderId);
+  const view = await getTrackingView(orderId, {
+    refundLines: buyerRefundLines,
+  });
   const base = localePath(locale, "home", "track", token);
   return (
     <TrackingPageView
