@@ -356,6 +356,15 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         surface: "email",
         paths: ["src/modules/partners/application/alert.ts"],
       },
+      // Spec 018 §7 (TASK-342): the invoice PDF's labels, a document on no page.
+      {
+        match: "invoice",
+        surface: "email",
+        paths: [
+          "src/modules/invoices/pdf/**",
+          "src/app/[locale]/(account)/account/invoices/**",
+        ],
+      },
       // Spec 011 (TASK-210): the application and sent pages, noindex, on route files of their own;
       // TASK-213 adds the form's schema and the alert, which read `forFlorists.apply.*` keys.
       ...["forFlorists.apply.*", "forFlorists.sent.*"].map((match) => ({

@@ -29,13 +29,21 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 builder I342 (self-review, left for later):
+  - Invoice link expiry: the spec is silent on the TTL, so the caller that mints the link (spec 016's emails, TASK-334) chooses it; `invoiceDownloadPath` refuses no expiry.
+  - Founder step: `R2_PRIVATE_BUCKET` must be set in Railway (with the R2 keys already there); until it is, a render job fails with `INVOICE_STORAGE_UNCONFIGURED`, retries, and alerts `invoice.render_dead` / `invoice.render_overdue`.
+  - The `invoice` copy (en, de, pl) needs exact-text approval under the delegation and the native review (meta: en `human`, de/pl `machine`, all unreviewed; in the review scope as an email surface).
+  - Wireframe deviation: lines print gross only (the gross method, VAT Act art. 106e(7)-(8)); net and VAT print per rate. The snapshot has no per-line VAT and no payment method, so no per-line net column and no "card" word.
+  - RoPA entry for the stored invoices: TASK-343. Owner-session download half: TASK-344. `invoice.email` handler: TASK-334 (its jobs wait until then).
+  - A paragraph mixing RTL and LTR runs is laid out with a base direction of LTR (PDFKit has no bidi); single-script RTL names read correctly.
+  - No `pnpm invoices:render` script: the minute sweep re-asks every unrendered document; the runbook says so.
+  - Under load above ~15, the existing `jobs-internal` / `jobs-runtime` handler-import tests can time out at 5 s on main as well (2.1 s each at load 13); not changed here.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-04 builder I342: TASK-341's `issueInvoice` (`src/modules/invoices/issue.ts` ~L119) and `issueCreditNote` (`credit.ts` ~L91) read `payment.order_id`, which migration `0026_payment_purchase` dropped. On main every live capture's `invoices` outbox delivery fails (dead deliveries, alerts) and `tests/integration/invoices*.test.ts` from TASK-341 fails 13/13. Not fixed here (another task's scope); this PR's integration suite writes invoice rows by SQL instead. Needs a new task row. To: orchestrator. `open`.
 
 ## Progress
 
@@ -46,10 +54,11 @@ here.
 - 2026-11-04 builder I342: worktree `fo-wt-342`, branch `task/TASK-342-invoice-pdf` off main c216700cc. Next: PDFKit and Noto Sans, the renderer, NBP adapter, render job, getters, download route, runbook.
 - 2026-11-04 builder I342: renderer (`src/modules/invoices/pdf/`), NBP adapter (`nbp.ts`, plugged in `src/jobs/handlers.ts`), render job + minute sweep + `invoice.email` enqueue + readers (`delivery.ts`), signed download (`download.ts` + route), jobs registry (`invoice.render` exclusive x5, `invoice.render_sweep`, `invoice.email`). Next: unit and integration tests, runbook.
 - 2026-11-04 builder I342: unit suites (`invoices-pdf` 17, `invoices-nbp` 8, jobs registry/runtime/internal updated) and integration `invoices-pdf` (10) green on a local PG16. Found: TASK-341's `issueInvoice`/`issueCreditNote` read `payment.order_id`, dropped by `0026`; its suite fails 13/13 on main (escalated below). Next: runbook, mutations, gates, PR.
+- 2026-11-04 builder I342: runbook `docs/runbooks/invoices.md`; review-scope entry for the `invoice` namespace; rebased on origin/main 84d4e1bcd (kept TASK-363's `payouts.prepaid_ready` beside the invoice jobs, registry size 24); 14 mutations each red; PR 465 ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/465. The invoice PDF (PDFKit 0.20.2, tagged, `/Lang`, PDF/UA identifier, embedded Noto Sans subset plus Hebrew and Arabic faces, A4, bilingual labels, gross-method table, PLN block at the stored NBP table A rate), the NBP adapter (14-day window ending the day before the tax point, newest table, exact digits), `invoice.render` (exclusive, 5 attempts, `invoice.render_dead`), the minute `invoice.render_sweep` (`invoice.render_overdue` at 15 minutes), private-bucket storage at `invoices/{yyyy}/{id}.pdf` with sha-256, `getPdfByInvoiceId` / `getIssuedPdf`, the live-only `invoice.email` enqueue, the signed `/{locale}/account/invoices/{invoiceId}?t=` download, and `docs/runbooks/invoices.md`. Tests: unit `invoices-pdf` 17 and `invoices-nbp` 8 new; jobs registry, runtime, internal and i18n-messages updated (104 green across the 7 touched unit files); integration `invoices-pdf` 11 on local PG16. No build, e2e, visual or Lighthouse run (founder rule: no CI tonight). New dependencies: `pdfkit` 0.20.2, `@types/pdfkit` 0.17.7 (dev). Handed on: see Carry-forwards and Escalations.
