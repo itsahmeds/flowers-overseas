@@ -282,27 +282,37 @@ export async function ingestResendWebhook(
   request: Request,
   deps: ResendIngestDeps,
 ): Promise<Response> {
-  const log = deps.log ?? defaultLogger;
   if (deps.secret === undefined || deps.secret === "") return empty(503);
   const declared = Number(request.headers.get("content-length") ?? "0");
   if (Number.isFinite(declared) && declared > RESEND_WEBHOOK_MAX_BYTES) {
     return empty(413);
   }
-  const rawBody = await request.text();
-  if (Buffer.byteLength(rawBody, "utf8") > RESEND_WEBHOOK_MAX_BYTES) {
-    return empty(413);
-  }
-  const now = (deps.now ?? (() => new Date()))();
-  const verified = verifySvixSignature(
-    rawBody,
+  return ingestResendBody(
+    await request.text(),
     {
       id: request.headers.get("svix-id") ?? undefined,
       timestamp: request.headers.get("svix-timestamp") ?? undefined,
       signature: request.headers.get("svix-signature") ?? undefined,
     },
-    deps.secret,
-    now,
+    { ...deps, secret: deps.secret },
   );
+}
+
+/**
+ * The raw body's half: the byte cap, the Svix signature over the exact text, then
+ * `ResendEnvelopeSchema` before any field is read; then store and enqueue.
+ */
+async function ingestResendBody(
+  rawBody: string,
+  headers: SvixHeaders,
+  deps: ResendIngestDeps & { readonly secret: string },
+): Promise<Response> {
+  const log = deps.log ?? defaultLogger;
+  if (Buffer.byteLength(rawBody, "utf8") > RESEND_WEBHOOK_MAX_BYTES) {
+    return empty(413);
+  }
+  const now = (deps.now ?? (() => new Date()))();
+  const verified = verifySvixSignature(rawBody, headers, deps.secret, now);
   if (!verified.ok) {
     // The counter (spec 016 §5.2): one line per refusal, the reason only.
     log.warn(
