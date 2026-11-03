@@ -1147,6 +1147,7 @@ describe.skipIf(server.url === undefined)(
         payments: noop,
         invoices: noop,
         notifications: noop,
+        payouts: noop,
       };
       for (let round = 0; round < 2; round += 1) {
         await scratch.sql`
