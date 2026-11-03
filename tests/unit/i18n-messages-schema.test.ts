@@ -347,23 +347,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet
     // cancel line and its dialog, the spec's and the boards' words, `reviewed: false` until the
     // record run (`.claude/state/record-approval-340.py`) attests them.
-    "confirmation.postPurchase.cancelConfirmBody",
-    "confirmation.postPurchase.cancelConfirmNo",
-    "confirmation.postPurchase.cancelConfirmTitle",
-    "confirmation.postPurchase.cancelConfirmYes",
-    "confirmation.postPurchase.cancelLine",
-    "confirmation.postPurchase.cancelRefused",
-    "confirmation.postPurchase.emailSent",
-    "confirmation.postPurchase.invoiceIssued",
-    "confirmation.postPurchase.invoicePending",
-    "confirmation.postPurchase.invoiceTitle",
-    "confirmation.postPurchase.nextTitle",
-    "confirmation.postPurchase.steps.beingMade",
-    "confirmation.postPurchase.steps.delivered",
-    "confirmation.postPurchase.steps.onItsWay",
-    "confirmation.postPurchase.steps.order",
-    "confirmation.postPurchase.trackBody",
-    "confirmation.postPurchase.trackTitle",
     // TASK-332's 34 florist email, email layout and WhatsApp keys and TASK-213's 21 application
     // keys left this queue under the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
