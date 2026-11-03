@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (builder T339): worktree `/Users/ahmed/dev/fo-wt-339` on `task/TASK-339-tracking-extras` from main 84d4e1bcd; row `in_progress`; draft PR opened. Next: refund lines, cancelled sentences, lookup, scrubbers, footer link.
 
 ## Result
 
