@@ -24,7 +24,9 @@
  * **The file (AC-22).** PDFKit with `tagged: true` (a `StructTreeRoot`, `/MarkInfo << /Marked true
  * >>`), `lang` (`/Lang`, the first label locale), PDF/UA metadata, A4, and Noto Sans embedded as a
  * subset (`./fonts`, Latin with its extensions, Greek and Cyrillic), so "Zażółć gęślą jaźń" and
- * "Größe" extract as typed. Rules and the page number are artifacts; every text run sits in a
+ * "Größe" extract as typed. A name in Hebrew or Arabic script is set in Noto Sans Hebrew or Noto
+ * Sans Arabic, one run per name, so the shaper lays it out right to left (and joins Arabic)
+ * rather than printing missing-glyph boxes. Rules and the page number are artifacts; every text run sits in a
  * structure element in reading order: header, meta, seller, buyer, table, second-currency VAT,
  * payment line, fine print. The creation date is the issue instant, so a re-render of the same
  * document produces the same bytes.
@@ -95,6 +97,9 @@ export interface RenderOptions {
 export interface InvoiceFonts {
   readonly regular: Buffer;
   readonly bold: Buffer;
+  /** Noto Sans Hebrew and Noto Sans Arabic: the scripts Noto Sans itself does not cover. */
+  readonly hebrew: Buffer;
+  readonly arabic: Buffer;
 }
 
 /** The credit note's title; an invoice's comes from its profile. */
@@ -133,6 +138,12 @@ export function invoiceFonts(): InvoiceFonts {
     ),
     bold: readFileSync(
       path.join(process.cwd(), FONT_DIRECTORY, "NotoSans-Bold.ttf"),
+    ),
+    hebrew: readFileSync(
+      path.join(process.cwd(), FONT_DIRECTORY, "NotoSansHebrew-Regular.ttf"),
+    ),
+    arabic: readFileSync(
+      path.join(process.cwd(), FONT_DIRECTORY, "NotoSansArabic-Regular.ttf"),
     ),
   };
   return cachedFonts;
@@ -275,18 +286,53 @@ interface TextOptions {
 }
 
 /** Writes `text` at the current line, returning the height it took. */
+/**
+ * A run of right-to-left script, from its first letter to its last, with the spaces and name
+ * punctuation between: one run, so the shaper lays the whole name out right to left.
+ */
+const RTL_RUN =
+  /(\p{Script=Hebrew}(?:[\p{Script=Hebrew}\s'’.-]*\p{Script=Hebrew})?)|(\p{Script=Arabic}(?:[\p{Script=Arabic}\s'’.-]*\p{Script=Arabic})?)/gu;
+
+/** `text` cut into runs, each with the face that has its glyphs. */
+function runs(text: string, face: "regular" | "bold"): [string, string][] {
+  const out: [string, string][] = [];
+  let at = 0;
+  for (const match of text.matchAll(RTL_RUN)) {
+    if (match.index > at) out.push([text.slice(at, match.index), face]);
+    // No-break spaces keep the run one word for PDFKit's line wrapper, so the shaper reverses
+    // the whole name, not each word in place (PDFKit has no bidi of its own).
+    out.push([
+      match[0].replace(/\s/gu, "\u00A0"),
+      match[1] === undefined ? "arabic" : "hebrew",
+    ]);
+    at = match.index + match[0].length;
+  }
+  if (at < text.length) out.push([text.slice(at), face]);
+  return out;
+}
+
 function write(ctx: Context, text: string, options: TextOptions = {}): number {
   const { doc } = ctx;
   const width = options.width ?? CONTENT_WIDTH;
+  const face = options.bold === true ? "bold" : "regular";
   doc
-    .font(options.bold === true ? "bold" : "regular")
+    .font(face)
     .fontSize(options.size ?? SIZE.body)
     .fillColor(options.color ?? INK);
   const height = doc.heightOfString(text, { width, lineGap: LINE_GAP });
-  doc.text(text, options.x ?? PAGE.margin, ctx.y, {
-    width,
-    align: options.align ?? "left",
-    lineGap: LINE_GAP,
+  const pieces = runs(text, face);
+  pieces.forEach(([piece, pieceFace], index) => {
+    doc.font(pieceFace);
+    const continued = index < pieces.length - 1;
+    const textOptions = {
+      width,
+      align: options.align ?? "left",
+      lineGap: LINE_GAP,
+      continued,
+    };
+    if (index === 0)
+      doc.text(piece, options.x ?? PAGE.margin, ctx.y, textOptions);
+    else doc.text(piece, textOptions);
   });
   return height;
 }
@@ -797,6 +843,8 @@ export async function renderInvoicePdf(
   );
   doc.registerFont("regular", fonts.regular);
   doc.registerFont("bold", fonts.bold);
+  doc.registerFont("hebrew", fonts.hebrew);
+  doc.registerFont("arabic", fonts.arabic);
 
   const chunks: Buffer[] = [];
   const done = new Promise<Uint8Array>((resolve, reject) => {
