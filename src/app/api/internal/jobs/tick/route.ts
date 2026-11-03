@@ -9,7 +9,9 @@
  * `DATABASE_URL_UNPOOLED`, on a pg-boss instance that lives for this request only. Every tick
  * first enqueues one `outbox.dispatch` (spec 013 §5.2, TASK-254), one `payments.production_start`
  * (TASK-258), one `order.close_sweep` (spec 022a §5.2, TASK-369, under a `singletonKey`) and one
- * `routing.sla_watch` (spec 016 §5.2, TASK-328, likewise), which the same tick consumes.
+ * `routing.sla_watch` (spec 016 §5.2, TASK-328, likewise), which the same tick consumes; and,
+ * once an hour (a `singletonKey` unique for 3600 seconds), `payouts.close` and `payouts.watch`
+ * (spec 030a §5.2, TASK-364).
  */
 import { JOB_HANDLERS } from "@/jobs/handlers";
 import { tickResponse } from "@/jobs/internal";
@@ -19,6 +21,9 @@ import { env } from "@/lib/env";
 /** Never cached, never prerendered: a write path. */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+/** spec 030a's hourly jobs: one run per clock hour. */
+const HOURLY_SECONDS = 3600;
 
 export function POST(request: Request): Promise<Response> {
   return tickResponse(request, {
@@ -71,6 +76,19 @@ export function POST(request: Request): Promise<Response> {
             singletonKey: "invoice.render_sweep",
           },
         );
+        // Spec 030a §5.2 (TASK-364): the weekly close and the missing-line watch, hourly.
+        for (const name of ["payouts.close", "payouts.watch"] as const) {
+          await enqueue(
+            boss,
+            name,
+            {},
+            {
+              requestId: "system:jobs.tick",
+              singletonKey: name,
+              singletonSeconds: HOURLY_SECONDS,
+            },
+          );
+        }
         return runTick(boss, JOB_HANDLERS);
       }),
   });

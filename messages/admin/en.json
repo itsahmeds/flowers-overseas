@@ -862,6 +862,20 @@
           "amount": "Amount",
           "open": "Open the payout",
           "note": "Send the statement, then add it to the next Wise export. The florist is paid before they make the bouquet."
+        },
+        "weeklyReady": {
+          "subject": "Weekly payouts ready for review: {count}",
+          "preheader": "The week has ended in each florist's time zone. Review, send the statements, then export.",
+          "heading": "Weekly payouts ready to review: {count}",
+          "open": "Open payouts",
+          "note": "Resolve any flagged line and any open adjustment, then send each statement and add it to the next Wise export."
+        },
+        "lineMissing": {
+          "subject": "No payout line for {reference}",
+          "preheader": "The delivery photo is in, but no payout line was written within {minutes} minutes.",
+          "heading": "Order {reference} has a photo and no payout line",
+          "open": "Open the order",
+          "note": "Usually the florist has no payout price for a product on this order. Add the price on the florist page; the line is written on the next retry."
         }
       }
     }

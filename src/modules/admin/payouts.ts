@@ -10,3 +10,8 @@ import { z } from "zod";
 export function payoutDetailHref(payoutId: string): string {
   return `/admin/payouts/${z.uuid().parse(payoutId)}`;
 }
+
+/** The payouts list (spec 030a §2.7): F2 links here. */
+export function payoutsListHref(): string {
+  return "/admin/payouts";
+}

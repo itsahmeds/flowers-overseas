@@ -3,9 +3,9 @@
  * emails", §12; AC-4, AC-7; TASK-363).
  *
  * **The handler.** One per process, registered by the worker (`src/jobs/handlers.ts`):
- * `assignment.accepted` → `fixPayoutAtAcceptance` with the assignment its event payload names.
- * Any other event reaching the target is not this task's (the `order.photo_uploaded` accrual is
- * TASK-364's row and branch) and is refused loudly rather than marked sent.
+ * `assignment.accepted` → `fixPayoutAtAcceptance` with the assignment its event payload names;
+ * `order.photo_uploaded` → `accrueOrder(orderId, 'photo')` (TASK-364). Any other event reaching
+ * the target is refused loudly rather than marked sent.
  *
  * **The hold.** While `payouts.accrue` is off the dispatcher claims no `payouts` delivery: each
  * stays `pending`, held and never dropped, and the first run after the flag is on delivers it
@@ -29,6 +29,7 @@ import {
 } from "@/modules/orders";
 
 import { type AcceptanceDeps, fixPayoutAtAcceptance } from "./acceptance";
+import { type AccrualDeps, accrueOrder } from "./accrual";
 
 /** The flag that holds every `payouts` delivery (spec 030a §12). */
 export const PAYOUTS_FLAG = "payouts.accrue" as const;
@@ -47,8 +48,18 @@ const AcceptedPayload = z.object({ assignment_id: z.uuid() });
 const EventPayloadRow = z.object({ payload: z.unknown() });
 
 /** The `payouts` handler. Every step is idempotent (a delivery is at least once). */
-export function payoutsOutboxHandler(deps: AcceptanceDeps = {}): OutboxHandler {
+export function payoutsOutboxHandler(
+  deps: AcceptanceDeps & AccrualDeps = {},
+): OutboxHandler {
   return async (event, context) => {
+    if (event.type === "order.photo_uploaded") {
+      await accrueOrder(
+        context.executor,
+        { orderId: event.orderId, source: "photo" },
+        deps,
+      );
+      return;
+    }
     if (event.type !== "assignment.accepted") {
       throw new PayoutsEventUnhandled(event.type);
     }
@@ -70,9 +81,10 @@ export function payoutsOutboxHandler(deps: AcceptanceDeps = {}): OutboxHandler {
  * `payouts.accrue` is off every `payouts` delivery stays `pending`.
  */
 export function registerPayoutsOutbox(
-  deps: AcceptanceDeps & {
-    readonly accrueEnabled?: () => Promise<boolean>;
-  } = {},
+  deps: AcceptanceDeps &
+    AccrualDeps & {
+      readonly accrueEnabled?: () => Promise<boolean>;
+    } = {},
 ): void {
   const enabled = deps.accrueEnabled ?? (() => isEnabled(PAYOUTS_FLAG));
   registerOutboxHandler("payouts", payoutsOutboxHandler(deps));

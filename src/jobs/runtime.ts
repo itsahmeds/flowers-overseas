@@ -162,6 +162,11 @@ export interface EnqueueOptions {
    * queue (spec 016's routing jobs): at most one **waiting** job per key, whenever it was sent.
    */
   readonly singletonKey?: string;
+  /**
+   * On a `standard` queue with a `singletonKey`: the window the key is unique within, in seconds
+   * (default `SINGLETON_SECONDS`, one minute tick). Spec 030a's hourly jobs pass 3600.
+   */
+  readonly singletonSeconds?: number;
   /** Not fetched before this instant (spec 016: a deferred offer, a reminder, a timeout). */
   readonly startAfter?: Date;
 }
@@ -200,7 +205,7 @@ export async function enqueue<Name extends RegisteredJobName>(
   }
   return boss.send(name, data, {
     singletonKey: options.singletonKey,
-    singletonSeconds: SINGLETON_SECONDS,
+    singletonSeconds: options.singletonSeconds ?? SINGLETON_SECONDS,
     ...sendOptions,
   });
 }
