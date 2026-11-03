@@ -14,7 +14,9 @@ import { adminT } from "@/modules/admin";
 import {
   type PartnerFieldError,
   type PartnerStatus,
+  type PayoutTermsFieldError,
   partnerFieldErrors,
+  payoutTermsFieldErrors,
 } from "@/modules/partners";
 import { AdminRefusal, AdminToast } from "@/modules/ui/admin/AdminControls";
 import { AdminChip, type AdminChipTone } from "@/modules/ui/admin/AdminData";
@@ -72,8 +74,16 @@ export const PARTNER_FORMS = [
   "daysOff",
   "products",
   "status",
+  // Spec 030a §2.8 (TASK-367): the "Payout terms" block.
+  "payoutTerms",
 ] as const;
 export type PartnerForm = (typeof PARTNER_FORMS)[number];
+
+/** Every field code a florist form can carry back: the partner commands' and the terms'. */
+const FIELD_ERROR_CODES = [
+  ...partnerFieldErrors,
+  ...payoutTermsFieldErrors,
+] as const;
 
 const FieldErrorsSchema = z
   .string()
@@ -84,10 +94,10 @@ const FieldErrorsSchema = z
         .split(",")
         .map((pair) => pair.split(":"))
         .filter(
-          (pair): pair is [string, PartnerFieldError] =>
+          (pair): pair is [string, PartnerFieldError | PayoutTermsFieldError] =>
             pair.length === 2 &&
             /^[a-zA-Z]{1,40}$/u.test(pair[0] ?? "") &&
-            (partnerFieldErrors as readonly string[]).includes(pair[1] ?? ""),
+            (FIELD_ERROR_CODES as readonly string[]).includes(pair[1] ?? ""),
         ),
     ),
   );
@@ -103,9 +113,15 @@ export type PartnerResult = z.infer<typeof PartnerResultSchema>;
 
 /** The field errors as the query string carries them: `field:code,field:code`. */
 export function errorsParam(
-  errors: Readonly<Record<string, PartnerFieldError>>,
+  errors: Readonly<
+    Record<string, PartnerFieldError | PayoutTermsFieldError | undefined>
+  >,
 ): string {
   return Object.entries(errors)
+    .filter(
+      (entry): entry is [string, PartnerFieldError | PayoutTermsFieldError] =>
+        entry[1] !== undefined,
+    )
     .map(([field, code]) => `${field}:${code}`)
     .join(",");
 }

@@ -26,7 +26,8 @@
       "partners": "Florists",
       "flags": "Flags",
       "audit": "Audit log",
-      "users": "Users"
+      "users": "Users",
+      "payouts": "Payouts"
     },
     "roles": {
       "admin": "admin",
@@ -631,9 +632,30 @@
         "version": "Use letters, digits, dots and hyphens, for example v1.",
         "reason": "Give a reason of at least 3 characters.",
         "target": "Choose one.",
-        "product": "Choose a product."
+        "product": "Choose a product.",
+        "cadence": "Choose weekly or per order.",
+        "prepaidLimit": "Enter a whole number from 0 to 50.",
+        "wiseRecipient": "Enter the id Wise shows: 1 to 20 digits."
       },
-      "where": "{city}, {country}"
+      "where": "{city}, {country}",
+      "payoutTerms": {
+        "title": "Payout terms",
+        "permission": "partner.payout · admin and finance",
+        "cadence": "How often we pay",
+        "cadenceHint": "Weekly: one statement after each Sunday. Per order: one statement for each delivered order.",
+        "cadenceOption": {
+          "weekly": "Weekly",
+          "per_order": "Per order"
+        },
+        "prepaid": "Prepaid orders",
+        "prepaidHint": "Used {used} of {limit}. These first orders are paid when the florist accepts them.",
+        "wise": "Wise recipient id",
+        "wiseHint": "Add the florist as a recipient in our Wise account, then copy its id here. We never store bank details.",
+        "save": "Save payout terms",
+        "notSet": "Not set: this florist's statements cannot go into a Wise export yet.",
+        "wiseNone": "Not set",
+        "readOnly": "Only admin and finance can change payout terms."
+      }
     },
     "applications": {
       "title": "Applications",
@@ -789,6 +811,307 @@
         "CANCEL_ILLEGAL": "This order is being made now, so it can no longer be cancelled. Nothing was done. Refund instead.",
         "CANCEL_REASON_NOT_ALLOWED": "Once a florist has accepted, only “The buyer asked” can cancel. Nothing was done.",
         "other": "Nothing was done. Reload and try again."
+      }
+    },
+    "payouts": {
+      "title": "Payouts",
+      "lead": "What each florist is owed, in their currency. Weekly payouts close after Sunday in the florist's time zone; you send the statement, then pay through Wise.",
+      "jumpLabel": "Groups",
+      "group": {
+        "open": "Open",
+        "ready": "Ready to send",
+        "sent": "Sent, waiting for an export",
+        "exported": "Exported, waiting for payment",
+        "paid": "Paid, last 8 weeks",
+        "adjustments": "Open adjustments",
+        "waivers": "Delivered without a photo"
+      },
+      "jump": {
+        "open": "Open",
+        "ready": "Ready to send",
+        "sent": "Sent",
+        "exported": "Exported",
+        "paid": "Paid",
+        "adjustments": "Open adjustments",
+        "waivers": "Delivered without a photo"
+      },
+      "empty": {
+        "open": "No payout is open. A weekly payout opens with a florist's first delivery photo of the week.",
+        "ready": "Nothing to send. Weekly payouts close after Sunday in each florist's time zone.",
+        "sent": "No statement is waiting for a Wise export.",
+        "exported": "No export is waiting for payment.",
+        "paid": "Nothing paid in the last 8 weeks.",
+        "adjustments": "No open adjustments.",
+        "waivers": "Every delivered order has its photo.",
+        "allTitle": "No payouts yet",
+        "allBody": "The first payout appears when a florist accepts one of their prepaid orders, or adds the delivery photo for a live order."
+      },
+      "column": {
+        "florist": "Florist",
+        "kind": "Kind",
+        "period": "Period",
+        "lines": "Lines",
+        "total": "Total",
+        "closes": "Closes",
+        "action": "Action",
+        "statement": "Statement",
+        "sent": "Sent",
+        "wise": "Wise recipient",
+        "export": "Export",
+        "paid": "Paid",
+        "select": "Select"
+      },
+      "kind": {
+        "weekly": "Weekly",
+        "prepaid": "Prepaid",
+        "per_order": "Per order"
+      },
+      "closes": "After {date}",
+      "rowLine": "{kind} · {period} ({zone}) · {count, plural, one {# line} other {# lines}}",
+      "rowLineCloses": "{kind} · {period} ({zone}) · {count, plural, one {# line} other {# lines}} · closes after {date}",
+      "sentOn": "Sent {date}",
+      "sentOnMissing": "Sent {date} · no Wise recipient id: add it on the <link>florist page</link>",
+      "paidOn": "Paid {date}",
+      "wiseSet": "Set",
+      "wiseMissing": "No Wise recipient id. Add it under Payout terms on the <link>florist page</link>.",
+      "exportOf": "Export of {date}",
+      "selectOne": "Select {number}",
+      "selection": {
+        "summary": "{count, plural, =0 {None selected} other {# selected}}",
+        "separator": " · ",
+        "create": "Create Wise export",
+        "none": "No statement can go into an export yet."
+      },
+      "review": {
+        "chip": "{count, plural, one {# line to review} other {# lines to review}}",
+        "hint": "Resolve it on the payout page, then send."
+      },
+      "held": {
+        "chip": "Open adjustment",
+        "hint": "{reference}, created {date}, must be settled or waived first."
+      },
+      "nothing": {
+        "chip": "Nothing to send",
+        "hint": "The total is not above zero; a weekly payout rolls over to next Sunday."
+      },
+      "send": "Send statement",
+      "sending": "Sending…",
+      "adjustment": {
+        "holds": "Holds a statement",
+        "line": "Cancelled by the buyer after acceptance · {when} ({zone})",
+        "note": "A weekly statement waits while its florist has an open adjustment created on or before the period's last day. Prepaid statements never wait.",
+        "settle": "Settle",
+        "waive": "Waive"
+      },
+      "settle": {
+        "title": "Settle the adjustment for {reference}",
+        "intro": "The buyer cancelled after {florist} accepted. Enter what the florist is paid for this order. It goes into their open weekly payout as an adjustment line.",
+        "amount": "Amount in minor units ({currency})",
+        "amountHint": "Whole minor units, never zero: {example} is {formatted}.",
+        "note": "Note",
+        "noteHint": "The florist sees this note on their statement. 3 to 500 characters.",
+        "submit": "Settle",
+        "pending": "Settling…"
+      },
+      "waive": {
+        "title": "Waive the adjustment for {reference}",
+        "intro": "Nothing is paid or recovered for this order. The reason goes to the audit log, not to the florist.",
+        "reason": "Reason",
+        "reasonHint": "10 to 500 characters.",
+        "submit": "Waive",
+        "pending": "Waiving…"
+      },
+      "waiver": {
+        "line": "Delivered {when} ({zone}) · no photo for {hours, plural, one {# hour} other {# hours}}",
+        "open": "Accrue without photo",
+        "title": "Accrue {reference} without a photo",
+        "intro": "Use this only when the delivery is confirmed another way. The order's payout line is written now; the reason goes to the audit log.",
+        "reason": "Reason",
+        "reasonHint": "10 to 500 characters.",
+        "submit": "Accrue without photo",
+        "pending": "Writing…",
+        "note": "Listed 2 hours after delivery. Accrue without a photo only when the delivery is confirmed another way; your reason goes to the audit log."
+      },
+      "cancel": "Cancel",
+      "fieldError": {
+        "amountMinor": "Enter a whole number of minor units that is not zero.",
+        "goodwill": "A goodwill line is above zero.",
+        "note": "Write a note of 3 to 500 characters. The florist sees it on the statement.",
+        "reason": "Write at least 10 characters.",
+        "kind": "Choose adjustment or goodwill.",
+        "orderId": "Choose an order of this payout, or none."
+      },
+      "detail": {
+        "back": "Payouts",
+        "title": "{kind, select, weekly {Weekly payout, {period}} prepaid {Prepaid payout, {period}} other {Per-order payout, {period}}}",
+        "prepaidLine": "Prepaid order {rank} of {limit} · closed when the florist accepted",
+        "perOrderLine": "Paid per order · closed at the delivery photo",
+        "lines": "Lines",
+        "column": {
+          "order": "Order",
+          "date": "Delivery date",
+          "bouquet": "Bouquet",
+          "line": "Line",
+          "amount": "Amount"
+        },
+        "lineKind": {
+          "order": "Order",
+          "adjustment": "Adjustment",
+          "goodwill": "Goodwill"
+        },
+        "item": "{name} · {stems, plural, one {# stem} other {# stems}}",
+        "itemNoStems": "{name}",
+        "quantity": "{item} × {quantity}",
+        "reviewChip": "Review: add-on not priced",
+        "markReviewed": "Mark reviewed",
+        "markReviewedLabel": "Mark the line of {reference} reviewed",
+        "remove": "Remove",
+        "removeLabel": "Remove the {kind} line of {amount}",
+        "total": "Total",
+        "totalNote": "{count, plural, one {# line} other {# lines}} · kept equal to the sum of the lines by the database",
+        "linesNote": "Order lines carry the amount fixed when the florist accepted; a later price change never moves them. Product names are shown in English here and in the florist's language on the statement.",
+        "noLines": "No lines yet.",
+        "status": "Status",
+        "chip": {
+          "open": "Open · collecting lines",
+          "closed": "Draft · closed",
+          "sent": "Statement sent",
+          "exported": "Exported",
+          "paid": "Paid {date}"
+        },
+        "closedAt": "Closed {when} ({zone}). Lines can still change until you send.",
+        "totalLabel": "Total",
+        "totalSoFar": "Total so far",
+        "sendUnavailable": "Send statement is not available",
+        "refusal": {
+          "PAYOUT_NOT_CLOSED": "This payout is still open. It closes after {date} in {zone}.",
+          "PAYOUT_TOTAL_NOT_POSITIVE": "The total is {amount}, so there is nothing to send. A weekly payout rolls over to next Sunday until it is above zero.",
+          "PAYOUT_REVIEW_OPEN": "{count, plural, one {# line needs} other {# lines need}} your review before this statement can go.",
+          "PAYOUT_ADJUSTMENT_OPEN": "An open adjustment for this florist ({reference}, created {date}) must be settled or waived first.",
+          "PAYOUT_STATUS_ILLEGAL": "This statement was already sent."
+        },
+        "numberNote": "The statement number is given when you send.",
+        "sendNote": "Sends it to the florist's contact email, in their language, with the PDF attached. Lines are frozen from then on.",
+        "number": "Number",
+        "sent": "Sent",
+        "sentWhen": "{when} ({zone}) by {name}",
+        "sentWhenAnon": "{when} ({zone})",
+        "email": "Email",
+        "emailStatus": "{status, select, sent {Sent to the florist} delivered {Delivered to the florist} bounced {Bounced} failed {Not sent} queued {Waiting to send} other {Waiting to send}}",
+        "openPdf": "Open the PDF",
+        "pdfNote": "Opens a private link that works for 5 minutes.",
+        "pdfPending": "The PDF is made with the email. Reload this page in a minute.",
+        "awaitingExport": "Waiting for a Wise export. Select it under “Sent” on Payouts.",
+        "inExport": "In the <link>Wise export of {date}</link>. Mark it paid once Wise has sent it.",
+        "markPaid": "Mark paid",
+        "paidNote": "Paid through its Wise export, marked by {name}. Kept for 10 years.",
+        "paidNoteAnon": "Paid through its Wise export. Kept for 10 years.",
+        "addLine": {
+          "open": "Add a line",
+          "title": "Add a line",
+          "kind": "Kind",
+          "adjustment": "Adjustment",
+          "adjustmentHint": "positive or negative",
+          "goodwill": "Goodwill",
+          "goodwillHint": "above zero",
+          "amount": "Amount in minor units ({currency})",
+          "amountHint": "Whole minor units: {example} is {formatted}; a minus sign takes money back.",
+          "order": "Order (optional)",
+          "orderNone": "No order",
+          "note": "Note",
+          "noteHint": "The florist sees this note on the statement. 3 to 500 characters.",
+          "submit": "Add line",
+          "pending": "Adding…"
+        }
+      },
+      "export": {
+        "back": "Payouts",
+        "title": "Wise export, {date}",
+        "created": "Created {when} ({zone}) by {name}",
+        "createdAnon": "Created {when} ({zone})",
+        "count": "{count, plural, one {# payout} other {# payouts}}",
+        "source": "Paid from our {currency} balance",
+        "download": "Download CSV",
+        "markAll": "Mark all paid",
+        "cancel": "Cancel export",
+        "steps": {
+          "label": "How to pay this export",
+          "download": "Download the CSV",
+          "downloadNote": "The same file every time you download it.",
+          "upload": "Upload it to Wise",
+          "uploadNote": "As a batch payment to saved recipients.",
+          "mark": "Mark paid",
+          "markNote": "Once Wise shows the transfers as sent."
+        },
+        "rows": "In this export",
+        "column": {
+          "statement": "Statement",
+          "florist": "Florist",
+          "wise": "Wise recipient",
+          "currency": "Currency",
+          "amount": "Amount",
+          "status": "Status",
+          "action": "Action"
+        },
+        "chip": {
+          "exported": "Exported",
+          "paid": "Paid {date}"
+        },
+        "markOne": "Mark paid",
+        "markOneLabel": "Mark {number} paid",
+        "totalIn": "Total in {currency}",
+        "totalNote": "one row per currency",
+        "note": "Each florist receives exactly the amount shown, in their currency; Wise's fee is paid from our {currency} balance. The payment reference is the statement number.",
+        "partlyPaid": "{count, plural, one {# payout is} other {# payouts are}} paid. This export can no longer be cancelled.",
+        "cancelled": "Cancelled {when} ({zone}). {count, plural, one {Its payout is} other {Its # payouts are}} back under “Sent” and can go into a new export. Do not upload this file to Wise.",
+        "cancelledBy": "Cancelled {when} ({zone}) by {name}. {count, plural, one {Its payout is} other {Its # payouts are}} back under “Sent” and can go into a new export. Do not upload this file to Wise.",
+        "markAllTitle": "Mark all {count, plural, one {# payout} other {# payouts}} paid?",
+        "markAllIntro": "Do this only after Wise shows the transfers as sent. Paid payouts cannot be changed back.",
+        "notYet": "Not yet",
+        "markAllSubmit": "Mark {count} paid",
+        "cancelTitle": "Cancel this export?",
+        "cancelIntro": "Its payouts return to “Sent” so you can export them again. If you already uploaded the file to Wise, cancel the batch there first.",
+        "keep": "Keep it",
+        "cancelSubmit": "Cancel export",
+        "empty": "This export holds no payouts.",
+        "allPaid": "Every payout in this export is paid."
+      },
+      "done": {
+        "sent": "Statement {number} sent to {florist}.",
+        "created": "Wise export created with {count, plural, one {# payout} other {# payouts}}.",
+        "settled": "Adjustment settled. The line is in the florist's open weekly payout.",
+        "waived": "Adjustment waived.",
+        "accrued": "Payout line written.",
+        "lineAdded": "Line added.",
+        "lineRemoved": "Line removed.",
+        "reviewed": "Line marked reviewed.",
+        "paid": "Marked paid.",
+        "exportPaid": "{count, plural, one {# payout} other {# payouts}} marked paid.",
+        "cancelled": "Export cancelled. Its payouts are back under “Sent”."
+      },
+      "refused": {
+        "PAYOUT_AMOUNT_UNKNOWN": "Nothing was written: an order line has no fixed payout amount.",
+        "PAYOUT_CURRENCY_MISMATCH": "Nothing was written: the amounts are in different currencies.",
+        "PAYOUT_ASSIGNMENT_NOT_ACCEPTED": "Nothing was written: no florist has a standing acceptance of this order.",
+        "PAYOUT_WAIVER_ILLEGAL": "Nothing was written: only a live order in delivered can be accrued without a photo.",
+        "PAYOUT_NOT_FOUND": "Nothing changed: it no longer exists. Reload the page.",
+        "PAYOUT_NOT_DRAFT": "Nothing changed: the statement was sent, so its lines are frozen.",
+        "PAYOUT_LINE_NOT_REMOVABLE": "Nothing changed: an order line, or the line of a settled adjustment, cannot be removed.",
+        "PAYOUT_REVIEW_NONE": "Nothing changed: that line has no review flag.",
+        "PAYOUT_ADJUSTMENT_RESOLVED": "Nothing changed: this adjustment was already settled or waived.",
+        "PAYOUT_STATUS_ILLEGAL": "Nothing changed: the payout is not in a state that allows this.",
+        "PAYOUT_NOT_CLOSED": "Nothing was sent: the payout is still open.",
+        "PAYOUT_TOTAL_NOT_POSITIVE": "Nothing was sent: the total is not above zero.",
+        "PAYOUT_REVIEW_OPEN": "Nothing was sent: a line still needs your review.",
+        "PAYOUT_ADJUSTMENT_OPEN": "Nothing was sent: the florist has an open adjustment in this period.",
+        "PAYOUT_STATEMENT_NUMBER_EXHAUSTED": "Nothing was sent: the statement numbers are used up. Tell the developer.",
+        "PAYOUT_IN_EXPORT": "Nothing was exported: a selected statement is already in an active export.",
+        "PAYOUT_WISE_RECIPIENT_MISSING": "Nothing was exported. {codes} {count, plural, one {has} other {have}} no Wise recipient id. Add it on the florist page, or leave that statement out.",
+        "PAYOUT_EXPORT_PAID": "This export has a paid payout, so it cannot be cancelled. Nothing changed.",
+        "PAYOUT_EXPORT_CANCELLED": "Nothing changed: this export was cancelled.",
+        "PAYOUT_NOT_EXPORTED": "Nothing changed: the payout is in no active export.",
+        "invalid": "Nothing changed: check the form.",
+        "other": "Nothing changed. Reload the page and try again."
       }
     }
   },

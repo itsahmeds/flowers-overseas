@@ -51,17 +51,36 @@ export const VIEWED_ENTITIES = {
   application: "partner_application",
   // Spec 030a §5.2 (TASK-366): each Wise CSV download.
   payout_export: "payout_export",
+  // Spec 030a §5.3 (TASK-367): each opening of a statement PDF through its signed link.
+  payout: "payout",
 } as const;
 export type ViewedEntity = keyof typeof VIEWED_ENTITIES;
 
+/**
+ * The payout tables (spec 030a §11 "Audit"): not under `audit_row_change()`, each payouts command
+ * writes its own row (`writePayoutAudit`), so the filter offers them beside the triggered tables
+ * (TASK-367, from TASK-366's carry-forward).
+ */
+export const PAYOUT_AUDIT_TABLES = [
+  "payout",
+  "payout_line",
+  "payout_adjustment",
+  "payout_export",
+] as const;
+
 /** Every `entity_table` the log can hold, the entity filter's options. */
-export const AUDIT_ENTITIES = [...AUDITED_TABLES, "order"] as const;
+export const AUDIT_ENTITIES = [
+  ...AUDITED_TABLES,
+  "order",
+  ...PAYOUT_AUDIT_TABLES,
+] as const;
 
 /** The audit action of each entity's view. */
 export const VIEW_ACTIONS = Object.freeze({
   order: "order.viewed",
   application: "application.viewed",
   payout_export: "payout_export.viewed",
+  payout: "payout.viewed",
 } as const satisfies Record<ViewedEntity, string>);
 
 /** The audit page reads with this action; no trigger records a read. */
@@ -152,7 +171,7 @@ export async function logAdminRead(
   run: AdminRunner = adminRunner,
 ): Promise<void> {
   const parsedEntity = z
-    .enum(["order", "application", "payout_export"])
+    .enum(["order", "application", "payout_export", "payout"])
     .parse(entity);
   const entityId = z.uuid().parse(id);
   await run({ ...actor, action: VIEW_ACTIONS[parsedEntity] }, async (db) => {

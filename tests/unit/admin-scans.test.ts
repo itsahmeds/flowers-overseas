@@ -493,6 +493,17 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       link: (chunks: string) => chunks,
       // TASK-364's `emails.ops.payouts.weeklyReady.*` (F2) and `lineMissing.*` (F3).
       minutes: "60",
+      // TASK-367's `admin.payouts.*` and `admin.partners.payoutTerms.*`.
+      used: "2",
+      formatted: "45.00 zł",
+      hours: 19,
+      kind: "weekly",
+      period: "19–25 Oct 2026",
+      rank: "3",
+      item: "Amber Hour · 18 stems",
+      quantity: 2,
+      stems: 18,
+      codes: "pl-waw-02",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);
