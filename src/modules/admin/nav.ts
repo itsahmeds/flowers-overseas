@@ -16,6 +16,7 @@ export interface AdminNavItem {
     | "orders"
     | "applications"
     | "partners"
+    | "payouts"
     | "flags"
     | "audit"
     | "users";
@@ -43,6 +44,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "partners",
     href: "/admin/partners",
     permissions: ["partner.edit", "partner.payout"],
+    built: true,
+  },
+  {
+    // Spec 030a §2.8 (TASK-367): the payouts pages, for `payouts.manage` (admin, finance).
+    key: "payouts",
+    href: "/admin/payouts",
+    permissions: ["payouts.manage"],
     built: true,
   },
   {

@@ -67,7 +67,7 @@ export type PayoutAdminRunner = <T>(
 
 /** Production: one admin transaction, a Drizzle executor over it. */
 export const payoutAdminRunner: PayoutAdminRunner = async (input, fn) => {
-  const [{ withAdminContext }, { drizzleExecutor }] = await Promise.all([
+  const [{ withAdminContext }, { withExecutor }] = await Promise.all([
     import("@/lib/db"),
     import("@/modules/orders"),
   ]);
@@ -78,7 +78,7 @@ export const payoutAdminRunner: PayoutAdminRunner = async (input, fn) => {
       action: PayoutAdminActionSchema.parse(input.action),
       ...(input.reason === undefined ? {} : { reason: input.reason }),
     },
-    (db) => fn(drizzleExecutor(db)),
+    (db) => withExecutor({ db }, "payouts.admin", fn),
   );
 };
 

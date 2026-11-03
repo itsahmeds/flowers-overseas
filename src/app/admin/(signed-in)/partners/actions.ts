@@ -22,6 +22,7 @@ import {
   saveBlackout,
   saveCoverage,
   saveMapping,
+  savePayoutTerms,
   setPartnerStatus,
   updatePartner,
 } from "@/modules/partners";
@@ -148,4 +149,28 @@ export async function setPartnerStatusAction(
     input,
     { result: "status", to: input["to"] ?? "" },
   );
+}
+
+/**
+ * Spec 030a §2.1, AC-1 (TASK-367): the "Payout terms" block. `partner.payout` (admin, finance)
+ * first; ops and content get 403 before anything is read. A refusal names the refused fields as
+ * codes, never the typed value (a Wise recipient id stays out of the URL).
+ */
+export async function savePayoutTermsAction(formData: FormData): Promise<void> {
+  const session = await requirePermission("partner.payout");
+  const input = fields(formData);
+  const result = await savePayoutTerms(await actor(session.userId), input);
+  if (result.ok) {
+    redirect(
+      `${pageOf(result.code)}?${new URLSearchParams({ result: "saved", form: "payoutTerms" }).toString()}`,
+    );
+  }
+  const params = new URLSearchParams({
+    result: result.reason,
+    form: "payoutTerms",
+  });
+  if (result.reason === "invalid") {
+    params.set("err", errorsParam(result.errors));
+  }
+  redirect(`${pageOf(input["code"])}?${params.toString()}`);
 }

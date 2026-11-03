@@ -44,6 +44,7 @@ import {
   AdminCell,
   AdminChip,
   AdminEmpty,
+  AdminCode,
   AdminField,
   AdminRow,
   AdminTable,
@@ -62,12 +63,19 @@ import {
   AdminSection,
 } from "@/modules/ui/admin/AdminRecord";
 
+import {
+  type PayoutTermsView,
+  payoutTermsOf,
+  readPayouts,
+} from "@/modules/partners/payouts";
+
 import { AdminFrame } from "../../frame";
 import {
   recordTermsAction,
   saveBlackoutAction,
   saveCoverageAction,
   saveMappingAction,
+  savePayoutTermsAction,
   setPartnerStatusAction,
   updatePartnerAction,
 } from "../actions";
@@ -416,6 +424,134 @@ function StatusCard({
   );
 }
 
+/**
+ * Spec 030a §2.1, §2.8 (TASK-367; artboard `admin-partner-detail-*` "Payout terms"): cadence,
+ * prepaid limit with "used n of m", Wise recipient id. `partner.payout` edits; a role without it
+ * reads the values and the reason, with no control. "Not set" says what a missing Wise id blocks.
+ */
+function PayoutTermsBlock({
+  partner,
+  terms,
+  canPay,
+  result,
+}: {
+  readonly partner: PartnerDetail;
+  readonly terms: PayoutTermsView;
+  readonly canPay: boolean;
+  readonly result: PartnerResult;
+}): ReactElement {
+  const prepaidHint = adminT("admin.partners.payoutTerms.prepaidHint", {
+    used: formatNumber(terms.prepaidUsed, "en"),
+    limit: formatNumber(terms.prepaidOrderLimit, "en"),
+  });
+  const notSet =
+    terms.wiseRecipientId === null ? (
+      <AdminQuiet>{adminT("admin.partners.payoutTerms.notSet")}</AdminQuiet>
+    ) : null;
+  if (!canPay) {
+    return (
+      <AdminCard>
+        <AdminKeyValues
+          items={[
+            {
+              key: "cadence",
+              label: adminT("admin.partners.payoutTerms.cadence"),
+              value: adminT(
+                `admin.partners.payoutTerms.cadenceOption.${terms.cadence}`,
+              ),
+            },
+            {
+              key: "prepaid",
+              label: adminT("admin.partners.payoutTerms.prepaid"),
+              value: prepaidHint,
+            },
+            {
+              key: "wise",
+              label: adminT("admin.partners.payoutTerms.wise"),
+              value:
+                terms.wiseRecipientId ??
+                adminT("admin.partners.payoutTerms.wiseNone"),
+              numeric: true,
+            },
+          ]}
+        />
+        {notSet}
+        <AdminQuiet>{adminT("admin.partners.payoutTerms.readOnly")}</AdminQuiet>
+      </AdminCard>
+    );
+  }
+  const cadenceId = "payoutTerms-cadence";
+  const cadenceError = fieldError(result, "payoutTerms", "cadence");
+  const cadenceHint = adminT("admin.partners.payoutTerms.cadenceHint");
+  const limitId = "payoutTerms-prepaidOrderLimit";
+  const limitError = fieldError(result, "payoutTerms", "prepaidOrderLimit");
+  const wiseId = "payoutTerms-wiseRecipientId";
+  const wiseError = fieldError(result, "payoutTerms", "wiseRecipientId");
+  const wiseHint = adminT("admin.partners.payoutTerms.wiseHint");
+  return (
+    <FormCard action={savePayoutTermsAction} partner={partner}>
+      <AdminField
+        id={cadenceId}
+        label={adminT("admin.partners.payoutTerms.cadence")}
+        hint={cadenceHint}
+        error={cadenceError}
+      >
+        <select
+          id={cadenceId}
+          name="cadence"
+          defaultValue={terms.cadence}
+          {...adminFieldAria(cadenceId, cadenceHint, cadenceError)}
+          className={adminControlClass(cadenceError !== undefined)}
+        >
+          {(["weekly", "per_order"] as const).map((cadence) => (
+            <option key={cadence} value={cadence}>
+              {adminT(`admin.partners.payoutTerms.cadenceOption.${cadence}`)}
+            </option>
+          ))}
+        </select>
+      </AdminField>
+      <AdminField
+        id={limitId}
+        label={adminT("admin.partners.payoutTerms.prepaid")}
+        hint={prepaidHint}
+        error={limitError}
+      >
+        <input
+          id={limitId}
+          name="prepaidOrderLimit"
+          type="text"
+          inputMode="numeric"
+          defaultValue={String(terms.prepaidOrderLimit)}
+          {...adminFieldAria(limitId, prepaidHint, limitError)}
+          className={adminControlClass(limitError !== undefined)}
+        />
+      </AdminField>
+      <AdminField
+        id={wiseId}
+        label={adminT("admin.partners.payoutTerms.wise")}
+        hint={wiseHint}
+        error={wiseError}
+        full
+      >
+        <input
+          id={wiseId}
+          name="wiseRecipientId"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          defaultValue={terms.wiseRecipientId ?? ""}
+          {...adminFieldAria(wiseId, wiseHint, wiseError)}
+          className={adminControlClass(wiseError !== undefined)}
+        />
+      </AdminField>
+      <Actions>
+        <AdminButton>{adminT("admin.partners.payoutTerms.save")}</AdminButton>
+        {notSet}
+      </Actions>
+    </FormCard>
+  );
+}
+
 export default async function AdminPartnerPage({
   params,
   searchParams,
@@ -437,6 +573,10 @@ export default async function AdminPartnerPage({
   const signIn = await floristSignInStatus(
     { userId: session.userId, requestId: await adminRequestId() },
     partner.id,
+  );
+  const payoutTerms = await readPayouts(
+    { userId: session.userId, requestId: await adminRequestId() },
+    (executor) => payoutTermsOf(executor, partner.id),
   );
   const zone = zoneCity(session.timeZone);
   const updated = formatDate(
@@ -896,6 +1036,24 @@ export default async function AdminPartnerPage({
                 <PartnerMessage result={result} form="products" />
                 {products}
               </AdminSection>
+              {payoutTerms === undefined ? null : (
+                <AdminSection
+                  title={adminT("admin.partners.payoutTerms.title")}
+                  note={
+                    <AdminCode>
+                      {adminT("admin.partners.payoutTerms.permission")}
+                    </AdminCode>
+                  }
+                >
+                  <PartnerMessage result={result} form="payoutTerms" />
+                  <PayoutTermsBlock
+                    partner={partner}
+                    terms={payoutTerms}
+                    canPay={canPay}
+                    result={result}
+                  />
+                </AdminSection>
+              )}
             </>
           }
           aside={

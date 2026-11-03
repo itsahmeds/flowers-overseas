@@ -24,6 +24,7 @@ export function AdminActionDialog({
   openTone = "ink",
   title,
   wide = false,
+  inline = false,
   initiallyOpen = false,
   closeLabel,
   children,
@@ -34,6 +35,8 @@ export function AdminActionDialog({
   readonly title: ReactNode;
   /** 760 px (the reroute list) instead of 540 px. */
   readonly wide?: boolean;
+  /** The opener at its own width (a row's Settle, Waive; spec 030a), not the card's full width. */
+  readonly inline?: boolean;
   readonly initiallyOpen?: boolean;
   readonly closeLabel?: string;
   readonly children: ReactNode;
@@ -56,7 +59,7 @@ export function AdminActionDialog({
         type="button"
         aria-haspopup="dialog"
         onClick={() => dialog.current?.showModal()}
-        className={adminButtonClass(openTone, { block: true })}
+        className={adminButtonClass(openTone, { block: !inline })}
       >
         {openLabel}
       </button>
@@ -87,5 +90,25 @@ export function AdminActionDialog({
         </div>
       </dialog>
     </>
+  );
+}
+
+/**
+ * A "Cancel" button inside a dialog's own form row (spec 030a's dialogs: Cancel beside the
+ * submit): closes the dialog it sits in without submitting; focus returns to the opener.
+ */
+export function AdminDialogClose({
+  label,
+}: {
+  readonly label: string;
+}): ReactElement {
+  return (
+    <button
+      type="button"
+      onClick={(event) => event.currentTarget.closest("dialog")?.close()}
+      className={adminButtonClass("ghost")}
+    >
+      {label}
+    </button>
   );
 }
