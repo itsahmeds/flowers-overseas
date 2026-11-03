@@ -14,7 +14,8 @@
  *  - a `paths` glob that matches a shared file (`SHARED_DIRECTORIES`, `SHARED_FILES`): a glob that
  *    covers a file every page uses would let the whole site count as one surface;
  *  - **the import rule**: a file under any entry's `paths` that a shared file, or a file under
- *    `src/app/` outside every entry's `paths`, imports, directly or through other files.
+ *    `src/app/` outside every entry's `paths` and outside `NON_INDEXABLE_APP_DIRECTORIES` (admin),
+ *    imports, directly or through other files.
  *    Without it a checkout component placed on a product page shows `checkout.*` copy on an
  *    indexable page while the key is named only inside a checkout file. The graph is the static
  *    `import`, `export ... from` and `import()` with a literal path of `src/`, read by
@@ -56,6 +57,17 @@ export const SHARED_FILES: readonly string[] = [
 ];
 /** Everything under here (root layout, chooser, error documents, localised pages) can render on an indexable page unless an entry's `paths` covers it. */
 const APP_DIRECTORY = "src/app/";
+/**
+ * The app directories no indexable page lives under, so their files are not roots of the import
+ * rule: admin (spec 012 §5.4: `noindex` five ways, English only, every word from its own admin
+ * catalogue, never a key of the public catalogues). Spec 020a's cancel
+ * and refund actions reach `src/modules/payments` from `src/app/admin/` (TASK-358; the answer
+ * TASK-359's brief asked for). A shared file an admin page imports is still a root of its own, so
+ * nothing an indexable page renders escapes the rule through admin.
+ */
+export const NON_INDEXABLE_APP_DIRECTORIES: readonly string[] = [
+  "src/app/admin/",
+];
 
 const SOURCE_EXTENSIONS = [".ts", ".tsx"];
 
@@ -271,7 +283,12 @@ export function scopeProblems(input: ScopeCheckInput): ScopeProblem[] {
     const queue: string[] = allFiles.filter((file) => {
       const path = rel(file);
       return (
-        isShared(path) || (path.startsWith(APP_DIRECTORY) && !inAnyPaths(path))
+        isShared(path) ||
+        (path.startsWith(APP_DIRECTORY) &&
+          !NON_INDEXABLE_APP_DIRECTORIES.some((directory) =>
+            path.startsWith(directory),
+          ) &&
+          !inAnyPaths(path))
       );
     });
     const seen = new Set(queue);

@@ -291,7 +291,12 @@ async function renderList(
 async function renderDetail(id: string): Promise<string> {
   const { default: Page } =
     await import("../../src/app/admin/(signed-in)/orders/[id]/page.tsx");
-  return renderToStaticMarkup(await Page({ params: Promise.resolve({ id }) }));
+  return renderToStaticMarkup(
+    await Page({
+      params: Promise.resolve({ id }),
+      searchParams: Promise.resolve({}),
+    }),
+  );
 }
 
 async function thrown(fn: () => unknown): Promise<unknown> {

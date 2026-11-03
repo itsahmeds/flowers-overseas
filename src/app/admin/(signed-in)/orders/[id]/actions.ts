@@ -23,32 +23,41 @@ import {
 import { adminOrderCancel } from "@/modules/admin/order-actions/cancel";
 import { manualReroute } from "@/modules/orders/routing/jobs";
 
-/** The form's own fields; Next's `$ACTION_…` keys are dropped. */
-function fields(formData: FormData): Record<string, string> {
-  const entries: [string, string][] = [];
-  for (const [key, value] of formData.entries()) {
-    if (!key.startsWith("$") && typeof value === "string") {
-      entries.push([key, value]);
-    }
-  }
-  return Object.fromEntries(entries);
+/**
+ * The posted fields at the boundary (unknown keys, Next's `$ACTION_…` among them, stripped):
+ * `expectedSeq` arrives as text and becomes a number; a blank note is no note. The command then
+ * parses the result with its own strict schema (`AdminRerouteSchema`, `AdminCancelSchema`).
+ */
+const BaseFormSchema = z.object({
+  orderId: z.string(),
+  actionId: z.string(),
+  expectedSeq: z.coerce.number(),
+});
+const RerouteFormSchema = BaseFormSchema.extend({ partnerId: z.string() });
+const CancelFormSchema = BaseFormSchema.extend({
+  reason: z.string(),
+  note: z
+    .string()
+    .optional()
+    .transform((note) =>
+      note === undefined || note.trim() === "" ? undefined : note,
+    ),
+});
+
+function rerouteForm(input: unknown) {
+  const parsed = RerouteFormSchema.strip().safeParse(input);
+  return parsed.success ? parsed.data : undefined;
 }
 
-const SeqSchema = z.coerce.number().int().positive();
-
-/** The base fields as the action schemas expect them: `expectedSeq` a number, no blank note. */
-function actionInput(input: Record<string, string>): Record<string, unknown> {
-  const seq = SeqSchema.safeParse(input["expectedSeq"]);
-  const { note, ...rest } = input;
-  return {
-    ...rest,
-    expectedSeq: seq.success ? seq.data : input["expectedSeq"],
-    ...(note === undefined || note.trim() === "" ? {} : { note }),
-  };
+function cancelForm(input: unknown) {
+  const parsed = CancelFormSchema.strip().safeParse(input);
+  if (!parsed.success) return undefined;
+  const { note, ...rest } = parsed.data;
+  return note === undefined ? rest : { ...rest, note };
 }
 
 function back(
-  orderId: unknown,
+  orderId: string,
   action: "reroute" | "cancel",
   result: AdminOrderActionResult,
 ): never {
@@ -63,22 +72,24 @@ function back(
 
 export async function rerouteOrderAction(formData: FormData): Promise<void> {
   const session = await requirePermission("orders.reroute");
-  const input = fields(formData);
-  const result = await adminOrderReroute(actionInput(input), {
+  const input = rerouteForm(Object.fromEntries(formData));
+  if (input === undefined) redirect("/admin/orders");
+  const result = await adminOrderReroute(input, {
     guard: () => Promise.resolve(session),
     requestId: await adminRequestId(),
     reroute: (orderId, partnerId, actor, options) =>
       manualReroute(orderId, partnerId, actor, options),
   });
-  back(input["orderId"], "reroute", result);
+  back(input.orderId, "reroute", result);
 }
 
 export async function cancelOrderAction(formData: FormData): Promise<void> {
   const session = await requirePermission("orders.cancel");
-  const input = fields(formData);
-  const result = await adminOrderCancel(actionInput(input), {
+  const input = cancelForm(Object.fromEntries(formData));
+  if (input === undefined) redirect("/admin/orders");
+  const result = await adminOrderCancel(input, {
     guard: () => Promise.resolve(session),
     requestId: await adminRequestId(),
   });
-  back(input["orderId"], "cancel", result);
+  back(input.orderId, "cancel", result);
 }

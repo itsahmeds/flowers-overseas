@@ -67,7 +67,7 @@ import {
 import { AdminFrame } from "../../frame";
 import { CHIP_TONE, deliveryDay, formatOrderMoney, ModeChip } from "../view";
 import { OrderActionsPanel } from "./actions-panel";
-import { readOrderActionsData } from "./actions-data";
+import { ActionOutcomeSchema, readOrderActionsData } from "./actions-data";
 
 /** A florist's page, only once it exists (no dead links). */
 function partnerHref(code: string): string | undefined {
@@ -237,7 +237,7 @@ export default async function AdminOrderPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const session = await requireAdminPage("orders.view");
   const { id } = await params;
@@ -254,7 +254,7 @@ export default async function AdminOrderPage({
       order,
       session,
       actor,
-      (await searchParams) ?? {},
+      ActionOutcomeSchema.safeParse(await searchParams).data ?? null,
     ),
   });
 
