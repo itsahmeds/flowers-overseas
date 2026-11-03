@@ -469,14 +469,16 @@ describe("the rendered header (AC-7, AC-14)", () => {
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.
     expect(html).not.toMatch(/min-\[\d+px\]:/);
-    const en = loadMessages("en", ["nav"]) as { nav: { send: string } };
+    // TASK-434: the pill's key (`nav.send`, "Send flowers") left every catalogue with its reader.
+    const en = loadMessages("en", ["nav"]);
+    expect(en.nav).not.toHaveProperty("send");
     for (const locale of LOCALES) {
       const rendered = render(locale);
       expect(rendered, locale).not.toContain(
         `${localePath(locale, "home")}#send`,
       );
     }
-    expect(textOf(html)).not.toContain(en.nav.send);
+    expect(textOf(html)).not.toContain("Send flowers");
   });
 
   it("sets the logo as the mark and the outlined wordmark, named by the trading name (A21 clause 3)", () => {

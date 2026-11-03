@@ -47,17 +47,6 @@ export function noticeOf(code: FloristActionErrorCode): OrderNotice | null {
   }
 }
 
-/** A query value among `allowed`, or `undefined`. */
-export function oneOf<T extends string>(
-  allowed: readonly T[],
-  value: string | string[] | undefined,
-): T | undefined {
-  return typeof value === "string" &&
-    (allowed as readonly string[]).includes(value)
-    ? (value as T)
-    : undefined;
-}
-
 /** `path?{key}={value}`, or `path` alone. */
 export function withQuery(
   path: string,

@@ -169,6 +169,36 @@ export function formEntries(form: FormData): FormEntries {
 }
 
 /**
+ * A post as `formEntries()` reads it, as the schema `applicationPost` parses the body with: not a
+ * `FormData`, a repeated key or a file part fails; otherwise the fields as a record of strings.
+ */
+export const PostedFieldsSchema = z
+  .instanceof(FormData)
+  .transform((form, ctx) => {
+    const read = formEntries(form);
+    if (read.ok) return read.entries;
+    ctx.addIssue({ code: "custom", message: "a repeated key or a file part" });
+    return z.NEVER;
+  });
+
+/**
+ * The state `useActionState` hands back with the next post. It comes from the browser, so it is
+ * parsed like any other input: the action reads `attempt` from it and returns it unchanged while
+ * the form is off. Its shape is `ApplyFormState`'s (`state.ts`, which the client island imports and
+ * so carries no Zod).
+ */
+export const ApplyFormStateSchema = z.object({
+  status: z.enum(["idle", "invalid", "failed", "tooMany"]),
+  attempt: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(Number.MAX_SAFE_INTEGER - 1),
+  values: z.record(z.string(), z.string()),
+  errors: z.record(z.string(), z.string()),
+});
+
+/**
  * The answers to show again after a refused post: only the form's own fields, each cut to the
  * schema's longest bound, so the re-rendered page never carries an unknown key or a megabyte.
  */

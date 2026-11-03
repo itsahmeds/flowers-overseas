@@ -122,6 +122,17 @@ async function readBounded(
   return buffer;
 }
 
+/** The parsed form's one `photo` part: a file of at least one byte, or the parse fails (`missing`). */
+const PhotoPartSchema = z
+  .instanceof(FormData)
+  .transform((form): unknown => form.get(PHOTO_FIELD))
+  .pipe(z.instanceof(Blob).refine((file) => file.size > 0));
+
+/** That part's bytes, read once its size is known to be within the limit. */
+const PhotoPartBytesSchema = z
+  .instanceof(ArrayBuffer)
+  .refine((bytes) => bytes.byteLength > 0);
+
 /**
  * The `photo` field of a `multipart/form-data` request, read bounded while streaming. Throws
  * `DeliveryPhotoRefused` (`too_large`, `missing`); the type is `checkDeliveryPhoto`'s.
@@ -144,22 +155,20 @@ export async function readPhotoUpload(
   if (request.body === null) throw new DeliveryPhotoRefused("missing");
   const raw = await readBounded(request.body, bound);
   if (raw === null) throw new DeliveryPhotoRefused("too_large");
-  let form: FormData;
+  let file: Blob;
   try {
-    form = await new Request("http://upload.invalid/", {
-      method: "POST",
-      headers: { "content-type": contentType },
-      body: raw,
-    }).formData();
+    file = PhotoPartSchema.parse(
+      await new Request("http://upload.invalid/", {
+        method: "POST",
+        headers: { "content-type": contentType },
+        body: raw,
+      }).formData(),
+    );
   } catch {
     throw new DeliveryPhotoRefused("missing");
   }
-  const file = form.get(PHOTO_FIELD);
-  if (!(file instanceof Blob) || file.size === 0) {
-    throw new DeliveryPhotoRefused("missing");
-  }
   if (file.size > limits.maxBytes) throw new DeliveryPhotoRefused("too_large");
-  return new Uint8Array(await file.arrayBuffer());
+  return new Uint8Array(PhotoPartBytesSchema.parse(await file.arrayBuffer()));
 }
 
 /** What `processDeliveryPhoto` returns: the JPEG we store and its facts. */

@@ -24,6 +24,7 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import type { ReactElement } from "react";
+import { z } from "zod";
 
 import { FLORIST_PATHS } from "@/config/florists";
 import { isPausedMember, toDbContext } from "@/lib/auth/florist";
@@ -39,7 +40,7 @@ import {
 import { floristTranslator } from "@/modules/partners/auth/copy";
 import { Button } from "@/modules/ui";
 
-import { commandContextOf, oneOf, ORDER_NOTICES } from "../../actions";
+import { commandContextOf, ORDER_NOTICES } from "../../actions";
 import { SignedInFrame } from "../../chrome";
 import { currentFloristContext } from "../../request";
 
@@ -51,6 +52,11 @@ const NOTICE_KEYS = {
 } as const;
 
 const DOCK_BUTTON = "min-h-[56px] px-[16px]";
+
+/** The order page's one query key: the notice after a refused action; any other value is none. */
+const OrderPageQuerySchema = z.object({
+  notice: z.enum(ORDER_NOTICES).optional().catch(undefined),
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const context = await currentFloristContext();
@@ -66,7 +72,7 @@ export default async function FloristOrderPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const { assignmentId } = await params;
-  const notice = oneOf(ORDER_NOTICES, (await searchParams)["notice"]);
+  const { notice } = OrderPageQuerySchema.parse(await searchParams);
   const context = await currentFloristContext();
   if (context === null) redirect(FLORIST_PATHS.signIn);
   setRequestLocale(context.locale);

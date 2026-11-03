@@ -1011,7 +1011,6 @@
     "category": {
       "destinations": "Destinations",
       "occasions": "Occasions",
-      "ourSelection": "Our selection",
       "roses": "Roses",
       "sympathy": "Sympathy",
       "addOns": "Add-ons"
@@ -1028,7 +1027,6 @@
       "label": "Search flowers, occasions, a city or a country",
       "submit": "Search"
     },
-    "send": "Wyślij kwiaty",
     "utility": {
       "cutoff": "Order by 14:00 in Warsaw for delivery today",
       "cutoffShort": "Order by 14:00 in Warsaw · today",

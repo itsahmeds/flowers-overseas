@@ -20,14 +20,24 @@ import {
   rejectApplication,
 } from "@/modules/partners";
 
+/**
+ * The form's own fields as strings: Next's `$ACTION_…` keys and any file part are dropped, so the
+ * command's own schema reads only what the form typed (a repeated key keeps its last value).
+ */
+const FormFieldsSchema = z
+  .record(z.string(), z.unknown())
+  .transform((entries) =>
+    Object.fromEntries(
+      Object.entries(entries).filter(
+        (entry): entry is [string, string] =>
+          !entry[0].startsWith("$") && typeof entry[1] === "string",
+      ),
+    ),
+  );
+
+/** The form's own fields, parsed. */
 function fields(formData: FormData): Record<string, string> {
-  const entries: [string, string][] = [];
-  for (const [key, value] of formData.entries()) {
-    if (!key.startsWith("$") && typeof value === "string") {
-      entries.push([key, value]);
-    }
-  }
-  return Object.fromEntries(entries);
+  return FormFieldsSchema.parse(Object.fromEntries(formData));
 }
 
 function pageOf(id: unknown): string {

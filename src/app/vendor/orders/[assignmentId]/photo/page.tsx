@@ -15,6 +15,7 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import type { ReactElement } from "react";
+import { z } from "zod";
 
 import { FLORIST_PATHS } from "@/config/florists";
 import { toDbContext } from "@/lib/auth/florist";
@@ -24,11 +25,16 @@ import { InboxDock, PhotoStep } from "@/modules/partners";
 import { floristTranslator } from "@/modules/partners/auth/copy";
 import { Button } from "@/modules/ui";
 
-import { commandContextOf, oneOf } from "../../../actions";
+import { commandContextOf } from "../../../actions";
 import { SignedInFrame } from "../../../chrome";
 import { currentFloristContext } from "../../../request";
 
 const PHOTO_ERRORS = ["wrong_type", "too_large"] as const;
+
+/** The photo page's one query key: why the last upload was refused; any other value is none. */
+const PhotoPageQuerySchema = z.object({
+  error: z.enum(PHOTO_ERRORS).optional().catch(undefined),
+});
 
 /** Appendix A's two photo messages. */
 const ERROR_KEYS = {
@@ -50,7 +56,7 @@ export default async function FloristPhotoPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const { assignmentId } = await params;
-  const error = oneOf(PHOTO_ERRORS, (await searchParams)["error"]);
+  const { error } = PhotoPageQuerySchema.parse(await searchParams);
   const context = await currentFloristContext();
   if (context === null) redirect(FLORIST_PATHS.signIn);
   setRequestLocale(context.locale);

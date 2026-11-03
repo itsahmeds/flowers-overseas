@@ -15,6 +15,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 import { floristsConfig } from "@/config/florists";
 import {
@@ -25,7 +26,11 @@ import {
 import { applicationAlertFor } from "@/modules/partners/application/alert";
 import { applicationNoticeVersion } from "@/modules/partners/application/notice";
 import { dbApplicationSink } from "@/modules/partners/application/sink";
-import type { ApplyFormState } from "@/modules/partners/application/state";
+import { ApplyFormStateSchema } from "@/modules/partners/application/schema";
+import {
+  type ApplyFormState,
+  INITIAL_APPLY_STATE,
+} from "@/modules/partners/application/state";
 import { createRateLimiter } from "@/lib/csp-report";
 import { logger } from "@/lib/logger";
 import { captureWarning } from "@/lib/sentry";
@@ -38,30 +43,37 @@ const limiter = createRateLimiter(
   APPLICATION_WINDOW_MS,
 );
 
+/** The bound locale, parsed like every other input: one the site routes, or the post is refused. */
+const BoundLocaleSchema = z
+  .string()
+  .refine((locale) => routableLocale(locale) !== undefined);
+
 export async function submitFloristApplicationAction(
-  locale: string,
-  previous: ApplyFormState,
-  form: FormData,
+  locale: unknown,
+  previous: unknown,
+  form: unknown,
 ): Promise<ApplyFormState> {
+  const state = ApplyFormStateSchema.catch(INITIAL_APPLY_STATE).parse(previous);
+  const bound = BoundLocaleSchema.safeParse(locale);
   if (
     floristsConfig.applicationForm !== "on" ||
-    routableLocale(locale) === undefined ||
-    !infoPageExists("florist-apply", locale)
+    !bound.success ||
+    !infoPageExists("florist-apply", bound.data)
   ) {
-    return previous;
+    return state;
   }
-  const outcome = await applicationPost(form, previous, {
+  const outcome = await applicationPost(form, state, {
     sink: dbApplicationSink(),
     alert: applicationAlertFor(process.env),
     logger,
     report: (signal) => {
       captureWarning(signal);
     },
-    privacyNoticeVersion: applicationNoticeVersion(locale),
+    privacyNoticeVersion: applicationNoticeVersion(bound.data),
     limiter,
   });
   if (outcome.kind === "sent") {
-    redirect(infoPagePath("florist-apply-sent", locale));
+    redirect(infoPagePath("florist-apply-sent", bound.data));
   }
   return outcome.state;
 }

@@ -120,6 +120,14 @@ const PARSERS: readonly Entry[] = [
     reason:
       "LinePositionSchema (through linePrelude) and UseNextDateSchema.safeParse(formValues(form))",
   },
+  // Spec 011 §5.2 "Server action" (TASK-213; registered by TASK-434): the apply action hands the
+  // posted FormData to the one runner, which parses it before anything reads a field and then
+  // runs FloristApplicationInputSchema (`submit.ts`) on the result.
+  {
+    entry: "src/modules/partners/application/form.ts#applicationPost",
+    reason:
+      "PostedFieldsSchema.safeParse(form), then FloristApplicationInputSchema.safeParse in submitFloristApplication",
+  },
 ];
 
 const BODY_METHODS = new Set([
@@ -990,6 +998,7 @@ describe("T-57: the real tree", () => {
       "src/modules/checkout/steps.ts#runUpdateLine",
       "src/modules/checkout/place.ts#runPlaceOrder",
       "src/modules/checkout/steps.ts#runUseNextDate",
+      "src/modules/partners/application/form.ts#applicationPost",
     ]);
   });
 

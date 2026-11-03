@@ -52,7 +52,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (G434): cheap layer green locally (format: Vitest file snapshots ignored like the corpus files; i18n: `nav.send`, `nav.category.ourSelection` deleted with their last reader gone; url-pii: TASK-221's admin query keys and `[code]` registered; zod-boundaries: 19 raw inputs now parsed with Zod). Map check already green (26,615 B, under the current cap). Next: unit suite; 15 unit failures pre-exist on main (catalog-product-view*, deferred-set, home-honesty de/pl, i18n-check, i18n-draft, i18n-messages-schema).
 
 ## Result
 

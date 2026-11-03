@@ -295,7 +295,8 @@ describe("the shipped catalogues and manifests", () => {
     //
     // On 2026-09-18 the founder attested four of them and they left this queue:
     // `nav.utility.datesPending` and `finder.datesPending`, `nav.utility.datesPendingShort` and
-    // `nav.category.ourSelection` ("Our selection", id `our-selection`). The two
+    // `nav.category.ourSelection` ("Our selection", id `our-selection`; it left every catalogue
+    // when the mega menu and home v3 retired its last reader, TASK-434). The two
     // `nav.utility.datesPending*` keys left every catalogue with spec 004 §14 A23 clause 12
     // (TASK-193). The decision is in
     // `docs/decisions-log.md`; their `en` manifest entries carry `reviewedBy: "founder"` and
@@ -631,8 +632,8 @@ describe("the shipped catalogues and manifests", () => {
 
     const destinationName: Messages["destinations"]["pl"]["name"] =
       enSource.destinations.pl.name;
-    const categoryLabel: Messages["nav"]["category"]["ourSelection"] =
-      enSource.nav.category.ourSelection;
+    const categoryLabel: Messages["nav"]["category"]["roses"] =
+      enSource.nav.category.roses;
     const heroHeading: Messages["home"]["hero"]["heading"] =
       enSource.home.hero.heading;
     const finderSubmit: Messages["finder"]["submit"] = enSource.finder.submit;
@@ -645,7 +646,7 @@ describe("the shipped catalogues and manifests", () => {
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
-    expect(categoryLabel).toBe("Our selection");
+    expect(categoryLabel).toBe("Roses");
     // TASK-231: the reviewed words, with the one italic phrase marked (the founder's "italic ok").
     expect(heroHeading).toBe("Flowers for someone <em>far away.</em>");
     expect(finderSubmit).toBe("Continue");

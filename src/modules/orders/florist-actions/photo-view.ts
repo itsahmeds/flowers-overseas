@@ -18,6 +18,7 @@ import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { floristsConfig } from "@/config/florists";
 import { withDbContext } from "@/lib/db";
 import type { ObjectLocation } from "@/lib/storage";
 
@@ -69,6 +70,18 @@ export async function floristDeliveryPhotoUrl(
 }
 
 /** What the photo route answers with: the bytes, never cached, never indexed. */
+/**
+ * A stored delivery photo as read back from the private bucket: at least one byte and at most the
+ * largest upload a florist may send (`floristsConfig.photo.maxBytes`; the stored JPEG is a
+ * re-encode no larger than that), so a wrong object answers 404, not its bytes.
+ */
+const StoredPhotoBytesSchema = z
+  .instanceof(ArrayBuffer)
+  .refine(
+    (bytes) =>
+      bytes.byteLength > 0 && bytes.byteLength <= floristsConfig.photo.maxBytes,
+  );
+
 const PHOTO_HEADERS = {
   "Content-Type": "image/jpeg",
   "Cache-Control": "private, no-store",
@@ -98,7 +111,9 @@ export async function floristDeliveryPhotoResponse(
   if (url === null) return notFound();
   const object = await (deps.fetchObject ?? ((target) => fetch(target)))(url);
   if (!object.ok) return notFound();
-  return new Response(new Uint8Array(await object.arrayBuffer()), {
+  const bytes = StoredPhotoBytesSchema.safeParse(await object.arrayBuffer());
+  if (!bytes.success) return notFound();
+  return new Response(new Uint8Array(bytes.data), {
     status: 200,
     headers: PHOTO_HEADERS,
   });
