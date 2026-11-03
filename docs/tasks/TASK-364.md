@@ -72,6 +72,9 @@ here.
 - 2026-11-04: F2 and F3 rebuilt to the `email-founder-*` artboard (copy `emails.ops.payouts.ready.*`
   with the ICU plural, `lineMissing.*` with the band, photo time in the florist's zone, florist
   code); F2 counts the ready group and those needing a look. Rebased on main 84d4e1bcd.
+- 2026-11-04: rebased on main 2801e7482 (TASK-342's invoice jobs): tick route, registry, runtime and the three
+  jobs unit files keep both sides (invoice.render_sweep then payouts.close/watch; 26 job names; hourly
+  `singletonSeconds` kept beside `retryLimit`). typecheck 0, db:check 0, jobs units 50/50, `payouts-accrual` 25/25 on PG16.
 
 ## Result
 
