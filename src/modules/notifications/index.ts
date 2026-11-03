@@ -41,15 +41,18 @@ export {
   NotificationJobInputSchema,
   NotificationRecipientMissing,
   NotificationsHeld,
+  OpsJobNotificationInputSchema,
   deliverNotifications,
   notificationsOutboxHandler,
   registerNotificationsOutbox,
   sendJobNotifications,
+  sendOpsJobNotification,
 } from "./pipeline";
 export type {
   NotificationDeps,
   NotificationJobInput,
   NotificationRequest,
+  OpsJobNotificationInput,
 } from "./pipeline";
 export {
   NotificationTemplateMissing,

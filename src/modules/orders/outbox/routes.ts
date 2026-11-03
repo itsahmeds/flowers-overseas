@@ -40,8 +40,7 @@
  * | Event                 | `live`    | Step                                                   |
  * |-----------------------|-----------|--------------------------------------------------------|
  * | `assignment.accepted` | `payouts` | `fixPayoutAtAcceptance`: the fixed amount, prepaid payout |
- *
- * `order.photo_uploaded` (the accrual, `accrueOrder`) is TASK-364's row, added with its handler.
+ * | `order.photo_uploaded` | `payouts` | `accrueOrder`: the order's payout line (TASK-364) |
  */
 import type { OrderEventType, OrderMode } from "../service/events";
 import type { OutboxTarget } from "../service/outbox";
@@ -223,6 +222,7 @@ export function notificationOutboxTargets(
 /** Spec 030a §5.2's subscriptions, exactly: `live` only. */
 export const PAYOUT_OUTBOX_ROUTES: ModeOutboxRoutes = {
   "assignment.accepted": { live: [PAYOUTS_TARGET] },
+  "order.photo_uploaded": { live: [PAYOUTS_TARGET] },
 };
 
 /** The targets spec 030a's rows give `event` for an order in `mode`. Pure. */

@@ -13,6 +13,7 @@ export const PAYOUT_ERROR_CODES = [
   "PAYOUT_AMOUNT_UNKNOWN",
   "PAYOUT_CURRENCY_MISMATCH",
   "PAYOUT_ASSIGNMENT_NOT_ACCEPTED",
+  "PAYOUT_WAIVER_ILLEGAL",
 ] as const;
 export type PayoutErrorCode = (typeof PAYOUT_ERROR_CODES)[number];
 

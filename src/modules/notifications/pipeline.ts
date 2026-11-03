@@ -442,9 +442,15 @@ async function claimDelivery(
 }
 
 /** Sends one recipient's message under its idempotency key, and records the outcome. */
+/** What one send needs of its trigger; F2 has no order, so `orderId` may be null here. */
+type SendRequest = Pick<
+  NotificationRequest,
+  "trigger" | "fromStatus" | "invoiceId"
+> & { readonly orderId: string | null; readonly jobId?: string | null };
+
 async function sendOne(
   executor: OrderExecutor,
-  request: NotificationRequest,
+  request: SendRequest,
   recipient: Recipient,
   deps: ResolvedDeps,
 ): Promise<"sent" | "skipped"> {
@@ -490,6 +496,7 @@ async function sendOne(
     assignmentId: assignment?.id ?? null,
     partnerId: assignment?.partner_id ?? null,
     invoiceId: request.invoiceId,
+    jobId: request.jobId ?? null,
     link,
     inboxUrl: rule.whatsappCopyOf === undefined ? null : inboxUrl,
     whatsappCopyOf: rule.whatsappCopyOf ?? null,
@@ -614,6 +621,7 @@ export const NotificationJobInputSchema = z
       "assignment.photo_remind",
       "invoice.email",
       "payouts.prepaid_ready",
+      "payouts.watch",
     ]),
     jobId: z.string().min(1).max(128),
     orderId: z.uuid(),
@@ -652,6 +660,65 @@ export async function sendJobNotifications(
     },
     deps,
   );
+}
+
+/**
+ * An ops message about no order (spec 030a's F2, TASK-364): `job:{name}:{jobId}` as the source
+ * key, `order_id` null on the delivery row (`notification_delivery_owner_check` admits it), the
+ * founder's address in `en`. Held (throws `NOTIFICATIONS_HELD`) while `notifications.email` is
+ * off; a second call with the same key sends nothing.
+ */
+export const OpsJobNotificationInputSchema = z
+  .object({
+    job: z.enum(["payouts.close"]),
+    jobId: z.string().min(1).max(128),
+  })
+  .strict();
+export type OpsJobNotificationInput = z.input<
+  typeof OpsJobNotificationInputSchema
+>;
+
+export async function sendOpsJobNotification(
+  executor: OrderExecutor,
+  input: OpsJobNotificationInput,
+  deps: NotificationDeps = {},
+): Promise<{ readonly sent: number; readonly skipped: number }> {
+  const parsed = OpsJobNotificationInputSchema.parse(input);
+  const resolved = resolveDeps(deps);
+  if (!(await resolved.emailEnabled())) throw new NotificationsHeld();
+  const job: NotificationJob = parsed.job;
+  const rules = notificationsFor(job, null, "live").filter(
+    (rule) => rule.audience === "ops",
+  );
+  const sourceKey = `job:${parsed.job}:${parsed.jobId}`;
+  let sent = 0;
+  let skipped = 0;
+  for (const rule of rules) {
+    const outcome = await sendOne(
+      executor,
+      {
+        trigger: job,
+        fromStatus: null,
+        invoiceId: null,
+        orderId: null,
+        jobId: parsed.jobId,
+      },
+      {
+        rule,
+        ref: "ops",
+        address: resolved.opsAddress(),
+        locale: "en",
+        sourceKey,
+        orderId: null,
+        purchaseId: null,
+        assignment: null,
+      },
+      resolved,
+    );
+    if (outcome === "sent") sent += 1;
+    else skipped += 1;
+  }
+  return { sent, skipped };
 }
 
 /**

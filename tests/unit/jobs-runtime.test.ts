@@ -192,7 +192,9 @@ describe("ensureQueues", () => {
       "order.route",
       "outbox.dispatch",
       "payments.production_start",
+      "payouts.close",
       "payouts.prepaid_ready",
+      "payouts.watch",
       "retention.sweep",
       "routing.sla_watch",
       "webhook.process",
@@ -396,7 +398,7 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), order.close_sweep (TASK-369), spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready (TASK-363) and spec 018's invoice.render and invoice.render_sweep (TASK-342), nothing else yet", async () => {
+  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), order.close_sweep (TASK-369), spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready (TASK-363), payouts.close and payouts.watch (TASK-364) and spec 018's invoice.render and invoice.render_sweep (TASK-342), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
       "assignment.photo_remind",
@@ -410,7 +412,9 @@ describe("runTick — each job settled exactly once", () => {
       "order.route",
       "outbox.dispatch",
       "payments.production_start",
+      "payouts.close",
       "payouts.prepaid_ready",
+      "payouts.watch",
       "retention.sweep",
       "routing.sla_watch",
     ]);
@@ -456,6 +460,28 @@ describe("enqueue — the minute tick's singletonKey (spec 022a §5.2, TASK-369)
         { singletonKey: "order.close_sweep", singletonSeconds: 60 },
       ],
       ["outbox.dispatch", { v: 1, requestId: "system:jobs.tick", payload: {} }],
+    ]);
+  });
+
+  it("spec 030a's hourly jobs pass a one-hour window instead of the minute (TASK-364)", async () => {
+    const send = vi.fn(async () => "job-id");
+    const boss = { send } as never;
+    await runtime.enqueue(
+      boss,
+      "payouts.close",
+      {},
+      {
+        requestId: "system:jobs.tick",
+        singletonKey: "payouts.close",
+        singletonSeconds: 3600,
+      },
+    );
+    expect(send.mock.calls).toEqual([
+      [
+        "payouts.close",
+        { v: 1, requestId: "system:jobs.tick", payload: {} },
+        { singletonKey: "payouts.close", singletonSeconds: 3600 },
+      ],
     ]);
   });
 

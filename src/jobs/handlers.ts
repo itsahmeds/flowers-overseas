@@ -25,7 +25,7 @@ import {
 // from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
 import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
-import { payoutDetailHref } from "../modules/admin/payouts";
+import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
 import { registerNotificationsOutbox } from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
 import {
@@ -36,8 +36,10 @@ import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
 // Spec 030a §5.2 (TASK-363): the `payouts` target and F1's job, the worker's entry, not the barrel.
 import {
+  closeDuePayouts,
   registerPayoutsOutbox,
   sendPrepaidReady,
+  watchMissingLines,
 } from "../modules/partners/payouts";
 // The close is not in the `orders` barrel: importing it registers `OrderClosedV1`, and only the
 // processes that close orders need that (spec 022a §5.2, TASK-369).
@@ -97,6 +99,8 @@ registerOpsEmailTemplates({
   orderHref: orderDetailHref,
   // Spec 030a §2.8: F1's link to the payout's admin page (TASK-367 builds the page).
   payoutHref: payoutDetailHref,
+  // Spec 030a §2.7: F2's link to the payouts list (TASK-364; TASK-367 builds the page).
+  payoutsHref: payoutsListHref,
 });
 
 // Spec 030a §5.2 (TASK-363): the `payouts` target for `live` acceptances, held while
@@ -165,6 +169,16 @@ export const JOB_HANDLERS: JobHandlers = {
   // `notification_delivery` key sends it once per payout; a gone payout sends nothing.
   "payouts.prepaid_ready": async (payload) => {
     await sendPrepaidReady(payload.payoutId);
+  },
+  // Spec 030a §5.2 (TASK-364): the weekly close, hourly. Idempotent: a closed payout is not open
+  // any more and a rolled one is not due; F2 is keyed by the run's instant and rolls back with it.
+  "payouts.close": async () => {
+    await closeDuePayouts(new Date());
+  },
+  // Spec 030a §5.2 (TASK-364): F3 and `alert=payouts.line_missing`, once per order (its
+  // `notification_delivery` key); an order already told is not selected again.
+  "payouts.watch": async () => {
+    await watchMissingLines();
   },
   // Spec 016 §5.2 (TASK-328): the cascade. Each is idempotent: it locks and re-reads what it
   // acts on, and a state it does not expect (an answered or withdrawn offer, an order that has

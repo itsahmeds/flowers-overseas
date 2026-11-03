@@ -28,7 +28,7 @@ export interface NotificationRenderInput {
   readonly locale: string;
   readonly trigger: NotificationTrigger;
   readonly fromStatus: string | null;
-  /** The order the message is about; null only for B1, which is about a purchase. */
+  /** The order the message is about; null for B1 (a purchase) and for F2 (no order at all). */
   readonly orderId: string | null;
   readonly purchaseId: string | null;
   /** Florist and W messages: the assignment, and its florist. */
@@ -36,6 +36,11 @@ export interface NotificationRenderInput {
   readonly partnerId: string | null;
   /** B8: the invoice or credit note (TASK-334). */
   readonly invoiceId: string | null;
+  /**
+   * A job's own id behind a `job:{name}:{id}` source (spec 030a's F2: the instant its run closed
+   * the payouts at); absent or null for an outbox delivery.
+   */
+  readonly jobId?: string | null;
   /**
    * V1, V2, V3 and V5: the one-tap link minted for this member (a fresh single-use token through
    * spec 012's core), or the plain inbox address when the member cannot be sent a link now.

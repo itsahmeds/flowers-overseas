@@ -48,7 +48,11 @@ const BUYER_TEMPLATES = new Set([
 ]);
 
 /** Founder rows that fire for a `live` order only (spec 030a: a test order gets no payout). */
-const LIVE_ONLY_OPS = new Set(["payout-prepaid-ready"]);
+const LIVE_ONLY_OPS = new Set([
+  "payout-prepaid-ready",
+  "payouts-ready",
+  "payout-line-missing",
+]);
 
 /** The §5.2 table for a `live` order, by hand: template keys, sorted. */
 function expectedLive(trigger: string, from: string | null): string[] {
@@ -92,6 +96,11 @@ function expectedLive(trigger: string, from: string | null): string[] {
       // spec 030a F1 (TASK-363): live only, to the founder.
       case "payouts.prepaid_ready":
         return ["payout-prepaid-ready"];
+      // spec 030a F2 and F3 (TASK-364): live only, to the founder.
+      case "payouts.close":
+        return ["payouts-ready"];
+      case "payouts.watch":
+        return ["payout-line-missing"];
       default:
         return [];
     }
@@ -133,6 +142,8 @@ const CASES: readonly (readonly [NotificationTrigger, string | null])[] = [
   ["assignment.photo_remind", "delivered"],
   ["invoice.email", null],
   ["payouts.prepaid_ready", null],
+  ["payouts.close", null],
+  ["payouts.watch", null],
   ["order.placed", null],
 ];
 
@@ -165,7 +176,7 @@ describe("notificationsFor (T-18, AC-18)", () => {
     }
   });
 
-  it("gives each row its audience: buyer for B, florist for V, ops for A1, W and F1; F1 live only", () => {
+  it("gives each row its audience: buyer for B, florist for V, ops for A1, W and F1 to F3; F1 to F3 live only", () => {
     for (const rule of NOTIFICATION_RULES) {
       const expectedAudience = rule.code.startsWith("B")
         ? "buyer"

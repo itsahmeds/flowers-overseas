@@ -17,7 +17,9 @@
  *    `assignment.timeout`, `assignment.photo_remind` (each keyed, at most one waiting job per key:
  *    the queue's `short` policy) and `routing.sla_watch` (enqueued by every minute tick),
  *    TASK-329's `order.no_partner_expire` (keyed by order, `short`), spec 030a's
- *    `payouts.prepaid_ready` (§5.2, TASK-363: founder email F1, keyed by payout), and spec 018's
+ *    `payouts.prepaid_ready` (§5.2, TASK-363: founder email F1, keyed by payout),
+ *    `payouts.close` and `payouts.watch` (§5.2, TASK-364: the hourly weekly close and the
+ *    missing-line watch, enqueued by the minute tick once an hour), and spec 018's
  *    invoice jobs (§5.2, TASK-342): `invoice.render` (keyed by invoice, `exclusive`, 5 attempts),
  *    `invoice.render_sweep` (enqueued by every minute tick) and `invoice.email` (keyed by invoice,
  *    `short`; its handler is spec 016's B8, TASK-334, so until then its jobs wait);
@@ -136,6 +138,18 @@ export const PayoutsPrepaidReadyPayload = z
   .strict();
 
 /**
+ * `payouts.close` (spec 030a §5.2, AC-14; TASK-364): one run of the weekly close. Takes nothing;
+ * the minute tick enqueues one run an hour under a `singletonKey`.
+ */
+export const PayoutsClosePayload = z.object({}).strict();
+
+/**
+ * `payouts.watch` (spec 030a §5.2, AC-11; TASK-364): one run of the missing-line watch (F3).
+ * Takes nothing; enqueued once an hour beside `payouts.close`.
+ */
+export const PayoutsWatchPayload = z.object({}).strict();
+
+/**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
  * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
  * already running may enqueue its own successor (a deferred offer, the next offer). `exclusive`:
@@ -202,6 +216,8 @@ export const REGISTERED_JOBS = {
   },
   "invoice.render_sweep": { version: 1, payload: InvoiceRenderSweepPayload },
   "invoice.email": { version: 1, payload: InvoiceJobPayload, policy: "short" },
+  "payouts.close": { version: 1, payload: PayoutsClosePayload },
+  "payouts.watch": { version: 1, payload: PayoutsWatchPayload },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */
