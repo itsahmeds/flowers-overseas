@@ -90,6 +90,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     ).toEqual(["invoice.render"]);
     expect(jobRetryLimit("invoice.render")).toBe(4);
     expect(jobRetryLimit("invoice.render_sweep")).toBeUndefined();
+    // Spec 016 §5.2 (TASK-334): B8's retries, one per minute tick, outlast `B1_INVOICE_WAIT`.
+    expect(jobRetryLimit("invoice.email")).toBe(15);
     // Spec 016 §5.2 (TASK-335): 7 retries, so the eighth attempt is the one that marks `dead`.
     expect(jobRetryLimit("webhook.resend.process")).toBe(7);
     expect(jobQueuePolicy("webhook.resend.process")).toBe("standard");

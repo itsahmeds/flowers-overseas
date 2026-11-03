@@ -25,8 +25,6 @@ import {
   tracking,
 } from "@/modules/orders";
 
-import type { MailAttachment } from "../mailer";
-
 import {
   type BuyerOrderFacts,
   BuyerOrderFactsSchema,
@@ -37,6 +35,7 @@ import {
   type RefundFacts,
 } from "./buyer";
 import { FloristFactsMissing as EmailFactsMissing } from "./facts";
+import { type B1Timing, type InvoiceSource, b1Invoices } from "./invoice-wait";
 
 export { EmailFactsMissing };
 
@@ -63,16 +62,12 @@ export interface BuyerFactSources {
     termsVersion: string,
     locale: LocaleCode,
   ) => { readonly filename: string; readonly url: string } | null;
-  /** The stored invoice PDFs B1 carries (TASK-334's wait). None until then. */
-  readonly invoicePdfs?: (
-    orderIds: readonly string[],
-    executor: OrderExecutor,
-  ) => Promise<readonly MailAttachment[]>;
-  /** B8's stored document PDF (TASK-334), or null while it is not stored. */
-  readonly documentPdf?: (
-    invoiceId: string,
-    executor: OrderExecutor,
-  ) => Promise<MailAttachment | null>;
+  /**
+   * Spec 018's stored documents and the `invoice.issue` flag (TASK-334): B1's bounded wait for the
+   * purchase's invoices (`./invoice-wait.ts`) and B8's PDF. Absent: B1 carries no invoice and waits
+   * for none, and B8 is refused (`EMAIL_FACTS_MISSING`).
+   */
+  readonly invoices?: InvoiceSource;
   /** The site origin of the account and home links (`NEXT_PUBLIC_SITE_URL`). */
   readonly siteOrigin?: () => string;
 }
@@ -289,7 +284,27 @@ export async function loadPurchaseFacts(
   purchaseId: string,
   locale: LocaleCode,
   sources: BuyerFactSources,
+  timing: B1Timing = { now: new Date(), retryDueAt: undefined },
 ): Promise<PurchaseFacts> {
+  return (
+    await loadOrderReceived(executor, purchaseId, locale, sources, timing)
+  ).facts;
+}
+
+/**
+ * B1's facts and the ids of the invoices it attaches (written as `notification_delivery_invoice`
+ * rows once the send is accepted). Throws `InvoicePending` while it waits (`./invoice-wait.ts`).
+ */
+export async function loadOrderReceived(
+  executor: OrderExecutor,
+  purchaseId: string,
+  locale: LocaleCode,
+  sources: BuyerFactSources,
+  timing: B1Timing,
+): Promise<{
+  readonly facts: PurchaseFacts;
+  readonly invoiceIds: readonly string[];
+}> {
   const [purchaseRaw] = await executor.execute(sql`
     SELECT total_minor, buyer_currency_code AS currency_code
     FROM purchase WHERE id = ${purchaseId}`);
@@ -326,12 +341,17 @@ export async function loadPurchaseFacts(
     };
   });
   const invoices =
-    (await sources.invoicePdfs?.(
-      orders.map((order) => order.orderId),
-      executor,
-    )) ?? [];
+    sources.invoices === undefined
+      ? { attachments: [], invoiceIds: [] }
+      : await b1Invoices(
+          executor,
+          purchaseId,
+          orders.map((order) => order.orderId),
+          timing,
+          sources.invoices,
+        );
   const origin = originOf(sources);
-  return {
+  const facts: PurchaseFacts = {
     buyerName,
     total: {
       amountMinor: purchase.total_minor,
@@ -343,14 +363,15 @@ export async function loadPurchaseFacts(
         ? `${origin}/${locale}/account/orders/${first.reference}`
         : `${origin}/${locale}/account`,
     terms,
-    invoices: invoices.map((file) => ({
+    invoices: invoices.attachments.map((file) => ({
       filename: file.filename,
       ...(file.content === undefined ? {} : { content: file.content }),
       ...(file.path === undefined ? {} : { path: file.path }),
-      contentType: file.contentType ?? "application/pdf",
+      contentType: file.contentType,
     })),
     complaintKey: B1_COMPLAINT_PATH_KEY,
   };
+  return { facts, invoiceIds: invoices.invoiceIds };
 }
 
 const PhotoRow = z.object({
@@ -475,10 +496,12 @@ export async function loadDocumentFacts(
   if (raw === undefined)
     throw new EmailFactsMissing("the document does not exist");
   const row = DocumentRow.parse(raw);
-  const pdf = (await sources.documentPdf?.(invoiceId, executor)) ?? null;
-  if (pdf === null) {
-    throw new EmailFactsMissing("the document's PDF is not stored");
+  if (sources.invoices === undefined) {
+    throw new EmailFactsMissing("no reader of the stored documents");
   }
+  // Spec 018's reader: throws `INVOICE_PDF_NOT_RENDERED` or `INVOICE_PDF_HASH_MISMATCH` while the
+  // PDF cannot be attached as stored, and the job retries.
+  const pdf = await sources.invoices.read(invoiceId, executor);
   return {
     kind: row.kind,
     number: row.number,
@@ -486,9 +509,8 @@ export async function loadDocumentFacts(
     amount: { amountMinor: row.total_minor, currency: row.currency_code },
     pdf: {
       filename: pdf.filename,
-      ...(pdf.content === undefined ? {} : { content: pdf.content }),
-      ...(pdf.path === undefined ? {} : { path: pdf.path }),
-      contentType: pdf.contentType ?? "application/pdf",
+      content: Buffer.from(pdf.bytes).toString("base64"),
+      contentType: "application/pdf",
     },
   };
 }

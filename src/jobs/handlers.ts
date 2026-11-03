@@ -18,6 +18,8 @@ import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import {
   createNbpRateProvider,
+  getPdfByInvoiceId,
+  invoiceFlagOn,
   invoicesOutboxHandler,
   runInvoiceRenderSweep,
   runRenderJob,
@@ -39,6 +41,7 @@ import {
   registerOpsEmailTemplates,
   payoutStatementPdf,
   registerPayoutStatementTemplate,
+  runInvoiceEmailJob,
 } from "../modules/notifications/emails";
 // Spec 018 §5.2 (TASK-339): the succeeded refunds, outside the `orders` barrel (it reads `payments`).
 import { buyerRefundLines } from "../modules/orders/buyer-refund-lines";
@@ -142,6 +145,12 @@ registerBuyerEmailTemplates({
     return Buffer.from(
       DeliveryPhotoBytesSchema.parse(await response.arrayBuffer()),
     ).toString("base64");
+  },
+  // Spec 016 §5.2 (TASK-334): B1 waits up to `B1_INVOICE_WAIT` for the purchase's invoice PDFs
+  // where `invoice.issue` is on, and B1 and B8 attach spec 018's stored bytes (hash checked).
+  invoices: {
+    read: (invoiceId, executor) => getPdfByInvoiceId(invoiceId, { executor }),
+    issueOn: invoiceFlagOn,
   },
 });
 
@@ -270,6 +279,12 @@ export const JOB_HANDLERS: JobHandlers = {
   // on its queue), and one 15 minutes old raises `invoice.render_overdue`. Reads only; idempotent.
   "invoice.render_sweep": async () => {
     await runInvoiceRenderSweep();
+  },
+  // Spec 016 §5.2 (TASK-334): B8 for one stored document. A credit note always; an invoice only
+  // when its purchase's B1 went without it (retried while that B1 is absent or `queued`). Idempotent:
+  // the delivery is keyed `job:invoice.email:{invoiceId}`, so a re-run finds it `sent`.
+  "invoice.email": async (payload) => {
+    await runInvoiceEmailJob(payload.invoiceId);
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.

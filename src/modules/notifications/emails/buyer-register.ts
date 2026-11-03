@@ -34,7 +34,7 @@ import {
   loadCancelledFacts,
   loadDeliveredFacts,
   loadDocumentFacts,
-  loadPurchaseFacts,
+  loadOrderReceived,
   loadRefundFacts,
 } from "./buyer-facts";
 
@@ -58,10 +58,17 @@ export async function renderBuyerNotification(
       if (input.purchaseId === null) {
         throw new EmailFactsMissing("order-received has no purchase");
       }
-      return renderOrderReceived(
-        await loadPurchaseFacts(executor, input.purchaseId, locale, sources),
+      const { facts, invoiceIds } = await loadOrderReceived(
+        executor,
+        input.purchaseId,
         locale,
+        sources,
+        { now: input.now ?? new Date(), retryDueAt: input.retryDueAt },
       );
+      const rendered = renderOrderReceived(facts, locale);
+      return invoiceIds.length === 0
+        ? rendered
+        : { ...rendered, invoiceIds: [...invoiceIds] };
     }
     case "being-made":
       return renderBeingMade(

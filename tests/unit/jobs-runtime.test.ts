@@ -549,7 +549,8 @@ describe("enqueue — the minute tick's singletonKey (spec 022a §5.2, TASK-369)
       [
         "invoice.email",
         { v: 1, requestId: "system:invoices", payload: { invoiceId } },
-        { singletonKey: `invoice.email:${invoiceId}` },
+        // Spec 016 §5.2 (TASK-334): B8 retries outlast B1's 5-minute wait for the invoice.
+        { singletonKey: `invoice.email:${invoiceId}`, retryLimit: 15 },
       ],
     ]);
   });

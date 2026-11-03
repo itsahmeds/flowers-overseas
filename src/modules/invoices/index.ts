@@ -16,7 +16,7 @@ export type { InvoiceRefusalCode, InvoiceRefusalDetail } from "./errors";
 export { issueInvoice } from "./issue";
 export { INVOICE_STEPS, invoicesOutboxHandler } from "./outbox";
 export type { InvoiceOutboxOptions } from "./outbox";
-export { formatNumber } from "./shared";
+export { formatNumber, invoiceFlagOn } from "./shared";
 export type { InvoiceOptions, IssueResult } from "./shared";
 export {
   CreditNoteSnapshotV1,

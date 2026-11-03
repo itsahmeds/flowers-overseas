@@ -147,9 +147,26 @@ export {
   loadCancelledFacts,
   loadDeliveredFacts,
   loadDocumentFacts,
+  loadOrderReceived,
   loadPurchaseFacts,
   loadRefundFacts,
 } from "./buyer-facts";
+export {
+  type B1Invoices,
+  type B1Timing,
+  type InvoiceSource,
+  type StoredDocumentPdf,
+  InvoicePending,
+  b1InvoiceDecision,
+  b1Invoices,
+} from "./invoice-wait";
+export {
+  type InvoiceEmailDeps,
+  type InvoiceEmailOutcome,
+  B1NotSent,
+  InvoicePdfNotStored,
+  runInvoiceEmailJob,
+} from "./invoice-email";
 export {
   registerBuyerEmailTemplates,
   renderBuyerNotification,

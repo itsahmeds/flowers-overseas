@@ -34,6 +34,7 @@ export {
   OUTBOX_RETRY_CAP_SECONDS,
   OutboxTargetNotConfigured,
   outboxHandlers,
+  outboxRetryDueAt,
   registerOutboxHandler,
   registerOutboxHold,
 } from "./outbox/dispatcher";

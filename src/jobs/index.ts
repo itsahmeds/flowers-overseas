@@ -136,6 +136,13 @@ export const RoutingSlaWatchPayload = z.object({}).strict();
  * `invoice.email` is spec 016's B8 (TASK-334 adds its handler), keyed `invoice.email:{invoiceId}`.
  */
 export const InvoiceJobPayload = z.object({ invoiceId: z.uuid() }).strict();
+/**
+ * `invoice.email`'s retries (spec 016 §5.2 "B8 handler", TASK-334): an invoice's B8 throws while
+ * its purchase's B1 is still waiting for invoices (`B1_INVOICE_WAIT`, 5 minutes) and each retry
+ * comes at the next minute tick, so 15 retries outlast the wait with ten minutes to spare. pg-boss's
+ * default (2) would let the job die before B1 has gone.
+ */
+export const INVOICE_EMAIL_RETRY_LIMIT = 15;
 /** `invoice.render_sweep` (spec 018 §11; TASK-342): one minute's look for unrendered documents. */
 export const InvoiceRenderSweepPayload = z.object({}).strict();
 
@@ -241,7 +248,12 @@ export const REGISTERED_JOBS = {
     retryLimit: 4,
   },
   "invoice.render_sweep": { version: 1, payload: InvoiceRenderSweepPayload },
-  "invoice.email": { version: 1, payload: InvoiceJobPayload, policy: "short" },
+  "invoice.email": {
+    version: 1,
+    payload: InvoiceJobPayload,
+    policy: "short",
+    retryLimit: INVOICE_EMAIL_RETRY_LIMIT,
+  },
   "payouts.statement_email": {
     version: 1,
     payload: PayoutsStatementEmailPayload,
