@@ -359,6 +359,37 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-333 (spec 016 §5.2, §7): the buyer emails B1 to B6 and B8, the spec's and the boards'
     // words and the builder's proposals, `reviewed: false` until the record run
     // (`.claude/state/record-approval-333.py`) attests them.
+    // TASK-365, spec 030a §7: the florist payout statement's email and PDF keys (PR 475), never
+    // queued when they shipped `reviewed: false`.
+    "emails.floristPayoutStatement.attached",
+    "emails.floristPayoutStatement.currencyLabel",
+    "emails.floristPayoutStatement.deleteReminder",
+    "emails.floristPayoutStatement.documentTitle",
+    "emails.floristPayoutStatement.forLabel",
+    "emails.floristPayoutStatement.fromLabel",
+    "emails.floristPayoutStatement.item",
+    "emails.floristPayoutStatement.linesCaption",
+    "emails.floristPayoutStatement.manualLine.adjustment",
+    "emails.floristPayoutStatement.manualLine.goodwill",
+    "emails.floristPayoutStatement.notInvoice",
+    "emails.floristPayoutStatement.numberLabel",
+    "emails.floristPayoutStatement.ordersLabel",
+    "emails.floristPayoutStatement.page",
+    "emails.floristPayoutStatement.paymentLabel",
+    "emails.floristPayoutStatement.paymentMethod",
+    "emails.floristPayoutStatement.periodLabel",
+    "emails.floristPayoutStatement.preheader",
+    "emails.floristPayoutStatement.quantity",
+    "emails.floristPayoutStatement.sentLabel",
+    "emails.floristPayoutStatement.singleDateLabel",
+    "emails.floristPayoutStatement.statementNumber",
+    "emails.floristPayoutStatement.subject",
+    "emails.floristPayoutStatement.table.amount",
+    "emails.floristPayoutStatement.table.bouquet",
+    "emails.floristPayoutStatement.table.date",
+    "emails.floristPayoutStatement.table.order",
+    "emails.floristPayoutStatement.title",
+    "emails.floristPayoutStatement.totalLabel",
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
     // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the
@@ -378,6 +409,9 @@ describe("the shipped catalogues and manifests", () => {
     "floristAuth.title",
     // TASK-214's 11 inbox page keys and TASK-215's 13 florist action keys left this queue under
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
+    // TASK-329, spec 016's withdrawn inbox stage (PR 459), never queued when it shipped `reviewed: false`.
+    "floristInbox.withdrawn.body",
+    "floristInbox.withdrawn.title",
     "footer.link.deliveryAndPayment",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
