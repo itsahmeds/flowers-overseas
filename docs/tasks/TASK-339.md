@@ -30,6 +30,14 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (b) (2026-10-22):** spec 020a request 3: the tracking page's cancelled state reads "You cancelled this order" when the actor is `buyer`, or `admin` with reason `buyer_cancel`; every other cancellation reads "We could not deliver this order".
+- **From the implementer's self-review (2026-11-04), handed on:**
+  - **TASK-343 / CI:** no screenshot, Playwright, axe or visual run was taken tonight (founder: no browser, no build). Owed: e2e of the no-JS lookup (`POST /en-gb/track` from the lookup page and from the not-working page, both landing on `/en-gb/track?sent=1`), axe on the lookup page and the cancelled and refund states, and the visual baselines of every page with a footer: "Track an order" joins the Sending column after "Occasions", so those baselines move.
+  - **Design (spec 018 owner):** the `track-order-*` cancelled board still prints "This order was cancelled and refunded in full."; the page follows §7 and AC-42 instead (the by-buyer or by-us sentence, then the pending sentence or the dated refund chip). No T16 artboard exists: T16 is built in the buyer frame of `email-layout-*` with builder-proposed copy (9 of the 17 texts are marked so in `record-approval-339.py`).
+  - **TASK-333 (B-emails):** `buyerRefundLines` lives in `src/modules/orders/buyer-refund-lines.ts`, outside the `orders` barrel (the barrel must not import `payments`, or `i18n:check` finds payments' checkout copy reachable from pages). Import it from the job worker and hand the lines in; `refundLineValues` (in the barrel) formats them.
+  - **TASK-362:** spec 020a request 3's tracking half is built here (`cancelledByOf`: an admin cancel with `buyer_cancel` reads "You cancelled this order."); the confirmation and B5 halves remain.
+  - **Spec 018 owner, two readings recorded in the PR:** the lookup answers with a `303` to one page (`/{locale}/track?sent=1`) rather than a `200` HTML body on the POST, identical for every case, with the lookup itself in `after()`; the pending sentence's amount is the order's open (`requested` plus `pending`) refunds, which is `buyer_total_minor` for the full refund AC-42 names and the remainder when a partial refund succeeded earlier.
+  - **§11 not built here:** the `> 100 not_working an hour` alert and GA4's `view_tracking` event (no AC of this task names them).
+  - **Main (not this diff):** `gates:cheap` on `main` 84d4e1bcd is red in 9 unit files (21 tests: `catalog-product-view*`, `deferred-set`, `home-honesty`, `i18n-check`, `i18n-draft`, `i18n-messages-schema`'s `floristInbox.withdrawn.*` queue, `url-pii`, `zod-boundaries`), in `format:check` (18 florist email snapshots) and `i18n:check` (`nav.send`, `nav.category.ourSelection` unused); the branch has exactly those reds and no other.
 
 ## Escalations
 
@@ -44,10 +52,11 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04 (builder T339): worktree `/Users/ahmed/dev/fo-wt-339` on `task/TASK-339-tracking-extras` from main 84d4e1bcd; row `in_progress`; draft PR opened. Next: refund lines, cancelled sentences, lookup, scrubbers, footer link.
+- 2026-11-04 (builder T339): built and pushed: refund lines (`refund-lines.ts`, `buyer-refund-lines.ts`), `cancelledBy`/`refundPending` in `getTrackingView`, the chips and cancelled sentences, `/{locale}/track` with `LookupForm` (also on the not-working page), `lookupTracking` + T16 + the `track` send counter, GA4/Sentry token scrubbers (`src/lib/url-tokens.ts`), the footer link, 17 keys (en, de/pl echoes), RoPA row 12, map. Unit and integration (local PG16, stopped and deleted) green; 16 mutations red. PR 466 marked ready. No process running.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#466](https://github.com/itsahmeds/flowers-overseas/pull/466). Ships `buyerRefundLines` over spec 013's `succeededRefunds` (outside the barrel) with `toBuyerRefundLines` and `refundLineValues`; `getTrackingView` filling `refundLines` (through a `refundLines` source the tracking routes hand in), `cancelledBy` (`cancelledByOf`: buyer, or admin with `buyer_cancel`, reads the buyer's; every other actor reads us) and `refundPending` (open refunds of a cancelled order); the refund chips and the cancelled sentences on the page; `/{locale}/track` (lookup page, `LookupForm`, `lookupTrackingAction` answering one `303` with the work in `after()`, `lookupTracking`, T16 `renderTrackingLinkEmail`, mail tag `tracking_link`, `claimSend` with `limit` and `scope`); `scrubUrlTokens` used by the consent bootstrap's GA4 `page_location` and Sentry's `beforeSend`; the footer's "Track an order"; 17 English keys queued for review (`.claude/state/record-approval-339.py --check` passes) with de/pl echoes; RoPA row 12. Tests: unit `tracking-page.test.tsx` (+14), `tracking-lookup.test.ts` (16, new), `url-tokens.test.ts` (13, new); integration `tracking-page.test.ts` (+2), `tracking-lookup.test.ts` (5, new), both green on a local PG16; pins updated in 6 unit files. 16 mutations, each red. No build, server, Playwright, Lighthouse or screenshot was run (founder, 2026-11-04). Handed on: see Carry-forwards.
