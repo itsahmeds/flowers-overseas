@@ -339,11 +339,24 @@ export const DAYS_A_WEEK =
   /(?<![\p{L}\p{N}_])(?:\p{Nd}+|seven|sieben|siedem)\s*(?:days? (?:a|per) week|tage (?:die|pro|in der) woche|dni w tygodniu)(?![\p{L}\p{N}_])/gu;
 
 /**
+ * The statutory cancellation right named as such ("the 14-day cancellation right", "the 14-day
+ * right to cancel", "the 14-day right of withdrawal"): a legal right, not a duration of freshness,
+ * so it is removed before the scan, as the header says that copy is meant to pass. Spec 010's
+ * lawyer-gated sentence "Flowers are fresh, so the 14-day cancellation right does not apply after
+ * that." (B1's "Your order terms", spec 016 §5.2; TASK-333) keeps only two words between "fresh"
+ * and "14-day". Only the number 14, joined to "day" and followed at once by the right's own noun:
+ * "fresh for 14 days" and "14-day freshness" are still claims.
+ */
+export const STATUTORY_RIGHT =
+  /(?<![\p{L}\p{N}_])14\s*(?:\p{Pd}|\u2212)?\s*day (?:cancellation right|right to cancel|right of withdrawal|withdrawal right)(?![\p{L}\p{N}_])/gu;
+
+/**
  * The text as the scan reads it: every HTML entity decoded (`entities`' HTML5 decoder: `&ndash;`,
  * `&#8209;`, `&shy;`, `&#53;`, `&auml;`), NFKC, Cyrillic and Greek look-alikes folded to Latin,
  * format characters (`\p{Cf}`: soft hyphen, zero-width space, word joiner, BOM), variation
  * selectors and the keycap mark ("5️⃣" reads 5) removed, markdown underscores (`_x_`, `__x__`)
- * removed, lower-cased with `ß` folded to `ss`, and "N days a week" removed.
+ * removed, lower-cased with `ß` folded to `ss`, "N days a week" removed, and the statutory
+ * "14-day cancellation right" removed (`STATUTORY_RIGHT`).
  */
 export function normaliseForScan(text: string): string {
   const folded = [...decodeHTML(text).normalize("NFKC")]
@@ -353,9 +366,11 @@ export function normaliseForScan(text: string): string {
     .replaceAll(/_+/gu, "")
     .toLowerCase()
     .replaceAll("ß", "ss");
-  return folded.replaceAll(DAYS_A_WEEK, (phrase: string, offset: number) =>
-    claimWordNear(folded, offset, offset + phrase.length) ? phrase : " ",
-  );
+  return folded
+    .replaceAll(DAYS_A_WEEK, (phrase: string, offset: number) =>
+      claimWordNear(folded, offset, offset + phrase.length) ? phrase : " ",
+    )
+    .replaceAll(STATUTORY_RIGHT, " ");
 }
 
 /** Words, as `wordsIn` counts them. */

@@ -385,6 +385,26 @@ describe("A11: the freshness-claim scan's own fixture case", () => {
     }
   });
 
+  it("reads the statutory 14-day cancellation right as a right, not a freshness claim (TASK-333)", () => {
+    // Spec 010's lawyer-gated sentence, printed in B1's "Your order terms" (spec 016 §5.2).
+    for (const text of [
+      "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that.",
+      "Flowers are fresh, so the 14-day right to cancel does not apply.",
+      "Fresh flowers fall outside the 14 day right of withdrawal.",
+    ]) {
+      expect(freshnessClaims(text), text).toEqual([]);
+    }
+    // Only the right, named as such: a number of days beside "fresh" is still a claim.
+    for (const text of [
+      "Flowers stay fresh for 14 days.",
+      "Fresh for 14 days, cancellation right included.",
+      "14-day freshness, or your money back.",
+      "Fresh, so the 15-day cancellation right does not apply.",
+    ]) {
+      expect(freshnessClaims(text).length, text).toBeGreaterThan(0);
+    }
+  });
+
   it('exempts "N days a week" in all four locales, only with no freshness or guarantee word near it', () => {
     for (const text of [
       "We answer 7 days a week.",

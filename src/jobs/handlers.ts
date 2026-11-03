@@ -12,6 +12,8 @@
  * until it expires, and pg-boss then hands it out again (review N7, PR 224). The retention sweep
  * is: a pseudonymised row carries its marker and is not selected again, a deleted row is gone.
  */
+import { z } from "zod";
+
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import {
@@ -118,6 +120,13 @@ registerOpsEmailTemplates({
 // `succeededRefunds`, and B4's photo is read from the private bucket through a short signed URL and
 // attached as bytes (§13 16-8: attached, never linked). Loaded at the first B4, so loading the job
 // table loads no storage client.
+/** The stored delivery photo (a 1,200 px JPEG, spec 011): some bytes, and well under Resend's 40 MB. */
+const DeliveryPhotoBytesSchema = z
+  .instanceof(ArrayBuffer)
+  .refine(
+    (buffer) => buffer.byteLength > 0 && buffer.byteLength <= 15 * 1024 * 1024,
+  );
+
 registerBuyerEmailTemplates({
   refundLines: (orderId, options) => buyerRefundLines(orderId, options),
   photoContent: async (location) => {
@@ -130,7 +139,9 @@ registerBuyerEmailTemplates({
         `delivery photo read failed: HTTP ${String(response.status)}`,
       );
     }
-    return Buffer.from(await response.arrayBuffer()).toString("base64");
+    return Buffer.from(
+      DeliveryPhotoBytesSchema.parse(await response.arrayBuffer()),
+    ).toString("base64");
   },
 });
 
