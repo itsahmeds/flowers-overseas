@@ -16,7 +16,7 @@
  *     deletes that user, with their sessions (`ON DELETE CASCADE`), when nothing else refers to
  *     them: no other membership, no `admin_profile`, no `user_role`, no `customer` row.
  *
- * `0035`'s `partner_member_audit` trigger writes one audit row per membership insert and delete,
+ * `0034`'s `partner_member_audit` trigger writes one audit row per membership insert and delete,
  * `entity_id = '{userId}:{partnerId}'`; the action the caller's transaction carried is restored
  * before returning, so the partner write that follows is audited under its own action. No
  * address is logged: `florist_member_granted` and `florist_member_revoked` carry `partner_id`.

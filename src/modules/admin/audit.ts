@@ -41,7 +41,7 @@ export const AUDITED_TABLES = [
   "feature_flag_scope",
   "user_role",
   "admin_profile",
-  // Spec 026a §5.1 (`0035_florist_access`, TASK-355): a florist's access, granted and removed.
+  // Spec 026a §5.1 (`0034_florist_access`, TASK-355): a florist's access, granted and removed.
   "partner_member",
 ] as const;
 

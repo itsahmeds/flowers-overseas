@@ -4,7 +4,7 @@
  * sign-in succeeds, under the system context: it sets `partner_member.accepted_at` where it is
  * still null, on that user's memberships whose partner the sign-in policy allows in this
  * environment. A second sign-in finds nothing null and changes nothing. The system context is not
- * audited (`0035`'s trigger returns early outside `app.role = 'admin'`). No address is logged:
+ * audited (`0034`'s trigger returns early outside `app.role = 'admin'`). No address is logged:
  * `florist_first_sign_in` carries `partner_id`.
  *
  * Kept apart from the admin reads so the florist instance's import graph gains no admin command.

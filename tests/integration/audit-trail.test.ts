@@ -314,7 +314,7 @@ const CASES: readonly TableCase[] = [
     source: false,
   },
   {
-    // Spec 026a AC-8 (`0035_florist_access`, TASK-355): the row id is `{user_id}:{partner_id}`.
+    // Spec 026a AC-8 (`0034_florist_access`, TASK-355): the row id is `{user_id}:{partner_id}`.
     table: "partner_member",
     parents: async (tx) => ({
       userId: await user(tx),

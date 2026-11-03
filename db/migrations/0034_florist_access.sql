@@ -1,8 +1,8 @@
--- 0035_florist_access — the founder grants a florist access in admin, and that grant is audited
+-- 0034_florist_access — the founder grants a florist access in admin, and that grant is audited
 -- (spec 026a §2 "The founder grants access in admin", §5.1, AC-8; TASK-355).
 --
--- Numbered 0035 (orchestrator, 2026-11-03): 0034 is TASK-363's (payouts), in flight; `db:check`
--- reports the gap until it merges.
+-- Numbered 0034 (orchestrator, 2026-11-04): main ends at 0033; TASK-363's payouts migration
+-- follows as 0035.
 --
 --   `partner_member_audit`  AFTER INSERT OR UPDATE OR DELETE, FOR EACH ROW, on `partner_member`,
 --                           with `0016`'s `audit_row_change('user_id', 'partner_id')`: the row id
@@ -20,7 +20,7 @@
 -- `accepted_at` exist since `0005`, and `locale_code` since `0022`. No change to any order
 -- table. No seed.
 --
--- Rollback: `0035_florist_access.down.sql`.
+-- Rollback: `0034_florist_access.down.sql`.
 
 SET LOCAL ROLE app_owner;
 

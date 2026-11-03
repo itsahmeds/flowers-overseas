@@ -34,9 +34,9 @@ One dated bullet per `/review`, newest last.
 - 2026-11-03: `tests/integration/migrations-round-trip.test.ts` is red on main independently of
   this PR (its `FUNCTIONS` list has `review_content_immutable` out of sorted order); not touched
   here.
-- 2026-11-03: until TASK-363's `0034` merges, `db:check` and every integration suite refuse the
-  gap before `0035` (the runner checks the sequence). Locally the suites were run with the pair
-  renamed to `0034`, never committed.
+- 2026-11-03: the migration was first numbered `0035` and the suites were run locally with the
+  pair renamed to `0034`; on 2026-11-04 it was renumbered to `0034` for good (main ends at
+  `0033`, TASK-363 takes `0035`), so `db:check` sees no gap.
 
 ## Escalations
 
@@ -63,7 +63,7 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-PR 461. Migration `0035_florist_access` (+ down) attaches `audit_row_change('user_id',
+PR 461. Migration `0034_florist_access` (+ down) attaches `audit_row_change('user_id',
 'partner_id')` to `partner_member`; `src/modules/partners/access/` holds `FloristSignInEmailSchema`
 and `floristLanguageFor` (pure), `syncPartnerOwnerMember` (run by `createPartner`, `updatePartner`
 and `convertApplication` in their admin transaction, actions `partner.member.grant` / `.revoke`),
