@@ -1,15 +1,15 @@
 /**
  * Spec 018 invoice PDF and delivery, connected half (TASK-342), on a migrated PG16 scratch
- * database (`support/scratch-db.ts`; never the shared database). Each document is an `invoice`
- * row written here with a snapshot from `tests/fixtures/invoice-documents.ts` for an order whose
- * lines, total and `vat_breakdown` match it, and rendered with `renderInvoice` into an
- * `InMemoryStorage` standing in for the private bucket.
+ * database (`support/scratch-db.ts`; never the shared database). Each document is issued by the
+ * real path, `issueInvoice` for a captured live order of AC-17's lines (an 8 % bouquet, a 23 %
+ * add-on and a free printed card, paid in GBP, its payment on the order's purchase as
+ * `0026_payment_purchase` has it) and `issueCreditNote` for a succeeded refund naming the order
+ * (TASK-435), and rendered with `renderInvoice` into an `InMemoryStorage` standing in for the
+ * private bucket. The issuer is `tests/fixtures/invoice-documents.ts`'s test seller, the NBP rate
+ * a fake provider at AC-17's table.
  *
- * Why the rows are written here and not by `issueInvoice`: on `main`, TASK-341's `issueInvoice`
- * and `issueCreditNote` read `payment.order_id`, which migration `0026_payment_purchase`
- * dropped, so neither runs against the migrated schema (escalated in `docs/tasks/TASK-342.md`).
- * Rendering reads only the `invoice` row and its profile, so the render half is proved
- * independently of the issuing half.
+ * One row is still written by SQL: the `test`-mode document of AC-37, a state `issueInvoice`
+ * refuses (`INVOICE_NOT_LIVE`), written to prove the renderer's own guard against it.
  *
  *  - **T-16 (render half) / AC-16:** the first render writes the three columns; a second write of
  *    them raises `INVOICE_IMMUTABLE`; a second render writes nothing.
@@ -37,11 +37,12 @@ import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { COMPANY, type Company } from "@/config/company";
 import { relayMatches } from "@/config/honesty";
 import { createLogger, type Logger } from "@/lib/logger";
 import { sign } from "@/lib/signed-link";
 import { InMemoryStorage, type Storage } from "@/lib/storage";
-import { formatMoney } from "@/modules/i18n";
+import { formatDate, formatMoney } from "@/modules/i18n";
 import {
   createPgBossInvoiceScheduler,
   getIssuedPdf,
@@ -50,21 +51,19 @@ import {
   invoiceDownloadResponse,
   InvoicePdfError,
   invoiceTranslator,
+  issueCreditNote,
+  issueInvoice,
   renderInvoice,
   runInvoiceRenderSweep,
   runRenderJob,
-  type CreditNoteSnapshot,
   type InvoiceJob,
-  type InvoiceSnapshot,
   type InvoiceStore,
   type InvoiceTranslatorFactory,
+  type VatRateProvider,
 } from "@/modules/invoices";
-import type { AlertRaiser } from "@/modules/orders";
+import { orderReference, type AlertRaiser } from "@/modules/orders";
 
-import {
-  AC17_INVOICE,
-  AC21_CREDIT_NOTE,
-} from "../fixtures/invoice-documents.ts";
+import { AC17_INVOICE, TEST_ISSUER } from "../fixtures/invoice-documents.ts";
 import { insertPlacedOrder } from "../fixtures/order-state.ts";
 import { pdfText } from "../fixtures/pdf-text.ts";
 import {
@@ -125,7 +124,47 @@ function scheduler(): ((job: InvoiceJob) => Promise<void>) & {
   );
 }
 
-/** The two seed profiles (`seed/plan.ts`) and the `en-gb` locale the buyer reads. */
+/** The fixture's test seller as a registered company: no real registry number or address. */
+const ISSUER: Company = {
+  ...COMPANY,
+  registered: true,
+  legalName: TEST_ISSUER.legalName,
+  registryName: TEST_ISSUER.registryName,
+  registrationNumber: TEST_ISSUER.registrationNumber,
+  address: {
+    ...TEST_ISSUER.address,
+    lines: [...TEST_ISSUER.address.lines],
+  },
+  supportEmail: "support@example.test",
+};
+
+/** NBP table A at AC-17's rate, for whatever tax point the issue asks about. */
+const RATES: VatRateProvider = {
+  rateFor: (request) =>
+    Promise.resolve({
+      from: request.from,
+      to: request.to,
+      rate: "5.1234",
+      source: "nbp_table_a",
+      table: "193/A/NBP/2026",
+      effectiveDate: "2026-10-05",
+    }),
+};
+
+function issueOptions(tx: Tx) {
+  return {
+    executor: runnerOf(tx),
+    company: ISSUER,
+    vatRates: RATES,
+    alert: alerts(),
+    log: silentLogger(),
+  };
+}
+
+/**
+ * The two seed profiles (`seed/plan.ts`), the `en-gb` locale the buyer reads, the PL VAT
+ * registration (the only one: spec 018 §14 on AC-17) and `invoice.issue` on for PL.
+ */
 async function profiles(tx: Tx): Promise<void> {
   await country(tx, "PL");
   await tx`INSERT INTO locale (code, bcp47, name) VALUES ('en-gb', 'en-GB', 'English (UK)')
@@ -140,10 +179,52 @@ async function profiles(tx: Tx): Promise<void> {
                   ('agent-pl', 'agent', 'PL', 'receipt_on_behalf',
                    'invoice.title.receiptOnBehalf', ARRAY['pl', '{buyer}'], ARRAY['surcharge'],
                    'fo-pl-2026', 'fok-pl-2026', 'PLN', 'nbp_previous_business_day', false)`;
+  await tx`INSERT INTO tax_registration (country_iso2, vat_id, valid_from)
+           VALUES ('PL', 'PL0000000000', DATE '2020-01-01')`;
+  await tx`INSERT INTO feature_flag_scope (flag_key, scope, scope_ref, enabled)
+           VALUES ('invoice.issue', 'country', 'PL', true)
+           ON CONFLICT (flag_key, scope, scope_ref) DO UPDATE SET enabled = true`;
 }
 
-/** An order of AC-17's lines (an 8 % bouquet, a 23 % add-on, a free card), paid in GBP. */
-async function order(tx: Tx, mode: "test" | "live" = "live"): Promise<string> {
+/** A catalogue row named per locale, for one order line. */
+async function named(
+  tx: Tx,
+  kind: "product" | "addon",
+  names: Readonly<Record<string, string>>,
+): Promise<string> {
+  if (kind === "product") {
+    const [row] = await tx<{ id: string }[]>`
+      INSERT INTO product (sku, product_type, primary_flower, colour_primary, style, price_tier,
+                           substitution_class, freshness_days)
+      VALUES (${unique("SKU-")}, 'bouquet', 'roses', 'red', 'classic', 'classic', 'main_flower', 5)
+      RETURNING id`;
+    const id = row?.id ?? "";
+    for (const [locale, name] of Object.entries(names)) {
+      await tx`INSERT INTO product_translation (product_id, locale_code, name, slug)
+               VALUES (${id}, ${locale}, ${name}, ${unique("amber-")})`;
+    }
+    return id;
+  }
+  const [row] = await tx<{ id: string }[]>`
+    INSERT INTO addon (key, kind)
+    VALUES (${unique("addon_").replaceAll("-", "")}, 'confectionery') RETURNING id`;
+  const id = row?.id ?? "";
+  for (const [locale, name] of Object.entries(names)) {
+    await tx`INSERT INTO addon_translation (addon_id, locale_code, name)
+             VALUES (${id}, ${locale}, ${name})`;
+  }
+  return id;
+}
+
+/**
+ * An order of AC-17's lines (an 8 % bouquet, a 23 % add-on, a free card), paid in GBP. A `live`
+ * one is captured: its purchase's payment has `captured_at` (`0026_payment_purchase`).
+ */
+async function order(
+  tx: Tx,
+  mode: "test" | "live" = "live",
+  supplyModel: "principal" | "agent" = "principal",
+): Promise<string> {
   const countryId = await country(tx, "PL");
   const customerId = await customer(tx);
   const id = await insertPlacedOrder(tx, {
@@ -161,34 +242,70 @@ async function order(tx: Tx, mode: "test" | "live" = "live"): Promise<string> {
     netMinor: split.netMinor,
   }));
   await tx`UPDATE "order"
-           SET vat_breakdown = ${tx.json(breakdown)}, supply_model = 'principal',
-               locale_code = 'en-gb'
+           SET vat_breakdown = ${tx.json(breakdown)}, supply_model = ${supplyModel},
+               locale_code = 'en-gb',
+               buyer_snapshot = ${tx.json({ name: AC17_INVOICE.buyer.name, countryIso2: AC17_INVOICE.buyer.countryIso2 })}
            WHERE id = ${id}`;
+  for (const line of AC17_INVOICE.lines) {
+    const kind = line.kind === "product" ? "product" : "addon";
+    const catalogueId = await named(tx, kind, line.names);
+    await tx`INSERT INTO order_line (order_id, kind, product_id, addon_id, qty, unit_retail_minor,
+                                     currency_code, vat_rate_bp)
+             VALUES (${id}, ${kind}, ${kind === "product" ? catalogueId : null},
+                     ${kind === "addon" ? catalogueId : null}, ${line.qty}, ${line.unitGrossMinor},
+                     'GBP', ${line.vatRateBp})`;
+  }
+  if (mode === "live") {
+    await tx`
+      INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor,
+                           currency_code, livemode, capture_method, amount_captured_minor,
+                           captured_at)
+      SELECT pu.id, 'stripe', ${unique("pi_")}, 'captured', 'card', pu.total_minor, 'GBP', true,
+             'automatic', pu.total_minor, now()
+      FROM "order" o JOIN purchase pu ON pu.id = o.purchase_id
+      WHERE o.id = ${id}`;
+  }
   return id;
 }
 
-/** Writes an invoice (or a credit note correcting `corrects`) for `orderId`, unrendered. */
-async function document(
+/** The order's invoice, issued by `issueInvoice` (unrendered). */
+async function issued(tx: Tx, orderId: string): Promise<string> {
+  return (await issueInvoice(orderId, issueOptions(tx))).invoiceId;
+}
+
+/**
+ * A succeeded refund of `amountMinor` naming `orderId`, on its purchase's payment, and the credit
+ * note `issueCreditNote` issues for it (unrendered).
+ */
+async function credited(
   tx: Tx,
   orderId: string,
-  options: {
-    readonly snapshot?: InvoiceSnapshot | CreditNoteSnapshot;
-    readonly corrects?: string;
-    readonly profileKey?: string;
-  } = {},
+  amountMinor: number,
 ): Promise<string> {
-  const snapshot = options.snapshot ?? AC17_INVOICE;
-  const credit = snapshot.kind === "credit_note";
   const [row] = await tx<{ id: string }[]>`
-    INSERT INTO invoice (kind, order_id, corrects_invoice_id, series_key, number, issued_at,
-                         supply_date, currency_code, total_minor, profile_key, snapshot,
-                         snapshot_version)
-    VALUES (${snapshot.kind}, ${orderId}, ${options.corrects ?? null},
-            ${credit ? "fok-pl-2026" : "fo-pl-2026"},
-            ${`${credit ? "FOK-PL" : "FO-PL"}/2026/${unique("")}`},
-            now(), ${snapshot.supplyDate}::date, ${snapshot.currency},
-            ${snapshot.totals.grossMinor}, ${options.profileKey ?? "principal-pl"},
-            ${tx.json(JSON.parse(JSON.stringify(snapshot)) as never)}, 1)
+    INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                        currency_code, reason, status, requested_by, succeeded_at)
+    SELECT p.id, o.id, o.purchase_id, ${unique("re_")}, ${amountMinor}, 'GBP', 'quality',
+           'succeeded', 'system:test', now()
+    FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+    WHERE o.id = ${orderId}
+    RETURNING id`;
+  if (row === undefined) throw new Error("no refund row");
+  return (await issueCreditNote(row.id, issueOptions(tx))).invoiceId;
+}
+
+/**
+ * AC-37's `test`-mode document: `issueInvoice` refuses a `test` order (`INVOICE_NOT_LIVE`), so
+ * this one row is written by SQL, to prove that the renderer itself enqueues no email for it.
+ */
+async function testModeDocument(tx: Tx): Promise<string> {
+  const orderId = await order(tx, "test");
+  const [row] = await tx<{ id: string }[]>`
+    INSERT INTO invoice (kind, order_id, series_key, number, issued_at, supply_date,
+                         currency_code, total_minor, profile_key, snapshot, snapshot_version)
+    VALUES ('invoice', ${orderId}, 'fo-pl-2026', ${`FO-PL/2026/${unique("")}`}, now(),
+            ${AC17_INVOICE.supplyDate}::date, 'GBP', ${AC17_INVOICE.totals.grossMinor},
+            'principal-pl', ${tx.json(JSON.parse(JSON.stringify(AC17_INVOICE)) as never)}, 1)
     RETURNING id`;
   if (row === undefined) throw new Error("no invoice row");
   return row.id;
@@ -242,6 +359,9 @@ const gbp = (amountMinor: number) =>
 const pln = (amountMinor: number) =>
   formatMoney({ amountMinor, currency: "PLN" }, "en-gb").replace(/\s+/g, " ");
 const HOUR = 3_600_000;
+/** A `YYYY-MM-DD` date as the PDF writes it for an `en-gb` buyer. */
+const day = (isoDate: string) =>
+  formatDate(new Date(`${isoDate}T12:00:00Z`), "en-gb", "dayMonthYear", "UTC");
 
 describe.skipIf(server.url === undefined)(
   `spec 018 invoice PDF and delivery (TASK-342)${server.url === undefined ? ` (skipped: ${server.reason})` : ""}`,
@@ -259,7 +379,7 @@ describe.skipIf(server.url === undefined)(
     it("AC-16 (render half): one render writes the three columns; a second write raises INVOICE_IMMUTABLE; a second render writes nothing", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
-        const invoiceId = await document(tx, await order(tx));
+        const invoiceId = await issued(tx, await order(tx));
         const before = await rowOf(tx, invoiceId);
         const files = store();
         const jobs = scheduler();
@@ -322,7 +442,7 @@ describe.skipIf(server.url === undefined)(
       const result = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
         const orderId = await order(tx);
-        const invoiceId = await document(tx, orderId);
+        const invoiceId = await issued(tx, orderId);
         const files = store();
         await renderInvoice(invoiceId, renderDeps(tx, files, scheduler()));
         const pdf = await getPdfByInvoiceId(invoiceId, {
@@ -333,12 +453,16 @@ describe.skipIf(server.url === undefined)(
           {
             buyer_total_minor: string;
             vat_breakdown: { rateBp: number; grossMinor: number }[];
+            warsaw_today: string;
           }[]
-        >`SELECT buyer_total_minor::text, vat_breakdown FROM "order" WHERE id = ${orderId}`;
+        >`SELECT buyer_total_minor::text, vat_breakdown,
+                 (now() AT TIME ZONE 'Europe/Warsaw')::date::text AS warsaw_today
+          FROM "order" WHERE id = ${orderId}`;
         return {
           text: pdfText(pdf.bytes).replace(/\s+/g, " "),
           pdf,
           order: orderRow,
+          orderReference: orderReference(orderId),
         };
       });
       const { text, pdf } = result;
@@ -348,17 +472,16 @@ describe.skipIf(server.url === undefined)(
         "1 Test Street",
         "00001 Testville",
         "Kod rejestrowy / Registry code: Test Register TEST-0001",
-        "VAT EE: EE000000000",
         "VAT PL: PL0000000000",
         "Nabywca / Buyer Sam Sample Wielka Brytania / United Kingdom",
         `Numer / Number ${pdf.number}`,
-        "Data wystawienia / Issue date 6 Oct 2026",
-        "Data dostawy / Supply date 8 Oct 2026",
-        "Zamówienie / Order FO-7K2M-9QXA",
+        `Data wystawienia / Issue date ${day(result.order?.warsaw_today ?? "")}`,
+        "Data dostawy / Supply date 14 Feb 2027",
+        `Zamówienie / Order ${result.orderReference}`,
         "Waluta / Currency GBP",
         `1 Amber Hour 8% ${gbp(4_590)}`,
-        `2 Bombonierka / Box of chocolates 23% ${gbp(600)}`,
-        `3 Drukowany bilecik / Printed card 8% ${gbp(0)}`,
+        `2 Drukowany bilecik / Printed card 8% ${gbp(0)}`,
+        `3 Bombonierka / Box of chocolates 23% ${gbp(600)}`,
         `Razem 8% / Total 8% 8% ${gbp(4_250)} ${gbp(340)} ${gbp(4_590)}`,
         `Razem 23% / Total 23% 23% ${gbp(488)} ${gbp(112)} ${gbp(600)}`,
         `Do zapłaty / Total ${gbp(4_738)} ${gbp(452)} ${gbp(5_190)}`,
@@ -368,6 +491,8 @@ describe.skipIf(server.url === undefined)(
       ]) {
         expect(text).toContain(expected);
       }
+      // Spec 018 §14 on AC-17: the fixture holds one PL registration; no EE number exists.
+      expect(text).not.toContain("VAT EE");
       expect(pdf.totalMinor).toBe(Number(result.order?.buyer_total_minor));
       expect(
         AC17_INVOICE.byRate.map((split) => [split.rateBp, split.grossMinor]),
@@ -390,7 +515,7 @@ describe.skipIf(server.url === undefined)(
       const texts = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
         const orderId = await order(tx);
-        const principalId = await document(tx, orderId);
+        const principalId = await issued(tx, orderId);
         const files = store();
         await renderInvoice(
           principalId,
@@ -401,14 +526,7 @@ describe.skipIf(server.url === undefined)(
         await tx`UPDATE invoice_profile
                  SET active = true, issuer_statement_key = 'invoice.statement.test'
                  WHERE key = 'agent-pl'`;
-        const agentSnapshot: InvoiceSnapshot = {
-          ...AC17_INVOICE,
-          profileKey: "agent-pl",
-        };
-        const agentId = await document(tx, await order(tx), {
-          snapshot: agentSnapshot,
-          profileKey: "agent-pl",
-        });
+        const agentId = await issued(tx, await order(tx, "live", "agent"));
         await renderInvoice(
           agentId,
           renderDeps(tx, files, scheduler(), statement),
@@ -437,12 +555,13 @@ describe.skipIf(server.url === undefined)(
       const ids = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
         const orderId = await order(tx);
-        const invoiceId = await document(tx, orderId);
-        const creditId = await document(tx, orderId, {
-          snapshot: AC21_CREDIT_NOTE,
-          corrects: invoiceId,
-        });
-        const testId = await document(tx, await order(tx, "test"));
+        const invoiceId = await issued(tx, orderId);
+        const creditId = await credited(
+          tx,
+          orderId,
+          AC17_INVOICE.totals.grossMinor,
+        );
+        const testId = await testModeDocument(tx);
         const deps = renderDeps(tx, store(), schedule);
         const outcomes: string[] = [];
         for (let round = 0; round < 2; round += 1) {
@@ -495,11 +614,12 @@ describe.skipIf(server.url === undefined)(
       const result = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
         const orderId = await order(tx);
-        const invoiceId = await document(tx, orderId);
-        const creditId = await document(tx, orderId, {
-          snapshot: AC21_CREDIT_NOTE,
-          corrects: invoiceId,
-        });
+        const invoiceId = await issued(tx, orderId);
+        const creditId = await credited(
+          tx,
+          orderId,
+          AC17_INVOICE.totals.grossMinor,
+        );
         const files = store();
         const read = { executor: runnerOf(tx), store: files };
         const unrendered = await codeOf(getPdfByInvoiceId(invoiceId, read));
@@ -565,7 +685,7 @@ describe.skipIf(server.url === undefined)(
         kind: "credit_note",
         number: result.creditRow.number,
         orderId: result.orderId,
-        totalMinor: -600,
+        totalMinor: -AC17_INVOICE.totals.grossMinor,
         currencyCode: "GBP",
         sha256: result.creditRow.pdf_sha256,
       });
@@ -616,8 +736,8 @@ describe.skipIf(server.url === undefined)(
         new URL(pathWithQuery, "https://example.test").searchParams.get("t");
       const result = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
-        const invoiceId = await document(tx, await order(tx));
-        const otherId = await document(tx, await order(tx));
+        const invoiceId = await issued(tx, await order(tx));
+        const otherId = await issued(tx, await order(tx));
         const files = store();
         await renderInvoice(invoiceId, renderDeps(tx, files, scheduler()));
         const deps = {
@@ -750,7 +870,7 @@ describe.skipIf(server.url === undefined)(
         await tx`INSERT INTO order_assignment (order_id, partner_id, sla_expires_at,
                                                responded_at, response, attempt)
                  VALUES (${orderId}, ${partnerId}, now() + interval '1 hour', now(), 'accept', 1)`;
-        const invoiceId = await document(tx, orderId);
+        const invoiceId = await issued(tx, orderId);
         const files = store();
         await renderInvoice(invoiceId, renderDeps(tx, files, scheduler()));
         const pdf = await getPdfByInvoiceId(invoiceId, {
@@ -774,7 +894,7 @@ describe.skipIf(server.url === undefined)(
     it("the sweep asks a render for every unrendered document and alerts one 15 minutes old; the fifth failed attempt alerts invoice.render_dead", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
-        const invoiceId = await document(tx, await order(tx));
+        const invoiceId = await issued(tx, await order(tx));
         const { issued_at: issuedAt } = await rowOf(tx, invoiceId);
         const sweep = async (minutes: number) => {
           const jobs = scheduler();
