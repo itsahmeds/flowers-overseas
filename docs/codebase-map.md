@@ -21,8 +21,8 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +126 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
-| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +15 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-actions.test.ts`, `integration/florist-inbox.test.ts` +13 |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +17 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +14 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +24 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +11 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
@@ -67,6 +67,7 @@ task actually touches.
 | `locales.data.ts` | Locale data as plain typed constants — the… | 004 |
 | `locales.ts` | Locale registry | 003 |
 | `mega-menu.ts` | The mega menu's shape as config (spec 004 §14… | 004 |
+| `notifications.ts` | The buyer emails' configuration slots | 016 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004… | 004 |
 | `orders.ts` | Order timing rules: the destination-local hour… | 013 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2… | 004 |
@@ -315,8 +316,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 461 |
-| `tests/integration/` | 87 |
+| `tests/unit/` | 462 |
+| `tests/integration/` | 88 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |

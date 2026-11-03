@@ -192,7 +192,13 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     surface: "orderConfirmation",
     paths: CHECKOUT_PATHS,
   },
-  { match: "tracking", surface: "orderTracking", paths: TRACK_PATHS },
+  // Spec 016 §5.2 (TASK-333): the buyer emails print the page's status labels, refund line, photo
+  // alt text and eyebrow verbatim ("the same map as spec 018's tracking page").
+  {
+    match: "tracking",
+    surface: "orderTracking",
+    paths: [...TRACK_PATHS, ...EMAIL_PATHS],
+  },
   { match: "trackLookup", surface: "orderTracking", paths: TRACK_PATHS },
   // Spec 013 §7 (TASK-255): the pay step's errors and labels render on step 3 only, and the
   // payment lines of the confirmation states on the confirmation page only; both are `no-store`,
@@ -207,15 +213,25 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     surface: "checkout",
     paths: PAYMENTS_PATHS,
   },
+  // B1's preheader is the confirmation's "Thank you. We have your order." (TASK-333).
   {
     match: "payments.confirmation.*",
     surface: "orderConfirmation",
-    paths: PAYMENTS_PATHS,
+    paths: [...PAYMENTS_PATHS, ...EMAIL_PATHS],
+  },
+  // Spec 010's lawyer-gated cancellation sentence (spec 016 §5.2 B1, TASK-333): the pay step's
+  // pre-contract block (spec 013) and B1's "Your order terms" print it.
+  {
+    match: "checkout.legal.*",
+    surface: "checkout",
+    paths: [...PAYMENTS_PATHS, ...EMAIL_PATHS],
   },
   { match: "floristAuth", surface: "florist", paths: FLORIST_PATHS },
   { match: "emails.floristSignIn.*", surface: "email", paths: FLORIST_PATHS },
   { match: "emails.layout.*", surface: "email", paths: EMAIL_PATHS },
   { match: "emails.florist.*", surface: "email", paths: EMAIL_PATHS },
+  // Spec 016 §5.2 (TASK-333): the buyer emails B1 to B6 and B8.
+  { match: "emails.buyer.*", surface: "email", paths: EMAIL_PATHS },
   // Spec 018 §7 (TASK-339): T16, the tracking lookup's answer, renders in email only; the lookup's
   // seams under `(track)` hand it to the mailer.
   {

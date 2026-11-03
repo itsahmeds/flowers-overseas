@@ -342,6 +342,8 @@ describe("the shipped catalogues and manifests", () => {
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
+    // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
+    "checkout.legal.cancellation",
     "company.controller",
     "consent.privacyLink",
     "corridor.calendar.ruleEaster",
@@ -354,6 +356,9 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-212, spec 011 Appendix A: the florist sign-in, inbox chrome and sign-in email copy,
     // shipped `reviewed: false` (founder copy pending on the artboards); not counted in the
     // unreviewed share (`review-scope.ts`, A17).
+    // TASK-333 (spec 016 §5.2, §7): the buyer emails B1 to B6 and B8, the spec's and the boards'
+    // words and the builder's proposals, `reviewed: false` until the record run
+    // (`.claude/state/record-approval-333.py`) attests them.
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
     // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the

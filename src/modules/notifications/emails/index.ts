@@ -112,3 +112,46 @@ export {
   renderPayoutStatementPdf,
 } from "./payout-statement-pdf";
 export { payoutStatementPdf } from "./statement-document";
+// Spec 016 §5.2 (TASK-333): the buyer emails B1 to B6 and B8.
+export {
+  BUYER_TEMPLATES,
+  type BuyerOrderFacts,
+  BuyerOrderFactsSchema,
+  type BuyerTemplate,
+  type CancelledFacts,
+  CancelledFactsSchema,
+  type DeliveredFacts,
+  DeliveredFactsSchema,
+  type DocumentFacts,
+  DocumentFactsSchema,
+  PHOTO_CONTENT_ID,
+  type PurchaseFacts,
+  PurchaseFactsSchema,
+  type RefundFacts,
+  RefundFactsSchema,
+  buyerStatusLabelKey,
+  deliveryPhotoFilename,
+  renderBeingMade,
+  renderCancelled,
+  renderCreditNote,
+  renderDeliveredPhoto,
+  renderOrderReceived,
+  renderOutForDelivery,
+  renderRefund,
+} from "./buyer";
+export {
+  type BuyerFactSources,
+  TermsPdfMissing,
+  buyerLocaleOf,
+  loadBuyerOrderFacts,
+  loadCancelledFacts,
+  loadDeliveredFacts,
+  loadDocumentFacts,
+  loadPurchaseFacts,
+  loadRefundFacts,
+} from "./buyer-facts";
+export {
+  registerBuyerEmailTemplates,
+  renderBuyerNotification,
+} from "./buyer-register";
+export { firstNameOf } from "./first-name";

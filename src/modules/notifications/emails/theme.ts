@@ -61,6 +61,13 @@ export const EMAIL_MEASURES = {
   phoneBlockGap: 18,
   heading: 32,
   phoneHeading: 26,
+  /** The lede under a buyer heading (B1's arrival line, B4's delivery line; TASK-333). */
+  lede: 19,
+  phoneLede: 17,
+  /** The "Your order terms" heading and a delivery panel's heading (B1; TASK-333). */
+  subheading: 21,
+  panelHeading: 20,
+  phonePanelHeading: 19,
   body: 17,
   phoneBody: 16,
   small: 14,

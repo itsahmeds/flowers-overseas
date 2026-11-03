@@ -47,21 +47,36 @@ export const mailTags = [
 export type MailTag = (typeof mailTags)[number];
 
 /**
- * One attached file (spec 030a §5.2: the payout statement PDF, TASK-365). The bytes travel as
- * base64, the form Resend's `attachments[].content` takes; the name is a plain file name (no path,
- * no address, no person), and only a PDF is admitted until another spec needs another type.
+ * One attached file. The bytes travel as base64, the form Resend's `attachments[].content` takes,
+ * or (spec 016 B1's terms PDF) as an `https` URL Resend fetches at send time (`attachments[].path`);
+ * the name is a plain file name (no path, no address, no person). Spec 030a's payout statement
+ * (TASK-365) and spec 016's B1 terms and invoice PDFs are PDFs; B4's delivery photo is a JPEG, sent
+ * once inline (`contentId`, shown in the HTML part as `cid:{contentId}`,
+ * https://resend.com/docs/dashboard/emails/embed-inline-images) and once as a file (TASK-333).
  */
 export const MailAttachmentSchema = z
   .object({
     filename: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/u),
-    contentType: z.literal("application/pdf"),
-    content: z.base64().min(1),
+    contentType: z.enum(["application/pdf", "image/jpeg"]),
+    content: z.base64().min(1).optional(),
+    path: z.url({ protocol: /^https$/u }).optional(),
+    contentId: z
+      .string()
+      .regex(/^[A-Za-z0-9._-]{1,64}$/u)
+      .optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (file) => (file.content === undefined) !== (file.path === undefined),
+    { error: "an attachment carries its content or its URL, exactly one" },
+  );
 export type MailAttachment = z.infer<typeof MailAttachmentSchema>;
 
-/** At most this many files per message. */
-export const MAX_ATTACHMENTS = 3;
+/**
+ * At most this many files per message: B1 of a five-order purchase carries the terms PDF of each
+ * distinct terms version and up to five invoices (spec 016 §14 A-founder-2026-10-22).
+ */
+export const MAX_ATTACHMENTS = 10;
 
 export const MailMessageSchema = z
   .object({
@@ -72,7 +87,7 @@ export const MailMessageSchema = z
     html: z.string().min(1),
     /** Sent as `Idempotency-Key` (spec 016 §5.2): `{source_key}:{template_key}:{recipient_ref}`. */
     idempotencyKey: z.string().min(1).max(256).optional(),
-    /** Files sent with the message (spec 030a's statement PDF). */
+    /** Files sent with the message (spec 030a's statement PDF; spec 016's B1, B4 and B8). */
     attachments: z
       .array(MailAttachmentSchema)
       .min(1)
@@ -162,8 +177,14 @@ export function resendMailer(
               : {
                   attachments: message.attachments.map((file) => ({
                     filename: file.filename,
-                    content: file.content,
+                    ...(file.content === undefined
+                      ? {}
+                      : { content: file.content }),
+                    ...(file.path === undefined ? {} : { path: file.path }),
                     content_type: file.contentType,
+                    ...(file.contentId === undefined
+                      ? {}
+                      : { content_id: file.contentId }),
                   })),
                 }),
           }),
