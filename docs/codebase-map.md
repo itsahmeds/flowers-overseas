@@ -98,6 +98,7 @@ task actually touches.
 | `[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/-product/{segment}/{child}/{gr… | 009 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the… | 008 |
+| `[locale]/(account)/account/invoices/[invoiceId]/route.ts` | GET: the invoice PDF for a signed link | 018 |
 | `[locale]/(checkout)/_views/CheckoutHeader.tsx` | The checkout's header | 010 |
 | `[locale]/(checkout)/_views/CheckoutView.tsx` | `/{locale}/checkout`, drawn (spec 010 §2 "The… | 010 |
 | `[locale]/(checkout)/_views/ConfirmationView.tsx` | `/{locale}/checkout/done`, drawn (spec 010 §2… | 010 |
@@ -319,7 +320,7 @@ task actually touches.
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 373 |
+| `tests/fixtures/` | 375 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

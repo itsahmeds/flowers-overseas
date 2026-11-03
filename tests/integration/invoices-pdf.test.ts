@@ -28,7 +28,7 @@
  *    invoice: 404.
  *  - **T-40 / AC-40:** the stored PDF of an order whose florist's name is a marker: no relay
  *    word, no marker, no partner id.
- *  - The sweep and the job: a fresh unrendered document is queued, one 15 minutes old alerts; the
+ *  - The sweep and the job: every unrendered document is queued, one 15 minutes old also alerts; the
  *    fifth failed attempt alerts `invoice.render_dead`.
  */
 import { createHash, randomUUID } from "node:crypto";
@@ -478,6 +478,19 @@ describe.skipIf(server.url === undefined)(
       ).toEqual([{ invoiceId: ids.creditId }]);
     });
 
+    it("the sweep's ask is idempotent on the exclusive invoice.render queue: two asks, one job, with five attempts", async () => {
+      const schedule = createPgBossInvoiceScheduler({
+        connectionString: scratch.url,
+      });
+      const invoiceId = randomUUID();
+      await schedule({ name: "invoice.render", invoiceId });
+      await schedule({ name: "invoice.render", invoiceId });
+      const jobs = await scratch.sql<{ retry_limit: number }[]>`
+        SELECT retry_limit FROM pgboss.job
+        WHERE name = 'invoice.render' AND singleton_key = ${invoiceId}`;
+      expect(jobs).toEqual([{ retry_limit: 4 }]);
+    });
+
     it("AC-37: getPdfByInvoiceId returns the private bucket's bytes for the invoice and the credit note; unrendered, a flipped byte and a missing object throw", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
@@ -758,7 +771,7 @@ describe.skipIf(server.url === undefined)(
       );
     });
 
-    it("the sweep queues a fresh unrendered document and alerts one 15 minutes old; the fifth failed attempt alerts invoice.render_dead", async () => {
+    it("the sweep asks a render for every unrendered document and alerts one 15 minutes old; the fifth failed attempt alerts invoice.render_dead", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         await profiles(tx);
         const invoiceId = await document(tx, await order(tx));
@@ -807,8 +820,8 @@ describe.skipIf(server.url === undefined)(
         alerts: [],
       });
       expect(result.old).toEqual({
-        counts: { queued: 0, overdue: 1 },
-        jobs: [],
+        counts: { queued: 1, overdue: 1 },
+        jobs: [{ name: "invoice.render", invoiceId: result.invoiceId }],
         alerts: [
           {
             alert: "invoice.render_overdue",

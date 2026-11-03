@@ -197,8 +197,8 @@ export const JOB_HANDLERS: JobHandlers = {
       retryCount: context.retryCount ?? 0,
     });
   },
-  // Spec 018 §11 (TASK-342): every unrendered document gets a render job for its first 15
-  // minutes, then an `invoice.render_overdue` alert each minute. Reads only; idempotent.
+  // Spec 018 §11 (TASK-342): every unrendered document is asked a render job (one per document
+  // on its queue), and one 15 minutes old raises `invoice.render_overdue`. Reads only; idempotent.
   "invoice.render_sweep": async () => {
     await runInvoiceRenderSweep();
   },

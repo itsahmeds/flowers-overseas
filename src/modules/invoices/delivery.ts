@@ -14,12 +14,13 @@
  * crash between the upload and the commit re-uploads the same bytes under the same key.
  *
  * **Who runs it.** `issueInvoice` and `issueCreditNote` (TASK-341) run inside the outbox delivery
- * and enqueue nothing; the minute tick's `invoice.render_sweep` finds every unrendered document.
- * One issued less than `RENDER_WINDOW_MINUTES` ago gets an `invoice.render {invoiceId}` job (an
- * `exclusive` queue keyed by the invoice: at most one queued or running per document; 5 attempts,
- * then `invoice.render_dead`); one older than that raises `invoice.render_overdue` each minute
- * until it is rendered (§11 "an invoice not rendered 15 minutes after issue"; the runbook's
- * `pnpm invoices:render` renders it by hand).
+ * and enqueue nothing; the minute tick's `invoice.render_sweep` finds every unrendered document
+ * and asks for an `invoice.render {invoiceId}` job (an `exclusive` queue keyed by the invoice: at
+ * most one queued, retrying or running per document, so asking every minute adds nothing while
+ * one is pending; 5 attempts, then `invoice.render_dead`, and the next sweep asks again). A
+ * document still unrendered `RENDER_WINDOW_MINUTES` after issue also raises
+ * `invoice.render_overdue`, every minute until it renders (§11 "an invoice not rendered 15
+ * minutes after issue"; `docs/runbooks/invoices.md`).
  *
  * **Read, never render.** `getPdfByInvoiceId` reads `pdf_object_key` from the row and the bytes
  * from the private bucket through a short-lived signed read URL (the seam has no `get`), checks
@@ -300,7 +301,7 @@ export async function runRenderJob(
 /* invoice.render_sweep                                                       */
 /* -------------------------------------------------------------------------- */
 
-/** How long after issue the sweep keeps a render queued before it alerts instead (§11). */
+/** How long after issue an unrendered document alerts (§11). */
 export const RENDER_WINDOW_MINUTES = 15;
 
 /** Documents looked at per sweep. */
@@ -319,8 +320,9 @@ const SweepRow = z.object({
 });
 
 /**
- * One minute's sweep: an `invoice.render` job for every unrendered document issued in the last
- * `RENDER_WINDOW_MINUTES`, an `invoice.render_overdue` alert for every older one.
+ * One minute's sweep: an `invoice.render` job asked for every unrendered document (the queue
+ * keeps one per document), and an `invoice.render_overdue` alert for each one issued
+ * `RENDER_WINDOW_MINUTES` or more ago.
  */
 export async function runInvoiceRenderSweep(
   deps: SweepDeps = {},
@@ -346,11 +348,9 @@ export async function runInvoiceRenderSweep(
   let overdue = 0;
   for (const raw of rows) {
     const row = SweepRow.parse(raw);
-    if (row.minutes < RENDER_WINDOW_MINUTES) {
-      await schedule({ name: "invoice.render", invoiceId: row.id });
-      queued += 1;
-      continue;
-    }
+    await schedule({ name: "invoice.render", invoiceId: row.id });
+    queued += 1;
+    if (row.minutes < RENDER_WINDOW_MINUTES) continue;
     overdue += 1;
     log.error(
       { invoice_id: row.id, minutes: row.minutes, job: "invoice.render_sweep" },
