@@ -2,7 +2,7 @@
  * The tracking lookup (spec 018 §5.2 `lookupTracking`, "Rate limits", "Emails"; §5.3 `track`;
  * AC-8; TASK-339).
  *
- * A buyer who has lost the link types the order's `FO-XXXX-XXXX` reference and the email on
+ * A buyer who has lost the link types the order's reference (spec 010) and the email on
  * `/{locale}/track`; when the pair matches one order, T16 sends that order's tracking link to the
  * order's own address. **The answer is the same page whatever happened** (the route renders it
  * from nothing this function returns), so nobody learns from it whether an order exists or which

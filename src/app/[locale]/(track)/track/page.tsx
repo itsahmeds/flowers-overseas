@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactElement } from "react";
+import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
 import { routableLocale } from "@/modules/i18n";
@@ -25,6 +26,11 @@ import { LookupPageView } from "./LookupForm";
  * `transactionalMetadata()`: a title and the robots meta, no canonical, no alternate (AC-12).
  */
 export const dynamic = "force-dynamic";
+
+/** The one query the page reads; any other value, or none, is the page before a submission. */
+const LookupQuerySchema = z
+  .object({ [SENT_PARAM]: z.string().optional().catch(undefined) })
+  .catch({});
 
 interface LookupParams {
   params: Promise<{ locale: string }>;
@@ -52,6 +58,7 @@ export default async function TrackLookupRoute({
   const locale = routableLocale(requested)?.code;
   if (locale === undefined || !isLocaleCode(locale)) notFound();
   setRequestLocale(locale);
-  const sent = (await searchParams)[SENT_PARAM] === "1";
+  const query = LookupQuerySchema.parse(await searchParams);
+  const sent = query[SENT_PARAM] === "1";
   return <LookupPageView locale={locale} sent={sent} />;
 }

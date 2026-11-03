@@ -21,21 +21,30 @@
 
 import { redirect } from "next/navigation";
 import { after } from "next/server";
+import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
 import { routableLocale } from "@/modules/i18n";
 
 import { lookupSentPath, runLookup } from "./lookup";
 
+/** The bound locale: a short string; anything else lands on the site root. */
+const BoundLocaleSchema = z.string().max(16).catch("");
+/** The post itself: form data, or nothing to read. */
+const LookupFormSchema = z.instanceof(FormData).nullable().catch(null);
+
 export async function lookupTrackingAction(
   locale: string,
   form: FormData,
 ): Promise<never> {
-  const code = routableLocale(locale)?.code;
+  const code = routableLocale(BoundLocaleSchema.parse(locale))?.code;
   if (code === undefined || !isLocaleCode(code)) redirect("/");
+  const data = LookupFormSchema.parse(form);
+  // The two fields as posted; `lookupTracking` parses them (`TrackingLookupInputSchema`) after
+  // the answer, so a field that does not parse gets the same answer as any other.
   const input = {
-    reference: form.get("reference"),
-    email: form.get("email"),
+    reference: data?.get("reference") ?? null,
+    email: data?.get("email") ?? null,
   };
   after(() => runLookup(input, code));
   redirect(lookupSentPath(code));

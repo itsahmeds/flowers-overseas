@@ -26,7 +26,7 @@ import {
 
 export interface TrackingLinkEmailInput {
   readonly locale: LocaleCode;
-  /** The order's `FO-XXXX-XXXX` reference. */
+  /** The order's reference (spec 010's `orderReference`). */
   readonly reference: string;
   /** The absolute `/{locale}/track/{token}` link. */
   readonly link: string;
