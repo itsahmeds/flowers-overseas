@@ -44,6 +44,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04 builder I342: worktree `fo-wt-342`, branch `task/TASK-342-invoice-pdf` off main c216700cc. Next: PDFKit and Noto Sans, the renderer, NBP adapter, render job, getters, download route, runbook.
+- 2026-11-04 builder I342: renderer (`src/modules/invoices/pdf/`), NBP adapter (`nbp.ts`, plugged in `src/jobs/handlers.ts`), render job + minute sweep + `invoice.email` enqueue + readers (`delivery.ts`), signed download (`download.ts` + route), jobs registry (`invoice.render` exclusive x5, `invoice.render_sweep`, `invoice.email`). Next: unit and integration tests, runbook.
 
 ## Result
 

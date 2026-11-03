@@ -35,6 +35,7 @@ import {
   REGISTERED_JOB_NAMES,
   buildJobData,
   jobQueuePolicy,
+  jobRetryLimit,
   parseJobData,
   type JobPayload,
   type JobPayloadInput,
@@ -179,23 +180,28 @@ export async function enqueue<Name extends RegisteredJobName>(
   options: EnqueueOptions,
 ): Promise<string | null> {
   const data = buildJobData(name, payload, options.requestId);
-  const startAfter =
-    options.startAfter === undefined ? {} : { startAfter: options.startAfter };
+  const retryLimit = jobRetryLimit(name);
+  const sendOptions = {
+    ...(options.startAfter === undefined
+      ? {}
+      : { startAfter: options.startAfter }),
+    ...(retryLimit === undefined ? {} : { retryLimit }),
+  };
   if (options.singletonKey === undefined) {
-    return options.startAfter === undefined
+    return Object.keys(sendOptions).length === 0
       ? boss.send(name, data)
-      : boss.send(name, data, startAfter);
+      : boss.send(name, data, sendOptions);
   }
-  if (jobQueuePolicy(name) === "short") {
+  if (jobQueuePolicy(name) !== "standard") {
     return boss.send(name, data, {
       singletonKey: options.singletonKey,
-      ...startAfter,
+      ...sendOptions,
     });
   }
   return boss.send(name, data, {
     singletonKey: options.singletonKey,
     singletonSeconds: SINGLETON_SECONDS,
-    ...startAfter,
+    ...sendOptions,
   });
 }
 
@@ -204,6 +210,11 @@ export interface JobContext {
   readonly jobId: string;
   /** From the envelope: the request that enqueued the job (spec 002 §11). */
   readonly requestId: string;
+  /**
+   * pg-boss's count of earlier attempts: 0 on the first (spec 018's `invoice.render` alert).
+   * Absent where a caller runs a handler outside a tick (the suites).
+   */
+  readonly retryCount?: number;
 }
 
 export type JobHandler<Name extends RegisteredJobName> = (
@@ -289,6 +300,7 @@ export async function runTick(
         await handler(parsed.envelope.payload as JobPayload<typeof name>, {
           jobId: job.id,
           requestId: parsed.envelope.requestId,
+          retryCount: typeof job.retryCount === "number" ? job.retryCount : 0,
         });
       } catch (error) {
         await boss.fail(name, job.id, {

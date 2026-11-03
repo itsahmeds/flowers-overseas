@@ -16,8 +16,11 @@
  *    spec 016's routing jobs (§5.2 "Jobs", TASK-328): `order.route`, `assignment.remind`,
  *    `assignment.timeout`, `assignment.photo_remind` (each keyed, at most one waiting job per key:
  *    the queue's `short` policy) and `routing.sla_watch` (enqueued by every minute tick),
- *    TASK-329's `order.no_partner_expire` (keyed by order, `short`), and spec 030a's
- *    `payouts.prepaid_ready` (§5.2, TASK-363: founder email F1, keyed by payout);
+ *    TASK-329's `order.no_partner_expire` (keyed by order, `short`), spec 030a's
+ *    `payouts.prepaid_ready` (§5.2, TASK-363: founder email F1, keyed by payout), and spec 018's
+ *    invoice jobs (§5.2, TASK-342): `invoice.render` (keyed by invoice, `exclusive`, 5 attempts),
+ *    `invoice.render_sweep` (enqueued by every minute tick) and `invoice.email` (keyed by invoice,
+ *    `short`; its handler is spec 016's B8, TASK-334, so until then its jobs wait);
  *  - **declared only** — the name is reserved for the spec that implements it
  *    (`notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -114,6 +117,14 @@ export const OrderNoPartnerExpirePayload = z
 
 /** `routing.sla_watch` (spec 016 §5.2, AC-31): one minute's look for overdue offers. */
 export const RoutingSlaWatchPayload = z.object({}).strict();
+/**
+ * `invoice.render` and `invoice.email` (spec 018 §5.2, AC-37; TASK-342): one invoice or credit
+ * note. `invoice.render` stores its PDF (an `exclusive` queue keyed by the invoice, 5 attempts);
+ * `invoice.email` is spec 016's B8 (TASK-334 adds its handler), keyed `invoice.email:{invoiceId}`.
+ */
+export const InvoiceJobPayload = z.object({ invoiceId: z.uuid() }).strict();
+/** `invoice.render_sweep` (spec 018 §11; TASK-342): one minute's look for unrendered documents. */
+export const InvoiceRenderSweepPayload = z.object({}).strict();
 
 /**
  * `payouts.prepaid_ready` (spec 030a §5.2, AC-7, TASK-363): founder email F1 for one prepaid
@@ -127,9 +138,11 @@ export const PayoutsPrepaidReadyPayload = z
 /**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
  * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
- * already running may enqueue its own successor (a deferred offer, the next offer).
+ * already running may enqueue its own successor (a deferred offer, the next offer). `exclusive`:
+ * at most one job per `singletonKey` that is waiting, retrying or running (spec 018's
+ * `invoice.render`, which the minute sweep asks for again until the document is rendered).
  */
-export type JobQueuePolicy = "standard" | "short";
+export type JobQueuePolicy = "standard" | "short" | "exclusive";
 
 /** One registered job: its payload schema and that schema's version. */
 export interface RegisteredJob<Schema extends z.ZodType = z.ZodType> {
@@ -137,6 +150,8 @@ export interface RegisteredJob<Schema extends z.ZodType = z.ZodType> {
   readonly payload: Schema;
   /** The queue's policy; `standard` when absent. */
   readonly policy?: JobQueuePolicy;
+  /** Retries after the first attempt; pg-boss's default when absent. */
+  readonly retryLimit?: number;
 }
 
 /** The registered jobs (spec 002 §5.2 "Implemented here"). */
@@ -179,6 +194,14 @@ export const REGISTERED_JOBS = {
     payload: PayoutsPrepaidReadyPayload,
     policy: "short",
   },
+  "invoice.render": {
+    version: 1,
+    payload: InvoiceJobPayload,
+    policy: "exclusive",
+    retryLimit: 4,
+  },
+  "invoice.render_sweep": { version: 1, payload: InvoiceRenderSweepPayload },
+  "invoice.email": { version: 1, payload: InvoiceJobPayload, policy: "short" },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */
@@ -220,6 +243,12 @@ export type JobPayloadInput<Name extends RegisteredJobName> = z.input<
 export function jobQueuePolicy(name: RegisteredJobName): JobQueuePolicy {
   const job: RegisteredJob = REGISTERED_JOBS[name];
   return job.policy ?? "standard";
+}
+
+/** The registered retry limit of a job, or `undefined` for pg-boss's default. */
+export function jobRetryLimit(name: RegisteredJobName): number | undefined {
+  const job: RegisteredJob = REGISTERED_JOBS[name];
+  return job.retryLimit;
 }
 
 /** True for a name with a queue and a payload schema. */
