@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04, builder X: TASK-357's ACs on main c216700cc. **Satisfied:** AC-1 (`src/modules/admin/permissions.ts:25-28,48-51`, no `orders.transition`; T-01 `tests/unit/admin-permissions.test.ts:67`); AC-4 (`src/modules/admin/order-actions/run.ts:248`; T-05 `tests/integration/admin-order-refunds.test.ts:414`); AC-5 (`run.ts:234`, lock at `run.ts:229`; T-06 refunds `admin-order-refunds.test.ts:437`); AC-6 (`run.ts:255` + 0031's audit trigger; T-07 `:470`); AC-7 (`db/migrations/0031_admin_order_actions.sql:89-101`; T-08 `:379`); AC-8 (T-09 `tests/unit/admin-order-action-scan.test.ts:45`); AC-32 (0031 + down in the round trip, `tests/integration/migrations-round-trip.test.ts:49`). **Not on main:** `orderActionHistory` (needed by TASK-361's history list, not by 358); AC-2's T-03 scan of `src/app/admin/orders` actions (none existed; this PR adds the first two and their scan); request 1's edit of payments' own `adminRefund`/`adminCancel` (TASK-359 built `adminOrderRefund` in admin instead; this PR does the same for cancel). The old worktree `fo-wt-357` holds only PR 398's merged commits: nothing reused.
 
 ## Result
 
