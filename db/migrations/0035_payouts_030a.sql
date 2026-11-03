@@ -105,8 +105,9 @@ ALTER TABLE public.payout ADD COLUMN export_id uuid NULL;
 ALTER TABLE public.payout ADD CONSTRAINT payout_statement_number_key UNIQUE (statement_number);
 ALTER TABLE public.payout ADD CONSTRAINT payout_statement_number_check
   CHECK (statement_number ~ '^P-[0-9]{6}$');
-ALTER TABLE public.payout ADD CONSTRAINT payout_export_id_payout_export_id_fk
-  FOREIGN KEY (export_id) REFERENCES public.payout_export (id) ON DELETE RESTRICT;
+ALTER TABLE public.payout
+  ADD CONSTRAINT payout_export_id_payout_export_id_fk FOREIGN KEY (export_id)
+    REFERENCES public.payout_export (id) ON DELETE RESTRICT;
 ALTER TABLE public.payout ADD CONSTRAINT payout_sent_check
   CHECK ((status = 'draft') = (sent_at IS NULL));
 ALTER TABLE public.payout ADD CONSTRAINT payout_statement_number_status_check
@@ -135,8 +136,9 @@ ALTER TABLE public.payout_line ADD COLUMN reviewed_at timestamptz NULL;
 ALTER TABLE public.payout_line ADD COLUMN reviewed_by uuid NULL;
 ALTER TABLE public.payout_line ADD CONSTRAINT payout_line_review_reason_check
   CHECK (review_reason IN ('unpriced_lines'));
-ALTER TABLE public.payout_line ADD CONSTRAINT payout_line_reviewed_by_users_id_fk
-  FOREIGN KEY (reviewed_by) REFERENCES public.users (id) ON DELETE RESTRICT;
+ALTER TABLE public.payout_line
+  ADD CONSTRAINT payout_line_reviewed_by_users_id_fk FOREIGN KEY (reviewed_by)
+    REFERENCES public.users (id) ON DELETE RESTRICT;
 ALTER TABLE public.payout_line ADD CONSTRAINT payout_line_reviewed_check
   CHECK (reviewed_at IS NULL OR review_reason IS NOT NULL);
 ALTER TABLE public.payout_line ADD CONSTRAINT payout_line_reviewed_pair_check

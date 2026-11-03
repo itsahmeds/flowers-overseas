@@ -484,6 +484,11 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       callingCode: "48",
       // TASK-355's `admin.partners.signIn.*`.
       email: "florist@example.test",
+      // TASK-363's `emails.ops.payouts.prepaidReady.*` (F1).
+      partnerCode: "PL-WAW-01",
+      amount: "397.00 PLN",
+      number: "1",
+      limit: "5",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

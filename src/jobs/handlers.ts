@@ -19,6 +19,7 @@ import { invoicesOutboxHandler } from "../modules/invoices";
 // from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
 import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
+import { payoutDetailHref } from "../modules/admin/payouts";
 import { registerNotificationsOutbox } from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
 import {
@@ -85,7 +86,7 @@ registerOpsEmailTemplates({
   ) => string,
   orderHref: orderDetailHref,
   // Spec 030a §2.8: F1's link to the payout's admin page (TASK-367 builds the page).
-  payoutHref: (payoutId) => `/admin/payouts/${encodeURIComponent(payoutId)}`,
+  payoutHref: payoutDetailHref,
 });
 
 // Spec 030a §5.2 (TASK-363): the `payouts` target for `live` acceptances, held while

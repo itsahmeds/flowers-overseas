@@ -778,7 +778,7 @@
       },
       "payouts": {
         "prepaidReady": {
-          "subject": "Prepaid payout ready: {code} · {amount}",
+          "subject": "Prepaid payout ready: {partnerCode} · {amount}",
           "preheader": "Prepaid order {number} of {limit}. Send the statement and pay it this week.",
           "heading": "A prepaid payout is ready to send",
           "florist": "Florist",

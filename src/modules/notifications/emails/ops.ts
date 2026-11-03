@@ -534,7 +534,7 @@ export function renderPrepaidPayoutReady(
   };
   const reference = orderReference(ready.orderId);
   const subject = t("emails.ops.payouts.prepaidReady.subject", {
-    code: ready.partnerCode,
+    partnerCode: ready.partnerCode,
     amount,
   });
   const title = t("emails.ops.payouts.prepaidReady.heading");
