@@ -9,6 +9,9 @@
  * The AC names a Playwright check; tonight's rules forbid Playwright on this machine, so this
  * route test carries the AC and the e2e is a carry-forward in the brief.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it, vi } from "vitest";
 
 import type { AdminSession } from "../../src/lib/auth/admin.ts";
@@ -185,5 +188,19 @@ describe("AC-26 · the Wise CSV download", () => {
     );
     expect((await call()).status).toBe(404);
     expect(state.logAdminRead).not.toHaveBeenCalled();
+  });
+});
+
+describe("AC-26 · nothing to disk or R2", () => {
+  // The bytes are built in memory and answered; neither the route nor the export module (the only
+  // code on the download path that is not mocked above) may reach a file system or object store.
+  const root = resolve(import.meta.dirname, "../..");
+  const FORBIDDEN =
+    /from\s+["'](?:node:)?fs(?:\/promises)?["']|import\(\s*["'](?:node:)?fs|@\/lib\/storage|@aws-sdk|createWriteStream|writeFile/u;
+  it.each([
+    "src/app/admin/api/payouts/exports/[exportId]/route.ts",
+    "src/modules/partners/payouts/export.ts",
+  ])("%s imports no fs or storage module", (file) => {
+    expect(readFileSync(resolve(root, file), "utf8")).not.toMatch(FORBIDDEN);
   });
 });

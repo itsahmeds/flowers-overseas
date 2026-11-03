@@ -349,6 +349,50 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
+    it("§11 audit: one row per create, cancel and payment, by the founder, with no name or recipient id", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const f = await florist(tx, {
+          name: "Kwiaciarnia Lipa",
+          wise: "12345678",
+        });
+        const a = await statement(tx, f.id, 14900);
+        const first = await asAdmin(tx, (e) =>
+          createWiseExport(e, { payoutIds: [a] }, actor, { log: quiet }),
+        );
+        if (!first.ok) throw new Error("no export");
+        await asAdmin(tx, (e) => cancelExport(e, first.exportId, actor));
+        const second = await asAdmin(tx, (e) =>
+          createWiseExport(e, { payoutIds: [a] }, actor, { log: quiet }),
+        );
+        if (!second.ok) throw new Error("no export");
+        await asAdmin(tx, (e) => markPaid(e, a, actor, { log: quiet }));
+        const rows = await tx<
+          { action: string; entity_id: string; actor: string; facts: string }[]
+        >`
+          SELECT action, entity_id::text, actor_user_id::text AS actor,
+                 coalesce(before::text, '') || coalesce(after::text, '') AS facts
+          FROM audit_log
+          WHERE action IN ('payout_export.created', 'payout_export.cancelled', 'payout.paid')
+          `;
+        // One transaction, one now(): the rows are compared as a set, not in insertion order.
+        expect(rows.map((r) => `${r.action} ${r.entity_id}`).sort()).toEqual(
+          [
+            `payout_export.created ${first.exportId}`,
+            `payout_export.cancelled ${first.exportId}`,
+            `payout_export.created ${second.exportId}`,
+            `payout.paid ${a}`,
+          ].sort(),
+        );
+        expect(new Set(rows.map((r) => r.actor))).toEqual(
+          new Set([actor.userId]),
+        );
+        for (const row of rows) {
+          expect(row.facts).not.toContain("Kwiaciarnia");
+          expect(row.facts).not.toContain("12345678");
+        }
+      });
+    });
+
     /* -------------------------------------------------------------------- */
     /* T-28                                                                 */
     /* -------------------------------------------------------------------- */
@@ -384,6 +428,26 @@ describe.skipIf(server.url === undefined)(
           expect(await codeOf(asAdmin(tx, (e) => markPaid(e, a, actor)))).toBe(
             "PAYOUT_STATUS_ILLEGAL",
           );
+        });
+      });
+
+      it("refuses a payout still pointing at a cancelled export (defence beside cancelExport)", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const f = await florist(tx);
+          const a = await statement(tx, f.id, 14900);
+          const created = await asAdmin(tx, (e) =>
+            createWiseExport(e, { payoutIds: [a] }, actor, { log: quiet }),
+          );
+          if (!created.ok) throw new Error("no export");
+          // A writer other than cancelExport stamps the export cancelled and leaves export_id.
+          await tx`UPDATE payout_export SET cancelled_at = now() WHERE id = ${created.exportId}`;
+          expect(await codeOf(asAdmin(tx, (e) => markPaid(e, a, actor)))).toBe(
+            "PAYOUT_NOT_EXPORTED",
+          );
+          const [row] = await tx<
+            { status: string }[]
+          >`SELECT status FROM payout WHERE id = ${a}`;
+          expect(row?.status).toBe("statement_sent");
         });
       });
 

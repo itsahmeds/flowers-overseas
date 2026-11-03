@@ -23,13 +23,16 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (self-review, PR 469): `tests/fixtures/wise-batch-header.csv` holds spec 030a §5.4's header, not Wise's real template; the founder commits the downloaded template header before the first live export (§13 Q7). The contract test then fails until `PAYOUTS_CONFIG.wise.header` matches it, which is the intent.
+- 2026-11-04: T-26 names an e2e; tonight's rules forbid Playwright on this machine, so AC-26 is carried by `tests/unit/payouts-wise-export-route.test.ts` (guard, headers, one `logAdminRead`, logger spy, a structural no-fs/no-storage check on the route and `export.ts`). The browser e2e belongs to TASK-367, which builds the page with the download link.
+- 2026-11-04: the admin audit filter's entity list does not yet offer the `payout*` tables; TASK-367 adds them when it builds the audit view for payouts.
+- 2026-11-04: `tests/unit/admin-unauthenticated.test.ts` times out (5 s) on its first cold page import (`applications/[id]`) under load 13 to 15; the same on the TASK-365 base, so not this diff. The new route's own 401 case in that file passes.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-04: a cancelled export's file: the spec says cancel "frees its payouts" and is silent on downloading it again. Conservative reading, delegated by the orchestrator: `wiseExportFile` refuses `PAYOUT_EXPORT_CANCELLED` (409), so a file whose payouts may go into another export is never uploaded twice. Decided, not open.
 
 ## Progress
 
@@ -37,11 +40,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04: `export.ts` (CSV, export, cancel, mark paid, download), the route, error codes and audit entity, fixtures with `-text` in `.gitattributes`, contract/unit/route/integration tests; draft PR 469 stacked on PR 468.
+- 2026-11-04: mutations W1 to W15, R1 to R6 all red (W12 first survived; a defence case added); gates run; PR ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 469](https://github.com/itsahmeds/flowers-overseas/pull/469), stacked on PR 468 (TASK-365) and PR 467 (TASK-364); no migration. `src/modules/partners/payouts/export.ts`: `minorToDecimalString`, `csvCell`, `wiseCsv`, `createWiseExport`, `wiseExportFile`, `cancelExport`, `markPaid`, `markExportPaid`, `readWiseExportFile`, `wiseCsvResponse`; route `GET /admin/api/payouts/exports/[exportId]` behind `payouts.manage`. Tests: contract 4 (`wise-batch-csv`), unit 28 (`payouts-wise-csv`) + 10 (`payouts-wise-export-route`), integration 11 (`payouts-wise-export`, local PG16). Gates: typecheck 0, lint 0, db:check 0, check:no-db 0, codebase:map --check 0; format:check, i18n:check and tests 1 on main's known reds only. No `next build`, Playwright or Lighthouse (tonight's rules), so the AC-26 e2e is carried to TASK-367.
