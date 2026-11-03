@@ -54,7 +54,7 @@ here.
 - 2026-11-04 builder I342: worktree `fo-wt-342`, branch `task/TASK-342-invoice-pdf` off main c216700cc. Next: PDFKit and Noto Sans, the renderer, NBP adapter, render job, getters, download route, runbook.
 - 2026-11-04 builder I342: renderer (`src/modules/invoices/pdf/`), NBP adapter (`nbp.ts`, plugged in `src/jobs/handlers.ts`), render job + minute sweep + `invoice.email` enqueue + readers (`delivery.ts`), signed download (`download.ts` + route), jobs registry (`invoice.render` exclusive x5, `invoice.render_sweep`, `invoice.email`). Next: unit and integration tests, runbook.
 - 2026-11-04 builder I342: unit suites (`invoices-pdf` 17, `invoices-nbp` 8, jobs registry/runtime/internal updated) and integration `invoices-pdf` (10) green on a local PG16. Found: TASK-341's `issueInvoice`/`issueCreditNote` read `payment.order_id`, dropped by `0026`; its suite fails 13/13 on main (escalated below). Next: runbook, mutations, gates, PR.
-- 2026-11-04 builder I342: runbook `docs/runbooks/invoices.md`; review-scope entry for the `invoice` namespace; rebased on origin/main 84d4e1bcd (kept TASK-363's `payouts.prepaid_ready` beside the invoice jobs, registry size 24); 14 mutations each red; PR 465 ready.
+- 2026-11-04 builder I342: runbook `docs/runbooks/invoices.md`; review-scope entry for the `invoice` namespace; rebased on origin/main 7bad92299 (kept TASK-363's `payouts.prepaid_ready` beside the invoice jobs, registry size 24; meta manifests union-merged with TASK-339's keys); `invoice` added to the typed-namespace list and its 32 English keys to the founder's pinned review queue; 14 mutations each red; PR 465 ready.
 
 ## Result
 
