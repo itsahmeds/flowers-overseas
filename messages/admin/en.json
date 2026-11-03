@@ -332,6 +332,9 @@
         },
         "notifications": {
           "email": "Sends order emails to buyers, florists and you. Off: every email waits and goes out once this is on again. Nothing is dropped."
+        },
+        "payouts": {
+          "accrue": "Writes what each florist is owed: the price fixed when they accept, their prepaid orders and their payout lines. Off: payout work waits and is done once this is on again. Nothing is dropped."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -382,6 +385,12 @@
           "email": {
             "off": "No order email will be sent until this is on again. Emails wait and are not lost. Type the flag's name to confirm.",
             "on": "Order emails will be sent again, including the ones that waited. Type the flag's name to confirm."
+          }
+        },
+        "payouts": {
+          "accrue": {
+            "off": "Payout work will stop: no price is fixed when a florist accepts and no prepaid payout is made. The work waits and is done once this is on again. Type the flag's name to confirm.",
+            "on": "Payout work that waited will be done now, then each time a florist accepts. Type the flag's name to confirm."
           }
         }
       },
@@ -772,6 +781,19 @@
         "copyFrom": "----- copy from here -----",
         "copyTo": "----- to here -----",
         "note": "The florist has the same offer by email already. Never accept or decline for them; ask them to open the order."
+      },
+      "payouts": {
+        "prepaidReady": {
+          "subject": "Prepaid payout ready: {partnerCode} · {amount}",
+          "preheader": "Prepaid order {number} of {limit}. Send the statement and pay it this week.",
+          "heading": "A prepaid payout is ready to send",
+          "florist": "Florist",
+          "prepaidOrder": "Prepaid order",
+          "prepaidOrderValue": "{number} of {limit} · {reference}",
+          "amount": "Amount",
+          "open": "Open the payout",
+          "note": "Send the statement, then add it to the next Wise export. The florist is paid before they make the bouquet."
+        }
       }
     }
   }

@@ -91,6 +91,8 @@ const FUNCTIONS = [
   "order_assignment_mode_check",
   "order_event_append_only",
   "order_insert_guard",
+  // 0035 (TASK-363): the amount a florist accepted is final (spec 030a §5.1).
+  "order_line_payout_write_once",
   "order_mode_immutable",
   // 0013 (TASK-245): the reference function `order_reference_idx` reads (spec 010 §14 A2.2).
   "order_reference",
@@ -101,6 +103,10 @@ const FUNCTIONS = [
   "partner_application_media_check",
   "partner_coverage_country_check",
   "payout_currency_check",
+  // 0035 (TASK-363): the payout lifecycle (spec 030a §5.1).
+  "payout_line_frozen",
+  "payout_status_guard",
+  "payout_total_sync",
   // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
   // A-founder-2026-10-22 item 2 A).
   "purchase_total_check",
@@ -111,13 +117,14 @@ const FUNCTIONS = [
   "review_attestation_append_only",
   "review_blog_revision_current_hash",
   "review_blog_revision_hash",
+  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1). In `name` (C)
+  // order, as the catalogue returns it.
+  "review_content_immutable",
   "review_hash_part",
   "review_product_copy_hash",
   "review_row_is_own",
   "review_subject_hash",
   "review_write_guard",
-  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1).
-  "review_content_immutable",
   "set_updated_at",
   "status_flip_guard",
 ];

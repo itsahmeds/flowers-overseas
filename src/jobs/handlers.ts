@@ -19,6 +19,7 @@ import { invoicesOutboxHandler } from "../modules/invoices";
 // from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
 import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
+import { payoutDetailHref } from "../modules/admin/payouts";
 import { registerNotificationsOutbox } from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
 import {
@@ -27,6 +28,11 @@ import {
 } from "../modules/notifications/emails";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
+// Spec 030a §5.2 (TASK-363): the `payouts` target and F1's job, the worker's entry, not the barrel.
+import {
+  registerPayoutsOutbox,
+  sendPrepaidReady,
+} from "../modules/partners/payouts";
 // The close is not in the `orders` barrel: importing it registers `OrderClosedV1`, and only the
 // processes that close orders need that (spec 022a §5.2, TASK-369).
 import { runCloseSweep } from "../modules/orders/close";
@@ -79,7 +85,13 @@ registerOpsEmailTemplates({
     values?: Readonly<Record<string, string>>,
   ) => string,
   orderHref: orderDetailHref,
+  // Spec 030a §2.8: F1's link to the payout's admin page (TASK-367 builds the page).
+  payoutHref: payoutDetailHref,
 });
+
+// Spec 030a §5.2 (TASK-363): the `payouts` target for `live` acceptances, held while
+// `payouts.accrue` is off; a prepaid payout enqueues F1.
+registerPayoutsOutbox();
 
 export const JOB_HANDLERS: JobHandlers = {
   // Spec 006 §2.6, AC-25 (TASK-082): the variant ladder of one asset, written once per (asset,
@@ -138,6 +150,11 @@ export const JOB_HANDLERS: JobHandlers = {
   // `closed` and skips it.
   "order.close_sweep": async () => {
     await runCloseSweep();
+  },
+  // Spec 030a §5.2 (TASK-363): F1 for one prepaid payout. Idempotent: the pipeline's
+  // `notification_delivery` key sends it once per payout; a gone payout sends nothing.
+  "payouts.prepaid_ready": async (payload) => {
+    await sendPrepaidReady(payload.payoutId);
   },
   // Spec 016 §5.2 (TASK-328): the cascade. Each is idempotent: it locks and re-reads what it
   // acts on, and a state it does not expect (an answered or withdrawn offer, an order that has

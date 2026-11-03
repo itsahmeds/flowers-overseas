@@ -100,6 +100,15 @@ export const partnerMemberLocales = ["en", "pl", "de"] as const;
 /** `payout.status`. */
 export const payoutStatuses = ["draft", "statement_sent", "paid"] as const;
 
+/** `payout.kind` (spec 030a §5.1, `0035`): one weekly statement, or one order paid on its own. */
+export const payoutKinds = ["weekly", "prepaid", "per_order"] as const;
+
+/** `fulfillment_partner.payout_cadence` (spec 030a §2.1, `0035`): after the prepaid orders. */
+export const payoutCadences = ["weekly", "per_order"] as const;
+
+/** `payout_line.review_reason` (spec 030a §2.4, `0035`). */
+export const payoutLineReviewReasons = ["unpriced_lines"] as const;
+
 /** `payout_line.kind`. An `adjustment` may be negative; the other two are positive. */
 export const payoutLineKinds = ["order", "adjustment", "goodwill"] as const;
 
@@ -155,6 +164,12 @@ export const fulfillmentPartner = pgTable(
     /** The day the florist signed the agreement; set with `termsVersion` or not at all. */
     termsSignedAt: date("terms_signed_at", { mode: "string" }),
     termsVersion: text("terms_version"),
+    // `0035_payouts_030a` (spec 030a §2.1; TASK-363): the payout terms. No bank detail is stored.
+    payoutCadence: text("payout_cadence").notNull().default("weekly"),
+    /** The florist's first N accepted live orders are paid at acceptance (0 to 50). */
+    prepaidOrderLimit: integer("prepaid_order_limit").notNull().default(5),
+    /** The saved-recipient id in our Wise Business account, digits only. */
+    wiseRecipientId: text("wise_recipient_id"),
   },
   (table) => [
     unique("fulfillment_partner_code_key").on(table.code),
@@ -192,6 +207,18 @@ export const fulfillmentPartner = pgTable(
     check(
       "fulfillment_partner_terms_pair_check",
       sql`(${table.termsSignedAt} is null) = (${table.termsVersion} is null)`,
+    ),
+    check(
+      "fulfillment_partner_payout_cadence_check",
+      sql.raw(`payout_cadence in ${valueList(payoutCadences)}`),
+    ),
+    check(
+      "fulfillment_partner_prepaid_order_limit_check",
+      sql`${table.prepaidOrderLimit} between 0 and 50`,
+    ),
+    check(
+      "fulfillment_partner_wise_recipient_id_check",
+      sql.raw(`wise_recipient_id ~ '^[0-9]{1,20}$'`),
     ),
     check(
       "fulfillment_partner_display_first_name_check",
@@ -532,8 +559,35 @@ export const partnerApplication = pgTable(
 );
 
 /* -------------------------------------------------------------------------- */
-/* payout, payout_line                                                        */
+/* payout_export, payout, payout_line                                         */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * Which sent payouts went into which Wise bulk-payment file (spec 030a §2.6, `0035`). No money
+ * column; the file is generated on request and never stored. RLS: staff only.
+ */
+export const payoutExport = pgTable(
+  "payout_export",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceCurrencyCode: text("source_currency_code")
+      .notNull()
+      .references(() => currency.code, { onDelete: "restrict" }),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+  },
+  () => [
+    check(
+      "payout_export_source_currency_code_check",
+      sql.raw(`source_currency_code ~ '${CURRENCY_PATTERN}'`),
+    ),
+  ],
+);
 
 export const payout = pgTable(
   "payout",
@@ -554,14 +608,58 @@ export const payout = pgTable(
       { onDelete: "restrict" },
     ),
     ...timestamps,
+    // `0035_payouts_030a` (spec 030a §5.1; TASK-363): the kind and the lifecycle.
+    kind: text("kind").notNull().default("weekly"),
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    /** `P-NNNNNN`, assigned at send from `payout_statement_number_seq`. */
+    statementNumber: text("statement_number"),
+    exportId: uuid("export_id").references(() => payoutExport.id, {
+      onDelete: "restrict",
+    }),
   },
   (table) => [
-    unique("payout_partner_period_key").on(
-      table.partnerId,
-      table.periodStart,
-      table.periodEnd,
-    ),
+    /** Replaces `0005`'s `payout_partner_period_key`: one-order payouts may share a date. */
+    uniqueIndex("payout_weekly_period_idx")
+      .on(table.partnerId, table.periodStart, table.periodEnd)
+      .where(sql`kind = 'weekly'`),
+    /** At most one open weekly payout per florist. */
+    uniqueIndex("payout_open_weekly_idx")
+      .on(table.partnerId)
+      .where(sql`kind = 'weekly' and closed_at is null`),
+    index("payout_export_id_idx").on(table.exportId),
+    unique("payout_statement_number_key").on(table.statementNumber),
     unique("payout_id_currency_code_key").on(table.id, table.currencyCode),
+    check("payout_kind_check", sql.raw(`kind in ${valueList(payoutKinds)}`)),
+    check(
+      "payout_kind_period_check",
+      sql`${table.kind} = 'weekly' or ${table.periodStart} = ${table.periodEnd}`,
+    ),
+    check(
+      "payout_statement_number_check",
+      sql.raw(`statement_number ~ '^P-[0-9]{6}$'`),
+    ),
+    check(
+      "payout_sent_check",
+      sql`(${table.status} = 'draft') = (${table.sentAt} is null)`,
+    ),
+    check(
+      "payout_statement_number_status_check",
+      sql`(${table.status} = 'draft') = (${table.statementNumber} is null)`,
+    ),
+    check(
+      "payout_paid_check",
+      sql`(${table.status} = 'paid') = (${table.paidAt} is not null)`,
+    ),
+    check(
+      "payout_closed_check",
+      sql`${table.status} = 'draft' or ${table.closedAt} is not null`,
+    ),
+    check(
+      "payout_export_status_check",
+      sql`${table.exportId} is null or ${table.status} <> 'draft'`,
+    ),
     check(
       "payout_status_check",
       sql.raw(`status in ${valueList(payoutStatuses)}`),
@@ -593,6 +691,12 @@ export const payoutLine = pgTable(
     kind: text("kind").notNull(),
     note: text("note"),
     ...timestamps,
+    // `0035_payouts_030a` (spec 030a §2.4; TASK-363): an order with add-ons waits for the founder.
+    reviewReason: text("review_reason"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    reviewedBy: uuid("reviewed_by").references(() => users.id, {
+      onDelete: "restrict",
+    }),
   },
   (table) => [
     /** A line is in its payout's currency. */
@@ -616,6 +720,22 @@ export const payoutLine = pgTable(
     check(
       "payout_line_amount_minor_check",
       sql`case ${table.kind} when 'adjustment' then ${table.amountMinor} <> 0 else ${table.amountMinor} > 0 end`,
+    ),
+    check(
+      "payout_line_review_reason_check",
+      sql.raw(`review_reason in ${valueList(payoutLineReviewReasons)}`),
+    ),
+    check(
+      "payout_line_reviewed_check",
+      sql`${table.reviewedAt} is null or ${table.reviewReason} is not null`,
+    ),
+    check(
+      "payout_line_reviewed_pair_check",
+      sql`(${table.reviewedAt} is null) = (${table.reviewedBy} is null)`,
+    ),
+    check(
+      "payout_line_note_check",
+      sql`${table.kind} = 'order' or length(btrim(coalesce(${table.note}, ''))) > 0`,
     ),
     index("payout_line_payout_id_idx").on(table.payoutId),
     /** An order is paid once, across every payout. */

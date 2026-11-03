@@ -20,6 +20,8 @@ export const adminPermissions = [
   "partner.status",
   "application.manage",
   "partner.payout",
+  // spec 030a §5.2 (TASK-363): every payouts command but `savePayoutTerms` (`partner.payout`).
+  "payouts.manage",
   "orders.view",
   "orders.view_pii",
   "orders.reroute",
@@ -43,6 +45,7 @@ export const ADMIN_PERMISSIONS: Readonly<
   "partner.status": ["admin", "ops"],
   "application.manage": ["admin", "ops"],
   "partner.payout": ["admin", "finance"],
+  "payouts.manage": ["admin", "finance"],
   "orders.view": ["admin", "ops", "finance"],
   "orders.view_pii": ["admin", "ops"],
   "orders.reroute": ["admin", "ops"],

@@ -33,6 +33,15 @@
  * Row 14's second `order.captured` reaches the same target; the step is idempotent on the order,
  * so it issues nothing. `order.chargeback_lost` has no row (§13 Q12), and no row names the
  * removed `order.refunded`.
+ *
+ * Spec 030a §5.2 "Outbox" (TASK-363) adds `payouts`, for `live` only (a `test` or `demo` order
+ * gets no amount, no line and no payout, AC-4):
+ *
+ * | Event                 | `live`    | Step                                                   |
+ * |-----------------------|-----------|--------------------------------------------------------|
+ * | `assignment.accepted` | `payouts` | `fixPayoutAtAcceptance`: the fixed amount, prepaid payout |
+ *
+ * `order.photo_uploaded` (the accrual, `accrueOrder`) is TASK-364's row, added with its handler.
  */
 import type { OrderEventType, OrderMode } from "../service/events";
 import type { OutboxTarget } from "../service/outbox";
@@ -46,6 +55,7 @@ export const OUTBOX_TARGET_NAMES = [
   "payments",
   "routing",
   "notifications",
+  "payouts",
 ] as const;
 
 export type OutboxTargetName = (typeof OUTBOX_TARGET_NAMES)[number];
@@ -80,6 +90,12 @@ export const INVOICES_TARGET = {
 export const NOTIFICATIONS_TARGET = {
   name: "notifications",
   audience: "partner",
+} as const satisfies OutboxTarget & { name: OutboxTargetName };
+
+/** The `payouts` target: spec 030a's florist payouts (`src/modules/partners/payouts`). */
+export const PAYOUTS_TARGET = {
+  name: "payouts",
+  audience: "system",
 } as const satisfies OutboxTarget & { name: OutboxTargetName };
 
 /** The same target on a `live` event with a buyer row (B1 … B6). */
@@ -202,4 +218,17 @@ export function notificationOutboxTargets(
   mode: OrderMode,
 ): readonly OutboxTarget[] {
   return NOTIFICATION_OUTBOX_ROUTES[event]?.[mode] ?? [];
+}
+
+/** Spec 030a §5.2's subscriptions, exactly: `live` only. */
+export const PAYOUT_OUTBOX_ROUTES: ModeOutboxRoutes = {
+  "assignment.accepted": { live: [PAYOUTS_TARGET] },
+};
+
+/** The targets spec 030a's rows give `event` for an order in `mode`. Pure. */
+export function payoutOutboxTargets(
+  event: OrderEventType,
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  return PAYOUT_OUTBOX_ROUTES[event]?.[mode] ?? [];
 }

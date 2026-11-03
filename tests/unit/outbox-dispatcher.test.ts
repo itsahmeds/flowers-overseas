@@ -61,6 +61,7 @@ const complete: HandlerRegistry = {
   payments: noop,
   routing: noop,
   notifications: noop,
+  payouts: noop,
 };
 
 const EVENT: OutboxDeliveryEvent = {
@@ -79,6 +80,7 @@ describe("HandlerRegistry (AC-20, type half)", () => {
       "invoices",
       "notifications",
       "payments",
+      "payouts",
       "routing",
     ]);
     expect(Object.keys(complete).sort()).toEqual(
@@ -158,6 +160,10 @@ describe("spec 013's outbox routes (§5.2)", () => {
     expect(
       outboxTargets("assignment.accepted", "test").map((t) => t.name),
     ).toEqual(["payments"]);
+    // Spec 030a (TASK-363) adds `payouts` to a live order's acceptance only.
+    expect(
+      outboxTargets("assignment.accepted", "live").map((t) => t.name),
+    ).toEqual(["payments", "payouts"]);
   });
 });
 

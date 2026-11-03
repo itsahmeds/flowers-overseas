@@ -84,7 +84,7 @@ function addedColumns(table: string): [string, string, string][] {
   return [
     ...LATER.matchAll(
       new RegExp(
-        `ALTER TABLE public\\.${table} ADD COLUMN (\\w+) ([a-z[\\]0-9]+)([^;]*);`,
+        `ALTER TABLE public\\.${table}\\s+ADD COLUMN (\\w+) ([a-z[\\]0-9]+)([^;]*);`,
         "g",
       ),
     ),
@@ -529,6 +529,23 @@ describe("mirror parity beyond names and nullability (breaker hole 4)", () => {
   const SQL_TYPE: Record<string, string> = {
     timestamptz: "timestamp with time zone",
   };
+  // What a later migration drops (spec 030a's `0035` drops `payout_partner_period_key`).
+  const droppedConstraints = (table: string): Set<string> =>
+    new Set(
+      [
+        ...LATER.matchAll(
+          new RegExp(
+            `ALTER TABLE public\\.${table}\\s+DROP CONSTRAINT (?:IF EXISTS )?(\\w+)`,
+            "g",
+          ),
+        ),
+      ].map((m) => m[1] ?? ""),
+    );
+  const droppedIndexes = new Set(
+    [...LATER.matchAll(/DROP INDEX (?:IF EXISTS )?(?:public\.)?(\w+)/g)].map(
+      (m) => m[1] ?? "",
+    ),
+  );
   const sqlNames = (table: string, kind: string): string[] =>
     [
       ...tableBody(table).matchAll(
@@ -536,20 +553,24 @@ describe("mirror parity beyond names and nullability (breaker hole 4)", () => {
       ),
       ...LATER.matchAll(
         new RegExp(
-          `ALTER TABLE public\\.${table} ADD CONSTRAINT (\\w+)\\s+${kind}`,
+          `ALTER TABLE public\\.${table}\\s+ADD CONSTRAINT (\\w+)\\s+${kind}`,
           "g",
         ),
       ),
-    ].map((m) => m[1] ?? "");
+    ]
+      .map((m) => m[1] ?? "")
+      .filter((name) => !droppedConstraints(table).has(name));
   const indexNames = (table: string, unique: boolean): string[] =>
     [
-      ...both.matchAll(
+      ...`${both}\n${LATER}`.matchAll(
         new RegExp(
           `CREATE ${unique ? "UNIQUE " : ""}INDEX (\\w+)\\s+ON public\\.${table} `,
           "g",
         ),
       ),
-    ].map((m) => m[1] ?? "");
+    ]
+      .map((m) => m[1] ?? "")
+      .filter((name) => !droppedIndexes.has(name));
 
   for (const table of [...PARTNER_TABLES, ...CUSTOMER_TABLES]) {
     it(`${table}: column types, CHECK names, unique keys and indexes agree`, () => {

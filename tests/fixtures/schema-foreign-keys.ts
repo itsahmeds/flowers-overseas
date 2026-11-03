@@ -268,4 +268,21 @@ export const DEFERRED_FOREIGN_KEYS: readonly (readonly [
     "RESTRICT",
     "0022_florists_v0.sql",
   ],
+  // spec 030a §5.1 (`0035_payouts_030a`, TASK-363): a payout's Wise export, a line's reviewer.
+  [
+    "payout_export_id_payout_export_id_fk",
+    "export_id",
+    "payout_export",
+    "id",
+    "RESTRICT",
+    "0035_payouts_030a.sql",
+  ],
+  [
+    "payout_line_reviewed_by_users_id_fk",
+    "reviewed_by",
+    "users",
+    "id",
+    "RESTRICT",
+    "0035_payouts_030a.sql",
+  ],
 ];

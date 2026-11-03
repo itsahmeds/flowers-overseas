@@ -15,8 +15,9 @@
  *    (spec 022a §5.2, TASK-369: one run of the close sweep, enqueued by every minute tick), and
  *    spec 016's routing jobs (§5.2 "Jobs", TASK-328): `order.route`, `assignment.remind`,
  *    `assignment.timeout`, `assignment.photo_remind` (each keyed, at most one waiting job per key:
- *    the queue's `short` policy) and `routing.sla_watch` (enqueued by every minute tick), and
- *    TASK-329's `order.no_partner_expire` (keyed by order, `short`);
+ *    the queue's `short` policy) and `routing.sla_watch` (enqueued by every minute tick),
+ *    TASK-329's `order.no_partner_expire` (keyed by order, `short`), and spec 030a's
+ *    `payouts.prepaid_ready` (§5.2, TASK-363: founder email F1, keyed by payout);
  *  - **declared only** — the name is reserved for the spec that implements it
  *    (`notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -115,6 +116,15 @@ export const OrderNoPartnerExpirePayload = z
 export const RoutingSlaWatchPayload = z.object({}).strict();
 
 /**
+ * `payouts.prepaid_ready` (spec 030a §5.2, AC-7, TASK-363): founder email F1 for one prepaid
+ * payout, enqueued by `fixPayoutAtAcceptance`. Keyed by the payout; the send itself is once per
+ * payout by `notification_delivery`'s key.
+ */
+export const PayoutsPrepaidReadyPayload = z
+  .object({ payoutId: z.uuid() })
+  .strict();
+
+/**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
  * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
  * already running may enqueue its own successor (a deferred offer, the next offer).
@@ -162,6 +172,11 @@ export const REGISTERED_JOBS = {
   "order.no_partner_expire": {
     version: 1,
     payload: OrderNoPartnerExpirePayload,
+    policy: "short",
+  },
+  "payouts.prepaid_ready": {
+    version: 1,
+    payload: PayoutsPrepaidReadyPayload,
     policy: "short",
   },
 } as const satisfies Record<string, RegisteredJob>;

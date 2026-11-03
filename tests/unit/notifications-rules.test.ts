@@ -47,6 +47,9 @@ const BUYER_TEMPLATES = new Set([
   "credit-note",
 ]);
 
+/** Founder rows that fire for a `live` order only (spec 030a: a test order gets no payout). */
+const LIVE_ONLY_OPS = new Set(["payout-prepaid-ready"]);
+
 /** The §5.2 table for a `live` order, by hand: template keys, sorted. */
 function expectedLive(trigger: string, from: string | null): string[] {
   const stop = (f: string | null) =>
@@ -86,6 +89,9 @@ function expectedLive(trigger: string, from: string | null): string[] {
         return ["photo-reminder"];
       case "invoice.email":
         return ["credit-note"];
+      // spec 030a F1 (TASK-363): live only, to the founder.
+      case "payouts.prepaid_ready":
+        return ["payout-prepaid-ready"];
       default:
         return [];
     }
@@ -102,7 +108,10 @@ function expected(
   const live = expectedLive(trigger, from);
   return mode === "live"
     ? live
-    : live.filter((template) => !BUYER_TEMPLATES.has(template));
+    : live.filter(
+        (template) =>
+          !BUYER_TEMPLATES.has(template) && !LIVE_ONLY_OPS.has(template),
+      );
 }
 
 const templates = (
@@ -123,6 +132,7 @@ const CASES: readonly (readonly [NotificationTrigger, string | null])[] = [
   ["assignment.remind", "routed"],
   ["assignment.photo_remind", "delivered"],
   ["invoice.email", null],
+  ["payouts.prepaid_ready", null],
   ["order.placed", null],
 ];
 
@@ -155,7 +165,7 @@ describe("notificationsFor (T-18, AC-18)", () => {
     }
   });
 
-  it("gives each row its audience: buyer for B, florist for V, ops for A1 and W", () => {
+  it("gives each row its audience: buyer for B, florist for V, ops for A1, W and F1; F1 live only", () => {
     for (const rule of NOTIFICATION_RULES) {
       const expectedAudience = rule.code.startsWith("B")
         ? "buyer"
@@ -164,7 +174,9 @@ describe("notificationsFor (T-18, AC-18)", () => {
           : "ops";
       expect(rule.audience, rule.code).toBe(expectedAudience);
       expect(rule.modes, rule.code).toEqual(
-        expectedAudience === "buyer" ? ["live"] : ["test", "live"],
+        expectedAudience === "buyer" || LIVE_ONLY_OPS.has(rule.template)
+          ? ["live"]
+          : ["test", "live"],
       );
     }
     expect(NOTIFICATION_RULES.some((rule) => rule.code === "B7")).toBe(false);

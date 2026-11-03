@@ -21,6 +21,7 @@ import {
   invoiceOutboxTargets,
   notificationOutboxTargets,
   paymentOutboxTargets,
+  payoutOutboxTargets,
   routingOutboxTargets,
 } from "../outbox/routes";
 
@@ -78,8 +79,8 @@ export function resolveOutboxTargets(
 }
 
 /**
- * `outboxTargets(event, mode)` of §5.2: this spec's (empty) routes plus spec 013's and spec
- * 018's rows (`../outbox/routes.ts`), each target name once (the `AFTER INSERT ON outbox` trigger of `0017`
+ * `outboxTargets(event, mode)` of §5.2: this spec's (empty) routes plus spec 013's, spec
+ * 016's, spec 018's and spec 030a's rows (`../outbox/routes.ts`), each target name once (the `AFTER INSERT ON outbox` trigger of `0017`
  * makes one delivery per element, and refuses a name twice), people filtered for `demo`/`test`.
  */
 export function outboxTargets(
@@ -94,6 +95,7 @@ export function outboxTargets(
     ...withoutPeopleUnlessLive(invoiceOutboxTargets(event, mode), mode),
     ...withoutPeopleUnlessLive(notificationOutboxTargets(event, mode), mode),
     ...withoutPeopleUnlessLive(routingOutboxTargets(event, mode), mode),
+    ...withoutPeopleUnlessLive(payoutOutboxTargets(event, mode), mode),
   ]) {
     if (seen.has(target.name)) continue;
     seen.add(target.name);

@@ -125,6 +125,7 @@ async function dispatch(
       payments: noop,
       routing: noop,
       notifications: noop,
+      payouts: noop,
     },
     transaction: savepoints(tx),
     orderId,

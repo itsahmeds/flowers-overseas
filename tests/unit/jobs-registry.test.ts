@@ -28,7 +28,7 @@ import {
 const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
-  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, spec 022a's order.close_sweep and spec 016's six routing jobs (TASK-328, TASK-329)", () => {
+  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329) and spec 030a's payouts.prepaid_ready", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
       "assignment.photo_remind",
       "assignment.remind",
@@ -41,6 +41,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "order.route",
       "outbox.dispatch",
       "payments.production_start",
+      "payouts.prepaid_ready",
       "retention.sweep",
       "routing.sla_watch",
       "webhook.process",
@@ -68,6 +69,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "assignment.timeout",
       "order.no_partner_expire",
       "order.route",
+      // spec 030a (TASK-363): F1, keyed by payout.
+      "payouts.prepaid_ready",
     ]);
     expect(jobQueuePolicy("routing.sla_watch")).toBe("standard");
     expect(OrderRoutePayload.parse({ orderId: REQUEST_ID })).toEqual({
@@ -94,7 +97,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(20);
+    expect(new Set(JOB_NAMES).size).toBe(21);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

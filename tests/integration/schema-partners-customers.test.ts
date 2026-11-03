@@ -234,6 +234,10 @@ describe.skipIf(sql === undefined)(
           "customer_user_id_users_id_fk",
           // `0022` keys `partner_member.locale_code` to `locale` (spec 011 §5.1, TASK-211).
           "partner_member_locale_code_locale_code_fk",
+          // `0035` keys a payout to its Wise export and a reviewed line to its reviewer (spec
+          // 030a §5.1, TASK-363).
+          "payout_export_id_payout_export_id_fk",
+          "payout_line_reviewed_by_users_id_fk",
         ]);
         expect(rows.filter((row) => !LATER.has(row.fk))).toEqual(
           FOREIGN_KEYS.map(([fk, , , , rule]) => ({
@@ -1003,10 +1007,20 @@ describe.skipIf(sql === undefined)(
                 sp`INSERT INTO payout (partner_id, period_start, period_end, total_minor, currency_code)
                  VALUES (${partner}, '2026-11-30', '2026-11-01', 1, 'ZZZ')`,
             );
+            // `0035`'s `payout_status_guard` judges an UPDATE of the status before the check
+            // does (spec 030a §5.1); an INSERT still meets `payout_status_check`.
             await refuse(
               "payout status sent",
               (sp) =>
                 sp`UPDATE payout SET status = 'sent' WHERE id = ${payoutId}`,
+            );
+            await refuse(
+              "payout inserted as sent",
+              (sp) =>
+                sp`INSERT INTO payout (partner_id, period_start, period_end, total_minor, currency_code, status,
+                                       closed_at, sent_at, statement_number)
+                 VALUES (${partner}, '2026-12-01', '2026-12-31', 1, 'ZZZ', 'sent',
+                         now(), now(), 'P-000001')`,
             );
             await refuse(
               "payout in another currency than the partner's (B6)",
@@ -1028,8 +1042,10 @@ describe.skipIf(sql === undefined)(
               currency = "ZZZ",
               orderId: string | null = null,
             ) =>
-              sp`INSERT INTO payout_line (payout_id, order_id, amount_minor, currency_code, kind)
-                 VALUES (${payoutId}, ${orderId}, ${amount}, ${currency}, ${kind})`;
+              // `0035`'s `payout_line_note_check`: a manual line says why (spec 030a §5.1).
+              sp`INSERT INTO payout_line (payout_id, order_id, amount_minor, currency_code, kind, note)
+                 VALUES (${payoutId}, ${orderId}, ${amount}, ${currency}, ${kind},
+                         ${kind === "order" ? null : "a manual line"})`;
             await accept(
               "payout_line an order, a negative adjustment, a goodwill",
               async () => {
@@ -1370,9 +1386,11 @@ describe.skipIf(sql === undefined)(
             "partner_application converted without a partner: partner_application_converted_check",
             "partner_application a partner while still new: partner_application_converted_check",
             "partner_application status approved: partner_application_status_check",
-            "payout the same period twice: payout_partner_period_key",
+            // `0035` replaces the period key with a weekly-only index (spec 030a §5.1).
+            "payout the same period twice: payout_weekly_period_idx",
             "payout ends before it starts: payout_period_check",
-            "payout status sent: payout_status_check",
+            "payout status sent: PAYOUT_STATUS_ILLEGAL (23001)",
+            "payout inserted as sent: payout_status_check",
             "payout_line in another currency than its payout: payout_line_payout_fkey",
             "payout_line the same order paid twice: payout_line_order_once_idx",
             "payout_line an order line without an order: payout_line_order_check",
