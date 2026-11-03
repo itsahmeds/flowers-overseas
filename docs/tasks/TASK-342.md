@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 builder I342: worktree `fo-wt-342`, branch `task/TASK-342-invoice-pdf` off main c216700cc. Next: PDFKit and Noto Sans, the renderer, NBP adapter, render job, getters, download route, runbook.
 
 ## Result
 
