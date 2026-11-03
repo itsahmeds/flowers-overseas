@@ -634,9 +634,46 @@
     "seoTitle": "Where we can send flowers"
   },
   "emails": {
-    "floristSignIn": {
-      "body": "Otwórz swoje zamówienia: {link}. Link działa raz, przez godzinę. Jeśli to nie Ty o niego prosiłeś, zignoruj tę wiadomość.",
-      "subject": "Twój link do logowania w Flowers Overseas"
+    "florist": {
+      "confirmed": {
+        "body": "Otwórz zamówienie, aby zobaczyć imię i nazwisko, adres i telefon odbiorcy oraz treść bileciku do wydruku.",
+        "heading": "Potwierdzone. Prosimy przygotować to zamówienie.",
+        "preheader": "Otwórz zamówienie, aby zobaczyć dane odbiorcy i treść bileciku.",
+        "subject": "Potwierdzone: przygotuj zamówienie na {date}"
+      },
+      "label": {
+        "addOns": "Dodatki",
+        "bouquet": "Bukiet",
+        "town": "Miejscowość",
+        "youReceive": "Otrzymujesz"
+      },
+      "offer": {
+        "heading": "Nowe zamówienie dla Ciebie",
+        "recipientLater": "Imię i nazwisko, adres i telefon odbiorcy zobaczysz w zamówieniu po jego przyjęciu.",
+        "subject": "Nowe zamówienie na {date} · odpowiedz do {time}"
+      },
+      "oneTap": "Przycisk zaloguje Cię i otworzy to zamówienie. Działa raz, przez godzinę.",
+      "oneTapText": "Link zaloguje Cię i otworzy to zamówienie. Działa raz, przez godzinę.",
+      "openOrder": "Otwórz zamówienie",
+      "photoReminder": {
+        "body": "Dziękujemy za dzisiejszą dostawę: {product}. Prosimy dodać jedno zdjęcie bukietu w chwili przekazania.",
+        "preheader": "Jedno zdjęcie bukietu w chwili dostawy.",
+        "subject": "Dodaj zdjęcie do zamówienia na {date}"
+      },
+      "reminder": {
+        "heading": "To zamówienie wciąż czeka na Twoją odpowiedź.",
+        "preheader": "Zamówienie na {date} wciąż czeka na Twoją odpowiedź.",
+        "subject": "Przypomnienie: odpowiedz do {time}"
+      },
+      "timedOut": {
+        "subject": "Czas na odpowiedź na zamówienie na {date} minął"
+      },
+      "withdrawn": {
+        "body": "Prosimy go nie przygotowywać.",
+        "heading": "To zamówienie nie jest już Twoje.",
+        "started": "Jeśli już zaczęto, zadzwoń do nas: {phone}.",
+        "subject": "Prosimy nie przygotowywać zamówienia na {date}"
+      }
     },
     "floristApplicationAlert": {
       "field": {
@@ -659,55 +696,18 @@
       "none": "Not given",
       "subject": "New florist application: {businessName}"
     },
+    "floristSignIn": {
+      "body": "Otwórz swoje zamówienia: {link}. Link działa raz, przez godzinę. Jeśli to nie Ty o niego prosiłeś, zignoruj tę wiadomość.",
+      "subject": "Twój link do logowania w Flowers Overseas"
+    },
     "layout": {
       "audience": {
         "florist": "Dla naszych kwiaciarni"
       },
-      "floristHelp": "Zadzwoń do nas, jeśli coś w zamówieniu jest niejasne.",
-      "floristWhy": "Otrzymujesz tę wiadomość, ponieważ Twoja kwiaciarnia przyjmuje zamówienia od Flowers Overseas.",
       "buyerHours": "Napisz do nas o każdej porze, 24/7. Odpowiadamy w ciągu kilku godzin.",
-      "buyerWhy": "Otrzymujesz tę wiadomość w związku z zamówieniem {reference} złożonym u nas."
-    },
-    "florist": {
-      "openOrder": "Otwórz zamówienie",
-      "oneTap": "Przycisk zaloguje Cię i otworzy to zamówienie. Działa raz, przez godzinę.",
-      "oneTapText": "Link zaloguje Cię i otworzy to zamówienie. Działa raz, przez godzinę.",
-      "label": {
-        "bouquet": "Bukiet",
-        "addOns": "Dodatki",
-        "town": "Miejscowość",
-        "youReceive": "Otrzymujesz"
-      },
-      "offer": {
-        "subject": "Nowe zamówienie na {date} · odpowiedz do {time}",
-        "heading": "Nowe zamówienie dla Ciebie",
-        "recipientLater": "Imię i nazwisko, adres i telefon odbiorcy zobaczysz w zamówieniu po jego przyjęciu."
-      },
-      "reminder": {
-        "subject": "Przypomnienie: odpowiedz do {time}",
-        "preheader": "Zamówienie na {date} wciąż czeka na Twoją odpowiedź.",
-        "heading": "To zamówienie wciąż czeka na Twoją odpowiedź."
-      },
-      "confirmed": {
-        "subject": "Potwierdzone: przygotuj zamówienie na {date}",
-        "preheader": "Otwórz zamówienie, aby zobaczyć dane odbiorcy i treść bileciku.",
-        "heading": "Potwierdzone. Prosimy przygotować to zamówienie.",
-        "body": "Otwórz zamówienie, aby zobaczyć imię i nazwisko, adres i telefon odbiorcy oraz treść bileciku do wydruku."
-      },
-      "withdrawn": {
-        "subject": "Prosimy nie przygotowywać zamówienia na {date}",
-        "heading": "To zamówienie nie jest już Twoje.",
-        "body": "Prosimy go nie przygotowywać.",
-        "started": "Jeśli już zaczęto, zadzwoń do nas: {phone}."
-      },
-      "timedOut": {
-        "subject": "Czas na odpowiedź na zamówienie na {date} minął"
-      },
-      "photoReminder": {
-        "subject": "Dodaj zdjęcie do zamówienia na {date}",
-        "preheader": "Jedno zdjęcie bukietu w chwili dostawy.",
-        "body": "Dziękujemy za dzisiejszą dostawę: {product}. Prosimy dodać jedno zdjęcie bukietu w chwili przekazania."
-      }
+      "buyerWhy": "Otrzymujesz tę wiadomość w związku z zamówieniem {reference} złożonym u nas.",
+      "floristHelp": "Zadzwoń do nas, jeśli coś w zamówieniu jest niejasne.",
+      "floristWhy": "Otrzymujesz tę wiadomość, ponieważ Twoja kwiaciarnia przyjmuje zamówienia od Flowers Overseas."
     }
   },
   "errors": {
@@ -748,76 +748,76 @@
   },
   "floristAuth": {
     "confirmSubmit": "Przejdź do zamówień",
+    "demoNotice": "<b>Demo:</b> to przykładowe zamówienia. Nikt nie płaci i nic nie jest dostarczane.",
     "email": "E-mail",
     "expiredBody": "Ten link wygasł lub został już użyty. Poproś o nowy.",
+    "homeLabel": "Flowers Overseas, Twoje zamówienia",
+    "language": "Język",
+    "menu": "Menu",
     "sentBody": "Jeśli ten adres należy do jednej z naszych kwiaciarni, wysłaliśmy na niego link. Link działa raz, przez godzinę.",
     "sentTitle": "Sprawdź pocztę",
-    "submit": "Wyślij mi link",
-    "title": "Zaloguj się, aby zobaczyć zamówienia",
-    "homeLabel": "Flowers Overseas, Twoje zamówienia",
-    "menu": "Menu",
-    "language": "Język",
     "signOut": "Wyloguj się",
-    "demoNotice": "<b>Demo:</b> to przykładowe zamówienia. Nikt nie płaci i nic nie jest dostarczane."
+    "submit": "Wyślij mi link",
+    "title": "Zaloguj się, aby zobaczyć zamówienia"
   },
   "floristInbox": {
-    "orders": "Zamówienia",
     "accept": "Przyjmij",
     "address": "Adres",
     "answerBy": "Odpowiedz do {time}",
     "cardMessage": "Treść bileciku do wydruku",
     "decline": "Odrzuć",
+    "declineReason": {
+      "capacity": "Tego dnia mamy komplet",
+      "closed": "Tego dnia mamy zamknięte",
+      "other": "Inny powód",
+      "outOfArea": "Nie dowozimy w to miejsce",
+      "productUnavailable": "Nie możemy zdobyć tych kwiatów"
+    },
+    "declineSubmit": "Odrzuć zamówienie",
+    "declineWhy": "Dlaczego odrzucasz to zamówienie?",
+    "deliveredAddPhoto": "Dostarczone, dodaj zdjęcie",
     "deliveryDate": "Data dostawy",
     "deliveryNote": "Uwagi do dostawy",
     "forDate": "Na {date}",
+    "notice": {
+      "answered": "Na to zamówienie już odpowiedziano.",
+      "changed": "To zamówienie zmieniło się od czasu, gdy je otwarto."
+    },
+    "orders": "Zamówienia",
     "outForDelivery": "W drodze do odbiorcy",
+    "page": {
+      "addPhoto": "Dodaj zdjęcie",
+      "beingMade": "W przygotowaniu",
+      "empty": "Na razie nie ma zamówień. Napiszemy do Ciebie, gdy pojawi się nowe.",
+      "expired": "Czas na odpowiedź minął.",
+      "groupDelivered": "Dostarczone",
+      "notFoundLine": "Tego zamówienia nie ma już na Twojej liście.",
+      "notFoundTitle": "Nie znaleziono zamówienia",
+      "photoReceived": "Zdjęcie otrzymane. Dziękujemy.",
+      "refresh": "Odśwież",
+      "refreshStopped": "Aktualizacje są wstrzymane, gdy Cię nie ma.",
+      "testOrder": "Wyślij zamówienie testowe"
+    },
+    "paused": {
+      "notice": "Twoja kwiaciarnia jest wstrzymana. Możesz dokończyć zamówienia, które już przyjęto. Nowe zamówienia znów do Ciebie trafią, gdy kwiaciarnia będzie aktywna."
+    },
     "photo": {
+      "alt": "Twoje zdjęcie dostarczonego bukietu",
       "choose": "Zrób lub wybierz zdjęcie dostarczonego bukietu",
       "send": "Wyślij zdjęcie",
-      "wrongType": "Tego pliku nie możemy użyć. Wyślij zdjęcie w formacie JPEG, PNG lub WebP.",
       "tooLarge": "To zdjęcie jest za duże. Wyślij plik mniejszy niż 15 MB.",
-      "alt": "Twoje zdjęcie dostarczonego bukietu"
+      "wrongType": "Tego pliku nie możemy użyć. Wyślij zdjęcie w formacie JPEG, PNG lub WebP."
     },
     "recipient": "Odbiorca",
     "stage": {
       "inProgress": "W realizacji",
       "waiting": "Czeka na Twoją odpowiedź"
     },
-    "youReceive": "Otrzymujesz <strong>{payout}</strong>",
-    "page": {
-      "groupDelivered": "Dostarczone",
-      "empty": "Na razie nie ma zamówień. Napiszemy do Ciebie, gdy pojawi się nowe.",
-      "expired": "Czas na odpowiedź minął.",
-      "beingMade": "W przygotowaniu",
-      "addPhoto": "Dodaj zdjęcie",
-      "photoReceived": "Zdjęcie otrzymane. Dziękujemy.",
-      "testOrder": "Wyślij zamówienie testowe",
-      "refresh": "Odśwież",
-      "refreshStopped": "Aktualizacje są wstrzymane, gdy Cię nie ma.",
-      "notFoundTitle": "Nie znaleziono zamówienia",
-      "notFoundLine": "Tego zamówienia nie ma już na Twojej liście."
-    },
-    "declineWhy": "Dlaczego odrzucasz to zamówienie?",
-    "declineReason": {
-      "capacity": "Tego dnia mamy komplet",
-      "outOfArea": "Nie dowozimy w to miejsce",
-      "productUnavailable": "Nie możemy zdobyć tych kwiatów",
-      "closed": "Tego dnia mamy zamknięte",
-      "other": "Inny powód"
-    },
-    "declineSubmit": "Odrzuć zamówienie",
-    "deliveredAddPhoto": "Dostarczone, dodaj zdjęcie",
-    "notice": {
-      "answered": "Na to zamówienie już odpowiedziano.",
-      "changed": "To zamówienie zmieniło się od czasu, gdy je otwarto."
-    },
     "withdrawn": {
-      "title": "To zamówienie nie jest już Twoje.",
-      "body": "Prosimy go nie przygotowywać."
+      "body": "Prosimy go nie przygotowywać.",
+      "title": "To zamówienie nie jest już Twoje."
     },
-    "paused": {
-      "notice": "Twoja kwiaciarnia jest wstrzymana. Możesz dokończyć zamówienia, które już przyjęto. Nowe zamówienia znów do Ciebie trafią, gdy kwiaciarnia będzie aktywna."
-    }
+    "youReceive": "Otrzymujesz <strong>{payout}</strong>"
   },
   "footer": {
     "cookieSettings": "Ustawienia plików cookie",
@@ -853,7 +853,115 @@
     },
     "signoff": "Z miłością, skądkolwiek jesteś."
   },
+  "forFlorists": {
+    "apply": {
+      "crumb": "Zgłoszenie",
+      "error": {
+        "area": "Napisz, gdzie dostarczasz.",
+        "capacity": "Wpisz liczbę całkowitą od 1 do 500.",
+        "contactBy": "Please choose how we should contact you.",
+        "contactName": "Podaj swoje imię i nazwisko.",
+        "country": "Wybierz kraj.",
+        "email": "Wpisz adres e-mail w rodzaju imie@example.com.",
+        "language": "Please choose a language.",
+        "phone": "Wpisz numer telefonu, pod który możemy zadzwonić.",
+        "registration": "Please keep the registration number to 100 characters.",
+        "shopName": "Podaj nazwę swojej kwiaciarni.",
+        "town": "Podaj swoją miejscowość.",
+        "website": "Wpisz pełny adres strony zaczynający się od https://.",
+        "weekends": "Please tell us whether you deliver at weekends."
+      },
+      "errorSummary": "Sprawdź te odpowiedzi",
+      "failed": "Nie udało się wysłać zgłoszenia. Twoje odpowiedzi są nadal tutaj. Spróbuj ponownie albo zadzwoń lub napisz do nas pod numer {phoneDisplay}.",
+      "field": {
+        "area": {
+          "help": "Dzielnice, kody pocztowe albo odległość od kwiaciarni",
+          "label": "Gdzie dostarczasz"
+        },
+        "capacity": {
+          "help": "Szczera liczba. Wolimy wysłać Ci mniej i mieć pewność, że każde zostanie dostarczone.",
+          "label": "Ile zamówień dziennie możesz przyjąć"
+        },
+        "contactBy": {
+          "email": "E-mail",
+          "label": "Jak mamy się z Tobą kontaktować?",
+          "phone": "Telefon",
+          "whatsapp": "WhatsApp"
+        },
+        "contactName": {
+          "label": "Imię i nazwisko"
+        },
+        "country": {
+          "choose": "Wybierz kraj",
+          "label": "Kraj"
+        },
+        "email": {
+          "label": "E-mail"
+        },
+        "language": {
+          "de": "Deutsch",
+          "en": "English",
+          "label": "Język",
+          "pl": "Polski"
+        },
+        "phone": {
+          "help": "Numer, pod który dzwonimy i wysyłamy zamówienia",
+          "label": "Telefon lub WhatsApp"
+        },
+        "registration": {
+          "help": "NIP, KRS, Handelsregister albo odpowiednik w Twoim kraju",
+          "label": "Numer rejestrowy"
+        },
+        "shopName": {
+          "help": "Tak jak na szyldzie",
+          "label": "Nazwa kwiaciarni"
+        },
+        "town": {
+          "label": "Miejscowość"
+        },
+        "website": {
+          "label": "Instagram lub strona internetowa"
+        },
+        "weekends": {
+          "label": "Czy dostarczasz w weekendy?",
+          "no": "Nie",
+          "sometimes": "Czasami",
+          "yes": "Tak"
+        }
+      },
+      "formOff": "Zadzwoń albo napisz do nas pod numer {phoneDisplay}, a wszystko z Tobą omówimy. Wolimy usłyszeć o Twojej kwiaciarni od Ciebie.",
+      "h1": "Zgłoś się do współpracy",
+      "honeypot": "Zostaw to pole puste",
+      "intro": "Opowiedz nam o swojej kwiaciarni. To zajmie kilka minut i nie pytamy o konto bankowe.",
+      "next": {
+        "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli tak, dzwonimy do Ciebie, ustalamy, ile otrzymujesz za każdy bukiet, i wysyłamy zamówienie testowe przed prawdziwym. Zaczynasz, gdy oboje się zgodzimy, a nie dlatego, że wysłałeś ten formularz.",
+        "heading": "Co dalej"
+      },
+      "notice": {
+        "body": "Używamy tych danych, aby rozpatrzyć Twoje zgłoszenie i skontaktować się w sprawie współpracy. Podstawą prawną są działania podjęte na Twoje żądanie przed zawarciem umowy (RODO art. 6 ust. 1 lit. b). Przechowujemy je przez 12 miesięcy od naszego ostatniego kontaktu, a potem usuwamy, chyba że zaczniemy współpracę. Przechowują je nasi dostawcy hostingu, bazy danych i poczty e-mail, w tym firmy z USA działające w ramach unijnych zabezpieczeń przekazywania danych. Nie sprzedajemy ich i nie pokazujemy ich kupującym. Aby je zobaczyć, poprawić lub usunąć, zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
+        "controller": "Tę stronę prowadzi {name}. W sprawie Twoich danych osobowych zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
+        "heading": "Co robimy z Twoimi danymi",
+        "privacyLink": "Nasza polityka prywatności"
+      },
+      "optional": "opcjonalnie",
+      "submit": "Wyślij zgłoszenie",
+      "title": "Zgłoś się do współpracy | Dla kwiaciarni",
+      "tooMany": "W tej chwili przychodzi zbyt wiele zgłoszeń naraz. Spróbuj ponownie za chwilę albo zadzwoń lub napisz do nas pod numer {phoneDisplay}."
+    },
+    "sent": {
+      "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli chcesz porozmawiać wcześniej, zadzwoń albo napisz do nas pod numer <phone>{phoneDisplay}</phone>.",
+      "h1": "Dziękujemy. Mamy Twoje zgłoszenie.",
+      "title": "Dziękujemy | Dla kwiaciarni",
+      "walkthrough": "Zobacz, jak przychodzi zamówienie"
+    },
+    "status": {
+      "choosingFirst": "Nie przyjmujemy jeszcze zamówień."
+    }
+  },
   "home": {
+    "comingUp": {
+      "more": "and {count} more"
+    },
     "dates": {
       "heading": "Dates worth <em>sending for</em>"
     },
@@ -927,9 +1035,6 @@
     },
     "trending": {
       "heading": "Popularne <em>wybory</em>"
-    },
-    "comingUp": {
-      "more": "and {count} more"
     }
   },
   "infoPages": {
@@ -1009,30 +1114,16 @@
       "label": "Categories"
     },
     "category": {
+      "addOns": "Add-ons",
       "destinations": "Destinations",
       "occasions": "Occasions",
       "roses": "Roses",
-      "sympathy": "Sympathy",
-      "addOns": "Add-ons"
+      "sympathy": "Sympathy"
     },
     "currency": {
       "label": "Prices shown in {currency}"
     },
     "forFlorists": "For florists",
-    "menu": {
-      "label": "Menu"
-    },
-    "search": {
-      "help": "Search opens when the shop does.",
-      "label": "Search flowers, occasions, a city or a country",
-      "submit": "Search"
-    },
-    "utility": {
-      "cutoff": "Order by 14:00 in Warsaw for delivery today",
-      "cutoffShort": "Order by 14:00 in Warsaw · today",
-      "guarantee": "Obietnica świeżych kwiatów",
-      "pricesInclude": "Ceny zawierają dostawę i VAT"
-    },
     "mega": {
       "allDestinations": "All destinations",
       "allFlowers": "All flowers",
@@ -1056,6 +1147,20 @@
         "partner": "For someone you love"
       },
       "soon": "Opening soon"
+    },
+    "menu": {
+      "label": "Menu"
+    },
+    "search": {
+      "help": "Search opens when the shop does.",
+      "label": "Search flowers, occasions, a city or a country",
+      "submit": "Search"
+    },
+    "utility": {
+      "cutoff": "Order by 14:00 in Warsaw for delivery today",
+      "cutoffShort": "Order by 14:00 in Warsaw · today",
+      "guarantee": "Obietnica świeżych kwiatów",
+      "pricesInclude": "Ceny zawierają dostawę i VAT"
     }
   },
   "occasionHub": {
@@ -1234,6 +1339,9 @@
       "noMatch": "We could not find “{query}”.",
       "remember": "We will remember this country on this device. Change it any time under Sending to."
     },
+    "cta": {
+      "chooseCountry": "Choose where to send"
+    },
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
       "corridorLink": "Read the {country} guide",
@@ -1274,6 +1382,14 @@
       "previous": "Previous",
       "titleSuffix": "{title} · Page {page}"
     },
+    "price": {
+      "bandWord": {
+        "high": "Higher prices",
+        "low": "Lower prices",
+        "mid": "Middle prices"
+      },
+      "choose": "Choose a country to see the price"
+    },
     "root": {
       "dateColumn": "Date",
       "demoNotice": "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
@@ -1293,6 +1409,7 @@
       "tilesHeading": "By what it is",
       "tilesSubheading": "Narrow it down"
     },
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}",
     "sort": {
       "default": "Our order",
       "priceAsc": "Price: low to high",
@@ -1305,19 +1422,7 @@
       "sortLabel": "Sort by",
       "submit": "Sort",
       "summary": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}} · strona {page} z {pageCount}"
-    },
-    "cta": {
-      "chooseCountry": "Choose where to send"
-    },
-    "price": {
-      "bandWord": {
-        "high": "Higher prices",
-        "low": "Lower prices",
-        "mid": "Middle prices"
-      },
-      "choose": "Choose a country to see the price"
-    },
-    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
+    }
   },
   "trackLookup": {
     "email": "Email you ordered with",
@@ -1396,117 +1501,12 @@
       "name": "The price includes delivery and VAT"
     }
   },
-  "forFlorists": {
-    "apply": {
-      "crumb": "Zgłoszenie",
-      "error": {
-        "area": "Napisz, gdzie dostarczasz.",
-        "capacity": "Wpisz liczbę całkowitą od 1 do 500.",
-        "contactName": "Podaj swoje imię i nazwisko.",
-        "country": "Wybierz kraj.",
-        "email": "Wpisz adres e-mail w rodzaju imie@example.com.",
-        "phone": "Wpisz numer telefonu, pod który możemy zadzwonić.",
-        "shopName": "Podaj nazwę swojej kwiaciarni.",
-        "town": "Podaj swoją miejscowość.",
-        "website": "Wpisz pełny adres strony zaczynający się od https://.",
-        "contactBy": "Please choose how we should contact you.",
-        "language": "Please choose a language.",
-        "registration": "Please keep the registration number to 100 characters.",
-        "weekends": "Please tell us whether you deliver at weekends."
-      },
-      "errorSummary": "Sprawdź te odpowiedzi",
-      "failed": "Nie udało się wysłać zgłoszenia. Twoje odpowiedzi są nadal tutaj. Spróbuj ponownie albo zadzwoń lub napisz do nas pod numer {phoneDisplay}.",
-      "field": {
-        "area": {
-          "help": "Dzielnice, kody pocztowe albo odległość od kwiaciarni",
-          "label": "Gdzie dostarczasz"
-        },
-        "capacity": {
-          "help": "Szczera liczba. Wolimy wysłać Ci mniej i mieć pewność, że każde zostanie dostarczone.",
-          "label": "Ile zamówień dziennie możesz przyjąć"
-        },
-        "contactBy": {
-          "email": "E-mail",
-          "label": "Jak mamy się z Tobą kontaktować?",
-          "phone": "Telefon",
-          "whatsapp": "WhatsApp"
-        },
-        "contactName": {
-          "label": "Imię i nazwisko"
-        },
-        "country": {
-          "choose": "Wybierz kraj",
-          "label": "Kraj"
-        },
-        "email": {
-          "label": "E-mail"
-        },
-        "language": {
-          "de": "Deutsch",
-          "en": "English",
-          "label": "Język",
-          "pl": "Polski"
-        },
-        "phone": {
-          "help": "Numer, pod który dzwonimy i wysyłamy zamówienia",
-          "label": "Telefon lub WhatsApp"
-        },
-        "registration": {
-          "help": "NIP, KRS, Handelsregister albo odpowiednik w Twoim kraju",
-          "label": "Numer rejestrowy"
-        },
-        "shopName": {
-          "help": "Tak jak na szyldzie",
-          "label": "Nazwa kwiaciarni"
-        },
-        "town": {
-          "label": "Miejscowość"
-        },
-        "website": {
-          "label": "Instagram lub strona internetowa"
-        },
-        "weekends": {
-          "label": "Czy dostarczasz w weekendy?",
-          "no": "Nie",
-          "sometimes": "Czasami",
-          "yes": "Tak"
-        }
-      },
-      "formOff": "Zadzwoń albo napisz do nas pod numer {phoneDisplay}, a wszystko z Tobą omówimy. Wolimy usłyszeć o Twojej kwiaciarni od Ciebie.",
-      "h1": "Zgłoś się do współpracy",
-      "honeypot": "Zostaw to pole puste",
-      "intro": "Opowiedz nam o swojej kwiaciarni. To zajmie kilka minut i nie pytamy o konto bankowe.",
-      "next": {
-        "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli tak, dzwonimy do Ciebie, ustalamy, ile otrzymujesz za każdy bukiet, i wysyłamy zamówienie testowe przed prawdziwym. Zaczynasz, gdy oboje się zgodzimy, a nie dlatego, że wysłałeś ten formularz.",
-        "heading": "Co dalej"
-      },
-      "notice": {
-        "body": "Używamy tych danych, aby rozpatrzyć Twoje zgłoszenie i skontaktować się w sprawie współpracy. Podstawą prawną są działania podjęte na Twoje żądanie przed zawarciem umowy (RODO art. 6 ust. 1 lit. b). Przechowujemy je przez 12 miesięcy od naszego ostatniego kontaktu, a potem usuwamy, chyba że zaczniemy współpracę. Przechowują je nasi dostawcy hostingu, bazy danych i poczty e-mail, w tym firmy z USA działające w ramach unijnych zabezpieczeń przekazywania danych. Nie sprzedajemy ich i nie pokazujemy ich kupującym. Aby je zobaczyć, poprawić lub usunąć, zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
-        "controller": "Tę stronę prowadzi {name}. W sprawie Twoich danych osobowych zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
-        "heading": "Co robimy z Twoimi danymi",
-        "privacyLink": "Nasza polityka prywatności"
-      },
-      "optional": "opcjonalnie",
-      "submit": "Wyślij zgłoszenie",
-      "title": "Zgłoś się do współpracy | Dla kwiaciarni",
-      "tooMany": "W tej chwili przychodzi zbyt wiele zgłoszeń naraz. Spróbuj ponownie za chwilę albo zadzwoń lub napisz do nas pod numer {phoneDisplay}."
-    },
-    "sent": {
-      "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli chcesz porozmawiać wcześniej, zadzwoń albo napisz do nas pod numer <phone>{phoneDisplay}</phone>.",
-      "h1": "Dziękujemy. Mamy Twoje zgłoszenie.",
-      "title": "Dziękujemy | Dla kwiaciarni",
-      "walkthrough": "Zobacz, jak przychodzi zamówienie"
-    },
-    "status": {
-      "choosingFirst": "Nie przyjmujemy jeszcze zamówień."
-    }
-  },
   "whatsapp": {
     "florist": {
       "offer": {
-        "title": "Nowe zamówienie od Flowers Overseas",
+        "alsoEmail": "To zamówienie wysłaliśmy Ci też e-mailem.",
         "open": "Otwórz zamówienie: {url}",
-        "alsoEmail": "To zamówienie wysłaliśmy Ci też e-mailem."
+        "title": "Nowe zamówienie od Flowers Overseas"
       },
       "stop": {
         "body": "To zamówienie nie jest już Twoje. Prosimy go nie przygotowywać."

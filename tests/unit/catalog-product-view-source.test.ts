@@ -190,11 +190,13 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   // The listings price their own cards (spec 008); every PDP figure is the view's. The TASK-127
   // route calling it to print a price of its own goes red here, naming the route file.
   // The checkout signs the same projection into its quote (spec 010 §2 "Money", TASK-203): it
-  // prices a draft, never a PDP figure.
+  // prices a draft, never a PDP figure. The demo florist's test order (spec 011 §2 "The demo",
+  // AC-33; TASK-214) prices its one bouquet the same way, outside production, never a PDP figure.
   priceProjection: [
     "src/modules/catalog/listing.ts",
     "src/modules/catalog/product.ts",
     "src/modules/checkout/pricing.ts",
+    "src/modules/orders/demo/place-demo-order.ts",
   ],
   dateSurcharges: ["src/modules/catalog/product.ts"],
   deliveryWindow: ["src/modules/catalog/product.ts"],

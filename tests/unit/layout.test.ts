@@ -48,6 +48,8 @@ describe("plan/01 §5 layout manifest (T-03)", () => {
         "customers",
         "geo",
         "i18n",
+        // spec 018 §5.2 (TASK-341; registered by TASK-434): invoice and credit-note issuing.
+        "invoices",
         "notifications",
         "orders",
         "partners",

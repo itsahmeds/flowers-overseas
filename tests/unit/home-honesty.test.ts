@@ -60,9 +60,19 @@ const FORBIDDEN: readonly {
     name: "customer count",
     pattern: /\d[\d\s,.]*\s*(customers?|orders? delivered|deliveries)\b/iu,
   },
+  // A relay network's brand, in any case.
+  {
+    name: "partner brand",
+    pattern: /\b(interflora|euroflorist|fleurop)\b/iu,
+  },
+  // A shop's name: the Polish, German or French word for a florist's shop followed by a proper
+  // name ("Kwiaciarnia Rosa", "Blumen Schmidt", "Fleurs de Paris"). Case-sensitive on the name, so
+  // the plain noun is not a name: the florist surface's Polish and German copy says "your flower
+  // shop" ("Twoja kwiaciarnia jest wstrzymana") and "these flowers" ("diese Blumen nicht"), which
+  // the word-only pattern this replaced flagged (TASK-434).
   {
     name: "partner name",
-    pattern: /\b(kwiaciarnia|blumen|fleurs|interflora|euroflorist|fleurop)\b/iu,
+    pattern: /\b([Kk]wiaciarnia|[Bb]lumen|[Ff]leurs)\s+(?:de\s+)?\p{Lu}/u,
   },
   // A photograph shown, as opposed to the promise that one is taken and sent: "see the photo
   // below", "photo gallery", "photos of our deliveries".
@@ -205,15 +215,15 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
           "900 deliveries",
         ],
       ],
+      ["partner brand", ["Interflora", "Euroflorist", "Fleurop", "FLEUROP"]],
       [
         "partner name",
         [
           "Kwiaciarnia Rosa",
+          "kwiaciarnia Rosa",
           "Blumen Schmidt",
           "Fleurs de Paris",
-          "Interflora",
-          "Euroflorist",
-          "Fleurop",
+          "Fleurs Margot",
         ],
       ],
       [
@@ -257,7 +267,8 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
       "Trustpilot mark": 3,
       "florist count": 0,
       "customer count": 3,
-      "partner name": 6,
+      "partner brand": 3,
+      "partner name": 3,
       "delivery-photo gallery claim": 7,
     });
     expect(survivors).toStrictEqual([]);
@@ -272,6 +283,9 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
       "A picture arrives when the flowers do, so you know it happened.",
       "Our florist in the recipient's town makes it and hands it over in person.",
       "7-day freshness guarantee",
+      // The florist surface's own words for the florist's shop and for flowers (TASK-434).
+      "Twoja kwiaciarnia jest wstrzymana.",
+      "Wir bekommen diese Blumen nicht",
     ]) {
       expect(
         FORBIDDEN.filter(({ pattern }) => pattern.test(allowed)).map(

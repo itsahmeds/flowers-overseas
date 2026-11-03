@@ -46,6 +46,10 @@ export const MODULES = [
   // florist rating belong to no listed module (`plan/01` §5 names none for reviews); registered
   // here and in `docs/architecture.md` §3 in the same PR, as the rule above requires.
   "reviews",
+  // spec 018 §5.2 `modules/invoices` (TASK-341): invoice and credit-note issuing, numbering, VAT
+  // per rate and the snapshot. `plan/01` §5 names no module for invoicing; registered here and in
+  // `docs/architecture.md` §3 by TASK-434, which found the module merged without its row.
+  "invoices",
 ] as const;
 
 export const REQUIRED_DIRS = [

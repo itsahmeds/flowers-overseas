@@ -374,6 +374,10 @@ describe("the shipped catalogues and manifests", () => {
     "floristAuth.title",
     // TASK-214's 11 inbox page keys and TASK-215's 13 florist action keys left this queue under
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
+    // TASK-329's two withdrawal keys (the inbox's withdrawn-offer state) wait
+    // here until the next record run (pinned by TASK-434).
+    "floristInbox.withdrawn.body",
+    "floristInbox.withdrawn.title",
     "footer.link.deliveryAndPayment",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",

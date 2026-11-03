@@ -20,6 +20,7 @@ import { z } from "zod";
 
 import { floristsConfig } from "@/config/florists";
 import { withDbContext } from "@/lib/db";
+import { FLORIST_ROBOTS_HEADER } from "@/lib/florist-headers";
 import type { ObjectLocation } from "@/lib/storage";
 
 import { deliveryPhotoSignedUrl, type PrivatePhotoStore } from "../photo/store";
@@ -85,7 +86,7 @@ const StoredPhotoBytesSchema = z
 const PHOTO_HEADERS = {
   "Content-Type": "image/jpeg",
   "Cache-Control": "private, no-store",
-  "X-Robots-Tag": "noindex, nofollow",
+  [FLORIST_ROBOTS_HEADER.key]: FLORIST_ROBOTS_HEADER.value,
   "Referrer-Policy": "no-referrer",
   "X-Content-Type-Options": "nosniff",
 } as const;
