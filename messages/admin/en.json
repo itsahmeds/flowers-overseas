@@ -750,10 +750,6 @@
       "grace": "Cancelled automatically at {time} ({city}) unless rerouted",
       "graceDestination": "{time} in {city} ({zone}), the delivery’s own time",
       "close": "Close",
-      "noPermission": {
-        "reroute": "Rerouting needs the admin or ops role.",
-        "cancel": "Cancelling needs the admin role."
-      },
       "reroute": {
         "open": "Reroute",
         "title": "Reroute {reference}",
@@ -810,7 +806,174 @@
         "REROUTE_ILLEGAL": "This order is no longer waiting for a florist. Nothing was done.",
         "CANCEL_ILLEGAL": "This order is being made now, so it can no longer be cancelled. Nothing was done. Refund instead.",
         "CANCEL_REASON_NOT_ALLOWED": "Once a florist has accepted, only “The buyer asked” can cancel. Nothing was done.",
-        "other": "Nothing was done. Reload and try again."
+        "other": "Nothing was done. Reload and try again.",
+        "RESEND_NOT_ALLOWED": "This email cannot be resent now. Nothing was sent.",
+        "RESEND_RATE_LIMITED": "Already resent 3 times in 24 hours. Nothing was sent."
+      },
+      "notAvailable": "Not available",
+      "control": {
+        "reroute": "Reroute",
+        "cancel": "Cancel the order",
+        "refundFull": "Refund in full",
+        "refundPartial": "Refund in part",
+        "retryFull": "Retry in full"
+      },
+      "unavailable": {
+        "reroute": {
+          "status": "Only when no florist has taken the order.",
+          "permission": "Needs the admin or ops role."
+        },
+        "cancel": {
+          "notPaid": "Only once the payment is secured.",
+          "made": "The bouquet is being made or delivered. Refund instead.",
+          "ended": "The order has ended.",
+          "permission": "Needs the admin role."
+        },
+        "refund": {
+          "notPaid": "Only once the payment is secured.",
+          "cancelInstead": "Cancel instead: a cancel refunds in full.",
+          "refundedFull": "Refunded in full already.",
+          "closed": "The order is closed.",
+          "chargeback": "A chargeback decides the money now.",
+          "cancelledFullOnly": "A cancelled order is retried in full only.",
+          "anomalyFullOnly": "Only a full refund, reason Other, for a payment taken on an abandoned order.",
+          "inFlight": "A refund is on its way. Wait until it settles.",
+          "noCapture": "No payment was taken, so there is nothing to refund.",
+          "nothingLeft": "Nothing is left to refund.",
+          "belowTwo": "Too little is left for a part refund. Refund in full instead.",
+          "permission": "Needs the admin role.",
+          "provider": "Refunds from this page start once the card provider is connected."
+        }
+      },
+      "emails": {
+        "title": "Emails",
+        "note": "No email address is shown. A resend goes to the address on the order.",
+        "email": "Email",
+        "to": "To",
+        "status": "Status",
+        "when": "When",
+        "empty": "No emails yet.",
+        "resend": "Resend",
+        "resending": "Resending…",
+        "resendThis": "Resend {email} to {to}",
+        "resent": "{email}, resent",
+        "audience": {
+          "buyer": "Buyer",
+          "ops": "Founder",
+          "florist": "Florist"
+        },
+        "template": {
+          "order-received": "Order received",
+          "being-made": "Being made",
+          "out-for-delivery": "On its way",
+          "delivered-photo": "Delivered, with the photo",
+          "cancelled": "Cancelled",
+          "refund": "Refund",
+          "credit-note": "Credit note",
+          "offer": "Offer",
+          "offer-reminder": "Reminder",
+          "order-confirmed": "Order confirmed",
+          "offer-withdrawn": "Offer withdrawn",
+          "photo-reminder": "Photo reminder",
+          "alert-no-partner": "No florist",
+          "whatsapp-copy": "WhatsApp copy",
+          "payout-prepaid-ready": "Prepaid payout ready",
+          "payouts-ready": "Payouts ready",
+          "payout-line-missing": "Payout line missing",
+          "florist-payout-statement": "Payout statement"
+        },
+        "deliveryStatus": {
+          "queued": "Queued",
+          "sent": "Sent",
+          "delivered": "Delivered",
+          "delivery_delayed": "Delayed",
+          "bounced": "Bounced",
+          "complained": "Marked as spam",
+          "failed": "Failed",
+          "held": "Held"
+        },
+        "cause": {
+          "demo": "Demo order: no actions",
+          "reminder": "Reminders are not resent.",
+          "own_alert": "Your own alerts are not resent.",
+          "test_order": "Test order: buyer emails are not sent.",
+          "queued": "Not sent yet.",
+          "held": "Held: email sending is off.",
+          "context_missing": "This email cannot be resent.",
+          "not_being_made": "Only while the order is being made.",
+          "not_on_its_way": "Only while the order is on its way.",
+          "not_cancelled": "Only while the order is cancelled.",
+          "answered": "Answered: not resent.",
+          "timed_out": "Timed out: not resent.",
+          "withdrawn": "Withdrawn: not resent.",
+          "not_accepted": "Only once the florist has accepted.",
+          "delivered": "Delivered: not resent.",
+          "not_withdrawn": "Only once the offer is withdrawn.",
+          "date_passed": "The delivery date has passed.",
+          "recipient_gone": "This person no longer works at the florist.",
+          "rate_limited": "Resent 3 times in 24 hours.",
+          "permission": "Needs the admin or ops role."
+        },
+        "done": "Resent: {email}, to {to}.",
+        "doneShort": "Resent."
+      },
+      "refunds": {
+        "status": "Status",
+        "amount": "Amount",
+        "reasonColumn": "Reason",
+        "reason": {
+          "buyer_cancel": "The buyer asked",
+          "no_partner": "No florist could make it",
+          "authorisation_lapsing": "Payment authorisation lapsing",
+          "redelivery_failed": "Redelivery failed",
+          "addon_missing": "Add-on missing",
+          "late_delivery": "Late delivery",
+          "substitution_complaint": "Substitution complaint",
+          "quality": "Quality",
+          "goodwill": "Goodwill",
+          "duplicate": "Duplicate charge",
+          "other": "Other"
+        },
+        "askedBy": "Asked by",
+        "requested": "Requested",
+        "settled": "Settled",
+        "none": "No refunds.",
+        "charged": "Charged",
+        "onItsWay": "Refunded or on its way",
+        "left": "Left to refund",
+        "state": {
+          "requested": "Requested",
+          "pending": "Pending",
+          "succeeded": "Succeeded",
+          "failed": "Failed",
+          "cancelled": "Cancelled"
+        },
+        "settledLine": {
+          "requested": "Not yet",
+          "pending": "Waiting for the card provider",
+          "failed": "Not refunded. Nothing left the account.",
+          "cancelled": "Not refunded."
+        },
+        "automatic": "Automatic",
+        "unknownAdmin": "An admin"
+      },
+      "history": {
+        "title": "Action history",
+        "empty": "No actions on this order yet.",
+        "who": "Who",
+        "what": "What",
+        "when": "When",
+        "reason": "Reason",
+        "amount": "Amount",
+        "none": "None",
+        "kind": {
+          "reroute": "Reroute",
+          "cancel": "Cancel",
+          "refund_full": "Refund in full",
+          "refund_partial": "Refund in part",
+          "resend": "Resend"
+        },
+        "resendWhat": "{email}, {to}"
       }
     },
     "payouts": {

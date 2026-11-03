@@ -11,7 +11,8 @@
  * order's `public_token` is never read, so it cannot reach the HTML, a URL or a log; the URL
  * carries the uuid only. Spec 020a's Actions card (TASK-358: reroute and cancel) sits above the
  * summary when the order's status, mode and the viewer's roles allow an action; otherwise the
- * summary keeps its "not available" line. Artboards `admin-order-detail-desktop.dc.html` (two columns, the summary sticky) and
+ * summary keeps its "not available" line. TASK-361 adds the refunds list and balance under
+ * Payments, the emails list with Resend, and the action history (`order-lists.tsx`). Artboards `admin-order-detail-desktop.dc.html` (two columns, the summary sticky) and
  * `admin-order-detail-mobile.dc.html` (one column, the summary first).
  */
 import { notFound } from "next/navigation";
@@ -66,8 +67,13 @@ import {
 
 import { AdminFrame } from "../../frame";
 import { CHIP_TONE, deliveryDay, formatOrderMoney, ModeChip } from "../view";
-import { OrderActionsPanel } from "./actions-panel";
-import { ActionOutcomeSchema, readOrderActionsData } from "./actions-data";
+import { highestSeq, OrderActionsPanel } from "./actions-panel";
+import {
+  ActionOutcomeSchema,
+  readOrderActionsData,
+  readOrderLists,
+} from "./actions-data";
+import { EmailsSection, HistorySection, RefundsBlock } from "./order-lists";
 
 /** A florist's page, only once it exists (no dead links). */
 function partnerHref(code: string): string | undefined {
@@ -249,13 +255,11 @@ export default async function AdminOrderPage({
   });
   if (order === null) notFound();
   await logAdminRead(actor, "order", order.orderId);
+  const outcome =
+    ActionOutcomeSchema.safeParse(await searchParams).data ?? null;
+  const lists = await readOrderLists(order, session, actor);
   const actionsPanel = OrderActionsPanel({
-    data: await readOrderActionsData(
-      order,
-      session,
-      actor,
-      ActionOutcomeSchema.safeParse(await searchParams).data ?? null,
-    ),
+    data: await readOrderActionsData(order, session, outcome, lists.refunds),
   });
 
   const zone = zoneCity(session.timeZone);
@@ -598,8 +602,26 @@ export default async function AdminOrderPage({
           ))}
         </AdminTable>
       )}
+      {lists.refunds === null || order.payments.length === 0 ? null : (
+        <RefundsBlock refunds={lists.refunds} zone={session.timeZone} />
+      )}
     </AdminSection>
   );
+
+  const emails =
+    order.mode === "demo" ? null : (
+      <EmailsSection
+        emails={lists.emails}
+        orderId={order.orderId}
+        seq={highestSeq(order)}
+        zone={session.timeZone}
+        outcome={
+          outcome?.action === "resend"
+            ? { result: outcome.result, ref: outcome.ref ?? null }
+            : null
+        }
+      />
+    );
 
   return (
     <AdminFrame session={session} current="orders">
@@ -649,6 +671,8 @@ export default async function AdminOrderPage({
               {timeline}
               {assignments}
               {payments}
+              {emails}
+              <HistorySection history={lists.history} zone={session.timeZone} />
             </>
           }
         />
