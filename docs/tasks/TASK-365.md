@@ -74,6 +74,8 @@ here.
   registered without a handler; the review-write lint rule scoped. Integration
   `payouts-statements` 19 green, unit `payouts-statement-number` 12, 17 mutations red. Next: AC-21
   to AC-23 after PR 465 (see Escalations).
+- 2026-11-04: rebased onto 467's new head f1460f07b (main 2801e7482 with TASK-342's invoice jobs); jobs index
+  and registry test keep both (27 job names). typecheck 0, db:check 0, units 72/72, `payouts-statements` 19/19 on PG16.
 
 ## Result
 
