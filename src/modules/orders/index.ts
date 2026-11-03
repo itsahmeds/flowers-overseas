@@ -106,6 +106,32 @@ export type {
   TrackingOptions,
   TrackingResolution,
 } from "./tracking";
+// Spec 018 §5.2 (TASK-339): the tracking lookup (`/{locale}/track`), its limit and T16's facts.
+export {
+  lookupTracking,
+  TRACKING_LOOKUP_LIMIT,
+  TRACKING_LOOKUP_SCOPE,
+  TrackingLookupInputSchema,
+} from "./tracking-lookup";
+export type {
+  TrackingLinkMail,
+  TrackingLookupDeps,
+  TrackingLookupInput,
+  TrackingLookupOutcome,
+} from "./tracking-lookup";
+// Spec 018 §5.2 (TASK-339): the buyer's refund lines' shape and their one formatter.
+// `buyerRefundLines` itself reads spec 013's `succeededRefunds`, so it is imported from
+// `./buyer-refund-lines` directly and stays out of this barrel (see that file).
+export {
+  BuyerRefundLineSchema,
+  refundLineValues,
+  toBuyerRefundLines,
+} from "./refund-lines";
+export type {
+  BuyerRefundLine,
+  RefundLinesSource,
+  SucceededRefundRow,
+} from "./refund-lines";
 // Spec 018 §5.2 (TASK-338): the buyer's tracking view model and its photo's location.
 export {
   BUYER_STEPS,
@@ -120,8 +146,11 @@ export {
   TRACKING_VIEW_KEYS,
   trackingPhotoLocation,
   TrackingViewSchema,
+  CancelledBySchema,
+  cancelledByOf,
 } from "./tracking-view";
 export type {
+  CancelledBy,
   BuyerStep,
   PhotoState,
   ProjectedEvent,
@@ -129,6 +158,7 @@ export type {
   TimelineStep,
   TimelineStepKey,
   TrackingView,
+  TrackingViewOptions,
 } from "./tracking-view";
 // Spec 011 §5.2 (TASK-214): the florist inbox's read models under partner context. The test
 // order and the after-answer seam live in `./demo` and are imported from there by the florist

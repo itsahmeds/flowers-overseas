@@ -23,6 +23,8 @@ import {
   type TrackingOptions,
   trackingPhotoLocation,
 } from "@/modules/orders";
+// Outside the barrel: it reads spec 013's `succeededRefunds` (TASK-339).
+import { buyerRefundLines } from "@/modules/orders/buyer-refund-lines";
 
 /** The robots header every tracking response carries (AC-12). */
 export const TRACK_ROBOTS = "noindex, nofollow";
@@ -124,7 +126,10 @@ export async function calendarResponse(
 ): Promise<Response> {
   const orderId = await orderForToken(token, dependencies);
   if (orderId === null) return trackNotFound();
-  const view = await getTrackingView(orderId, dependencies);
+  const view = await getTrackingView(orderId, {
+    ...dependencies,
+    refundLines: buyerRefundLines,
+  });
   const t = await getTranslations({ locale, namespace: "tracking" });
   const summary =
     view.destinationCity === null

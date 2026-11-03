@@ -21,6 +21,17 @@
  *    both reach.
  *  - **AC-2 (CLI half):** `pnpm orders:rotate-tracking` revokes the old link and writes the audit
  *    row `rotateTrackingToken` writes.
+ *  - **AC-10 / T-10 (tracking half; TASK-339):** a status from each projection with refunds in
+ *    each of `requested`, `pending`, `succeeded` (two), `failed` and `cancelled`: exactly the two
+ *    succeeded lines, oldest first by `succeeded_at` (inserted newest first, dated days away from
+ *    every event), formatted in the refund's currency; `refunded_full` reads `closed`, a partial
+ *    refund on `in_production` reads `being_made`.
+ *  - **AC-42 / T-42 (TASK-339):** cancelled through spec 013's `cancelOrder` by `system` from
+ *    `no_partner_available`, by `admin` from `routed` and by `system` from `manual_reroute`: one
+ *    page, "We could not deliver this order.", no cause; the full refund `requested`, `pending`,
+ *    then `succeeded`: the pending sentence, then the dated line in its place; the buyer's own
+ *    cancel, and an admin's with `buyer_cancel`, read "You cancelled this order."; `payment_failed`
+ *    and `abandoned` show no refund text.
  */
 import { randomUUID } from "node:crypto";
 
@@ -34,6 +45,8 @@ import { InMemoryStorage } from "@/lib/storage";
 import { sign } from "@/lib/signed-link";
 import { loadMessages } from "@/modules/i18n";
 import { MESSAGE_NAMESPACES } from "@/modules/i18n/messages";
+import { buyerRefundLines } from "@/modules/orders/buyer-refund-lines";
+import { cancelOrder } from "@/modules/payments";
 import {
   type Actor,
   buyerStep,
@@ -108,6 +121,7 @@ const MARKERS = {
 const opts = (tx: Tx, now?: Date) => ({
   executor: runnerOf(tx),
   secret: SECRET,
+  refundLines: buyerRefundLines,
   ...(now === undefined ? {} : { now: () => now }),
 });
 
@@ -206,6 +220,39 @@ async function render(
       calendarHref: `/${locale}/track/T/calendar.ics`,
     }),
   );
+}
+
+/** A captured card payment of the order's purchase, at 189.00 PLN. */
+async function capturedPayment(tx: Tx, orderId: string): Promise<string> {
+  const [payment] = await tx<{ id: string }[]>`
+    INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor,
+                         currency_code, livemode, capture_method, amount_captured_minor,
+                         captured_at)
+    VALUES ((SELECT purchase_id FROM "order" WHERE id = ${orderId}), 'stripe',
+            ${`pi_${randomUUID().slice(0, 12)}`}, 'captured', 'card', 18900, 'PLN', true,
+            'automatic', 18900, now())
+    RETURNING id`;
+  return payment?.id ?? "";
+}
+
+/** One refund row of the order in `status`; `succeededAt` for a succeeded one. */
+async function refundRow(
+  tx: Tx,
+  orderId: string,
+  paymentId: string,
+  status: "requested" | "pending" | "succeeded" | "failed" | "cancelled",
+  amountMinor: number,
+  succeededAt?: string,
+): Promise<string> {
+  const [refund] = await tx<{ id: string }[]>`
+    INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                        currency_code, reason, status, requested_by, succeeded_at)
+    VALUES (${paymentId}, ${orderId}, (SELECT purchase_id FROM "order" WHERE id = ${orderId}),
+            ${status === "requested" ? null : `re_${randomUUID().slice(0, 12)}`},
+            ${amountMinor}, 'PLN', 'quality', ${status}, 'system:payments',
+            ${status === "succeeded" ? (succeededAt ?? null) : null}::timestamptz)
+    RETURNING id`;
+  return refund?.id ?? "";
 }
 
 function markersIn(text: string): string[] {
@@ -666,5 +713,251 @@ describe.skipIf(server.url === undefined)(
       expect({ ...cli, entity_id: "" }).toEqual({ ...module, entity_id: "" });
       expect(cli?.channel).toBe("cli");
     });
+    it("AC-10: one dated line per succeeded refund, oldest first, in every projection; refunded_full reads closed", async () => {
+      const targets = [
+        "paid_unrouted",
+        "in_production",
+        "out_for_delivery",
+        "delivered",
+        "closed",
+        "cancelled",
+      ];
+      const results = await rolledBack(scratch.sql, async (tx) => {
+        const out: { status: string; view: TrackingView; html: string }[] = [];
+        for (const status of targets) {
+          const id = await order(tx);
+          await walkOrderTo(tx, id, status);
+          const paymentId = await capturedPayment(tx, id);
+          // Inserted newest first, dated days away from every event (all of them `now()`).
+          await refundRow(
+            tx,
+            id,
+            paymentId,
+            "succeeded",
+            400,
+            "2026-10-09T08:00:00Z",
+          );
+          await refundRow(
+            tx,
+            id,
+            paymentId,
+            "succeeded",
+            300,
+            "2026-10-07T08:00:00Z",
+          );
+          await refundRow(tx, id, paymentId, "requested", 100);
+          await refundRow(tx, id, paymentId, "pending", 200);
+          await refundRow(tx, id, paymentId, "failed", 250);
+          await refundRow(tx, id, paymentId, "cancelled", 350);
+          const view = await getTrackingView(id, opts(tx));
+          out.push({ status, view, html: await render(view) });
+        }
+        // refunded_full and a partial refund while being made.
+        const full = await order(tx);
+        await walkOrderTo(tx, full, "refunded_full");
+        const partial = await order(tx);
+        await walkOrderTo(tx, partial, "in_production");
+        await refundRow(
+          tx,
+          partial,
+          await capturedPayment(tx, partial),
+          "succeeded",
+          1,
+          "2026-10-08T22:30:00Z",
+        );
+        return {
+          out,
+          full: await getTrackingView(full, opts(tx)),
+          partial: await getTrackingView(partial, opts(tx)),
+        };
+      });
+      for (const { status, view, html } of results.out) {
+        // The open refunds (100 requested + 200 pending) are a sentence on a cancelled order only.
+        expect(view.refundPending, status).toEqual(
+          status === "cancelled"
+            ? { amountMinor: 300, currencyCode: "PLN" }
+            : null,
+        );
+        expect(html.includes("We are refunding"), status).toBe(
+          status === "cancelled",
+        );
+        expect(view.refundLines, status).toEqual([
+          {
+            amountMinor: 300,
+            currencyCode: "PLN",
+            succeededAt: new Date("2026-10-07T08:00:00Z"),
+          },
+          {
+            amountMinor: 400,
+            currencyCode: "PLN",
+            succeededAt: new Date("2026-10-09T08:00:00Z"),
+          },
+        ]);
+        expect(
+          [...html.matchAll(/data-fo-track-refund=""[^>]*>([^<]*)</gu)].map(
+            (match) => (match[1] ?? "").replace(/\s+/gu, " "),
+          ),
+          status,
+        ).toEqual([
+          "Refunded PLN 3.00 on 7 October",
+          "Refunded PLN 4.00 on 9 October",
+        ]);
+      }
+      expect(results.full.projection).toBe("closed");
+      expect(results.partial.projection).toBe("being_made");
+      // 22:30 UTC on the 8th is the 9th in Warsaw.
+      expect(results.partial.refundLines).toEqual([
+        {
+          amountMinor: 1,
+          currencyCode: "PLN",
+          succeededAt: new Date("2026-10-08T22:30:00Z"),
+        },
+      ]);
+    }, 120_000);
+
+    it("AC-42: the cancelled page by actor class, the pending sentence, then the dated line", async () => {
+      const admin = `admin:${randomUUID()}`;
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const cancelledFrom = async (
+          from: string,
+          actor: string,
+          reason: "no_partner" | "other" | "buyer_cancel",
+        ): Promise<string> => {
+          const id = await order(tx);
+          await walkOrderTo(tx, id, from);
+          const done = await cancelOrder(id, actor, reason, {
+            executor: runnerOf(tx),
+          });
+          if (done.kind !== "cancelled") {
+            throw new Error(
+              `cancel refused from ${from}: ${JSON.stringify(done)}`,
+            );
+          }
+          return id;
+        };
+        const ours = [
+          await cancelledFrom(
+            "no_partner_available",
+            "system:routing.no_partner_expiry",
+            "no_partner",
+          ),
+          await cancelledFrom("routed", admin, "other"),
+          await cancelledFrom(
+            "manual_reroute",
+            "system:routing.no_partner_expiry",
+            "no_partner",
+          ),
+        ];
+        const oursViews = [];
+        for (const id of ours)
+          oursViews.push(await getTrackingView(id, opts(tx)));
+
+        // The full refund of the first, through its three states.
+        const [first = ""] = ours;
+        const paymentId = await capturedPayment(tx, first);
+        const refundId = await refundRow(
+          tx,
+          first,
+          paymentId,
+          "requested",
+          18_900,
+        );
+        const requested = await getTrackingView(first, opts(tx));
+        await tx`UPDATE refund SET status = 'pending', provider_ref = ${`re_${randomUUID().slice(0, 12)}`}
+                 WHERE id = ${refundId}`;
+        const pending = await getTrackingView(first, opts(tx));
+        await tx`UPDATE refund SET status = 'succeeded', succeeded_at = '2026-10-07T08:00:00Z'
+                 WHERE id = ${refundId}`;
+        const succeeded = await getTrackingView(first, opts(tx));
+
+        const byBuyer = await getTrackingView(
+          await cancelledFrom("paid_unrouted", "buyer", "buyer_cancel"),
+          opts(tx),
+        );
+        const byAdminForBuyer = await getTrackingView(
+          await cancelledFrom("paid", admin, "buyer_cancel"),
+          opts(tx),
+        );
+        const failed = await order(tx);
+        await walkOrderTo(tx, failed, "payment_failed");
+        const abandoned = await order(tx);
+        await walkOrderTo(tx, abandoned, "abandoned");
+        return {
+          oursViews,
+          requested,
+          pending,
+          succeeded,
+          byBuyer,
+          byAdminForBuyer,
+          unpaid: [
+            await getTrackingView(failed, opts(tx)),
+            await getTrackingView(abandoned, opts(tx)),
+          ],
+        };
+      });
+      // One page for every cause: the same view once the reference and the instants are set aside.
+      const bare = (view: TrackingView): TrackingView => ({
+        ...view,
+        reference: "FO-0000-0000",
+        timeline: {
+          ...view.timeline,
+          steps: view.timeline.steps.map((step) => ({ ...step, at: null })),
+          cancelledAt: null,
+        },
+      });
+      const pages = await Promise.all(
+        result.oursViews.map(async (view) => render(bare(view))),
+      );
+      expect(new Set(pages).size).toBe(1);
+      for (const view of result.oursViews) {
+        expect(view.projection).toBe("cancelled");
+        expect(view.cancelledBy).toBe("us");
+      }
+      const page = visible(pages[0] ?? "");
+      expect(page).toContain("We could not deliver this order.");
+      for (const cause of [
+        "florist",
+        "partner",
+        "available",
+        "reroute",
+        "reason",
+      ]) {
+        expect(page.toLowerCase()).not.toContain(cause);
+      }
+
+      expect(result.requested.refundPending).toEqual({
+        amountMinor: 18_900,
+        currencyCode: "PLN",
+      });
+      expect(result.pending.refundPending).toEqual({
+        amountMinor: 18_900,
+        currencyCode: "PLN",
+      });
+      const pendingText = visible(await render(result.pending));
+      expect(pendingText).toContain(
+        "We could not deliver this order. We are refunding PLN 189.00 to your original payment method.",
+      );
+      expect(result.succeeded.refundPending).toBeNull();
+      const doneText = visible(await render(result.succeeded));
+      expect(doneText).not.toContain("We are refunding");
+      expect(doneText).toContain("Refunded PLN 189.00 on 7 October");
+
+      expect(result.byBuyer.cancelledBy).toBe("buyer");
+      expect(visible(await render(result.byBuyer))).toContain(
+        "You cancelled this order.",
+      );
+      expect(result.byAdminForBuyer.cancelledBy).toBe("buyer");
+
+      for (const view of result.unpaid) {
+        expect(view.projection).toBe("cancelled");
+        expect(view.cancelledBy).toBeNull();
+        expect(view.refundPending).toBeNull();
+        expect(view.refundLines).toEqual([]);
+        const text = visible(await render(view)).toLowerCase();
+        expect(text).not.toContain("refund");
+        expect(text).not.toContain("could not deliver");
+        expect(text).not.toContain("you cancelled");
+      }
+    }, 120_000);
   },
 );

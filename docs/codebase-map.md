@@ -21,8 +21,8 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +124 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
-| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +11 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-actions.test.ts`, `integration/florist-inbox.test.ts` +10 |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +12 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-actions.test.ts`, `integration/florist-inbox.test.ts` +11 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-access.test.ts` +15 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +10 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
@@ -106,6 +106,7 @@ task actually touches.
 | `[locale]/(checkout)/checkout/actions.ts` | The checkout page's one server action. Thin glue | 010 |
 | `[locale]/(checkout)/checkout/done/page.tsx` | `/{locale}/checkout/done` (spec 010 §2… | 010 |
 | `[locale]/(checkout)/checkout/page.tsx` | `/{locale}/checkout` (spec 010 §2 "The… | 010 |
+| `[locale]/(track)/track/LookupForm.tsx` | Tracking lookup page body and form | 018 |
 | `[locale]/(track)/track/[token]/ShareTile.tsx` | Share-link island | 018 |
 | `[locale]/(track)/track/[token]/TrackingPageView.tsx` | Tracking and not-working page bodies | 018 |
 | `[locale]/(track)/track/[token]/calendar.ics/route.ts` | Tracking calendar file | 018 |
@@ -113,6 +114,9 @@ task actually touches.
 | `[locale]/(track)/track/[token]/page.tsx` | Buyer tracking page | 018 |
 | `[locale]/(track)/track/[token]/photo/route.ts` | Tracking photo proxy | 018 |
 | `[locale]/(track)/track/[token]/tracking-routes.ts` | Tracking routes' work, .ics | 018 |
+| `[locale]/(track)/track/actions.ts` | The tracking lookup's server action (spec 018… | 018 |
+| `[locale]/(track)/track/lookup.ts` | Tracking lookup's seams and answer path | 018 |
+| `[locale]/(track)/track/page.tsx` | Tracking lookup page | 018 |
 | `[locale]/-choose/-next/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchil… | 009 |
 | `[locale]/@header/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | The header of the product parameter route,… | 043 |
@@ -122,6 +126,7 @@ task actually touches.
 | `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header | 010 |
 | `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header | 010 |
 | `[locale]/@header/(track)/track/[token]/page.tsx` | Tracking page header | 018 |
+| `[locale]/@header/(track)/track/page.tsx` | Tracking lookup header | 018 |
 | `[locale]/@header/-choose/-next/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot… | 043 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{chi… | 043 |
@@ -307,8 +312,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 450 |
-| `tests/integration/` | 79 |
+| `tests/unit/` | 452 |
+| `tests/integration/` | 80 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |

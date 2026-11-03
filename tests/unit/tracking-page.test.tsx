@@ -11,6 +11,10 @@
  *    headline per step, times in Europe/Warsaw with the short zone name across the October DST
  *    night, the florist line only when the view carries it, no "accepted" and no relay language.
  *  - `NotWorkingView`: one body per locale, the lookup form, no order data.
+ *  - TASK-339 (AC-10, AC-42): one refund chip per succeeded refund, in the refund's currency and
+ *    the destination's zone, oldest first; "You cancelled this order." / "We could not deliver
+ *    this order." by `cancelledByOf`; the pending sentence until the refund succeeds; nothing for
+ *    an order that never took money; the lookup page's one sent message.
  *  - `calendarIcs` parses as RFC 5545 (a strict reader below): one all-day `VEVENT`.
  *  - `trackHeaderRules()` and their place after the security rules in `next.config.ts`;
  *    `transactionalMetadata("trackOrder")`.
@@ -36,6 +40,7 @@ import { loadMessages } from "../../src/modules/i18n";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   buyerStep,
+  cancelledByOf,
   foldTimeline,
   TRACKING_VIEW_KEYS,
   type TrackingView,
@@ -70,6 +75,8 @@ const { TrackingPageView } =
   await import("../../src/app/[locale]/(track)/track/[token]/TrackingPageView.tsx");
 const { NotWorkingView } =
   await import("../../src/app/[locale]/(track)/track/[token]/TrackingPageView.tsx");
+const { LookupForm, LookupPageView } =
+  await import("../../src/app/[locale]/(track)/track/LookupForm.tsx");
 const { calendarIcs, foldLine } =
   await import("../../src/app/[locale]/(track)/track/[token]/tracking-routes.ts");
 
@@ -421,8 +428,14 @@ describe("NotWorkingView (AC-7)", () => {
       const first = renderToStaticMarkup(await NotWorkingView({ locale }));
       const second = renderToStaticMarkup(await NotWorkingView({ locale }));
       expect(second).toBe(first);
-      expect(first).toContain(`action="/${locale}/track"`);
-      expect(first).toContain('method="post"');
+      // TASK-339: the lookup's own form, a server action bound to the locale, so the fields
+      // travel in a POST body and never in an address.
+      expect(first).toContain("data-fo-track-lookup");
+      expect(first).not.toMatch(/method="get"/iu);
+      const form = (await LookupForm({ locale })) as {
+        props: { action: { name: string } };
+      };
+      expect(form.props.action.name).toBe("bound lookupTrackingAction");
       expect(first).toContain('name="reference"');
       expect(first).toContain('name="email"');
       // The reference field's placeholder is the pattern, never a reference.
@@ -632,5 +645,271 @@ describe("A6 alignment and no assignment leakage (AC-35, AC-41)", () => {
       );
       expect(code(source), path).not.toMatch(/\be\.type\b/u);
     }
+  });
+});
+
+/** The en-gb `Intl` rendering of an amount, computed here and not by the code under test. */
+function money(amountMinor: number, currency: string, tag: string): string {
+  const digits =
+    new Intl.NumberFormat("en", {
+      style: "currency",
+      currency,
+    }).resolvedOptions().maximumFractionDigits ?? 2;
+  return new Intl.NumberFormat(tag, { style: "currency", currency })
+    .format(amountMinor / 10 ** digits)
+    .replace(/\s+/gu, " ");
+}
+
+describe("refund lines and the cancelled state (AC-10, AC-42; TASK-339)", () => {
+  const cancelledTimeline = foldTimeline(
+    [
+      { projection: "confirmed", occurredAt: at("2026-10-06T17:22:00Z") },
+      { projection: "cancelled", occurredAt: at("2026-10-06T20:10:00Z") },
+    ],
+    "cancelled",
+    ZONE,
+  );
+  const refundsOf = (markup: string): string[] =>
+    [...markup.matchAll(/data-fo-track-refund=""[^>]*>([^<]*)</gu)].map(
+      (match) => (match[1] ?? "").replace(/\s+/gu, " "),
+    );
+
+  it("prints one chip per succeeded refund, oldest first, in its currency and the destination's day", async () => {
+    const markup = await html(
+      view({
+        projection: "delivered",
+        refundLines: [
+          // 22:30 UTC on the 8th is 00:30 on the 9th in Warsaw: the date is the zone's.
+          {
+            amountMinor: 1,
+            currencyCode: "GBP",
+            succeededAt: at("2026-10-08T22:30:00Z"),
+          },
+          {
+            amountMinor: 123_456_789,
+            currencyCode: "PLN",
+            succeededAt: at("2026-10-10T09:00:00Z"),
+          },
+        ],
+      }),
+    );
+    expect(refundsOf(markup)).toEqual([
+      `Refunded ${money(1, "GBP", "en-GB")} on 9 October`,
+      `Refunded ${money(123_456_789, "PLN", "en-GB")} on 10 October`,
+    ]);
+    expect(markup).toContain('aria-label="Refunds"');
+    // A partial refund keeps the fulfilment headline (D1).
+    expect(markup).toMatch(
+      /data-fo-track-headline="delivered"[^>]*>Delivered</u,
+    );
+  });
+
+  it("formats the amount and the date in the page locale (pl, de)", async () => {
+    const line = {
+      amountMinor: 4590,
+      currencyCode: "EUR" as const,
+      succeededAt: at("2026-10-08T22:30:00Z"),
+    };
+    const pl = refundsOf(
+      await html(view({ projection: "being_made", refundLines: [line] }), "pl"),
+    );
+    expect(pl).toEqual([
+      `Refunded ${money(4590, "EUR", "pl-PL")} on 9 października`,
+    ]);
+    const de = refundsOf(
+      await html(view({ projection: "being_made", refundLines: [line] }), "de"),
+    );
+    expect(de).toEqual([
+      `Refunded ${money(4590, "EUR", "de-DE")} on 9. Oktober`,
+    ]);
+
+    // One minor unit and a large amount, in złoty and pounds, in Polish.
+    const extremes = refundsOf(
+      await html(
+        view({
+          projection: "delivered",
+          refundLines: [
+            {
+              amountMinor: 1,
+              currencyCode: "PLN",
+              succeededAt: line.succeededAt,
+            },
+            {
+              amountMinor: 123_456_789,
+              currencyCode: "GBP",
+              succeededAt: line.succeededAt,
+            },
+          ],
+        }),
+        "pl",
+      ),
+    );
+    expect(extremes).toEqual([
+      `Refunded ${money(1, "PLN", "pl-PL")} on 9 października`,
+      `Refunded ${money(123_456_789, "GBP", "pl-PL")} on 9 października`,
+    ]);
+  });
+
+  it("prints no refund row when there is no succeeded refund", async () => {
+    const markup = await html(view({ projection: "delivered" }));
+    expect(markup).not.toContain("data-fo-track-refunds");
+    expect(text(markup).toLowerCase()).not.toContain("refund");
+  });
+
+  it("reads You cancelled this order. for the buyer and We could not deliver this order. for us, with no cause", async () => {
+    const byBuyer = text(
+      await html(
+        view({
+          projection: "cancelled",
+          timeline: cancelledTimeline,
+          cancelledBy: "buyer",
+        }),
+      ),
+    );
+    expect(byBuyer).toContain("You cancelled this order.");
+    expect(byBuyer).not.toContain("could not deliver");
+    const byUs = text(
+      await html(
+        view({
+          projection: "cancelled",
+          timeline: cancelledTimeline,
+          cancelledBy: "us",
+        }),
+      ),
+    );
+    expect(byUs).toContain("We could not deliver this order.");
+    expect(byUs).not.toContain("You cancelled");
+    for (const cause of [
+      "florist",
+      "available",
+      "reroute",
+      "admin",
+      "no_partner",
+    ]) {
+      expect(byUs.toLowerCase()).not.toContain(cause);
+    }
+  });
+
+  it("says We are refunding {amount} while the refund is open, and the dated line once it succeeded", async () => {
+    const pending = await html(
+      view({
+        projection: "cancelled",
+        timeline: cancelledTimeline,
+        cancelledBy: "us",
+        refundPending: { amountMinor: 18_900, currencyCode: "PLN" },
+      }),
+    );
+    expect(text(pending)).toContain(
+      `We could not deliver this order. We are refunding ${money(18_900, "PLN", "en-GB")} to your original payment method.`,
+    );
+    expect(refundsOf(pending)).toEqual([]);
+    const done = await html(
+      view({
+        projection: "cancelled",
+        timeline: cancelledTimeline,
+        cancelledBy: "us",
+        refundLines: [
+          {
+            amountMinor: 18_900,
+            currencyCode: "PLN",
+            succeededAt: at("2026-10-07T08:00:00Z"),
+          },
+        ],
+      }),
+    );
+    expect(text(done)).not.toContain("We are refunding");
+    expect(refundsOf(done)).toEqual([
+      `Refunded ${money(18_900, "PLN", "en-GB")} on 7 October`,
+    ]);
+    // The refund is the second sentence: after the cancelled lede (§7).
+    expect(done.indexOf("data-fo-track-cancelled")).toBeLessThan(
+      done.indexOf("data-fo-track-refunds"),
+    );
+  });
+
+  it("shows neither sentence for an order that never took money (payment_failed, abandoned)", async () => {
+    const markup = await html(
+      view({ projection: "cancelled", timeline: cancelledTimeline }),
+    );
+    const visible = text(markup).toLowerCase();
+    expect(visible).not.toContain("refund");
+    expect(visible).not.toContain("could not deliver");
+    expect(visible).not.toContain("you cancelled");
+  });
+
+  it("has no relay language and no dash in any refund or cancelled state, in en-gb, de and pl", async () => {
+    const line = {
+      amountMinor: 2500,
+      currencyCode: "PLN" as const,
+      succeededAt: at("2026-10-07T08:00:00Z"),
+    };
+    const states = [
+      view({ projection: "being_made", refundLines: [line] }),
+      view({
+        projection: "cancelled",
+        timeline: cancelledTimeline,
+        cancelledBy: "us",
+        refundPending: { amountMinor: 2500, currencyCode: "PLN" },
+      }),
+      view({
+        projection: "cancelled",
+        timeline: cancelledTimeline,
+        cancelledBy: "buyer",
+        refundLines: [line],
+      }),
+    ];
+    for (const locale of ["en-gb", "de", "pl"] as const) {
+      for (const state of states) {
+        const markup = await html(state, locale);
+        expect(relayMatches(text(markup), locale)).toEqual([]);
+        expect(markup).not.toMatch(/[\u2013\u2014]/u);
+      }
+    }
+  });
+});
+
+describe("cancelledByOf (spec 018 §5.2; spec 020a request 3)", () => {
+  it.each([
+    ["buyer", null, "buyer"],
+    ["buyer", "buyer_cancel", "buyer"],
+    ["admin:7d1c", "buyer_cancel", "buyer"],
+    ["admin:7d1c", "other", "us"],
+    ["admin:7d1c", null, "us"],
+    ["system:routing.no_partner_expiry", "no_partner", "us"],
+    ["system:test_fixture", "buyer_cancel", "us"],
+    ["partner:x", "buyer_cancel", "us"],
+    ["nobody", null, "us"],
+  ] as const)("%s with %s reads %s", (actor, reason, expected) => {
+    expect(cancelledByOf(actor, reason)).toBe(expected);
+  });
+});
+
+describe("LookupPageView (AC-8; TASK-339)", () => {
+  it("draws the one sent message only after a submission, the same bytes every time", async () => {
+    for (const locale of ["en", "en-gb", "de", "pl"] as const) {
+      const before = renderToStaticMarkup(
+        await LookupPageView({ locale, sent: false }),
+      );
+      const first = renderToStaticMarkup(
+        await LookupPageView({ locale, sent: true }),
+      );
+      const second = renderToStaticMarkup(
+        await LookupPageView({ locale, sent: true }),
+      );
+      expect(second).toBe(first);
+      expect(before).not.toContain("data-fo-track-sent");
+      expect(first).toMatch(/data-fo-track-sent=""[^>]*role="status"/u);
+      expect(relayMatches(text(first), locale)).toEqual([]);
+      expect(first).not.toMatch(/[\u2013\u2014]/u);
+    }
+    const en = text(
+      renderToStaticMarkup(
+        await LookupPageView({ locale: "en-gb", sent: true }),
+      ),
+    );
+    expect(en).toContain("Find your order");
+    expect(en).toContain(
+      "If that order exists, we have emailed its link to the address it was placed with.",
+    );
   });
 });

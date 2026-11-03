@@ -12,31 +12,34 @@
  * seven columns and the side column (photo, florist card, calendar and share tiles, help) on five
  * from `lg`; one column below, with the help line repeated in the phone dock.
  *
+ * Refunds and the cancelled state (AC-10, AC-42; TASK-339): one "Refunded {amount} on {date}"
+ * chip per succeeded refund (the boards' `.s18-ref`), the amount in the refund's own currency and
+ * the date in the destination's zone (`refundLineValues`); on a cancelled order the lede is "You
+ * cancelled this order." or "We could not deliver this order." with no reason, then, while the
+ * refund is open, "We are refunding {amount} to your original payment method.", and the chips
+ * follow as its second sentence (§7). An order that never took money prints neither.
+ *
  * What it never prints (AC-4, AC-5; the founder's rulings of 2026-10-14): a recipient field, the
- * florist before production, the word "accepted", a refund or failure sentence (the cancelled and
- * refund lines are TASK-339's), a cancel control (the link is shared, §13 Q10).
+ * florist before production, the word "accepted", a refund or failure sentence beyond the two
+ * above, a cancellation's cause, a cancel control (the link is shared, §13 Q10).
  */
 import { getTranslations } from "next-intl/server";
 import type { ReactElement } from "react";
 
 import { COMPANY, whatsappHref } from "@/config/company";
 import type { LocaleCode } from "@/config/locales";
-import { formatDate, formatDateParts, localePath } from "@/modules/i18n";
-import type {
-  BuyerStep,
-  TimelineStep,
-  TimelineStepKey,
-  TrackingView,
-} from "@/modules/orders";
+import { formatDate, formatDateParts, formatMoney } from "@/modules/i18n";
 import {
-  FIELD,
-  FIELD_LABEL,
-  INPUT,
-  buttonClass,
-} from "@/modules/ui/checkout/styles";
+  type BuyerStep,
+  refundLineValues,
+  type TimelineStep,
+  type TimelineStepKey,
+  type TrackingView,
+} from "@/modules/orders";
 import { PAGE_FRAME } from "@/modules/ui/primitives/layout";
 import { StickyActionBar } from "@/modules/ui/primitives/StickyActionBar";
 
+import { LookupForm } from "../LookupForm";
 import { ShareTile } from "./ShareTile";
 
 /** The catalogue key of each buyer step (message keys are camelCase). */
@@ -67,6 +70,18 @@ const TILE = [
   "[&>b]:font-display [&>b]:text-link [&>b]:text-[19px] [&>b]:leading-[1.2] [&>b]:font-(--font-weight-display) [&>b]:underline [&>b]:decoration-[1.5px] [&>b]:underline-offset-[5px]",
   "[&>span]:text-ink-2 [&>span]:text-sm [&>span]:leading-[1.4] max-md:[&>span]:col-start-1",
 ].join(" ");
+
+/** The boards' `.s18-ref` row and `.s18-refund` chip. */
+const REFUND_ROW =
+  "m-0 mt-[4px] mb-[18px] flex list-none flex-wrap gap-[8px] p-0";
+const REFUND_CHIP = [
+  "bg-leaf-wash text-ink inline-flex min-h-[32px] items-center gap-[8px] rounded-full px-[12px] text-sm font-bold tabular-nums",
+  "before:bg-stem before:h-[8px] before:w-[8px] before:flex-none before:rounded-full before:content-['']",
+].join(" ");
+
+/** The boards' `.lede`, without its block margin (24 px after it, 8 px before a refund row). */
+const LEDE =
+  "text-ink-2 text-body max-w-[40ch] md:text-[21px] md:leading-[1.5]";
 
 const MARKER: Readonly<Record<TimelineStep["state"] | "cancelled", string>> = {
   done: "bg-stem text-card",
@@ -168,22 +183,22 @@ export async function TrackingPageView({
   );
   const city = view.destinationCity;
 
-  const lede =
-    view.projection === "cancelled"
-      ? null
-      : delivered === undefined
-        ? city === null
-          ? t("lede.plannedNoCity", { date: deliveryLong })
-          : t("lede.planned", { date: deliveryLong, city })
-        : (() => {
-            const date =
-              delivered.at === null
-                ? deliveryLong
-                : formatDate(delivered.at, locale, "weekdayDayMonth", zone);
-            return city === null
-              ? t("lede.deliveredNoCity", { date })
-              : t("lede.delivered", { date, city });
-          })();
+  const cancelled = view.projection === "cancelled";
+  const lede = cancelled
+    ? null
+    : delivered === undefined
+      ? city === null
+        ? t("lede.plannedNoCity", { date: deliveryLong })
+        : t("lede.planned", { date: deliveryLong, city })
+      : (() => {
+          const date =
+            delivered.at === null
+              ? deliveryLong
+              : formatDate(delivered.at, locale, "weekdayDayMonth", zone);
+          return city === null
+            ? t("lede.deliveredNoCity", { date })
+            : t("lede.delivered", { date, city });
+        })();
 
   const shortDate = formatDate(deliveryDay, locale, "deliveryDate", "UTC");
   const ringUnit = (city === null ? [shortDate] : [city, shortDate])
@@ -204,7 +219,56 @@ export async function TrackingPageView({
 
   const steps = view.timeline.steps;
   const cancelledAt = view.timeline.cancelledAt;
-  const cancelled = view.projection === "cancelled";
+
+  const refundLines = view.refundLines.map((line) =>
+    t("refundLine", refundLineValues(line, locale, zone)),
+  );
+  const refunds =
+    refundLines.length === 0 ? null : (
+      <ul
+        aria-label={t("refundsLabel")}
+        className={REFUND_ROW}
+        data-fo-track-refunds=""
+      >
+        {refundLines.map((line, index) => (
+          <li
+            className={REFUND_CHIP}
+            data-fo-track-refund=""
+            // Two refunds of one amount on one day print the same words; the order is the key.
+            key={index}
+          >
+            {line}
+          </li>
+        ))}
+      </ul>
+    );
+  const cancelledLede =
+    !cancelled || view.cancelledBy === null ? null : (
+      <p
+        className={`${LEDE} ${refunds === null ? "mb-[24px]" : "mb-[8px]"}`}
+        data-fo-track-cancelled={view.cancelledBy}
+      >
+        {t(
+          view.cancelledBy === "buyer" ? "cancelled.byBuyer" : "cancelled.byUs",
+        )}
+        {view.refundPending === null ? null : (
+          <>
+            {" "}
+            <span data-fo-track-refund-pending="">
+              {t("cancelled.refundPending", {
+                amount: formatMoney(
+                  {
+                    amountMinor: view.refundPending.amountMinor,
+                    currency: view.refundPending.currencyCode,
+                  },
+                  locale,
+                ),
+              })}
+            </span>
+          </>
+        )}
+      </p>
+    );
   const help = t("help.whatsapp", { phone: COMPANY.contact.phoneDisplay });
 
   const stepLabel = (step: TimelineStepKey): string => t(STEP_KEY[step]);
@@ -248,10 +312,18 @@ export async function TrackingPageView({
               </div>
             </div>
           </div>
-          {lede === null ? null : (
-            <p className="text-ink-2 text-body mb-[24px] max-w-[40ch] md:text-[21px] md:leading-[1.5]">
-              {lede}
-            </p>
+          {cancelled ? (
+            <>
+              {cancelledLede}
+              {refunds}
+            </>
+          ) : (
+            <>
+              {refunds}
+              {lede === null ? null : (
+                <p className={`${LEDE} mb-[24px]`}>{lede}</p>
+              )}
+            </>
           )}
           <ol
             aria-label={t("timelineLabel")}
@@ -431,8 +503,8 @@ export async function TrackingPageView({
  * TASK-338): one body per locale for an invalid, a forged, a rotated and an expired link, with the
  * lookup form and no order data. It reads nothing but the locale, so it cannot differ by cause.
  *
- * The form posts the reference and email to `/{locale}/track`, the lookup (`lookupTracking`,
- * TASK-339). It is a POST, so the email never enters an address.
+ * The form is the lookup's own (`../LookupForm`, TASK-339): a server action, so it posts the
+ * reference and email in the body and the email never enters an address.
  */
 export async function NotWorkingView({
   locale,
@@ -440,7 +512,6 @@ export async function NotWorkingView({
   readonly locale: LocaleCode;
 }): Promise<ReactElement> {
   const t = await getTranslations({ locale, namespace: "tracking" });
-  const form = await getTranslations({ locale, namespace: "trackLookup" });
   return (
     <main className={PAGE_FRAME} data-fo-track="not-working" id="main">
       <div className="grid max-w-[640px] justify-items-start gap-[16px] pt-[32px] pb-[16px] md:pt-[56px] md:pb-[24px]">
@@ -449,50 +520,7 @@ export async function NotWorkingView({
         </h1>
         <p className="text-ink-2 m-0 max-w-[52ch]">{t("notWorking.body")}</p>
       </div>
-      <form
-        action={localePath(locale, "home", "track")}
-        className="bg-card mb-[56px] grid max-w-[560px] gap-[14px] rounded-(--radius-letter) px-[18px] pt-[22px] pb-[24px] shadow-(--shadow-letter) md:gap-[18px] md:px-[34px] md:pt-[30px] md:pb-[32px]"
-        method="post"
-      >
-        <div className={FIELD}>
-          <label className={FIELD_LABEL} htmlFor="track-reference">
-            {form("reference")}
-          </label>
-          <input
-            autoCapitalize="characters"
-            autoComplete="off"
-            className={INPUT}
-            id="track-reference"
-            maxLength={12}
-            name="reference"
-            placeholder={form("referencePlaceholder")}
-            required
-            spellCheck={false}
-            type="text"
-          />
-        </div>
-        <div className={FIELD}>
-          <label className={FIELD_LABEL} htmlFor="track-email">
-            {form("email")}
-          </label>
-          <input
-            autoComplete="email"
-            className={INPUT}
-            id="track-email"
-            inputMode="email"
-            maxLength={254}
-            name="email"
-            placeholder={form("emailPlaceholder")}
-            required
-            type="email"
-          />
-        </div>
-        <div>
-          <button className={buttonClass("primary", "md")} type="submit">
-            {form("submit")}
-          </button>
-        </div>
-      </form>
+      {await LookupForm({ locale })}
     </main>
   );
 }

@@ -309,13 +309,26 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         ],
       })),
       // TASK-332, spec 016 §5.3: the email layout, the florist emails and the WhatsApp copy.
-      ...["emails.layout.*", "emails.florist.*", "whatsapp.florist.*"].map(
-        (match) => ({
-          match,
-          surface: "email",
-          paths: ["src/modules/notifications/emails/**"],
-        }),
-      ),
+      ...["emails.layout.*", "emails.florist.*"].map((match) => ({
+        match,
+        surface: "email",
+        paths: ["src/modules/notifications/emails/**"],
+      })),
+      // TASK-339: T16, the tracking lookup's answer, rendered by the email module and sent from
+      // the lookup's seams under `(track)`.
+      {
+        match: "emails.account.*",
+        surface: "email",
+        paths: [
+          "src/modules/notifications/emails/**",
+          "src/app/[locale]/(track)/**",
+        ],
+      },
+      {
+        match: "whatsapp.florist.*",
+        surface: "email",
+        paths: ["src/modules/notifications/emails/**"],
+      },
       // TASK-214: the inbox pages' own lines; TASK-332's florist emails reuse them verbatim.
       {
         match: "floristInbox.page.*",

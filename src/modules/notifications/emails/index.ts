@@ -80,3 +80,9 @@ export {
   renderPrepaidPayoutReady,
   renderWhatsappCopy,
 } from "./ops";
+// Spec 018 §5.2 (TASK-339): T16, the tracking lookup's answer.
+export {
+  type RenderedTrackingLinkEmail,
+  type TrackingLinkEmailInput,
+  renderTrackingLinkEmail,
+} from "./tracking-link";

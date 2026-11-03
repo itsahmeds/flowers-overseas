@@ -88,9 +88,10 @@ export type ListingPageLinkType = (typeof listingPageLinkTypes)[number];
 
 /**
  * The transactional pages a chrome entry may name (spec 010 §14 A-founder-2026-10-22; TASK-349):
- * pages whose URL segment is the same English word in every locale (spec 010 §13 Q10).
+ * pages whose URL segment is the same English word in every locale (spec 010 §13 Q10). Spec 018's
+ * tracking lookup, `/{locale}/track`, joined with TASK-339 (the footer's "Track an order").
  */
-export const transactionalPages = ["basket"] as const;
+export const transactionalPages = ["basket", "track"] as const;
 export type TransactionalPage = (typeof transactionalPages)[number];
 
 /**
@@ -423,6 +424,17 @@ const siteLinks = [
     published: true,
     owningSpec: "008",
     surfaces: ["footer", "listing"],
+  },
+  {
+    // Spec 018 §5.3 "Chrome" (TASK-339): "Track an order", at launch and not flag-gated, to the
+    // lookup page `/{locale}/track` (`noindex`, crawlable). Drawn after "Occasions" in the Sending
+    // column, as the `basket-*` and `track-order-*` boards draw the footer.
+    id: "track-order",
+    labelKey: "footer.link.trackOrder",
+    target: { kind: "transactional", page: "track" },
+    published: true,
+    owningSpec: "018",
+    surfaces: ["footer"],
   },
   {
     id: "delivery-times",
@@ -812,7 +824,13 @@ const siteLinkGroups = [
     id: "sending",
     headingKey: "footer.group.sending",
     surface: "footer",
-    linkIds: ["destinations", "occasions", "delivery-times", "guarantee"],
+    linkIds: [
+      "destinations",
+      "occasions",
+      "track-order",
+      "delivery-times",
+      "guarantee",
+    ],
   },
   {
     id: "company",

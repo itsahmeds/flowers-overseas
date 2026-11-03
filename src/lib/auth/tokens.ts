@@ -8,7 +8,8 @@
  *    Auth.js's email callback finds the row the core wrote. The plain token exists only in the
  *    email and in the one request that consumes it.
  *  - `hashIdentifier(email)` — the SHA-256 hex of the normalised address: `auth_email_send` keys
- *    the send limit by it and never stores the address.
+ *    the send limit by it and never stores the address. `hashScopedIdentifier(scope, email)` is
+ *    the same for another purpose's counter (spec 018's lookup, TASK-339).
  *  - `newSessionToken(surface)` / `isSessionTokenOf(surface, token)` — a session token names the
  *    surface that minted it (`admin.…`, `florist.…`; TASK-212), so one surface's session
  *    authenticates nothing on the other (spec 011 §2).
@@ -30,6 +31,18 @@ export function normaliseEmail(email: string): string {
 
 export function hashIdentifier(email: string): string {
   return createHash("sha256").update(normaliseEmail(email)).digest("hex");
+}
+
+/**
+ * The SHA-256 hex of `{scope}:{normalised address}`: a send counter of its own in
+ * `auth_email_send` for a purpose with another limit (spec 018 §5.2 "Rate limits": the tracking
+ * lookup's 3 per hour, `scope` `track`), which never counts against the sign-in limit nor it
+ * against the lookup's. Still a hash: the address is never stored.
+ */
+export function hashScopedIdentifier(scope: string, email: string): string {
+  return createHash("sha256")
+    .update(`${scope}:${normaliseEmail(email)}`)
+    .digest("hex");
 }
 
 /** A database session token bound to its surface: `{surface}.{32 random bytes, base64url}`. */

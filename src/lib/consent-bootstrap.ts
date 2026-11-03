@@ -28,13 +28,22 @@
  *     `wait_for_update` so a tag that loads before the visitor answers waits instead of guessing;
  *  3. switches `url_passthrough` off (no consent state in our URLs — `CLAUDE.md`: no PII in URLs)
  *     and `ads_data_redaction` on, which is the pre-consent behaviour §8 promises;
- *  4. only if `data-fo-ga4` is present, queues `js` and `config` for the tag that follows.
+ *  4. only if `data-fo-ga4` is present, queues `js` and `config` for the tag that follows, with
+ *     `page_location` set to the address with every token replaced by `:token` (spec 018 AC-14;
+ *     TASK-339): the tracking link's path token and a signed link's `?t=`, through the two
+ *     expressions of `./url-tokens.ts`, so `page_view` never carries a credential.
  *
  * With no id, steps 1–3 still run: `dataLayer` carries a default-denied entry on every localised
  * document, which is exactly what AC-18 asserts and what makes Phase 0 AC 7 true the moment the
  * founder pastes an id in.
  */
 import { createHash } from "node:crypto";
+
+import {
+  QUERY_TOKEN,
+  TOKEN_PLACEHOLDER,
+  TRACK_PATH_TOKEN,
+} from "./url-tokens.ts";
 
 /** The attribute the measurement id rides on. Not part of the hashed bytes (see above). */
 export const GA4_ID_ATTRIBUTE = "data-fo-ga4";
@@ -73,7 +82,9 @@ export const CONSENT_BOOTSTRAP_SCRIPT =
   `g("consent","default",${JSON.stringify(CONSENT_DEFAULT_SIGNALS)});` +
   `g("set","url_passthrough",false);g("set","ads_data_redaction",true);` +
   `var s=document.currentScript,i=s&&s.getAttribute("${GA4_ID_ATTRIBUTE}");` +
-  `if(i){g("js",new Date());g("config",i)}}();`;
+  `if(i){var l=location.href.replace(/${TRACK_PATH_TOKEN.source}/g,"$1${TOKEN_PLACEHOLDER}")` +
+  `.replace(/${QUERY_TOKEN.source}/g,"$1${TOKEN_PLACEHOLDER}");` +
+  `g("js",new Date());g("config",i,{page_location:l})}}();`;
 
 /**
  * The `'sha256-'` source expression for `script-src`, base64 as the CSP grammar wants it and

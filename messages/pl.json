@@ -708,6 +708,17 @@
         "preheader": "Jedno zdjęcie bukietu w chwili dostawy.",
         "body": "Dziękujemy za dzisiejszą dostawę: {product}. Prosimy dodać jedno zdjęcie bukietu w chwili przekazania."
       }
+    },
+    "account": {
+      "trackingLink": {
+        "subject": "Your tracking link for order {reference}",
+        "preheader": "Follow your order step by step, from today to the door.",
+        "heading": "Your tracking link",
+        "body": "Here is the link to follow order {reference}, as you asked.",
+        "button": "Track your order",
+        "paste": "Or paste this link into your browser:",
+        "ignore": "If you did not ask for this link, you can ignore this email."
+      }
     }
   },
   "errors": {
@@ -837,7 +848,8 @@
       "occasions": "Okazje",
       "privacy": "Prywatność",
       "terms": "Regulamin",
-      "withdrawal": "Odstąpienie i zwroty"
+      "withdrawal": "Odstąpienie i zwroty",
+      "trackOrder": "Track an order"
     },
     "payment": {
       "heading": "Płatność",
@@ -1326,7 +1338,13 @@
     "emailPlaceholder": "name@example.com",
     "reference": "Order reference",
     "referencePlaceholder": "FO-XXXX-XXXX",
-    "submit": "Send me the link"
+    "submit": "Send me the link",
+    "meta": {
+      "title": "Find your order"
+    },
+    "title": "Find your order",
+    "body": "Enter your order reference and the email you ordered with. We email you the tracking link.",
+    "sent": "If that order exists, we have emailed its link to the address it was placed with."
   },
   "tracking": {
     "calendar": {
@@ -1381,7 +1399,14 @@
       "title": "Share the tracking link"
     },
     "substitution": "We made a small change to your bouquet: {note}",
-    "timelineLabel": "Your order, step by step"
+    "timelineLabel": "Your order, step by step",
+    "refundLine": "Refunded {amount} on {date}",
+    "refundsLabel": "Refunds",
+    "cancelled": {
+      "byBuyer": "You cancelled this order.",
+      "byUs": "We could not deliver this order.",
+      "refundPending": "We are refunding {amount} to your original payment method."
+    }
   },
   "trust": {
     "guarantee": {

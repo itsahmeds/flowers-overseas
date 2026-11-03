@@ -34,6 +34,10 @@
  *   `message` (the gift message) explicitly. The cost is that a captured event groups by
  *   exception `type` and stack rather than by text; the alternative is shipping an untested
  *   pattern matcher and hoping. Spec 025 revisits this when alerts exist.
+ * - **Tokens** (spec 018 AC-14; TASK-339): the tracking link's path token and a signed link's
+ *   `?t=` are replaced by `:token` (`scrubUrlTokens`, `./url-tokens.ts`) in `request.url`, the
+ *   transaction name and every string of the breadcrumbs (a navigation's `from`/`to`, a fetch's
+ *   `url`). The query string is dropped whole, as before.
  * - Org region: EU (`de.sentry.io`), spec 001 §13 Q6. The region lives in the DSN the founder
  *   pastes into the Vercel env store; no code depends on it.
  */
@@ -41,6 +45,7 @@ import { captureMessage, getCurrentScope } from "@sentry/nextjs";
 import type { ErrorEvent, EventHint } from "@sentry/nextjs";
 
 import { REDACTED, isRedactedLogKey, redact, scrubText } from "./logger";
+import { scrubUrlTokens } from "./url-tokens.ts";
 
 /**
  * Tags that may be attached to an event, with the reason each is not PII (spec 003 §11).
@@ -212,6 +217,25 @@ function scrubException(exception: { values?: unknown }): {
   };
 }
 
+/** Every string at any depth with its URL tokens replaced (arrays and plain records walked). */
+function scrubTokensDeep(
+  value: unknown,
+  seen = new WeakSet<object>(),
+): unknown {
+  if (typeof value === "string") return scrubUrlTokens(value);
+  if (value === null || typeof value !== "object") return value;
+  if (seen.has(value)) return value;
+  seen.add(value);
+  if (Array.isArray(value)) {
+    return value.map((item) => scrubTokensDeep(item, seen));
+  }
+  const out: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value)) {
+    out[key] = scrubTokensDeep(item, seen);
+  }
+  return out;
+}
+
 /** Remove PII from an event before it leaves the process. Returns a scrubbed copy. */
 export function beforeSend<T extends ScrubbableEvent>(event: T): T {
   const scrubbed: T = { ...event };
@@ -223,7 +247,9 @@ export function beforeSend<T extends ScrubbableEvent>(event: T): T {
     scrubbed.request = {
       ...omit(scrubbed.request, ["cookies", "data", "query_string", "headers"]),
       ...(headers === undefined ? {} : { headers: scrubRecord(headers) }),
-      ...(typeof url === "string" ? { url: scrubText(url) } : {}),
+      ...(typeof url === "string"
+        ? { url: scrubUrlTokens(scrubText(url)) }
+        : {}),
     };
   }
 
@@ -235,7 +261,14 @@ export function beforeSend<T extends ScrubbableEvent>(event: T): T {
   if (scrubbed.tags) scrubbed.tags = scrubRecord(scrubbed.tags);
   if (scrubbed.contexts) scrubbed.contexts = scrubRecord(scrubbed.contexts);
   if (scrubbed.breadcrumbs !== undefined) {
-    scrubbed.breadcrumbs = scrubBreadcrumbs(scrubbed.breadcrumbs);
+    scrubbed.breadcrumbs = scrubTokensDeep(
+      scrubBreadcrumbs(scrubbed.breadcrumbs),
+    );
+  }
+  if (typeof scrubbed["transaction"] === "string") {
+    (scrubbed as Record<string, unknown>)["transaction"] = scrubUrlTokens(
+      scrubbed["transaction"],
+    );
   }
   if (scrubbed.exception) {
     scrubbed.exception = scrubException(scrubbed.exception);

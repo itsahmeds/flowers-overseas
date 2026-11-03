@@ -14,7 +14,7 @@
  * Which one runs is `mailerConfig()` in `src/lib/env.auth.ts` (`MAILER`, else the environment's
  * default). `MailMessageSchema` carries a **tag** from a closed registry: `admin_sign_in` here;
  * spec 011 adds `florist_sign_in` and `florist_application_alert`; spec 016's pipeline adds one tag
- * per audience (`order_buyer`, `order_florist`, `ops_alert`).
+ * per audience (`order_buyer`, `order_florist`, `ops_alert`); spec 018 adds `tracking_link` (T16).
  *
  * **Idempotency (spec 016 §5.2, §12's request on spec 012; TASK-331).** A message may carry an
  * `idempotencyKey` (1 to 256 characters, Resend's limit), sent as the `Idempotency-Key` header.
@@ -39,6 +39,8 @@ export const mailTags = [
   "ops_alert",
   // Spec 011 §5.2 (TASK-213): the founder's alert for each stored florist application.
   "florist_application_alert",
+  // Spec 018 §5.2 (TASK-339): T16, the tracking lookup's answer.
+  "tracking_link",
 ] as const;
 export type MailTag = (typeof mailTags)[number];
 

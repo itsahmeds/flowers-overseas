@@ -495,10 +495,11 @@ describe("Sentry beforeSend value scan (T-58, AC-54)", () => {
 
   it("scrubs a phone in request.url", () => {
     const scrubbed = beforeSend({
-      request: { url: "https://flowersoverseas.com/x?t=0048600123456" },
+      // `?p=`, not `?t=`: a `t` value is a signed-link token and is replaced whole (TASK-339).
+      request: { url: "https://flowersoverseas.com/x?p=0048600123456" },
     });
     expect(scrubbed.request?.url).toBe(
-      "https://flowersoverseas.com/x?t=[REDACTED:phone]",
+      "https://flowersoverseas.com/x?p=[REDACTED:phone]",
     );
   });
 
