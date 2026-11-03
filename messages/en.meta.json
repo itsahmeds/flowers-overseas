@@ -6557,87 +6557,121 @@
   },
   "tracking.refundLine": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "262da0fb3be51f75a841dfd42b35a94b2380915b211ec06162262bc314664a96"
   },
   "tracking.refundsLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "0942c1799b5a167623a85f4d8818a07e0701b2a9d398630d0b964a732fd86b5d"
   },
   "tracking.cancelled.byBuyer": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "2b671bb69e2e05522bd48dd3df16a38f15b3f62b20077b4ddfe2bfb7ba322ba1"
   },
   "tracking.cancelled.byUs": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "ff6b1744d535c88584a96f22438764d59eaf20781665835ce4eb677b063a672f"
   },
   "tracking.cancelled.refundPending": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "18ae78351ea774f72a7054ffe45b3cf0f345583332f0930b9bdf1b0584046476"
   },
   "trackLookup.meta.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "809a4ede7071ea812c3aad393143673352047ec1db6ec43b1bd30815232fc68d"
   },
   "trackLookup.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "809a4ede7071ea812c3aad393143673352047ec1db6ec43b1bd30815232fc68d"
   },
   "trackLookup.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "ee66eff23d5f331001318df6200b22cd3384e6e177e6cbf580a5c81c91fd5995"
   },
   "trackLookup.sent": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "e38b793306c5839884bbc49880aa15948c1eb4b73861103c418cf9bb87ea6f0a"
   },
   "emails.account.trackingLink.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "4364f8b5817bd56c7a17811c7ef005a5312b5ebd6f49a80f2f373295258c903a"
   },
   "emails.account.trackingLink.preheader": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "ea3f4ae756ec07b423b0f298ab6b81275c1d6746a96c4065198b0db0d129a719"
   },
   "emails.account.trackingLink.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "8e9c0b7ac67733b3c83b06301e94ff4cccc71b1d0f1317c2616dbd69c4f23393"
   },
   "emails.account.trackingLink.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "ff1e22a24959bbab08741ebd27e5466c587ff87b2819703a7f1103288bc727bb"
   },
   "emails.account.trackingLink.button": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "cb88fb33b3193636400334aaaca35ee556427bcb49ab2e2599c27f322dc786a7"
   },
   "emails.account.trackingLink.paste": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "aa65fc5c29a0c269aa44c5e31333103154a174e89a9f59c56bc9e8199f701eea"
   },
   "emails.account.trackingLink.ignore": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "ac91fd71feba8493ca4f6c28e552d64a29636799a012f050b8f7a52143e840da"
   },
   "footer.link.trackOrder": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "968c7b1389922644affd6cb4de032c86431d91b023137ec9054de2792fa1e431"
   }
 }

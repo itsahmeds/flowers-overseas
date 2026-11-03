@@ -347,13 +347,6 @@ describe("the shipped catalogues and manifests", () => {
     "corridor.calendar.ruleEaster",
     "corridor.calendar.ruleFixed",
     "corridor.calendar.ruleWeekday",
-    "emails.account.trackingLink.body",
-    "emails.account.trackingLink.button",
-    "emails.account.trackingLink.heading",
-    "emails.account.trackingLink.ignore",
-    "emails.account.trackingLink.paste",
-    "emails.account.trackingLink.preheader",
-    "emails.account.trackingLink.subject",
     // TASK-332's 34 florist email, email layout and WhatsApp keys and TASK-213's 21 application
     // keys left this queue under the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
@@ -381,7 +374,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-214's 11 inbox page keys and TASK-215's 13 florist action keys left this queue under
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     "footer.link.deliveryAndPayment",
-    "footer.link.trackOrder",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
     "forFlorists.apply.error.capacity",
@@ -482,15 +474,6 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
-    "trackLookup.body",
-    "trackLookup.meta.title",
-    "trackLookup.sent",
-    "trackLookup.title",
-    "tracking.cancelled.byBuyer",
-    "tracking.cancelled.byUs",
-    "tracking.cancelled.refundPending",
-    "tracking.refundLine",
-    "tracking.refundsLabel",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
