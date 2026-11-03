@@ -68,10 +68,11 @@ describe("priceEquivalents — exactly one leg unusable (A21 clause 6 (d))", () 
   it("prints the full line when every leg is current (the control)", async () => {
     expect(rateRows).toHaveLength(3);
     const result = await priceEquivalents(CHARGED, FRESH);
+    // Item 7's order (TASK-389): GBP, EUR, USD, PLN, the displayed EUR left out.
     expect(result?.amounts.map((amount) => amount.currency)).toEqual([
       "GBP",
-      "PLN",
       "USD",
+      "PLN",
     ]);
   });
 

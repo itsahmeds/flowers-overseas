@@ -95,3 +95,18 @@ export const HOME_COMING_UP = { occasions: 3, cards: 3, names: 2 } as const;
  * occasion is found once whatever the day the page is rendered.
  */
 export const HOME_COMING_UP_MONTHS = 12;
+
+/**
+ * Cards per page on a country-less hub (spec 008 §14 A-founder-2026-10-24a "Hubs": "every one,
+ * paginated at 24"; spec 004 §14 A-founder-2026-10-24a item 8; TASK-388). A hub shows only core
+ * products, at most `CORE_RANGE_SIZE.max`, so today every hub is one page.
+ */
+export const HUB_PAGE_SIZE = 24;
+
+/**
+ * The equivalents line's display bound, in calendar days from the rate's `as_of` (spec 004 §14
+ * A-founder-2026-10-24a item 7 (d), AC-106; TASK-389): `displayRateFor()` returns a rate through
+ * the end of day `as_of + 14` (UTC) and `null` after. It never governs a charged amount:
+ * `fxRateFor()` and `MAX_FX_AGE_HOURS` do (spec 005 AC-35).
+ */
+export const EQUIVALENTS_MAX_AGE_DAYS = 14;

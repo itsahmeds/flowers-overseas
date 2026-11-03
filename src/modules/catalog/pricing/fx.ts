@@ -43,6 +43,7 @@
  * is the only formatter in the codebase), and any storage — a conversion is recomputed, and the
  * rate and its date travel with the projection so a repaint cannot invent a rate (§5.4).
  */
+import { EQUIVALENTS_MAX_AGE_DAYS } from "@/config/commerce";
 import type { CurrencyCode } from "@/config/currencies";
 
 import { CATALOG_SIGNALS, catalogSignal } from "../observability";
@@ -199,54 +200,99 @@ export async function fxRateFor(
   quote: CurrencyCode,
   asOf: Date,
 ): Promise<FxRate | null> {
+  const rate = await derivedRate("fxRateFor", base, quote);
+  return rate === undefined ? null : usableOrNull(rate, asOf);
+}
+
+/**
+ * The newest rate for `base -> quote` by the three derivations `fxRateFor()` documents, **before**
+ * any age bound: the one derivation both bounds share, so a display rate and a charging rate of the
+ * same snapshot are the same number. `undefined` when no row derives it. Throws on `base === quote`.
+ */
+async function derivedRate(
+  caller: "fxRateFor" | "displayRateFor",
+  base: CurrencyCode,
+  quote: CurrencyCode,
+): Promise<FxRate | undefined> {
   if (base === quote) {
     throw new Error(
-      `fxRateFor(${base}, ${quote}) asks for a currency's rate against itself; a price in its own currency is not converted at all (spec 005 §2 "FX and rounding")`,
+      `${caller}(${base}, ${quote}) asks for a currency's rate against itself; a price in its own currency is not converted at all (spec 005 §2 "FX and rounding")`,
     );
   }
   const rows = await catalogProviders().fx.fxRates();
 
   const direct = newestRow(rows, base, quote);
   if (direct !== undefined) {
-    return usableOrNull(
-      {
-        base,
-        quote,
-        ratePpm: direct.ratePpm,
-        asOf: direct.asOf,
-        source: direct.source,
-      },
-      asOf,
-    );
+    return {
+      base,
+      quote,
+      ratePpm: direct.ratePpm,
+      asOf: direct.asOf,
+      source: direct.source,
+    };
   }
 
   const opposite = newestRow(rows, quote, base);
   if (opposite !== undefined) {
-    return usableOrNull(
-      {
-        base,
-        quote,
-        ratePpm: divideMinorCeil([PPM_SCALE, PPM_SCALE], opposite.ratePpm),
-        asOf: opposite.asOf,
-        source: `${opposite.source}:inverse`,
-      },
-      asOf,
-    );
+    return {
+      base,
+      quote,
+      ratePpm: divideMinorCeil([PPM_SCALE, PPM_SCALE], opposite.ratePpm),
+      asOf: opposite.asOf,
+      source: `${opposite.source}:inverse`,
+    };
   }
 
   const baseLeg = newestRow(rows, PIVOT_CURRENCY, base);
   const quoteLeg = newestRow(rows, PIVOT_CURRENCY, quote);
-  if (baseLeg === undefined || quoteLeg === undefined) return null;
-  return usableOrNull(
-    {
-      base,
-      quote,
-      ratePpm: divideMinorCeil([quoteLeg.ratePpm, PPM_SCALE], baseLeg.ratePpm),
-      asOf: olderOf(baseLeg.asOf, quoteLeg.asOf),
-      source: `${quoteLeg.source}:cross:${PIVOT_CURRENCY}`,
-    },
-    asOf,
-  );
+  if (baseLeg === undefined || quoteLeg === undefined) return undefined;
+  return {
+    base,
+    quote,
+    ratePpm: divideMinorCeil([quoteLeg.ratePpm, PPM_SCALE], baseLeg.ratePpm),
+    asOf: olderOf(baseLeg.asOf, quoteLeg.asOf),
+    source: `${quoteLeg.source}:cross:${PIVOT_CURRENCY}`,
+  };
+}
+
+/**
+ * The first instant a rate published on `asOf` is past the **display** bound: 00:00Z of day
+ * `asOf + EQUIVALENTS_MAX_AGE_DAYS + 1`, so the rate holds through the end of day
+ * `asOf + EQUIVALENTS_MAX_AGE_DAYS` (spec 004 §14 A-founder-2026-10-24a item 7 (d), AC-106).
+ * Calendar days in UTC: an `as_of` is a day, not an instant.
+ */
+export function displayRateStaleAfter(asOf: IsoDate): number {
+  const day = Date.parse(`${asOf}T00:00:00Z`);
+  // A real calendar day round-trips; `2026-02-30` or a timestamp does not.
+  if (
+    !Number.isFinite(day) ||
+    new Date(day).toISOString().slice(0, 10) !== asOf
+  ) {
+    throw new Error(`\`${asOf}\` is not a calendar day`);
+  }
+  return day + (EQUIVALENTS_MAX_AGE_DAYS + 1) * MS_PER_DAY;
+}
+
+/**
+ * The rate the **equivalents line** converts at, or `null` past its display bound (spec 004 §14
+ * A-founder-2026-10-24a item 7 (d), AC-106; TASK-389).
+ *
+ * The same derivation as `fxRateFor()` (`derivedRate()`), with one difference: the bound is
+ * `EQUIVALENTS_MAX_AGE_DAYS` calendar days, not `MAX_FX_AGE_HOURS`. Inside the 48-hour bound the
+ * two return the same rate, so the line's amounts equal what `fxRateFor()` would give. It is a
+ * **display** rate: no charged amount, quote, offer or checkout total may read it (those stay on
+ * `fxRateFor()` and its stale fallback, spec 005 AC-35). It raises no stale signal, because a
+ * hidden equivalents line is not a pricing failure.
+ */
+export async function displayRateFor(
+  base: CurrencyCode,
+  quote: CurrencyCode,
+  now: Date,
+): Promise<FxRate | null> {
+  const rate = await derivedRate("displayRateFor", base, quote);
+  if (rate === undefined) return null;
+  const parsed = FxRateSchema.parse(rate);
+  return now.getTime() < displayRateStaleAfter(parsed.asOf) ? parsed : null;
 }
 
 /**

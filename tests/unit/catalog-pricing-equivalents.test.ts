@@ -18,8 +18,11 @@ import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
 
 /** Inside the 48-hour window of the 2026-09-08 snapshot. */
 const FRESH = new Date("2026-09-09T12:00:00Z");
-/** Past it: `fxRateFor()` returns `null` for every pair. */
-const STALE = new Date("2026-09-11T00:00:01Z");
+/**
+ * Past the equivalents line's display bound (spec 004 §14 A-founder-2026-10-24a item 7 (d),
+ * AC-106; TASK-389): 2026-09-08 + 14 days ends at 2026-09-22T23:59:59.999Z.
+ */
+const STALE = new Date("2026-09-23T00:00:00Z");
 
 const money = (amountMinor: number, currency: "EUR" | "GBP" | "PLN") => ({
   amountMinor: toMinor(amountMinor),
@@ -38,13 +41,14 @@ describe("priceEquivalents — a converted charged price (A21 clause 6 (b))", ()
     );
     expect(result).toEqual({
       asOf: "2026-09-08",
+      // Item 7's order (TASK-389): GBP, EUR, USD, PLN, the displayed EUR left out.
       amounts: [
         // 4590 × 0.8574 = 3935.466 → 3935 (buffered: 4033.85 → 4034)
         { amountMinor: 3935, currency: "GBP" },
-        // 4590 × 4.3178 = 19 818.702 → 19 819
-        { amountMinor: 19_819, currency: "PLN" },
         // 4590 × 1.1614 = 5330.826 → 5331
         { amountMinor: 5331, currency: "USD" },
+        // 4590 × 4.3178 = 19 818.702 → 19 819
+        { amountMinor: 19_819, currency: "PLN" },
       ],
     });
   });
@@ -62,8 +66,8 @@ describe("priceEquivalents — a converted charged price (A21 clause 6 (b))", ()
       // Inverse ceil(10^12 / 857 400) = 1 166 317 ppm; crosses ceil(4 317 800 × 10^6 / 857 400)
       // = 5 035 923 and ceil(1 161 400 × 10^6 / 857 400) = 1 354 561 (TASK-180's true rates).
       { amountMinor: 4654, currency: "EUR" },
-      { amountMinor: 20_093, currency: "PLN" },
       { amountMinor: 5405, currency: "USD" },
+      { amountMinor: 20_093, currency: "PLN" },
     ]);
   });
 
@@ -110,8 +114,8 @@ describe("priceEquivalents — a native charged price (A21 clause 6 (b))", () =>
       asOf: "2026-09-08",
       amounts: [
         // 231 600 / 198 574 / 268 980 ppm: the inverse and two euro crosses of the true rates.
-        { amountMinor: 4609, currency: "EUR" },
         { amountMinor: 3952, currency: "GBP" },
+        { amountMinor: 4609, currency: "EUR" },
         { amountMinor: 5353, currency: "USD" },
       ],
     });
@@ -144,7 +148,7 @@ describe("priceEquivalents — stale and fallback (A21 clause 6 (d))", () => {
     ).resolves.toBeNull();
   });
 
-  it("hides the line for a converted price evaluated past the age bound", async () => {
+  it("hides the line for a converted price evaluated past the display bound", async () => {
     await expect(
       priceEquivalents(
         {
