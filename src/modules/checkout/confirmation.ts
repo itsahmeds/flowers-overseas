@@ -29,6 +29,11 @@ import { type DraftConnection, loadDraft, withDraftConnection } from "./draft";
 
 /** One delivery of a placed purchase, as the confirmation recaps it. */
 export interface ConfirmedDelivery {
+  /**
+   * The order's id (spec 018 §5.2, TASK-340): what spec 013's states hand `getConfirmationBlock`
+   * and what the buyer's cancel resolves a posted reference to. Server-side only: no page prints it.
+   */
+  readonly orderId: string;
   readonly reference: string;
   /** The bouquet's SKU (its photo); `null` when the line has no product. */
   readonly sku: string | null;
@@ -146,6 +151,7 @@ export async function confirmationFor(
     const snapshot = order.recipient_snapshot;
     total += order.buyer_total_minor;
     deliveries.push({
+      orderId: order.id,
       reference: orderReference(order.id),
       sku: order.sku,
       productName: product?.name ?? order.sku ?? "",

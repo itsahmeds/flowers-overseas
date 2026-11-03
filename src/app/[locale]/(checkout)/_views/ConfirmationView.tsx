@@ -29,12 +29,19 @@ import {
   DemoBanner,
 } from "@/modules/ui/checkout";
 
+import type { CancelUiState } from "../checkout/done/buyer-cancel";
+
 type Placed = Extract<Confirmation, { kind: "placed" }>;
 
-/** A confirmation state's renderer (spec 013 registers `test` and `live`). */
+/**
+ * A confirmation state's renderer (spec 013 registers `test` and `live`). `cancel` is spec 018's
+ * cancel step read from the query (TASK-340): the confirm dialog or the refusal for one delivery,
+ * which the renderer hands to `CancelLine` and `CancelDialog` (`./PostPurchaseBlock.tsx`).
+ */
 export type ConfirmationRenderer = (props: {
   readonly confirmation: Placed;
   readonly locale: LocaleCode;
+  readonly cancel: CancelUiState;
 }) => Promise<ReactElement> | ReactElement;
 
 const renderers = new Map<Placed["mode"], ConfirmationRenderer>();
@@ -364,12 +371,14 @@ export async function ConfirmationGone({
 export async function ConfirmationPage({
   confirmation,
   locale,
+  cancel = null,
 }: {
   readonly confirmation: Confirmation;
   readonly locale: LocaleCode;
+  readonly cancel?: CancelUiState;
 }): Promise<ReactElement> {
   if (confirmation.kind === "gone") return <ConfirmationGone locale={locale} />;
   const render = confirmationStateFor(confirmation.mode);
   if (render === undefined) return <ConfirmationGone locale={locale} />;
-  return render({ confirmation, locale });
+  return render({ confirmation, locale, cancel });
 }

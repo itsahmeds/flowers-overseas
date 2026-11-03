@@ -1125,6 +1125,27 @@
     "page": {
       "gone": "This confirmation is no longer available.",
       "promise": "Our fresh-flower promise covers the flowers when they arrive."
+    },
+    "postPurchase": {
+      "emailSent": "A confirmation is on its way to <b>{email}</b>.",
+      "nextTitle": "What happens next",
+      "steps": {
+        "order": "We have your order and your payment",
+        "beingMade": "Being made",
+        "onItsWay": "On its way",
+        "delivered": "Delivered, with a photo"
+      },
+      "trackTitle": "Track this order",
+      "trackBody": "One link for every step. Keep it, or share it.",
+      "invoiceTitle": "Invoice",
+      "invoicePending": "We will email your invoice shortly.",
+      "invoiceIssued": "We have emailed it to you.",
+      "cancelLine": "Plans changed? <cancel>You can cancel for free</cancel> until we start preparing your order.",
+      "cancelConfirmTitle": "Cancel this order?",
+      "cancelConfirmBody": "We refund {amount} in full.",
+      "cancelConfirmYes": "Yes, cancel it",
+      "cancelConfirmNo": "Keep my order",
+      "cancelRefused": "We have started preparing your order, so it can no longer be cancelled. Message us on WhatsApp if something is wrong."
     }
   },
   "infoPages": {

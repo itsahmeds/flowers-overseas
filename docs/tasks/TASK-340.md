@@ -29,7 +29,14 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (builder C340, self-review; PR 480):
+  - **TASK-263 mounts the block.** Spec 013's `test`/`live` states are not built, so nothing on the live page renders the block yet (test and live orders still read "no longer available", unchanged). TASK-263's renderer: `getConfirmationBlock(delivery.orderId, { locale })`; `PostPurchaseBlock` inside its `.s13-conf` column after the heading and arrival line; `CancelLine` as the **last element of `<main>`** (`line` = the delivery's 1-based position, `state` = the renderer's `cancel` prop); `CancelDialog` after it; `inert` on every other part while `cancelDialogOpen(...)`. A live basket mounts one line per delivery. The unit test's fixture renderer (`tests/unit/post-purchase-block.test.tsx`) is the reference.
+  - **"Keep my order" is a GET of the page**, not the board's `<form method="dialog">`: with JavaScript off a dialog close leaves the server-rendered `inert` on the page behind it. It looks the same (`.btn ghost`, `autofocus`). The designer may update the annotation.
+  - **`inert` covers `<main>` only.** The site header and footer stay focusable behind the scrim (a non-modal `<dialog open>`, no script). TASK-343's axe and keyboard pass judges it.
+  - **Owed, not run tonight (founder 2026-11-04: no build, Playwright, Lighthouse or screenshots; only typecheck and own tests):** T-09/T-28/T-43/T-46 e2e on the real page (after TASK-263), keyboard-only and JavaScript-off cancel runs, the framework-data-payload half of AC-39, the pixel match at 1440 and 390, and `lint`, `format:check`, `i18n:check`, `codebase:map --check` (prettier was run on every touched file; the map was regenerated).
+  - **AC-46's "Being made" time is the `order.in_production` event's own time**, which spec 010's engine stamps with the database clock, not the production tick's injected `now`; the test asserts the event's time printed in Warsaw time with `CET`.
+  - **Invoice tile:** `issued` once the order's invoice row has rendered (AC-43); "or download it from your account" joins with the `account` flag in TASK-344, as does the account nudge above the line.
+  - **Copy:** 17 en keys `reviewed: false` (4 board-proposed); `.claude/state/record-approval-340.py --check` passes. de and pl are English echoes for the native queue.
 
 ## Escalations
 
@@ -43,11 +50,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 04:30 (C340): worktree `../fo-wt-340` on `task/TASK-340-confirmation-cancel` from main c7ed97d7a; row `in_progress`; draft PR next. TASK-263 (spec 013's `test`/`live` states) is still `todo`, so the block mounts through a test fixture renderer (AC-9's fallback).
+- 2026-11-04 04:40 (C340): built and pushed: `getConfirmationBlock` (`src/modules/orders/confirmation-block.ts`), `cancelOrderAsBuyer` (`buyer-cancel.ts`, outside the barrel), `PostPurchaseBlock`/`CancelLine`/`CancelDialog`, the done page's `cancelOrderAsBuyerAction` and `?cancel=review|refused&line=N`, 17 keys; unit 24 and integration 16 green (local PG16, stopped and deleted); 15 mutations red; rebased on 0e9e2ba7c; PR 480 ready. No process running.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#480](https://github.com/itsahmeds/flowers-overseas/pull/480). Ships `getConfirmationBlock(orderId, { locale })` (masked email, the four steps from the folded `buyer_projection`, tracking and calendar links, invoice `pending`/`issued` once rendered, and the separate `cancelLine` part exactly while the folded projection is `confirmed`, set P), `cancelOrderAsBuyer({ orderId, step })` over spec 013's `cancelOrder(orderId, 'buyer', 'buyer_cancel')` (review writes nothing; a double submit or lost race reads `cancelled`; `in_production` or later, or a production start that wins the lock, reads `refused`), the view parts `PostPurchaseBlock`, `CancelLine` (the one quiet line, a text-styled button, last in `<main>`; or the refusal in ink, focused) and `CancelDialog` (an open native `<dialog>` from the server), the done page's server action resolving the order from the `fo_checkout` cookie (another draft's reference: 404) and its `?cancel=review|refused&line=N` query (no id in a URL), `orderId` on spec 010's `ConfirmedDelivery`, `ShareTile`'s `url`, 17 en keys (de/pl echoes) with `.claude/state/record-approval-340.py --check` passing. Tests: unit `tests/unit/post-purchase-block.test.tsx` (24, new; mounts the block through a fixture renderer registered with `registerConfirmationState`), integration `tests/integration/post-purchase-block.test.ts` (16, new; local PG16, stopped and deleted), pins updated in `i18n-messages-schema` and `i18n-review-scope`. 15 mutations, each red. No build, server, Playwright, Lighthouse or screenshot (founder, 2026-11-04). Handed on: see Carry-forwards (TASK-263 mounts the block; TASK-343 the axe and keyboard pass).
