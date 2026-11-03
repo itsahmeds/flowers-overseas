@@ -719,6 +719,16 @@
     "reviewed": false,
     "sourceHash": "e915d3d1de848997940f748d42d8fe304fbcf6b59f907a822f77ce1e1c79ff32"
   },
+  "admin.flags.confirmBody.payouts.accrue.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "84b62314701389838ea808831276b9c32e7f08abb5785f88f05544c1c26dfd86"
+  },
+  "admin.flags.confirmBody.payouts.accrue.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51a46acb4eaa52dde4dc771731dc20d8d048bcc0905d9eb8557bffb14f473940"
+  },
   "admin.flags.confirmBody.payments.stripe.off": {
     "source": "human",
     "reviewed": false,
