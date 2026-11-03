@@ -245,14 +245,18 @@ async function order(
   return id;
 }
 
-/** The order's payment, captured now (`payment.captured_at`, the money fact). */
+/**
+ * The payment of the order's purchase, captured now (`payment.captured_at`, the money fact). Since
+ * `0026_payment_purchase` a payment pays for a purchase, at the purchase's total.
+ */
 async function capturePayment(tx: Tx, orderId: string): Promise<string> {
   const [row] = await tx<{ id: string; total: string }[]>`
-    INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
+    INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor,
                          currency_code, livemode, capture_method, amount_captured_minor, captured_at)
-    SELECT id, 'stripe', ${unique("pi_")}, 'captured', 'card', buyer_total_minor, 'GBP', true,
-           'automatic', buyer_total_minor, now()
-    FROM "order" WHERE id = ${orderId}
+    SELECT pu.id, 'stripe', ${unique("pi_")}, 'captured', 'card', pu.total_minor, 'GBP', true,
+           'automatic', pu.total_minor, now()
+    FROM "order" o JOIN purchase pu ON pu.id = o.purchase_id
+    WHERE o.id = ${orderId}
     RETURNING id`;
   return row?.id ?? "";
 }
@@ -282,10 +286,12 @@ async function refund(
   event: "order.refunded_partial" | "order.refunded_full",
 ): Promise<string> {
   const [row] = await tx<{ id: string }[]>`
-    INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
-                        requested_by, succeeded_at)
-    SELECT id, ${unique("re_")}, ${amount}, 'GBP', 'quality', 'succeeded', 'system:test', now()
-    FROM payment WHERE order_id = ${orderId}
+    INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                        currency_code, reason, status, requested_by, succeeded_at)
+    SELECT p.id, o.id, o.purchase_id, ${unique("re_")}, ${amount}, 'GBP', 'quality', 'succeeded',
+           'system:test', now()
+    FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+    WHERE o.id = ${orderId}
     RETURNING id`;
   const refundId = row?.id ?? "";
   await engine(tx, orderId, event, {
@@ -748,10 +754,12 @@ describe.skipIf(server.url === undefined)(
         await capturePayment(tx, id);
         const orphan = await tx.savepoint(async (sp) => {
           const [row] = await sp<{ id: string }[]>`
-            INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
-                                requested_by, succeeded_at)
-            SELECT id, ${unique("re_")}, 100, 'GBP', 'quality', 'succeeded', 'system:test', now()
-            FROM payment WHERE order_id = ${id} RETURNING id`;
+            INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                                currency_code, reason, status, requested_by, succeeded_at)
+            SELECT p.id, o.id, o.purchase_id, ${unique("re_")}, 100, 'GBP', 'quality', 'succeeded',
+                   'system:test', now()
+            FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+            WHERE o.id = ${id} RETURNING id`;
           const alert = alerts();
           const code = await refusalOf(
             issueCreditNote(row?.id ?? "", opts(sp, { alert })),
@@ -765,10 +773,12 @@ describe.skipIf(server.url === undefined)(
                  WHERE flag_key = 'invoice.issue' AND scope_ref = 'PL'`;
         await issueInvoice(id, opts(tx));
         const [row] = await tx<{ id: string }[]>`
-          INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
-                              requested_by, succeeded_at)
-          SELECT id, ${unique("re_")}, 1000, 'GBP', 'quality', 'succeeded', 'system:test', now()
-          FROM payment WHERE order_id = ${id} RETURNING id`;
+          INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                              currency_code, reason, status, requested_by, succeeded_at)
+          SELECT p.id, o.id, o.purchase_id, ${unique("re_")}, 1000, 'GBP', 'quality', 'succeeded',
+                 'system:test', now()
+          FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+          WHERE o.id = ${id} RETURNING id`;
         const before = await nextNumbers(tx);
         const alert = alerts();
         const split = await refusalOf(

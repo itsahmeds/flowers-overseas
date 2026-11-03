@@ -37,7 +37,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 builder F435: worktree `fo-wt-435`, branch `task/TASK-435-invoice-order-link` off main 2801e7482. `issue.ts` reads the tax point from the payment of the order's purchase, `credit.ts` reads the refund's own `order_id`; `invoices.test.ts` fixtures write payments by `purchase_id` and refunds with `order_id`/`purchase_id`: 13/13 on local PG16. Next: `invoices-pdf` through `issueInvoice`/`issueCreditNote`.
 
 ## Result
 
