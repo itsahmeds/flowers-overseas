@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 04:30 (C340): worktree `../fo-wt-340` on `task/TASK-340-confirmation-cancel` from main c7ed97d7a; row `in_progress`; draft PR next. TASK-263 (spec 013's `test`/`live` states) is still `todo`, so the block mounts through a test fixture renderer (AC-9's fallback).
 
 ## Result
 
