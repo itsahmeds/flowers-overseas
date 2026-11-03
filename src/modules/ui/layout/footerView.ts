@@ -124,6 +124,11 @@ function hrefFor(
       ? localePath(locale, location.segmentKey)
       : localePath(locale, "legal", location.leaf);
   }
+  // A transactional page's segment is the English word in every locale (spec 010 §13 Q10): spec
+  // 018's lookup, "Track an order" (TASK-339).
+  if (link.target.kind === "transactional") {
+    return localePath(locale, "home", link.target.page);
+  }
   if (link.target.kind !== "route") return undefined;
   // **Permission is not existence** (spec 004 AC-14; TASK-113). `isPublished()` says the site may
   // link at this page type; whether the page is *there in this locale* is a fact only the owning

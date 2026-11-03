@@ -106,6 +106,26 @@ export type {
   TrackingOptions,
   TrackingResolution,
 } from "./tracking";
+// Spec 018 §5.2 (TASK-339): the tracking lookup (`/{locale}/track`), its limit and T16's facts.
+export {
+  lookupTracking,
+  TRACKING_LOOKUP_LIMIT,
+  TRACKING_LOOKUP_SCOPE,
+  TrackingLookupInputSchema,
+} from "./tracking-lookup";
+export type {
+  TrackingLinkMail,
+  TrackingLookupDeps,
+  TrackingLookupInput,
+  TrackingLookupOutcome,
+} from "./tracking-lookup";
+// Spec 018 §5.2 (TASK-339): the buyer's refund lines and their one formatter.
+export {
+  BuyerRefundLineSchema,
+  buyerRefundLines,
+  refundLineValues,
+} from "./refund-lines";
+export type { BuyerRefundLine } from "./refund-lines";
 // Spec 018 §5.2 (TASK-338): the buyer's tracking view model and its photo's location.
 export {
   BUYER_STEPS,
@@ -120,8 +140,11 @@ export {
   TRACKING_VIEW_KEYS,
   trackingPhotoLocation,
   TrackingViewSchema,
+  CancelledBySchema,
+  cancelledByOf,
 } from "./tracking-view";
 export type {
+  CancelledBy,
   BuyerStep,
   PhotoState,
   ProjectedEvent,

@@ -16,18 +16,31 @@
  *
  * **No assignment, offer, decline, timeout or re-route reaches the view (AC-41).** The timeline is
  * a fold of each event's `to_status` projection: an event that keeps the status, or moves it
- * between internal statuses of one projection, changes nothing a buyer sees. No field is derived
- * from an event's type. The florist card reads the partner of the order's accepted
+ * between internal statuses of one projection, changes nothing a buyer sees. The only event type
+ * read is the cancellation's (`order.cancelled`, `order.cancelled_refunded`), for its actor class
+ * and reason and nothing else. The florist card reads the partner of the order's accepted
  * `order_assignment` row, and only once the history holds a production event (AC-5).
  *
- * `refundLines`, `refundPending` and `cancelledBy` are in the allowlist and empty here: TASK-339
- * fills them from spec 013's `succeededRefunds` and the cancelling actor.
+ * **Refunds and the cancelled state (TASK-339; AC-10, AC-42).** `refundLines` is
+ * `buyerRefundLines` (spec 013's `succeededRefunds`): one line per succeeded refund, in every
+ * state, dated by `refund.succeeded_at`. On a cancelled order, `cancelledBy` is `buyer` when the
+ * latest cancellation was the buyer's own, or an admin's with reason `buyer_cancel` (spec 020a
+ * request 3), and `us` for every other actor, whatever the cause; `refundPending` is the sum of
+ * the order's `requested` and `pending` refunds, so "We are refunding {amount}" shows until the
+ * refund succeeds and its dated line takes its place. An order that never took money
+ * (`payment_failed`, `abandoned`) has no cancellation event and no refund, so neither appears.
  *
  * Nothing here logs an order id, a token or an order's data (spec 018 §8).
  */
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
+import {
+  buyerRefundLines,
+  BuyerRefundLineSchema,
+  CurrencyCodeSchema,
+} from "./refund-lines";
+import { ActorSchema, actorClass } from "./service/actor";
 import { type EngineConnection, withExecutor } from "./service/executor";
 import { ORDER_REFERENCE_PATTERN, orderReference } from "./service/reference";
 
@@ -98,9 +111,32 @@ export type PhotoState = z.infer<typeof PhotoStateSchema>;
 const MinorAmountSchema = z
   .object({
     amountMinor: z.number().int().positive(),
-    currencyCode: z.string().regex(/^[A-Z]{3}$/u),
+    currencyCode: CurrencyCodeSchema,
   })
   .strict();
+
+export const CancelledBySchema = z.enum(["buyer", "us"]);
+export type CancelledBy = z.infer<typeof CancelledBySchema>;
+
+/** The cancellation reason that reads as the buyer's own when an admin records it (spec 020a). */
+const BUYER_CANCEL_REASON = "buyer_cancel";
+
+/**
+ * Who the buyer is told cancelled the order (spec 018 §5.2 "Cancelled"; spec 020a request 3):
+ * `buyer` for the buyer's own cancellation, or an admin's made with reason `buyer_cancel` (the
+ * buyer asked us); `us` for every other actor and reason. An actor that does not parse reads `us`.
+ */
+export function cancelledByOf(
+  actor: string,
+  reason: string | null,
+): CancelledBy {
+  const parsed = ActorSchema.safeParse(actor);
+  if (!parsed.success) return "us";
+  const actorKind = actorClass(parsed.data);
+  if (actorKind === "buyer") return "buyer";
+  if (actorKind === "admin" && reason === BUYER_CANCEL_REASON) return "buyer";
+  return "us";
+}
 
 /** The AC-4 allowlist, key for key. An added key fails the parse. */
 export const TrackingViewSchema = z
@@ -108,14 +144,12 @@ export const TrackingViewSchema = z
     reference: z.string().regex(ORDER_REFERENCE_PATTERN),
     projection: BuyerStepSchema,
     timeline: TimelineSchema,
-    /** Filled by TASK-339 (`buyerRefundLines`). */
-    refundLines: z.array(
-      MinorAmountSchema.extend({ succeededAt: z.date() }).strict(),
-    ),
-    /** Filled by TASK-339. */
+    /** One per succeeded refund, oldest first (`buyerRefundLines`). */
+    refundLines: z.array(BuyerRefundLineSchema),
+    /** A cancelled order's open refund (`requested` or `pending`), until it succeeds. */
     refundPending: MinorAmountSchema.nullable(),
-    /** Filled by TASK-339. */
-    cancelledBy: z.enum(["buyer", "us"]).nullable(),
+    /** Who the buyer is told cancelled: themselves, or us. `null` unless cancelled. */
+    cancelledBy: CancelledBySchema.nullable(),
     deliveryDate: z.iso.date(),
     destinationCity: z.string().min(1).nullable(),
     floristFirstName: z.string().min(1).nullable(),
@@ -208,6 +242,16 @@ const EventRow = z.object({
   occurred_at: z.coerce.date(),
 });
 
+const CancellationRow = z.object({
+  actor: z.string(),
+  reason: z.string().nullable(),
+});
+
+const PendingRow = z.object({
+  amount_minor: z.coerce.number().int().nonnegative(),
+  currency_code: CurrencyCodeSchema.nullable(),
+});
+
 const FactsRow = z.object({
   in_production: z.boolean(),
   photo_uploaded_at: z.coerce.date().nullable(),
@@ -282,6 +326,35 @@ export async function getTrackingView(
     const facts = FactsRow.parse(factsRaw);
 
     const projection = buyerStep(order.projection);
+    const refundLines = await buyerRefundLines(id, { executor });
+
+    let cancelledBy: CancelledBy | null = null;
+    let refundPending: z.infer<typeof MinorAmountSchema> | null = null;
+    if (projection === "cancelled") {
+      // The latest cancellation event, for its actor class and reason only.
+      const [cancellation] = await executor.execute(sql`
+        SELECT e.actor, e.payload ->> 'reason' AS reason
+        FROM order_event e
+        WHERE e.order_id = ${id}
+          AND e.type IN ('order.cancelled', 'order.cancelled_refunded')
+        ORDER BY e.seq DESC LIMIT 1`);
+      if (cancellation !== undefined) {
+        const row = CancellationRow.parse(cancellation);
+        cancelledBy = cancelledByOf(row.actor, row.reason);
+      }
+      const [pendingRaw] = await executor.execute(sql`
+        SELECT coalesce(sum(r.amount_minor), 0) AS amount_minor,
+               min(r.currency_code) AS currency_code
+        FROM refund r
+        WHERE r.order_id = ${id} AND r.status IN ('requested', 'pending')`);
+      const pending = PendingRow.parse(pendingRaw);
+      if (pending.amount_minor > 0 && pending.currency_code !== null) {
+        refundPending = {
+          amountMinor: pending.amount_minor,
+          currencyCode: pending.currency_code,
+        };
+      }
+    }
     const florist = facts.in_production;
     const photoState: PhotoState =
       facts.photo_taken_at !== null
@@ -308,9 +381,9 @@ export async function getTrackingView(
         order.projection,
         order.zone,
       ),
-      refundLines: [],
-      refundPending: null,
-      cancelledBy: null,
+      refundLines,
+      refundPending,
+      cancelledBy,
       deliveryDate: order.delivery_date,
       destinationCity: order.city,
       floristFirstName: florist ? text(facts.florist_first_name) : null,

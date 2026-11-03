@@ -195,7 +195,8 @@
       "privacy": "Privacy",
       "cookies": "Cookies",
       "withdrawal": "Withdrawal and refunds",
-      "deliveryAndPayment": "Delivery and payment"
+      "deliveryAndPayment": "Delivery and payment",
+      "trackOrder": "Track an order"
     },
     "payment": {
       "heading": "Payment",
@@ -1334,6 +1335,17 @@
         "preheader": "One photo of the bouquet as you delivered it.",
         "body": "Thank you for delivering {product} today. Please add one photo of the bouquet as you handed it over."
       }
+    },
+    "account": {
+      "trackingLink": {
+        "subject": "Your tracking link for order {reference}",
+        "preheader": "Follow your order step by step, from today to the door.",
+        "heading": "Your tracking link",
+        "body": "Here is the link to follow order {reference}, as you asked.",
+        "button": "Track your order",
+        "paste": "Or paste this link into your browser:",
+        "ignore": "If you did not ask for this link, you can ignore this email."
+      }
     }
   },
   "tracking": {
@@ -1389,6 +1401,13 @@
     "notWorking": {
       "title": "This tracking link does not work.",
       "body": "It may be old, or it may have been replaced. Enter your order reference and email, and we send you the current link."
+    },
+    "refundLine": "Refunded {amount} on {date}",
+    "refundsLabel": "Refunds",
+    "cancelled": {
+      "byBuyer": "You cancelled this order.",
+      "byUs": "We could not deliver this order.",
+      "refundPending": "We are refunding {amount} to your original payment method."
     }
   },
   "trackLookup": {
@@ -1396,7 +1415,13 @@
     "referencePlaceholder": "FO-XXXX-XXXX",
     "email": "Email you ordered with",
     "emailPlaceholder": "name@example.com",
-    "submit": "Send me the link"
+    "submit": "Send me the link",
+    "meta": {
+      "title": "Find your order"
+    },
+    "title": "Find your order",
+    "body": "Enter your order reference and the email you ordered with. We email you the tracking link.",
+    "sent": "If that order exists, we have emailed its link to the address it was placed with."
   },
   "forFlorists": {
     "status": {
