@@ -27,6 +27,7 @@ import postgres from "postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { adminT } from "../../src/modules/admin/messages.ts";
+import { formatMoney } from "../../src/modules/i18n/index.ts";
 import {
   capturingMailer,
   sendJobNotifications,
@@ -80,9 +81,17 @@ interface Catalogue {
   readonly adminId: string;
 }
 
-/** A florist in PL with mappings A 14900 PLN (base tier) and B 9900 PLN; returns its id. */
-async function florist(tx: Tx, c: Catalogue, limit = 5): Promise<string> {
-  const id = await make.partner(tx, c.countryId, "active");
+/**
+ * A florist in PL with mappings A 14900 PLN (base tier) and B 9900 PLN; returns its id. `demo`
+ * for a florist a `test` or `demo` order may be offered to (`ASSIGNMENT_MODE_MISMATCH`).
+ */
+async function florist(
+  tx: Tx,
+  c: Catalogue,
+  limit = 5,
+  status: "active" | "demo" = "active",
+): Promise<string> {
+  const id = await make.partner(tx, c.countryId, status);
   await tx`UPDATE fulfillment_partner SET prepaid_order_limit = ${limit} WHERE id = ${id}`;
   await tx`INSERT INTO partner_catalog_mapping (partner_id, product_id, tier_key, partner_payout_minor, currency_code)
            VALUES (${id}, ${c.productA}, NULL, 14900, 'PLN'), (${id}, ${c.productB}, NULL, 9900, 'PLN')`;
@@ -119,7 +128,7 @@ async function accepted(
 ): Promise<string> {
   const [row] = await tx<{ id: string }[]>`
     INSERT INTO order_assignment (order_id, partner_id, offered_at, sla_expires_at, attempt, response, responded_at)
-    VALUES (${orderId}, ${partnerId}, ${new Date(at.getTime() - 60_000)}, ${new Date(at.getTime() + 3_600_000)}, 1, 'accept', ${at})
+    VALUES (${orderId}, ${partnerId}, ${new Date(at.getTime() - 60_000).toISOString()}, ${new Date(at.getTime() + 3_600_000).toISOString()}, 1, 'accept', ${at.toISOString()})
     RETURNING id`;
   return row?.id ?? "";
 }
@@ -191,8 +200,8 @@ async function prepaid(sql: Sql | Tx, partnerId: string) {
     }[]
   >`SELECT p.id, p.period_start::text, p.period_end::text, p.status, p.closed_at IS NOT NULL AS closed,
            p.total_minor::text, p.currency_code, p.updated_at::text,
-           array_agg(l.amount_minor::text ORDER BY l.id) AS line_amounts,
-           array_agg(l.review_reason ORDER BY l.id) AS review
+           jsonb_agg(l.amount_minor::text ORDER BY l.id) AS line_amounts,
+           jsonb_agg(l.review_reason ORDER BY l.id) AS review
     FROM payout p JOIN payout_line l ON l.payout_id = p.id AND l.kind = 'order'
     WHERE p.partner_id = ${partnerId} AND p.kind = 'prepaid'
     GROUP BY p.id ORDER BY p.period_start, p.created_at`;
@@ -277,7 +286,7 @@ describe.skipIf(server.url === undefined)(
       const audits = async (id: string) =>
         scratch.sql<{ action: string; before: unknown; after: unknown }[]>`
           SELECT action, before, after FROM audit_log
-          WHERE table_name = 'fulfillment_partner' AND row_id = ${id} ORDER BY at, id`;
+          WHERE entity_table = 'fulfillment_partner' AND entity_id = ${id} ORDER BY at, id`;
 
       it.each([
         [{ cadence: "monthly" }, { cadence: "cadence" }],
@@ -467,7 +476,7 @@ describe.skipIf(server.url === undefined)(
 
     it("T-04 (AC-4): a test order and a demo order walked to the photo get no amount, no payout and no line", async () => {
       await rolledBack(scratch.sql, async (tx) => {
-        const partnerId = await florist(tx, c);
+        const partnerId = await florist(tx, c, 5, "demo");
         for (const mode of ["test", "demo"] as const) {
           const orderId = await order(tx, c, mode);
           await walkOrderTo(tx, orderId, "accepted");
@@ -655,7 +664,8 @@ describe.skipIf(server.url === undefined)(
         const [event] = await tx<{ id: string; seq: number }[]>`
           INSERT INTO order_event (order_id, seq, type, from_status, to_status, actor, payload, payload_version)
           SELECT ${orderId}, max(seq) + 1, 'assignment.accepted', ${edge?.from_status ?? ""}, 'accepted',
-                 'system:test_fixture', ${tx.json({ mode: "live", assignment_id: assignmentId })}, 1
+                 'system:test_fixture',
+                 (${JSON.stringify({ mode: "live", assignment_id: assignmentId })}::text)::jsonb, 1
           FROM order_event WHERE order_id = ${orderId}
           RETURNING id, seq`;
         const scheduled: string[] = [];
@@ -714,7 +724,8 @@ describe.skipIf(server.url === undefined)(
         const mails = capture.messages(OPS);
         expect(mails).toHaveLength(1);
         expect(mails[0]?.subject).toBe(
-          `Prepaid payout ready: ${code?.code ?? ""} · PLN 397.00`,
+          // 2 × 14900 + 9900 = 39700 PLN minor, through the one money formatter.
+          `Prepaid payout ready: ${code?.code ?? ""} · ${formatMoney({ amountMinor: 39700n, currency: "PLN" }, "en")}`,
         );
         expect(mails[0]?.text).toContain(`${ORIGIN}/admin/payouts/${payoutId}`);
         expect(mails[0]?.text).toContain("1 of 5");
