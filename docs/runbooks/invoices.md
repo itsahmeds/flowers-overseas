@@ -23,6 +23,16 @@ How a document moves:
    columns once and, for a live order, enqueues `invoice.email {invoiceId}` (spec 016's B8).
 3. The buyer receives it attached to B1 or B8; a signed `invoice` link
    (`/{locale}/account/invoices/{invoiceId}?t=…`) downloads it. Nothing ever renders on request.
+   B1 (spec 016, TASK-334) waits at most `B1_INVOICE_WAIT` (5 minutes after the payment) for the
+   invoice of every order of the purchase whose country has `invoice.issue` on: its outbox
+   delivery fails with `INVOICE_PENDING` and is retried meanwhile (an `outbox_attempt` row per
+   try, not an incident). An invoice B1 carried has a `notification_delivery_invoice` row and its
+   `invoice.email` job sends nothing; one stored after B1 went is sent alone by B8. A credit note
+   is always sent by B8. The `invoice.email` job retries (15 times, one per minute tick) with
+   `B1_NOT_SENT` while the purchase's B1 has not gone, and with `INVOICE_PDF_NOT_STORED` or
+   `INVOICE_PDF_HASH_MISMATCH` while the PDF cannot be read. A job that runs out of retries is not
+   asked again by any sweep (`docs/tasks/TASK-334.md`, carry-forwards); the buyer still has the
+   signed download, and a re-enqueued job sends at most once per document.
 
 Every SQL block below runs in the Neon SQL editor of the **production** branch, inside
 `BEGIN; … COMMIT;`, and is read twice before `COMMIT`. `:'invoice_id'` is psql's variable syntax:

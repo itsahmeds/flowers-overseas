@@ -149,7 +149,7 @@ export const PurchaseFactsSchema = z
     accountUrl: z.url(),
     /** The terms PDF once per distinct `terms_version`. */
     terms: z.array(AttachmentFactSchema).min(1),
-    /** Each order's stored invoice PDF (TASK-334's wait); none yet in this task. */
+    /** Each order's invoice PDF stored within `B1_INVOICE_WAIT` (`./invoice-wait.ts`, TASK-334). */
     invoices: z.array(AttachmentFactSchema),
     /** B1's complaint-path sentence key, while the lawyer's text is a slot: null. */
     complaintKey: z.string().nullable(),

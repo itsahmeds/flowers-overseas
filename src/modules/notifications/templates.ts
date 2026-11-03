@@ -56,6 +56,13 @@ export interface NotificationRenderInput {
   readonly whatsappCopyOf: "offer" | "offer-withdrawn" | null;
   /** The delivery's own transaction, for the facts the template shows. */
   readonly executor: OrderExecutor;
+  /** The pipeline's clock (B1's bounded wait for the invoice, TASK-334); the wall clock when absent. */
+  readonly now?: Date;
+  /**
+   * An outbox delivery's next due time if this send throws (`OutboxHandlerContext.retryDueAt`);
+   * null on its last attempt; absent for a job.
+   */
+  readonly retryDueAt?: Date | null;
 }
 
 /** A rendered message: both parts, and a subject with no name, address or phone in it. */
@@ -65,6 +72,12 @@ export interface RenderedNotification {
   readonly html: string;
   /** Files sent with it: B1's terms and invoices, B4's photo, B8's document (TASK-333). */
   readonly attachments?: readonly MailAttachment[];
+  /**
+   * B1: the invoices among `attachments` (TASK-334). Once the send is accepted, the pipeline writes
+   * one `notification_delivery_invoice` row per id on the delivery, which is how B8 knows B1
+   * carried it.
+   */
+  readonly invoiceIds?: readonly string[];
 }
 
 export type NotificationRenderer = (

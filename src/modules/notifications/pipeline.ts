@@ -129,6 +129,8 @@ export interface NotificationDeps {
   readonly siteOrigin?: () => string;
   /** Whether `notifications.email` is on (the job entry's hold). */
   readonly emailEnabled?: () => Promise<boolean>;
+  /** The clock a template reads (B1's bounded wait for the invoice, TASK-334). */
+  readonly now?: () => Date;
   readonly log?: Logger;
 }
 
@@ -145,6 +147,7 @@ interface ResolvedDeps {
   readonly opsAddress: () => string;
   readonly siteOrigin: () => string;
   readonly emailEnabled: () => Promise<boolean>;
+  readonly now: () => Date;
   readonly log: Logger;
 }
 
@@ -170,6 +173,7 @@ function resolveDeps(input: NotificationDeps): ResolvedDeps {
       deps.siteOrigin ??
       (() => process.env["NEXT_PUBLIC_SITE_URL"] ?? "http://localhost:3000"),
     emailEnabled: deps.emailEnabled ?? (() => isEnabled(NOTIFICATIONS_FLAG)),
+    now: deps.now ?? (() => new Date()),
     log: deps.log ?? defaultLogger,
   };
 }
@@ -188,6 +192,11 @@ export interface NotificationRequest {
   readonly assignmentId: string | null;
   /** B8's document (TASK-334). */
   readonly invoiceId: string | null;
+  /**
+   * An outbox delivery's next due time if it throws now (`OutboxHandlerContext.retryDueAt`), for
+   * B1's bounded wait; absent for a job.
+   */
+  readonly retryDueAt?: Date | null;
 }
 
 const OrderFactsRow = z.object({
@@ -451,7 +460,7 @@ async function claimDelivery(
 /** What one send needs of its trigger; F2 has no order, so `orderId` may be null here. */
 type SendRequest = Pick<
   NotificationRequest,
-  "trigger" | "fromStatus" | "invoiceId"
+  "trigger" | "fromStatus" | "invoiceId" | "retryDueAt"
 > & {
   readonly orderId: string | null;
   readonly jobId?: string | null;
@@ -518,6 +527,10 @@ async function sendOne(
     inboxUrl: rule.whatsappCopyOf === undefined ? null : inboxUrl,
     whatsappCopyOf: rule.whatsappCopyOf ?? null,
     executor,
+    now: deps.now(),
+    ...(request.retryDueAt === undefined
+      ? {}
+      : { retryDueAt: request.retryDueAt }),
   });
   // The template's own files (spec 016's B1, B4, B8; TASK-333), then the request's (spec 030a's
   // statement PDF, made only now that the row is `queued`).
@@ -563,11 +576,22 @@ async function sendOne(
     UPDATE notification_delivery
     SET status = 'sent', provider_message_id = ${providerRef}, status_at = now()
     WHERE id = ${delivery.id}`);
+  // B1's invoices (TASK-334): one row per invoice this send carried, so B8 sends nothing for it.
+  // Not on Resend's 409 `invalid_idempotent_request`: the accepted first send had another body,
+  // which may not have carried them, so B8 sends them rather than the buyer never getting one.
+  const carried = providerRef === null ? [] : (rendered.invoiceIds ?? []);
+  for (const invoiceId of carried) {
+    await executor.execute(sql`
+      INSERT INTO notification_delivery_invoice (notification_delivery_id, invoice_id)
+      VALUES (${delivery.id}, ${z.uuid().parse(invoiceId)})
+      ON CONFLICT DO NOTHING`);
+  }
   deps.log.info(
     {
       ...fields,
       outcome: providerRef === null ? "already_accepted" : "sent",
       provider_message_id: providerRef,
+      ...(carried.length === 0 ? {} : { invoices: carried.length }),
     },
     "notification.sent",
   );
@@ -631,6 +655,9 @@ export function notificationsOutboxHandler(
         eventId: event.eventId,
         assignmentId: null,
         invoiceId: null,
+        ...(context.retryDueAt === undefined
+          ? {}
+          : { retryDueAt: context.retryDueAt }),
       },
       deps,
     );

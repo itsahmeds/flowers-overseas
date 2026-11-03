@@ -72,6 +72,24 @@ export const OUTBOX_MAX_ATTEMPTS = 8;
 export const OUTBOX_RETRY_BASE_SECONDS = 30;
 export const OUTBOX_RETRY_CAP_SECONDS = 3_600;
 
+/**
+ * When a delivery whose attempt `attempt` (1 for the first) fails at `now` is due again: the
+ * claim's backoff, `retryBaseSeconds · 2^(attempt − 1)` capped at `OUTBOX_RETRY_CAP_SECONDS`; null
+ * when that failure makes it `dead`. Pure.
+ */
+export function outboxRetryDueAt(
+  now: Date,
+  attempt: number,
+  retryBaseSeconds: number = OUTBOX_RETRY_BASE_SECONDS,
+): Date | null {
+  if (attempt >= OUTBOX_MAX_ATTEMPTS) return null;
+  const seconds = Math.min(
+    retryBaseSeconds * 2 ** (attempt - 1),
+    OUTBOX_RETRY_CAP_SECONDS,
+  );
+  return new Date(now.getTime() + seconds * 1000);
+}
+
 /** Deliveries handled per dispatch run (one `outbox.dispatch` job). */
 export const OUTBOX_BATCH_SIZE = 25;
 
@@ -96,6 +114,13 @@ export interface OutboxHandlerContext {
   readonly target: OutboxTargetName;
   /** This delivery's attempt, 1 for the first. */
   readonly attempt: number;
+  /**
+   * When this delivery becomes due again if the handler throws now (the backoff below), or null
+   * when this attempt is the last before `dead`. Spec 016's B1 reads it to keep its bounded wait
+   * for the invoice (`INVOICE_PENDING`) from retrying past `B1_INVOICE_WAIT` (TASK-334). Absent
+   * where a caller builds the context by hand.
+   */
+  readonly retryDueAt?: Date | null;
   /** The delivery's own transaction: pass it to the engine as `{ executor }`. */
   readonly executor: OrderExecutor;
 }
@@ -406,6 +431,7 @@ async function deliverOne(
       outboxId: claimed.outbox_id,
       target: claimed.target,
       attempt,
+      retryDueAt: outboxRetryDueAt(now, attempt, retryBaseSeconds),
       executor,
     });
   } catch (error) {

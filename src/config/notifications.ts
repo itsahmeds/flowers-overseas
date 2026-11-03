@@ -51,3 +51,12 @@ export function termsPdfFor(
 
 /** B1's complaint-path sentence (a message key), or null while the lawyer has not approved one. */
 export const B1_COMPLAINT_PATH_KEY: string | null = null;
+
+/**
+ * How long B1 waits for the issued invoice PDFs of its purchase (spec 016 §5.2 "The invoice rides
+ * B1", A-founder-2026-10-14b; §14 A-founder-2026-10-22 item 5; TASK-334): 5 minutes after the
+ * purchase's first `order.captured` from `placed`, in milliseconds. Within it a pending invoice
+ * makes the B1 delivery throw `INVOICE_PENDING` and retry; after it B1 goes with the stored ones
+ * and B8 sends each later one alone.
+ */
+export const B1_INVOICE_WAIT = 5 * 60 * 1000;
