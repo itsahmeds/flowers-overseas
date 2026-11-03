@@ -29,6 +29,12 @@
  *     inside a function named `publishPost` or `publishChanges` (`messageId: "publish"`;
  *     `blog_publish_guard()` refuses a pointer to a revision without an approval).
  *
+ * Spec 030a §5.1 (TASK-365): `payout_line` has a `reviewed_at` / `reviewed_by` pair of its own,
+ * the founder's answer to an `unpriced_lines` flag (`resolveReview`), which is not copy or photo
+ * approval, has no ledger, and is guarded by `payout_line_frozen` instead. An `UPDATE` whose
+ * target is `payout_line` (`EXEMPT_UPDATE_TABLES`) is therefore not a review write; an `INSERT`
+ * naming a review column stays reported wherever it goes, and so does every other table.
+ *
  * What it cannot see (the guard can): a patch built at run time (a parameter, a spread, a call),
  * a column name assembled from pieces, and SQL text read from a file. `seed/index.ts`'s generic
  * upsert is one such writer; it writes the review columns on insert only, unreviewed, and the
@@ -44,10 +50,16 @@ export const REVIEW_COLUMNS = Object.freeze([
 ]);
 
 /**
+ * Tables whose own `reviewed_at` / `reviewed_by` are not the review columns of spec 012b, for
+ * `UPDATE` only: spec 030a's `payout_line` (the founder resolving a payout review flag).
+ */
+export const EXEMPT_UPDATE_TABLES = Object.freeze(["payout_line"]);
+
+/**
  * One guarded write: the columns (as the database and as a Drizzle patch name them), the
  * functions allowed to write them, and the message reported elsewhere.
  *
- * @typedef {{ columns: readonly string[], keys: ReadonlySet<string>, writers: ReadonlySet<string>, drizzle: string, sql: string }} GuardedWrite
+ * @typedef {{ columns: readonly string[], exemptUpdateTables?: readonly string[], keys: ReadonlySet<string>, writers: ReadonlySet<string>, drizzle: string, sql: string }} GuardedWrite
  */
 
 /** @type {readonly GuardedWrite[]} */
@@ -55,6 +67,7 @@ export const GUARDED_WRITES = Object.freeze([
   {
     // the review columns, and spec 044's freeze (an approval's own column)
     columns: [...REVIEW_COLUMNS, "frozen_at"],
+    exemptUpdateTables: EXEMPT_UPDATE_TABLES,
     keys: new Set([
       ...REVIEW_COLUMNS,
       "reviewedBy",
@@ -83,18 +96,23 @@ export const GUARDED_WRITES = Object.freeze([
  *
  * @param {string} text
  * @param {readonly string[]} columns
+ * @param {readonly string[]} [exemptUpdateTables] `UPDATE <table>` targets that are not reported
  * @returns {boolean}
  */
-export function writesColumnSql(text, columns) {
+export function writesColumnSql(text, columns, exemptUpdateTables = []) {
   const column = `(?:${[...columns].sort((a, b) => b.length - a.length).join("|")})`;
   // `col =` at the start of a SET item (after `SET`, a comma, or an opening parenthesis).
   const assigns = new RegExp(String.raw`(?:^|[\s,(.])${column}\s*=(?!=)`, "i");
   const names = new RegExp(String.raw`\b${column}\b`, "i");
   const sql = text.replace(/"/g, " ");
   for (const match of sql.matchAll(
-    /\bUPDATE\b[\s\S]*?\bSET\b([\s\S]*?)(?=\bWHERE\b|\bFROM\b|\bRETURNING\b|;|$)/gi,
+    /\bUPDATE\b([\s\S]*?)\bSET\b([\s\S]*?)(?=\bWHERE\b|\bFROM\b|\bRETURNING\b|;|$)/gi,
   )) {
-    if (assigns.test(` ${match[1] ?? ""}`)) return true;
+    const target = /^\s*(?:ONLY\s+)?(?:public\s*\.\s*)?(\w+)\s*$/i
+      .exec(match[1] ?? "")?.[1]
+      ?.toLowerCase();
+    if (target !== undefined && exemptUpdateTables.includes(target)) continue;
+    if (assigns.test(` ${match[2] ?? ""}`)) return true;
   }
   for (const match of sql.matchAll(
     /\bINSERT\s+INTO\s+[\w.]+\s*\(([^)]*)\)/gi,
@@ -248,7 +266,7 @@ const rule = {
     /** @param {import("estree").Node} node @param {string} text */
     const checkSql = (node, text) => {
       for (const guarded of GUARDED_WRITES) {
-        if (writesColumnSql(text, guarded.columns))
+        if (writesColumnSql(text, guarded.columns, guarded.exemptUpdateTables))
           report(node, guarded, "sql");
       }
     };

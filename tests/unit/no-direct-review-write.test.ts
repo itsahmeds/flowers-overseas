@@ -13,8 +13,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import rule, {
+  EXEMPT_UPDATE_TABLES,
   REVIEW_COLUMNS,
   isReviewWriteSql,
+  writesColumnSql,
 } from "../../eslint/fo/no-direct-review-write.js";
 import plugin from "../../eslint/fo/index.js";
 import { tsLanguageOptions } from "./support/ts-parser";
@@ -209,6 +211,52 @@ describe("fo/no-direct-review-write (T-14)", () => {
     );
     expect(isReviewWriteSql("SELECT reviewed FROM t")).toBe(false);
     expect(isReviewWriteSql("the reviewed flag")).toBe(false);
+  });
+
+  it("spec 030a: an UPDATE of payout_line's own review pair is not a review write; every other target and every INSERT still is (TASK-365)", () => {
+    expect(
+      writesColumnSql(
+        "UPDATE payout_line SET reviewed_at = now(), reviewed_by = $1 WHERE id = $2",
+        REVIEW_COLUMNS,
+        EXEMPT_UPDATE_TABLES,
+      ),
+    ).toBe(false);
+    expect(
+      writesColumnSql(
+        'UPDATE public."payout_line" SET reviewed_at = now() WHERE id = $1',
+        REVIEW_COLUMNS,
+        EXEMPT_UPDATE_TABLES,
+      ),
+    ).toBe(false);
+    for (const text of [
+      "UPDATE product_translation SET reviewed = true WHERE id = $1",
+      "UPDATE media_asset SET reviewed_at = now() WHERE id = $1",
+      "UPDATE payout_line_copy SET reviewed_at = now()",
+      "INSERT INTO payout_line (payout_id, reviewed_at) VALUES ($1, now())",
+      "INSERT INTO t (a) VALUES (1) ON CONFLICT (a) DO UPDATE SET reviewed = true",
+    ]) {
+      expect(
+        writesColumnSql(text, REVIEW_COLUMNS, EXEMPT_UPDATE_TABLES),
+        text,
+      ).toBe(true);
+    }
+    expect(() => {
+      ruleTester.run("no-direct-review-write", rule, {
+        valid: [
+          {
+            code: "db.execute(sql`UPDATE payout_line SET reviewed_at = now(), reviewed_by = ${u} WHERE id = ${id}`);",
+            filename: "src/modules/partners/payouts/manual.ts",
+          },
+        ],
+        invalid: [
+          {
+            code: "db.execute(sql`UPDATE product_translation SET reviewed_at = now() WHERE id = ${id}`);",
+            filename: "src/modules/partners/payouts/manual.ts",
+            errors: [{ messageId: "sql" }],
+          },
+        ],
+      });
+    }).not.toThrow();
   });
 
   it("is error on every root that can reach the database, through the real config", async () => {

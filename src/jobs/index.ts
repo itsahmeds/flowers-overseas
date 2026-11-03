@@ -19,7 +19,8 @@
  *    TASK-329's `order.no_partner_expire` (keyed by order, `short`), spec 030a's
  *    `payouts.prepaid_ready` (§5.2, TASK-363: founder email F1, keyed by payout),
  *    `payouts.close` and `payouts.watch` (§5.2, TASK-364: the hourly weekly close and the
- *    missing-line watch, enqueued by the minute tick once an hour), and spec 018's
+ *    missing-line watch, enqueued by the minute tick once an hour), and `payouts.statement_email`
+ *    (§5.2, TASK-365: keyed by payout; no handler until the shared PDF renderer lands), and spec 018's
  *    invoice jobs (§5.2, TASK-342): `invoice.render` (keyed by invoice, `exclusive`, 5 attempts),
  *    `invoice.render_sweep` (enqueued by every minute tick) and `invoice.email` (keyed by invoice,
  *    `short`; its handler is spec 016's B8, TASK-334, so until then its jobs wait);
@@ -138,6 +139,16 @@ export const PayoutsPrepaidReadyPayload = z
   .strict();
 
 /**
+ * `payouts.statement_email` (spec 030a §5.2, AC-21; TASK-365): the statement email and PDF of one
+ * sent payout, enqueued by `sendStatement`. Keyed by the payout; the send itself is once per
+ * payout by `notification_delivery`'s key. Its handler (the PDF on spec 018's renderer and the
+ * email with the attachment) lands with the shared renderer (TASK-342); until then the job waits.
+ */
+export const PayoutsStatementEmailPayload = z
+  .object({ payoutId: z.uuid() })
+  .strict();
+
+/**
  * `payouts.close` (spec 030a §5.2, AC-14; TASK-364): one run of the weekly close. Takes nothing;
  * the minute tick enqueues one run an hour under a `singletonKey`.
  */
@@ -216,6 +227,11 @@ export const REGISTERED_JOBS = {
   },
   "invoice.render_sweep": { version: 1, payload: InvoiceRenderSweepPayload },
   "invoice.email": { version: 1, payload: InvoiceJobPayload, policy: "short" },
+  "payouts.statement_email": {
+    version: 1,
+    payload: PayoutsStatementEmailPayload,
+    policy: "short",
+  },
   "payouts.close": { version: 1, payload: PayoutsClosePayload },
   "payouts.watch": { version: 1, payload: PayoutsWatchPayload },
 } as const satisfies Record<string, RegisteredJob>;
