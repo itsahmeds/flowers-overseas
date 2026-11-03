@@ -28,7 +28,12 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the implementer (2026-11-04):** spec 041 Appendix A still lists `infoPages.company.notRegistered`
+  with the Estonian text, and the about boards (`docs/design/wireframes/about-*.dc.html`) and the
+  occasion-hub board still show the old key and the em-dash `dateUnknown`; amend and redraw when next
+  opened (spec writer, designer).
+- **From the implementer (2026-11-04):** `pnpm i18n:check` fails on main (and here) for two unused keys
+  outside this task, `nav.category.ourSelection` and `nav.send`.
 
 ## Escalations
 
@@ -42,11 +47,21 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04: texts rewritten (key renamed to `infoPages.company.detailsToFollow`), payout period in
+  words via `formatRangeEnds` + `admin.payouts.period`, tests added, record script written; PR 485.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 485](https://github.com/itsahmeds/flowers-overseas/pull/485). The company line is now
+`infoPages.company.detailsToFollow`: "Flowers Overseas LLC is registered in Wyoming, USA. We will
+publish its full company details on this page before our first order." (`company.ts` stays
+`registered: false`). `occasionHub.dateUnknown`: "Omitted: we cannot compute this country's date
+yet". The admin payout period reads "19 to 25 Oct 2026" through `formatRangeEnds`
+(`src/modules/i18n/format.ts`) and `admin.payouts.period` ("{start} to {end}"). de/pl remain
+unreviewed drafts. Tests: unit `i18n-format` +1, `payouts-admin-pages` +3, `info-page-render` +1
+(and its order needle), `catalog-hub-pages` and `info-pages` updated. The en texts are recorded
+only by `.claude/state/record-approval-437.py` (orchestrator; `--check` passes). en 0.5 % unreviewed,
+indexable. No build, browser or CI run (founder's rules 2026-11-04).
