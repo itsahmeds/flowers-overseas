@@ -525,7 +525,7 @@ describe.skipIf(server.url === undefined)(
           const mails = capture.messages(OPS);
           expect(mails).toHaveLength(1);
           expect(mails[0]?.subject).toBe(
-            `No payout line for ${orderReference(orderId)}`,
+            `No payout line: ${orderReference(orderId)}`,
           );
           expect(mails[0]?.text).toContain(`${ORIGIN}/admin/orders/${orderId}`);
           expect(mails[0]?.text).not.toContain("Test Recipient");
@@ -771,10 +771,59 @@ describe.skipIf(server.url === undefined)(
 
           const mails = capture.messages(OPS);
           expect(mails.map((m) => m.subject)).toEqual([
-            "Weekly payouts ready for review: 1",
+            "1 payout ready for review",
           ]);
+          // The ready group holds the one closed payout; nothing needs a look first.
+          expect(mails[0]?.text).toContain("Ready to send: 1\n");
+          expect(mails[0]?.text).not.toContain("Need a look first");
           expect(mails[0]?.text).toContain(`${ORIGIN}/admin/payouts`);
         });
+      });
+    });
+
+    it("T-14 (AC-14) · F2's counts: a flagged line and an open adjustment dated before the period's end need a look first", async () => {
+      const capture = capturingMailer("Flowers Overseas <orders@example.test>");
+      capture.clear();
+      await rolledBack(scratch.sql, async (tx) => {
+        // Florist 1: a line with an add-on (review flag). Florist 2: a clean line, and an open
+        // adjustment created at 23:59 on Sunday the 25th, Warsaw time (CET).
+        const one = await florist(tx, c);
+        const flagged = await order(tx, c, { extra: "addon" });
+        await acceptAndFix(tx, flagged, one);
+        await accrue(tx, flagged, AC8_INSTANT);
+        const two = await florist(tx, c);
+        const clean = await order(tx, c, { extra: null });
+        await acceptAndFix(tx, clean, two);
+        await accrue(tx, clean, AC8_INSTANT);
+        const withdrawn = await order(tx, c, { extra: null });
+        const assignment = await accepted(tx, withdrawn, two);
+        await tx`INSERT INTO payout_adjustment (order_id, partner_id, assignment_id, kind, created_at)
+                 VALUES (${withdrawn}, ${two}, ${assignment}, 'withdrawn_by_buyer_after_acceptance',
+                         '2026-10-25T22:59:00Z')`;
+        await asSystem(tx, () =>
+          closeDuePayouts(new Date("2026-10-25T23:30:00Z"), {
+            executor: runnerOf(tx),
+            sendReady: (executor, input) =>
+              sendOpsJobNotification(
+                executor,
+                { job: "payouts.close", jobId: input.closedAt.toISOString() },
+                {
+                  mailer: () => capture,
+                  provider: () => "capture",
+                  opsAddress: () => OPS,
+                  siteOrigin: () => ORIGIN,
+                  emailEnabled: () => Promise.resolve(true),
+                  log: quiet,
+                },
+              ).then(() => undefined),
+            log: quiet,
+          }),
+        );
+        const [mail] = capture.messages(OPS);
+        expect(mail?.subject).toBe("2 payouts ready for review");
+        expect(mail?.text).toContain(
+          "Ready to send: 2\nNeed a look first: 2 (a line to review, an open adjustment)\n",
+        );
       });
     });
 

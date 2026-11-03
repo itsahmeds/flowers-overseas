@@ -76,6 +76,7 @@ import {
   heading,
   note,
   numeric,
+  paragraph,
   pasteBlock,
 } from "./layout";
 
@@ -636,13 +637,24 @@ export async function loadPrepaidPayoutFacts(
 /* F2                                                                          */
 /* -------------------------------------------------------------------------- */
 
-/** What F2 prints: how many weekly payouts one close run closed. Nothing about a person. */
+/**
+ * What F2 prints (artboard `email-founder-*`, "F2"): how many weekly payouts one close run closed,
+ * how many closed drafts are ready to send now, and how many of those need a look first and why
+ * (an unresolved review flag, an open adjustment of the florist dated on or before the period's
+ * end). Counts only, nothing about a person.
+ */
 export const PayoutsReadyFactsSchema = z
-  .object({ count: z.number().int().positive() })
+  .object({
+    closed: z.number().int().positive(),
+    readyToSend: z.number().int().min(0),
+    needLook: z.number().int().min(0),
+    review: z.boolean(),
+    adjustment: z.boolean(),
+  })
   .strict();
 export type PayoutsReadyFacts = z.infer<typeof PayoutsReadyFactsSchema>;
 
-/** F2 from its facts (spec 030a §5.2): the count and the payouts list link. */
+/** F2 from its facts (spec 030a §5.2, AC-14). */
 export function renderPayoutsReady(
   input: PayoutsReadyFacts,
   copy: OpsCopy,
@@ -654,53 +666,132 @@ export function renderPayoutsReady(
     throw new Error("EMAIL_FACTS_MISSING: F2 has no payouts link");
   }
   const link = new URL(copy.payoutsHref(), siteOrigin).toString();
-  const values = { count: String(ready.count) };
-  const subject = t("emails.ops.payouts.weeklyReady.subject", values);
-  const title = t("emails.ops.payouts.weeklyReady.heading", values);
-  const open = t("emails.ops.payouts.weeklyReady.open");
-  const what = t("emails.ops.payouts.weeklyReady.note");
+  const subject = t("emails.ops.payouts.ready.subject", {
+    count: String(ready.closed),
+  });
+  const title = t("emails.ops.payouts.ready.heading");
+  const lead = t("emails.ops.payouts.ready.lead", {
+    count: String(ready.closed),
+  });
+  const open = t("emails.ops.payouts.ready.open");
+  const needKey =
+    ready.review && ready.adjustment
+      ? "needLookBoth"
+      : ready.review
+        ? "needLookReview"
+        : "needLookAdjustment";
+  const rows = [
+    {
+      label: t("emails.ops.payouts.ready.readyToSend"),
+      text: String(ready.readyToSend),
+    },
+    ...(ready.needLook > 0
+      ? [
+          {
+            label: t("emails.ops.payouts.ready.needLook"),
+            text: t(`emails.ops.payouts.ready.${needKey}`, {
+              count: String(ready.needLook),
+            }),
+          },
+        ]
+      : []),
+  ];
   const html = emailDocument({
     locale: "en",
     subject,
-    preheader: t("emails.ops.payouts.weeklyReady.preheader", values),
+    preheader: t("emails.ops.payouts.ready.preheader"),
     frame: opsFrame(copy),
-    blocks: [heading(title), button(open, link), note(what)],
+    blocks: [
+      heading(title),
+      paragraph("body", lead),
+      facts(rows.map((row) => ({ label: row.label, value: row.text }))),
+      button(open, link),
+    ],
   });
-  const textPart = [title, `${open}:\n${link}`, what, opsFooterText(copy)].join(
-    "\n\n",
-  );
+  const textPart = [
+    title,
+    lead,
+    rows.map((row) => `${row.label}: ${row.text}`).join("\n"),
+    `${open}:\n${link}`,
+    opsFooterText(copy),
+  ].join("\n\n");
   return { subject, html, text: `${textPart}\n` };
 }
 
-const ClosedCountRow = z.object({ n: z.coerce.number().int() });
+const ReadyCountsRow = z.object({
+  closed: z.coerce.number().int(),
+  ready_to_send: z.coerce.number().int(),
+  need_review: z.coerce.number().int(),
+  need_adjustment: z.coerce.number().int(),
+  need_look: z.coerce.number().int(),
+});
 
-/** F2's facts: the weekly payouts closed at the run's instant (its job id). */
+/**
+ * F2's facts at send time: the weekly payouts closed at the run's instant (its job id), and the
+ * "ready to send" group (closed drafts of every kind) with those a statement would refuse today
+ * (`PAYOUT_REVIEW_OPEN`; `PAYOUT_ADJUSTMENT_OPEN` for a weekly payout, the adjustment dated on or
+ * before the end of its `period_end` in the florist's zone).
+ */
 export async function loadPayoutsReadyFacts(
   executor: OrderExecutor,
   closedAt: string,
 ): Promise<PayoutsReadyFacts> {
   const at = z.iso.datetime().parse(closedAt);
   const [row] = await executor.execute(sql`
-    SELECT count(*) AS n FROM payout
-    WHERE kind = 'weekly' AND closed_at = ${at}::timestamptz`);
-  const { n } = ClosedCountRow.parse(row);
-  if (n < 1) {
+    WITH ready AS (
+      SELECT p.id,
+             EXISTS (SELECT 1 FROM payout_line l
+                     WHERE l.payout_id = p.id AND l.review_reason IS NOT NULL
+                       AND l.reviewed_at IS NULL) AS review,
+             (p.kind = 'weekly' AND EXISTS (
+                SELECT 1 FROM payout_adjustment a
+                WHERE a.partner_id = p.partner_id AND a.status = 'open'
+                  AND a.created_at < ((p.period_end + 1)::timestamp AT TIME ZONE c.iana_zone)))
+               AS adjustment
+      FROM payout p
+      JOIN fulfillment_partner fp ON fp.id = p.partner_id
+      JOIN country c ON c.id = fp.country_id
+      WHERE p.status = 'draft' AND p.closed_at IS NOT NULL
+    )
+    SELECT (SELECT count(*) FROM payout
+             WHERE kind = 'weekly' AND closed_at = ${at}::timestamptz) AS closed,
+           (SELECT count(*) FROM ready) AS ready_to_send,
+           (SELECT count(*) FROM ready WHERE review) AS need_review,
+           (SELECT count(*) FROM ready WHERE adjustment) AS need_adjustment,
+           (SELECT count(*) FROM ready WHERE review OR adjustment) AS need_look`);
+  const counts = ReadyCountsRow.parse(row);
+  if (counts.closed < 1) {
     throw new Error("EMAIL_FACTS_MISSING: F2's run closed no payout");
   }
-  return { count: n };
+  return {
+    closed: counts.closed,
+    readyToSend: counts.ready_to_send,
+    needLook: counts.need_look,
+    review: counts.need_review > 0,
+    adjustment: counts.need_adjustment > 0,
+  };
 }
 
 /* -------------------------------------------------------------------------- */
 /* F3                                                                          */
 /* -------------------------------------------------------------------------- */
 
-/** What F3 prints: the order reference and its admin link. Nothing about a person. */
+/**
+ * What F3 prints (artboard `email-founder-*`, "F3"): the order reference, the photo's time in the
+ * florist's zone, the florist code and the admin link. No buyer or recipient data.
+ */
 export const LineMissingFactsSchema = z
-  .object({ orderId: z.uuid(), minutes: z.number().int().positive() })
+  .object({
+    orderId: z.uuid(),
+    minutes: z.number().int().positive(),
+    photoAt: Instant,
+    timeZone: z.string().min(3),
+    partnerCode: z.string().min(1).nullable(),
+  })
   .strict();
 export type LineMissingFacts = z.infer<typeof LineMissingFactsSchema>;
 
-/** F3 from its facts (spec 030a §5.2, AC-11): the order reference and the admin order link. */
+/** F3 from its facts (spec 030a §5.2, AC-11). */
 export function renderLineMissing(
   input: LineMissingFacts,
   copy: OpsCopy,
@@ -710,22 +801,102 @@ export function renderLineMissing(
   const missing = LineMissingFactsSchema.parse(input);
   const reference = orderReference(missing.orderId);
   const link = new URL(copy.orderHref(missing.orderId), siteOrigin).toString();
-  const values = { reference, minutes: String(missing.minutes) };
-  const subject = t("emails.ops.payouts.lineMissing.subject", values);
-  const title = t("emails.ops.payouts.lineMissing.heading", values);
+  const minutes = { minutes: String(missing.minutes) };
+  const subject = t("emails.ops.payouts.lineMissing.subject", { reference });
+  const band = t("emails.ops.payouts.lineMissing.band", minutes);
+  const title = t("emails.ops.payouts.lineMissing.heading");
   const open = t("emails.ops.payouts.lineMissing.open");
   const what = t("emails.ops.payouts.lineMissing.note");
+  const photoValue = t("emails.ops.payouts.lineMissing.photoReceivedValue", {
+    time: formatDate(missing.photoAt, "en", "dayMonthTime", missing.timeZone),
+    zone: missing.timeZone,
+  });
+  const rows = [
+    {
+      label: t("emails.ops.payouts.lineMissing.order"),
+      value: numeric(reference),
+      text: reference,
+    },
+    {
+      label: t("emails.ops.payouts.lineMissing.photoReceived"),
+      value: numeric(photoValue),
+      text: photoValue,
+    },
+    ...(missing.partnerCode === null
+      ? []
+      : [
+          {
+            label: t("emails.ops.payouts.lineMissing.florist"),
+            value: code(missing.partnerCode),
+            text: missing.partnerCode,
+          },
+        ]),
+  ];
   const html = emailDocument({
     locale: "en",
     subject,
-    preheader: t("emails.ops.payouts.lineMissing.preheader", values),
+    preheader: t("emails.ops.payouts.lineMissing.preheader", minutes),
     frame: opsFrame(copy),
-    blocks: [heading(title), button(open, link), note(what)],
+    band: text(band),
+    blocks: [
+      heading(title),
+      facts(rows.map(({ label, value }) => ({ label, value }))),
+      button(open, link),
+      note(what),
+    ],
   });
-  const textPart = [title, `${open}:\n${link}`, what, opsFooterText(copy)].join(
-    "\n\n",
-  );
+  const textPart = [
+    title,
+    band,
+    rows.map((row) => `${row.label}: ${row.text}`).join("\n"),
+    `${open}:\n${link}`,
+    what,
+    opsFooterText(copy),
+  ].join("\n\n");
   return { subject, html, text: `${textPart}\n` };
+}
+
+const LineMissingRow = z.object({
+  photo_at: z.union([z.date(), z.string()]),
+  time_zone: z.string(),
+  partner_code: z.string().nullable(),
+});
+
+/**
+ * F3's facts at send time: the order's photo event, the zone of the florist's country (else the
+ * destination's) and the code of the florist of its standing acceptance.
+ */
+export async function loadLineMissingFacts(
+  executor: OrderExecutor,
+  orderId: string,
+  minutes: number,
+): Promise<LineMissingFacts> {
+  const [found] = await executor.execute(sql`
+    SELECT (SELECT e.occurred_at FROM order_event e
+             WHERE e.order_id = o.id AND e.type = 'order.photo_uploaded'
+             ORDER BY e.seq DESC LIMIT 1) AS photo_at,
+           coalesce(pc.iana_zone, c.iana_zone) AS time_zone,
+           fp.code AS partner_code
+    FROM "order" o
+    JOIN country c ON c.id = o.destination_country_id
+    LEFT JOIN LATERAL (
+      SELECT a.partner_id FROM order_assignment a
+      WHERE a.order_id = o.id AND a.response = 'accept' AND a.withdrawn_at IS NULL
+      ORDER BY a.attempt DESC LIMIT 1) a ON true
+    LEFT JOIN fulfillment_partner fp ON fp.id = a.partner_id
+    LEFT JOIN country pc ON pc.id = fp.country_id
+    WHERE o.id = ${orderId}`);
+  if (found === undefined) {
+    throw new Error("EMAIL_FACTS_MISSING: the order does not exist");
+  }
+  const row = LineMissingRow.parse(found);
+  return LineMissingFactsSchema.parse({
+    orderId,
+    minutes,
+    photoAt: row.photo_at,
+    timeZone: row.time_zone,
+    partnerCode: row.partner_code,
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -759,7 +930,7 @@ export async function renderLineMissingNotification(
     throw new Error("EMAIL_FACTS_MISSING: F3 has no order");
   }
   return renderLineMissing(
-    { orderId: input.orderId, minutes },
+    await loadLineMissingFacts(input.executor, input.orderId, minutes),
     copy,
     siteOrigin,
   );

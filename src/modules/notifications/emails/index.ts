@@ -77,6 +77,7 @@ export {
   type PayoutsReadyFacts,
   PayoutsReadyFactsSchema,
   type WhatsappCopyContext,
+  loadLineMissingFacts,
   loadNoPartnerAlertFacts,
   loadPayoutsReadyFacts,
   loadPrepaidPayoutFacts,
