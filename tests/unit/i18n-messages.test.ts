@@ -95,6 +95,9 @@ describe("the shell catalogue", () => {
       // `infoPages` is spec 041 §7's namespace (TASK-182): the trust pages' not-open line, the
       // help page's contact block and the about page's company line. Server Components only.
       "infoPages",
+      // `invoice` is spec 018 §7's namespace (TASK-342): the invoice and credit-note PDF's labels,
+      // read by the renderer in the `invoice.render` job only, so in no `ROUTE_NAMESPACES` entry.
+      "invoice",
       // `languagePopup` is the language popup's seven strings (spec 003 §14 A16, TASK-119), which
       // replaced the suggestion strip's `banner`: resolved on the server by `languagePopupCopy()`
       // and handed to the island as props, so it is in no `ROUTE_NAMESPACES` entry.

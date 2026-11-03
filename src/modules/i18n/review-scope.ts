@@ -246,6 +246,18 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     surface: "email",
     paths: ["src/modules/partners/application/alert.ts"],
   },
+  // Spec 018 §7 (TASK-342): the invoice and credit-note PDF's labels. A document, not a page: it
+  // is rendered by the `invoice.render` job (the minute tick, already under `PAYMENTS_PATHS`) and
+  // reaches the buyer as an email attachment or through the signed download, a `noindex`,
+  // `no-store` route handler that serves the stored bytes and renders nothing.
+  {
+    match: "invoice",
+    surface: "email",
+    paths: [
+      "src/modules/invoices/pdf/**",
+      "src/app/[locale]/(account)/account/invoices/**",
+    ],
+  },
   // Spec 011 §14 pointer to A17 (TASK-210): the application and its sent page are `noindex,follow`
   // in every combination and have route files of their own, so their keys reach no indexable page.
   // The landing's `forFlorists.status.*` and the walkthrough's `floristInbox.*` labels stay
