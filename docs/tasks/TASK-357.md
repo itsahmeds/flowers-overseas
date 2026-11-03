@@ -43,6 +43,7 @@ here.
 
 - 2026-10-24: built the dependency-free layer in PR 398 (stacked on PR 307): the four permissions (T-01), `ORDER_ACTION_AVAILABILITY` and `availableActions` over the 26 statuses, the action schemas and result codes, the AC-8 source scan (T-09); 20 mutations each went red. Next, once TASK-258/261/327 merge: the migration `0027_admin_order_actions` + down, `runOrderAction`, `orderActionHistory`, request 1.
 - 2026-10-31: finisher L: the 10-25 e2e reds were the Sunday-chip tests (not this PR's; same two failed on PR 326 that hour). Re-run on 60e3ed40: all green but lighthouse, home LCP only (2003 to 2055 ms on /en-gb and /pl; rerun 2016 /en-gb, 2032 /de), pages this diff does not touch. Rebased onto main 790ea4d4 and re-fired.
+- 2026-11-04, builder X (TASK-358, PR 463): audited against main c216700cc. Satisfied on main via PR 398 and TASK-359's PR 448: AC-1, AC-4 to AC-8, AC-32 (file:line in TASK-358's Progress). PR 463 adds AC-2's T-03 source scan (`tests/unit/admin-order-action-guard-scan.test.ts`) over the first `src/app/admin/(signed-in)/orders` actions, and extends T-06/T-07 to reroute and cancel. Still missing: `orderActionHistory` (TASK-361 needs it for the history list), and AC-1's T-02 integration (each role against each action, 403 and zero rows) beyond the injected-guard cases.
 
 ## Result
 

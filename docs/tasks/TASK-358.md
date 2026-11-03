@@ -24,13 +24,16 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **To TASK-361 (2026-11-04, PR 463):** the Actions card renders reroute and cancel only. Still TASK-361's: the refund controls and dialog (`adminOrderRefund` exists; its "Not available" reasons), the resend list, the refunds list and the action history (`orderActionHistory` is not on main), the mobile sticky "Actions" bar and sheet (the card sits above the summary, first on a phone), `MoneyInput`, the components sheet entries for the three new islands, axe and keyboard (AC-30), visual baselines (T-35), and the full 26-status render fixture (AC-3). The PARTNER_NOT_ELIGIBLE line reads "That florist" (the URL carries codes only, and the refused florist has left the list), and the reroute done line names the florist by code.
+- **To TASK-362 (2026-11-04):** the cancel dialog already quotes "You cancelled this order" for `buyer_cancel` and "We could not deliver this order" otherwise (§13 Q1); the buyer surfaces still choose by actor class until request 3 lands.
+- **Spec 020a §5.2 "Where things live" (2026-11-04):** `adminReroute` lives in `src/modules/admin/order-actions/reroute.ts` (as TASK-359 put `adminOrderRefund` there), not in `orders/routing`, so `orders` never imports `admin`; payments' own `adminRefund`/`adminCancel` (TASK-261) remain and are unused by the panel.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: needs `manualReroute`, `eligibleCandidates`, `rankCandidates`, `graceEnd` (TASK-327, TASK-329) and `cancelOrder` (TASK-258, `blocked` on the founder's Stripe keys); none exists on any branch. Not started. `open`.
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: needs `manualReroute`, `eligibleCandidates`, `rankCandidates`, `graceEnd` (TASK-327, TASK-329) and `cancelOrder` (TASK-258, `blocked` on the founder's Stripe keys); none exists on any branch. Not started. Answered 2026-11-04: all are on main (PRs 448, 459); `cancelOrder` runs on the fake provider's path, no Stripe key needed.
+- 2026-11-04, builder X to the orchestrator: `pnpm i18n:check`'s import rule (spec 003 A17 clause 2) counts every `src/app/` file as an indexable root, so the admin cancel action reaching `src/modules/payments` tripped entry 23 (`payments.error.*`). TASK-359's brief asked for "the scope entry's answer (admin pages are noindex)". Decided in PR 463, please confirm: `NON_INDEXABLE_APP_DIRECTORIES = ["src/app/admin/"]` in `scripts/i18n-check-scope.ts` (admin is noindex five ways and reads only its own catalogue; shared files stay roots), tested in `tests/unit/i18n-scope-admin-roots.test.ts`. If spec 003 needs an amendment line for it, that is the spec writer's. `open` (for confirmation).
 
 ## Progress
 
@@ -39,10 +42,11 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04, builder X: TASK-357's ACs on main c216700cc. **Satisfied:** AC-1 (`src/modules/admin/permissions.ts:25-28,48-51`, no `orders.transition`; T-01 `tests/unit/admin-permissions.test.ts:67`); AC-4 (`src/modules/admin/order-actions/run.ts:248`; T-05 `tests/integration/admin-order-refunds.test.ts:414`); AC-5 (`run.ts:234`, lock at `run.ts:229`; T-06 refunds `admin-order-refunds.test.ts:437`); AC-6 (`run.ts:255` + 0031's audit trigger; T-07 `:470`); AC-7 (`db/migrations/0031_admin_order_actions.sql:89-101`; T-08 `:379`); AC-8 (T-09 `tests/unit/admin-order-action-scan.test.ts:45`); AC-32 (0031 + down in the round trip, `tests/integration/migrations-round-trip.test.ts:49`). **Not on main:** `orderActionHistory` (needed by TASK-361's history list, not by 358); AC-2's T-03 scan of `src/app/admin/orders` actions (none existed; this PR adds the first two and their scan); request 1's edit of payments' own `adminRefund`/`adminCancel` (TASK-359 built `adminOrderRefund` in admin instead; this PR does the same for cancel). The old worktree `fo-wt-357` holds only PR 398's merged commits: nothing reused.
+- 2026-11-04, builder X: built on main's `runOrderAction` (0031), `manualReroute` and `cancelOrder` (PR 459); no migration needed (none taken, 0036 free). Backend: `rerouteCandidates` + `noPartnerGrace` (`src/modules/orders/routing/reroute-candidates.ts`), `adminOrderReroute` (`src/modules/admin/order-actions/reroute.ts`, `manualReroute` injected by the app action because `orders/routing/jobs` is outside the orders barrel), `adminOrderCancel` (`.../cancel.ts`, imported by path like refund), `graceEndDisplay` (`.../grace.ts`), code `ROUTING_DEADLINE_PASSED` passed through. UI: the Actions card on `/admin/orders/[id]` (grace line, Reroute and Cancel dialogs, refusal re-opens its dialog, done line), islands `AdminActionDialog`, `AdminCancelForm`, `AdminPendingSubmit`. Tests: integration 17 (`tests/integration/admin-order-reroute-cancel.test.ts`), unit 4 + 10 + 4 + 3 new files; mutations in the PR's self-review.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 463 (`feat(admin): reroute and cancel from the order page (TASK-358)`): AC-9 to AC-15 with spec 020a's reroute and cancel through `runOrderAction`, and the Actions card on `/admin/orders/[id]` for those two controls, matching `admin-order-reroute-*` and `admin-order-cancel-*`. Tests: integration 17 on PG16 (T-06, T-07 for reroute and cancel, T-10, T-11, T-12 ×2, T-14 ×5, T-15 ×2, T-16, T-05, the deadline and guard case, the schema case); unit 21 new (T-13 ×4, panel render ×10, T-03 guard scan ×4, scope roots ×3) plus the updated page, scan and url-pii pins. No migration. Handed on: see Carry-forwards.
