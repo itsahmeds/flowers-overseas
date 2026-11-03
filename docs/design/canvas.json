@@ -282,7 +282,7 @@
     },
     {
       "file": "wireframes/confirmation-desktop.dc.html",
-      "title": "Order confirmation · held, paid, not completed, cancelled (013) with the post-purchase block (018), demo · desktop",
+      "title": "Order confirmation · paid, not completed, cancelled (013) with the post-purchase block and its quiet cancel line (018), demo · desktop",
       "x": 0,
       "y": 345979,
       "w": 1440,
@@ -290,7 +290,7 @@
     },
     {
       "file": "wireframes/confirmation-mobile.dc.html",
-      "title": "Order confirmation · held, paid, not completed, cancelled (013) with the post-purchase block (018), demo · mobile",
+      "title": "Order confirmation · paid, not completed, cancelled (013) with the post-purchase block and its quiet cancel line (018), demo · mobile",
       "x": 1520,
       "y": 345979,
       "w": 390,
