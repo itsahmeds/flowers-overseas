@@ -268,20 +268,39 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         paths,
       })),
       { match: "confirmation", surface: "orderConfirmation", paths },
-      // Spec 018 §7 (TASK-338): the tracking routes alone read the tracking copy.
-      ...["tracking", "trackLookup"].map((match) => ({
-        match,
+      // Spec 018 §7 (TASK-338): the tracking routes read the tracking copy; TASK-333's buyer
+      // emails print its labels, refund line, photo alt text and eyebrow verbatim.
+      {
+        match: "tracking",
+        surface: "orderTracking",
+        paths: [
+          "src/app/[locale]/(track)/**",
+          "src/modules/notifications/emails/**",
+        ],
+      },
+      {
+        match: "trackLookup",
         surface: "orderTracking",
         paths: ["src/app/[locale]/(track)/**"],
-      })),
-      // Spec 013 §7 (TASK-255): the payments module names the decline keys.
+      },
+      // Spec 013 §7 (TASK-255): the payments module names the decline keys; B1's preheader is
+      // the confirmation's line (TASK-333), and B1 prints the pay step's cancellation sentence.
       ...(
         [
-          ["payments.error.*", "checkout"],
-          ["payments.step.*", "checkout"],
-          ["payments.confirmation.*", "orderConfirmation"],
+          ["payments.error.*", "checkout", []],
+          ["payments.step.*", "checkout", []],
+          [
+            "payments.confirmation.*",
+            "orderConfirmation",
+            ["src/modules/notifications/emails/**"],
+          ],
+          [
+            "checkout.legal.*",
+            "checkout",
+            ["src/modules/notifications/emails/**"],
+          ],
         ] as const
-      ).map(([match, surface]) => ({
+      ).map(([match, surface, email]) => ({
         match,
         surface,
         paths: [
@@ -290,6 +309,7 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
           "src/app/api/webhooks/**",
           "src/app/api/internal/payments/**",
           "src/app/api/internal/jobs/**",
+          ...email,
         ],
       })),
       // Spec 011 §7 (TASK-212): the florist surface under `FLORIST_BASE_PATH` and its email.
@@ -309,11 +329,13 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         ],
       })),
       // TASK-332, spec 016 §5.3: the email layout, the florist emails and the WhatsApp copy.
-      ...["emails.layout.*", "emails.florist.*"].map((match) => ({
-        match,
-        surface: "email",
-        paths: ["src/modules/notifications/emails/**"],
-      })),
+      ...["emails.layout.*", "emails.florist.*", "emails.buyer.*"].map(
+        (match) => ({
+          match,
+          surface: "email",
+          paths: ["src/modules/notifications/emails/**"],
+        }),
+      ),
       // TASK-339: T16, the tracking lookup's answer, rendered by the email module and sent from
       // the lookup's seams under `(track)`.
       {

@@ -174,6 +174,67 @@ describe("resendMailer idempotency (spec 016 AC-19)", () => {
   });
 });
 
+describe("resendMailer attachments (spec 016 §5.2 B1, B4; TASK-333)", () => {
+  it("sends each file in Resend's documented fields: filename, content or path, content_type, content_id", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    await resendMailer(config, fetchImpl).send({
+      ...message,
+      tag: "order_buyer",
+      attachments: [
+        {
+          filename: "delivery-FO-7K2M-9QXA.jpg",
+          content: "/9j/4AAQ",
+          contentType: "image/jpeg",
+          contentId: "delivery-photo",
+        },
+        {
+          filename: "terms-2026-10.pdf",
+          path: "https://media.example.test/legal/terms-2026-10.pdf",
+          contentType: "application/pdf",
+        },
+      ],
+    });
+    const [, init] = fetchImpl.mock.calls[0] ?? [];
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect(body["attachments"]).toEqual([
+      {
+        filename: "delivery-FO-7K2M-9QXA.jpg",
+        content: "/9j/4AAQ",
+        content_type: "image/jpeg",
+        content_id: "delivery-photo",
+      },
+      {
+        filename: "terms-2026-10.pdf",
+        path: "https://media.example.test/legal/terms-2026-10.pdf",
+        content_type: "application/pdf",
+      },
+    ]);
+  });
+
+  it("refuses a file with both or neither of content and path, an http URL, or a path in its name, before any request", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    for (const file of [
+      { filename: "a.pdf" },
+      {
+        filename: "a.pdf",
+        content: "JVBE",
+        path: "https://example.test/a.pdf",
+      },
+      { filename: "a.pdf", path: "http://example.test/a.pdf" },
+      { filename: "../a.pdf", content: "JVBE" },
+      { filename: "a.pdf", content: "not base64!" },
+    ]) {
+      await expect(
+        resendMailer(config, fetchImpl).send({
+          ...message,
+          attachments: [file],
+        }),
+      ).rejects.toThrow();
+    }
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
 describe("capturingMailer idempotency, as Resend's (spec 016 AC-19)", () => {
   it("returns the first reference for the same key and body, captures once, and 409s another body", async () => {
     const mailer = capturingMailer("ops@example.test");

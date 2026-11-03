@@ -473,6 +473,50 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
+    it("hands a template's attachments to the mailer, and sends none when it has none (TASK-333)", async () => {
+      reset();
+      await rolledBack(scratch.sql, async (tx) => {
+        const { orderId, countryId } = await order(tx, "live");
+        const shop = await florist(tx, countryId, "active", "email", [
+          ["pl", "owner"],
+        ]);
+        await step(tx, orderId, "order.captured", "paid_unrouted");
+        await step(tx, orderId, "order.routed", "routed");
+        const offered = await offer(tx, orderId, shop.partnerId, "live");
+        const job = {
+          job: "assignment.remind" as const,
+          orderId,
+          assignmentId: offered.assignmentId,
+        };
+        const file = {
+          filename: "terms-2026-10.pdf",
+          path: "https://media.example.test/legal/terms-2026-10.pdf",
+          contentType: "application/pdf",
+        };
+        await asSystem(tx, () =>
+          sendJobNotifications(
+            runnerOf(tx),
+            { ...job, jobId: "attach-1" },
+            deps({
+              template: () => async (input) => ({
+                ...(await renderer(input)),
+                attachments: [file],
+              }),
+            }),
+          ),
+        );
+        await asSystem(tx, () =>
+          sendJobNotifications(
+            runnerOf(tx),
+            { ...job, jobId: "attach-2" },
+            deps(),
+          ),
+        );
+        expect(sent()[0]?.attachments).toEqual([file]);
+        expect(sent()[1]?.attachments).toBeUndefined();
+      });
+    });
+
     it("T-19: a row left queued by a crash is sent with the same key; a lost commit is repeated and Resend's 409 invalid marks it sent", async () => {
       reset();
       await rolledBack(scratch.sql, async (tx) => {
