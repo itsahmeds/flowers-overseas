@@ -216,6 +216,7 @@ task actually touches.
 | `api/internal/payments/replay-webhooks/route.ts` | POST: secret-gated replay of missed Stripe… | 013 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
+| `api/webhooks/resend/route.ts` | POST: Resend webhook endpoint, Svix verify,… | 016 |
 | `api/webhooks/stripe/route.ts` | POST: Stripe webhook endpoint, verify, store… | 013 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3… | 003 |
 | `layout.tsx` | App-root layout | 003 |
@@ -314,9 +315,9 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 460 |
-| `tests/integration/` | 85 |
-| `tests/contract/` | 30 |
+| `tests/unit/` | 461 |
+| `tests/integration/` | 86 |
+| `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
