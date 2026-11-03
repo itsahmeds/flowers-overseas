@@ -42,7 +42,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04: the 31 unqueued keys (29 `emails.floristPayoutStatement.*` of PR 475, 2 `floristInbox.withdrawn.*` of PR 459) added to `AWAITING_FOUNDER_REVIEW` so the pin matches main; `.claude/state/record-approval-436.py` written (55 to record, 3 refused); the orchestrator reads `--check` and runs it.
 
 ## Result
 

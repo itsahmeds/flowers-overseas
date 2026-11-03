@@ -344,11 +344,6 @@ describe("the shipped catalogues and manifests", () => {
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
     "checkout.legal.cancellation",
-    "company.controller",
-    "consent.privacyLink",
-    "corridor.calendar.ruleEaster",
-    "corridor.calendar.ruleFixed",
-    "corridor.calendar.ruleWeekday",
     // TASK-332's 34 florist email, email layout and WhatsApp keys and TASK-213's 21 application
     // keys left this queue under the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
@@ -359,6 +354,9 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-333 (spec 016 §5.2, §7): the buyer emails B1 to B6 and B8, the spec's and the boards'
     // words and the builder's proposals, `reviewed: false` until the record run
     // (`.claude/state/record-approval-333.py`) attests them.
+    // TASK-365's florist payout statement keys (PR 475) left this queue under the delegation, all
+    // but the lawyer-gated `deleteReminder` (spec 030a §13 Q12; TASK-436).
+    "emails.floristPayoutStatement.deleteReminder",
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
     // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the
@@ -378,7 +376,7 @@ describe("the shipped catalogues and manifests", () => {
     "floristAuth.title",
     // TASK-214's 11 inbox page keys and TASK-215's 13 florist action keys left this queue under
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
-    "footer.link.deliveryAndPayment",
+    // TASK-329's withdrawn inbox stage and spec 041's chrome left this queue under the delegation (TASK-436).
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
     "forFlorists.apply.error.capacity",
@@ -438,23 +436,6 @@ describe("the shipped catalogues and manifests", () => {
     "forFlorists.sent.title",
     "forFlorists.sent.walkthrough",
     "infoPages.company.notRegistered",
-    "infoPages.contact.body",
-    "infoPages.contact.heading",
-    "infoPages.contact.phone",
-    "infoPages.contact.privacy",
-    "infoPages.cookies.change",
-    "infoPages.delivery.status",
-    "infoPages.legal.appliesTo.eu",
-    "infoPages.legal.appliesTo.uk",
-    "infoPages.legal.changeLog",
-    "infoPages.legal.contents",
-    "infoPages.legal.inForce",
-    "infoPages.legal.inForceSince",
-    "infoPages.legal.notInForce",
-    "infoPages.legal.notInForceYet",
-    "infoPages.legal.unreviewed",
-    "infoPages.legal.version",
-    "infoPages.status.notYetOpen",
     // Spec 018 §7's invoice PDF wording (TASK-342), awaiting the founder's exact-text approval.
     "invoice.label.buyer",
     "invoice.label.corrects",
@@ -489,8 +470,6 @@ describe("the shipped catalogues and manifests", () => {
     "invoice.title.receiptOnBehalf",
     "invoice.title.vatInvoice",
     // The header Basket link's name and count (spec 010 D10; TASK-349).
-    "nav.basket",
-    "nav.basketCount",
     "occasionHub.dateUnknown",
     "payments.confirmation.arrival",
     "payments.confirmation.cancelled",

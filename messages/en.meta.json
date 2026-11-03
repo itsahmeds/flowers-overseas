@@ -1854,17 +1854,23 @@
   },
   "corridor.calendar.ruleFixed": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "ae8003ccead967445c56e42bb82a302d468ed1188833f82e72bc7fb6f1ed0c3e"
   },
   "corridor.calendar.ruleEaster": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "adf381b0e3010d5f7f0e9bf9d9422c01d71a4a1928ca70bb1a012d9d151c1386"
   },
   "corridor.calendar.ruleWeekday": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "1b038ee52b6df444133839319a74b59989d9f1dcc146846fd74d63992048a9ba"
   },
   "corridor.calendar.undated": {
@@ -3571,7 +3577,9 @@
   },
   "nav.basket": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "b331a771c2e30ea57e636f62e8c91facc0178cf1d6c80694e8dc7a90b0b6d08e"
   },
   "nav.categories.label": {
@@ -4676,7 +4684,9 @@
   },
   "infoPages.status.notYetOpen": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "76c90f3766e84a946be2f0dbffdefe0fa6a19163fb29ef86fe6c9ec41c8b6a09"
   },
   "infoPages.company.notRegistered": {
@@ -4686,32 +4696,44 @@
   },
   "infoPages.contact.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "1d1d94fb539774e520cb772c3859fc00c9f63d48f4637e61f44ce54fc8a8fd44"
   },
   "infoPages.contact.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "8382f721141b299037f002dab96f94fa875e4e82d808f928e0ddff0d2d02acf0"
   },
   "infoPages.contact.privacy": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "22efc54d1751de706f62229f578f95d10912d942d00ce8e1d6f9d7fb00a2c425"
   },
   "infoPages.delivery.status": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
   },
   "footer.link.deliveryAndPayment": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "8f4a8807691e7bbe54e42482e5114d0da3e9bc65a98ab25ecd751603b2701df7"
   },
   "infoPages.contact.phone": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "63dceb8800b2dd4af9567a1f54f03b7c3dbdc27fac4799091ebfcc4928899ee5"
   },
   "payments.error.cardDeclined": {
@@ -4827,67 +4849,93 @@
   },
   "company.controller": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "ab3ddb4c8e482d2ff5fab71d0c27957b0c8b419ddedb6bbcaff5aae45ced47db"
   },
   "consent.privacyLink": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "7b73c89536c76dd2793bf9b726a881b539a86166f56fb78d524af93130a72d35"
   },
   "infoPages.cookies.change": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "81559ad261ac9065276634f32d6079a6d404c302f23c1a31ba2de08185619421"
   },
   "infoPages.legal.appliesTo.eu": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "61952969af0a10a1982bc0364b2d3b6ba5388c6d2e44d6fca5988f770629dd74"
   },
   "infoPages.legal.appliesTo.uk": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "df4f10ff444f161d28f5b0ac2a9f7264d8cf98314f0c03c1c175a97161d38475"
   },
   "infoPages.legal.changeLog": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "1bcbf1dcad4ffe4950cdae6b868f8a81fabe5f9da2d92abc3cef577e25fee639"
   },
   "infoPages.legal.contents": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "437aea62a5bd6ad4762e494c81b88532809a231477c82bdecf6fd6636908b7ab"
   },
   "infoPages.legal.inForce": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "1652cbbbc6d266a3a183f700227ef382d1bbbab0ebef42fa40952f57229f6345"
   },
   "infoPages.legal.inForceSince": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "fa9ac9866f385045a1ac225d5d1d51ff77b5de5ca213ff1f1e8bf60638e32d88"
   },
   "infoPages.legal.notInForce": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "52091bb007b10b4a160125ee8a17046089b07800875d9babd683d8e82e1479be"
   },
   "infoPages.legal.notInForceYet": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "3be5956ac06fe1144301a1b71e76f1cfaf3dd6280af1fbb9dfc2407a94fb2ec8"
   },
   "infoPages.legal.unreviewed": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "01c2a424123fcb2df7c35b6cc243e5c0d4838e0ae7af188509baee1bea351bc9"
   },
   "infoPages.legal.version": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "a18745121bb8af6d1a0c689cfb3c2a2245d10d5fe3b37ff37c8b69fd74773dfa"
   },
   "home.picker.label": {
@@ -4955,7 +5003,9 @@
   },
   "nav.basketCount": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "90fd4bbd3be993db0653247c4e8bbe2668521d9b5c7d403a3a18b2f1de12cfe8"
   },
   "checkout.basket.title": {
@@ -6510,12 +6560,16 @@
   },
   "floristInbox.withdrawn.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "ef57bdd46b1d35e3d4e7472a7766a582f86e76af344462ffbcd2aca3cd0f0410"
   },
   "floristInbox.withdrawn.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "0d0ace416562295582839779517217c29a24e1dd06542a2db1c6f64067ea1184"
   },
   "floristInbox.paused.notice": {
@@ -7212,132 +7266,184 @@
   },
   "emails.floristPayoutStatement.subject": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "ae35eace95551640aee10ddff8b8b756e0114c88dcc70719d19062eceb611976"
   },
   "emails.floristPayoutStatement.preheader": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "7f0ba26196c1739dbe6788f53e084affacaa445a9bf0a4e8a0a2be4e8215a2f6"
   },
   "emails.floristPayoutStatement.documentTitle": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "db5406825fe18a3c47f15b52203c7852e1aaeffb9cbfca294097424c043f48bf"
   },
   "emails.floristPayoutStatement.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "270e463cce91ec559374cbd96589a0e7bb1116e1439cd0b6a61a01014b03507e"
   },
   "emails.floristPayoutStatement.numberLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "24e6dd7840c7c45ece142315c142c61f35d33d761d483d5fd3bf797abb9245d4"
   },
   "emails.floristPayoutStatement.statementNumber": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "6f6aaa8fba7ff3376b19fd827bab3cce73d0fbe8af5100284b3ee763bcba58ba"
   },
   "emails.floristPayoutStatement.periodLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "6e795d4d3cc21c5ca8349ab5e917482197aa612d1a218f9e9411467db73242bb"
   },
   "emails.floristPayoutStatement.singleDateLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
   },
   "emails.floristPayoutStatement.sentLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "40f554a23d6bd0624e73d49dc1cb13f411f4da081cdc6d3c0f569d9575ba2313"
   },
   "emails.floristPayoutStatement.currencyLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "3ac1a9ec4fa7a9fa612a30803f3d88fa479a45431f644190ebcc18d3eaafdb3a"
   },
   "emails.floristPayoutStatement.fromLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
   },
   "emails.floristPayoutStatement.forLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "ca15ebc05a3c5c1348753b209c4452c54022dbe565d9943b11c795e3af9eb0b0"
   },
   "emails.floristPayoutStatement.ordersLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
   },
   "emails.floristPayoutStatement.linesCaption": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "c6de1d6ed9bb02e546e929fc08a8a12099bc07a4e9622dea7976e4428e4be4ac"
   },
   "emails.floristPayoutStatement.table.order": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
   },
   "emails.floristPayoutStatement.table.date": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
   },
   "emails.floristPayoutStatement.table.bouquet": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
   },
   "emails.floristPayoutStatement.table.amount": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
   },
   "emails.floristPayoutStatement.item": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "20529b4223061bafe35fab774a4578d511459523ea938ab010c4ee9b8a77e4c2"
   },
   "emails.floristPayoutStatement.quantity": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "21a5be75bba015c083d085efa685fa8418d150b8129c84916ef75ccca558ac99"
   },
   "emails.floristPayoutStatement.manualLine.adjustment": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "c416069b7f61a4a678ec1a5b87e47cf2aa9761988165a3b6d08d38634f9c5327"
   },
   "emails.floristPayoutStatement.manualLine.goodwill": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "1202ac7e4b7531e920e5bfba2876dc5b130a38705ba2db0ec381927a440f9a32"
   },
   "emails.floristPayoutStatement.totalLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
   },
   "emails.floristPayoutStatement.paymentLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "7048f38b33f135df36b3d9d382f167d45cfdda857b616899c9d8c9acd2751f64"
   },
   "emails.floristPayoutStatement.paymentMethod": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "017f614dce7ada429ac04ab2ede1c687759136c568008e55c393951d035f2397"
   },
   "emails.floristPayoutStatement.notInvoice": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "c77430c8667bd8a996c3e313b08b2e73f5540915e369f767473e8cad930fd8a1"
   },
   "emails.floristPayoutStatement.deleteReminder": {
@@ -7347,12 +7453,16 @@
   },
   "emails.floristPayoutStatement.attached": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "2b920708669a1a223db478869e2fdfd8471d0b63ed275b2e4a551cb89ccf2ec7"
   },
   "emails.floristPayoutStatement.page": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "240ab6d8dc2cbb5ede8e1e708f5812d1129644348c3a28d3aaf8d5b97a4cfaef"
   }
 }
