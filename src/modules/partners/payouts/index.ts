@@ -131,3 +131,43 @@ export type {
   PayoutTermsFieldErrors,
   PayoutTermsResult,
 } from "./terms";
+// TASK-367: the admin pages' reads and their one way into a command.
+export {
+  PAID_GROUP_DAYS,
+  PAYOUTS_VIEW_ACTION,
+  SEND_REFUSALS,
+  exportDetail,
+  payoutDetail,
+  payoutTermsOf,
+  payoutsOverview,
+  readPayouts,
+  sendRefusals,
+  statementFileOf,
+  totalsByCurrency,
+} from "./admin-read";
+export type {
+  ExportDetail,
+  ExportPayout,
+  OpenAdjustment,
+  PayoutDetail,
+  PayoutKind,
+  PayoutLineView,
+  PayoutListRow,
+  PayoutStatus,
+  PayoutTermsView,
+  PayoutsOverview,
+  SendFacts,
+  SendRefusal,
+  WaiverCandidate,
+} from "./admin-read";
+export {
+  PayoutAdminActionSchema,
+  payoutAdminRunner,
+  payoutRefusalCode,
+  runPayoutCommand,
+} from "./admin-command";
+export type {
+  PayoutAdminRunner,
+  PayoutCommandActor,
+  PayoutCommandResult,
+} from "./admin-command";

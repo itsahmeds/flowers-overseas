@@ -54,8 +54,24 @@ export const VIEWED_ENTITIES = {
 } as const;
 export type ViewedEntity = keyof typeof VIEWED_ENTITIES;
 
+/**
+ * The payout tables (spec 030a §11 "Audit"): not under `audit_row_change()`, each payouts command
+ * writes its own row (`writePayoutAudit`), so the filter offers them beside the triggered tables
+ * (TASK-367, from TASK-366's carry-forward).
+ */
+export const PAYOUT_AUDIT_TABLES = [
+  "payout",
+  "payout_line",
+  "payout_adjustment",
+  "payout_export",
+] as const;
+
 /** Every `entity_table` the log can hold, the entity filter's options. */
-export const AUDIT_ENTITIES = [...AUDITED_TABLES, "order"] as const;
+export const AUDIT_ENTITIES = [
+  ...AUDITED_TABLES,
+  "order",
+  ...PAYOUT_AUDIT_TABLES,
+] as const;
 
 /** The audit action of each entity's view. */
 export const VIEW_ACTIONS = Object.freeze({
