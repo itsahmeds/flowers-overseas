@@ -26,7 +26,10 @@ import {
 import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
 import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
-import { registerNotificationsOutbox } from "../modules/notifications";
+import {
+  registerNotificationsOutbox,
+  runResendWebhookJob,
+} from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
 import {
   registerFloristEmailTemplates,
@@ -163,6 +166,12 @@ export const JOB_HANDLERS: JobHandlers = {
   // each due order is locked `SKIP LOCKED` and re-read; a second run finds it `in_production`.
   "payments.production_start": async () => {
     await runProductionStart();
+  },
+  // Spec 016 §5.2 (TASK-335): one stored Resend webhook. Idempotent: the inbox row is locked
+  // `SKIP LOCKED` and a settled one is skipped; a `failed` run throws so pg-boss retries it, and
+  // the eighth attempt marks the row `dead` with one `webhook.dead`.
+  "webhook.resend.process": async (payload) => {
+    await runResendWebhookJob(payload.inboxId);
   },
   // Spec 022a §5.2 (TASK-369): every due order closed in its own `system` transaction. Idempotent:
   // each order is locked and re-read before it is closed, so a re-run or a second sweep finds it

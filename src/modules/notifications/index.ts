@@ -70,3 +70,32 @@ export type {
   NotificationRenderer,
   RenderedNotification,
 } from "./templates";
+export {
+  FINAL_DELIVERY_STATUSES,
+  FLORIST_BOUNCE_ALERT,
+  RESEND_IGNORED_EVENTS,
+  RESEND_STATUS_EVENTS,
+  RESEND_STATUS_RANK,
+  RESEND_WEBHOOK_MAX_ATTEMPTS,
+  RESEND_WEBHOOK_MAX_BYTES,
+  RESEND_WEBHOOK_TOLERANCE_SECONDS,
+  ResendEnvelopeSchema,
+  ResendStatusEventSchema,
+  ResendWebhookFailed,
+  ingestResendWebhook,
+  precedenceOf,
+  processResendWebhook,
+  runResendWebhookJob,
+  svixSignature,
+  verifySvixSignature,
+} from "./resend-webhook";
+export type {
+  DeliveryStatus,
+  ResendIgnoreReason,
+  ResendIngestDeps,
+  ResendProcessDeps,
+  ResendProcessOutcome,
+  ResendRejection,
+  ResendTransaction,
+  SvixHeaders,
+} from "./resend-webhook";

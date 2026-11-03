@@ -18,6 +18,7 @@
       "MAILER": "resend",
       "REVIEW_TOKEN_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "TRUSTPILOT_AFS_ADDRESS": "",
+      "RESEND_WEBHOOK_SECRET": "",
       "OPS_ALERT_EMAIL": "ops@example.test",
       "FLORIST_APPLICATIONS_NOTIFY_EMAIL": "",
       "LOG_LEVEL": "SENTINEL-VALUE",
