@@ -33,7 +33,15 @@ One dated bullet per `/review`, newest last.
   preview or production deploy.
 - 2026-11-03: `tests/integration/migrations-round-trip.test.ts` is red on main independently of
   this PR (its `FUNCTIONS` list has `review_content_immutable` out of sorted order); not touched
-  here.
+  here. Re-checked 2026-11-04 on PG16: still red the same way (`review_content_immutable` sorted
+  last in the test's `FUNCTIONS`), so AC-8's "round-trip passes" was proven for 0034 by a manual
+  migrate / `--down --to 0033` / migrate (trigger present, absent, present).
+- 2026-11-04 (self-review): two mutants survive and are equivalent, not gaps: swallowing a sync
+  failure in `updatePartner` (Postgres has already aborted the transaction, so the partner write
+  cannot commit), and not restoring the caller's audit action (the sync is the last write in all
+  three callers). If a later caller writes after the sync, add a test for the restored action.
+- 2026-11-04: the "First signed in on {date}" rendering in the admin's zone (AC-10's page half,
+  T-10 visual + axe) has no automated test; it needs an admin session and is CI's visual job.
 - 2026-11-03: the migration was first numbered `0035` and the suites were run locally with the
   pair renamed to `0034`; on 2026-11-04 it was renumbered to `0034` for good (main ends at
   `0033`, TASK-363 takes `0035`), so `db:check` sees no gap.
@@ -57,6 +65,10 @@ here.
 - 2026-11-03: integration suite `florist-access` (17), the confirm-stamp case in `florist-auth`,
   `partner_member` in the audit-trail suite; migrate, roll back, migrate on PG16; snapshot
   regenerated; mutations recorded in the PR. Done; PR 461 ready.
+- 2026-11-04: renumbered to `0034_florist_access` (main ends at 0033; TASK-363 takes 0035), rebased
+  on main c216700cc; typecheck, db:check (34 migrations), unit 39, integration florist-access 17,
+  florist-auth 17, audit-trail 38 green on PG16; migrate, roll back to 0033, migrate checked by
+  hand; 18 mutations re-run and written into PR 461's `## Self-review`. PR ready.
 
 ## Result
 
