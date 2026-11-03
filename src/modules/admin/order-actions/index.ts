@@ -3,8 +3,8 @@
  * the suggested refund amounts, `runOrderAction` (lock, replay, `expectedSeq`, the audited action
  * row) and the refunds list (TASK-359). The refund action itself is `./refund.ts`, imported by
  * path (see its header). Reroute (TASK-358) is `./reroute.ts`, re-exported here with the grace
- * end's display; cancel is `./cancel.ts`, imported by path for refund's reason. Resend waits for
- * TASK-360.
+ * end's display; cancel is `./cancel.ts`, imported by path for refund's reason. The action history
+ * is `orderActionHistory` (TASK-357). Resend waits for TASK-360.
  */
 export {
   type AvailableActions,
@@ -89,6 +89,12 @@ export {
   type RefundStatus,
   refundStatuses,
 } from "./refund-state.ts";
+export {
+  type ActionHistoryEntry,
+  ORDER_ACTION_HISTORY_READ_ACTION,
+  orderActionHistory,
+  type OrderActionHistoryDeps,
+} from "./history.ts";
 export {
   type GraceEndDisplay,
   graceEndDisplay,
