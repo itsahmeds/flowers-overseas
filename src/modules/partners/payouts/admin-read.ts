@@ -167,8 +167,7 @@ function toListRow(raw: unknown): PayoutListRow {
     totalMinor: row.total_minor,
     lineCount: row.line_count,
     reviewCount: row.review_count,
-    blockingAdjustment:
-      row.kind === "weekly" ? row.blocking_adjustment : null,
+    blockingAdjustment: row.kind === "weekly" ? row.blocking_adjustment : null,
     refusals: sendRefusals(facts),
   };
 }
@@ -614,7 +613,10 @@ export function totalsByCurrency(
   for (const row of rows) {
     totals.set(row.currency, (totals.get(row.currency) ?? 0n) + row.totalMinor);
   }
-  return [...totals].map(([currency, totalMinor]) => ({ currency, totalMinor }));
+  return [...totals].map(([currency, totalMinor]) => ({
+    currency,
+    totalMinor,
+  }));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -667,7 +669,9 @@ const StatementFileRow = z.object({
 export async function statementFileOf(
   executor: OrderExecutor,
   payoutId: string,
-): Promise<{ readonly bucket: string; readonly objectKey: string } | undefined> {
+): Promise<
+  { readonly bucket: string; readonly objectKey: string } | undefined
+> {
   const id = z.uuid().safeParse(payoutId);
   if (!id.success) return undefined;
   const [raw] = await executor.execute(sql`
