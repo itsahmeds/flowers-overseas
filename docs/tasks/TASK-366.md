@@ -42,6 +42,8 @@ here.
 
 - 2026-11-04: `export.ts` (CSV, export, cancel, mark paid, download), the route, error codes and audit entity, fixtures with `-text` in `.gitattributes`, contract/unit/route/integration tests; draft PR 469 stacked on PR 468.
 - 2026-11-04: mutations W1 to W15, R1 to R6 all red (W12 first survived; a defence case added); gates run; PR ready.
+- 2026-11-04: rebased onto 468's new head 3cc4d9efb (main 2801e7482); only the map conflicted (regenerated).
+  typecheck 0, db:check 0, contract+unit 42/42, `payouts-wise-export` 11/11 on PG16.
 
 ## Result
 
