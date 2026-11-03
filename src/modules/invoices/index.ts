@@ -44,3 +44,16 @@ export {
   VatRateProviderNotConfigured,
 } from "./vat-rate";
 export type { VatRateProvider, VatRateRequest } from "./vat-rate";
+export {
+  convertMinor,
+  CREDIT_NOTE_TITLE_KEY,
+  renderInvoicePdf,
+} from "./pdf/render";
+export type {
+  InvoiceFonts,
+  RenderableDocument,
+  RenderOptions,
+  RenderProfile,
+} from "./pdf/render";
+export { invoiceTranslator, invoiceWords, LABEL_SEPARATOR } from "./pdf/labels";
+export type { InvoiceTranslate, InvoiceTranslatorFactory } from "./pdf/labels";
