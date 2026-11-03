@@ -1,11 +1,12 @@
 /**
- * @purpose /admin/orders/[id] reroute and cancel actions, each guarded first (020a AC-2, AC-10, AC-13)
+ * @purpose /admin/orders/[id] reroute, cancel and resend actions, each guarded first (020a AC-2, AC-10, AC-13, AC-25)
  * @spec 020a
  *
  * Thin (`plan/01` §5): `requirePermission(…)` is the first statement of every action (spec 020a
  * AC-2, T-03 scans for it), then the form's fields, then one admin command (`adminOrderReroute`
  * over spec 016's `manualReroute`, `adminOrderCancel` over spec 013's `cancelOrder`), each running
- * through `runOrderAction`, then a redirect back to the order that names the action and its
+ * through `runOrderAction` (`adminResendNotification` over spec 016's `resendNotification` too),
+ * then a redirect back to the order that names the action and its
  * outcome as codes. The URL carries the order's uuid (the page's own path segment) and codes only:
  * never a note, a name or a florist.
  */
@@ -21,6 +22,7 @@ import {
   requirePermission,
 } from "@/modules/admin";
 import { adminOrderCancel } from "@/modules/admin/order-actions/cancel";
+import { adminResendNotification } from "@/modules/admin/order-actions/resend";
 import { manualReroute } from "@/modules/orders/routing/jobs";
 
 /**
@@ -34,6 +36,7 @@ const BaseFormSchema = z.object({
   expectedSeq: z.coerce.number(),
 });
 const RerouteFormSchema = BaseFormSchema.extend({ partnerId: z.string() });
+const ResendFormSchema = BaseFormSchema.extend({ deliveryId: z.string() });
 const CancelFormSchema = BaseFormSchema.extend({
   reason: z.string(),
   note: z
@@ -49,6 +52,11 @@ function rerouteForm(input: unknown) {
   return parsed.success ? parsed.data : undefined;
 }
 
+function resendForm(input: unknown) {
+  const parsed = ResendFormSchema.strip().safeParse(input);
+  return parsed.success ? parsed.data : undefined;
+}
+
 function cancelForm(input: unknown) {
   const parsed = CancelFormSchema.strip().safeParse(input);
   if (!parsed.success) return undefined;
@@ -58,7 +66,7 @@ function cancelForm(input: unknown) {
 
 function back(
   orderId: string,
-  action: "reroute" | "cancel",
+  action: "reroute" | "cancel" | "resend",
   result: AdminOrderActionResult,
 ): never {
   const id = z.uuid().safeParse(orderId);
@@ -92,4 +100,15 @@ export async function cancelOrderAction(formData: FormData): Promise<void> {
     requestId: await adminRequestId(),
   });
   back(input.orderId, "cancel", result);
+}
+
+export async function resendEmailAction(formData: FormData): Promise<void> {
+  const session = await requirePermission("orders.resend");
+  const input = resendForm(Object.fromEntries(formData));
+  if (input === undefined) redirect("/admin/orders");
+  const result = await adminResendNotification(input, {
+    guard: () => Promise.resolve(session),
+    requestId: await adminRequestId(),
+  });
+  back(input.orderId, "resend", result);
 }

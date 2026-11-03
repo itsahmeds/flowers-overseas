@@ -61,6 +61,37 @@ export type {
   PayoutStatementNotificationInput,
 } from "./pipeline";
 export {
+  RESEND_CAUSES,
+  RESEND_CONDITIONS,
+  RESEND_LIMIT,
+  RESEND_RULES,
+  RESEND_WINDOW_HOURS,
+  ResendNotificationInputSchema,
+  originalContext,
+  pgBossResendScheduler,
+  resendDecision,
+  resendNotification,
+  resendableDeliveries,
+  runResendNotificationJob,
+} from "./resend";
+export type {
+  OriginalContext,
+  ResendAssignmentFacts,
+  ResendCause,
+  ResendCondition,
+  ResendFacts,
+  ResendJobDeps,
+  ResendJobOutcome,
+  ResendListOptions,
+  ResendNotificationDeps,
+  ResendNotificationInput,
+  ResendNotificationResult,
+  ResendRule,
+  ResendScheduler,
+  ResendVerdict,
+  ResendableDelivery,
+} from "./resend";
+export {
   NotificationTemplateMissing,
   notificationTemplate,
   registerNotificationTemplate,

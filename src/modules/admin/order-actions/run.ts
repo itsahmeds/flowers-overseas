@@ -17,7 +17,10 @@
  *     `expectedSeq` (it moved since the page rendered) is `ORDER_CHANGED`;
  *  5. the effect runs on this transaction's executor; a refusal rolls the whole transaction
  *     back, so a refused action leaves no action row and no audit row;
- *  6. the `admin_order_action` row is inserted with the effect's `result_ref`;
+ *  6. the `admin_order_action` row is inserted with the effect's `result_ref`, stamped with the
+ *     clock **after** the lock (`clock_timestamp()`, not the transaction's start), so two actions
+ *     on one order list in the order they took the lock, and the resend rate limit counts by it
+ *     (TASK-360: two resends share one `expectedSeq`, so both may wait on one lock);
  *  7. after the commit, and only then, the effect's `afterCommit` runs (a refund's provider call,
  *     keyed by the refund row's id; a crash before it is recovered by `payments.sweep` (d)).
  *
@@ -254,11 +257,12 @@ export async function runOrderAction(
         const inserted = await executor.execute(sql`
         INSERT INTO admin_order_action (id, order_id, kind, actor_user_id, reason, amount_minor,
                                         currency_code, partner_id, notification_delivery_id,
-                                        result_ref)
+                                        result_ref, created_at)
         VALUES (${input.actionId}, ${order.id}, ${kind}, ${userId}, ${record.reason ?? null},
                 ${record.amountMinor === undefined ? null : record.amountMinor.toString()}::bigint,
                 ${record.currencyCode ?? null}, ${record.partnerId ?? null}::uuid,
-                ${record.notificationDeliveryId ?? null}::uuid, ${outcome.resultRef})
+                ${record.notificationDeliveryId ?? null}::uuid, ${outcome.resultRef},
+                clock_timestamp())
         ON CONFLICT (id) DO NOTHING
         RETURNING id`);
         // Only an action id reused on another order, racing, can conflict here: undo the effect.

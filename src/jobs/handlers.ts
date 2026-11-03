@@ -32,6 +32,7 @@ import { orderDetailHref } from "../modules/admin/orders";
 import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
 import {
   registerNotificationsOutbox,
+  runResendNotificationJob,
   runResendWebhookJob,
 } from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
@@ -215,6 +216,12 @@ export const JOB_HANDLERS: JobHandlers = {
   // the eighth attempt marks the row `dead` with one `webhook.dead`.
   "webhook.resend.process": async (payload) => {
     await runResendWebhookJob(payload.inboxId);
+  },
+  // Spec 020a §5.2 (TASK-360): one admin resend row. Idempotent: the row is locked and a row no
+  // longer `queued` is skipped; the send's idempotency key is the row's own. Held (throws, retried)
+  // while `notifications.email` is off.
+  "notifications.resend": async (payload) => {
+    await runResendNotificationJob(payload.deliveryId);
   },
   // Spec 022a §5.2 (TASK-369): every due order closed in its own `system` transaction. Idempotent:
   // each order is locked and re-read before it is closed, so a re-run or a second sweep finds it

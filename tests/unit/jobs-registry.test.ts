@@ -29,7 +29,7 @@ import {
 const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
-  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready, payouts.close, payouts.watch and payouts.statement_email, and spec 018's three invoice jobs (TASK-342)", () => {
+  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready, payouts.close, payouts.watch and payouts.statement_email, spec 018's three invoice jobs (TASK-342) and spec 020a's notifications.resend (TASK-360)", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
       "assignment.photo_remind",
       "assignment.remind",
@@ -40,6 +40,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "invoice.render_sweep",
       "media.derive_variants",
       "neon.usage_probe",
+      // spec 020a (TASK-360): one admin resend row.
+      "notifications.resend",
       "order.close_sweep",
       "order.no_partner_expire",
       "order.route",
@@ -77,6 +79,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "assignment.remind",
       "assignment.timeout",
       "invoice.email",
+      // spec 020a (TASK-360): keyed by the resend row.
+      "notifications.resend",
       "order.no_partner_expire",
       "order.route",
       // spec 030a (TASK-363): F1, keyed by payout; (TASK-365) the statement email, likewise.
@@ -95,6 +99,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     // Spec 016 §5.2 (TASK-335): 7 retries, so the eighth attempt is the one that marks `dead`.
     expect(jobRetryLimit("webhook.resend.process")).toBe(7);
     expect(jobQueuePolicy("webhook.resend.process")).toBe("standard");
+    // Spec 020a §5.2 (TASK-360): held while `notifications.email` is off, retried.
+    expect(jobRetryLimit("notifications.resend")).toBe(7);
     expect(jobQueuePolicy("routing.sla_watch")).toBe("standard");
     expect(OrderRoutePayload.parse({ orderId: REQUEST_ID })).toEqual({
       orderId: REQUEST_ID,
@@ -120,7 +126,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(28);
+    expect(new Set(JOB_NAMES).size).toBe(29);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 
