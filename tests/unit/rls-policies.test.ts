@@ -140,9 +140,13 @@ const EFFECTIVE_POLICIES: Policy[] = [
 const policiesOf = (table: string): Policy[] =>
   EFFECTIVE_POLICIES.filter((p) => p.table === table);
 
-/** Every `CREATE POLICY … ON <table>` name, whatever its shape (`FOR INSERT … WITH CHECK` too). */
-const anyPolicyNamesOf = (table: string): string[] =>
-  [
+/**
+ * Every `CREATE POLICY … ON <table>` name in force, whatever its shape (`FOR INSERT … WITH CHECK`
+ * too): a later `DROP POLICY` removes one created once, by the same rule as `POLICIES` (TASK-434:
+ * `0029` drops `0011`'s `review_read`, and this reader counted it still).
+ */
+const anyPolicyNamesOf = (table: string): string[] => {
+  const created = [
     ...up.matchAll(
       new RegExp(
         `CREATE POLICY (\\w+) ON ${ref(table)}\\s+(?:AS \\w+\\s+)?(?:FOR \\w+\\s+)?TO app_web\\b`,
@@ -150,6 +154,16 @@ const anyPolicyNamesOf = (table: string): string[] =>
       ),
     ),
   ].map((m) => m[1] ?? "");
+  return [
+    ...new Set(
+      created.filter(
+        (name) =>
+          !DROPPED.has(`${table}.${name}`) ||
+          created.filter((other) => other === name).length > 1,
+      ),
+    ),
+  ];
+};
 
 /** `0022`'s insert-only policies: `FOR INSERT TO app_web WITH CHECK (…)` (spec 011 §5.1). */
 const INSERT_POLICIES: Policy[] = [

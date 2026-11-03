@@ -17,7 +17,7 @@
  */
 import type { RateLimiter } from "@/lib/csp-report";
 
-import { formEntries, keptAnswers } from "./schema.ts";
+import { PostedFieldsSchema, keptAnswers } from "./schema.ts";
 import type { ApplyFormState } from "./state.ts";
 import { type SubmitDeps, submitFloristApplication } from "./submit.ts";
 
@@ -37,13 +37,13 @@ export interface ApplicationPostDeps extends SubmitDeps {
 }
 
 export async function applicationPost(
-  form: FormData,
+  form: unknown,
   previous: ApplyFormState,
   deps: ApplicationPostDeps,
 ): Promise<ApplicationPostOutcome> {
   const attempt = previous.attempt + 1;
-  const read = formEntries(form);
-  const values = read.ok ? keptAnswers(read.entries) : {};
+  const read = PostedFieldsSchema.safeParse(form);
+  const values = read.success ? keptAnswers(read.data) : {};
 
   if (!deps.limiter.allow()) {
     deps.logger.warn(
@@ -56,7 +56,7 @@ export async function applicationPost(
     };
   }
 
-  if (!read.ok) {
+  if (!read.success) {
     deps.logger.info({ florist_application_invalid: 1 }, "florist application");
     return {
       kind: "render",
@@ -64,7 +64,7 @@ export async function applicationPost(
     };
   }
 
-  const result = await submitFloristApplication(read.entries, deps);
+  const result = await submitFloristApplication(read.data, deps);
   if (result.ok) return { kind: "sent" };
   return {
     kind: "render",

@@ -237,6 +237,33 @@ const EXTERNAL_QUERY_KEYS: readonly {
     entry: "src/app/vendor/sign-in/confirm/page.tsx#hl",
     reason: "the florist confirm page's language links (spec 011 §7)",
   },
+  // Spec 012 §2.5 (TASK-221): /admin/partners and /admin/applications, `noindex`, `no-store`,
+  // admin-only. Outcome codes, a form name, field:code pairs and a status tab; no person, not
+  // listing keys. Registered by TASK-434 (the merge carried the keys without their entries).
+  {
+    entry: "src/app/admin/(signed-in)/partners/actions.ts#result",
+    reason:
+      "/admin/partners's outcome line after a save (`saved`, `created`, `invalid`, …; `PARTNER_OUTCOMES`)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/partners/actions.ts#form",
+    reason:
+      "the florist page's form an outcome came from (`profile`, `terms`, …; `PARTNER_FORMS`)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/partners/actions.ts#err",
+    reason:
+      "the refused fields as `field:code` pairs (`errorsParam`), field names and error codes only",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/applications/actions.ts#result",
+    reason:
+      "/admin/applications's outcome line (`contacted`, `converted`, `rejected` or a refusal code)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/applications/page.tsx#status",
+    reason: "/admin/applications's status tab: an application status key",
+  },
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
 
@@ -683,6 +710,11 @@ describe("the real tree (T-59)", () => {
         "src/app/vendor/sign-in/page.tsx#hl",
         "src/app/vendor/sign-in/confirm/page.tsx#t",
         "src/app/vendor/sign-in/confirm/page.tsx#hl",
+        "src/app/admin/(signed-in)/partners/actions.ts#result",
+        "src/app/admin/(signed-in)/partners/actions.ts#form",
+        "src/app/admin/(signed-in)/partners/actions.ts#err",
+        "src/app/admin/(signed-in)/applications/actions.ts#result",
+        "src/app/admin/(signed-in)/applications/page.tsx#status",
       ]);
       expect(urlPiiViolations(repoRoot)).toEqual([]);
     },
@@ -704,7 +736,7 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "keeps today's eight dynamic segments, none a PII key",
+    "keeps today's ten dynamic segments, none a PII key",
     () => {
       const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
         const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
@@ -715,6 +747,9 @@ describe("the real tree (T-59)", () => {
         // never an order reference, a name or an address.
         "assignmentId",
         "child",
+        // `/admin/partners/[code]` (spec 012 §2.5; TASK-221): a partner's slug code
+        // (`PartnerCodeSchema`), never an order, a customer or a recipient value.
+        "code",
         "grandchild",
         // `/admin/orders/[id]` (TASK-222): an order's uuid.
         "id",

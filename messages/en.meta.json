@@ -3219,13 +3219,6 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
   },
-  "nav.category.ourSelection": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "a2040966ffe53f09022064db402c7d8c1ba1f1ddbccc5dccaad4caffe3812624",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "reviewedBy": "founder"
-  },
   "nav.category.roses": {
     "source": "human",
     "reviewed": true,
@@ -3283,13 +3276,6 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9",
     "retained": true
-  },
-  "nav.send": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "e3be5078f2ccbc19c3787792fca859fba0ab68e95b0030b11ff3f21e28222e52"
   },
   "nav.utility.cutoff": {
     "source": "human",

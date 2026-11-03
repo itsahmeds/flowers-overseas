@@ -10,6 +10,7 @@
  * (cards).
  */
 import type { ReactElement } from "react";
+import { z } from "zod";
 
 import {
   adminRequestId,
@@ -47,6 +48,11 @@ const TABS: readonly FloristApplicationStatus[] = [
   "rejected",
 ];
 
+/** The list's one query key: the status tab; an unknown value shows every application. */
+const ApplicationsQuerySchema = z.object({
+  status: FloristApplicationStatusSchema.optional().catch(undefined),
+});
+
 function where(row: FloristApplicationRow): string {
   return adminT("admin.applications.where", {
     city: row.city,
@@ -66,10 +72,7 @@ export default async function AdminApplicationsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const session = await requireAdminPage("application.manage");
-  const query = await searchParams;
-  const status = FloristApplicationStatusSchema.optional()
-    .catch(undefined)
-    .parse(query["status"]);
+  const { status } = ApplicationsQuerySchema.parse(await searchParams);
   const rows = await listApplications({
     userId: session.userId,
     requestId: await adminRequestId(),

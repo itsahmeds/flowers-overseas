@@ -295,7 +295,8 @@ describe("the shipped catalogues and manifests", () => {
     //
     // On 2026-09-18 the founder attested four of them and they left this queue:
     // `nav.utility.datesPending` and `finder.datesPending`, `nav.utility.datesPendingShort` and
-    // `nav.category.ourSelection` ("Our selection", id `our-selection`). The two
+    // `nav.category.ourSelection` ("Our selection", id `our-selection`; it left every catalogue
+    // when the mega menu and home v3 retired its last reader, TASK-434). The two
     // `nav.utility.datesPending*` keys left every catalogue with spec 004 §14 A23 clause 12
     // (TASK-193). The decision is in
     // `docs/decisions-log.md`; their `en` manifest entries carry `reviewedBy: "founder"` and
@@ -373,6 +374,10 @@ describe("the shipped catalogues and manifests", () => {
     "floristAuth.title",
     // TASK-214's 11 inbox page keys and TASK-215's 13 florist action keys left this queue under
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
+    // TASK-329's two withdrawal keys (the inbox's withdrawn-offer state) wait
+    // here until the next record run (pinned by TASK-434).
+    "floristInbox.withdrawn.body",
+    "floristInbox.withdrawn.title",
     "footer.link.deliveryAndPayment",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
@@ -631,8 +636,8 @@ describe("the shipped catalogues and manifests", () => {
 
     const destinationName: Messages["destinations"]["pl"]["name"] =
       enSource.destinations.pl.name;
-    const categoryLabel: Messages["nav"]["category"]["ourSelection"] =
-      enSource.nav.category.ourSelection;
+    const categoryLabel: Messages["nav"]["category"]["roses"] =
+      enSource.nav.category.roses;
     const heroHeading: Messages["home"]["hero"]["heading"] =
       enSource.home.hero.heading;
     const finderSubmit: Messages["finder"]["submit"] = enSource.finder.submit;
@@ -645,7 +650,7 @@ describe("the shipped catalogues and manifests", () => {
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
-    expect(categoryLabel).toBe("Our selection");
+    expect(categoryLabel).toBe("Roses");
     // TASK-231: the reviewed words, with the one italic phrase marked (the founder's "italic ok").
     expect(heroHeading).toBe("Flowers for someone <em>far away.</em>");
     expect(finderSubmit).toBe("Continue");

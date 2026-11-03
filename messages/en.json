@@ -121,7 +121,6 @@
       "label": "Categories"
     },
     "category": {
-      "ourSelection": "Our selection",
       "sympathy": "Sympathy",
       "occasions": "Occasions",
       "roses": "Roses",
@@ -151,7 +150,6 @@
     "currency": {
       "label": "Prices shown in {currency}"
     },
-    "send": "Send flowers",
     "basketCount": "{count, plural, one {Basket, # bouquet} other {Basket, # bouquets}}",
     "mega": {
       "flowers": "Flowers",

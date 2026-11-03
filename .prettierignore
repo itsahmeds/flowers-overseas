@@ -24,3 +24,6 @@ CLAUDE.md
 # `tests/unit/corridor-corpus-index.test.ts`, so the formatter must not rewrite it
 /src/modules/geo/content/corpus.generated.ts
 /src/modules/content/corpus.generated.ts
+# written by Vitest's `toMatchFileSnapshot` (`tests/unit/email-florist.test.ts`, `email-ops.test.ts`)
+# and compared byte for byte, like the corpus files above: reformatting one fails its test
+/tests/unit/__snapshots__/

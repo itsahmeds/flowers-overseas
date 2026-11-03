@@ -711,7 +711,7 @@ export const review = pgTable(
  * One review invitation per delivered `live` order (spec 022a §5.1, §5.2; migration
  * `0029_reviews_close`; TASK-368). No address is stored: the `review.request` job resolves it from
  * `order.buyer_snapshot` at send time. `token_hash` is the lower-case hex SHA-256 of the link's
- * token (the token itself is never stored), as `text` because `bytea` is refused in `public`
+ * token (the token itself is never stored), as `text` because a binary column is refused in `public`
  * (spec 002 AC-22, ADR-0015; `checkout_draft.token_sha256` is the precedent). Staff only (RLS).
  */
 export const reviewInvite = pgTable(

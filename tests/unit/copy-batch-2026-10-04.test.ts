@@ -47,7 +47,8 @@ const APPROVED: Readonly<Record<string, string>> = {
   "home.sentence.notYet": "{country} (not yet)",
   "home.sentence.who":
     "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} partner {my partner} friend {a friend} other {someone I love}}",
-  "nav.send": "Send flowers",
+  // `nav.send` left this batch: the mega menu (TASK-383) removed the header's send button, its
+  // only reader, and TASK-434 deleted the unused key.
   "nav.utility.guarantee": "Fresh-flower promise",
   "product.card.legend": "What should the card say?",
   "product.card.printed": "Printed on our card · included",
