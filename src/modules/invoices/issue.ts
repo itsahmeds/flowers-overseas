@@ -7,8 +7,9 @@
  *  1. `INVOICE_NOT_LIVE` unless `order.mode = 'live'` (no alert, no number);
  *  2. an existing `kind = 'invoice'` row for the order is returned unchanged (idempotent: row 14's
  *     second `order.captured` issues nothing, AC-15);
- *  3. `INVOICE_NOT_CAPTURED` unless a `payment` of the order has `captured_at` (the money fact is
- *     the column, never the event; retried, alerted after the retries);
+ *  3. `INVOICE_NOT_CAPTURED` unless a `payment` of the order's purchase has `captured_at` (the
+ *     payment belongs to the purchase since `0026_payment_purchase`, spec 013 §14 Q19; the money
+ *     fact is the column, never the event; retried, alerted after the retries);
  *  4. `INVOICE_FLAG_OFF` unless `invoice.issue` is on for the destination;
  *  5. `INVOICE_SUPPLY_MODEL_UNSET` when `order.supply_model` is null;
  *  6. `INVOICE_NO_PROFILE` when no active profile matches `(supply_model, destination)`;
@@ -116,7 +117,7 @@ async function readOrder(executor: OrderExecutor, orderId: string) {
            c.iso2 AS destination_iso2,
            (now() AT TIME ZONE c.iana_zone)::date::text AS issue_date,
            (SELECT (min(p.captured_at) AT TIME ZONE c.iana_zone)::date::text
-            FROM payment p WHERE p.order_id = o.id AND p.captured_at IS NOT NULL) AS tax_point_date
+            FROM payment p WHERE p.purchase_id = o.purchase_id AND p.captured_at IS NOT NULL) AS tax_point_date
     FROM "order" o JOIN country c ON c.id = o.destination_country_id
     WHERE o.id = ${orderId}
     FOR NO KEY UPDATE OF o`);

@@ -1,7 +1,9 @@
 /**
  * `issueCreditNote(refundId)` (spec 018 §5.2, AC-21; TASK-341).
  *
- * The same pattern as `issueInvoice`, for one `refund` with `status = 'succeeded'`: the order row
+ * The same pattern as `issueInvoice`, for one `refund` with `status = 'succeeded'`. The order is
+ * the refund's own `order_id` (since `0026_payment_purchase` a payment pays for a purchase, and
+ * each refund names the one order of it that it returns money for, spec 013 §14 Q19). The order row
  * is locked first (so two refunds of one order are credited one after the other, each seeing the
  * other's note), then:
  *
@@ -88,8 +90,8 @@ async function creditIn(
   const [refundRow] = await executor.execute(sql`
     SELECT r.id, r.status, r.amount_minor, r.currency_code,
            to_char(r.succeeded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS succeeded_at,
-           p.order_id
-    FROM refund r JOIN payment p ON p.id = r.payment_id
+           r.order_id
+    FROM refund r
     WHERE r.id = ${refundId}`);
   if (refundRow === undefined) {
     throw new Error(`INVOICE_REFUND_NOT_FOUND: refund ${refundId}`);

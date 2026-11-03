@@ -16,6 +16,10 @@
  *    netting the invoice to zero per rate; a refund after `cancelled` (row 32) nets it to zero; a
  *    refund on an order with no invoice: `INVOICE_CREDIT_NO_INVOICE` and an alert;
  *    `order.chargeback_lost`: no credit note; a replayed delivery: nothing new.
+ *  - **The 0026 payment model (TASK-435):** a payment pays for a purchase and each refund names its
+ *    order. One purchase of two orders and one payment: an invoice per order, and a refund naming
+ *    the second order credits the second invoice only; another purchase's captured payment leaves
+ *    an order `INVOICE_NOT_CAPTURED`.
  *
  * Each case runs in a transaction that is rolled back, except the concurrency cases, which need
  * real separate transactions and so use their own series and country.
@@ -189,6 +193,8 @@ async function order(
     lines?: readonly Line[];
     iso2?: string;
     supplyModel?: "principal" | null;
+    /** A purchase to join (its total is the caller's to raise); else the order's own. */
+    purchaseId?: string;
   } = {},
 ): Promise<string> {
   const lines = options.lines ?? MIXED;
@@ -202,6 +208,9 @@ async function order(
     mode: options.mode ?? "live",
     currencyCode: "GBP",
     totalMinor: total,
+    ...(options.purchaseId === undefined
+      ? {}
+      : { purchaseId: options.purchaseId }),
   });
   const byRate = new Map<number, number>();
   for (const line of lines)
@@ -245,14 +254,18 @@ async function order(
   return id;
 }
 
-/** The order's payment, captured now (`payment.captured_at`, the money fact). */
+/**
+ * The payment of the order's purchase, captured now (`payment.captured_at`, the money fact). Since
+ * `0026_payment_purchase` a payment pays for a purchase, at the purchase's total.
+ */
 async function capturePayment(tx: Tx, orderId: string): Promise<string> {
   const [row] = await tx<{ id: string; total: string }[]>`
-    INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
+    INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor,
                          currency_code, livemode, capture_method, amount_captured_minor, captured_at)
-    SELECT id, 'stripe', ${unique("pi_")}, 'captured', 'card', buyer_total_minor, 'GBP', true,
-           'automatic', buyer_total_minor, now()
-    FROM "order" WHERE id = ${orderId}
+    SELECT pu.id, 'stripe', ${unique("pi_")}, 'captured', 'card', pu.total_minor, 'GBP', true,
+           'automatic', pu.total_minor, now()
+    FROM "order" o JOIN purchase pu ON pu.id = o.purchase_id
+    WHERE o.id = ${orderId}
     RETURNING id`;
   return row?.id ?? "";
 }
@@ -282,10 +295,12 @@ async function refund(
   event: "order.refunded_partial" | "order.refunded_full",
 ): Promise<string> {
   const [row] = await tx<{ id: string }[]>`
-    INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
-                        requested_by, succeeded_at)
-    SELECT id, ${unique("re_")}, ${amount}, 'GBP', 'quality', 'succeeded', 'system:test', now()
-    FROM payment WHERE order_id = ${orderId}
+    INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                        currency_code, reason, status, requested_by, succeeded_at)
+    SELECT p.id, o.id, o.purchase_id, ${unique("re_")}, ${amount}, 'GBP', 'quality', 'succeeded',
+           'system:test', now()
+    FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+    WHERE o.id = ${orderId}
     RETURNING id`;
   const refundId = row?.id ?? "";
   await engine(tx, orderId, event, {
@@ -712,6 +727,76 @@ describe.skipIf(server.url === undefined)(
       expect(result.after["fok-pl-2026"]).toBe(3);
     });
 
+    it("AC-15 and AC-21 on one purchase of two orders and its one payment (0026): each order gets its own invoice; a refund naming the second order credits the second invoice only", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        await invoicing(tx);
+        const first = await order(tx, { lines: SINGLE });
+        const [own] = await tx<{ purchase_id: string }[]>`
+          SELECT purchase_id FROM "order" WHERE id = ${first}`;
+        const purchaseId = own?.purchase_id ?? "";
+        const second = await order(tx, {
+          lines: [{ kind: "product", gross: 4_000, rateBp: 800 }],
+          purchaseId,
+        });
+        await tx`UPDATE purchase SET total_minor = total_minor + 4000 WHERE id = ${purchaseId}`;
+        const paymentId = await capturePayment(tx, first);
+        for (const id of [first, second]) {
+          await engine(tx, id, "order.captured", { mode: "live" });
+          await dispatch(tx, id);
+        }
+        await walkOrderTo(tx, second, "delivered");
+        const refundId = await refund(
+          tx,
+          second,
+          1_000,
+          "order.refunded_partial",
+        );
+        await dispatch(tx, second);
+        const [payment] = await tx<{ n: number; amount: string }[]>`
+          SELECT count(*)::int AS n, max(amount_minor)::text AS amount
+          FROM payment WHERE purchase_id = ${purchaseId}`;
+        return {
+          paymentId,
+          payment,
+          refundId,
+          first: await documents(tx, first),
+          second: await documents(tx, second),
+        };
+      });
+      expect(result.paymentId).not.toBe("");
+      expect(result.payment).toEqual({ n: 1, amount: "10799" });
+      expect(
+        result.first.map((doc) => [doc.kind, doc.total_minor, doc.refund_id]),
+      ).toEqual([["invoice", "6799", null]]);
+      const [invoice, credit] = result.second;
+      expect(result.second.map((doc) => [doc.kind, doc.total_minor])).toEqual([
+        ["invoice", "4000"],
+        ["credit_note", "-1000"],
+      ]);
+      expect(credit?.refund_id).toBe(result.refundId);
+      expect(credit?.corrects_invoice_id).toBe(invoice?.id);
+    });
+
+    it("AC-20 (0026): another purchase's captured payment does not capture this order: INVOICE_NOT_CAPTURED, no number", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        await invoicing(tx);
+        const paid = await order(tx, { lines: SINGLE });
+        await capturePayment(tx, paid);
+        const unpaid = await order(tx, { lines: SINGLE });
+        const before = await nextNumbers(tx);
+        const code = await refusalOf(issueInvoice(unpaid, opts(tx)));
+        return {
+          code,
+          unchanged:
+            JSON.stringify(await nextNumbers(tx)) === JSON.stringify(before),
+          docs: await documents(tx, unpaid),
+        };
+      });
+      expect(result.code).toBe("INVOICE_NOT_CAPTURED");
+      expect(result.unchanged).toBe(true);
+      expect(result.docs).toEqual([]);
+    });
+
     it("AC-21: a refund settling on a cancelled order (row 32) nets the mixed-rate invoice to zero per rate", async () => {
       const docs = await rolledBack(scratch.sql, async (tx) => {
         await invoicing(tx);
@@ -748,10 +833,12 @@ describe.skipIf(server.url === undefined)(
         await capturePayment(tx, id);
         const orphan = await tx.savepoint(async (sp) => {
           const [row] = await sp<{ id: string }[]>`
-            INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
-                                requested_by, succeeded_at)
-            SELECT id, ${unique("re_")}, 100, 'GBP', 'quality', 'succeeded', 'system:test', now()
-            FROM payment WHERE order_id = ${id} RETURNING id`;
+            INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                                currency_code, reason, status, requested_by, succeeded_at)
+            SELECT p.id, o.id, o.purchase_id, ${unique("re_")}, 100, 'GBP', 'quality', 'succeeded',
+                   'system:test', now()
+            FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+            WHERE o.id = ${id} RETURNING id`;
           const alert = alerts();
           const code = await refusalOf(
             issueCreditNote(row?.id ?? "", opts(sp, { alert })),
@@ -765,10 +852,12 @@ describe.skipIf(server.url === undefined)(
                  WHERE flag_key = 'invoice.issue' AND scope_ref = 'PL'`;
         await issueInvoice(id, opts(tx));
         const [row] = await tx<{ id: string }[]>`
-          INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
-                              requested_by, succeeded_at)
-          SELECT id, ${unique("re_")}, 1000, 'GBP', 'quality', 'succeeded', 'system:test', now()
-          FROM payment WHERE order_id = ${id} RETURNING id`;
+          INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor,
+                              currency_code, reason, status, requested_by, succeeded_at)
+          SELECT p.id, o.id, o.purchase_id, ${unique("re_")}, 1000, 'GBP', 'quality', 'succeeded',
+                 'system:test', now()
+          FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+          WHERE o.id = ${id} RETURNING id`;
         const before = await nextNumbers(tx);
         const alert = alerts();
         const split = await refusalOf(
