@@ -313,8 +313,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 452 |
-| `tests/integration/` | 80 |
+| `tests/unit/` | 454 |
+| `tests/integration/` | 81 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
