@@ -3719,7 +3719,9 @@
   },
   "occasionHub.dateUnknown": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-437.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:34:36Z",
     "sourceHash": "68d38b67a079b5df32812b7ca54d9adb57b5ccbc4bfeccc13c4e10444473ea40"
   },
   "occasionHub.datesCaption": {
@@ -4691,7 +4693,9 @@
   },
   "infoPages.company.detailsToFollow": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-437.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:34:36Z",
     "sourceHash": "e09f110fb9b813c271ecfcec47ed62ecb498435b8c4ca19c256178b379798500"
   },
   "infoPages.contact.heading": {
