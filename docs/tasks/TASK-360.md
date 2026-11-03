@@ -30,7 +30,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: needs the `notification_delivery` table and spec 016's pipeline (TASK-327, TASK-331, TASK-333); none exists on any branch. Not started. `open`.
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: needs the `notification_delivery` table and spec 016's pipeline (TASK-327, TASK-331, TASK-333); none exists on any branch. Not started. Answered 2026-11-04 (builder R360, from main 685f9c3ba): TASK-331 (PR 450), TASK-333 (PR 472) and TASK-357 (PRs 398, 448, 478) are merged; `resend_of` is in migration 0031.
 
 ## Progress
 
@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04, builder R360: worktree `/Users/ahmed/dev/fo-wt-360` on `task/TASK-360-admin-resend` from main 685f9c3ba; row `in_progress`; draft PR. Next: `RESEND_RULES`, `resendableDeliveries`, `resendNotification`, the `notifications.resend` job, `adminOrderResend`, tests.
 
 ## Result
 
