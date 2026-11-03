@@ -176,20 +176,31 @@ describe("notificationsFor (T-18, AC-18)", () => {
     }
   });
 
-  it("gives each row its audience: buyer for B, florist for V, ops for A1, W and F1 to F3; F1 to F3 live only", () => {
+  it("gives each row its audience: buyer for B, florist for V and FS, ops for A1, W and F1 to F3; F1 to F3 and FS live only", () => {
     for (const rule of NOTIFICATION_RULES) {
       const expectedAudience = rule.code.startsWith("B")
         ? "buyer"
-        : rule.code.startsWith("V")
+        : rule.code.startsWith("V") || rule.code === "FS"
           ? "florist"
           : "ops";
       expect(rule.audience, rule.code).toBe(expectedAudience);
       expect(rule.modes, rule.code).toEqual(
-        expectedAudience === "buyer" || LIVE_ONLY_OPS.has(rule.template)
+        expectedAudience === "buyer" ||
+          LIVE_ONLY_OPS.has(rule.template) ||
+          rule.code === "FS"
           ? ["live"]
           : ["test", "live"],
       );
     }
+    // Spec 030a §5.2 (TASK-365): the payout statement, about one payout, to the florist.
+    expect(
+      notificationsFor("payouts.statement_email", null, "live").map(
+        (rule) => [rule.code, rule.template, rule.audience] as const,
+      ),
+    ).toEqual([["FS", "florist-payout-statement", "florist"]]);
+    expect(notificationsFor("payouts.statement_email", null, "test")).toEqual(
+      [],
+    );
     expect(NOTIFICATION_RULES.some((rule) => rule.code === "B7")).toBe(false);
   });
 });

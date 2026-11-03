@@ -196,3 +196,76 @@ describe("capturingMailer idempotency, as Resend's (spec 016 AC-19)", () => {
     mailer.clear();
   });
 });
+
+describe("resendMailer attachments (spec 030a §5.2, AC-21; TASK-365)", () => {
+  const pdf = Buffer.from("%PDF-1.7 statement").toString("base64");
+
+  it("sends each file as Resend's attachments[] { filename, content (base64), content_type }", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    await resendMailer(config, fetchImpl).send({
+      ...message,
+      attachments: [
+        {
+          filename: "payout-statement-P-000127.pdf",
+          contentType: "application/pdf",
+          content: pdf,
+        },
+      ],
+    });
+    const [, init] = fetchImpl.mock.calls[0] ?? [];
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect(body["attachments"]).toEqual([
+      {
+        filename: "payout-statement-P-000127.pdf",
+        content: pdf,
+        content_type: "application/pdf",
+      },
+    ]);
+  });
+
+  it("sends no attachments field for a message without files", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    await resendMailer(config, fetchImpl).send(message);
+    const [, init] = fetchImpl.mock.calls[0] ?? [];
+    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    expect("attachments" in body).toBe(false);
+  });
+
+  it("refuses, before any request, a file that is not base64, not a PDF, or named with a path", async () => {
+    const fetchImpl = respond(200, fixture.response200);
+    const mailer = resendMailer(config, fetchImpl);
+    const file = {
+      filename: "payout-statement-P-000127.pdf",
+      contentType: "application/pdf",
+      content: pdf,
+    } as const;
+    for (const bad of [
+      { ...file, content: "not base64 at all!" },
+      { ...file, contentType: "text/html" },
+      { ...file, filename: "../etc/passwd" },
+      { ...file, filename: "a/b.pdf" },
+    ]) {
+      await expect(
+        mailer.send({ ...message, attachments: [bad] } as never),
+      ).rejects.toThrow();
+    }
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("the capturing mailer keeps the files with the message", async () => {
+    const capture = capturingMailer("Flowers Overseas <orders@example.test>");
+    const to = `attach-${String(Date.now())}@example.test`;
+    await capture.send({
+      ...message,
+      to,
+      attachments: [
+        {
+          filename: "payout-statement-P-000001.pdf",
+          contentType: "application/pdf",
+          content: pdf,
+        },
+      ],
+    });
+    expect(capture.messages(to)[0]?.attachments?.[0]?.content).toBe(pdf);
+  });
+});
