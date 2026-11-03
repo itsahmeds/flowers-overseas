@@ -721,6 +721,75 @@
         "invalid": "Give a reason of at least 3 characters. Nothing was saved.",
         "not_found": "That application no longer exists."
       }
+    },
+    "orderActions": {
+      "title": "Actions",
+      "demo": "Demo order: no actions",
+      "grace": "Cancelled automatically at {time} ({city}) unless rerouted",
+      "graceDestination": "{time} in {city} ({zone}), the delivery’s own time",
+      "close": "Close",
+      "noPermission": {
+        "reroute": "Rerouting needs the admin or ops role.",
+        "cancel": "Cancelling needs the admin role."
+      },
+      "reroute": {
+        "open": "Reroute",
+        "title": "Reroute {reference}",
+        "intro": "Phone the florist first. They get the offer by email in their language, with the usual time to answer. The buyer is told nothing.",
+        "rank": "#",
+        "florist": "Florist",
+        "town": "Town",
+        "payout": "Payout",
+        "earlier": "Earlier on this order",
+        "declined": "declined earlier",
+        "timed_out": "did not answer earlier",
+        "none": "None",
+        "offer": "Offer this order",
+        "offerTo": "Offer this order to {florist}",
+        "offering": "Offering…",
+        "empty": "No florist is eligible: check coverage, capacity and blackouts in <link>Florists</link>.",
+        "footnote": "Only florists who cover this address, make this bouquet and are open with room on {date}, and who can sign in, are listed. Ranked as automatic routing ranks them.",
+        "done": "Offered to {florist}."
+      },
+      "cancel": {
+        "open": "Cancel the order",
+        "title": "Cancel {reference}?",
+        "why": "Why",
+        "reason": {
+          "buyer_cancel": "The buyer asked",
+          "no_partner": "No florist can make it",
+          "other": "Other"
+        },
+        "accepted": "{florist} accepted this order. From now on only the buyer’s own request can cancel it.",
+        "note": "Note",
+        "noteOptional": "(optional)",
+        "noteHint": "Internal note. Do not type names, addresses or phone numbers.",
+        "noteCount": "{count} / {max}",
+        "noteRequired": "Add a note when the reason is Other.",
+        "whatHappens": "What happens",
+        "refund": "The buyer is refunded {amount} in full, to the card or wallet they paid with.",
+        "florist": "{florist} is told to stop (the offer-withdrawn email).",
+        "payout": "A payout adjustment is recorded for {florist}.",
+        "buyerEmail": "The buyer receives the cancellation email:",
+        "youCancelled": "You cancelled this order. We have refunded {amount}.",
+        "couldNotDeliver": "We could not deliver this order. We have refunded {amount}.",
+        "keep": "Keep the order",
+        "confirm": "Cancel the order",
+        "cancelling": "Cancelling…",
+        "done": "Order cancelled. A refund of {amount} is on its way."
+      },
+      "refused": {
+        "ORDER_CHANGED": "This order changed after you opened it. Nothing was done. Reload to see it as it is now.",
+        "DEMO_ORDER": "Demo order: no actions. Nothing was done.",
+        "FORBIDDEN": "Your role cannot do this. Nothing was done.",
+        "INPUT_INVALID": "The form was incomplete. Nothing was done.",
+        "PARTNER_NOT_ELIGIBLE": "That florist can no longer take this order. Nothing was sent. Choose another florist.",
+        "ROUTING_DEADLINE_PASSED": "It is too late for this order to arrive on its date. Nothing was sent. Cancel it instead.",
+        "REROUTE_ILLEGAL": "This order is no longer waiting for a florist. Nothing was done.",
+        "CANCEL_ILLEGAL": "This order is being made now, so it can no longer be cancelled. Nothing was done. Refund instead.",
+        "CANCEL_REASON_NOT_ALLOWED": "Once a florist has accepted, only “The buyer asked” can cancel. Nothing was done.",
+        "other": "Nothing was done. Reload and try again."
+      }
     }
   },
   "emails": {

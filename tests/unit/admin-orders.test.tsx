@@ -96,6 +96,8 @@ vi.mock("@/modules/admin", async (importOriginal) => {
       permission: Parameters<typeof actual.requirePermission>[0],
     ) => actual.requirePermission(permission, { session }),
     adminRequestId: () => Promise.resolve("request-1"),
+    // Spec 020a's Actions card reads the refund state (TASK-358); none in these fixtures.
+    orderRefunds: () => Promise.resolve(null),
     logAdminRead: (_actor: unknown, entity: string, id: string) => {
       if (data.viewLogFails) {
         return Promise.reject(new Error("audit_log write failed"));
@@ -105,6 +107,12 @@ vi.mock("@/modules/admin", async (importOriginal) => {
     },
   };
 });
+
+vi.mock("@/modules/orders/routing/jobs", () => ({
+  rerouteCandidates: () => Promise.resolve([]),
+  noPartnerGrace: () => Promise.resolve(null),
+  manualReroute: () => Promise.reject(new Error("not in this suite")),
+}));
 
 vi.mock("@/modules/orders", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/modules/orders")>();
@@ -610,7 +618,11 @@ describe("/admin/orders/[id] (AC-13, AC-19)", () => {
     expect(html).toContain("Accepted 11:09");
     expect(html).toContain("pl-waw-demo-2");
     expect(html).toContain("No payment. Demo orders are never charged.");
-    expect(html).toContain("Changes to orders are not available in admin yet.");
+    // Spec 020a §5.2 "Mode" (TASK-358): a demo order's Actions card names why it has no control.
+    expect(html).toContain("Demo order: no actions");
+    expect(html).not.toContain(
+      "Changes to orders are not available in admin yet.",
+    );
     expect(actionControls(html)).toEqual([]);
     expect(html.slice(html.indexOf("<main"))).not.toContain("<form");
   });
