@@ -165,7 +165,7 @@ describe("notificationsFor (T-18, AC-18)", () => {
     }
   });
 
-  it("gives each row its audience: buyer for B, florist for V, ops for A1 and W", () => {
+  it("gives each row its audience: buyer for B, florist for V, ops for A1, W and F1; F1 live only", () => {
     for (const rule of NOTIFICATION_RULES) {
       const expectedAudience = rule.code.startsWith("B")
         ? "buyer"
@@ -174,7 +174,9 @@ describe("notificationsFor (T-18, AC-18)", () => {
           : "ops";
       expect(rule.audience, rule.code).toBe(expectedAudience);
       expect(rule.modes, rule.code).toEqual(
-        expectedAudience === "buyer" ? ["live"] : ["test", "live"],
+        expectedAudience === "buyer" || LIVE_ONLY_OPS.has(rule.template)
+          ? ["live"]
+          : ["test", "live"],
       );
     }
     expect(NOTIFICATION_RULES.some((rule) => rule.code === "B7")).toBe(false);

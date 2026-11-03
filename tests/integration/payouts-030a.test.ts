@@ -172,6 +172,13 @@ async function fix(
   );
 }
 
+/** The physical row ids of an order's lines: an UPDATE, even to the same values, moves them. */
+async function ctids(tx: Tx, orderId: string): Promise<string[]> {
+  const rows = await tx<{ ctid: string }[]>`
+    SELECT ctid::text AS ctid FROM order_line WHERE order_id = ${orderId} ORDER BY id`;
+  return rows.map((row) => row.ctid);
+}
+
 async function lines(sql: Sql | Tx, orderId: string) {
   return sql<
     {
@@ -414,14 +421,16 @@ describe.skipIf(server.url === undefined)(
               payout_currency_code: "PLN",
             },
           ]);
-          // A later statement in the same transaction would share now(); a new one would not.
-          await tx`SELECT pg_sleep(0.01)`;
+          const firstCtids = await ctids(tx, orderId);
           expect(await fix(tx, orderId, assignmentId)).toEqual({
             outcome: "fixed",
             linesFixed: 0,
             prepaidPayoutId: null,
           });
           expect(await lines(tx, orderId)).toEqual(once);
+          // `now()` is the transaction's, so `updated_at` alone cannot see a rewrite here; a
+          // rewritten row gets a new `ctid`, so the second run must leave every one in place.
+          expect(await ctids(tx, orderId)).toEqual(firstCtids);
         });
       });
 
@@ -736,6 +745,155 @@ describe.skipIf(server.url === undefined)(
           WHERE source_key = ${`job:payouts.prepaid_ready:${payoutId}`}
             AND template_key = 'payout-prepaid-ready' AND recipient_ref = 'ops'`;
         expect(deliveries?.n).toBe(1);
+      });
+    });
+
+    /* -------------------------------------------------------------------- */
+    /* Money's awkward cases (self-review, TASK-363)                        */
+    /* -------------------------------------------------------------------- */
+
+    describe("awkward amounts, currencies, cancellations and retries", () => {
+      async function prepaidCount(tx: Tx, partnerId: string): Promise<number> {
+        const [row] = await tx<{ n: number }[]>`
+          SELECT count(*)::int AS n FROM payout
+          WHERE partner_id = ${partnerId} AND kind = 'prepaid'`;
+        return row?.n ?? -1;
+      }
+
+      async function refusal(tx: Tx, orderId: string, assignmentId: string) {
+        return tx
+          .savepoint((sp) => fix(sp as Tx, orderId, assignmentId))
+          .then(
+            () => "fixed",
+            (error: unknown) => (error as { code?: string }).code,
+          );
+      }
+
+      it("zero: a florist whose prices are 0 gets the amounts fixed at 0, no prepaid payout, and keeps its prepaid slot", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c, 5);
+          await tx`UPDATE partner_catalog_mapping SET partner_payout_minor = 0
+                   WHERE partner_id = ${partnerId}`;
+          const orderId = await order(tx, c);
+          const scheduled: string[] = [];
+          expect(
+            await fix(
+              tx,
+              orderId,
+              await accepted(tx, orderId, partnerId),
+              scheduled,
+            ),
+          ).toEqual({ outcome: "fixed", linesFixed: 2, prepaidPayoutId: null });
+          expect(
+            (await lines(tx, orderId)).map((l) => l.partner_payout_minor),
+          ).toEqual([null, "0", "0"]);
+          expect(scheduled).toEqual([]);
+          expect(await prepaidCount(tx, partnerId)).toBe(0);
+        });
+      });
+
+      it("currencies: the database refuses a price in EUR for a florist paid in PLN; amounts fixed in another currency refuse the prepaid payout", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c, 5);
+          const mapping = await pgFailure(
+            tx,
+            (sp) =>
+              sp`UPDATE partner_catalog_mapping SET currency_code = 'EUR'
+                 WHERE partner_id = ${partnerId} AND product_id = ${c.productB}`,
+          );
+          expect(mapping.constraint).toBe(
+            "partner_catalog_mapping_partner_currency_fkey",
+          );
+          // Amounts fixed in EUR before (a florist whose currency changed since): the prepaid
+          // step refuses rather than pay EUR amounts as PLN, and writes nothing.
+          const orderId = await order(tx, c);
+          await tx`UPDATE order_line SET partner_payout_minor = 100, payout_currency_code = 'EUR'
+                   WHERE order_id = ${orderId} AND kind = 'product'`;
+          const assignmentId = await accepted(tx, orderId, partnerId);
+          expect(await refusal(tx, orderId, assignmentId)).toBe(
+            "PAYOUT_CURRENCY_MISMATCH",
+          );
+          expect(await prepaidCount(tx, partnerId)).toBe(0);
+        });
+      });
+
+      it("spec 030a Q5: an order cancelled after acceptance, handled late, still gets its prepaid payout (the founder recovers it by adjustment)", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c, 5);
+          const orderId = await order(tx, c);
+          await walkOrderTo(tx, orderId, "accepted");
+          const assignmentId = await accepted(tx, orderId, partnerId);
+          await walkOrderTo(tx, orderId, "cancelled");
+          const result = await fix(tx, orderId, assignmentId);
+          expect(result).toMatchObject({ outcome: "fixed", linesFixed: 2 });
+          const rows = await prepaid(tx, partnerId);
+          expect(rows.map((r) => [r.total_minor, r.line_amounts])).toEqual([
+            ["39700", ["39700"]],
+          ]);
+        });
+      });
+
+      it("a retry after a failed run accrues once: F1 cannot be enqueued, nothing stays; the next run writes one payout and one line", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c, 5);
+          const orderId = await order(tx, c);
+          const assignmentId = await accepted(tx, orderId, partnerId);
+          const failed = await tx
+            .savepoint((sp) =>
+              asSystem(sp as Tx, () =>
+                fixPayoutAtAcceptance(
+                  runnerOf(sp as Tx),
+                  { orderId, assignmentId },
+                  {
+                    schedulePrepaidReady: () =>
+                      Promise.reject(new Error("IT_QUEUE_DOWN")),
+                    log: quiet,
+                  },
+                ),
+              ),
+            )
+            .then(
+              () => "fixed",
+              (error: unknown) => String(error),
+            );
+          expect(failed).toMatch(/IT_QUEUE_DOWN/u);
+          expect(
+            (await lines(tx, orderId)).map((l) => l.partner_payout_minor),
+          ).toEqual([null, null, null]);
+          expect(await prepaidCount(tx, partnerId)).toBe(0);
+
+          const scheduled: string[] = [];
+          for (let i = 0; i < 3; i += 1) {
+            await fix(tx, orderId, assignmentId, scheduled);
+          }
+          expect(scheduled).toHaveLength(1);
+          const rows = await prepaid(tx, partnerId);
+          expect(
+            rows.map((r) => [r.id, r.total_minor, r.line_amounts]),
+          ).toEqual([[scheduled[0], "39700", ["39700"]]]);
+        });
+      });
+
+      it("AC-7: a prepaid order's later photo creates no line and no payout (no `payouts` route on the photo yet)", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c, 5);
+          const orderId = await order(tx, c);
+          await walkOrderTo(tx, orderId, "accepted");
+          await fix(tx, orderId, await accepted(tx, orderId, partnerId));
+          const before = await prepaid(tx, partnerId);
+          expect(before).toHaveLength(1);
+          await walkOrderTo(tx, orderId, "photo_uploaded");
+          const [counts] = await tx<{ payouts: number; lines: number }[]>`
+            SELECT (SELECT count(*)::int FROM payout WHERE partner_id = ${partnerId}) AS payouts,
+                   (SELECT count(*)::int FROM payout_line WHERE order_id = ${orderId}) AS lines`;
+          expect({ ...counts }).toEqual({ payouts: 1, lines: 1 });
+          const [targets] = await tx<{ n: number }[]>`
+            SELECT count(*)::int AS n FROM outbox_delivery d
+            JOIN outbox x ON x.id = d.outbox_id JOIN order_event e ON e.id = x.event_id
+            WHERE e.order_id = ${orderId} AND e.type = 'order.photo_uploaded'
+              AND d.target = 'payouts'`;
+          expect(targets?.n).toBe(0);
+        });
       });
     });
 
