@@ -66,9 +66,12 @@ here.
   calendar (`localDateIn`, `weeklyPeriod`), F2/F3 templates and copy, the `order.photo_uploaded`
   route, the hourly `payouts.close`/`payouts.watch` jobs (tick, one-hour singleton window); unit
   tests updated and green; typecheck green. No migration.
-- 2026-11-04: integration `payouts-accrual` 24 green on a local PG16; 21 mutations recorded, each
+- 2026-11-04: integration `payouts-accrual` green on a local PG16; 23 mutations recorded, each
   red; cheap gates run (reds are the known main reds plus none of this diff). Ready for the
   orchestrator.
+- 2026-11-04: F2 and F3 rebuilt to the `email-founder-*` artboard (copy `emails.ops.payouts.ready.*`
+  with the ICU plural, `lineMissing.*` with the band, photo time in the florist's zone, florist
+  code); F2 counts the ready group and those needing a look. Rebased on main 84d4e1bcd.
 
 ## Result
 
@@ -82,8 +85,8 @@ and `dates.ts` (`localDateIn`, `weeklyPeriod`); the `payouts` outbox target now 
 `order.photo_uploaded` (live) to the accrual; jobs `payouts.close` and `payouts.watch`, enqueued by
 the minute tick under a one-hour singleton key; spec 016's pipeline gains
 `sendOpsJobNotification` (an ops message about no order) and templates `payouts-ready` and
-`payout-line-missing` with English admin copy. Tests: integration `payouts-accrual` 24 (T-03,
-T-08 to T-15, T-33, awkward cases); unit `payouts-dates` 15, `email-payouts-founder` 3, plus the
+`payout-line-missing` with English admin copy. Tests: integration `payouts-accrual` (T-03,
+T-08 to T-15, T-33, F2 counts, awkward cases; 25); unit `payouts-dates` 15, `email-payouts-founder` 5, plus the
 registry, rules, tick, runtime and admin key-scan files that follow the new jobs and templates.
 Handed on: AC-10's statement half (TASK-365), the waiver's server action and permission
 (TASK-367), the carry-forwards above.
