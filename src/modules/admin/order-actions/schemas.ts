@@ -126,6 +126,10 @@ export const adminOrderActionCodes = [
   "NOT_REFUNDABLE",
   "RESEND_NOT_ALLOWED",
   "RESEND_RATE_LIMITED",
+  // Spec 016's `manualReroute` refusal, passed through under its own name (§5.2 "Engine and
+  // command errors pass through"): past the routing deadline the order cannot arrive on its date
+  // (TASK-358).
+  "ROUTING_DEADLINE_PASSED",
   // Not in §5.2's list: a form that fails its schema (a forged reason, `other` without a note), a
   // missing order, or an action id reused on another order. The engine's own errors pass through
   // under their own names (§5.2), and this is the action layer's (TASK-359).

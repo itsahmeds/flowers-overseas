@@ -2,7 +2,9 @@
  * Admin order actions (spec 020a): the availability table, the action schemas, the money input,
  * the suggested refund amounts, `runOrderAction` (lock, replay, `expectedSeq`, the audited action
  * row) and the refunds list (TASK-359). The refund action itself is `./refund.ts`, imported by
- * path (see its header). Reroute, cancel and resend wait for TASK-358 and TASK-360.
+ * path (see its header). Reroute (TASK-358) is `./reroute.ts`, re-exported here with the grace
+ * end's display; cancel is `./cancel.ts`, imported by path for refund's reason. Resend waits for
+ * TASK-360.
  */
 export {
   type AvailableActions,
@@ -87,3 +89,14 @@ export {
   type RefundStatus,
   refundStatuses,
 } from "./refund-state.ts";
+export {
+  type GraceEndDisplay,
+  graceEndDisplay,
+  type ZonedTime,
+} from "./grace.ts";
+export {
+  adminOrderReroute,
+  type AdminOrderRerouteDeps,
+  type RerouteCommand,
+  type RerouteCommandResult,
+} from "./reroute.ts";
