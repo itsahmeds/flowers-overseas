@@ -779,6 +779,104 @@ describe.skipIf(server.url === undefined)(
     });
 
     /* -------------------------------------------------------------------- */
+    /* Awkward cases (self-review, TASK-364)                                */
+    /* -------------------------------------------------------------------- */
+
+    describe("awkward cases: zero, currency mismatch, the year end, a refund after accrual", () => {
+      it("zero: amounts fixed at 0 accrue no line (no zero order line exists) and the order stays watchable", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c);
+          await tx`UPDATE partner_catalog_mapping SET partner_payout_minor = 0
+                   WHERE partner_id = ${partnerId}`;
+          const orderId = await order(tx, c, { extra: null });
+          await acceptAndFix(tx, orderId, partnerId);
+          expect((await accrue(tx, orderId, AC8_INSTANT)).outcome).toBe("zero");
+          expect(await payouts(tx, partnerId)).toEqual([]);
+        });
+      });
+
+      it("a prepaid order's photo (AC-7's photo half, TASK-363's hand-over) accrues nothing more: one line, one payout", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c, "weekly", 5);
+          const orderId = await order(tx, c, { extra: null });
+          await acceptAndFix(tx, orderId, partnerId);
+          for (let i = 0; i < 2; i += 1) {
+            expect((await accrue(tx, orderId, AC8_INSTANT)).outcome).toBe(
+              "already_accrued",
+            );
+          }
+          expect(
+            (await payouts(tx, partnerId)).map((r) => [r.kind, r.lines.length]),
+          ).toEqual([["prepaid", 1]]);
+        });
+      });
+
+      it("currency mismatch: amounts fixed in EUR for a florist paid in PLN refuse PAYOUT_CURRENCY_MISMATCH and write nothing", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c);
+          const orderId = await order(tx, c, { extra: null });
+          await accepted(tx, orderId, partnerId);
+          await tx`UPDATE order_line SET partner_payout_minor = 14900, payout_currency_code = 'EUR'
+                   WHERE order_id = ${orderId}`;
+          expect(
+            await codeOf(
+              tx.savepoint((sp) =>
+                accrue(sp as unknown as Tx, orderId, AC8_INSTANT),
+              ),
+            ),
+          ).toBe("PAYOUT_CURRENCY_MISMATCH");
+          expect(await payouts(tx, partnerId)).toEqual([]);
+        });
+      });
+
+      it("the year end: a week from 28 December to 3 January stays open at 23:30 on the 3rd and closes at 00:30 on the 4th, Warsaw time", async () => {
+        await rolledBack(scratch.sql, async (tx) => {
+          const partnerId = await florist(tx, c);
+          const orderId = await order(tx, c, { extra: null });
+          await acceptAndFix(tx, orderId, partnerId);
+          await accrue(tx, orderId, new Date("2026-12-30T10:00:00Z"));
+          const close = (at: Date) =>
+            asSystem(tx, () =>
+              closeDuePayouts(at, {
+                executor: runnerOf(tx),
+                sendReady: () => Promise.resolve(),
+                log: quiet,
+              }),
+            );
+          const view = async () =>
+            (await payouts(tx, partnerId)).map((r) => [
+              r.period_start,
+              r.period_end,
+              r.closed,
+            ]);
+          await close(new Date("2027-01-03T22:30:00Z"));
+          expect(await view()).toEqual([["2026-12-30", "2027-01-03", false]]);
+          await close(new Date("2027-01-03T23:30:00Z"));
+          expect(await view()).toEqual([["2026-12-30", "2027-01-03", true]]);
+        });
+      });
+
+      it("a refund after accrual: no payouts route exists for a refund, so the line stands (spec 030a §13 Q13)", async () => {
+        const { payoutOutboxTargets } =
+          await import("../../src/modules/orders/outbox/routes.ts");
+        for (const event of [
+          "order.refunded_partial",
+          "order.refunded_full",
+          "order.cancelled",
+          "order.chargeback_opened",
+        ] as const) {
+          expect(payoutOutboxTargets(event, "live"), event).toEqual([]);
+        }
+        expect(
+          payoutOutboxTargets("order.photo_uploaded", "live").map(
+            (t) => t.name,
+          ),
+        ).toEqual(["payouts"]);
+        expect(payoutOutboxTargets("order.photo_uploaded", "test")).toEqual([]);
+      });
+    });
+
+    /* -------------------------------------------------------------------- */
     /* T-15                                                                 */
     /* -------------------------------------------------------------------- */
 
