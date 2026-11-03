@@ -770,6 +770,15 @@ describe.skipIf(server.url === undefined)(
         };
       });
       for (const { status, view, html } of results.out) {
+        // The open refunds (100 requested + 200 pending) are a sentence on a cancelled order only.
+        expect(view.refundPending, status).toEqual(
+          status === "cancelled"
+            ? { amountMinor: 300, currencyCode: "PLN" }
+            : null,
+        );
+        expect(html.includes("We are refunding"), status).toBe(
+          status === "cancelled",
+        );
         expect(view.refundLines, status).toEqual([
           {
             amountMinor: 300,
