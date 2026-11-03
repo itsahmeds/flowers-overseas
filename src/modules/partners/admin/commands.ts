@@ -61,6 +61,8 @@ import {
   parseTerms,
   unmetConditions,
 } from "./schemas";
+import { hasOwnerMember, syncPartnerOwnerMember } from "../access/sync";
+import { FloristSignInEmailSchema } from "../access/language";
 
 /** Runs `fn` in one admin transaction carrying `context.action`. */
 export type PartnerAdminRunner = <T>(
@@ -151,6 +153,7 @@ interface LockedPartner {
   readonly status: string;
   readonly countryId: string;
   readonly payoutCurrencyCode: string;
+  readonly contactEmail: string;
 }
 
 /**
@@ -170,6 +173,7 @@ async function lockPartner(
       status: fulfillmentPartner.status,
       countryId: fulfillmentPartner.countryId,
       payoutCurrencyCode: fulfillmentPartner.payoutCurrencyCode,
+      contactEmail: fulfillmentPartner.contactEmail,
       updatedAt: fulfillmentPartner.updatedAt,
     })
     .from(fulfillmentPartner)
@@ -261,10 +265,15 @@ export async function createPartner(
         ...profileColumns(profile.value, countryId),
       })
       .onConflictDoNothing({ target: fulfillmentPartner.code })
-      .returning({ code: fulfillmentPartner.code });
-    return inserted.length === 1
-      ? { ok: true as const, code }
-      : { ok: false as const, reason: "code_taken" as const };
+      .returning({ id: fulfillmentPartner.id });
+    const [partner] = inserted;
+    if (partner === undefined) {
+      return { ok: false as const, reason: "code_taken" as const };
+    }
+    // Spec 026a AC-7: the contact email becomes the one address that may sign in, in this
+    // transaction; a failure here rolls the partner back too.
+    await syncPartnerOwnerMember(db, partner.id);
+    return { ok: true as const, code };
   });
 }
 
@@ -310,8 +319,26 @@ export async function updatePartner(
         updatedAt: sql`now()`,
       })
       .where(eq(fulfillmentPartner.id, locked.id));
+    // Spec 026a AC-7: a changed contact email moves sign-in access in this transaction; an
+    // unchanged one changes no membership. A partner with no owner yet (created before spec
+    // 026a, never a seeded demo partner) gets its first one on the next save.
+    if (
+      !sameAddress(locked.contactEmail, profile.value.contactEmail) ||
+      (locked.status !== "demo" && !(await hasOwnerMember(db, locked.id)))
+    ) {
+      await syncPartnerOwnerMember(db, locked.id);
+    }
     return { ok: true, code: locked.code };
   });
+}
+
+/** Whether two contact emails are the same sign-in address once normalised. */
+function sameAddress(before: string, after: string): boolean {
+  const normalise = (value: string): string => {
+    const parsed = FloristSignInEmailSchema.safeParse(value);
+    return parsed.success ? parsed.data : value.trim().toLowerCase();
+  };
+  return normalise(before) === normalise(after);
 }
 
 /* -------------------------------------------------------------------------- */

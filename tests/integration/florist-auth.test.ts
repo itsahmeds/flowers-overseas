@@ -320,6 +320,41 @@ describe.skipIf(server.url === undefined)(
       expect(row?.days).toBe(30);
     });
 
+    it("spec 026a T-10: a confirmed sign-in stamps accepted_at once; a second sign-in leaves it", async () => {
+      const userId = ids[MEMBER("demo")] ?? "";
+      const stamp = async () => {
+        const [row] = await scratch.sql<{ at: string | null }[]>`
+          SELECT accepted_at::text AS at FROM partner_member WHERE user_id = ${userId}`;
+        return row?.at ?? null;
+      };
+      await scratch.sql`UPDATE partner_member SET accepted_at = NULL WHERE user_id = ${userId}`;
+      expect(await stamp()).toBeNull();
+      await signIn(MEMBER("demo"));
+      const first = await stamp();
+      expect(first).not.toBeNull();
+      await signIn(MEMBER("demo"));
+      expect(await stamp()).toBe(first);
+      // A failed confirm (a spent token) stamps nothing.
+      await scratch.sql`UPDATE partner_member SET accepted_at = NULL WHERE user_id = ${userId}`;
+      await request(MEMBER("demo"));
+      const t = tokenOf(
+        linkIn(mailer.messages(MEMBER("demo")).at(-1)?.text ?? ""),
+      );
+      await confirmFloristSignIn(
+        form({ t }, `${BASE}/api/auth/confirm`),
+        florist(),
+      );
+      await scratch.sql`UPDATE partner_member SET accepted_at = NULL WHERE user_id = ${userId}`;
+      const spent = await confirmFloristSignIn(
+        form({ t }, `${BASE}/api/auth/confirm`),
+        florist(),
+      );
+      expect(spent.headers.get("location")).toBe(
+        `${BASE}/sign-in?state=expired`,
+      );
+      expect(await stamp()).toBeNull();
+    });
+
     it("T-19: a second POST of the token, and a token past its hour, land on the expired page in the page's language", async () => {
       await request(MEMBER("demo"));
       const t = tokenOf(linkIn(mailer.messages(MEMBER("demo"))[0]?.text ?? ""));

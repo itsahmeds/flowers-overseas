@@ -163,3 +163,23 @@ export type {
   PartnerListFilter,
   PartnerListItem,
 } from "./admin/queries.ts";
+// Spec 026a §5.2 (TASK-355): florist access in admin. The partner's contact email is the one
+// sign-in address (`syncPartnerOwnerMember`, run by the commands above), its starting language,
+// and the admin block's "first signed in" fact. Server only.
+export {
+  FLORIST_COUNTRY_LANGUAGES,
+  FloristSignInEmailSchema,
+  floristLanguageFor,
+} from "./access/language.ts";
+export {
+  PARTNER_MEMBER_ACTIONS,
+  SyncOwnerResultSchema,
+  syncPartnerOwnerMember,
+} from "./access/sync.ts";
+export type { SyncOwnerResult } from "./access/sync.ts";
+export { recordFirstFloristSignIn } from "./access/first-sign-in.ts";
+export {
+  FloristSignInStatusSchema,
+  floristSignInStatus,
+} from "./access/status.ts";
+export type { FloristSignInStatus } from "./access/status.ts";

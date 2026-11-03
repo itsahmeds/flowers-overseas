@@ -2893,5 +2893,30 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "6ed5c1b68fe800d5677041667469829c52eeff09510c0f3c4b68371ac0eeb8a6"
+  },
+  "admin.partners.signIn.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d3cd4d915ef3536be546531cbc0c9926c1c1766839f380c5b4a07b393fcb946d"
+  },
+  "admin.partners.signIn.address": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3fa10dce5a295a8cca43210872805c2bacc15338b19dea12117a1db1fbad567d"
+  },
+  "admin.partners.signIn.notYet": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "797c5bd7666edc1284efbbac3136423306ad397aa9725dc592d121bbdf8dced5"
+  },
+  "admin.partners.signIn.firstSignedIn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e9ba1b87f0ca1a9f266613042cf68f78c94fdc985d70766cfb377eb112616e6c"
+  },
+  "admin.partners.signIn.help": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c73c1bd8eaf73458c3f0ed0dfb9f14755d216e5743e3dc296627ad55c8ce36ff"
   }
 }

@@ -482,6 +482,8 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       channel: "email",
       product: "Amber Hour",
       callingCode: "48",
+      // TASK-355's `admin.partners.signIn.*`.
+      email: "florist@example.test",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

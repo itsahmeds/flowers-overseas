@@ -27,7 +27,24 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-03 (self-review, PR 461): no 1280/390 screenshot of the admin block was taken locally
+  (the page needs an admin session and a database); the block is built from the artboard's own
+  primitives (`.ad-sec`, `.ad-card`, `.ad-chip`/`ok`, `.ad-note`). Compare it on the first
+  preview or production deploy.
+- 2026-11-03: `tests/integration/migrations-round-trip.test.ts` is red on main independently of
+  this PR (its `FUNCTIONS` list has `review_content_immutable` out of sorted order); not touched
+  here. Re-checked 2026-11-04 on PG16: still red the same way (`review_content_immutable` sorted
+  last in the test's `FUNCTIONS`), so AC-8's "round-trip passes" was proven for 0034 by a manual
+  migrate / `--down --to 0033` / migrate (trigger present, absent, present).
+- 2026-11-04 (self-review): two mutants survive and are equivalent, not gaps: swallowing a sync
+  failure in `updatePartner` (Postgres has already aborted the transaction, so the partner write
+  cannot commit), and not restoring the caller's audit action (the sync is the last write in all
+  three callers). If a later caller writes after the sync, add a test for the restored action.
+- 2026-11-04: the "First signed in on {date}" rendering in the admin's zone (AC-10's page half,
+  T-10 visual + axe) has no automated test; it needs an admin session and is CI's visual job.
+- 2026-11-03: the migration was first numbered `0035` and the suites were run locally with the
+  pair renamed to `0034`; on 2026-11-04 it was renumbered to `0034` for good (main ends at
+  `0033`, TASK-363 takes `0035`), so `db:check` sees no gap.
 
 ## Escalations
 
@@ -41,11 +58,32 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-03: migration `0035_florist_access` (+ down; renumbered from 0036 by the orchestrator,
+  0034 is TASK-363's), `src/modules/partners/access/` (language, sync, first-sign-in, status),
+  the sync wired into `createPartner`, `updatePartner`, `convertApplication`, the stamp in
+  `confirmFloristSignIn`, the admin block, unit tests. Next: integration tests on a local PG16.
+- 2026-11-03: integration suite `florist-access` (17), the confirm-stamp case in `florist-auth`,
+  `partner_member` in the audit-trail suite; migrate, roll back, migrate on PG16; snapshot
+  regenerated; mutations recorded in the PR. Done; PR 461 ready.
+- 2026-11-04: renumbered to `0034_florist_access` (main ends at 0033; TASK-363 takes 0035), rebased
+  on main c216700cc; typecheck, db:check (34 migrations), unit 39, integration florist-access 17,
+  florist-auth 17, audit-trail 38 green on PG16; migrate, roll back to 0033, migrate checked by
+  hand; 18 mutations re-run and written into PR 461's `## Self-review`. PR ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 461. Migration `0034_florist_access` (+ down) attaches `audit_row_change('user_id',
+'partner_id')` to `partner_member`; `src/modules/partners/access/` holds `FloristSignInEmailSchema`
+and `floristLanguageFor` (pure), `syncPartnerOwnerMember` (run by `createPartner`, `updatePartner`
+and `convertApplication` in their admin transaction, actions `partner.member.grant` / `.revoke`),
+`recordFirstFloristSignIn` (called after a successful florist confirm) and `floristSignInStatus`
+(the admin block under Profile). `partner_member` joins `AUDITED_TABLES`. Tests: unit 14
+(`partners-access-language`), integration 17 (`florist-access`) + 1 (`florist-auth`) + 1 case
+(`audit-trail`); `partners-admin` and `florist-auth` green with the sync in place. No new copy
+outside `admin.partners.signIn.*` (English only, admin keys ship unreviewed by rule, so no
+approval script). One reading to note: `updatePartner` also syncs when a non-demo partner has no
+owner yet (partners created before this task), so a legacy partner gains access on its next save.
+Records of AC-14 (RoPA, runbook, pointers) are TASK-356's.

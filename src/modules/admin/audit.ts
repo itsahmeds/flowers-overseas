@@ -29,7 +29,7 @@ import { type AdminRunner, adminRunner } from "./users";
 /** What `audit_mask()` writes in place of a personal value (the migration's constant). */
 export const AUDIT_MASK = "[masked]";
 
-/** The tables `audit_row_change()` is attached to (spec 012 §5.1), in the migration's order. */
+/** The tables `audit_row_change()` is attached to (spec 012 §5.1, spec 026a §5.1), in migration order. */
 export const AUDITED_TABLES = [
   "country",
   "fulfillment_partner",
@@ -41,6 +41,8 @@ export const AUDITED_TABLES = [
   "feature_flag_scope",
   "user_role",
   "admin_profile",
+  // Spec 026a §5.1 (`0034_florist_access`, TASK-355): a florist's access, granted and removed.
+  "partner_member",
 ] as const;
 
 /** The entities a view row names (AC-13): the order, and the application by its table. */

@@ -23,7 +23,7 @@ task actually touches.
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +10 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/florist-actions.test.ts`, `integration/florist-inbox.test.ts` +10 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-applications.test.ts` +10 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `integration/florist-access.test.ts` +12 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +10 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
@@ -303,8 +303,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 442 |
-| `tests/integration/` | 76 |
+| `tests/unit/` | 443 |
+| `tests/integration/` | 77 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
