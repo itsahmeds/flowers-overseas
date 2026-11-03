@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 W335: worktree `../fo-wt-335`, row `in_progress`, draft PR opened. No migration needed (0030 already widened `webhook_inbox.provider` and created `notification_delivery`). Next: verifier, inbox, processor, job, route, tests.
 
 ## Result
 
