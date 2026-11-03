@@ -1003,8 +1003,9 @@ describe.skipIf(server.url === undefined)(
           INSERT INTO payout (partner_id, period_start, period_end, total_minor, currency_code)
           VALUES (${partnerId}, DATE '2027-02-01', DATE '2027-02-07', 500, 'PLN') RETURNING id`;
         const [line] = await tx<{ id: string }[]>`
-          INSERT INTO payout_line (payout_id, order_id, amount_minor, currency_code, kind)
-          VALUES (${payout?.id ?? ""}, ${orderId}, 500, 'PLN', 'adjustment') RETURNING id`;
+          INSERT INTO payout_line (payout_id, order_id, amount_minor, currency_code, kind, note)
+          VALUES (${payout?.id ?? ""}, ${orderId}, 500, 'PLN', 'adjustment', 'a settled withdrawal')
+          RETURNING id`;
         return {
           orderId,
           partnerId,
