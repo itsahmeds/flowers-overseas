@@ -49,6 +49,15 @@ One dated bullet per `/review`, newest last.
   `home-honesty`, `deferred-set`, `catalog-product-view*`; `format:check` (email snapshots);
   `i18n:check` (`nav.send`, `nav.category.ourSelection`).
 
+- 2026-11-04 (self-review, PR 475): carry-forwards. (a) The PDF and email were built from the
+  artboards' structure and copy, but no pixel comparison of the PDF against
+  `florist-payout-statement-pdf.dc.html` was run (no visual gate tonight). (b) The `pl` and `de`
+  statement copy is a machine draft (`source: machine`, `reviewed: false`); the `pl` text needs a
+  native reader before the first live statement (§12). (c) `deleteReminder` stays the lawyer's to
+  confirm (§13 Q12). (d) `tests/unit/jobs-runtime.test.ts`'s production-map case times out at 5 s
+  under load average 11 to 15 on this branch and on PR 468 alike (it imports the whole worker); it
+  passes with `--testTimeout=60000`. (e) The admin "open the PDF" signed link is TASK-367's.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -60,7 +69,24 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   (2) an attachment on spec 016's `Mailer` (`MailMessageSchema` has no attachment field, and PR
   465 does not add one). Conservative reading taken (delegated by the orchestrator's work order):
   build everything that does not need either, leave the job without a handler, and finish AC-21
-  to AC-23 in a follow-up once PR 465 merges, adding the Mailer attachment there. `open`.
+  to AC-23 in a follow-up once PR 465 merges, adding the Mailer attachment there. **Answered
+  2026-11-04** (orchestrator's work order to builder P2): PR 465 merged; build AC-21 to AC-23 as a
+  new PR. Spec 030a AC-21 requires the PDF *attached*, so no signed link was considered; the
+  `Mailer` gains an optional attachment (decided under the orchestrator's delegation, see below).
+- 2026-11-04 (builder P2, decided under the orchestrator's delegation, conservative readings):
+  (1) `MailMessageSchema.attachments` (1 to 3 files, base64, `application/pdf` only, a plain file
+  name), sent as Resend's `attachments[]`; the capturing mailer keeps them. (2) The statement
+  `media_asset` row is `kind = 'partner'` (migration 0004's comment names the payout statement
+  PDF as a `partner` asset), `source = 'partner'` and `depicts = 'context'`: the closed value lists
+  have no "document" value and the spec lists no schema change, so none was made. (3) The copy
+  namespace is `emails.floristPayoutStatement.*`: the catalogue's email namespace is `emails`
+  (the spec's `email.` prefix names it). (4) "The country default" language is data,
+  `STATEMENT_LANGUAGE_BY_COUNTRY` in `src/config/payouts.ts` (PL `pl`, DE and AT `de`, else `en`):
+  no table carries a country's language. (5) The statement email and PDF live in
+  `src/modules/notifications/emails/` (the template registry, the florist frame and the copy are
+  there, and no barrel may carry email copy); the worker hands the PDF renderer to
+  `runStatementEmailJob` (`renderPdf`), so the `partners` module imports no email internals. All
+  five are `open` for the founder only if he wants another reading.
 
 ## Progress
 
@@ -76,6 +102,12 @@ here.
   to AC-23 after PR 465 (see Escalations).
 - 2026-11-04: rebased onto 467's new head f1460f07b (main 2801e7482 with TASK-342's invoice jobs); jobs index
   and registry test keep both (27 job names). typecheck 0, db:check 0, units 72/72, `payouts-statements` 19/19 on PG16.
+- 2026-11-04: AC-21 to AC-23 built on branch `task/TASK-365-statement-pdf` (PR 475, stacked on
+  PR 468 until it merges): Mailer attachments, the `FS` rule and `sendPayoutStatementNotification`,
+  the statement view, words, email and PDF (`notifications/emails/payout-statement*.ts`), the job
+  (`partners/payouts/statement-email.ts`) and its handler, copy in en, pl, de (`reviewed: false`).
+  Tests: integration `payouts-statement-email` 3, unit `payouts-statement-document` 10, contract
+  `resend-mailer` +4; 10 mutations each red.
 
 ## Result
 
@@ -89,3 +121,13 @@ weekly payout (created for a per-order florist too) and waive with an audited re
 email job enqueued. Tests: integration `payouts-statements` 19 (T-10, T-16 to T-20); unit
 `payouts-statement-number` 12, `no-direct-review-write` +1, registry files. Not built: AC-21 to
 AC-23 (statement email, PDF, en/pl/de copy), escalated above.
+
+PR 475 (TASK-365 remainder, AC-21 to AC-23): the `payouts.statement_email` handler renders the
+statement PDF on spec 018's setup (tagged, `/Lang`, PDF/UA, A4, the invoice's embedded Noto Sans
+via `invoiceFonts()`), stores it private at `payouts/{yyyy}/{payoutId}.pdf` as a `media_asset`,
+sets `statement_media_asset_id` and sends the florist email with the PDF attached through spec
+016's pipeline (`job:payouts.statement_email:{payoutId}`, `florist-payout-statement`, the florist's
+id), in the earliest owner's language else the country's; a re-run sends nothing. Tests:
+integration `payouts-statement-email` 3 (T-21, T-22 on a real order), unit
+`payouts-statement-document` 10 (T-22, T-23), contract `resend-mailer` 16 (+4), `notifications-rules`
+and `jobs-runtime` updated. No build, e2e, visual or Lighthouse run (founder rule tonight).

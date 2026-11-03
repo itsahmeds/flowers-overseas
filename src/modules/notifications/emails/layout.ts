@@ -696,9 +696,9 @@ export function note(...children: readonly Child[]): Block {
   };
 }
 
-/** A tinted box: information (sage), stop (blush), alert (butter). */
+/** A tinted box: information (sage), stop (blush), alert (butter), money on its way (leaf). */
 export function box(
-  tone: "sage" | "blush" | "butter",
+  tone: "sage" | "blush" | "butter" | "leaf",
   ...children: readonly Child[]
 ): Block {
   const background =
@@ -706,7 +706,9 @@ export function box(
       ? colour("sage-wash")
       : tone === "blush"
         ? colour("blush")
-        : colour("butter");
+        : tone === "leaf"
+          ? colour("leaf-wash")
+          : colour("butter");
   return {
     html: el(
       "p",
@@ -793,6 +795,104 @@ export function attemptsTable(
           ...row.map((child, index) =>
             cell("td", index, rowIndex === rows.length - 1, false, child),
           ),
+        ),
+      ),
+    ),
+  };
+}
+
+/** One row of the statement's lines: a main text and an optional small line under it, per cell. */
+export interface StatementLineRow {
+  readonly reference: string;
+  readonly referenceSmall: string | null;
+  readonly item: string;
+  readonly itemSmall: readonly string[];
+  readonly amount: string;
+}
+
+/**
+ * The lines of spec 030a's payout statement (artboard `email-florist-*`, "em-lines"): order with
+ * its date under it, bouquet with a second product or a note under it, the amount at the end in
+ * tabular figures. A real table with a header row, so a reader hears the columns.
+ */
+export function statementLines(
+  caption: string,
+  head: readonly [string, string, string],
+  rows: readonly StatementLineRow[],
+): Block {
+  const rule = `1px solid ${colour("rule")}`;
+  const small = (value: string): SafeHtml =>
+    el(
+      "span",
+      {
+        style: {
+          display: "block",
+          "font-size": 13,
+          color: colour("ink-3"),
+        },
+      },
+      value,
+    );
+  const cell = (
+    tag: "th" | "td",
+    index: number,
+    child: readonly Child[],
+  ): SafeHtml =>
+    el(
+      tag,
+      {
+        scope: tag === "th" ? "col" : null,
+        width: index === 0 ? 132 : null,
+        style: {
+          padding: "10px 0",
+          ...(index === 2 ? {} : { "padding-inline-end": "12px" }),
+          "border-bottom": rule,
+          "text-align": index === 2 ? "end" : "start",
+          "vertical-align": "baseline",
+          "font-family": EMAIL_FONTS.body,
+          ...(tag === "th"
+            ? {
+                "font-size": 12,
+                "font-weight": 700,
+                "letter-spacing": "0.1em",
+                "text-transform": "uppercase",
+                color: colour("ink-3"),
+              }
+            : {
+                "font-size": 15,
+                color: colour("ink"),
+                ...(index === 2
+                  ? {
+                      "white-space": "nowrap",
+                      "font-variant-numeric": "lining-nums tabular-nums",
+                    }
+                  : {}),
+              }),
+        },
+      },
+      ...child,
+    );
+  return {
+    html: el(
+      "table",
+      {
+        width: "100%",
+        cellpadding: 0,
+        cellspacing: 0,
+        "aria-label": caption,
+        style: { "border-collapse": "collapse", "border-top": rule },
+      },
+      el("tr", {}, ...head.map((label, index) => cell("th", index, [label]))),
+      ...rows.map((row) =>
+        el(
+          "tr",
+          {},
+          cell("td", 0, [
+            row.reference,
+            row.referenceSmall === null ? null : small(row.referenceSmall),
+          ]),
+          cell("td", 1, [row.item, ...row.itemSmall.map(small)]),
+          cell("td", 2, [row.amount]),
         ),
       ),
     ),

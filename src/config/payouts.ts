@@ -20,6 +20,8 @@
  */
 import { z } from "zod";
 
+import { FLORIST_LANGUAGES, type FloristLanguage } from "./florists";
+
 const WiseHeaderSchema = z
   .array(z.string().min(1).max(64))
   .min(1)
@@ -72,3 +74,25 @@ export const PREPAID_ORDER_LIMIT_MAX = 50;
 
 /** `fulfillment_partner.wise_recipient_id`: 1 to 20 digits (the migration's check). */
 export const WISE_RECIPIENT_ID_PATTERN = /^[0-9]{1,20}$/u;
+
+/**
+ * The statement's language when the florist has no owner member yet (spec 030a §5.2, §13 Q10:
+ * "the earliest owner member's language, else the country default (`pl` for Poland)"; TASK-365).
+ * Data keyed by the country's ISO code, one entry per florist language's home country; a country
+ * not listed falls back to `en`, the florist surface's default. A new country is a row here, not
+ * code.
+ */
+export const STATEMENT_LANGUAGE_BY_COUNTRY: Readonly<
+  Record<string, FloristLanguage>
+> = Object.freeze(
+  z.record(z.string().regex(/^[A-Z]{2}$/u), z.enum(FLORIST_LANGUAGES)).parse({
+    PL: "pl",
+    DE: "de",
+    AT: "de",
+  }),
+);
+
+/** The statement language of a florist in `iso2` with no owner member. */
+export function statementCountryLanguage(iso2: string): FloristLanguage {
+  return STATEMENT_LANGUAGE_BY_COUNTRY[iso2] ?? "en";
+}

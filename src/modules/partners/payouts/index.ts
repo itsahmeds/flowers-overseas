@@ -92,6 +92,17 @@ export type {
   WiseExportReader,
   WiseRow,
 } from "./export";
+export {
+  privateStatementStore,
+  runStatementEmailJob,
+  statementObjectKey,
+} from "./statement-email";
+export type {
+  StatementEmailDeps,
+  StatementEmailOutcome,
+  StatementPdfRenderer,
+  StatementStore,
+} from "./statement-email";
 export { closeDuePayouts } from "./close";
 export type { CloseDeps, CloseResult, PayoutsReadySender } from "./close";
 export { addDays, isoWeekday, localDateIn, weeklyPeriod } from "./dates";

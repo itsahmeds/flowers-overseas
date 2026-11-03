@@ -41,6 +41,8 @@ export interface NotificationRenderInput {
    * the payouts at); absent or null for an outbox delivery.
    */
   readonly jobId?: string | null;
+  /** Spec 030a's payout statement (TASK-365): the payout it states; absent or null otherwise. */
+  readonly payoutId?: string | null;
   /**
    * V1, V2, V3 and V5: the one-tap link minted for this member (a fresh single-use token through
    * spec 012's core), or the plain inbox address when the member cannot be sent a link now.

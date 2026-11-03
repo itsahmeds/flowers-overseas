@@ -31,6 +31,8 @@ import { registerNotificationsOutbox } from "../modules/notifications";
 import {
   registerFloristEmailTemplates,
   registerOpsEmailTemplates,
+  payoutStatementPdf,
+  registerPayoutStatementTemplate,
 } from "../modules/notifications/emails";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
@@ -38,6 +40,7 @@ import { runProductionStart } from "../modules/payments";
 import {
   closeDuePayouts,
   registerPayoutsOutbox,
+  runStatementEmailJob,
   sendPrepaidReady,
   watchMissingLines,
 } from "../modules/partners/payouts";
@@ -91,6 +94,8 @@ registerNotificationsOutbox({
 // Spec 016 §5.3 (TASK-332): the florist emails V1 to V5 and the founder's A1 and W. Until a
 // template is registered, a delivery that needs it throws `TEMPLATE_NOT_BUILT` and is retried.
 registerFloristEmailTemplates();
+// Spec 030a §5.2 (TASK-365): the florist's payout statement, its PDF attached.
+registerPayoutStatementTemplate();
 registerOpsEmailTemplates({
   t: adminT as unknown as (
     key: string,
@@ -179,6 +184,13 @@ export const JOB_HANDLERS: JobHandlers = {
   // `notification_delivery` key); an order already told is not selected again.
   "payouts.watch": async () => {
     await watchMissingLines();
+  },
+  // Spec 030a §5.2 (TASK-365): one sent payout's statement PDF, stored, and its email. Idempotent:
+  // a payout whose `statement_media_asset_id` is set is done, and the delivery is keyed by payout.
+  "payouts.statement_email": async (payload) => {
+    await runStatementEmailJob(payload.payoutId, {
+      renderPdf: payoutStatementPdf,
+    });
   },
   // Spec 016 §5.2 (TASK-328): the cascade. Each is idempotent: it locks and re-reads what it
   // acts on, and a state it does not expect (an answered or withdrawn offer, an order that has

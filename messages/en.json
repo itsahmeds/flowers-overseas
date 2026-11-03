@@ -1346,6 +1346,41 @@
         "paste": "Or paste this link into your browser:",
         "ignore": "If you did not ask for this link, you can ignore this email."
       }
+    },
+    "floristPayoutStatement": {
+      "subject": "Payout statement {number} · {total}",
+      "preheader": "For {period}. We send it through Wise, in {currency}.",
+      "documentTitle": "Payout statement",
+      "title": "Your payout statement",
+      "numberLabel": "Statement {number}",
+      "statementNumber": "Statement number",
+      "periodLabel": "Period",
+      "singleDateLabel": "Date",
+      "sentLabel": "Sent on",
+      "currencyLabel": "Currency",
+      "fromLabel": "From",
+      "forLabel": "For",
+      "ordersLabel": "Orders",
+      "linesCaption": "Orders in this statement",
+      "table": {
+        "order": "Order",
+        "date": "Delivery date",
+        "bouquet": "Bouquet",
+        "amount": "Amount"
+      },
+      "item": "{product} · {tier}",
+      "quantity": "{item} × {quantity}",
+      "manualLine": {
+        "adjustment": "Adjustment",
+        "goodwill": "Goodwill"
+      },
+      "totalLabel": "Total",
+      "paymentLabel": "Payment",
+      "paymentMethod": "We send this amount to your bank account through Wise, in {currency}.",
+      "notInvoice": "This is a payout statement, not an invoice.",
+      "deleteReminder": "Please delete the recipient's name, address and phone for the orders above, as our florist agreement asks.",
+      "attached": "Attached: {filename}",
+      "page": "Page {page} of {pages}"
     }
   },
   "tracking": {

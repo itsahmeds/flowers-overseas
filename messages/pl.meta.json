@@ -5023,5 +5023,150 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "63c205d2b4348e34b50222a374953393a8fce24e7fc838e1288ee4c76733e320"
+  },
+  "emails.floristPayoutStatement.subject": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ae35eace95551640aee10ddff8b8b756e0114c88dcc70719d19062eceb611976"
+  },
+  "emails.floristPayoutStatement.preheader": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7f0ba26196c1739dbe6788f53e084affacaa445a9bf0a4e8a0a2be4e8215a2f6"
+  },
+  "emails.floristPayoutStatement.documentTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "db5406825fe18a3c47f15b52203c7852e1aaeffb9cbfca294097424c043f48bf"
+  },
+  "emails.floristPayoutStatement.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "270e463cce91ec559374cbd96589a0e7bb1116e1439cd0b6a61a01014b03507e"
+  },
+  "emails.floristPayoutStatement.numberLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "24e6dd7840c7c45ece142315c142c61f35d33d761d483d5fd3bf797abb9245d4"
+  },
+  "emails.floristPayoutStatement.statementNumber": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6f6aaa8fba7ff3376b19fd827bab3cce73d0fbe8af5100284b3ee763bcba58ba"
+  },
+  "emails.floristPayoutStatement.periodLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6e795d4d3cc21c5ca8349ab5e917482197aa612d1a218f9e9411467db73242bb"
+  },
+  "emails.floristPayoutStatement.singleDateLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "emails.floristPayoutStatement.sentLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "40f554a23d6bd0624e73d49dc1cb13f411f4da081cdc6d3c0f569d9575ba2313"
+  },
+  "emails.floristPayoutStatement.currencyLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3ac1a9ec4fa7a9fa612a30803f3d88fa479a45431f644190ebcc18d3eaafdb3a"
+  },
+  "emails.floristPayoutStatement.fromLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
+  },
+  "emails.floristPayoutStatement.forLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ca15ebc05a3c5c1348753b209c4452c54022dbe565d9943b11c795e3af9eb0b0"
+  },
+  "emails.floristPayoutStatement.ordersLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "emails.floristPayoutStatement.linesCaption": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c6de1d6ed9bb02e546e929fc08a8a12099bc07a4e9622dea7976e4428e4be4ac"
+  },
+  "emails.floristPayoutStatement.table.order": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
+  },
+  "emails.floristPayoutStatement.table.date": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
+  },
+  "emails.floristPayoutStatement.table.bouquet": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
+  },
+  "emails.floristPayoutStatement.table.amount": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "emails.floristPayoutStatement.item": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "20529b4223061bafe35fab774a4578d511459523ea938ab010c4ee9b8a77e4c2"
+  },
+  "emails.floristPayoutStatement.quantity": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "21a5be75bba015c083d085efa685fa8418d150b8129c84916ef75ccca558ac99"
+  },
+  "emails.floristPayoutStatement.manualLine.adjustment": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c416069b7f61a4a678ec1a5b87e47cf2aa9761988165a3b6d08d38634f9c5327"
+  },
+  "emails.floristPayoutStatement.manualLine.goodwill": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1202ac7e4b7531e920e5bfba2876dc5b130a38705ba2db0ec381927a440f9a32"
+  },
+  "emails.floristPayoutStatement.totalLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "emails.floristPayoutStatement.paymentLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7048f38b33f135df36b3d9d382f167d45cfdda857b616899c9d8c9acd2751f64"
+  },
+  "emails.floristPayoutStatement.paymentMethod": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "017f614dce7ada429ac04ab2ede1c687759136c568008e55c393951d035f2397"
+  },
+  "emails.floristPayoutStatement.notInvoice": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c77430c8667bd8a996c3e313b08b2e73f5540915e369f767473e8cad930fd8a1"
+  },
+  "emails.floristPayoutStatement.deleteReminder": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8177c0028a7f0eb3a093131df7b32f67e5ff8b724e8d0fbdebca7bd975f4e75f"
+  },
+  "emails.floristPayoutStatement.attached": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2b920708669a1a223db478869e2fdfd8471d0b63ed275b2e4a551cb89ccf2ec7"
+  },
+  "emails.floristPayoutStatement.page": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "240ab6d8dc2cbb5ede8e1e708f5812d1129644348c3a28d3aaf8d5b97a4cfaef"
   }
 }
