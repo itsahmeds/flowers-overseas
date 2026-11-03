@@ -175,6 +175,13 @@ const nextConfig: NextConfig = {
   // build-output shape rather than application behaviour, so branching on it here is inside that
   // build-output shape, recorded as spec 040 §14 A2. Pinned by `tests/unit/container.test.ts`.
   ...(platform === "vercel" ? {} : { output: "standalone" as const }),
+  // Spec 018 §5.2 (TASK-342): the invoice PDF embeds Noto Sans, read from
+  // `src/modules/invoices/pdf/fonts` relative to the working directory. The renderer runs in the
+  // minute tick's job handlers, so that route's trace carries the two faces into the standalone
+  // tree (a `readFileSync` of a computed path is invisible to the tracer).
+  outputFileTracingIncludes: {
+    "/api/internal/jobs/tick": ["./src/modules/invoices/pdf/fonts/*.ttf"],
+  },
   headers: () => Promise.resolve(headerRules),
   // `unauthorized()` and `forbidden()` (spec 012 AC-1, AC-4; TASK-217): the admin guard answers a
   // server action or route handler without a session with a 401, and one without the permission

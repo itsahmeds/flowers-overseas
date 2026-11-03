@@ -6673,5 +6673,165 @@
     "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-339.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
     "reviewedAt": "2026-11-03T22:03:49Z",
     "sourceHash": "968c7b1389922644affd6cb4de032c86431d91b023137ec9054de2792fa1e431"
+  },
+  "invoice.title.vatInvoice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b832002da297545ff2c6cc36303a5f9b9779a2d7e47ba81c07ef86aca92181c0"
+  },
+  "invoice.title.receiptOnBehalf": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dad5a969231390f5dc1ddc79ae2582f4c305dc8c2971e6a9d16f501c710c33df"
+  },
+  "invoice.title.creditNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c204aa17e8f609334cca014ba68d7eacc1d6295b6dba0b47a002c89c9bb610ae"
+  },
+  "invoice.label.number": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bd82cf16699be29ec05cbb763199c12f0dced428dde8381dbdd31c1d5dd0e8d4"
+  },
+  "invoice.label.issueDate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f0a6c4753adfbd8c4cacfd961ae4c130c70f3d99142067875fa88cf96484643c"
+  },
+  "invoice.label.supplyDate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e92875fe9bca6d41188b746b9a73b450d672e94bc262a2dfcc16bb39d9fbd71"
+  },
+  "invoice.label.order": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
+  },
+  "invoice.label.currency": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3ac1a9ec4fa7a9fa612a30803f3d88fa479a45431f644190ebcc18d3eaafdb3a"
+  },
+  "invoice.label.corrects": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c871ffdd9791a4664b862c6c891f1a8011487dabe51312c65e94219928fdacc"
+  },
+  "invoice.label.seller": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01498fa31d5a344a6a66c69dc5671c8d0f86953c2268c1c9274b259add7bae4b"
+  },
+  "invoice.label.buyer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a2a54d668c45a20d0b4367e954c70654928409f6c569b0991afdbe66b70e6628"
+  },
+  "invoice.label.registryCode": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b9ff51b78ac23157cec66941f2a2370225c6fb88e4c70ce426ee2847abb33cad"
+  },
+  "invoice.label.vatId": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "60c596bddea9d7ee2d1feb8eedf956b56ccf480b65d185e9e4e42b1cbbdb350a"
+  },
+  "invoice.label.lineNo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "38178a20b470cfd18299fb1593dd4ba706f1a83321dac051d01086efd8b7a96f"
+  },
+  "invoice.label.description": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "invoice.label.vatRate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b55d2e03b924f21f1ad780ea6695897c7b204ae7f88e238887196d3b2025aaa5"
+  },
+  "invoice.label.net": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "660fb2c41d028988b2093656a80d3ae99bc67cd0d5acca5c6063793819b15881"
+  },
+  "invoice.label.vat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4885a17383f949c7b45650abce6474987141080831e902c37623e8a09ec3188f"
+  },
+  "invoice.label.gross": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0589b626717ccca8914a41a144ce292bf279c52ac7135af131cece4e747e89aa"
+  },
+  "invoice.label.totalAtRate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8def333c8707ca966943dd892c928ebfefb1afa37bb9650c9b50d15a40603805"
+  },
+  "invoice.label.outsideVat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ef733ee939161d3c148add9e9ecf2dec43268bfc04b758eb0a9b671826ef1109"
+  },
+  "invoice.label.totalDue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "invoice.label.totalRefunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "117f6a7cf0372277233d0477c1eb99523af847c2b8bdd41fc3cc53fab78bb80c"
+  },
+  "invoice.label.vatInCurrency": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "434e501e0de2ab6c2870123d121045337b625042659aaf85f49f9c7e73409ef1"
+  },
+  "invoice.label.rateSource": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5c08f833ffa3605a502bfb96051df021b09c055dccf6780868ef4793b96ae579"
+  },
+  "invoice.label.vatAtRate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1401ecbbad005d7c10493a566d04f89b65466cb2eac473725dc5f257d0058dbd"
+  },
+  "invoice.label.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fb81b961af456e5e748db7e1b1bff9a5e621b62718234c1937738d1adc317a17"
+  },
+  "invoice.label.refunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "117f6a7cf0372277233d0477c1eb99523af847c2b8bdd41fc3cc53fab78bb80c"
+  },
+  "invoice.label.pricesInclude": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a773cd6067b736ce80a70be425b79cf5611e70af5b4332baa4dca94aa1ec982d"
+  },
+  "invoice.label.page": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "240ab6d8dc2cbb5ede8e1e708f5812d1129644348c3a28d3aaf8d5b97a4cfaef"
+  },
+  "invoice.line.surcharge": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0b83938f494c14f7a7c2b2728f172179928650e5ec49c82fe1f0cae933518e08"
+  },
+  "invoice.line.quantity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "63c205d2b4348e34b50222a374953393a8fce24e7fc838e1288ee4c76733e320"
   }
 }

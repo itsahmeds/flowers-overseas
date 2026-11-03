@@ -61,6 +61,16 @@ export function POST(request: Request): Promise<Response> {
             singletonKey: "routing.sla_watch",
           },
         );
+        // Spec 018 §11 (TASK-342): the unrendered-invoice sweep, once a minute.
+        await enqueue(
+          boss,
+          "invoice.render_sweep",
+          {},
+          {
+            requestId: "system:jobs.tick",
+            singletonKey: "invoice.render_sweep",
+          },
+        );
         return runTick(boss, JOB_HANDLERS);
       }),
   });

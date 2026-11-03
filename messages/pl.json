@@ -1539,5 +1539,45 @@
         "body": "To zamówienie nie jest już Twoje. Prosimy go nie przygotowywać."
       }
     }
+  },
+  "invoice": {
+    "title": {
+      "vatInvoice": "Faktura",
+      "receiptOnBehalf": "Pokwitowanie",
+      "creditNote": "Faktura korygująca"
+    },
+    "label": {
+      "number": "Numer",
+      "issueDate": "Data wystawienia",
+      "supplyDate": "Data dostawy",
+      "order": "Zamówienie",
+      "currency": "Waluta",
+      "corrects": "Koryguje fakturę",
+      "seller": "Sprzedawca",
+      "buyer": "Nabywca",
+      "registryCode": "Kod rejestrowy",
+      "vatId": "VAT {country}",
+      "lineNo": "Lp.",
+      "description": "Opis",
+      "vatRate": "Stawka VAT",
+      "net": "Netto",
+      "vat": "VAT",
+      "gross": "Brutto",
+      "totalAtRate": "Razem {rate}",
+      "outsideVat": "Nie podlega VAT",
+      "totalDue": "Do zapłaty",
+      "totalRefunded": "Do zwrotu",
+      "vatInCurrency": "VAT w {currency}",
+      "rateSource": "Kurs NBP, tabela A nr {table}, {date}: 1 {from} = {rate} {to}",
+      "vatAtRate": "{rate}: VAT {amount}",
+      "paid": "Zapłacono",
+      "refunded": "Zwrócono",
+      "pricesInclude": "Ceny zawierają VAT i dostawę.",
+      "page": "Strona {page} z {pages}"
+    },
+    "line": {
+      "surcharge": "Dopłata za dostawę",
+      "quantity": "{name} × {qty}"
+    }
   }
 }

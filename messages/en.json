@@ -1539,5 +1539,45 @@
         "body": "This order is no longer yours. Please do not make it."
       }
     }
+  },
+  "invoice": {
+    "title": {
+      "vatInvoice": "Invoice",
+      "receiptOnBehalf": "Receipt",
+      "creditNote": "Credit note"
+    },
+    "label": {
+      "number": "Number",
+      "issueDate": "Issue date",
+      "supplyDate": "Supply date",
+      "order": "Order",
+      "currency": "Currency",
+      "corrects": "Corrects invoice",
+      "seller": "Seller",
+      "buyer": "Buyer",
+      "registryCode": "Registry code",
+      "vatId": "VAT {country}",
+      "lineNo": "No.",
+      "description": "Description",
+      "vatRate": "VAT rate",
+      "net": "Net",
+      "vat": "VAT",
+      "gross": "Gross",
+      "totalAtRate": "Total {rate}",
+      "outsideVat": "Outside the scope of VAT",
+      "totalDue": "Total",
+      "totalRefunded": "Refunded",
+      "vatInCurrency": "VAT in {currency}",
+      "rateSource": "NBP rate, table A no. {table}, {date}: 1 {from} = {rate} {to}",
+      "vatAtRate": "{rate}: VAT {amount}",
+      "paid": "Paid",
+      "refunded": "Refunded",
+      "pricesInclude": "Prices include VAT and delivery.",
+      "page": "Page {page} of {pages}"
+    },
+    "line": {
+      "surcharge": "Delivery surcharge",
+      "quantity": "{name} × {qty}"
+    }
   }
 }

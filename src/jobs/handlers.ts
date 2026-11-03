@@ -14,7 +14,13 @@
  */
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
-import { invoicesOutboxHandler } from "../modules/invoices";
+import {
+  createNbpRateProvider,
+  invoicesOutboxHandler,
+  runInvoiceRenderSweep,
+  runRenderJob,
+  setVatRateProvider,
+} from "../modules/invoices";
 // Spec 016 §5.3 (TASK-332): the founder's emails read their English copy and the admin order path
 // from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
 import { adminT } from "../modules/admin/messages";
@@ -56,6 +62,10 @@ const DERIVE_READ_TIMEOUT_MS = 60_000;
 // Spec 018 §5.2 (TASK-341): the `invoices` outbox target issues invoices and credit notes in the
 // delivery's transaction. Registered once, where the dispatcher's job is defined.
 registerOutboxHandler("invoices", invoicesOutboxHandler());
+
+// Spec 018 §5.2 (TASK-342): the PLN VAT line's rate, NBP table A of the last business day before
+// the tax point, for every profile whose `vat_currency_code` differs from the invoice currency.
+setVatRateProvider(createNbpRateProvider());
 
 // Spec 016 §5.2 (TASK-328): the `routing` target, for `test` and `live` orders: a secured
 // payment enqueues `order.route`, a delivery the photo reminder. Replaces the stand-in that made
@@ -178,6 +188,19 @@ export const JOB_HANDLERS: JobHandlers = {
   // order; one that has moved on (rerouted, cancelled) or is not yet due writes nothing.
   "order.no_partner_expire": async (payload) => {
     await expireNoPartner(payload.orderId);
+  },
+  // Spec 018 §5.2, §11 (TASK-342): one document's PDF, rendered and stored once. Idempotent: the
+  // row is locked and a rendered one is left alone, so a re-run enqueues no second email. The
+  // fifth failed attempt raises `invoice.render_dead`.
+  "invoice.render": async (payload, context) => {
+    await runRenderJob(payload.invoiceId, {
+      retryCount: context.retryCount ?? 0,
+    });
+  },
+  // Spec 018 §11 (TASK-342): every unrendered document is asked a render job (one per document
+  // on its queue), and one 15 minutes old raises `invoice.render_overdue`. Reads only; idempotent.
+  "invoice.render_sweep": async () => {
+    await runInvoiceRenderSweep();
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.

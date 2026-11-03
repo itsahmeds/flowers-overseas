@@ -1539,5 +1539,45 @@
         "body": "Dieser Auftrag ist nicht mehr Ihrer. Bitte fertigen Sie ihn nicht."
       }
     }
+  },
+  "invoice": {
+    "title": {
+      "vatInvoice": "Rechnung",
+      "receiptOnBehalf": "Quittung",
+      "creditNote": "Rechnungskorrektur"
+    },
+    "label": {
+      "number": "Nummer",
+      "issueDate": "Rechnungsdatum",
+      "supplyDate": "Lieferdatum",
+      "order": "Bestellung",
+      "currency": "Währung",
+      "corrects": "Korrigiert Rechnung",
+      "seller": "Verkäufer",
+      "buyer": "Käufer",
+      "registryCode": "Registernummer",
+      "vatId": "USt-IdNr. {country}",
+      "lineNo": "Nr.",
+      "description": "Beschreibung",
+      "vatRate": "USt.-Satz",
+      "net": "Netto",
+      "vat": "USt.",
+      "gross": "Brutto",
+      "totalAtRate": "Summe {rate}",
+      "outsideVat": "Nicht steuerbar",
+      "totalDue": "Gesamtbetrag",
+      "totalRefunded": "Erstattet",
+      "vatInCurrency": "USt. in {currency}",
+      "rateSource": "NBP-Kurs, Tabelle A Nr. {table}, {date}: 1 {from} = {rate} {to}",
+      "vatAtRate": "{rate}: USt. {amount}",
+      "paid": "Bezahlt",
+      "refunded": "Erstattet",
+      "pricesInclude": "Preise inklusive USt. und Lieferung.",
+      "page": "Seite {page} von {pages}"
+    },
+    "line": {
+      "surcharge": "Lieferzuschlag",
+      "quantity": "{name} × {qty}"
+    }
   }
 }

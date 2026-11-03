@@ -11,6 +11,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [railway-cloudflare-setup](railway-cloudflare-setup.md) | Standing the Railway `web` service up on `staging`: config-as-code, the 24 pasted variables, the `STAGING_BASIC_AUTH` wall, the health checks, `pnpm railway:check`, and what is still to verify against the live URL (ADR-0018) |
 | [branch-protection](branch-protection.md) | Required checks, merge method and review policy on `main`, and the verifier |
 | [payment-webhook-down](payment-webhook-down.md) | Stripe/Mollie webhooks failing or delayed |
+| [invoices](invoices.md) | An invoice refused, a stuck render, a hash mismatch, re-issuing, the year's series, the backfill |
 | [florist-declines-peak](florist-declines-peak.md) | A partner declines during a peak day |
 | [whatsapp-phase1](whatsapp-phase1.md) | Pasting the offer and stop messages of a WhatsApp florist from the founder email (spec 016 W) |
 | [csp-enforce](csp-enforce.md) | Enforcing the Content-Security-Policy: what `CSP_REPORT_ONLY=false` enforces and where, reading the Report-Only evidence with the flight-block noise filtered, the per-instance rate-limit caveat, the staging-first flip and the rollback with a Cloudflare purge |
