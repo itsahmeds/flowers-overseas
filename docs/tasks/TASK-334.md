@@ -27,7 +27,37 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **2026-11-04, builder N334 (self-review, PR 482), left for later:**
+  - **The wait is bounded by the dispatcher's next due time, not stretched to 5:00 in production.**
+    B1 throws `INVOICE_PENDING` only while its next retry (`OutboxHandlerContext.retryDueAt`, the
+    dispatcher's own backoff, 30 s doubling) is due by the deadline; otherwise it sends now with
+    what is stored. With the production backoff a purchase still waiting is sent by its fourth
+    attempt (about 3.5 minutes plus one minute tick), so an invoice stored between that attempt and
+    5:00 goes by B8, not B1. Under the injected clock (base 0, as the dispatcher suites run) B1 is
+    sent at exactly 5:00. A retry *due* by 5:00 still runs at the next minute tick, so the send can
+    lag a due time by up to 60 s. Holding B1 to the full 5 minutes would need a per-delivery
+    `not_before` on `outbox_delivery` (a migration the spec does not list): founder's call.
+  - **`invoice.email` retries 15 times, one per minute tick** (`INVOICE_EMAIL_RETRY_LIMIT`), which
+    outlasts B1's wait. While `notifications.email` is off (today) the job throws
+    `NOTIFICATIONS_HELD` and dies after about 15 minutes, so a **credit note** issued while the
+    switch is off is never emailed (an invoice is fine: the held B1 carries it once the switch is
+    on). AC-26's "the job retries" needs a sweep that re-enqueues unsent documents, or a longer
+    policy: TASK-331's area, not built here.
+  - B1 waits for every order whose destination has `invoice.issue` on, even when spec 018's issue
+    refused silently (no profile, issuer incomplete): such a B1 waits the full bound, then goes.
+  - Resend's `409 invalid_idempotent_request` on B1 writes no `notification_delivery_invoice` row
+    (the accepted first send may have had another body), so B8 sends the invoice: a possible second
+    copy, never a missing one.
+  - Download-link expiry (TASK-342's hand-on): B1 and B8 **attach** the stored PDF and mint no
+    download link, so no TTL is chosen here (the most conservative reading).
+  - The integration suite's render is a stand-in (bytes put in an in-memory private bucket with
+    their SHA-256 and the three render columns written, exactly what `renderInvoice` stores); the
+    real PDF and its `invoice.email` enqueue are `invoices-pdf.test.ts` (TASK-342).
+  - AC-46 (the per-purchase case: three invoices, plural text, one late B8) is exercised by the
+    two-delivery breaker cases but not claimed: no `TASKS.md` row owns spec 016 AC-44 to AC-49 that
+    this builder could find.
+  - Touches spec 013's dispatcher additively (`retryDueAt` in the handler context and the pure
+    `outboxRetryDueAt`); no behaviour of the dispatcher changed.
 
 ## Escalations
 
@@ -41,11 +71,27 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 N334: B1's bounded wait (`emails/invoice-wait.ts`), the link rows in `pipeline.ts`,
+  the `invoice.email` job (`emails/invoice-email.ts`), `retryDueAt` from the dispatcher, the worker
+  wiring and `INVOICE_EMAIL_RETRY_LIMIT`; pushed a7d03f73e, draft PR 482.
+- 2026-11-04 N334: unit `notifications-invoice-wait` (8) and integration `invoice-email` (15) green
+  on a local PG16; 14 mutations, each red; RoPA row 13 and the invoices runbook updated.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/482. B1 waits at most `B1_INVOICE_WAIT`
+(5 minutes, `src/config/notifications.ts`) after the purchase's first `order.captured` from
+`placed` for the stored invoice PDF of every order whose destination has `invoice.issue` on,
+throwing `INVOICE_PENDING` while its next retry is still due within the wait; it then sends with
+the stored PDFs (read through spec 018's `getPdfByInvoiceId`, hash checked) and the pipeline writes
+one `notification_delivery_invoice` row per invoice carried. The `invoice.email` job
+(`runInvoiceEmailJob`) sends B8: nothing for a `test` or `demo` order, a retry while the PDF is not
+stored or the purchase's B1 is absent or `queued`, nothing when B1 carried the invoice, one keyed
+send otherwise (credit notes always). Tests: unit `notifications-invoice-wait` 8 (new),
+`jobs-registry` and `jobs-runtime` pins; integration `invoice-email` 15 (new: T-37, T-43 and the
+breaker's cases), and `email-buyer` 4, `notifications-pipeline` 12, `outbox-dispatcher` 8 re-run
+green. 14 mutations, each red. No migration, no build, Playwright or Lighthouse (founder rule
+tonight). Handed on: see Carry-forwards.

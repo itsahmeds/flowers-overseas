@@ -21,7 +21,7 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +127 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
-| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +17 |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +19 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +14 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +26 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +11 |
@@ -323,8 +323,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 465 |
-| `tests/integration/` | 89 |
+| `tests/unit/` | 466 |
+| `tests/integration/` | 90 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
