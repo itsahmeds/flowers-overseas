@@ -1,7 +1,7 @@
 /**
  * Spec 020a T-03, source half (AC-2; TASK-358): every server action under `src/app/admin/(signed-in)/orders`
  * calls `requirePermission` as its first statement, and each admin order command
- * (`adminOrderReroute`, `adminOrderCancel`, `adminOrderRefund`) asks its guard for its own
+ * (`adminOrderReroute`, `adminOrderCancel`, `adminOrderRefund`, `adminResendNotification`) asks its guard for its own
  * permission first. The set of actions is enumerated from the file tree (every `"use server"`
  * file's exported async functions), never a hand list; the fixtures prove the scan bites.
  */
@@ -24,6 +24,11 @@ const COMMANDS = {
   "src/modules/admin/order-actions/refund.ts": [
     "adminOrderRefund",
     "orders.refund",
+  ],
+  // TASK-360: resend, admin and ops.
+  "src/modules/admin/order-actions/resend.ts": [
+    "adminResendNotification",
+    "orders.resend",
   ],
 } as const;
 
@@ -74,7 +79,7 @@ describe("T-03 the guard is the first statement (spec 020a AC-2)", () => {
         ({ name }) => `${relative(ROOT, file)}#${name}`,
       ),
     );
-    expect(actions.length).toBeGreaterThanOrEqual(2);
+    expect(actions.length).toBeGreaterThanOrEqual(3);
     expect(
       actionFiles.flatMap((file) =>
         unguarded(readFileSync(file, "utf8")).map(
