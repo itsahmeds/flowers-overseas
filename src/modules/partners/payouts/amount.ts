@@ -26,6 +26,12 @@ export const PAYOUT_ERROR_CODES = [
   "PAYOUT_REVIEW_OPEN",
   "PAYOUT_ADJUSTMENT_OPEN",
   "PAYOUT_STATEMENT_NUMBER_EXHAUSTED",
+  // TASK-366: the Wise export and payment (spec 030a §5.2).
+  "PAYOUT_IN_EXPORT",
+  "PAYOUT_WISE_RECIPIENT_MISSING",
+  "PAYOUT_EXPORT_PAID",
+  "PAYOUT_EXPORT_CANCELLED",
+  "PAYOUT_NOT_EXPORTED",
 ] as const;
 export type PayoutErrorCode = (typeof PAYOUT_ERROR_CODES)[number];
 

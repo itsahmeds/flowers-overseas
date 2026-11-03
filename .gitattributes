@@ -1,0 +1,2 @@
+# The Wise batch fixtures are byte-exact CRLF files (spec 030a AC-25): never normalise them.
+tests/fixtures/wise-*.csv -text
