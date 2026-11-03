@@ -344,6 +344,7 @@ describe("the shipped catalogues and manifests", () => {
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
     "checkout.legal.cancellation",
+    "checkout.legal.payButton",
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet
     // cancel line and its dialog, the spec's and the boards' words, `reviewed: false` until the
     // record run (`.claude/state/record-approval-340.py`) attests them.
@@ -480,6 +481,7 @@ describe("the shipped catalogues and manifests", () => {
     "payments.confirmation.notDeliveredRefunded",
     "payments.confirmation.notDeliveredRefunding",
     "payments.confirmation.paid",
+    "payments.confirmation.yourOrder",
     "payments.error.authenticationFailed",
     "payments.error.cardDeclined",
     "payments.error.expiredCard",
@@ -489,9 +491,24 @@ describe("the shipped catalogues and manifests", () => {
     "payments.error.processingError",
     "payments.error.tryAnotherMethod",
     "payments.error.unavailable",
+    "payments.step.cancelling",
+    "payments.step.delivery",
+    "payments.step.deliveryItem",
+    "payments.step.deliveryWhen",
+    "payments.step.draftLabel",
+    "payments.step.item",
     "payments.step.noScript",
+    "payments.step.notPaidYet",
+    "payments.step.payTitle",
+    "payments.step.preContractTitle",
+    "payments.step.printedCard",
+    "payments.step.processedBy",
+    "payments.step.seller",
     "payments.step.submitting",
     "payments.step.testLabel",
+    "payments.step.total",
+    "payments.step.totalIncluded",
+    "payments.step.whatYouBuy",
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
   ];
 

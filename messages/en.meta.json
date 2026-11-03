@@ -7552,5 +7552,90 @@
     "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-340.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
     "reviewedAt": "2026-11-03T23:40:23Z",
     "sourceHash": "143ca5ba6f2c5fd96982e198bb5c3b2a16fbaa0a3794361eff49f443d2a88551"
+  },
+  "checkout.legal.payButton": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "63095f1d66e965acf4b958d2591adaccba444893d821619d122ac46387462125"
+  },
+  "payments.confirmation.yourOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f159e18f1328d9a0c8e0b461b00da7b511abc472acc4e8b9549ec975fb36cb4b"
+  },
+  "payments.step.payTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7048f38b33f135df36b3d9d382f167d45cfdda857b616899c9d8c9acd2751f64"
+  },
+  "payments.step.preContractTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c8b88fdbd5c059a2db2a8967644dc32fa9ca02beb9ea637e844c48afb7eb5297"
+  },
+  "payments.step.draftLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d2d591508f8366354f0d118d367394c1b76bda0f93b8cf00aff59de7f363ea37"
+  },
+  "payments.step.whatYouBuy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "462954d14476a7f33d034dff13511471cd263e8dcbb84df07ca47afab826e0a9"
+  },
+  "payments.step.item": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "73ca350046c0abd843f9f2ea8603b428b412a70119c7e48f5e45c6639f9dc730"
+  },
+  "payments.step.printedCard": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3a31e9a77c5bc143f000c6ee1f69889e0aa10879f878eec7cdc703fcefa35ff1"
+  },
+  "payments.step.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "payments.step.totalIncluded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "94cff41fa41d714fcf2353d2bcff574d35787a0152ea1d6e877e15c14fb2f90f"
+  },
+  "payments.step.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52bfe584a5fc450539e2aa651b990fa2415060492a243816ab2994292089c6fd"
+  },
+  "payments.step.deliveryWhen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f7834023a965796e586febfbc9d21fab5281ad346a527789ea260cb10439caa4"
+  },
+  "payments.step.deliveryItem": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2530a9933c19c4996f76b99e5f0cb8369feb8dcbbfb433032a424de070120132"
+  },
+  "payments.step.cancelling": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "20d55e8c3373cb09161484abeb2a760254ae43d9a6a812e126928bd263949533"
+  },
+  "payments.step.seller": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01498fa31d5a344a6a66c69dc5671c8d0f86953c2268c1c9274b259add7bae4b"
+  },
+  "payments.step.processedBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "08b776f3a884bbb200a7a182b4b714e88a2fe6b4a5fb3fd5bf3d962c89da39b2"
+  },
+  "payments.step.notPaidYet": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7376b75a30316cdce510b0a8356ac969cce00b2253b96638377d4d44af754951"
   }
 }

@@ -62,12 +62,12 @@ export function confirmationStateFor(
 }
 
 /** The board's `.s10-conf h1` and `.s10-msg h1`. */
-const H1 =
+export const H1 =
   "display text-ink m-0 text-[30px] leading-[1.1] md:text-(length:--text-3xl-fluid)";
 /** `.s10-conf .s10-promise`. */
 const PROMISE = "text-ink-2 m-0 text-sm";
 
-function day(date: string): Date {
+export function day(date: string): Date {
   return new Date(`${date}T12:00:00Z`);
 }
 
@@ -80,7 +80,7 @@ function strong(chunks: ReactNode): ReactElement {
 }
 
 /** The bouquet's first displayable photo, or nothing. */
-function photo(
+export function photo(
   delivery: ConfirmedDelivery,
   locale: LocaleCode,
 ): ReactElement | null {
@@ -104,10 +104,16 @@ function photo(
   return null;
 }
 
-type Translate = (key: string, values?: Record<string, unknown>) => string;
+export type Translate = (
+  key: string,
+  values?: Record<string, unknown>,
+) => string;
 
 /** "18 stems", then each add-on the buyer chose, by name. */
-function itemDetails(delivery: ConfirmedDelivery, all: Translate): string[] {
+export function itemDetails(
+  delivery: ConfirmedDelivery,
+  all: Translate,
+): string[] {
   return [
     ...(delivery.tier === null
       ? []
@@ -251,7 +257,7 @@ export async function DemoConfirmation({
 }
 
 /** One delivery of a basket's confirmation (the board's `.cf-dlv`, AC-68). */
-function ConfirmedDeliveryCard({
+export function ConfirmedDeliveryCard({
   delivery,
   index,
   of,

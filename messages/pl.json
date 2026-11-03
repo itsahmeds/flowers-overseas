@@ -357,7 +357,8 @@
       "vatOf": "Of which VAT {rate}"
     },
     "legal": {
-      "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that."
+      "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that.",
+      "payButton": "Pay {amount} and place order"
     }
   },
   "common": {
@@ -1288,7 +1289,8 @@
       "notCompleted": "Your payment was not completed. Nothing was charged. You can try again.",
       "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}.",
       "notDeliveredRefunding": "We could not deliver this order. We are refunding {amount} to your original payment method.",
-      "paid": "Thank you. We have your order."
+      "paid": "Thank you. We have your order.",
+      "yourOrder": "Your order"
     },
     "error": {
       "authenticationFailed": "We could not confirm the payment with your bank. Please try again.",
@@ -1304,7 +1306,22 @@
     "step": {
       "noScript": "Paying needs JavaScript. Turn it on, or call or message us and we will help you order.",
       "submitting": "Processing your payment…",
-      "testLabel": "Test mode. Use a test card. No real money moves."
+      "testLabel": "Test mode. Use a test card. No real money moves.",
+      "payTitle": "Payment",
+      "preContractTitle": "Before you pay",
+      "draftLabel": "Draft, not in force",
+      "whatYouBuy": "What you buy",
+      "item": "{name}, {details}",
+      "printedCard": "with a printed card",
+      "total": "Total",
+      "totalIncluded": "{amount}, VAT and delivery included",
+      "delivery": "Delivery",
+      "deliveryWhen": "{date}, {city}",
+      "deliveryItem": "Delivery {n} of {total}: {item} · {date}, {city}",
+      "cancelling": "Cancelling",
+      "seller": "Seller",
+      "processedBy": "Card payments are processed by Stripe. We never store card numbers.",
+      "notPaidYet": "Not paid yet. Nothing was charged."
     }
   },
   "product": {
