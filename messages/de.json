@@ -719,6 +719,41 @@
         "paste": "Or paste this link into your browser:",
         "ignore": "If you did not ask for this link, you can ignore this email."
       }
+    },
+    "floristPayoutStatement": {
+      "subject": "Auszahlungsübersicht {number} · {total}",
+      "preheader": "Für {period}. Wir überweisen über Wise, in {currency}.",
+      "documentTitle": "Auszahlungsübersicht",
+      "title": "Ihre Auszahlungsübersicht",
+      "numberLabel": "Übersicht {number}",
+      "statementNumber": "Übersichtsnummer",
+      "periodLabel": "Zeitraum",
+      "singleDateLabel": "Datum",
+      "sentLabel": "Gesendet am",
+      "currencyLabel": "Währung",
+      "fromLabel": "Von",
+      "forLabel": "Für",
+      "ordersLabel": "Aufträge",
+      "linesCaption": "Aufträge in dieser Übersicht",
+      "table": {
+        "order": "Auftrag",
+        "date": "Lieferdatum",
+        "bouquet": "Strauß",
+        "amount": "Betrag"
+      },
+      "item": "{product} · {tier}",
+      "quantity": "{item} × {quantity}",
+      "manualLine": {
+        "adjustment": "Korrektur",
+        "goodwill": "Kulanz"
+      },
+      "totalLabel": "Summe",
+      "paymentLabel": "Zahlung",
+      "paymentMethod": "Wir überweisen diesen Betrag über Wise auf Ihr Bankkonto, in {currency}.",
+      "notInvoice": "Dies ist eine Auszahlungsübersicht, keine Rechnung.",
+      "deleteReminder": "Bitte löschen Sie Name, Adresse und Telefon der empfangenden Person für die obigen Aufträge, wie es unsere Vereinbarung mit Ihnen vorsieht.",
+      "attached": "Anhang: {filename}",
+      "page": "Seite {page} von {pages}"
     }
   },
   "errors": {

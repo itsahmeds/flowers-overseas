@@ -53,7 +53,13 @@ import {
   registerOutboxHold,
 } from "@/modules/orders";
 
-import { type Mailer, MailerError, type MailTag, getMailer } from "./mailer";
+import {
+  type MailAttachment,
+  type Mailer,
+  MailerError,
+  type MailTag,
+  getMailer,
+} from "./mailer";
 import {
   type NotificationAudience,
   type NotificationJob,
@@ -446,7 +452,17 @@ async function claimDelivery(
 type SendRequest = Pick<
   NotificationRequest,
   "trigger" | "fromStatus" | "invoiceId"
-> & { readonly orderId: string | null; readonly jobId?: string | null };
+> & {
+  readonly orderId: string | null;
+  readonly jobId?: string | null;
+  /** Spec 030a's statement: the payout the template reads. */
+  readonly payoutId?: string | null;
+  /**
+   * The files to attach, made only when the row is `queued` (a skipped repeat makes none): spec
+   * 030a's statement PDF, rendered and stored in the same transaction as the send.
+   */
+  readonly attachments?: () => Promise<readonly MailAttachment[]>;
+};
 
 async function sendOne(
   executor: OrderExecutor,
@@ -497,11 +513,14 @@ async function sendOne(
     partnerId: assignment?.partner_id ?? null,
     invoiceId: request.invoiceId,
     jobId: request.jobId ?? null,
+    payoutId: request.payoutId ?? null,
     link,
     inboxUrl: rule.whatsappCopyOf === undefined ? null : inboxUrl,
     whatsappCopyOf: rule.whatsappCopyOf ?? null,
     executor,
   });
+  const attachments =
+    request.attachments === undefined ? [] : await request.attachments();
   let providerRef: string | null;
   try {
     providerRef = (
@@ -512,6 +531,7 @@ async function sendOne(
         text: rendered.text,
         html: rendered.html,
         idempotencyKey: `${recipient.sourceKey}:${rule.template}:${recipient.ref}`,
+        ...(attachments.length === 0 ? {} : { attachments: [...attachments] }),
       })
     ).providerRef;
   } catch (error) {
@@ -719,6 +739,63 @@ export async function sendOpsJobNotification(
     else skipped += 1;
   }
   return { sent, skipped };
+}
+
+/**
+ * The florist's payout statement (spec 030a §5.2 `payouts.statement_email`, AC-21; TASK-365):
+ * one message to the florist's business address (`fulfillment_partner.contact_email`, resolved by
+ * the caller, never stored), keyed `job:payouts.statement_email:{payoutId}` with `recipient_ref` =
+ * the florist's id and `order_id` null, so a re-run of the job finds the row `sent` and sends
+ * nothing more. `attachments` runs only when the row is `queued`. Held (throws
+ * `NOTIFICATIONS_HELD`) while `notifications.email` is off.
+ */
+export const PayoutStatementNotificationInputSchema = z
+  .object({
+    payoutId: z.uuid(),
+    partnerId: z.uuid(),
+    address: z.email(),
+    locale: z.string().min(2).max(16),
+  })
+  .strict();
+export type PayoutStatementNotificationInput = z.input<
+  typeof PayoutStatementNotificationInputSchema
+>;
+
+export async function sendPayoutStatementNotification(
+  executor: OrderExecutor,
+  input: PayoutStatementNotificationInput,
+  attachments: () => Promise<readonly MailAttachment[]>,
+  deps: NotificationDeps = {},
+): Promise<"sent" | "skipped"> {
+  const parsed = PayoutStatementNotificationInputSchema.parse(input);
+  const resolved = resolveDeps(deps);
+  if (!(await resolved.emailEnabled())) throw new NotificationsHeld();
+  const job: NotificationJob = "payouts.statement_email";
+  const [rule] = notificationsFor(job, null, "live");
+  if (rule === undefined) return "skipped";
+  return sendOne(
+    executor,
+    {
+      trigger: job,
+      fromStatus: null,
+      invoiceId: null,
+      orderId: null,
+      jobId: parsed.payoutId,
+      payoutId: parsed.payoutId,
+      attachments,
+    },
+    {
+      rule,
+      ref: parsed.partnerId,
+      address: parsed.address,
+      locale: parsed.locale,
+      sourceKey: `job:${job}:${parsed.payoutId}`,
+      orderId: null,
+      purchaseId: null,
+      assignment: null,
+    },
+    resolved,
+  );
 }
 
 /**

@@ -91,6 +91,11 @@ function helpLineText(t: EmailTranslator, sentenceKey: string): string {
   return `${t(COMPANY.contact.labelKey)}: ${supportPhone()}. ${t(sentenceKey)}`;
 }
 
+/** The florist help line as plain text (spec 030a's statement PDF prints it in its fine print). */
+export function floristHelpText(t: EmailTranslator): string {
+  return helpLineText(t, "emails.layout.floristHelp");
+}
+
 /** The florist frame: "For our florists"; help, then why. */
 export function floristFrame(t: EmailTranslator): EmailFrame {
   return {

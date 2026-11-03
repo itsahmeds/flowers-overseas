@@ -719,6 +719,41 @@
         "paste": "Or paste this link into your browser:",
         "ignore": "If you did not ask for this link, you can ignore this email."
       }
+    },
+    "floristPayoutStatement": {
+      "subject": "Zestawienie wypłaty {number} · {total}",
+      "preheader": "Za okres {period}. Wysyłamy przez Wise, w {currency}.",
+      "documentTitle": "Zestawienie wypłaty",
+      "title": "Twoje zestawienie wypłaty",
+      "numberLabel": "Zestawienie {number}",
+      "statementNumber": "Numer zestawienia",
+      "periodLabel": "Okres",
+      "singleDateLabel": "Data",
+      "sentLabel": "Wysłano",
+      "currencyLabel": "Waluta",
+      "fromLabel": "Od",
+      "forLabel": "Dla",
+      "ordersLabel": "Zamówienia",
+      "linesCaption": "Zamówienia w tym zestawieniu",
+      "table": {
+        "order": "Zamówienie",
+        "date": "Data dostawy",
+        "bouquet": "Bukiet",
+        "amount": "Kwota"
+      },
+      "item": "{product} · {tier}",
+      "quantity": "{item} × {quantity}",
+      "manualLine": {
+        "adjustment": "Korekta",
+        "goodwill": "Premia"
+      },
+      "totalLabel": "Razem",
+      "paymentLabel": "Płatność",
+      "paymentMethod": "Tę kwotę przelewamy na Twoje konto bankowe przez Wise, w {currency}.",
+      "notInvoice": "To jest zestawienie wypłaty, a nie faktura.",
+      "deleteReminder": "Prosimy usunąć imię i nazwisko, adres i telefon odbiorcy powyższych zamówień, zgodnie z naszą umową z kwiaciarnią.",
+      "attached": "Załącznik: {filename}",
+      "page": "Strona {page} z {pages}"
     }
   },
   "errors": {

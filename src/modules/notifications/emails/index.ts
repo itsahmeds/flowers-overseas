@@ -94,3 +94,21 @@ export {
   type TrackingLinkEmailInput,
   renderTrackingLinkEmail,
 } from "./tracking-link";
+// Spec 030a §5.2 (TASK-365): the florist's payout statement, email and PDF.
+export {
+  type PayoutStatementView,
+  PayoutStatementViewSchema,
+  PayoutStatementMissing,
+  STATEMENT_NAMESPACE,
+  type StatementWords,
+  loadPayoutStatementView,
+  payoutStatementWords,
+  registerPayoutStatementTemplate,
+  renderPayoutStatementEmail,
+  statementFilename,
+} from "./payout-statement";
+export {
+  type StatementPdfOptions,
+  renderPayoutStatementPdf,
+} from "./payout-statement-pdf";
+export { payoutStatementPdf } from "./statement-document";

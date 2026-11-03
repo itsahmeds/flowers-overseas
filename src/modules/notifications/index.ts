@@ -4,6 +4,9 @@ export {
   type CapturedMail,
   type CapturingMailer,
   type IdempotencyErrorCode,
+  MAX_ATTACHMENTS,
+  type MailAttachment,
+  MailAttachmentSchema,
   type MailMessage,
   MailMessageSchema,
   type MailTag,
@@ -42,17 +45,20 @@ export {
   NotificationRecipientMissing,
   NotificationsHeld,
   OpsJobNotificationInputSchema,
+  PayoutStatementNotificationInputSchema,
   deliverNotifications,
   notificationsOutboxHandler,
   registerNotificationsOutbox,
   sendJobNotifications,
   sendOpsJobNotification,
+  sendPayoutStatementNotification,
 } from "./pipeline";
 export type {
   NotificationDeps,
   NotificationJobInput,
   NotificationRequest,
   OpsJobNotificationInput,
+  PayoutStatementNotificationInput,
 } from "./pipeline";
 export {
   NotificationTemplateMissing,

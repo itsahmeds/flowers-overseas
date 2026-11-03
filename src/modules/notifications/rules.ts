@@ -49,6 +49,8 @@ export const NOTIFICATION_TEMPLATE_KEYS = [
   "payout-prepaid-ready",
   "payouts-ready",
   "payout-line-missing",
+  // spec 030a §5.2 (TASK-365): the florist's payout statement, its PDF attached.
+  "florist-payout-statement",
 ] as const;
 export type NotificationTemplateKey =
   (typeof NOTIFICATION_TEMPLATE_KEYS)[number];
@@ -60,7 +62,8 @@ export type NotificationAudience = (typeof NOTIFICATION_AUDIENCES)[number];
 /**
  * The jobs that trigger a message without an event of their own: V2 and V5 (spec 016's routing
  * jobs, TASK-328), B8 (`invoice.email`, TASK-334) and spec 030a's F1 (`payouts.prepaid_ready`,
- * TASK-363), F2 (`payouts.close`, about no order) and F3 (`payouts.watch`, TASK-364). None of them
+ * TASK-363), F2 (`payouts.close`, about no order) and F3 (`payouts.watch`, TASK-364), and the
+ * florist's payout statement (`payouts.statement_email`, about one payout, TASK-365). None of them
  * is an event name.
  */
 export const NOTIFICATION_JOBS = [
@@ -70,6 +73,7 @@ export const NOTIFICATION_JOBS = [
   "payouts.prepaid_ready",
   "payouts.close",
   "payouts.watch",
+  "payouts.statement_email",
 ] as const;
 export type NotificationJob = (typeof NOTIFICATION_JOBS)[number];
 
@@ -232,6 +236,16 @@ export const NOTIFICATION_RULES: readonly NotificationRule[] = Object.freeze([
     template: "payout-line-missing",
     audience: "ops",
     trigger: "payouts.watch",
+    from: ANY,
+    modes: LIVE,
+  },
+  // The payout statement (spec 030a §5.2, AC-21, TASK-365): to the florist's contact address,
+  // about one payout and no order (`sendPayoutStatementNotification`); `live` only, as F1 to F3.
+  {
+    code: "FS",
+    template: "florist-payout-statement",
+    audience: "florist",
+    trigger: "payouts.statement_email",
     from: ANY,
     modes: LIVE,
   },

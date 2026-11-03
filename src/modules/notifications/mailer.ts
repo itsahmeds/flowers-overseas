@@ -15,6 +15,8 @@
  * default). `MailMessageSchema` carries a **tag** from a closed registry: `admin_sign_in` here;
  * spec 011 adds `florist_sign_in` and `florist_application_alert`; spec 016's pipeline adds one tag
  * per audience (`order_buyer`, `order_florist`, `ops_alert`); spec 018 adds `tracking_link` (T16).
+ * A message may carry `attachments` (spec 030a's statement PDF, TASK-365), sent as Resend's
+ * `attachments` array of base64 contents.
  *
  * **Idempotency (spec 016 §5.2, §12's request on spec 012; TASK-331).** A message may carry an
  * `idempotencyKey` (1 to 256 characters, Resend's limit), sent as the `Idempotency-Key` header.
@@ -44,6 +46,23 @@ export const mailTags = [
 ] as const;
 export type MailTag = (typeof mailTags)[number];
 
+/**
+ * One attached file (spec 030a §5.2: the payout statement PDF, TASK-365). The bytes travel as
+ * base64, the form Resend's `attachments[].content` takes; the name is a plain file name (no path,
+ * no address, no person), and only a PDF is admitted until another spec needs another type.
+ */
+export const MailAttachmentSchema = z
+  .object({
+    filename: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/u),
+    contentType: z.literal("application/pdf"),
+    content: z.base64().min(1),
+  })
+  .strict();
+export type MailAttachment = z.infer<typeof MailAttachmentSchema>;
+
+/** At most this many files per message. */
+export const MAX_ATTACHMENTS = 3;
+
 export const MailMessageSchema = z
   .object({
     tag: z.enum(mailTags),
@@ -53,6 +72,12 @@ export const MailMessageSchema = z
     html: z.string().min(1),
     /** Sent as `Idempotency-Key` (spec 016 §5.2): `{source_key}:{template_key}:{recipient_ref}`. */
     idempotencyKey: z.string().min(1).max(256).optional(),
+    /** Files sent with the message (spec 030a's statement PDF). */
+    attachments: z
+      .array(MailAttachmentSchema)
+      .min(1)
+      .max(MAX_ATTACHMENTS)
+      .optional(),
   })
   .strict();
 export type MailMessage = z.infer<typeof MailMessageSchema>;
@@ -132,6 +157,15 @@ export function resendMailer(
             text: message.text,
             html: message.html,
             tags: [{ name: "tag", value: message.tag }],
+            ...(message.attachments === undefined
+              ? {}
+              : {
+                  attachments: message.attachments.map((file) => ({
+                    filename: file.filename,
+                    content: file.content,
+                    content_type: file.contentType,
+                  })),
+                }),
           }),
         });
       } catch {
@@ -191,6 +225,7 @@ function bodyOf(message: MailMessage): string {
     message.subject,
     message.text,
     message.html,
+    message.attachments ?? null,
   ]);
 }
 

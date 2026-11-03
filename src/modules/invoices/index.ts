@@ -47,6 +47,8 @@ export type { VatRateProvider, VatRateRequest } from "./vat-rate";
 export {
   convertMinor,
   CREDIT_NOTE_TITLE_KEY,
+  // Spec 030a §5.2 (TASK-365): the payout statement PDF uses spec 018's embedded faces.
+  invoiceFonts,
   renderInvoicePdf,
 } from "./pdf/render";
 export type {
