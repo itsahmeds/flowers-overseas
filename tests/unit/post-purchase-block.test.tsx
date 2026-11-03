@@ -514,6 +514,13 @@ describe("the refusal (?cancel=refused)", () => {
       new RegExp(`^${EN.refused.replace(/[.?]/gu, "\\$&")} WhatsApp \\+`, "u"),
     );
     expect(refusal).toMatch(/href="https:\/\/wa\.me\/\d+"/u);
+    // In ink, with no panel and no error colour.
+    for (const open of tags(refusal, "p", "")) {
+      expect(open).not.toMatch(/\bbg-|danger|blush|rounded|shadow|border/u);
+    }
+    expect(tags(refusal, "p", 'role="status"')).toEqual([
+      expect.stringMatching(/\btext-ink\b/u),
+    ]);
     expect(text(html)).not.toContain(EN.button);
     expect(text(html)).not.toMatch(/accept|florist/iu);
   });
