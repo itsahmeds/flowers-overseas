@@ -15,7 +15,8 @@
  *  - `cancelled`, `cancelled_refunded`          → `refund`, keyed on the **actor class** of the
  *    cancelling event (`cancelledByOf`, the same rule as spec 016's B5 and spec 018's AC-42) and
  *    on whether a refund has succeeded; `{amount}` is the order's remaining balance while
- *    refunding and the sum of its succeeded refunds once refunded. The reason is never returned.
+ *    refunding and the sum of its succeeded refunds once they cover it. The reason is never
+ *    returned.
  *  - every other status (`in_production` and later) → `progress`, the order's buyer status (spec
  *    018's labels) with the arrival line, plus "Refunded {amount} on {date}" per succeeded refund.
  *
@@ -135,7 +136,10 @@ export function confirmationProjection(
     0,
   );
   if (CANCELLED.has(input.status)) {
-    const refunded = input.succeeded.length > 0;
+    // Refunded once the order's succeeded refunds cover it: a partial refund taken before the
+    // cancellation (set F) leaves the rest still "refunding", for the remaining balance.
+    const refunded =
+      input.succeeded.length > 0 && refundedMinor >= input.total.amountMinor;
     return {
       kind: "refund",
       by: cancelledByOf(input.cancelActor ?? "", input.cancelReason),

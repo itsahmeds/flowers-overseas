@@ -180,42 +180,31 @@ describe("the projection table (AC-6)", () => {
   });
 
   it("prints the remaining balance while refunding and the succeeded sum once refunded", () => {
-    // Remaining balance, not the order total: £10 already back, £35.90 still to come.
+    const at = (day: number) => new Date(Date.UTC(2026, 9, day, 10));
+    // Nothing back yet: the whole order is still to come.
+    expect(confirmationProjection(input("cancelled"))).toMatchObject({
+      refunded: false,
+      amount: GBP(4590),
+    });
+    // A £10 partial refund taken in `paid` before the cancel: £35.90 is still to come.
     expect(
       confirmationProjection(
         input("cancelled", {
-          succeeded: [],
+          succeeded: [{ amountMinor: 1000, succeededAt: at(6) }],
         }),
       ),
-    ).toMatchObject({ refunded: false, amount: GBP(4590) });
+    ).toMatchObject({ refunded: false, amount: GBP(3590) });
+    // Both back: the notice reads the sum of the succeeded refunds.
     expect(
       confirmationProjection(
         input("cancelled", {
           succeeded: [
-            {
-              amountMinor: 1000,
-              succeededAt: new Date("2026-10-06T10:00:00Z"),
-            },
-            {
-              amountMinor: 3590,
-              succeededAt: new Date("2026-10-07T10:00:00Z"),
-            },
+            { amountMinor: 1000, succeededAt: at(6) },
+            { amountMinor: 3590, succeededAt: at(7) },
           ],
         }),
       ),
     ).toMatchObject({ refunded: true, amount: GBP(4590) });
-    expect(
-      confirmationProjection(
-        input("cancelled", {
-          succeeded: [
-            {
-              amountMinor: 1000,
-              succeededAt: new Date("2026-10-06T10:00:00Z"),
-            },
-          ],
-        }),
-      ),
-    ).toMatchObject({ refunded: true, amount: GBP(1000) });
   });
 
   it("never carries the reason, and the paid state carries no amount at all", () => {
