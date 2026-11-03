@@ -159,7 +159,7 @@ function CompanyBlock({
         registrationNumber: company.registrationNumber,
       })
     : // No address, registry, VAT or legal-form field before registration (AC-11).
-      label(t, "infoPages.company.notRegistered");
+      label(t, "infoPages.company.detailsToFollow");
   return (
     <div
       className="bg-card rounded-photo max-w-(--measure) p-[26px] shadow-[inset_0_0_0_1px_var(--color-rule)]"

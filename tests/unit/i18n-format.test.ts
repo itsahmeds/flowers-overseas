@@ -52,6 +52,7 @@ import {
   formatNumber,
   formatPercentFromBasisPoints,
   formatRange,
+  formatRangeEnds,
   formatRelativeTime,
   formatTimeInZone,
   moneyDecimalString,
@@ -532,6 +533,49 @@ describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
     expect(spaces(formatRange(instant, until, "pl", "short", WARSAW))).toBe(
       "14–18.02.2027",
     );
+  });
+
+  it("splits a range into its two ends, the shared fields left to the end (TASK-437)", () => {
+    const day = (iso: string): Date => new Date(`${iso}T12:00:00Z`);
+    const ends = (a: string, b: string) =>
+      formatRangeEnds(day(a), day(b), "en", "dayMonthYear", "UTC");
+    // One month: the start is the day alone, the end carries month and year once.
+    expect(ends("2026-10-19", "2026-10-25")).toEqual({
+      start: "19",
+      end: "25 Oct 2026",
+    });
+    // Across a month: the start keeps its month; the year is said once.
+    expect(ends("2026-10-26", "2026-11-01")).toEqual({
+      start: "26 Oct",
+      end: "1 Nov 2026",
+    });
+    // Across a year: both ends in full.
+    expect(ends("2026-12-28", "2027-01-03")).toEqual({
+      start: "28 Dec 2026",
+      end: "3 Jan 2027",
+    });
+    // One day (or two instants of it): the one value, twice; no dash anywhere.
+    expect(ends("2026-10-19", "2026-10-19")).toEqual({
+      start: "19 Oct 2026",
+      end: "19 Oct 2026",
+    });
+    for (const [a, b] of [
+      ["2026-10-19", "2026-10-25"],
+      ["2026-10-26", "2026-11-01"],
+      ["2026-12-28", "2027-01-03"],
+    ] as const) {
+      const { start, end } = ends(a, b);
+      expect(`${start}${end}`).not.toMatch(/[–—-]/u);
+    }
+    expect(() =>
+      formatRangeEnds(
+        day("2026-10-19"),
+        day("2026-10-25"),
+        "en",
+        "dayMonthYear",
+        "Europe/Warschau",
+      ),
+    ).toThrow();
   });
 
   it("joins lists with each locale's conjunction (plan/03 §7)", () => {

@@ -114,6 +114,10 @@ describe("T-06 / AC-6 and AC-26: every trust page", () => {
 
 describe("AC-1 (§14 A1) and AC-11: about", () => {
   const html = render(<InfoPage pageId="about" locale="en" />);
+  // TASK-437: the true line (ADR-0021, a Wyoming LLC registered 2026-10-23), with no registry
+  // number, address, VAT id or person's name, while `company.ts` stays `registered: false`.
+  const COMPANY_LINE =
+    "Flowers Overseas LLC is registered in Wyoming, USA. We will publish its full company details on this page before our first order.";
 
   it("orders h1, status, intro, why, today, the company (who runs it waits for the company)", () => {
     // "Who runs it" names the company once it is registered and is not drawn before (spec 041
@@ -126,7 +130,7 @@ describe("AC-1 (§14 A1) and AC-11: about", () => {
       ">Why we do it this way<",
       ">Where we are today<",
       ">The company<",
-      "Flowers Overseas is not yet a registered company.",
+      COMPANY_LINE,
     ].map((needle) => html.indexOf(needle));
     for (const index of order) expect(index).toBeGreaterThan(-1);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
@@ -139,6 +143,18 @@ describe("AC-1 (§14 A1) and AC-11: about", () => {
     expect(html).not.toMatch(
       /Operated by|VAT|Tallinn|registr(?:y|ation) number/iu,
     );
+  });
+
+  it("states where the company is registered, truly, and invents no fact (TASK-437)", () => {
+    const block =
+      /<div[^>]*data-fo-company-block="unregistered"[^>]*>([\s\S]*?)<\/div>/u.exec(
+        html,
+      )?.[1];
+    expect(block).toBe(`<p class="text-ink-2 m-0">${COMPANY_LINE}</p>`);
+    // Never the superseded Estonian plan (ADR-0004 → ADR-0021), no dash (founder 2026-10-05),
+    // and no digit: a registry number, a postcode or a VAT id would be one.
+    expect(html).not.toMatch(/Estonia|OÜ/u);
+    expect(block?.replace(/<[^>]+>/gu, "")).not.toMatch(/[—–\d]/u);
   });
 });
 

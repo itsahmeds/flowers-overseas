@@ -435,7 +435,6 @@ describe("the shipped catalogues and manifests", () => {
     "forFlorists.sent.h1",
     "forFlorists.sent.title",
     "forFlorists.sent.walkthrough",
-    "infoPages.company.notRegistered",
     // Spec 018 §7's invoice PDF wording (TASK-342), awaiting the founder's exact-text approval.
     "invoice.label.buyer",
     "invoice.label.corrects",
@@ -470,7 +469,6 @@ describe("the shipped catalogues and manifests", () => {
     "invoice.title.receiptOnBehalf",
     "invoice.title.vatInvoice",
     // The header Basket link's name and count (spec 010 D10; TASK-349).
-    "occasionHub.dateUnknown",
     "payments.confirmation.arrival",
     "payments.confirmation.cancelled",
     "payments.confirmation.cancelledByYouRefunded",

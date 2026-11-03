@@ -15,7 +15,7 @@ import {
   formatDate,
   formatMoney,
   formatNumber,
-  formatRange,
+  formatRangeEnds,
 } from "@/modules/i18n";
 import type { PayoutKind, PayoutListRow } from "@/modules/partners/payouts";
 import {
@@ -57,16 +57,21 @@ export function weekdayDay(date: string): string {
   return formatDate(new Date(`${date}T12:00:00Z`), "en", "deliveryDate", "UTC");
 }
 
-/** A payout's period: one date for a one-order payout, else the range ("19–25 Oct 2026"). */
+/**
+ * A payout's period: one date for a one-order payout, else the range in words, "19 to 25 Oct
+ * 2026" (TASK-437: no dash, founder 2026-10-05). The two ends are `Intl`'s, the word joining them
+ * is the admin catalogue's (`admin.payouts.period`).
+ */
 export function periodText(start: string, end: string): string {
   if (start === end) return calendarDay(start);
-  return formatRange(
+  const ends = formatRangeEnds(
     new Date(`${start}T12:00:00Z`),
     new Date(`${end}T12:00:00Z`),
     "en",
     "dayMonthYear",
     "UTC",
   );
+  return adminT("admin.payouts.period", { ...ends });
 }
 
 /** An instant in a zone, with the zone's city: "23 Oct, 18:05 (Warsaw)". */

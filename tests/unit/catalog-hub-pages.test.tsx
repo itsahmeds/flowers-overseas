@@ -485,7 +485,7 @@ describe("the occasion hub's date table (AC-11, §14 A1, A10, design-round Q6)",
       ),
     };
     const rendered = textOf(render(<OccasionHubPage view={unknown} />, "en"));
-    expect(rendered).toContain("Omitted — we cannot compute this country");
+    expect(rendered).toContain("Omitted: we cannot compute this country");
     // Never a guess and never a neighbour's date reused.
     expect(ListingViewSchema.safeParse(unknown).success).toBe(true);
   });

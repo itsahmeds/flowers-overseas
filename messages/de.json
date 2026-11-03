@@ -1055,7 +1055,7 @@
   },
   "infoPages": {
     "company": {
-      "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
+      "detailsToFollow": "Flowers Overseas LLC is registered in Wyoming, USA. We will publish its full company details on this page before our first order."
     },
     "contact": {
       "body": "A person answers. Call us or message us on WhatsApp, and include your order number if you have one.",
@@ -1190,7 +1190,7 @@
     "aboutHeading": "What people send",
     "countryColumn": "Country",
     "dateColumn": "Date",
-    "dateUnknown": "Omitted — we cannot compute this country's date yet",
+    "dateUnknown": "Omitted: we cannot compute this country's date yet",
     "datesCaption": "{entity} in every destination we cover, computed from each country's own rule",
     "datesEyebrow": "The dates",
     "datesHeading": "When it falls, where we deliver",

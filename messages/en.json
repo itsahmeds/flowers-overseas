@@ -845,7 +845,7 @@
     "datesCaption": "{entity} in every destination we cover, computed from each country's own rule",
     "countryColumn": "Country",
     "dateColumn": "Date",
-    "dateUnknown": "Omitted — we cannot compute this country's date yet",
+    "dateUnknown": "Omitted: we cannot compute this country's date yet",
     "productsEyebrow": "What we make for it",
     "productsHeading": "{entity} flowers",
     "destinationsHeading": "Where we have a page for it",
@@ -1133,7 +1133,7 @@
       "untranslated": "This translation has not been checked yet. If it differs from the English version, the English version applies."
     },
     "company": {
-      "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
+      "detailsToFollow": "Flowers Overseas LLC is registered in Wyoming, USA. We will publish its full company details on this page before our first order."
     },
     "contact": {
       "heading": "Talk to us",

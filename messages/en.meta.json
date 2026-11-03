@@ -3719,8 +3719,10 @@
   },
   "occasionHub.dateUnknown": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "85a52423c7244ec6130825e737e2bebe91f77a7ed1478b31a7903d2e3962baac"
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-437.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:34:36Z",
+    "sourceHash": "68d38b67a079b5df32812b7ca54d9adb57b5ccbc4bfeccc13c4e10444473ea40"
   },
   "occasionHub.datesCaption": {
     "source": "human",
@@ -4689,10 +4691,12 @@
     "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "76c90f3766e84a946be2f0dbffdefe0fa6a19163fb29ef86fe6c9ec41c8b6a09"
   },
-  "infoPages.company.notRegistered": {
+  "infoPages.company.detailsToFollow": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "b960ecb3fc048d36b54c703732a7bf7bf120cc8a11e50dc8e05fcf57b5e7377a"
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-437.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-03T23:34:36Z",
+    "sourceHash": "e09f110fb9b813c271ecfcec47ed62ecb498435b8c4ca19c256178b379798500"
   },
   "infoPages.contact.heading": {
     "source": "human",
