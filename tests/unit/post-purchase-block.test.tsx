@@ -143,7 +143,7 @@ function placed(
         amount: { amountMinor: 4590, currency: "GBP" },
       },
     ],
-  } as Confirmation;
+  } as unknown as Confirmation;
 }
 
 /**
