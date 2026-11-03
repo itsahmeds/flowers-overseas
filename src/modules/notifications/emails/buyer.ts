@@ -102,7 +102,7 @@ const AttachmentFactSchema = z
     filename: z.string().min(1),
     content: z.string().min(1).optional(),
     path: z.url().optional(),
-    contentType: z.string().optional(),
+    contentType: z.enum(["application/pdf", "image/jpeg"]).optional(),
   })
   .strict();
 
@@ -705,7 +705,7 @@ export function renderDeliveredPhoto(
   const filename = deliveryPhotoFilename(words.reference);
   const photo = {
     content: facts.photo.content,
-    contentType: "image/jpeg",
+    contentType: "image/jpeg" as const,
   };
   return assemble(t, locale, {
     subject: t("emails.buyer.delivered.subject", { city: words.city }),

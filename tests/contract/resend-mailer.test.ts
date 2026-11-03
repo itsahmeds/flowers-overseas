@@ -228,7 +228,7 @@ describe("resendMailer attachments (spec 016 §5.2 B1, B4; TASK-333)", () => {
         resendMailer(config, fetchImpl).send({
           ...message,
           attachments: [file],
-        }),
+        } as never),
       ).rejects.toThrow();
     }
     expect(fetchImpl).not.toHaveBeenCalled();

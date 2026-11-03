@@ -519,8 +519,12 @@ async function sendOne(
     whatsappCopyOf: rule.whatsappCopyOf ?? null,
     executor,
   });
-  const attachments =
-    request.attachments === undefined ? [] : await request.attachments();
+  // The template's own files (spec 016's B1, B4, B8; TASK-333), then the request's (spec 030a's
+  // statement PDF, made only now that the row is `queued`).
+  const attachments = [
+    ...(rendered.attachments ?? []),
+    ...(request.attachments === undefined ? [] : await request.attachments()),
+  ];
   let providerRef: string | null;
   try {
     providerRef = (
@@ -530,10 +534,6 @@ async function sendOne(
         subject: rendered.subject,
         text: rendered.text,
         html: rendered.html,
-        ...(rendered.attachments === undefined ||
-        rendered.attachments.length === 0
-          ? {}
-          : { attachments: [...rendered.attachments] }),
         idempotencyKey: `${recipient.sourceKey}:${rule.template}:${recipient.ref}`,
         ...(attachments.length === 0 ? {} : { attachments: [...attachments] }),
       })

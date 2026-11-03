@@ -322,7 +322,7 @@ export async function loadPurchaseFacts(
     return {
       filename: pdf.filename,
       path: pdf.url,
-      contentType: "application/pdf",
+      contentType: "application/pdf" as const,
     };
   });
   const invoices =

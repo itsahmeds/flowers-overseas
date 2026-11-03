@@ -82,12 +82,12 @@ const SECOND: BuyerOrderFacts = {
 const TERMS = {
   filename: "flowers-overseas-terms-2026-10.pdf",
   path: "https://media.flowersoverseas.com/legal/terms-2026-10.pdf",
-  contentType: "application/pdf",
+  contentType: "application/pdf" as const,
 };
 const INVOICE = {
   filename: "FO-PL-2026-000001.pdf",
   content: "JVBERi0xLjcK",
-  contentType: "application/pdf",
+  contentType: "application/pdf" as const,
 };
 
 const PURCHASE: PurchaseFacts = {

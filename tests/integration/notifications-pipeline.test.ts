@@ -491,7 +491,7 @@ describe.skipIf(server.url === undefined)(
         const file = {
           filename: "terms-2026-10.pdf",
           path: "https://media.example.test/legal/terms-2026-10.pdf",
-          contentType: "application/pdf",
+          contentType: "application/pdf" as const,
         };
         await asSystem(tx, () =>
           sendJobNotifications(
