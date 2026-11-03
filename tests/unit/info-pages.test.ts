@@ -407,11 +407,12 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
         continue;
       // The one exception is a key recorded by a record-approval run, never by an agent's edit:
       // `infoPages.status.untranslated`, recorded with record-approval-210b.py (PR 344), and the
-      // keys TASK-436 recorded under the delegation with record-approval-436.py (PR 481).
+      // keys the orchestrator records under the delegation with a record-approval script
+      // (record-approval-436.py, PR 481; record-approval-437.py, TASK-437).
       if (
         (key === "infoPages.status.untranslated" &&
           /record-approval-210b\.py/u.test(record.reviewedBy ?? "")) ||
-        /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-436\.py /u.test(
+        /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-\d+[a-z]?\.py /u.test(
           record.reviewedBy ?? "",
         )
       )
