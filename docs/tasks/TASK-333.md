@@ -44,7 +44,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (builder E333): worktree `/Users/ahmed/dev/fo-wt-333` on `task/TASK-333-buyer-emails` from main ddc61cc05 (B1/B4 redraw merged, PR 470); row `in_progress`; draft PR opened. Next: attachments seam, buyer layout parts, B1 to B6 and B8, keys, tests.
 
 ## Result
 
