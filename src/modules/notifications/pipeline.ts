@@ -530,6 +530,10 @@ async function sendOne(
         subject: rendered.subject,
         text: rendered.text,
         html: rendered.html,
+        ...(rendered.attachments === undefined ||
+        rendered.attachments.length === 0
+          ? {}
+          : { attachments: [...rendered.attachments] }),
         idempotencyKey: `${recipient.sourceKey}:${rule.template}:${recipient.ref}`,
         ...(attachments.length === 0 ? {} : { attachments: [...attachments] }),
       })

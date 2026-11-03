@@ -24,3 +24,6 @@ CLAUDE.md
 # `tests/unit/corridor-corpus-index.test.ts`, so the formatter must not rewrite it
 /src/modules/geo/content/corpus.generated.ts
 /src/modules/content/corpus.generated.ts
+# the email markup snapshots (spec 016 T-21; TASK-332, TASK-333): byte-pinned by
+# `toMatchFileSnapshot` in `tests/unit/email-*.test.ts`, so the formatter must not rewrite them
+/tests/unit/__snapshots__/emails/

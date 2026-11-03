@@ -32,11 +32,14 @@ import {
 } from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
 import {
+  registerBuyerEmailTemplates,
   registerFloristEmailTemplates,
   registerOpsEmailTemplates,
   payoutStatementPdf,
   registerPayoutStatementTemplate,
 } from "../modules/notifications/emails";
+// Spec 018 §5.2 (TASK-339): the succeeded refunds, outside the `orders` barrel (it reads `payments`).
+import { buyerRefundLines } from "../modules/orders/buyer-refund-lines";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import { runProductionStart } from "../modules/payments";
 // Spec 030a §5.2 (TASK-363): the `payouts` target and F1's job, the worker's entry, not the barrel.
@@ -109,6 +112,26 @@ registerOpsEmailTemplates({
   payoutHref: payoutDetailHref,
   // Spec 030a §2.7: F2's link to the payouts list (TASK-364; TASK-367 builds the page).
   payoutsHref: payoutsListHref,
+});
+
+// Spec 016 §5.2 (TASK-333): the buyer emails B1 to B6 and B8. The refunds come through spec 013's
+// `succeededRefunds`, and B4's photo is read from the private bucket through a short signed URL and
+// attached as bytes (§13 16-8: attached, never linked). Loaded at the first B4, so loading the job
+// table loads no storage client.
+registerBuyerEmailTemplates({
+  refundLines: (orderId, options) => buyerRefundLines(orderId, options),
+  photoContent: async (location) => {
+    const { deliveryPhotoSignedUrl, privatePhotoStoreFrom } =
+      await import("../modules/orders/photo");
+    const url = await deliveryPhotoSignedUrl(privatePhotoStoreFrom(), location);
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `delivery photo read failed: HTTP ${String(response.status)}`,
+      );
+    }
+    return Buffer.from(await response.arrayBuffer()).toString("base64");
+  },
 });
 
 // Spec 030a §5.2 (TASK-363): the `payouts` target for `live` acceptances, held while

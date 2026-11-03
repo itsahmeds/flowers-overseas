@@ -14,6 +14,8 @@
  */
 import type { OrderExecutor } from "@/modules/orders";
 
+import type { MailAttachment } from "./mailer";
+
 import type {
   NotificationAudience,
   NotificationTemplateKey,
@@ -61,6 +63,8 @@ export interface RenderedNotification {
   readonly subject: string;
   readonly text: string;
   readonly html: string;
+  /** Files sent with it: B1's terms and invoices, B4's photo, B8's document (TASK-333). */
+  readonly attachments?: readonly MailAttachment[];
 }
 
 export type NotificationRenderer = (

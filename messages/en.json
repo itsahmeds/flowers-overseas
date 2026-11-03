@@ -1103,6 +1103,9 @@
       "noCard": "No card",
       "change": "Change",
       "amount": "Price"
+    },
+    "legal": {
+      "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that."
     }
   },
   "confirmation": {
@@ -1381,6 +1384,77 @@
       "deleteReminder": "Please delete the recipient's name, address and phone for the orders above, as our florist agreement asks.",
       "attached": "Attached: {filename}",
       "page": "Page {page} of {pages}"
+    },
+    "buyer": {
+      "label": {
+        "order": "Order",
+        "yourOrder": "Your order",
+        "recipient": "Recipient",
+        "date": "Date",
+        "status": "Status",
+        "amount": "Amount",
+        "invoice": "Invoice",
+        "creditNote": "Credit note",
+        "pdf": "PDF"
+      },
+      "paid": "You paid",
+      "recipientPlace": "{name}, {city}",
+      "trackOrder": "Track this order",
+      "deliveryLine": "Order {reference} to {city}, {date}",
+      "orderReceived": {
+        "subject": "We have your order {reference}",
+        "hero": "Thank you, {firstName}.",
+        "arrival": "Your flowers arrive in {city} on {date}.",
+        "arrivalMany": "Your flowers arrive on the dates below.",
+        "next": "We email you when your bouquet is being made, and again when it is delivered.",
+        "trackDelivery": "Track this delivery",
+        "totalPaid": "Total paid {amount}",
+        "termsHeading": "Your order terms",
+        "cancelHow": "To cancel, message us on WhatsApp or call us with your order number.",
+        "account": "You can see and manage this order in your account.",
+        "termsAttached": "{invoices, plural, =0 {Our terms are attached.} one {Our terms and your invoice are attached.} other {Our terms and your invoices are attached.}}"
+      },
+      "beingMade": {
+        "subject": "Your bouquet is being made",
+        "heading": "Your bouquet is being made.",
+        "body": "Our florist is making your order. It arrives on {date}."
+      },
+      "outForDelivery": {
+        "subject": "Your flowers are on their way",
+        "heading": "Your flowers are on their way.",
+        "body": "They arrive today, {date}."
+      },
+      "delivered": {
+        "subject": "Delivered in {city}. Here is your photo.",
+        "headline": "Delivered.",
+        "body": "Your flowers reached {city} at {time} on {date}.",
+        "caption": "Delivered to {recipientFirstName}",
+        "photoAttached": "Your photo is attached: {filename}"
+      },
+      "cancelled": {
+        "subject": "Order {reference} is cancelled and refunded",
+        "byUs": "We could not deliver this order.",
+        "byBuyer": "You cancelled this order.",
+        "refunded": "We have refunded {amount}.",
+        "sorry": "We are sorry. The refund goes back to your original payment method. Most banks show it within 5 to 10 working days.",
+        "timing": "The refund goes back to your original payment method. Most banks show it within 5 to 10 working days.",
+        "otherFlowers": "Choose other flowers",
+        "help": "If you need flowers there in time, message us and we will help."
+      },
+      "refund": {
+        "subject": "Refund for order {reference}",
+        "heading": "We have sent you a refund.",
+        "method": "It goes back to your original payment method. Most banks show it within 5 to 10 working days."
+      },
+      "creditNote": {
+        "subjectInvoice": "Your invoice {number}",
+        "subjectCreditNote": "Your credit note {number}",
+        "headingInvoice": "Your invoice",
+        "headingCreditNote": "Your credit note",
+        "bodyInvoice": "Your invoice for this order is attached as a PDF.",
+        "bodyCreditNote": "Your credit note for this order is attached as a PDF.",
+        "preheader": "Order {reference}. The PDF is attached."
+      }
     }
   },
   "tracking": {

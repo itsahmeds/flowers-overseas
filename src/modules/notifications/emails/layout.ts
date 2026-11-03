@@ -41,6 +41,15 @@ export interface Block {
   readonly tightAfter?: boolean;
   /** 12 px (not 20) between the block before and this one: a note under a button. */
   readonly tightBefore?: boolean;
+  /** Exactly this many pixels between the block before and this one, on every screen. */
+  readonly spaceBefore?: number;
+  /**
+   * Full card width, edge to edge (B4's photo): the body's padding stops above it and starts
+   * again under it, 24 px each side.
+   */
+  readonly bleed?: boolean;
+  /** Phone rules this block needs, added to the document's media query only when it is used. */
+  readonly phoneCss?: string;
 }
 
 /** One line of the footer. */
@@ -208,10 +217,17 @@ function bandRow(band: SafeHtml): SafeHtml {
   );
 }
 
-function bodyRow(blocks: readonly Block[]): SafeHtml {
-  const spaced = blocks.map((block, index) => {
+function spacedBlocks(blocks: readonly Block[]): SafeHtml[] {
+  return blocks.map((block, index) => {
     const next = blocks[index + 1];
     const last = next === undefined;
+    if (!last && next.spaceBefore !== undefined) {
+      return el(
+        "div",
+        { style: { margin: `0 0 ${next.spaceBefore}px` } },
+        block.html,
+      );
+    }
     const tight = block.tightAfter === true || next?.tightBefore === true;
     const gap = last ? 0 : tight ? M.blockGap - 8 : M.blockGap;
     return el(
@@ -223,18 +239,92 @@ function bodyRow(blocks: readonly Block[]): SafeHtml {
       block.html,
     );
   });
-  return el(
-    "tr",
-    {},
-    el(
-      "td",
-      {
-        class: "fo-body",
-        style: { padding: `32px ${M.gutter}px 36px`, ...BODY_TEXT },
-      },
-      ...spaced,
-    ),
-  );
+}
+
+/** The space above and under a full-width block (B4's photo). */
+const BLEED_GAP = 24;
+
+function bodyRow(blocks: readonly Block[]): SafeHtml {
+  if (!blocks.some((block) => block.bleed === true)) {
+    return el(
+      "tr",
+      {},
+      el(
+        "td",
+        {
+          class: "fo-body",
+          style: { padding: `32px ${M.gutter}px 36px`, ...BODY_TEXT },
+        },
+        ...spacedBlocks(blocks),
+      ),
+    );
+  }
+  // One row per run of padded blocks, and a row of its own for each full-width block.
+  const rows: SafeHtml[] = [];
+  let run: Block[] = [];
+  const flush = (last: boolean): void => {
+    if (run.length === 0) return;
+    const first = rows.length === 0;
+    const top = first ? 32 : BLEED_GAP;
+    const bottom = last ? 36 : BLEED_GAP;
+    rows.push(
+      el(
+        "tr",
+        {},
+        el(
+          "td",
+          {
+            class: [
+              "fo-body",
+              first ? null : "fo-body-after",
+              last ? null : "fo-body-before",
+            ]
+              .filter((name) => name !== null)
+              .join(" "),
+            style: {
+              padding: `${top}px ${M.gutter}px ${bottom}px`,
+              ...BODY_TEXT,
+            },
+          },
+          ...spacedBlocks(run),
+        ),
+      ),
+    );
+    run = [];
+  };
+  for (const block of blocks) {
+    if (block.bleed !== true) {
+      run.push(block);
+      continue;
+    }
+    flush(false);
+    rows.push(
+      el(
+        "tr",
+        {},
+        el("td", { style: { padding: "0", "line-height": "0" } }, block.html),
+      ),
+    );
+  }
+  flush(true);
+  return fragment(...rows);
+}
+
+/** The phone rules of the split body rows, beside a full-width block. */
+const BLEED_PHONE_CSS = [
+  `.fo-body-before{padding-bottom:${BLEED_GAP}px!important}`,
+  `.fo-body-after{padding-top:${BLEED_GAP}px!important}`,
+].join("");
+
+/** The extra phone rules the blocks ask for, once each, in their order; empty when none. */
+function extraPhoneCss(blocks: readonly Block[]): string {
+  const rules = new Set<string>();
+  for (const block of blocks) {
+    if (block.bleed === true) rules.add(BLEED_PHONE_CSS);
+    if (block.phoneCss !== undefined) rules.add(block.phoneCss);
+  }
+  if (rules.size === 0) return "";
+  return `@media only screen and (max-width:620px){${[...rules].join("")}}`;
 }
 
 function footerRow(frame: EmailFrame): SafeHtml {
@@ -313,7 +403,7 @@ export function emailDocument(input: EmailDocumentInput): string {
       el("meta", { name: "color-scheme", content: "light" }),
       el("meta", { name: "supported-color-schemes", content: "light" }),
       el("title", {}, input.subject),
-      el("style", {}, trusted(PHONE_CSS)),
+      el("style", {}, trusted(`${PHONE_CSS}${extraPhoneCss(input.blocks)}`)),
     ),
     el(
       "body",
@@ -919,6 +1009,463 @@ export function pasteBlock(value: string): Block {
         },
       },
       value,
+    ),
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Buyer parts (artboard `email-buyer-*.dc.html`, the 2026-11-04 redraw; TASK-333)   */
+/* -------------------------------------------------------------------------- */
+
+/** A name or a city as the buyer typed it, isolated from the sentence around it. */
+export function bdi(value: string): SafeHtml {
+  return el("bdi", {}, value);
+}
+
+const LEDE_STYLE: Style = {
+  margin: "0",
+  "font-family": EMAIL_FONTS.body,
+  "font-size": M.lede,
+  "line-height": "1.45",
+  color: colour("ink"),
+};
+const LEDE_PHONE_CSS = `.fo-lede{font-size:${M.phoneLede}px!important}`;
+
+/**
+ * The hero: the heading, then its lede 8 px under it (19 px ink, 17 on a phone). B1's first
+ * text block: nothing goes above it.
+ */
+export function hero(title: Child, lede: Child): Block {
+  return {
+    phoneCss: LEDE_PHONE_CSS,
+    html: fragment(
+      heading(title).html,
+      el(
+        "p",
+        { class: "fo-lede", style: { ...LEDE_STYLE, "margin-top": "8px" } },
+        lede,
+      ),
+    ),
+  };
+}
+
+/**
+ * B4's two lines: the lede (19 px ink) and, 8 px under it, the name line in the display face,
+ * italic, 19 px (17 on a phone), ink-2.
+ */
+export function ledeWithCaption(lede: Child, caption: Child): Block {
+  return {
+    phoneCss: `${LEDE_PHONE_CSS}.fo-caption{font-size:${M.phoneLede}px!important}`,
+    html: fragment(
+      el("p", { class: "fo-lede", style: LEDE_STYLE }, lede),
+      el(
+        "p",
+        {
+          class: "fo-caption",
+          style: {
+            margin: "8px 0 0",
+            "font-family": EMAIL_FONTS.display,
+            "font-style": "italic",
+            "font-weight": 300,
+            "font-size": M.lede,
+            "line-height": "1.4",
+            color: colour("ink-2"),
+          },
+        },
+        caption,
+      ),
+    ),
+  };
+}
+
+/** A text link in the link colour, bold, 17 px; `spaceBefore` sets its own gap above. */
+export function textLink(
+  label: string,
+  href: string,
+  spaceBefore?: number,
+): Block {
+  return {
+    ...(spaceBefore === undefined ? {} : { spaceBefore }),
+    html: el(
+      "p",
+      { style: { margin: "0", ...BODY_TEXT } },
+      el(
+        "a",
+        {
+          href,
+          style: {
+            color: colour("link"),
+            "font-weight": 700,
+            "text-decoration": "underline",
+            "text-underline-offset": "4px",
+          },
+        },
+        label,
+      ),
+    ),
+  };
+}
+
+/**
+ * A photo across the whole card (B4): 600 px wide on the desktop card, the phone's width on a
+ * phone, its own ratio (height from the file), no radius, no crop. `src` is a `cid:` reference.
+ */
+export function photo(input: {
+  readonly src: string;
+  readonly alt: string;
+  readonly width: number;
+  readonly height: number;
+}): Block {
+  return {
+    bleed: true,
+    html: el("img", {
+      src: input.src,
+      alt: input.alt,
+      width: M.card,
+      height: Math.round((M.card * input.height) / input.width),
+      style: {
+        display: "block",
+        width: "100%",
+        "max-width": `${M.card}px`,
+        height: "auto",
+        border: "0",
+      },
+    }),
+  };
+}
+
+const RULE = (): string => `1px solid ${colour("rule")}`;
+
+const SMALL_NOTE: Style = {
+  "font-family": EMAIL_FONTS.body,
+  "font-size": M.small,
+  "line-height": "1.45",
+  color: colour("ink-3"),
+};
+
+/**
+ * The amount box: a paper-2 ground inside a 1 px rule, 10 px radius, 16 × 18 padding; the label
+ * at the start in bold and the amount at the end in the display face at 26 px, the note under
+ * them at 14 px in ink-3. With no `amount`, `label` is one sentence holding the amount (B1's
+ * "Total paid {amount}").
+ */
+export function amountBox(input: {
+  readonly label: Child;
+  readonly amount: string | null;
+  readonly note: string;
+}): Block {
+  const cell: Style = {
+    padding: "16px 18px 4px",
+    "font-family": EMAIL_FONTS.body,
+    "font-size": M.body,
+    "font-weight": 700,
+    "vertical-align": "baseline",
+    color: colour("ink"),
+  };
+  return {
+    html: el(
+      "table",
+      {
+        role: "presentation",
+        width: "100%",
+        cellpadding: 0,
+        cellspacing: 0,
+        style: {
+          "border-collapse": "separate",
+          background: colour("paper-2"),
+          border: RULE(),
+          "border-radius": `${M.radiusBox}px`,
+        },
+      },
+      el(
+        "tr",
+        {},
+        el(
+          "td",
+          {
+            style:
+              input.amount === null
+                ? cell
+                : { ...cell, "padding-inline-end": "0" },
+          },
+          input.label,
+        ),
+        input.amount === null
+          ? null
+          : el(
+              "td",
+              {
+                style: {
+                  ...cell,
+                  "text-align": "end",
+                  "white-space": "nowrap",
+                  "font-family": EMAIL_FONTS.display,
+                  "font-size": 26,
+                  "font-weight": 400,
+                  "font-variant-numeric": "lining-nums tabular-nums",
+                },
+              },
+              input.amount,
+            ),
+      ),
+      el(
+        "tr",
+        {},
+        el(
+          "td",
+          {
+            colspan: input.amount === null ? null : 2,
+            style: { padding: "0 18px 16px", ...SMALL_NOTE },
+          },
+          input.note,
+        ),
+      ),
+    ),
+  };
+}
+
+/** An amount inside a sentence, in the display face (B1's "Total paid {amount}"). */
+export function displayAmount(value: string): SafeHtml {
+  return el(
+    "span",
+    {
+      style: {
+        "font-family": EMAIL_FONTS.display,
+        "font-size": 26,
+        "font-weight": 400,
+        "font-variant-numeric": "lining-nums tabular-nums",
+      },
+    },
+    value,
+  );
+}
+
+/** One delivery of a purchase (B1 with two to five orders). */
+export interface DeliveryPanel {
+  /** "Your flowers arrive in {city} on {date}.", the panel's heading. */
+  readonly heading: Child;
+  readonly facts: readonly Fact[];
+  readonly amount: string;
+  readonly amountNote: string;
+  readonly link: { readonly label: string; readonly href: string };
+}
+
+/**
+ * A delivery panel: a 1 px rule, 10 px radius, 18 × 20 padding (16 on a phone), 12 px between
+ * its parts: the heading (display face, 20 px; 19 on a phone), the facts, the order's amount
+ * (22 px) with its note, and the panel's own tracking link. Panels sit 16 px apart.
+ */
+export function deliveryPanel(panel: DeliveryPanel, first: boolean): Block {
+  const part = (child: Child, last = false): SafeHtml =>
+    el("div", { style: { margin: last ? "0" : "0 0 12px" } }, child);
+  return {
+    ...(first ? {} : { spaceBefore: 16 }),
+    phoneCss: `.fo-panel{padding:16px!important}.fo-panel-h{font-size:${M.phonePanelHeading}px!important}`,
+    html: el(
+      "table",
+      {
+        role: "presentation",
+        width: "100%",
+        cellpadding: 0,
+        cellspacing: 0,
+        style: {
+          "border-collapse": "separate",
+          border: RULE(),
+          "border-radius": `${M.radiusBox}px`,
+        },
+      },
+      el(
+        "tr",
+        {},
+        el(
+          "td",
+          { class: "fo-panel", style: { padding: "18px 20px" } },
+          part(
+            el(
+              "h2",
+              {
+                class: "fo-panel-h",
+                style: {
+                  margin: "0",
+                  "font-family": EMAIL_FONTS.display,
+                  "font-weight": 400,
+                  "font-size": M.panelHeading,
+                  "line-height": "1.25",
+                  color: colour("ink"),
+                },
+              },
+              panel.heading,
+            ),
+          ),
+          part(facts(panel.facts).html),
+          part(
+            el(
+              "p",
+              { style: { margin: "0", ...BODY_TEXT } },
+              el(
+                "span",
+                {
+                  style: {
+                    "font-family": EMAIL_FONTS.display,
+                    "font-size": 22,
+                    "font-variant-numeric": "lining-nums tabular-nums",
+                  },
+                },
+                panel.amount,
+              ),
+              " ",
+              el("span", { style: SMALL_NOTE }, panel.amountNote),
+            ),
+          ),
+          part(textLink(panel.link.label, panel.link.href).html, true),
+        ),
+      ),
+    ),
+  };
+}
+
+/** A file the email carries, as its row in "Your order terms". */
+export interface AttachmentRow {
+  readonly filename: string;
+  /** "PDF". */
+  readonly kind: string;
+}
+
+const PAPERCLIP = (): SafeHtml =>
+  trusted(
+    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${colour("ink-3")}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M21 11.5l-8.5 8.5a5 5 0 0 1-7-7L14 4.5a3.3 3.3 0 0 1 4.7 4.7L10.2 17.7a1.7 1.7 0 0 1-2.4-2.4L15.5 7.6"/></svg>`,
+  );
+
+function attachmentRow(row: AttachmentRow): SafeHtml {
+  return el(
+    "table",
+    {
+      role: "presentation",
+      width: "100%",
+      cellpadding: 0,
+      cellspacing: 0,
+      style: {
+        "border-collapse": "separate",
+        border: RULE(),
+        "border-radius": `${M.radiusBox}px`,
+      },
+    },
+    el(
+      "tr",
+      {},
+      el(
+        "td",
+        {
+          width: 32,
+          style: {
+            width: "32px",
+            padding: "12px 0",
+            "padding-inline-start": "14px",
+            "vertical-align": "middle",
+          },
+        },
+        PAPERCLIP(),
+      ),
+      el(
+        "td",
+        {
+          style: {
+            padding: "12px 0",
+            "vertical-align": "middle",
+            "font-family": EMAIL_FONTS.body,
+            "font-size": 15,
+            color: colour("ink"),
+            "word-break": "break-word",
+          },
+        },
+        row.filename,
+      ),
+      el(
+        "td",
+        {
+          style: {
+            padding: "12px 14px",
+            "text-align": "end",
+            "vertical-align": "middle",
+            "font-family": EMAIL_FONTS.body,
+            "font-size": M.label,
+            color: colour("ink-3"),
+          },
+        },
+        row.kind,
+      ),
+    ),
+  );
+}
+
+/**
+ * "Your order terms" (B1's foot block): 24 px above a 1 px rule, 24 px under it the heading in
+ * the display face at 21 px, then each line at 16 px in ink (never shrunk), 12 px apart, then one
+ * row per attached file.
+ */
+export function termsBlock(input: {
+  readonly heading: string;
+  readonly lines: readonly Child[];
+  readonly attachments: readonly AttachmentRow[];
+}): Block {
+  const parts: SafeHtml[] = [
+    el(
+      "h2",
+      {
+        style: {
+          margin: "0",
+          "font-family": EMAIL_FONTS.display,
+          "font-weight": 400,
+          "font-size": M.subheading,
+          "line-height": "1.2",
+          color: colour("ink"),
+        },
+      },
+      input.heading,
+    ),
+    ...input.lines.map((line) =>
+      el(
+        "p",
+        {
+          style: {
+            margin: "0",
+            "font-family": EMAIL_FONTS.body,
+            "font-size": 16,
+            "line-height": "1.5",
+            color: colour("ink"),
+          },
+        },
+        line,
+      ),
+    ),
+  ];
+  const rows = input.attachments.map((row) => attachmentRow(row));
+  return {
+    spaceBefore: 24,
+    html: el(
+      "div",
+      { style: { "padding-top": "24px", "border-top": RULE() } },
+      ...parts.map((part, index) =>
+        el(
+          "div",
+          {
+            style: {
+              margin:
+                index === parts.length - 1 && rows.length === 0
+                  ? "0"
+                  : "0 0 12px",
+            },
+          },
+          part,
+        ),
+      ),
+      ...rows.map((row, index) =>
+        el(
+          "div",
+          { style: { margin: index === rows.length - 1 ? "0" : "0 0 8px" } },
+          row,
+        ),
+      ),
     ),
   };
 }

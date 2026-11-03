@@ -38,6 +38,12 @@ const NAMESPACES = [
   "floristInbox",
   "catalog",
   "company",
+  // The buyer emails (TASK-333): the tracking page's status labels, refund line, photo alt text
+  // and eyebrow (spec 016 §5.2: the same words as spec 018's page), the confirmation's preheader
+  // and the pay step's cancellation sentence (`checkout.legal.cancellation`).
+  "tracking",
+  "payments",
+  "checkout",
 ] as const;
 
 type LooseTranslate = (key: string, values?: Values) => string;

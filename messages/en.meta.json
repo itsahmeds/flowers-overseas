@@ -1320,6 +1320,11 @@
     "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "ec91fdd9256cb75ae611249b50cb7eb16533f0fa91b86239ec1d439a1ea033b8"
   },
+  "checkout.legal.cancellation": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5e84a1dfebac512370a3a9c15e8fcdfa516992403fdca2b4651b3621a66a89de"
+  },
   "checkout.placeKind.cemetery": {
     "source": "human",
     "reviewed": true,
@@ -2519,6 +2524,271 @@
     "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
     "reviewedAt": "2026-09-16T00:00:00Z",
     "sourceHash": "bde980964168d925712f4b32e8edf8a8d798a99c64d8d0319e351fd7a3a4da84"
+  },
+  "emails.buyer.beingMade.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "588fac8d65a3b93538e4f45c36b71d2e2c8ac5e96cada5845c479816a9bf4cf0"
+  },
+  "emails.buyer.beingMade.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1bf3c1ead883ade213363df247534d4ea4c71294d4e1f2580c0fcb951eed1774"
+  },
+  "emails.buyer.beingMade.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a16574eed165e41ecd7068309cf928fcb1bb4ee261e3b113f0d6b2e194b671e1"
+  },
+  "emails.buyer.cancelled.byBuyer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2b671bb69e2e05522bd48dd3df16a38f15b3f62b20077b4ddfe2bfb7ba322ba1"
+  },
+  "emails.buyer.cancelled.byUs": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ff6b1744d535c88584a96f22438764d59eaf20781665835ce4eb677b063a672f"
+  },
+  "emails.buyer.cancelled.help": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "237e47b8f73b52bb123379ac7535d5bc9bf99af1a9b14f507146e528acf5b1bb"
+  },
+  "emails.buyer.cancelled.otherFlowers": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "adb63f1eb009d66db56ff476b95dbd7fd0b142fe6b1fb5302ca3bc56728cd277"
+  },
+  "emails.buyer.cancelled.refunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aa160901095c0308519c860ac8a3ea488f8cd1aeb63e496db430f5489ba3e0c5"
+  },
+  "emails.buyer.cancelled.sorry": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b432b8cf90015bb7f833867cd1844de2e7e42d1c6ecb15a105f227714508f050"
+  },
+  "emails.buyer.cancelled.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "27be1be68fcdca2010d2f7825d2f9ba0d36e735dc8b1521695d86f8bf1998c11"
+  },
+  "emails.buyer.cancelled.timing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "58a53ab435e6b1485e4709d8417aceb5eb5320053b3d11a5c6a94ec4ef458b99"
+  },
+  "emails.buyer.creditNote.bodyCreditNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "520bdc30423c25dab36bb738fe312d260188fe57039973392f94a82de792682f"
+  },
+  "emails.buyer.creditNote.bodyInvoice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e2fa4f0e19e9420fc561ce8ec4339f2d0aeb34bcd2ea694df2fcd6175ddcb760"
+  },
+  "emails.buyer.creditNote.headingCreditNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "843fada0c4a33e3a922a4ce0e61ac90a2b7aaf5d00f9627d89dc17ab0bfd8300"
+  },
+  "emails.buyer.creditNote.headingInvoice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "719d8eac78cdb00f1e9d54c63a52dcbc8a83427d223c075c1802034e390d00b4"
+  },
+  "emails.buyer.creditNote.preheader": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e36be7f3f7e6519000b906cddd356195c8fdf7cc915efb994c19cacdcd0b3df"
+  },
+  "emails.buyer.creditNote.subjectCreditNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a68be0090109cfed9d0fe157b8ac9aec68452b4a0fd306820d4c3f0c7b5c4a78"
+  },
+  "emails.buyer.creditNote.subjectInvoice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8aa356089c8d12fc491c476469d304eb74aa5bbe1bd97fa746275c6e5605f221"
+  },
+  "emails.buyer.delivered.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db050b20920b77eb21a86f9d5eee266d4331a7b8330741b46b3d2773a6f96833"
+  },
+  "emails.buyer.delivered.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ef1f54cf8f2cf90170a0c6848a97c9c0a2319276d177a1107a0f29fe6079d3c9"
+  },
+  "emails.buyer.delivered.headline": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db03d6c34c2b09a18345a0622bb07e8b4860d156ef017daddaa5b0085ffd40c4"
+  },
+  "emails.buyer.delivered.photoAttached": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fca885be863a452d920a4fd3edaaac02b72b88cf4ca91283a75bea64b1fc2d67"
+  },
+  "emails.buyer.delivered.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d2273308688f0da8caa98a0fdcd27105912ab231cbb7d82486052e66aeb2226"
+  },
+  "emails.buyer.deliveryLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6182ff0964403d4f263718bbaed1f705b3970a85f1355b94f6919d1acc5c1461"
+  },
+  "emails.buyer.label.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "emails.buyer.label.creditNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c204aa17e8f609334cca014ba68d7eacc1d6295b6dba0b47a002c89c9bb610ae"
+  },
+  "emails.buyer.label.date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "emails.buyer.label.invoice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b832002da297545ff2c6cc36303a5f9b9779a2d7e47ba81c07ef86aca92181c0"
+  },
+  "emails.buyer.label.order": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
+  },
+  "emails.buyer.label.pdf": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d393b0081b632c54654eb08c345ff76b92ae4efe0768b4c0f64b9ebbe920492"
+  },
+  "emails.buyer.label.recipient": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
+  },
+  "emails.buyer.label.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "emails.buyer.label.yourOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f159e18f1328d9a0c8e0b461b00da7b511abc472acc4e8b9549ec975fb36cb4b"
+  },
+  "emails.buyer.orderReceived.account": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "66b4f10005fa6a1ff83188e1b66c350fd0bbc78255c49d333f674191bf96adb5"
+  },
+  "emails.buyer.orderReceived.arrival": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "896e7c14ca5830fbdf66563050d0dfea6c5928704f77f332f05213823834f0fa"
+  },
+  "emails.buyer.orderReceived.arrivalMany": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d5b30297825847b4aac525b18a691be3fc8447e4514b4fb55c5bf09a8b1b01c9"
+  },
+  "emails.buyer.orderReceived.cancelHow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e4f5a65ce491cf68c15b8af56046511b6a88902a87d7f57302775623043db74b"
+  },
+  "emails.buyer.orderReceived.hero": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5cb12793c3ffdda85878422eb13ef6268a8e48a3dd9f78af6652a6dfa18d4ba1"
+  },
+  "emails.buyer.orderReceived.next": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0c90f3eb02da674fc95616c56d2a0f7cd78bf69c982bdcef1f61a41c3400ce22"
+  },
+  "emails.buyer.orderReceived.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3d3fa785af3bbc2da68fa9eb48fcad11a1bd5b4e86f7aab5055c48d194b305f6"
+  },
+  "emails.buyer.orderReceived.termsAttached": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ab831fbf172bd70bec90aff59676c4d78ddda4fb99044fd0f9ff2d0ee96d9568"
+  },
+  "emails.buyer.orderReceived.termsHeading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "33baa6782007a57e1b7d3713f2f17ae2be376e14b55cdbefee09692ed449c8f2"
+  },
+  "emails.buyer.orderReceived.totalPaid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36d61db91cc30ca49b55bd679fb085260b955b76fa2b0470011097ae3361eb01"
+  },
+  "emails.buyer.orderReceived.trackDelivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ff0e130bd1929dce903271002c16b5f6e68746e42100577f88b0b20ef664a99a"
+  },
+  "emails.buyer.outForDelivery.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e6b9ba145084afada41a240d5852f6f128e5399ac655ef62edfbd2ba97cdb390"
+  },
+  "emails.buyer.outForDelivery.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d96c24ad34d2e1cc52634085738b07bb1cdad96e3db48f31d4c54186776e468b"
+  },
+  "emails.buyer.outForDelivery.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a37ef288389782a45ab89a059a3f1ed986a9c98d31543e9644ffc7026274e9f0"
+  },
+  "emails.buyer.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c0c9d25fb72a1937a91c797b45da8800837fa8ab1511761d81e7c20da4bda384"
+  },
+  "emails.buyer.recipientPlace": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7bce503228c85af741ab86628728afe7b7366b83ee8d6845a4dd9145177a5436"
+  },
+  "emails.buyer.refund.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "57a7ef5a61caa15b7cebf10fb1a8257724b1576c40822abd9333bc18d376d39d"
+  },
+  "emails.buyer.refund.method": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e74ba2eb2bf131ec8addc319b39486d9ce6219fae4b90518a91653aa975ca90e"
+  },
+  "emails.buyer.refund.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b1b12c3e9d8f5cd141333884493a64de37e27041d61b209811462da54a82ecf6"
+  },
+  "emails.buyer.trackOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f90efe273819c6abfdd14829aea61d27fbd0fdac8060099f8bc788a551ad17a7"
   },
   "errors.notFound.body": {
     "source": "human",
