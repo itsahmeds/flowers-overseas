@@ -11,7 +11,8 @@
  *    (TASK-025), `neon.usage_probe` (TASK-029), `db.backup_verify` (TASK-028), `outbox.dispatch`
  *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick),
  *    `payments.production_start` (spec 013 §5.2, TASK-258: row 16 on the delivery morning),
- *    `webhook.process` (spec 013 §5.2, TASK-260: one stored webhook), `order.close_sweep`
+ *    `webhook.process` (spec 013 §5.2, TASK-260: one stored webhook), `webhook.resend.process`
+ *    (spec 016 §5.2, TASK-335: one stored Resend webhook, 7 retries), `order.close_sweep`
  *    (spec 022a §5.2, TASK-369: one run of the close sweep, enqueued by every minute tick), and
  *    spec 016's routing jobs (§5.2 "Jobs", TASK-328): `order.route`, `assignment.remind`,
  *    `assignment.timeout`, `assignment.photo_remind` (each keyed, at most one waiting job per key:
@@ -83,6 +84,15 @@ export const PaymentsProductionStartPayload = z.object({}).strict();
  * wired with the production provider once Stripe keys exist (TASK-266); until then its jobs wait.
  */
 export const WebhookProcessPayload = z.object({ inboxId: z.uuid() }).strict();
+
+/**
+ * `webhook.resend.process` (spec 016 §5.2 "Resend webhooks", AC-29, AC-30; TASK-335): process one
+ * stored Resend webhook. A `failed` run throws, so pg-boss retries it: 7 retries make the eighth
+ * attempt the one that marks the row `dead` and raises `webhook.dead` with `provider=resend`.
+ */
+export const WebhookResendProcessPayload = z
+  .object({ inboxId: z.uuid() })
+  .strict();
 
 /**
  * `order.close_sweep` (spec 022a §5.2, AC-2 to AC-4; TASK-369): one run of the close sweep, which
@@ -191,6 +201,11 @@ export const REGISTERED_JOBS = {
     payload: PaymentsProductionStartPayload,
   },
   "webhook.process": { version: 1, payload: WebhookProcessPayload },
+  "webhook.resend.process": {
+    version: 1,
+    payload: WebhookResendProcessPayload,
+    retryLimit: 7,
+  },
   "order.close_sweep": { version: 1, payload: OrderCloseSweepPayload },
   "order.route": { version: 1, payload: OrderRoutePayload, policy: "short" },
   "assignment.remind": {

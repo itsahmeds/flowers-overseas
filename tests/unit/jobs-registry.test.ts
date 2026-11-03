@@ -52,6 +52,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "retention.sweep",
       "routing.sla_watch",
       "webhook.process",
+      // spec 016 (TASK-335): one stored Resend webhook.
+      "webhook.resend.process",
     ]);
   });
 
@@ -88,6 +90,9 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     ).toEqual(["invoice.render"]);
     expect(jobRetryLimit("invoice.render")).toBe(4);
     expect(jobRetryLimit("invoice.render_sweep")).toBeUndefined();
+    // Spec 016 §5.2 (TASK-335): 7 retries, so the eighth attempt is the one that marks `dead`.
+    expect(jobRetryLimit("webhook.resend.process")).toBe(7);
+    expect(jobQueuePolicy("webhook.resend.process")).toBe("standard");
     expect(jobQueuePolicy("routing.sla_watch")).toBe("standard");
     expect(OrderRoutePayload.parse({ orderId: REQUEST_ID })).toEqual({
       orderId: REQUEST_ID,
@@ -113,7 +118,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(27);
+    expect(new Set(JOB_NAMES).size).toBe(28);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

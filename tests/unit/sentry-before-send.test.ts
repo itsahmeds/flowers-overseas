@@ -557,3 +557,31 @@ describe("Sentry beforeSend value scan (T-58, AC-54)", () => {
     );
   });
 });
+
+/**
+ * Spec 016 §8 "Logs and PII" (TASK-335): an event raised while the Resend webhook is handled
+ * keeps neither the body (which names the recipient address and the subject) nor the
+ * `svix-signature` header.
+ */
+describe("the Resend webhook request (spec 016 §8, TASK-335)", () => {
+  it("drops the body and redacts svix-signature, keeping svix-id", () => {
+    const scrubbed = beforeSend({
+      request: {
+        url: "https://flowersoverseas.com/api/webhooks/resend",
+        method: "POST",
+        data: JSON.stringify({
+          type: "email.bounced",
+          data: { to: ["florist@example.test"], subject: "New order" },
+        }),
+        headers: {
+          "svix-id": "msg_1",
+          "svix-signature": "v1,c2lnbmF0dXJl",
+        },
+      },
+    });
+    expect(scrubbed.request?.data).toBeUndefined();
+    expect(scrubbed.request?.headers?.["svix-signature"]).toBe(REDACTED);
+    expect(scrubbed.request?.headers?.["svix-id"]).toBe("msg_1");
+    expect(JSON.stringify(scrubbed)).not.toContain("florist@example.test");
+  });
+});

@@ -316,6 +316,13 @@ export const serverEnvSchema = z.object({
    */
   STRIPE_WEBHOOK_SECRET: optionalText,
   /**
+   * The signing secret of the environment's Resend webhook (`whsec_…`, Svix's scheme; spec 016
+   * §5.2 "Resend webhooks", §12 "Env contract"; TASK-335). SECRET: never logged, never in an
+   * error. Optional at boot, required at use: without it `POST /api/webhooks/resend` answers 503
+   * and stores nothing.
+   */
+  RESEND_WEBHOOK_SECRET: optionalText,
+  /**
    * The sender of the sign-in mail, `Name <address>` or a bare address on the domain verified in
    * Resend (spec 012 §2.2; TASK-217). Not secret. Required at use where the mailer is `resend`.
    */

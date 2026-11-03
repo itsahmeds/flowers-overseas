@@ -72,6 +72,15 @@ const PARSERS: readonly Entry[] = [
     reason:
       "Buffer.byteLength cap, then provider.verifyAndParseWebhook (StripeEventSchema.safeParse) before any field is read",
   },
+  // Spec 016 §5.2 "Resend webhooks" (TASK-335): `ingestResendWebhook` reads the body and hands it
+  // here; the raw body is measured against the 1 MB cap,
+  // the Svix signature is checked over the exact text, then `ResendEnvelopeSchema.safeParse`
+  // parses it before any field is read. The signature must be checked on the unparsed text.
+  {
+    entry: "src/modules/notifications/resend-webhook.ts#ingestResendBody",
+    reason:
+      "Buffer.byteLength cap, verifySvixSignature over the raw text, then ResendEnvelopeSchema.safeParse(JSON.parse(rawBody)) before any field is read",
+  },
   {
     entry: "src/modules/catalog/params.ts#listingRequest",
     reason:
@@ -981,6 +990,7 @@ describe("T-57: the real tree", () => {
     ]);
     expect(PARSERS.map((e) => e.entry)).toEqual([
       "src/modules/payments/webhooks.ts#ingestWebhook",
+      "src/modules/notifications/resend-webhook.ts#ingestResendBody",
       "src/modules/catalog/params.ts#listingRequest",
       "src/modules/catalog/product.ts#productSearchParams",
       "src/modules/checkout/steps.ts#runRecipientStep",

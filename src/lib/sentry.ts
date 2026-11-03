@@ -144,6 +144,26 @@ export function captureAlert(
   });
 }
 
+/**
+ * A webhook refused for its signature or timestamp (spec 016 §5.2 "Resend webhooks", §11;
+ * TASK-335): a warning fingerprinted `webhook-signature:{provider}`, so every refusal of one
+ * provider groups into one issue and Sentry's rule (`webhook-signature:*`, 3 events in 15 minutes)
+ * can count them. The fingerprint is also the `signal` tag, a constant built from a closed provider
+ * name, never from input. No header, body or secret is attached.
+ */
+export function captureWebhookSignatureRejected(
+  provider: "resend" | "stripe" | "mollie",
+  fields: Readonly<Record<string, unknown>> = {},
+): void {
+  const fingerprint = `webhook-signature:${provider}`;
+  captureMessage(fingerprint, {
+    level: "warning",
+    fingerprint: [fingerprint],
+    tags: { signal: fingerprint },
+    extra: { ...fields },
+  });
+}
+
 /** The subset of a Sentry event this module touches. Structural, so no SDK types are needed. */
 export interface ScrubbableEvent {
   request?: {
