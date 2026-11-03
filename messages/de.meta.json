@@ -2834,10 +2834,10 @@
     "reviewed": false,
     "sourceHash": "64a1a51b423b82d186f4a71ee4d26ab0f1ee011c4b9739cd6588f2b1246d4bea"
   },
-  "infoPages.company.notRegistered": {
+  "infoPages.company.detailsToFollow": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "b960ecb3fc048d36b54c703732a7bf7bf120cc8a11e50dc8e05fcf57b5e7377a"
+    "sourceHash": "e09f110fb9b813c271ecfcec47ed62ecb498435b8c4ca19c256178b379798500"
   },
   "infoPages.contact.body": {
     "source": "machine",
@@ -3127,7 +3127,7 @@
   "occasionHub.dateUnknown": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "85a52423c7244ec6130825e737e2bebe91f77a7ed1478b31a7903d2e3962baac"
+    "sourceHash": "68d38b67a079b5df32812b7ca54d9adb57b5ccbc4bfeccc13c4e10444473ea40"
   },
   "occasionHub.datesCaption": {
     "source": "machine",

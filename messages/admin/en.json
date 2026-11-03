@@ -867,6 +867,7 @@
         "per_order": "Per order"
       },
       "closes": "After {date}",
+      "period": "{start} to {end}",
       "rowLine": "{kind} · {period} ({zone}) · {count, plural, one {# line} other {# lines}}",
       "rowLineCloses": "{kind} · {period} ({zone}) · {count, plural, one {# line} other {# lines}} · closes after {date}",
       "sentOn": "Sent {date}",

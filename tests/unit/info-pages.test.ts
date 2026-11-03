@@ -406,10 +406,14 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
       )
         continue;
       // The one exception is a key recorded by a record-approval run, never by an agent's edit:
-      // `infoPages.status.untranslated`, recorded with record-approval-210b.py (PR 344).
+      // `infoPages.status.untranslated`, recorded with record-approval-210b.py (PR 344), and the
+      // keys TASK-436 recorded under the delegation with record-approval-436.py (PR 481).
       if (
-        key === "infoPages.status.untranslated" &&
-        /record-approval-210b\.py/u.test(record.reviewedBy ?? "")
+        (key === "infoPages.status.untranslated" &&
+          /record-approval-210b\.py/u.test(record.reviewedBy ?? "")) ||
+        /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-436\.py /u.test(
+          record.reviewedBy ?? "",
+        )
       )
         continue;
       expect(record.reviewed, key).toBe(false);
@@ -418,7 +422,7 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
 });
 
 describe("T-11 / AC-11: the company block and company.ts's refinements", () => {
-  it("about renders notRegistered, no name and no address field while unregistered", () => {
+  it("about renders detailsToFollow, no name and no address field while unregistered", () => {
     const view = infoPageView("about", "en", { registered: false });
     expect(view?.company).toEqual({ registered: false });
     // "Who runs it" names the company once it is registered and is not drawn before (spec 041

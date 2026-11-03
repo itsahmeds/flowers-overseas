@@ -716,6 +716,49 @@ export function formatRange(
   }).formatRange(from, until);
 }
 
+/** The two ends of a date range, each as `Intl` writes it, for a template that joins them in words. */
+export interface RangeEnds {
+  readonly start: string;
+  readonly end: string;
+}
+
+/**
+ * A date range split into its two ends (TASK-437), so a message key can join them in words
+ * ("19 to 25 Oct 2026") instead of the dash `formatRange` prints (founder 2026-10-05: no dash
+ * anywhere). The start is what `Intl.DateTimeFormat#formatRangeToParts` gives the start, with the
+ * fields both ends share left to the end ("19", "26 Oct", "28 Dec 2026"; a field shared *before*
+ * the start, as in `en-US`'s "Oct 19", stays with it); the end is the end date in full. A range
+ * that collapses to one formatted value returns that value twice; the caller decides to print one.
+ */
+export function formatRangeEnds(
+  start: Date,
+  end: Date,
+  locale: LocaleCode,
+  style: DateStyle,
+  timeZone: string,
+): RangeEnds {
+  const from = InstantSchema.parse(start);
+  const until = InstantSchema.parse(end);
+  const zone = TimeZoneSchema.parse(timeZone);
+  const format = dateTimeFormat(tagFor(locale), {
+    ...DATE_STYLE_OPTIONS[style],
+    timeZone: zone,
+  });
+  const whole = format.format(until);
+  const parts = format.formatRangeToParts(from, until);
+  let lastStart = -1;
+  parts.forEach((part, index) => {
+    if (part.source === "startRange") lastStart = index;
+  });
+  if (lastStart === -1) return { start: whole, end: whole };
+  const startText = parts
+    .slice(0, lastStart + 1)
+    .map((part) => part.value)
+    .join("")
+    .trim();
+  return { start: startText, end: whole };
+}
+
 /**
  * How many letters a reader sees in `text` (spec 010 §2, §7, AC-10, §13 Q9; TASK-200).
  *

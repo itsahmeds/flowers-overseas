@@ -444,6 +444,47 @@ describe("AC-29: a payout whose send would refuse shows the reason and no send b
   });
 });
 
+describe("TASK-437: a payout's period in words, never a dash", () => {
+  it("the list and the detail say 19 to 25 Oct 2026", async () => {
+    data.overview = overview({ ready: [row()] });
+    for (const html of [text(await renderList()), text(await renderDetail())]) {
+      expect(html).toContain("19 to 25 Oct 2026");
+      expect(html).not.toMatch(/\d\s?[–—]\s?\d/u);
+    }
+    expect(text(await renderDetail())).toContain(
+      "Weekly payout, 19 to 25 Oct 2026",
+    );
+  });
+
+  it("a period across a month keeps the start's month; across a year, both years", async () => {
+    data.detail = detail({
+      periodStart: "2026-10-26",
+      periodEnd: "2026-11-01",
+    });
+    expect(text(await renderDetail())).toContain(
+      "Weekly payout, 26 Oct to 1 Nov 2026",
+    );
+    data.detail = detail({
+      periodStart: "2026-12-28",
+      periodEnd: "2027-01-03",
+    });
+    expect(text(await renderDetail())).toContain(
+      "Weekly payout, 28 Dec 2026 to 3 Jan 2027",
+    );
+  });
+
+  it("a one-day period is the one date", async () => {
+    data.detail = detail({
+      kind: "per_order",
+      periodStart: "2026-10-21",
+      periodEnd: "2026-10-21",
+    });
+    const html = text(await renderDetail());
+    expect(html).toContain("Per-order payout, 21 Oct 2026");
+    expect(html).not.toContain("21 to 21");
+  });
+});
+
 describe("sendRefusals: sendStatement's checks, in its order", () => {
   const ready = {
     status: "draft",

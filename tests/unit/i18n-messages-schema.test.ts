@@ -435,7 +435,7 @@ describe("the shipped catalogues and manifests", () => {
     "forFlorists.sent.h1",
     "forFlorists.sent.title",
     "forFlorists.sent.walkthrough",
-    "infoPages.company.notRegistered",
+    "infoPages.company.detailsToFollow",
     // Spec 018 §7's invoice PDF wording (TASK-342), awaiting the founder's exact-text approval.
     "invoice.label.buyer",
     "invoice.label.corrects",
