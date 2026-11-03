@@ -22,18 +22,22 @@ import {
   jobQueuePolicy,
   OrderRoutePayload,
   AssignmentJobPayload,
+  jobRetryLimit,
   parseJobData,
 } from "../../src/jobs/index";
 
 const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
-  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329) and spec 030a's payouts.prepaid_ready", () => {
+  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready and spec 018's three invoice jobs (TASK-342)", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
       "db.backup_verify",
+      "invoice.email",
+      "invoice.render",
+      "invoice.render_sweep",
       "media.derive_variants",
       "neon.usage_probe",
       "order.close_sweep",
@@ -59,7 +63,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     ]);
   });
 
-  it("spec 016's keyed routing jobs are short queues (one waiting job per key); every other queue is standard", () => {
+  it("spec 016's keyed routing jobs and spec 018's invoice.email are short queues (one waiting job per key); invoice.render is exclusive (one queued or running per invoice, 5 attempts); every other queue is standard", () => {
     const short = REGISTERED_JOB_NAMES.filter(
       (name) => jobQueuePolicy(name) === "short",
     ).sort();
@@ -67,11 +71,19 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
+      "invoice.email",
       "order.no_partner_expire",
       "order.route",
       // spec 030a (TASK-363): F1, keyed by payout.
       "payouts.prepaid_ready",
     ]);
+    expect(
+      REGISTERED_JOB_NAMES.filter(
+        (name) => jobQueuePolicy(name) === "exclusive",
+      ),
+    ).toEqual(["invoice.render"]);
+    expect(jobRetryLimit("invoice.render")).toBe(4);
+    expect(jobRetryLimit("invoice.render_sweep")).toBeUndefined();
     expect(jobQueuePolicy("routing.sla_watch")).toBe("standard");
     expect(OrderRoutePayload.parse({ orderId: REQUEST_ID })).toEqual({
       orderId: REQUEST_ID,
@@ -97,7 +109,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(21);
+    expect(new Set(JOB_NAMES).size).toBe(24);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 
