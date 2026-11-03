@@ -43,7 +43,7 @@ One dated bullet per `/review`, newest last.
   - **Spec 009 owner (freshness scan):** spec 010's sentence "Flowers are fresh, so the 14-day cancellation right does not apply after that." tripped the A11 scan (two words between "fresh" and "14-day"). `STATUTORY_RIGHT` in `src/config/freshness-claim.ts` removes only "14-day cancellation right / right to cancel / right of withdrawal" before the scan, as the module's header says that copy is meant to pass; must-pass and must-fail cases pinned. Confirm or replace with a decided-string record.
   - **TASK-343 / whoever holds the build slot:** no screenshot, Playwright or pixel baseline was taken (founder, 2026-11-04). T-21's per-locale snapshots are the 44 pinned markup files `tests/unit/__snapshots__/emails/buyer-*.html`; `/tests/unit/__snapshots__/emails/` is now in `.prettierignore` (the formatter had been rewriting the byte-pinned florist snapshots, main's `format:check` red).
   - **Not built here:** B3's delivery window (no field stores one; TASK-332's carry-forward), O-7's "left with" variant, the B9 review email (spec 022a). Spec 020a request 3's B5 half is built (the loader reads `cancelledByOf`, so an admin cancel with `buyer_cancel` reads "You cancelled this order."); TASK-362 keeps the confirmation half.
-  - **Main (not this diff):** the branch's unit reds are main's at d764bf3cc: `catalog-product-view*`, `deferred-set`, `home-honesty`, `i18n-check` and `i18n:check` (`nav.*` unused), `i18n-draft`, `i18n-messages-schema` (`floristInbox.withdrawn.*`, `emails.floristPayoutStatement.*` not queued), `url-pii`, `zod-boundaries` (no line of this diff).
+  - **Main (not this diff):** the branch's unit reds are main's at d764bf3cc and again at 66ec90156 (same failing tests, compared file by file in a worktree of main): `catalog-product-view*`, `deferred-set`, `home-honesty`, `i18n-check` and `i18n:check` (`nav.*` unused), `i18n-draft`, `i18n-messages-schema` (`floristInbox.withdrawn.*`, `emails.floristPayoutStatement.*` not queued), `url-pii`, `zod-boundaries` (no line of this diff).
 
 ## Escalations
 
@@ -58,6 +58,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04 (builder E333): worktree `/Users/ahmed/dev/fo-wt-333` on `task/TASK-333-buyer-emails` from main ddc61cc05 (B1/B4 redraw merged, PR 470); row `in_progress`; draft PR opened. Next: attachments seam, buyer layout parts, B1 to B6 and B8, keys, tests.
+- 2026-11-04 (builder E333): B1 to B6 and B8, attachments, keys, tests and 19 mutations done; rebased on main 66ec90156 (RoPA row 13 merged with TASK-335's: its rows kept, this task's facts folded in); gates:cheap on 8ea0af0d8: typecheck, lint, format:check, check:no-db, map 0; i18n:check and tests 1, both main's. PR marked ready, no `ci:full` (founder, no CI tonight).
 
 ## Result
 
