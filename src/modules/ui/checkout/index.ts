@@ -28,6 +28,9 @@ export { DemoBanner } from "./DemoBanner.tsx";
 export type { DemoBannerProps } from "./DemoBanner.tsx";
 export { ErrorSummary } from "./ErrorSummary.tsx";
 export type { ErrorSummaryItem, ErrorSummaryProps } from "./ErrorSummary.tsx";
+// Spec 018 (TASK-340): the confirmation's refused-cancel sentence takes focus the same way.
+export { FocusOnMount } from "./FocusOnMount.tsx";
+export type { FocusOnMountProps } from "./FocusOnMount.tsx";
 export { describedBy, fieldMessageIds } from "./FieldMessages.tsx";
 export type { FieldMessageContent } from "./FieldMessages.tsx";
 export {

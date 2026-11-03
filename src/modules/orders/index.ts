@@ -161,6 +161,25 @@ export type {
   TrackingView,
   TrackingViewOptions,
 } from "./tracking-view";
+// Spec 018 §5.2 (TASK-340): the post-purchase block spec 013's confirmation states mount. The
+// buyer's cancel (`cancelOrderAsBuyer`) calls spec 013's `cancelOrder`, so it is imported from
+// `./buyer-cancel` directly and stays out of this barrel, as `buyerRefundLines` does.
+export {
+  ConfirmationBlockSchema,
+  getConfirmationBlock,
+  isCancellable,
+  maskEmail,
+  POST_PURCHASE_STEPS,
+  PostPurchaseStepKeySchema,
+  PostPurchaseStepSchema,
+  postPurchaseSteps,
+} from "./confirmation-block";
+export type {
+  ConfirmationBlock,
+  ConfirmationBlockOptions,
+  PostPurchaseStep,
+  PostPurchaseStepKey,
+} from "./confirmation-block";
 // Spec 011 §5.2 (TASK-214): the florist inbox's read models under partner context. The test
 // order and the after-answer seam live in `./demo` and are imported from there by the florist
 // routes only: `placeDemoOrder` reads spec 010's sample people (`src/config/checkout-samples.ts`),

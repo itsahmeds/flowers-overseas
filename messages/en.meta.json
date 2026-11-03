@@ -7468,5 +7468,90 @@
     "reviewedBy": "founder (delegated), 2026-11-03: recorded by the orchestrator with record-approval-436.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
     "reviewedAt": "2026-11-03T23:22:40Z",
     "sourceHash": "240ab6d8dc2cbb5ede8e1e708f5812d1129644348c3a28d3aaf8d5b97a4cfaef"
+  },
+  "confirmation.postPurchase.emailSent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5e832ea7649b1093e9947d7be46ee4565b53cb2d3587ada3832f15884d061e7e"
+  },
+  "confirmation.postPurchase.nextTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8f9b77e6e0b4eebac0a0786b761ecfaf5782fd7223b1fb34ae6c6bbe2fd63a9b"
+  },
+  "confirmation.postPurchase.steps.order": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c20889e461bfb62332eb4ea09c87939e5f9c23e5892d0f98c9ce64a05096d908"
+  },
+  "confirmation.postPurchase.steps.beingMade": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0bbd09f250bdeb17ffc3866c999e5152d75558a61420f49ff599c6299258c750"
+  },
+  "confirmation.postPurchase.steps.onItsWay": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c5d0f5f4b8b8dced4ee0da7564b8beb791395e724dd8fb2837f4b29c04fbb612"
+  },
+  "confirmation.postPurchase.steps.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e132d8853a5b4b091fd7dd1b6dd0cfc88d513038a3d4178fe7a62a530e92f1e5"
+  },
+  "confirmation.postPurchase.trackTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f90efe273819c6abfdd14829aea61d27fbd0fdac8060099f8bc788a551ad17a7"
+  },
+  "confirmation.postPurchase.trackBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "40990bba5a1cee7dbcf6b8711688e4c3266bc6d6fda935314f7a57033681fab0"
+  },
+  "confirmation.postPurchase.invoiceTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b832002da297545ff2c6cc36303a5f9b9779a2d7e47ba81c07ef86aca92181c0"
+  },
+  "confirmation.postPurchase.invoicePending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "826ac3c409a0781040766b89c7aeaf01e0f94dd7a8c5b82f8e6367150322f981"
+  },
+  "confirmation.postPurchase.invoiceIssued": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c762b78e96b4d0ed6c801fa780cf0a1955736f70ea171aec1402734355d0c03f"
+  },
+  "confirmation.postPurchase.cancelLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ff32dd1b10980a4eadd38a09676ea15055d02c39da0021a30f44de5ddc8c3385"
+  },
+  "confirmation.postPurchase.cancelConfirmTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f9c78a23cb43e1ef60761a2e8feab96907eeb7b74afae3c04ed00eb81d2feea8"
+  },
+  "confirmation.postPurchase.cancelConfirmBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ffe389d4901125bf598756d38abbef27e4185f0a57839dcbce4f1c1fe88de08e"
+  },
+  "confirmation.postPurchase.cancelConfirmYes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1063d14cb64cd2d58d7455c9b6a186390d8a13a77f5c4adf3e03e23ea618c99e"
+  },
+  "confirmation.postPurchase.cancelConfirmNo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eca8987227eae6c5aea48d12beb048a96f9bfca2f02e445eb3614567923dacae"
+  },
+  "confirmation.postPurchase.cancelRefused": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "143ca5ba6f2c5fd96982e198bb5c3b2a16fbaa0a3794361eff49f443d2a88551"
   }
 }

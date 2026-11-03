@@ -269,13 +269,15 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
       })),
       { match: "confirmation", surface: "orderConfirmation", paths },
       // Spec 018 §7 (TASK-338): the tracking routes read the tracking copy; TASK-333's buyer
-      // emails print its labels, refund line, photo alt text and eyebrow verbatim.
+      // emails print its labels, refund line, photo alt text and eyebrow verbatim; TASK-340's
+      // post-purchase block prints its contact line, calendar and share tiles on the confirmation.
       {
         match: "tracking",
         surface: "orderTracking",
         paths: [
           "src/app/[locale]/(track)/**",
           "src/modules/notifications/emails/**",
+          ...paths,
         ],
       },
       {

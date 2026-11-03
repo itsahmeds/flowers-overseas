@@ -193,11 +193,13 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     paths: CHECKOUT_PATHS,
   },
   // Spec 016 §5.2 (TASK-333): the buyer emails print the page's status labels, refund line, photo
-  // alt text and eyebrow verbatim ("the same map as spec 018's tracking page").
+  // alt text and eyebrow verbatim ("the same map as spec 018's tracking page"). Spec 018's
+  // post-purchase block (TASK-340) prints the tracking page's contact line, calendar tile and
+  // share tile verbatim on the `no-store`, `noindex` confirmation page under `(checkout)`.
   {
     match: "tracking",
     surface: "orderTracking",
-    paths: [...TRACK_PATHS, ...EMAIL_PATHS],
+    paths: [...TRACK_PATHS, ...EMAIL_PATHS, ...CHECKOUT_PATHS],
   },
   { match: "trackLookup", surface: "orderTracking", paths: TRACK_PATHS },
   // Spec 013 §7 (TASK-255): the pay step's errors and labels render on step 3 only, and the
