@@ -20,8 +20,9 @@
  *  3. `CancelDialog` after it, only after the buyer pressed the line (`?cancel=review`): an open
  *     native `<dialog>` over the scrim, "Cancel this order?", "We refund {amount} in full." (the
  *     order's own total, in its currency), "Yes, cancel it" (posts `step=confirm`) and "Keep my
- *     order", which reloads the page without the dialog. The state wraps everything else in
- *     `inert` while `cancelDialogOpen` is true.
+ *     order", which reloads the page without the dialog (a `GET` of the page: with JavaScript off a
+ *     `method="dialog"` close would leave the page behind it `inert`). While `cancelDialogOpen` is
+ *     true the line is `inert`, and the state marks every other part of `<main>` `inert` too.
  *
  * **No refund or failure wording before the press** (AC-9, AC-46): the only refund sentence is
  * the dialog's, and no part names a florist, an acceptance or a hold (AC-39, AC-43). Both steps
@@ -267,7 +268,11 @@ export async function CancelLine({
     );
   }
   return (
-    <div className={FOOT} data-fo-cancel-line="">
+    <div
+      className={FOOT}
+      data-fo-cancel-line=""
+      inert={cancelDialogOpen(block, line, state)}
+    >
       <form
         action={cancelOrderAsBuyerAction.bind(null, locale, block.reference)}
       >
