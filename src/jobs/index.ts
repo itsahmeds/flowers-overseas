@@ -12,7 +12,8 @@
  *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick),
  *    `payments.production_start` (spec 013 §5.2, TASK-258: row 16 on the delivery morning),
  *    `webhook.process` (spec 013 §5.2, TASK-260: one stored webhook), `webhook.resend.process`
- *    (spec 016 §5.2, TASK-335: one stored Resend webhook, 7 retries), `order.close_sweep`
+ *    (spec 016 §5.2, TASK-335: one stored Resend webhook, 7 retries), `notifications.resend`
+ *    (spec 020a §5.2, TASK-360: one admin resend row, keyed by row, `short`, 7 retries), `order.close_sweep`
  *    (spec 022a §5.2, TASK-369: one run of the close sweep, enqueued by every minute tick), and
  *    spec 016's routing jobs (§5.2 "Jobs", TASK-328): `order.route`, `assignment.remind`,
  *    `assignment.timeout`, `assignment.photo_remind` (each keyed, at most one waiting job per key:
@@ -92,6 +93,16 @@ export const WebhookProcessPayload = z.object({ inboxId: z.uuid() }).strict();
  */
 export const WebhookResendProcessPayload = z
   .object({ inboxId: z.uuid() })
+  .strict();
+
+/**
+ * `notifications.resend` (spec 020a §5.2 "Resend", AC-25, AC-26; TASK-360): send one admin resend
+ * row (`source_key = admin:{actionId}`, `resend_of` set) through spec 016's pipeline. Keyed by the
+ * row (`singletonKey = deliveryId`); a row already sent is skipped. While `notifications.email` is
+ * off it throws `NOTIFICATIONS_HELD` and pg-boss retries it; the row stays `queued`.
+ */
+export const NotificationsResendPayload = z
+  .object({ deliveryId: z.uuid() })
   .strict();
 
 /**
@@ -211,6 +222,12 @@ export const REGISTERED_JOBS = {
   "webhook.resend.process": {
     version: 1,
     payload: WebhookResendProcessPayload,
+    retryLimit: 7,
+  },
+  "notifications.resend": {
+    version: 1,
+    payload: NotificationsResendPayload,
+    policy: "short",
     retryLimit: 7,
   },
   "order.close_sweep": { version: 1, payload: OrderCloseSweepPayload },

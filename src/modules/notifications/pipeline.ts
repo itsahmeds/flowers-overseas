@@ -33,6 +33,10 @@
  * stay `pending`, `registerNotificationsOutbox`) and makes the job entry throw `NOTIFICATIONS_HELD`
  * so pg-boss retries it (AC-26).
  *
+ * An admin resend (spec 020a §5.2 request 2, TASK-360) is a row created outside the outbox with
+ * `source_key = admin:{actionId}` and `resend_of`; `resend.ts` renders it from its original's
+ * context through `sendOne` below, the one send path (exported for it, not from the barrel).
+ *
  * Logs carry ids, the template key, the audience and the source key only (spec 016 §11): never an
  * address, a name, a subject, a link or a token (AC-33).
  */
@@ -134,7 +138,7 @@ export interface NotificationDeps {
   readonly log?: Logger;
 }
 
-interface ResolvedDeps {
+export interface ResolvedDeps {
   readonly mailer: () => Mailer;
   readonly provider: () => "resend" | "capture";
   readonly template: (
@@ -161,7 +165,7 @@ let processDeps: NotificationDeps = {};
 
 const noLink = (): Promise<string | null> => Promise.resolve(null);
 
-function resolveDeps(input: NotificationDeps): ResolvedDeps {
+export function resolveDeps(input: NotificationDeps): ResolvedDeps {
   const deps: NotificationDeps = { ...processDeps, ...input };
   return {
     mailer: deps.mailer ?? getMailer,
@@ -206,7 +210,7 @@ const OrderFactsRow = z.object({
   purchase_locale: z.string().min(1).nullable(),
   buyer_email: z.string().nullable(),
 });
-type OrderFacts = z.infer<typeof OrderFactsRow>;
+export type OrderFacts = z.infer<typeof OrderFactsRow>;
 
 const EventRow = z.object({
   payload: z.unknown(),
@@ -220,7 +224,7 @@ const AssignmentRow = z.object({
   partner_id: z.uuid(),
   notification_channel: z.enum(["email", "whatsapp"]),
 });
-type Assignment = z.infer<typeof AssignmentRow>;
+export type Assignment = z.infer<typeof AssignmentRow>;
 
 const MemberRow = z.object({
   user_id: z.uuid(),
@@ -231,7 +235,7 @@ const MemberRow = z.object({
 const DeliveryRow = z.object({ id: z.uuid(), status: z.string() });
 
 /** One message to one recipient. */
-interface Recipient {
+export interface Recipient {
   readonly rule: NotificationRule;
   readonly ref: string;
   readonly address: string;
@@ -242,7 +246,7 @@ interface Recipient {
   readonly assignment: Assignment | null;
 }
 
-async function orderFacts(
+export async function orderFacts(
   executor: OrderExecutor,
   orderId: string,
 ): Promise<OrderFacts> {
@@ -268,7 +272,7 @@ const ASSIGNMENT_COLUMNS = sql`a.id, a.partner_id, p.notification_channel`;
  *    withdrawn before the event (the routing handler may set `withdrawn_at` before or after this
  *    delivery runs; an assignment withdrawn by an earlier event is not told twice).
  */
-async function assignmentFor(
+export async function assignmentFor(
   executor: OrderExecutor,
   request: NotificationRequest,
 ): Promise<Assignment | null> {
@@ -458,7 +462,7 @@ async function claimDelivery(
 
 /** Sends one recipient's message under its idempotency key, and records the outcome. */
 /** What one send needs of its trigger; F2 has no order, so `orderId` may be null here. */
-type SendRequest = Pick<
+export type SendRequest = Pick<
   NotificationRequest,
   "trigger" | "fromStatus" | "invoiceId" | "retryDueAt"
 > & {
@@ -473,7 +477,7 @@ type SendRequest = Pick<
   readonly attachments?: () => Promise<readonly MailAttachment[]>;
 };
 
-async function sendOne(
+export async function sendOne(
   executor: OrderExecutor,
   request: SendRequest,
   recipient: Recipient,

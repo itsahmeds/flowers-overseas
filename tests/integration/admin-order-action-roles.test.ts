@@ -2,8 +2,8 @@
  * Spec 020a T-02 (AC-1), the integration half of T-03 (AC-2), and `orderActionHistory` (§5.2,
  * §5.3 "Action history") on a disposable PG16 (TASK-357).
  *
- *  - T-02: every admin role against every order action that exists (reroute, cancel, refund in
- *    full, refund in part; resend is TASK-360's), through the real guard (`requirePermission`
+ *  - T-02: every admin role against every order action (reroute, cancel, refund in full, refund
+ *    in part, and resend from TASK-360), through the real guard (`requirePermission`
  *    reading a stubbed `getAdminSession`). The allowed cells come from a fixture transcribed from
  *    spec 020a §5.2 / AC-1, never from `ADMIN_PERMISSIONS`. A denied call answers 403 and the five
  *    tables (`order_event`, `refund`, `notification_delivery`, `admin_order_action`, `audit_log`)
@@ -22,6 +22,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import {
   cancelOrderAction,
+  resendEmailAction,
   rerouteOrderAction,
 } from "@/app/admin/(signed-in)/orders/[id]/actions";
 import type { AdminSession } from "@/lib/auth/admin";
@@ -34,6 +35,7 @@ import {
 } from "@/modules/admin/order-actions";
 import { adminOrderCancel } from "@/modules/admin/order-actions/cancel";
 import { adminOrderRefund } from "@/modules/admin/order-actions/refund";
+import { adminResendNotification } from "@/modules/admin/order-actions/resend";
 import { FakePaymentProvider } from "@/modules/payments/fake";
 
 import { insertPlacedOrder, walkOrderTo } from "../fixtures/order-state.ts";
@@ -74,13 +76,14 @@ const BUYER_STRING = "Test Buyer";
 
 /**
  * Spec 020a AC-1, transcribed: `orders.reroute` (admin, ops), `orders.cancel` (admin),
- * `orders.refund` (admin). Not read from `ADMIN_PERMISSIONS`.
+ * `orders.refund` (admin), `orders.resend` (admin, ops). Not read from `ADMIN_PERMISSIONS`.
  */
 const ALLOWED: Readonly<Record<string, readonly Role[]>> = {
   reroute: ["admin", "ops"],
   cancel: ["admin"],
   refund_full: ["admin"],
   refund_partial: ["admin"],
+  resend: ["admin", "ops"],
 };
 
 const sessionOf = (role: Role): AdminSession => ({
@@ -186,6 +189,9 @@ describe.skipIf(server.url === undefined)(
     const neverReroute = vi.fn<RerouteCommand>(() =>
       Promise.reject(new Error("the reroute command must not run here")),
     );
+    const neverSchedule = vi.fn(() =>
+      Promise.reject(new Error("no resend may be scheduled here")),
+    );
     const refundDeps = {
       provider: new FakePaymentProvider({
         now: () => new Date("2026-11-04T10:00:00Z"),
@@ -236,6 +242,17 @@ describe.skipIf(server.url === undefined)(
           },
           { transaction: adminTransaction, refund: refundDeps },
         ),
+      // TASK-360: a stale seq stops it before the delivery is read, so any id will do.
+      resend: (orderId, expectedSeq) =>
+        adminResendNotification(
+          {
+            orderId,
+            actionId: randomUUID(),
+            expectedSeq,
+            deliveryId: randomUUID(),
+          },
+          { transaction: adminTransaction, schedule: neverSchedule },
+        ),
     };
 
     /** The page's own server actions, posted as the browser would. */
@@ -263,6 +280,15 @@ describe.skipIf(server.url === undefined)(
             actionId: randomUUID(),
             expectedSeq: String(expectedSeq),
             reason: "no_partner",
+          }),
+        ),
+      resend: (orderId, expectedSeq) =>
+        resendEmailAction(
+          form({
+            orderId,
+            actionId: randomUUID(),
+            expectedSeq: String(expectedSeq),
+            deliveryId: randomUUID(),
           }),
         ),
     };
@@ -297,9 +323,12 @@ describe.skipIf(server.url === undefined)(
         "admin:refund_full:allowed",
         "admin:refund_partial:allowed",
         "admin:reroute:allowed",
+        "admin:resend:allowed",
         "ops:reroute:allowed",
+        "ops:resend:allowed",
       ]);
-      expect(cells).toHaveLength(16);
+      expect(cells).toHaveLength(20);
+      expect(neverSchedule).not.toHaveBeenCalled();
       expect(neverReroute).not.toHaveBeenCalled();
       expect(await seqOf(orderId)).toBe(stale + 1);
     }, 120_000);
@@ -337,8 +366,8 @@ describe.skipIf(server.url === undefined)(
           denied += 1;
         }
       }
-      // finance and content on both, ops on cancel.
-      expect(denied).toBe(5);
+      // finance and content on all three, ops on cancel.
+      expect(denied).toBe(7);
       expect(await seqOf(orderId)).toBe(seq);
     }, 120_000);
 
@@ -351,7 +380,7 @@ describe.skipIf(server.url === undefined)(
         ...Object.entries(PAGE_ACTIONS),
         ...Object.entries(COMMANDS),
       ];
-      expect(calls).toHaveLength(6);
+      expect(calls).toHaveLength(8);
       for (const [kind, call] of calls) {
         expect(digestOf(await thrown(() => call(orderId, seq))), kind).toBe(
           "NEXT_HTTP_ERROR_FALLBACK;401",
@@ -545,37 +574,23 @@ describe.skipIf(server.url === undefined)(
       // Two ids, the larger written first, so insertion order and id order disagree.
       const [low, high] = [randomUUID(), randomUUID()].sort();
       if (low === undefined || high === undefined) throw new Error("ids");
-      const seq = await seqOf(orderId);
-      // Written first: inside the transaction below the order row is locked, and the delivery's
-      // foreign key to it would wait on that lock.
+      // `runOrderAction` stamps each row with `clock_timestamp()` after the lock (TASK-360), so two
+      // of its rows never share an instant; a tie can still come from a migration or a restore, so
+      // the two rows are written here directly with one timestamp.
       const deliveries = new Map([
         [high, await delivery(orderId)],
         [low, await delivery(orderId)],
       ]);
-      // One transaction for both: `now()`, the column's default, is the same for the two rows.
       await scratch.sql.begin(async (tx) => {
         await tx`SELECT set_config('app.audit_action', 'order.action.resend', true)`;
         await tx`SELECT set_config('app.audit_reason', '', true)`;
-        await asApp(tx, { role: "admin", userId: USER.ops });
-        const shared: OrderActionTransaction = (_context, fn) =>
-          fn(runnerOf(tx)) as never;
         for (const actionId of [high, low]) {
-          const deliveryId = deliveries.get(actionId) ?? "";
-          const result = await runOrderAction(
-            {
-              kind: "resend",
-              input: { orderId, actionId, expectedSeq: seq },
-              userId: USER.ops,
-            },
-            () =>
-              Promise.resolve({
-                ok: true,
-                resultRef: randomUUID(),
-                record: { notificationDeliveryId: deliveryId },
-              }),
-            { transaction: shared },
-          );
-          expect(result).toMatchObject({ ok: true });
+          await tx`
+            INSERT INTO admin_order_action (id, order_id, kind, actor_user_id,
+                                            notification_delivery_id, result_ref, created_at)
+            VALUES (${actionId}, ${orderId}, 'resend', ${USER.ops},
+                    ${deliveries.get(actionId) ?? ""}, ${randomUUID()},
+                    TIMESTAMPTZ '2026-11-04 10:00:00+00')`;
         }
       });
       const [times] = await scratch.sql<{ distinct: number }[]>`
