@@ -1,4 +1,4 @@
--- 0034_payouts_030a — florist payouts, Phase 1: the payout terms of a florist, the kind and the
+-- 0035_payouts_030a — florist payouts, Phase 1: the payout terms of a florist, the kind and the
 -- lifecycle of a payout, the Wise export, and the four triggers that keep a florist's money honest
 -- (spec 030a §5.1; AC-2, AC-3, AC-5, AC-31, AC-32; TASK-363).
 --
@@ -31,7 +31,7 @@
 -- The new `payout` and `payout_line` columns fall under `0011`'s policies: staff all, a florist
 -- reads its own rows (AC-32).
 --
--- Rollback: `0034_payouts_030a.down.sql`, guarded by `PAYOUTS_030A_ROLLBACK_ROWS_IN_USE`.
+-- Rollback: `0035_payouts_030a.down.sql`, guarded by `PAYOUTS_030A_ROLLBACK_ROWS_IN_USE`.
 
 SET LOCAL ROLE app_owner;
 

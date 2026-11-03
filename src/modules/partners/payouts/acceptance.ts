@@ -10,7 +10,7 @@
  *     connections, queue here, so the prepaid count below is read by one of them at a time (AC-6).
  *  3. Each `product` line still without a unit amount gets `partner_payout_minor` and
  *     `payout_currency_code` from that florist's `partner_catalog_mapping` for (product, tier),
- *     the **unit** amount, written once (`0034`'s `order_line_payout_write_once`). A product with
+ *     the **unit** amount, written once (`0035`'s `order_line_payout_write_once`). A product with
  *     no mapping raises `PAYOUT_AMOUNT_UNKNOWN` and writes nothing (the dispatcher retries; the
  *     founder adds the price on the florist page). `addon` and `surcharge` lines stay null.
  *  4. Prepaid: if the order has no `order` line yet and the florist's `prepaid` payouts number

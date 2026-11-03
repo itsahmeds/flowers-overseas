@@ -368,7 +368,13 @@ describe.skipIf(server.url === undefined)(
 
     const noop = () => Promise.resolve();
     function handlers(routing: HandlerRegistry["routing"]): HandlerRegistry {
-      return { routing, payments: noop, invoices: noop, notifications: noop };
+      return {
+        routing,
+        payments: noop,
+        invoices: noop,
+        notifications: noop,
+        payouts: noop,
+      };
     }
 
     /**

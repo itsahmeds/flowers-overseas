@@ -100,13 +100,13 @@ export const partnerMemberLocales = ["en", "pl", "de"] as const;
 /** `payout.status`. */
 export const payoutStatuses = ["draft", "statement_sent", "paid"] as const;
 
-/** `payout.kind` (spec 030a §5.1, `0034`): one weekly statement, or one order paid on its own. */
+/** `payout.kind` (spec 030a §5.1, `0035`): one weekly statement, or one order paid on its own. */
 export const payoutKinds = ["weekly", "prepaid", "per_order"] as const;
 
-/** `fulfillment_partner.payout_cadence` (spec 030a §2.1, `0034`): after the prepaid orders. */
+/** `fulfillment_partner.payout_cadence` (spec 030a §2.1, `0035`): after the prepaid orders. */
 export const payoutCadences = ["weekly", "per_order"] as const;
 
-/** `payout_line.review_reason` (spec 030a §2.4, `0034`). */
+/** `payout_line.review_reason` (spec 030a §2.4, `0035`). */
 export const payoutLineReviewReasons = ["unpriced_lines"] as const;
 
 /** `payout_line.kind`. An `adjustment` may be negative; the other two are positive. */
@@ -164,7 +164,7 @@ export const fulfillmentPartner = pgTable(
     /** The day the florist signed the agreement; set with `termsVersion` or not at all. */
     termsSignedAt: date("terms_signed_at", { mode: "string" }),
     termsVersion: text("terms_version"),
-    // `0034_payouts_030a` (spec 030a §2.1; TASK-363): the payout terms. No bank detail is stored.
+    // `0035_payouts_030a` (spec 030a §2.1; TASK-363): the payout terms. No bank detail is stored.
     payoutCadence: text("payout_cadence").notNull().default("weekly"),
     /** The florist's first N accepted live orders are paid at acceptance (0 to 50). */
     prepaidOrderLimit: integer("prepaid_order_limit").notNull().default(5),
@@ -563,7 +563,7 @@ export const partnerApplication = pgTable(
 /* -------------------------------------------------------------------------- */
 
 /**
- * Which sent payouts went into which Wise bulk-payment file (spec 030a §2.6, `0034`). No money
+ * Which sent payouts went into which Wise bulk-payment file (spec 030a §2.6, `0035`). No money
  * column; the file is generated on request and never stored. RLS: staff only.
  */
 export const payoutExport = pgTable(
@@ -608,7 +608,7 @@ export const payout = pgTable(
       { onDelete: "restrict" },
     ),
     ...timestamps,
-    // `0034_payouts_030a` (spec 030a §5.1; TASK-363): the kind and the lifecycle.
+    // `0035_payouts_030a` (spec 030a §5.1; TASK-363): the kind and the lifecycle.
     kind: text("kind").notNull().default("weekly"),
     closedAt: timestamp("closed_at", { withTimezone: true }),
     sentAt: timestamp("sent_at", { withTimezone: true }),
@@ -691,7 +691,7 @@ export const payoutLine = pgTable(
     kind: text("kind").notNull(),
     note: text("note"),
     ...timestamps,
-    // `0034_payouts_030a` (spec 030a §2.4; TASK-363): an order with add-ons waits for the founder.
+    // `0035_payouts_030a` (spec 030a §2.4; TASK-363): an order with add-ons waits for the founder.
     reviewReason: text("review_reason"),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
     reviewedBy: uuid("reviewed_by").references(() => users.id, {

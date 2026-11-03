@@ -296,7 +296,7 @@ export const STAFF_ONLY_TABLES = [
   // spec 013 / spec 002 §14 A7.5 (migration `0017_payments_a7`, TASK-254): a chargeback on a
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
-  // spec 030a §5.1 (migration `0034_payouts_030a`, TASK-363): which sent payouts went into which
+  // spec 030a §5.1 (migration `0035_payouts_030a`, TASK-363): which sent payouts went into which
   // Wise file. Partners, customers and the public read nothing.
   "payout_export",
   "retention_policy",

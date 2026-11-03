@@ -40,7 +40,7 @@
  * orders to the founder instead of to florists) and `notifications.email` (global: off holds every
  * email, never drops one).
  *
- * Spec 030a (TASK-363, migration `0034_payouts_030a`) adds `payouts.accrue`, global and high-risk,
+ * Spec 030a (TASK-363, migration `0035_payouts_030a`) adds `payouts.accrue`, global and high-risk,
  * on by default: off holds the `payouts` outbox rows (nothing is lost) and dirties no page.
  *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.

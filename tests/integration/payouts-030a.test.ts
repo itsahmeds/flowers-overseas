@@ -14,7 +14,7 @@
  *  - T-06 (AC-6): two acceptances on two connections at four used make exactly one more;
  *  - T-07 (AC-7): the handler twice, through the real `assignment.accepted` event, enqueues F1
  *    once, and F1 sent twice through spec 016's pipeline reaches the founder once;
- *  - the lifecycle triggers of `0034`: status guard, frozen lines, the total kept by the database;
+ *  - the lifecycle triggers of `0035`: status guard, frozen lines, the total kept by the database;
  *  - T-32 (AC-32): RLS under `partner` A and B, `customer`, `public`, `system` and `admin`;
  *  - T-31 (AC-31): the down file refuses with each guard row (catalogue and counts unchanged),
  *    succeeds on a clean database back to the pre-030a catalogue, and migrates again.
