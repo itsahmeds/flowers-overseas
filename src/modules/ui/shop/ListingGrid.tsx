@@ -73,6 +73,15 @@ export interface ListingGridProps {
   readonly leadItemClassName?: string;
   /** Where the first card's `priority` holds (`ProductCard`'s `priorityAt`; the hubs). */
   readonly priorityAt?: "below-md";
+  /**
+   * Country-less cards that link through the chooser (spec 004 §14 A-founder-2026-10-24a items 2
+   * and 6; TASK-388): each card prints `shop.price.choose` and `shop.cta.chooseCountry` and its
+   * link carries `rel="nofollow"` (`ProductCard`'s `chooser`), on the commerce boards' `.cm-g4`
+   * spacing (28/14 on a phone, 44/28 from `md`).
+   */
+  readonly chooser?: boolean;
+  /** The listing's country name, for a local special's "Only in {country}" (TASK-389). */
+  readonly country?: string;
 }
 
 /** What each card does with its own label, given the grid's mode (`provenance="grid"`). */
@@ -98,6 +107,8 @@ export function ListingGrid({
   lead = false,
   leadItemClassName,
   priorityAt,
+  chooser = false,
+  country,
 }: ListingGridProps): ReactElement | null {
   const t = useTranslations("shop");
 
@@ -119,7 +130,11 @@ export function ListingGrid({
       columns="2-4"
       gap="none"
       aria-label={t("grid.label", { count: cards.length })}
-      className="list-none gap-x-[14px] gap-y-[32px] md:gap-x-[28px] md:gap-y-[52px]"
+      className={
+        chooser
+          ? "list-none gap-x-[14px] gap-y-[28px] md:gap-x-[28px] md:gap-y-[44px]"
+          : "list-none gap-x-[14px] gap-y-[32px] md:gap-x-[28px] md:gap-y-[52px]"
+      }
       data-fo-listing-grid={cards.length}
     >
       {cards.map((card, index) => [
@@ -147,6 +162,8 @@ export function ListingGrid({
                 : cardProvenance(mode, lead && index === 0)
             }
             {...(manifest === undefined ? {} : { manifest })}
+            {...(chooser ? { chooser: true } : {})}
+            {...(country === undefined ? {} : { country })}
           />
         </li>,
         interlude !== undefined &&

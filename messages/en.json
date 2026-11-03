@@ -794,6 +794,9 @@
       "mark": "P.S.",
       "label": "A note before you choose"
     },
+    "card": {
+      "localSpecial": "Only in {country}"
+    },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."
     },

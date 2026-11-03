@@ -126,6 +126,7 @@ import {
 
 import { copyRow, copyRows } from "./copy";
 import { orderedCountryCodes } from "./country-order";
+import { priceEquivalents } from "./pricing/equivalents";
 import { fromPriceProjection, priceProjection } from "./pricing/project";
 import { resolvePrice } from "./pricing/resolve";
 import {
@@ -142,6 +143,7 @@ import {
   ListingParamsSchema,
   ListingPageTypeSchema,
 } from "./schemas";
+import { localSpecialSkus } from "./shop";
 import { slugFor } from "./slugs";
 import type {
   Category,
@@ -1239,31 +1241,40 @@ export function photoFor(
 }
 
 /**
- * One product card for a country-scoped listing (§2 "The product card contract"): the photo or
- * the placeholder, the name in this locale, and **one** all-in price, the default tier's
- * `priceProjection().displayPrice`, a payable configuration, with the `catalog.price.inclusive`
- * wording beside it. The equivalents line, the delivery slots and the local-special label have
- * their fields since TASK-381 (spec 004 §14 A-founder-2026-10-24a items 7, 8, 10) and are filled
- * by the tasks that render them.
+ * One product card in a country (spec 008 AC-6's second form as amended by §14
+ * A-founder-2026-10-24a; spec 004 §14 A-founder-2026-10-24a items 7 and 8; TASK-389): the photo
+ * or the placeholder, the name in this locale, and **"from" the smallest size's exact all-in
+ * price** in this country (`fromPriceProjection()`, a payable configuration, printed inside
+ * `catalog.price.from` with `catalog.price.inclusive` beside it). Under it the equivalents line
+ * (`priceEquivalents()` of that same projection at the same `now`, in item 7's order with the
+ * locale's display currency first, `null` where the line is hidden: the stale-FX fallback, a leg
+ * past the display bound). `localSpecial` is the caller's answer (`localSpecialSkus()`), because
+ * it is a property of the listing's country set, not of the product alone. `slots` stays `null`
+ * until the countdown's task (TASK-393) fills the reserved box.
  *
- * `href` is present only when spec 009's `product` link id is published (§13 Q8, AC-12). It is
- * not in `site-links.ts` yet, so the caller passes `productLinks: false` — its default — and
- * every card renders as a tile with no `<a>`. The flip is then a data change with no markup
- * change, because nothing else in the shape moves.
+ * The equivalents are display values only: no `ItemList`, `Offer`, sitemap, sort key or band reads
+ * them (item 7 (c)); the sort and the bands read `price`, the number the card prints.
+ *
+ * `href` is present only when the caller asks for product links (§13 Q8, AC-12); otherwise the
+ * card renders as a tile with no `<a>`, and the flip is a data change with no markup change.
  */
 export async function productCardView(
   product: Product,
   locale: LocaleCode,
   iso2: CountryIso2,
-  options: { readonly productLinks?: boolean; readonly now?: Date } = {},
+  options: {
+    readonly productLinks?: boolean;
+    readonly now?: Date;
+    readonly localSpecial?: boolean;
+  } = {},
 ): Promise<ProductCardView> {
-  const tier = await defaultTier(product.sku);
-  const projection = await priceProjection(locale, {
+  const now = options.now ?? new Date();
+  const projection = await fromPriceProjection(locale, {
     productId: product.sku,
-    tierKey: tier.tierKey,
     countryIso: iso2,
-    now: options.now ?? new Date(),
+    now,
   });
+  const equivalents = await priceEquivalents(projection, now, { locale });
   const { photo, provenance } = photoFor(product.sku, locale);
   const slug = slugFor("product", product.sku, locale);
   const href =
@@ -1279,12 +1290,12 @@ export async function productCardView(
     price: projection.displayPrice,
     priceLabelKey: PRICE_LABEL_KEY,
     provenance,
-    // The country card's three new fields (spec 008 AC-6 as amended; TASK-381 adds the shape).
-    // Rendered by TASK-389 (equivalents, local special) and the countdown's task (slots), which
-    // fill them; until then no card prints a line from them, so none is computed here.
-    equivalents: null,
+    equivalents:
+      equivalents === null
+        ? null
+        : { asOf: equivalents.asOf, amounts: [...equivalents.amounts] },
     slots: null,
-    localSpecial: false,
+    localSpecial: options.localSpecial ?? false,
   });
 }
 
@@ -1705,12 +1716,22 @@ export async function listingView(
     );
   } else {
     const productLinks = options.productLinks ?? false;
+    // "Only in {country}" (AC-6, TASK-389): one question for the whole list, asked of the shop set.
+    const specials = await localSpecialSkus(
+      locale,
+      iso2,
+      ordered.map((product) => product.sku),
+    );
     const cards = async (
       list: readonly Product[],
     ): Promise<readonly ProductCardView[]> =>
       Promise.all(
         list.map((product) =>
-          productCardView(product, locale, iso2, { productLinks, now }),
+          productCardView(product, locale, iso2, {
+            productLinks,
+            now,
+            localSpecial: specials.has(product.sku),
+          }),
         ),
       );
     items =

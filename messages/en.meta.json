@@ -4158,6 +4158,11 @@
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "7d1e11c5aab8c80b7e6169b91dcb26aa7cc5930e44260f85665c3553029c81d1"
   },
+  "shop.card.localSpecial": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec10005485b900bc0c769b8c4656061681acc67949118dbfd214faa5b3a019e8"
+  },
   "shop.cardNote.heading": {
     "source": "human",
     "reviewed": true,

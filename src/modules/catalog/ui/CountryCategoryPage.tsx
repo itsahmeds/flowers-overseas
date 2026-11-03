@@ -137,6 +137,7 @@ export function CountryCategoryPage({
           <ListingGrid
             cards={view.items}
             locale={code}
+            country={country}
             priority
             provenance="grid"
           />

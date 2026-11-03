@@ -1362,6 +1362,9 @@
     "vat": "VAT {rate}"
   },
   "shop": {
+    "card": {
+      "localSpecial": "Only in {country}"
+    },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."
     },

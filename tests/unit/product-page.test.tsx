@@ -701,12 +701,19 @@ describe("AC-21: one all-in price with its formula, VAT and delivery rows, and t
       // v2 moves the sentence out of the summary into the "Good to know" band (TASK-179); the
       // page still prints it, once.
       expect([...html.matchAll(/data-fo-price-excludes/gu)]).toHaveLength(1);
-      // No "from", no strike-through, no reference price.
+      // No "from", no strike-through, no reference price on the page's own price. The related
+      // row's cards are country cards, which say "from" their smallest size (spec 004 §14
+      // A-founder-2026-10-24a item 8; TASK-389), so they are cut out before the scan.
       const fromWord = messages.catalog.price.from
         .replace("{price}", "")
         .trim();
+      let own = html;
+      for (let card = block(own, "data-fo-product-card="); card !== "";) {
+        own = own.replace(card, "");
+        card = block(own, "data-fo-product-card=");
+      }
       expect(
-        new RegExp(`\\b${fromWord}\\s+\\S*\\d`, "iu").exec(readable(html))?.[0],
+        new RegExp(`\\b${fromWord}\\s+\\S*\\d`, "iu").exec(readable(own))?.[0],
         `${locale}: a "from" price`,
       ).toBe(undefined);
       expect(html).not.toMatch(/<(s|del|strike)[\s>]|line-through/u);

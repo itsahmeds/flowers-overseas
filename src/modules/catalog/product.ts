@@ -1593,15 +1593,15 @@ export async function productView(
   if (selectedBase === undefined) {
     throw new Error(`\`${selectedTierKey}\` unpriced`);
   }
-  const priceLine = await priceEquivalents(selectedBase, now);
-  const totalLine = await priceEquivalents(price, now);
+  const priceLine = await priceEquivalents(selectedBase, now, { locale });
+  const totalLine = await priceEquivalents(price, now, { locale });
   // Every tier's own line, so the size the buyer picks shows its own (AC-31; TASK-228). One clock:
   // a stale leg drops every tier's line together, because the legs are the rates, not the amount.
   const tierLines: Record<string, PriceEquivalentsView> = {};
   for (const tier of tiers) {
     const undated = grid.base.get(tier.tierKey);
     if (undated === undefined) throw new Error(`\`${tier.tierKey}\` unpriced`);
-    const line = await priceEquivalents(undated, now);
+    const line = await priceEquivalents(undated, now, { locale });
     if (line !== null) {
       tierLines[tier.tierKey] = { asOf: line.asOf, amounts: [...line.amounts] };
     }
