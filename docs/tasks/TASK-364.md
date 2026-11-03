@@ -24,7 +24,31 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size L
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (self-review, PR 467): AC-10's second half (`sendStatement` refuses
+  `PAYOUT_REVIEW_OPEN`, `resolveReview` lets it pass) needs TASK-365's commands; this PR proves the
+  flag (`unpriced_lines` for an add-on and a surcharge, none without). TASK-365's PR runs the rest
+  on the same fixture.
+- 2026-11-04: AC-33's walk drives `order.captured` through the engine's `transition` (system
+  actor), because spec 013's acceptance capture (TASK-259's `payments` branch for
+  `assignment.accepted`) is not built; the delivery morning is the real `runProductionStart`,
+  everything else the real florist commands and the real dispatcher. When TASK-259 lands, swap the
+  `transition` call for its handler.
+- 2026-11-04: the accrual pays the florist of the order's latest accepted, not withdrawn,
+  assignment; the unit amounts were fixed by the first acceptance (write-once). A reroute after
+  acceptance to a florist paid in another currency refuses `PAYOUT_CURRENCY_MISMATCH` (retried,
+  then F3); in the same currency the second florist is paid the first one's amounts. The spec is
+  silent (TASK-363's carry-forward); not changed here.
+- 2026-11-04: amounts fixed at 0 accrue no line (`payout_line_amount_minor_check`), so after an
+  hour `payouts.watch` tells the founder (F3) about a zero-priced order. Intended as a signal; the
+  spec is silent on zero prices.
+- 2026-11-04: `payouts.watch` raises the Sentry alert only once F3's `notification_delivery` row is
+  written; while `notifications.email` is off neither goes, and the next hourly run tries again.
+- 2026-11-04: `accrueWithoutPhoto` is a module command (`payouts.manage` is checked by TASK-367's
+  server action, which must call `requirePermission('payouts.manage')` first and run it under
+  `withAdminContext`). The reason goes to `audit_log.reason` with action `payout.photo_waived`.
+- 2026-11-04: red on main and here alike, untouched: unit `url-pii`, `zod-boundaries`,
+  `home-honesty`, `deferred-set`, `catalog-product-view*`; `format:check` (florist and ops email
+  snapshots); `i18n:check` (`nav.send`, `nav.category.ourSelection`).
 
 ## Escalations
 
@@ -38,11 +62,28 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04: `accrueOrder`, `accrueWithoutPhoto`, `closeDuePayouts`, `watchMissingLines`, the
+  calendar (`localDateIn`, `weeklyPeriod`), F2/F3 templates and copy, the `order.photo_uploaded`
+  route, the hourly `payouts.close`/`payouts.watch` jobs (tick, one-hour singleton window); unit
+  tests updated and green; typecheck green. No migration.
+- 2026-11-04: integration `payouts-accrual` 24 green on a local PG16; 21 mutations recorded, each
+  red; cheap gates run (reds are the known main reds plus none of this diff). Ready for the
+  orchestrator.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 467. No migration. `src/modules/partners/payouts/` gains `accrual.ts` (`accrueOrder`,
+`openWeeklyPayout`, `accrueWithoutPhoto`), `close.ts` (`closeDuePayouts`, F2 in the closing
+transaction), `watch.ts` (`watchMissingLines`, F3 and `alert=payouts.line_missing` once per order)
+and `dates.ts` (`localDateIn`, `weeklyPeriod`); the `payouts` outbox target now routes
+`order.photo_uploaded` (live) to the accrual; jobs `payouts.close` and `payouts.watch`, enqueued by
+the minute tick under a one-hour singleton key; spec 016's pipeline gains
+`sendOpsJobNotification` (an ops message about no order) and templates `payouts-ready` and
+`payout-line-missing` with English admin copy. Tests: integration `payouts-accrual` 24 (T-03,
+T-08 to T-15, T-33, awkward cases); unit `payouts-dates` 15, `email-payouts-founder` 3, plus the
+registry, rules, tick, runtime and admin key-scan files that follow the new jobs and templates.
+Handed on: AC-10's statement half (TASK-365), the waiver's server action and permission
+(TASK-367), the carry-forwards above.

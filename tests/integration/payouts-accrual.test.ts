@@ -829,7 +829,7 @@ describe.skipIf(server.url === undefined)(
         });
       });
 
-      it("the year end: a week from 28 December to 3 January stays open at 23:30 on the 3rd and closes at 00:30 on the 4th, Warsaw time", async () => {
+      it("the year end: a week from 30 December to 3 January stays open at 23:30 on the 3rd and closes at 00:30 on the 4th, Warsaw time", async () => {
         await rolledBack(scratch.sql, async (tx) => {
           const partnerId = await florist(tx, c);
           const orderId = await order(tx, c, { extra: null });
