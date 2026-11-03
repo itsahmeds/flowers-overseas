@@ -1,0 +1,3 @@
+name,recipientId,sourceCurrency,targetCurrency,amountCurrency,amount,paymentReference
+Kwiaciarnia Lipa,12345678,EUR,PLN,PLN,149.00,P-000127
+"'=HYPERLINK(""x"")",87654321,EUR,PLN,PLN,1234.50,P-000128

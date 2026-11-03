@@ -12,7 +12,8 @@ import type { PayoutActor } from "./accrual";
 
 export interface PayoutAuditEntry {
   readonly action: string;
-  readonly entityTable: "payout" | "payout_line" | "payout_adjustment";
+  readonly entityTable:
+    "payout" | "payout_line" | "payout_adjustment" | "payout_export";
   readonly entityId: string;
   readonly before?: Readonly<Record<string, unknown>>;
   readonly after?: Readonly<Record<string, unknown>>;
