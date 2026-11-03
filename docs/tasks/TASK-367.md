@@ -24,7 +24,28 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (self-review, PR 476): **browser gates not run** (founder rules tonight: no
+  `next build`, Playwright, Lighthouse or screenshots on this machine). Owed to CI or a later
+  pass: T-29's e2e per role (proven here at the page-render layer, `tests/unit/payouts-admin-pages.test.tsx`),
+  T-30's axe on the three pages at 390 and 1440 (data and empty) and on the statement email HTML,
+  the visual comparison against `admin-payouts-*`, `admin-payout-detail-*`, `admin-payout-export-*`
+  and `admin-partner-detail-*`, and TASK-366's AC-26 browser e2e of the CSV link (the route is
+  proven in `tests/unit/payouts-wise-export-route.test.ts`; the page now links to it).
+- 2026-11-04: AC-29 says "401 without a session" for the three pages. Every admin page sits under
+  spec 012's signed-in layout, which sends no session to `/admin/sign-in` (spec 012 AC-1), and the
+  pages use the same `requireAdminPage`; the server actions and the two `/admin/api/payouts/**`
+  routes answer 401. Built as spec 012 does; flagged here, not escalated.
+- 2026-11-04: differences from the boards, by choice: the period reads as `Intl.formatRange`
+  gives it ("19–25 Oct 2026", board "19 to 25 Oct"); the settle and add-line amount fields show a
+  static hint ("4,500 is 45.00 zł") instead of the board's live preview (no island for it); the
+  "Prepaid order 3 of 5" rank counts the florist's prepaid payouts by creation; the PDF link opens
+  through `/admin/api/payouts/[payoutId]/statement` (303 to a 5-minute signed URL, made at the
+  click, one `payout.viewed` audit row) rather than a URL rendered into the page.
+- 2026-11-04: the statement email status line reads `notification_delivery.status` (queued, sent,
+  delivered, bounced, failed); spec 016's status words beyond those read as "Waiting to send".
+- 2026-11-04: red on main and here alike, untouched: `i18n:check` (`nav.send`,
+  `nav.category.ourSelection`).
+
 
 ## Escalations
 
@@ -38,11 +59,26 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 A367: module reads `admin-read.ts` and the runner `admin-command.ts`; the three
+  pages, their actions and outcome parsing; the Payout terms block and `savePayoutTermsAction`;
+  the statement PDF route; payout tables in the audit filter; `admin.payouts.*` copy. Unit 44 +
+  34 + 3, integration 6 on a scratch PG16 (stopped, deleted). PR 476, ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 476](https://github.com/itsahmeds/flowers-overseas/pull/476). `/admin/payouts` (five groups,
+open adjustments with settle and waive, the waiver list, the Wise export selection with a live
+count island), `/admin/payouts/[id]` (lines, add/remove/review, send or every refusal as text,
+sent state with the 5-minute PDF link, mark paid), `/admin/payouts/exports/[id]` (steps, rows,
+totals per currency, download, mark one/all paid, cancel; partly paid and cancelled states), the
+"Payout terms" block on `/admin/partners/[code]` with `savePayoutTermsAction` (`partner.payout`),
+a Payouts nav entry, payout tables in the audit entity filter, and `GET /admin/api/payouts/[payoutId]/statement`.
+Reads in `src/modules/partners/payouts/admin-read.ts`; every action is
+`requirePermission` → `runPayoutCommand` (one admin transaction) → redirect with codes only. Tests:
+unit `payouts-admin-pages` 44, `payouts-admin-actions` 34, `payouts-statement-pdf-structure` 3
+(T-30's PDF half), `admin-scans` params; integration `payouts-admin-read` 6 on a scratch PG16. No
+migration. No `next build`, Playwright, axe or Lighthouse run (tonight's rules): see
+Carry-forwards.
