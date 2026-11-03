@@ -26,13 +26,41 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size L
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (self-review, PR 468): **partial.** AC-21, AC-22 and AC-23 (the
+  `payouts.statement_email` job, the statement PDF and the florist email in en, pl and de) are
+  not built: see Escalations. `sendStatement` enqueues `payouts.statement_email { payoutId }`
+  (registered, `short`, keyed by payout) and the job has no handler yet, so a sent statement's
+  email waits in the queue; nothing calls `sendStatement` in production until TASK-367's pages.
+- 2026-11-04: `fo/no-direct-review-write` reported `UPDATE payout_line SET reviewed_at` (spec
+  030a's founder review pair shares the column names of spec 012b's copy review). The rule now
+  exempts an `UPDATE` whose target is exactly `payout_line` (`EXEMPT_UPDATE_TABLES`), with tests;
+  an `INSERT` naming a review column and every other table stay reported. Flagged for the
+  orchestrator: a lint-rule scope change, not a disable.
+- 2026-11-04: refusal codes the spec does not name, chosen here: `PAYOUT_NOT_FOUND`,
+  `PAYOUT_LINE_NOT_REMOVABLE` (an order line, or a settled adjustment's line),
+  `PAYOUT_REVIEW_NONE` (resolve on an unflagged line), `PAYOUT_STATEMENT_NUMBER_EXHAUSTED`
+  (beyond P-999999). TASK-367's admin copy needs a message for each.
+- 2026-11-04: every command writes one `audit_log` row (`payout.line_added`, `.line_removed`,
+  `.review_resolved`, `.adjustment_settled`, `.adjustment_waived` with the reason in
+  `audit_log.reason`, `.statement_sent`); the `payout` tables are not under
+  `audit_row_change()`. TASK-367's actions must check `payouts.manage` and run them under
+  `withAdminContext`.
+- 2026-11-04: red on main and here alike, untouched: unit `url-pii`, `zod-boundaries`,
+  `home-honesty`, `deferred-set`, `catalog-product-view*`; `format:check` (email snapshots);
+  `i18n:check` (`nav.send`, `nav.category.ourSelection`).
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-04 (builder P364 to the orchestrator): AC-21 to AC-23 need (1) spec 018's PDFKit
+  renderer, which TASK-342 creates in PR 465 (draft, `src/modules/invoices/pdf/render.ts`, fonts
+  under `src/modules/invoices/pdf/fonts/`); the row says "whichever lands first creates it and the
+  other imports it", and PR 465 is first, so building a second renderer here would fork it; and
+  (2) an attachment on spec 016's `Mailer` (`MailMessageSchema` has no attachment field, and PR
+  465 does not add one). Conservative reading taken (delegated by the orchestrator's work order):
+  build everything that does not need either, leave the job without a handler, and finish AC-21
+  to AC-23 in a follow-up once PR 465 merges, adding the Mailer attachment there. `open`.
 
 ## Progress
 
@@ -40,11 +68,22 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04: stacked on PR 467 (TASK-364, not merged). `manual.ts` (`addManualLine`,
+  `removeManualLine`, `resolveReview`), `adjustments.ts` (`settleAdjustment`, `waiveAdjustment`),
+  `statement.ts` (`sendStatement`, `statementNumber`), `audit.ts`; job `payouts.statement_email`
+  registered without a handler; the review-write lint rule scoped. Integration
+  `payouts-statements` 19 green, unit `payouts-statement-number` 12, 17 mutations red. Next: AC-21
+  to AC-23 after PR 465 (see Escalations).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 468 (partial; stacked on PR 467). AC-10 (statement half), AC-16 to AC-20 built and proven:
+manual lines with the total kept by the database, removals, the review flag, settle into the open
+weekly payout (created for a per-order florist too) and waive with an audited reason, and
+`sendStatement` with its five refusals in order, `P-NNNNNN` numbers from the sequence and the
+email job enqueued. Tests: integration `payouts-statements` 19 (T-10, T-16 to T-20); unit
+`payouts-statement-number` 12, `no-direct-review-write` +1, registry files. Not built: AC-21 to
+AC-23 (statement email, PDF, en/pl/de copy), escalated above.
