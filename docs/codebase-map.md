@@ -19,11 +19,11 @@ task actually touches.
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +126 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +127 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +17 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +14 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +24 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +25 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +11 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
@@ -191,6 +191,12 @@ task actually touches.
 | `admin/(signed-in)/partners/page.tsx` | GET /admin/partners: the florists, by status… | 012 |
 | `admin/(signed-in)/partners/profile-form.tsx` | The florist profile form, for create and edit… | 012 |
 | `admin/(signed-in)/partners/view.tsx` | The florist pages' shared view pieces: chips,… | 012 |
+| `admin/(signed-in)/payouts/[id]/page.tsx` | GET /admin/payouts/[id]: one payout, its lines,… | 030 |
+| `admin/(signed-in)/payouts/actions.ts` | /admin/payouts actions, each guarded first… | 030 |
+| `admin/(signed-in)/payouts/exports/[id]/page.tsx` | GET /admin/payouts/exports/[id]: one Wise… | 030 |
+| `admin/(signed-in)/payouts/outcome.ts` | The payouts pages' outcome in the query string:… | 030 |
+| `admin/(signed-in)/payouts/page.tsx` | GET /admin/payouts: five payout groups, open… | 030 |
+| `admin/(signed-in)/payouts/view.tsx` | The payout pages' shared view pieces: money,… | 030 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3,… | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
 | `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint answers 404 | 012 |
@@ -198,6 +204,7 @@ task actually touches.
 | `admin/api/auth/request/route.ts` | POST: ask for a link, one 303 for all (AC-2) | 012 |
 | `admin/api/auth/sign-out/route.ts` | POST: admin sign-out | 012 |
 | `admin/api/orders/head/route.ts` | GET: the order queue's head, for the 3 s poll… | 012 |
+| `admin/api/payouts/[payoutId]/statement/route.ts` | GET: a sent payout's statement PDF through a… | 030 |
 | `admin/api/payouts/exports/[exportId]/route.ts` | GET: one Wise export as its bulk-payment CSV,… | 030 |
 | `admin/environment.ts` | The admin environment chip | 012 |
 | `admin/forbidden.tsx` | Admin 403, noindex | 012 |
@@ -316,7 +323,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 462 |
+| `tests/unit/` | 465 |
 | `tests/integration/` | 88 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
