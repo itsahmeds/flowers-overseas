@@ -183,7 +183,7 @@ task actually touches.
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
 | `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card needs… | 020 |
 | `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute and… | 020 |
-| `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute and cancel actions,… | 020 |
+| `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute, cancel and resend… | 020 |
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |

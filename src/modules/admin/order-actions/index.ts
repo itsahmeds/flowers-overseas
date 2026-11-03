@@ -4,7 +4,9 @@
  * row) and the refunds list (TASK-359). The refund action itself is `./refund.ts`, imported by
  * path (see its header). Reroute (TASK-358) is `./reroute.ts`, re-exported here with the grace
  * end's display; cancel is `./cancel.ts`, imported by path for refund's reason. The action history
- * is `orderActionHistory` (TASK-357). Resend waits for TASK-360.
+ * is `orderActionHistory` (TASK-357). Resend (TASK-360) is `./resend.ts` (`adminResendNotification`
+ * and the emails list `orderEmails`), imported by path like cancel: it reaches the notifications
+ * barrel.
  */
 export {
   type AvailableActions,
