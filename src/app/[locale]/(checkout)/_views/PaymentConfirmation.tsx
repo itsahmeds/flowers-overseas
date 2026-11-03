@@ -502,7 +502,7 @@ export function paymentConfirmationRenderer(
     const map = await sources.states(ids);
     const states = ids.map((id) => map.get(id));
     if (states.some((state) => state === undefined)) {
-      return <ConfirmationGone locale={locale} />;
+      return ConfirmationGone({ locale });
     }
     const known = states as ConfirmationState[];
     const blocks = await Promise.all(
@@ -516,29 +516,33 @@ export function paymentConfirmationRenderer(
     const [delivery] = confirmation.deliveries;
     const [state] = known;
     const [block] = blocks;
+    // Each part is awaited here, not nested as an async element, so the page is one tree of
+    // plain elements whichever renderer draws it (Next, or a test's static renderer).
+    const [strip, body] = await Promise.all([
+      TestStrip({ locale, mode: confirmation.mode }),
+      confirmation.deliveries.length === 1 &&
+      delivery !== undefined &&
+      state !== undefined
+        ? SingleDelivery({
+            block: block ?? null,
+            cancel,
+            confirmation,
+            delivery,
+            locale,
+            state,
+          })
+        : ManyDeliveries({
+            blocks,
+            cancel,
+            confirmation,
+            locale,
+            states: known,
+          }),
+    ]);
     return (
       <>
-        <TestStrip locale={locale} mode={confirmation.mode} />
-        {confirmation.deliveries.length === 1 &&
-        delivery !== undefined &&
-        state !== undefined ? (
-          <SingleDelivery
-            block={block ?? null}
-            cancel={cancel}
-            confirmation={confirmation}
-            delivery={delivery}
-            locale={locale}
-            state={state}
-          />
-        ) : (
-          <ManyDeliveries
-            blocks={blocks}
-            cancel={cancel}
-            confirmation={confirmation}
-            locale={locale}
-            states={known}
-          />
-        )}
+        {strip}
+        {body}
       </>
     );
   };
