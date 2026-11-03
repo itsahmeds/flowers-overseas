@@ -36,6 +36,38 @@ export type {
   PhotoWaiver,
   WaiverResult,
 } from "./accrual";
+export {
+  AdjustmentSettleSchema,
+  AdjustmentWaiveSchema,
+  settleAdjustment,
+  waiveAdjustment,
+} from "./adjustments";
+export type {
+  AdjustmentResult,
+  AdjustmentSettle,
+  AdjustmentWaive,
+} from "./adjustments";
+export { writePayoutAudit } from "./audit";
+export type { PayoutAuditEntry } from "./audit";
+export {
+  ManualPayoutLineSchema,
+  MinorAmountSchema,
+  addManualLine,
+  removeManualLine,
+  resolveReview,
+} from "./manual";
+export type {
+  ManualLineField,
+  ManualLineResult,
+  ManualPayoutLine,
+} from "./manual";
+export {
+  STATEMENT_NUMBER_MAX,
+  pgBossStatementEmailScheduler,
+  sendStatement,
+  statementNumber,
+} from "./statement";
+export type { StatementDeps, StatementEmailScheduler } from "./statement";
 export { closeDuePayouts } from "./close";
 export type { CloseDeps, CloseResult, PayoutsReadySender } from "./close";
 export { addDays, isoWeekday, localDateIn, weeklyPeriod } from "./dates";

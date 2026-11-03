@@ -194,6 +194,7 @@ describe("ensureQueues", () => {
       "payments.production_start",
       "payouts.close",
       "payouts.prepaid_ready",
+      "payouts.statement_email",
       "payouts.watch",
       "retention.sweep",
       "routing.sla_watch",
@@ -215,6 +216,7 @@ describe("ensureQueues", () => {
       "order.no_partner_expire",
       "order.route",
       "payouts.prepaid_ready",
+      "payouts.statement_email",
     ]);
     // Spec 018's `invoice.render`: one queued or running job per invoice (TASK-342).
     expect(
