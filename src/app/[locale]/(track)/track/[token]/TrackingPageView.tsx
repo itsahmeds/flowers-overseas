@@ -520,7 +520,7 @@ export async function NotWorkingView({
         </h1>
         <p className="text-ink-2 m-0 max-w-[52ch]">{t("notWorking.body")}</p>
       </div>
-      <LookupForm locale={locale} />
+      {await LookupForm({ locale })}
     </main>
   );
 }

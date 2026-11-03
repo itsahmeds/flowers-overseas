@@ -426,6 +426,17 @@ const siteLinks = [
     surfaces: ["footer", "listing"],
   },
   {
+    // Spec 018 §5.3 "Chrome" (TASK-339): "Track an order", at launch and not flag-gated, to the
+    // lookup page `/{locale}/track` (`noindex`, crawlable). Drawn after "Occasions" in the Sending
+    // column, as the `basket-*` and `track-order-*` boards draw the footer.
+    id: "track-order",
+    labelKey: "footer.link.trackOrder",
+    target: { kind: "transactional", page: "track" },
+    published: true,
+    owningSpec: "018",
+    surfaces: ["footer"],
+  },
+  {
     id: "delivery-times",
     labelKey: "footer.link.deliveryAndPayment",
     target: { kind: "infoPage", page: "delivery" },
@@ -447,17 +458,6 @@ const siteLinks = [
     target: { kind: "infoPage", page: "how-it-works" },
     published: true,
     owningSpec: "041",
-    surfaces: ["footer"],
-  },
-  {
-    // Spec 018 §5.3 "Chrome" (TASK-339): "Track an order", at launch and not flag-gated, to the
-    // lookup page `/{locale}/track` (`noindex`, crawlable). Drawn after "Occasions" in the Sending
-    // column, as the `basket-*` and `track-order-*` boards draw the footer.
-    id: "track-order",
-    labelKey: "footer.link.trackOrder",
-    target: { kind: "transactional", page: "track" },
-    published: true,
-    owningSpec: "018",
     surfaces: ["footer"],
   },
   {

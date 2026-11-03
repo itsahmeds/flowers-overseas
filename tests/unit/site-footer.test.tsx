@@ -197,6 +197,8 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
     const published = [
       localePath("en", "destinations"),
       localePath("en", "occasions"),
+      // Spec 018's lookup, "Track an order" (TASK-339).
+      localePath("en", "home", "track"),
       // Spec 041's trust pages (TASK-182).
       localePath("en", "delivery"),
       localePath("en", "guarantee"),
@@ -236,6 +238,8 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       "for-florists",
       "destinations",
       "occasions",
+      // Spec 018 §5.3 "Chrome" (TASK-339): the lookup.
+      "track-order",
       // Spec 041's four trust links (TASK-182).
       "delivery-times",
       "guarantee",
@@ -273,6 +277,7 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
           unavailable: [
             "occasions",
             "destinations",
+            "track-order",
             "delivery-times",
             "guarantee",
           ],

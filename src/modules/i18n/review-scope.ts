@@ -111,7 +111,7 @@ const PAYMENTS_PATHS = [
 /**
  * Spec 018 tracking copy (TASK-338): only the `(track)` routes read it. Every one of them is
  * `noindex, nofollow` and `no-store` (the tracking page, its not-working page, its photo and its
- * calendar file; TASK-339 adds the lookup page there).
+ * calendar file; TASK-339 adds the lookup page, its form and its server action there).
  */
 const TRACK_PATHS = ["src/app/[locale]/(track)/**"];
 const CHECKOUT_SUBTREES = [
@@ -216,6 +216,13 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   { match: "emails.floristSignIn.*", surface: "email", paths: FLORIST_PATHS },
   { match: "emails.layout.*", surface: "email", paths: EMAIL_PATHS },
   { match: "emails.florist.*", surface: "email", paths: EMAIL_PATHS },
+  // Spec 018 §7 (TASK-339): T16, the tracking lookup's answer, renders in email only; the lookup's
+  // seams under `(track)` hand it to the mailer.
+  {
+    match: "emails.account.*",
+    surface: "email",
+    paths: [...EMAIL_PATHS, ...TRACK_PATHS],
+  },
   { match: "whatsapp.florist.*", surface: "email", paths: EMAIL_PATHS },
   // Spec 011 §5.3 (TASK-214): the inbox pages' own lines (groups, empty state, stage leads, the
   // test-order control, the refresh line, not found) render only under `FLORIST_BASE_PATH`; the

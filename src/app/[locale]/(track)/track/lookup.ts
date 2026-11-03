@@ -15,7 +15,7 @@
  */
 import type { LocaleCode } from "@/config/locales";
 import { claimSend } from "@/lib/auth/send-limit";
-import { environment } from "@/lib/env";
+import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
 import { captureWarning } from "@/lib/sentry";
 import { localePath } from "@/modules/i18n";
@@ -62,7 +62,7 @@ export function lookupDeps(): TrackingLookupDeps {
         scope: TRACKING_LOOKUP_SCOPE,
       }),
     send: sendTrackingLink,
-    sendsNonLive: environment !== "production",
+    sendsNonLive: appEnvironment(process.env) !== "production",
   };
 }
 

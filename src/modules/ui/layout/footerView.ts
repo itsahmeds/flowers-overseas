@@ -127,6 +127,7 @@ function hrefFor(
   // A transactional page's segment is the English word in every locale (spec 010 §13 Q10): spec
   // 018's lookup, "Track an order" (TASK-339).
   if (link.target.kind === "transactional") {
+    if (unavailable.has(link.id)) return undefined;
     return localePath(locale, "home", link.target.page);
   }
   if (link.target.kind !== "route") return undefined;

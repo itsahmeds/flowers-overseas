@@ -16,9 +16,9 @@
  *
  * **No assignment, offer, decline, timeout or re-route reaches the view (AC-41).** The timeline is
  * a fold of each event's `to_status` projection: an event that keeps the status, or moves it
- * between internal statuses of one projection, changes nothing a buyer sees. The only event type
- * read is the cancellation's (`order.cancelled`, `order.cancelled_refunded`), for its actor class
- * and reason and nothing else. The florist card reads the partner of the order's accepted
+ * between internal statuses of one projection, changes nothing a buyer sees. No event type is read;
+ * the entry into `cancelled` or `cancelled_refunded` is read for its actor class and reason and
+ * nothing else. The florist card reads the partner of the order's accepted
  * `order_assignment` row, and only once the history holds a production event (AC-5).
  *
  * **Refunds and the cancelled state (TASK-339; AC-10, AC-42).** `refundLines` is
@@ -40,7 +40,6 @@ import {
   BuyerRefundLineSchema,
   CurrencyCodeSchema,
 } from "./refund-lines";
-import { ActorSchema, actorClass } from "./service/actor";
 import { type EngineConnection, withExecutor } from "./service/executor";
 import { ORDER_REFERENCE_PATTERN, orderReference } from "./service/reference";
 
@@ -124,15 +123,14 @@ const BUYER_CANCEL_REASON = "buyer_cancel";
 /**
  * Who the buyer is told cancelled the order (spec 018 §5.2 "Cancelled"; spec 020a request 3):
  * `buyer` for the buyer's own cancellation, or an admin's made with reason `buyer_cancel` (the
- * buyer asked us); `us` for every other actor and reason. An actor that does not parse reads `us`.
+ * buyer asked us); `us` for every other actor and reason, an unknown one included.
  */
 export function cancelledByOf(
   actor: string,
   reason: string | null,
 ): CancelledBy {
-  const parsed = ActorSchema.safeParse(actor);
-  if (!parsed.success) return "us";
-  const actorKind = actorClass(parsed.data);
+  // The class is the actor's head, as `order_event_actor_check` stores it (`buyer`, `admin:…`).
+  const actorKind = actor.split(":", 1)[0];
   if (actorKind === "buyer") return "buyer";
   if (actorKind === "admin" && reason === BUYER_CANCEL_REASON) return "buyer";
   return "us";
@@ -331,12 +329,15 @@ export async function getTrackingView(
     let cancelledBy: CancelledBy | null = null;
     let refundPending: z.infer<typeof MinorAmountSchema> | null = null;
     if (projection === "cancelled") {
-      // The latest cancellation event, for its actor class and reason only.
+      // The latest entry into `cancelled` or `cancelled_refunded` (`order.cancelled`, row 13, 39,
+      // 40; `order.cancelled_refunded`, row 24), for its actor class and reason only. Found by
+      // its status pair, never its type; `payment_failed` and `abandoned` have no such entry.
       const [cancellation] = await executor.execute(sql`
         SELECT e.actor, e.payload ->> 'reason' AS reason
         FROM order_event e
         WHERE e.order_id = ${id}
-          AND e.type IN ('order.cancelled', 'order.cancelled_refunded')
+          AND e.to_status IN ('cancelled', 'cancelled_refunded')
+          AND e.from_status IS DISTINCT FROM e.to_status
         ORDER BY e.seq DESC LIMIT 1`);
       if (cancellation !== undefined) {
         const row = CancellationRow.parse(cancellation);

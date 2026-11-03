@@ -9,7 +9,8 @@
  * it was placed with.", in a `role="status"` box: the same words for a match, a wrong email, an
  * unknown reference and an over-limit request, because the page is drawn from `sent` alone.
  *
- * `LookupForm` is the form on its own, so the not-working page (TASK-338) offers the same one. It
+ * `LookupForm` is the form on its own, so the not-working page (TASK-338) offers the same one;
+ * both pages await it and place the element, as every async part of these bodies is placed. It
  * posts to `lookupTrackingAction` (`./actions.ts`), a server action bound to the page's locale:
  * the fields travel in the body, never in the address, and the form works with JavaScript off.
  * Server Components only; every word from the `trackLookup` catalogue.
@@ -108,7 +109,7 @@ export async function LookupPageView({
           </div>
         ) : null}
       </div>
-      <LookupForm locale={locale} />
+      {await LookupForm({ locale })}
     </main>
   );
 }

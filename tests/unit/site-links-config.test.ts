@@ -67,6 +67,13 @@ const chromeCanvas = readFileSync(
   resolve(__dirname, "../../docs/design/wireframes/chrome-desktop.dc.html"),
   "utf8",
 );
+const trackBoard = readFileSync(
+  resolve(
+    __dirname,
+    "../../docs/design/wireframes/track-order-desktop.dc.html",
+  ),
+  "utf8",
+);
 const canvas = readFileSync(
   resolve(__dirname, "../../docs/design/homepage-v1/homepage-desktop.dc.html"),
   "utf8",
@@ -156,12 +163,12 @@ describe("src/config/site-links.ts", () => {
       }
       if (link.target.kind === "transactional") {
         // Spec 010's transactional pages (TASK-349): the English word under every locale prefix
-        // (spec 010 §13 Q10), owned by spec 010.
-        expect(link.target.page, link.id).toBe("basket");
-        expect(link.owningSpec, link.id).toBe("010");
+        // (spec 010 §13 Q10), owned by spec 010; spec 018's lookup `/{locale}/track` (TASK-339).
+        const owner = { basket: "010", track: "018" }[link.target.page];
+        expect(link.owningSpec, link.id).toBe(owner);
         for (const locale of launchLocales) {
           expect(localePath(locale, "home", link.target.page)).toBe(
-            `/${locale}/basket`,
+            `/${locale}/${link.target.page}`,
           );
         }
         continue;
@@ -188,6 +195,8 @@ describe("src/config/site-links.ts", () => {
       "for-florists",
       "destinations",
       "occasions",
+      // Spec 018 §5.3 "Chrome" (TASK-339): "Track an order", the lookup `/{locale}/track`.
+      "track-order",
       // Spec 041's four trust links (TASK-182).
       "delivery-times",
       "guarantee",
@@ -386,6 +395,8 @@ describe("src/config/site-links.ts", () => {
     expect(groupLinks("sending").map((link) => link.id)).toEqual([
       "destinations",
       "occasions",
+      // Spec 018 (TASK-339): after "Occasions", as `track-order-*.dc.html` draws the footer.
+      "track-order",
       "delivery-times",
       "guarantee",
     ]);
@@ -540,6 +551,12 @@ describe("src/config/site-links.ts", () => {
       // the listing cards print (spec 009 AC-20), not a phrase the homepage artboard could carry.
       if (link.id === "product") continue;
       const label = messageAt(link.labelKey) as string;
+      // Spec 018's "Track an order" (TASK-339) postdates the 2026-09 homepage canvas: the footer
+      // that carries it is drawn on the tracking boards.
+      if (link.id === "track-order") {
+        expect(trackBoard).toContain(`>${label}<`);
+        continue;
+      }
       // Spec 041 §2 "Links" relabels "Delivery times and cutoffs" as "Delivery and payment"
       // (Appendix A.1, TASK-182): spec 041's copy, which the 2026-09 homepage canvas predates.
       if (link.id === "delivery-times") {
