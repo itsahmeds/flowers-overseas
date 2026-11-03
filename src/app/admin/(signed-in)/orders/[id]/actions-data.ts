@@ -1,16 +1,28 @@
 /**
- * @purpose Reads what the order page's Actions card needs (020a AC-9, AC-12)
+ * @purpose Reads what the order page's Actions card and lists need (020a AC-9, AC-12, AC-23, AC-24)
  * @spec 020a
  *
  * Thin: the refund state through `orderRefunds` (captured, remaining, in flight, and the automatic
  * refund a cancel caused), and, only for a `test` or `live` order at `no_partner_available` that
  * the viewer may reroute, spec 016's `rerouteCandidates` and `noPartnerGrace`. The last
  * submission's outcome is the page's query string, parsed with `ActionOutcomeSchema` there.
+ * TASK-361 adds the emails list (`orderEmails`, spec 020a TASK-360) and the action history
+ * (`orderActionHistory`), and keeps the whole refunds list for the Payments section.
  */
 import { z } from "zod";
 
 import type { AdminSession } from "@/lib/auth/admin";
-import { can, orderRefunds } from "@/modules/admin";
+import {
+  type ActionHistoryEntry,
+  can,
+  orderActionHistory,
+  type OrderRefunds,
+  orderRefunds,
+} from "@/modules/admin";
+import {
+  type OrderEmail,
+  orderEmails,
+} from "@/modules/admin/order-actions/resend";
 import type { AdminOrderDetail } from "@/modules/orders";
 import {
   noPartnerGrace,
@@ -21,19 +33,40 @@ import type { OrderActionsData } from "./actions-panel";
 
 /** `?action=…&result=…` after a submission: the action and a code, nothing else. */
 export const ActionOutcomeSchema = z.object({
-  action: z.enum(["reroute", "cancel"]),
+  action: z.enum(["reroute", "cancel", "resend"]),
   result: z.string().regex(/^(?:done|[A-Z_]{3,40})$/u),
+  /** A resend's new delivery row. */
+  ref: z.uuid().optional(),
 });
 export type ActionOutcome = z.infer<typeof ActionOutcomeSchema>;
+
+/** The page's lists: refunds with the balance, emails, and the action history. */
+export interface OrderListsData {
+  readonly refunds: OrderRefunds | null;
+  readonly emails: readonly OrderEmail[];
+  readonly history: readonly ActionHistoryEntry[];
+}
+
+export async function readOrderLists(
+  order: AdminOrderDetail,
+  session: AdminSession,
+  viewer: { readonly userId: string; readonly requestId: string },
+): Promise<OrderListsData> {
+  const [refunds, emails, history] = await Promise.all([
+    order.mode === "demo" ? null : orderRefunds(order.orderId, viewer),
+    orderEmails(order.orderId, { ...viewer, roles: session.roles }),
+    orderActionHistory(order.orderId, viewer),
+  ]);
+  return { refunds, emails: emails ?? [], history: history ?? [] };
+}
 
 export async function readOrderActionsData(
   order: AdminOrderDetail,
   session: AdminSession,
-  viewer: { readonly userId: string; readonly requestId: string },
   outcome: ActionOutcome | null,
+  /** The refund state `readOrderLists` read, so the page reads it once. */
+  refunds: OrderRefunds | null,
 ): Promise<OrderActionsData> {
-  const refunds =
-    order.mode === "demo" ? null : await orderRefunds(order.orderId, viewer);
   const reroutable =
     order.mode !== "demo" &&
     order.status === "no_partner_available" &&

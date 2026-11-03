@@ -171,12 +171,13 @@ describe("the reroute dialog (spec 020a AC-9, AC-12)", () => {
       data("no_partner_available", { roles: ["finance"] }),
     );
     expect(finance).not.toContain('name="partnerId"');
-    expect(finance).toContain("Rerouting needs the admin or ops role.");
+    // TASK-361: the reason line of the "Not available" list.
+    expect(finance).toContain("Reroute</b> · Needs the admin or ops role.");
     // ops may reroute (§13 Q2) but not cancel, and is told why.
     const ops = render(data("no_partner_available", { roles: ["ops"] }));
     expect(ops).toContain('name="partnerId"');
     expect(reasons(ops)).toEqual([]);
-    expect(ops).toContain("Cancelling needs the admin role.");
+    expect(ops).toContain("Cancel the order</b> · Needs the admin role.");
   });
 
   it("re-opens with the refusal after PARTNER_NOT_ELIGIBLE", () => {

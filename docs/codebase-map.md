@@ -181,10 +181,12 @@ task actually touches.
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
-| `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card needs… | 020 |
+| `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card and… | 020 |
 | `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute and… | 020 |
 | `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute, cancel and resend… | 020 |
+| `admin/(signed-in)/orders/[id]/order-lists.tsx` | The order page's refunds list, emails list with… | 020 |
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
+| `admin/(signed-in)/orders/[id]/panel-reasons.ts` | The Actions card's "Not available" reason per… | 020 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
@@ -326,7 +328,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 468 |
+| `tests/unit/` | 470 |
 | `tests/integration/` | 92 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |

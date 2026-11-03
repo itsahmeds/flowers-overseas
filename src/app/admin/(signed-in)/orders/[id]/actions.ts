@@ -75,6 +75,9 @@ function back(
     action,
     result: result.ok ? "done" : result.code,
   });
+  // A resend names its new delivery row (a uuid, no personal data) so the result line can say
+  // which email went (TASK-361).
+  if (action === "resend" && result.ok) params.set("ref", result.resultRef);
   redirect(`/admin/orders/${id.data}?${params.toString()}`);
 }
 

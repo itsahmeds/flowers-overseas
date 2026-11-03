@@ -1,5 +1,5 @@
 /**
- * @purpose The order page's Actions card: reroute and cancel, their dialogs and results (020a AC-9 to AC-15)
+ * @purpose The order page's Actions card: reroute and cancel, their dialogs, results and every "Not available" reason (020a AC-3, AC-9 to AC-15)
  * @spec 020a
  *
  * Server-rendered (spec 020a §5.3; artboards `admin-order-actions-*`, `admin-order-reroute-*`,
@@ -13,7 +13,13 @@
  * Every form carries a fresh `actionId` per render and the order's highest event `seq` it saw
  * (`expectedSeq`), so a double submit has one effect and a stale page changes nothing. After a
  * submission the action redirects back with `?action=…&result=…`; a refusal re-opens its dialog
- * with the message. Refunds, resends, the lists and the history are TASK-361's.
+ * with the message.
+ *
+ * TASK-361: under the buttons, "Not available" lists every control that cannot act, one reason
+ * line each (`panel-reasons.ts`), so the card answers all four controls for every status, mode
+ * and role (AC-3). Refund controls the table allows are listed there too, with the `provider`
+ * line, until the refund dialog lands with the card provider's production wiring (escalated).
+ * Resend results are the emails list's (`order-lists.tsx`), not this card's.
  */
 import { randomUUID } from "node:crypto";
 
@@ -49,6 +55,11 @@ import { AdminPendingSubmit } from "@/modules/ui/admin/AdminPendingSubmit";
 
 import { deliveryDay } from "../view";
 import { cancelOrderAction, rerouteOrderAction } from "./actions";
+import {
+  PANEL_CONTROLS,
+  type PanelControl,
+  unavailableReason,
+} from "./panel-reasons";
 
 /** What the page read for the panel. */
 export interface OrderActionsData {
@@ -105,7 +116,8 @@ function holder(order: AdminOrderDetail): string | undefined {
     .at(-1)?.partnerCode;
 }
 
-function highestSeq(order: AdminOrderDetail): number {
+/** The order's highest `order_event.seq`: every form's `expectedSeq`. */
+export function highestSeq(order: AdminOrderDetail): number {
   return order.events.reduce((max, event) => Math.max(max, event.seq), 0);
 }
 
@@ -247,6 +259,60 @@ function RerouteList({
   );
 }
 
+/** One "Not available" line: the control's label and its one reason. */
+export interface UnavailableLine {
+  readonly control: PanelControl;
+  readonly label: string;
+  readonly reason: string;
+}
+
+const CONTROL_LABEL: Readonly<
+  Record<
+    PanelControl,
+    | "admin.orderActions.control.reroute"
+    | "admin.orderActions.control.cancel"
+    | "admin.orderActions.control.refundFull"
+    | "admin.orderActions.control.refundPartial"
+  >
+> = {
+  reroute: "admin.orderActions.control.reroute",
+  cancel: "admin.orderActions.control.cancel",
+  refundFull: "admin.orderActions.control.refundFull",
+  refundPartial: "admin.orderActions.control.refundPartial",
+};
+
+/**
+ * Every control that cannot act now, in the card's order, with its reason (AC-3). A refund the
+ * table allows is listed with the `provider` line: its dialog is not built yet (TASK-361
+ * escalation). On a cancelled order "Refund in full" is the retry, labelled so.
+ */
+export function notAvailable(
+  available: ReturnType<typeof availableActions>,
+  status: Parameters<typeof unavailableReason>[2],
+): UnavailableLine[] {
+  const lines: UnavailableLine[] = [];
+  for (const control of PANEL_CONTROLS) {
+    const state = available[control];
+    const cause = state.available
+      ? control === "refundFull" || control === "refundPartial"
+        ? "provider"
+        : null
+      : state.cause;
+    if (cause === null) continue;
+    const retry =
+      control === "refundFull" &&
+      (status === "cancelled" || status === "cancelled_refunded");
+    lines.push({
+      control,
+      label: adminT(
+        retry ? "admin.orderActions.control.retryFull" : CONTROL_LABEL[control],
+      ),
+      reason: adminT(unavailableReason(control, cause, status)),
+    });
+  }
+  return lines;
+}
+
 export function OrderActionsPanel({
   data,
 }: {
@@ -306,19 +372,7 @@ export function OrderActionsPanel({
             })
           : undefined;
 
-  const reasonsNote: string[] = [];
-  if (
-    available.reroute.available === false &&
-    available.reroute.cause === "permission"
-  ) {
-    reasonsNote.push(adminT("admin.orderActions.noPermission.reroute"));
-  }
-  if (
-    available.cancel.available === false &&
-    available.cancel.cause === "permission"
-  ) {
-    reasonsNote.push(adminT("admin.orderActions.noPermission.cancel"));
-  }
+  const unavailable = notAvailable(available, order.status);
 
   const grace =
     order.status === "no_partner_available" && data.grace !== null ? (
@@ -422,6 +476,7 @@ export function OrderActionsPanel({
   const outcomeRefusal =
     outcome !== null &&
     outcome.result !== "done" &&
+    outcome.action !== "resend" &&
     ((outcome.action === "reroute" && reroute === null) ||
       (outcome.action === "cancel" && cancel === null))
       ? refusal(
@@ -429,16 +484,6 @@ export function OrderActionsPanel({
           outcome.result,
         )
       : undefined;
-
-  if (
-    reroute === null &&
-    cancel === null &&
-    reasonsNote.length === 0 &&
-    done === undefined &&
-    outcomeRefusal === undefined
-  ) {
-    return null;
-  }
 
   return card(
     <>
@@ -453,12 +498,19 @@ export function OrderActionsPanel({
           {cancel}
         </div>
       )}
-      {reasonsNote.length === 0 ? null : (
-        <ul className="text-ink-2 grid gap-[6px] text-[13px] leading-[1.4]">
-          {reasonsNote.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
+      {unavailable.length === 0 ? null : (
+        <div className="grid gap-[6px]">
+          <h3 className="text-ink-3 text-[12px] font-bold tracking-[0.08em] uppercase">
+            {adminT("admin.orderActions.notAvailable")}
+          </h3>
+          <ul className="text-ink-2 grid gap-[6px] text-[13px] leading-[1.4]">
+            {unavailable.map((line) => (
+              <li key={line.control}>
+                <b className="text-ink">{line.label}</b> · {line.reason}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </>,
   );
