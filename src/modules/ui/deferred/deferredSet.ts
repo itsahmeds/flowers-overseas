@@ -201,6 +201,12 @@ export const NOT_DEFERRED: Readonly<Record<string, string>> = {
     "the flags page's typed-key confirm switch (TASK-220): admin only, not a public page, no LCP budget",
   "src/modules/ui/admin/OrderQueuePoll.tsx":
     "the order queue's arrival poll (TASK-222): admin only, not a public page, no LCP budget",
+  "src/modules/ui/admin/AdminActionDialog.tsx":
+    "the order page's action dialogs (TASK-358): admin only, not a public page, no LCP budget",
+  "src/modules/ui/admin/AdminCancelForm.tsx":
+    "the order page's cancel form (TASK-358): admin only, not a public page, no LCP budget",
+  "src/modules/ui/admin/AdminPendingSubmit.tsx":
+    "the order page's pending submit button (TASK-358): admin only, not a public page, no LCP budget",
   "src/modules/ui/product/CardMessageField.tsx":
     "the product page's card field: on no audited URL, and its buy section belongs to PR 239 (TASK-228); clause 4's new row is the orchestrator's",
 };

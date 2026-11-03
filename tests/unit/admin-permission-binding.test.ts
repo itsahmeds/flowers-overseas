@@ -231,7 +231,10 @@ describe("/admin/orders, its detail and its head are bound to orders.view (AC-4;
     detail: async () =>
       (
         await import("../../src/app/admin/(signed-in)/orders/[id]/page.tsx")
-      ).default({ params: Promise.resolve({ id: ORDER }) }),
+      ).default({
+        params: Promise.resolve({ id: ORDER }),
+        searchParams: Promise.resolve({}),
+      }),
     head: async () =>
       (await import("../../src/app/admin/api/orders/head/route.ts")).GET(),
   };

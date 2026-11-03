@@ -489,6 +489,8 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       amount: "397.00 PLN",
       number: "1",
       limit: "5",
+      // TASK-358's `admin.orderActions.*` (`amount` above serves it too).
+      link: (chunks: string) => chunks,
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

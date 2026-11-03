@@ -9,8 +9,9 @@
  * query never selects the column for them. Opening the page writes one `order.viewed` audit row
  * (`logAdminRead`) after the order is found and before anything renders, for every role. The
  * order's `public_token` is never read, so it cannot reach the HTML, a URL or a log; the URL
- * carries the uuid only. No action control renders: spec 020 adds the panel (spec 012 §2.6).
- * Artboards `admin-order-detail-desktop.dc.html` (two columns, the summary sticky) and
+ * carries the uuid only. Spec 020a's Actions card (TASK-358: reroute and cancel) sits above the
+ * summary when the order's status, mode and the viewer's roles allow an action; otherwise the
+ * summary keeps its "not available" line. Artboards `admin-order-detail-desktop.dc.html` (two columns, the summary sticky) and
  * `admin-order-detail-mobile.dc.html` (one column, the summary first).
  */
 import { notFound } from "next/navigation";
@@ -65,6 +66,8 @@ import {
 
 import { AdminFrame } from "../../frame";
 import { CHIP_TONE, deliveryDay, formatOrderMoney, ModeChip } from "../view";
+import { OrderActionsPanel } from "./actions-panel";
+import { ActionOutcomeSchema, readOrderActionsData } from "./actions-data";
 
 /** A florist's page, only once it exists (no dead links). */
 function partnerHref(code: string): string | undefined {
@@ -231,8 +234,10 @@ function Recipient({
 
 export default async function AdminOrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const session = await requireAdminPage("orders.view");
   const { id } = await params;
@@ -244,6 +249,14 @@ export default async function AdminOrderPage({
   });
   if (order === null) notFound();
   await logAdminRead(actor, "order", order.orderId);
+  const actionsPanel = OrderActionsPanel({
+    data: await readOrderActionsData(
+      order,
+      session,
+      actor,
+      ActionOutcomeSchema.safeParse(await searchParams).data ?? null,
+    ),
+  });
 
   const zone = zoneCity(session.timeZone);
   const viewer = (iso: string, style: "time" | "dayMonthTimeSeconds") =>
@@ -334,7 +347,11 @@ export default async function AdminOrderPage({
           },
         ]}
       />
-      <AdminBanner small>{adminT("admin.orders.detail.noActions")}</AdminBanner>
+      {actionsPanel === null ? (
+        <AdminBanner small>
+          {adminT("admin.orders.detail.noActions")}
+        </AdminBanner>
+      ) : null}
     </AdminCard>
   );
 
@@ -613,7 +630,16 @@ export default async function AdminOrderPage({
           }
         />
         <AdminRecordColumns
-          aside={summary}
+          aside={
+            actionsPanel === null ? (
+              summary
+            ) : (
+              <div className="grid gap-[16px]">
+                {actionsPanel}
+                {summary}
+              </div>
+            )
+          }
           main={
             <>
               {lines}

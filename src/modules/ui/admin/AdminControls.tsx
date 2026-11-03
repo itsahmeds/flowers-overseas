@@ -98,19 +98,33 @@ export function AdminRefusal({
   );
 }
 
-/** The button tones of the sheet (`.ad-btn`): ink, the one primary, ghost, danger outline. */
-export type AdminButtonTone = "ink" | "primary" | "ghost" | "danger";
+/**
+ * The button tones of the sheet (`.ad-btn`): ink, the one primary, ghost, danger outline, danger
+ * filled (`.dangerfill`, a dialog's destructive confirm, spec 020a), and busy (`.busy`, a form
+ * posting).
+ */
+export type AdminButtonTone =
+  "ink" | "primary" | "ghost" | "danger" | "dangerFill" | "busy";
 
 const BUTTON_TONES: Readonly<Record<AdminButtonTone, string>> = {
   ink: "bg-ink text-paper",
   primary: "bg-accent text-accent-ink",
   ghost: "bg-card text-ink shadow-[inset_0_0_0_1px_var(--color-field-edge)]",
   danger: "bg-card text-danger shadow-[inset_0_0_0_1px_var(--color-danger)]",
+  dangerFill: "bg-danger text-on-danger",
+  busy: "bg-ink-2 text-paper",
 };
 
-/** The classes of an admin button, for a link that looks like one. */
-export function adminButtonClass(tone: AdminButtonTone = "ink"): string {
-  return `inline-flex min-h-[36px] cursor-pointer items-center justify-center gap-[6px] rounded-[8px] px-[14px] text-[14px] font-bold whitespace-nowrap no-underline ${BUTTON_TONES[tone]}`;
+/**
+ * The classes of an admin button, for a link that looks like one. `block` is the action card's
+ * full-width, 40 px button (`.ad-acts .go .ad-btn`, spec 020a).
+ */
+export function adminButtonClass(
+  tone: AdminButtonTone = "ink",
+  options: { readonly block?: boolean } = {},
+): string {
+  const size = options.block === true ? "min-h-[40px] w-full" : "min-h-[36px]";
+  return `inline-flex ${size} cursor-pointer items-center justify-center gap-[6px] rounded-[8px] px-[14px] text-[14px] font-bold whitespace-nowrap no-underline ${BUTTON_TONES[tone]}`;
 }
 
 /** A submit button (`.ad-btn`, TASK-221); `primary` is the screen's one primary action. */

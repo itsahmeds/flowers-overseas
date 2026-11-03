@@ -116,6 +116,18 @@ const EXTERNAL_QUERY_KEYS: readonly {
     entry: "src/app/[locale]/(checkout)/checkout/actions.ts#line",
     reason: "the same 303's basket line (`&line=` is an integer position)",
   },
+  // Spec 020a (TASK-358): /admin/orders/[id]'s outcome after a reroute or a cancel, on a
+  // `noindex`, `no-store`, admin-only page. The action's name and a result code; never a note,
+  // a florist or a person.
+  {
+    entry: "src/app/admin/(signed-in)/orders/[id]/actions.ts#action",
+    reason: "/admin/orders/[id]'s last action (`reroute` or `cancel`)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/orders/[id]/actions.ts#result",
+    reason:
+      "/admin/orders/[id]'s outcome line (`done`, or a refusal code such as `ORDER_CHANGED`)",
+  },
   {
     entry: "src/app/admin/(signed-in)/users/actions.ts#result",
     reason:
@@ -656,6 +668,8 @@ describe("the real tree (T-59)", () => {
         "src/app/[locale]/(checkout)/_views/CheckoutView.tsx#line",
         "src/app/[locale]/(checkout)/checkout/actions.ts#step",
         "src/app/[locale]/(checkout)/checkout/actions.ts#line",
+        "src/app/admin/(signed-in)/orders/[id]/actions.ts#action",
+        "src/app/admin/(signed-in)/orders/[id]/actions.ts#result",
         "src/app/admin/(signed-in)/users/actions.ts#result",
         "src/app/admin/(signed-in)/audit/page.tsx#entity",
         "src/app/admin/(signed-in)/audit/page.tsx#actor",

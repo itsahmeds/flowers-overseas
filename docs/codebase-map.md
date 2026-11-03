@@ -171,6 +171,9 @@ task actually touches.
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
+| `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card needs… | 020 |
+| `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute and… | 020 |
+| `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute and cancel actions,… | 020 |
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
@@ -304,8 +307,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 446 |
-| `tests/integration/` | 78 |
+| `tests/unit/` | 450 |
+| `tests/integration/` | 79 |
 | `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
