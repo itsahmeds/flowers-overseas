@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +18 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +19 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +118 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +12 |
@@ -21,7 +21,7 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +132 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
-| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +19 |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +20 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +16 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +26 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +13 |
@@ -189,11 +189,12 @@ task actually touches.
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
 | `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card and… | 020 |
-| `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute and… | 020 |
-| `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute, cancel and resend… | 020 |
+| `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute, cancel… | 020 |
+| `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute, cancel, refund and… | 020 |
 | `admin/(signed-in)/orders/[id]/order-lists.tsx` | The order page's refunds list, emails list with… | 020 |
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
 | `admin/(signed-in)/orders/[id]/panel-reasons.ts` | The Actions card's "Not available" reason per… | 020 |
+| `admin/(signed-in)/orders/[id]/refund-form.tsx` | The refund dialog's form island: amount,… | 020 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
@@ -335,8 +336,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 481 |
-| `tests/integration/` | 95 |
+| `tests/unit/` | 482 |
+| `tests/integration/` | 97 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
