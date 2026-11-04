@@ -114,7 +114,7 @@ async function noindexListingUrls(
   for (const locale of listingLocales()) {
     if (!routable.has(locale)) continue;
     for (const page of await listingPages(locale)) {
-      const verdict = listingPageIndexability(
+      const verdict = await listingPageIndexability(
         {
           pageType: page.pageType,
           locale: page.locale,

@@ -216,13 +216,18 @@ export async function generateMetadata({
     const cluster = deployment.siteUrl.startsWith("https:")
       ? alternatesFor(
           {
-            pathByLocale: await listingAlternatePaths({
-              pageType: match.kind,
-              locale: match.locale,
-              ...(view.entity === undefined
-                ? {}
-                : { entityKey: view.entity.key }),
-            }),
+            // The hreflang cluster, which leaves out a hub version with no core product that takes
+            // rule 2 (spec 008 §14 A-orchestrator-2026-11-04a, AC-94; TASK-438).
+            pathByLocale: await listingAlternatePaths(
+              {
+                pageType: match.kind,
+                locale: match.locale,
+                ...(view.entity === undefined
+                  ? {}
+                  : { entityKey: view.entity.key }),
+              },
+              { cluster: true },
+            ),
           },
           { baseUrl: deployment.siteUrl },
         ).find((page) => page.url.endsWith(view.path))?.alternates

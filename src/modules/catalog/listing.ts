@@ -75,7 +75,11 @@ import {
   categoryPresentation,
   occasionPresentation,
 } from "@/config/catalogue/listing-presentation";
-import { CATALOGUE_LOCALE } from "@/config/catalogue/schemas";
+import {
+  type CategoryKind,
+  type ProductType,
+  CATALOGUE_LOCALE,
+} from "@/config/catalogue/schemas";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
 import {
   type ListingLinkPageType,
@@ -985,14 +989,29 @@ export async function listingHref(
  * from one path with the locale swapped would claim `/de/polen/blumen/roses` where no German slug
  * was ever authored. A locale with no page contributes nothing, which is the honest answer and the
  * reason the `de`/`pl` clusters are small today (§13 Q10).
+ *
+ * `cluster: true` asks for the **hreflang cluster** rather than the link map: it also leaves out a
+ * hub version whose `coreStocked` term is false (A-orchestrator-2026-11-04a rule 2; TASK-438), so
+ * every remaining cluster stays reciprocal. The `<head>` and the sitemap's `xhtml:link` set ask
+ * for it; the menu, the language switcher and the popup do not, because "every link to it stays".
  */
 export async function listingAlternatePaths(
   identity: ListingIdentity,
+  options: { readonly cluster?: boolean } = {},
 ): Promise<Readonly<Record<string, string>>> {
   const paths: Record<string, string> = {};
   for (const locale of listingLocales()) {
     const here: ListingIdentity = { ...identity, locale };
     if (!(await listingExists(here))) continue;
+    // A hub version with no core product that takes rule 2 is in no hreflang cluster, in any
+    // environment (spec 008 §14 A-orchestrator-2026-11-04a, AC-16 as amended, AC-94; TASK-438).
+    // Only the cluster drops it: every link to it (menu, switcher, popup) keeps its path.
+    if (
+      options.cluster === true &&
+      (await hubCoreState(here))?.coreStocked === false
+    ) {
+      continue;
+    }
     const countrySlug =
       identity.countryIso === undefined
         ? undefined
@@ -1033,6 +1052,12 @@ export interface ListingIndexabilityTerms {
    * thing that makes it a duplicate of the base.
    */
   readonly unparameterised?: boolean;
+  /**
+   * The hub's grid holds at least one core product in this locale (spec 008 §14
+   * A-orchestrator-2026-11-04a rule 2, AC-94; TASK-438). Stated only by a hub that takes rule 2
+   * when it has none; absent everywhere else.
+   */
+  readonly coreStocked?: boolean;
 }
 
 /**
@@ -1056,6 +1081,9 @@ export function listingDescriptor(
     ...(terms.unparameterised === undefined
       ? {}
       : { unparameterised: terms.unparameterised }),
+    ...(terms.coreStocked === undefined
+      ? {}
+      : { coreStocked: terms.coreStocked }),
   };
 }
 
@@ -1109,11 +1137,11 @@ function kindOf(
  * reads `listingPages()`, which is the existence set. `parameterised` is the request's own term
  * (AC-15); a sitemap row is a bare URL and never passes it.
  */
-export function listingPageIndexability(
+export async function listingPageIndexability(
   identity: ListingIdentity,
   deployment: DeploymentDescriptor,
   options: { readonly parameterised?: boolean } = {},
-): IndexabilityVerdict {
+): Promise<IndexabilityVerdict> {
   const kind = kindOf(identity.pageType);
   const entityRow =
     identity.entityKey === undefined || kind === undefined
@@ -1123,6 +1151,8 @@ export function listingPageIndexability(
   // and authored names, and asserts no copy record of its own.
   const reviewed = entityRow?.reviewed ?? true;
   const iso2 = identity.countryIso;
+  // A-orchestrator-2026-11-04a rule 2 (TASK-438): stated only by a hub that can take it.
+  const coreStocked = (await hubCoreState(identity))?.coreStocked;
   return listingIndexability(
     identity,
     {
@@ -1138,6 +1168,7 @@ export function listingPageIndexability(
       ...(options.parameterised === undefined
         ? {}
         : { unparameterised: !options.parameterised }),
+      ...(coreStocked === undefined ? {} : { coreStocked }),
     },
     deployment,
   );
@@ -1355,6 +1386,97 @@ async function hubCoreProducts(
       photo: photoFor(product.sku, locale).photo,
     })),
   ).map(({ product }) => product);
+}
+
+/**
+ * The category kinds whose hub, with no core product, is `noindex,follow` (spec 008 §14
+ * A-orchestrator-2026-11-04a rule 2: "a flower type or product kind"). A category of kind
+ * `occasion` is neither and takes rule 1 (Q-04a-1). Taxonomy values, never a category key.
+ */
+const UNSTOCKED_NOINDEX_CATEGORY_KINDS: readonly CategoryKind[] = [
+  "productType",
+  "flowerType",
+];
+
+/**
+ * The product type that makes an occasion hub a funeral-register one (Q-04a-2, answered
+ * 2026-11-04): an occasion hub with no core product whose tagged products are all of this type
+ * takes rule 2, so no bright bouquet is drawn on it. A taxonomy value, never an occasion key.
+ */
+const FUNERAL_PRODUCT_TYPE: ProductType = "funeral";
+
+/** Which of A-orchestrator-2026-11-04a's three rules a hub's grid follows. */
+export type HubCoreRule =
+  /** Rule 3 (and every stocked hub): its own core products, never topped up. */
+  | "own"
+  /** Rule 1: no core product, occasion kind: every slugged product of `coreRange()`. */
+  | "wholeRange"
+  /** Rule 2: no core product, flower type, product kind or funeral register: no grid, `noindex`. */
+  | "unstocked";
+
+/** A hub's core products, its core count and the rule it takes, in one locale. */
+export interface HubCoreState {
+  /** `hubCoreProducts()`'s set: the products of `coreRange()` tagged to the hub, slugged here. */
+  readonly coreCount: number;
+  readonly rule: HubCoreRule;
+  /**
+   * The `coreStocked` term as this hub states it (`coreCount >= 1`), or `undefined` where the
+   * hub's kind never takes rule 2 and so does not state the term (spec 007 §14 A7).
+   */
+  readonly coreStocked: boolean | undefined;
+  /** The grid's products, in the hub grids' order. Empty under rule 2. */
+  readonly grid: readonly Product[];
+}
+
+/**
+ * **The one reading of a hub's core** (spec 008 §14 A-orchestrator-2026-11-04a; TASK-438): the
+ * grid `listingView()` draws, the `coreStocked` term `listingPageIndexability()` states, the
+ * cluster `listingAlternatePaths()` keeps and the count `thinCoreHubs()` prints all come from
+ * here, so the page, its `ItemList`, its robots meta, its sitemap row and its hreflang cluster
+ * cannot disagree (§5.4, T-31's rule).
+ *
+ * Which rule a zero-core hub takes is data: the category's `kind`, or for an occasion hub whether
+ * every product tagged to it is a funeral piece. `tagged` is the hub's products across published
+ * countries (`productsFor()`), passed by a caller that already holds them.
+ */
+export async function hubCoreState(
+  identity: ListingIdentity,
+  tagged?: readonly Product[],
+): Promise<HubCoreState | undefined> {
+  const { pageType, entityKey, locale } = identity;
+  if (pageType !== "categoryHub" && pageType !== "occasionHub") {
+    return undefined;
+  }
+  if (entityKey === undefined) return undefined;
+  const kind = pageType === "categoryHub" ? "category" : "occasion";
+  const products =
+    tagged ?? (await productsFor(pageType, entityKey, kind, undefined));
+  const own = await hubCoreProducts(products, locale);
+
+  const statesTerm =
+    pageType === "categoryHub"
+      ? UNSTOCKED_NOINDEX_CATEGORY_KINDS.includes(
+          (await getCategory(entityKey))?.kind ?? "occasion",
+        )
+      : products.length > 0 &&
+        products.every(
+          (product) => product.productType === FUNERAL_PRODUCT_TYPE,
+        );
+  const coreStocked = statesTerm ? own.length > 0 : undefined;
+
+  if (own.length > 0) {
+    return { coreCount: own.length, rule: "own", coreStocked, grid: own };
+  }
+  if (statesTerm) {
+    return { coreCount: 0, rule: "unstocked", coreStocked, grid: [] };
+  }
+  // Rule 1: the whole core range, each product once, in the order every hub grid uses.
+  return {
+    coreCount: 0,
+    rule: "wholeRange",
+    coreStocked,
+    grid: await hubCoreProducts(await listProducts(), locale),
+  };
 }
 
 /**
@@ -1787,9 +1909,13 @@ export async function listingView(
    * product of `coreRange()` tagged to the hub, 24 per page. A florist's own bouquet and every
    * other non-core product never shows before a country is chosen. The hub still *exists* by the
    * count of every tagged product (AC-70 unchanged), so a hub may hold fewer core cards than the
-   * floor, or none (the brief's escalation: then no grid and no count line).
+   * floor, or none. With none, A-orchestrator-2026-11-04a decides by the hub's kind (TASK-438):
+   * the whole core range (rule 1) or no grid and `noindex` (rule 2); `hubCoreState()` is the one
+   * reading, shared with the robots meta, the sitemap and the cluster.
    */
-  const hubCore = hub ? await hubCoreProducts(ordered, locale) : undefined;
+  const hubCore = hub
+    ? (await hubCoreState(identity, ordered))?.grid
+    : undefined;
   const listed = hubCore ?? ordered;
   const pageSize = hub ? HUB_PAGE_SIZE : LISTING_PAGE_SIZE;
   const total = listed.length;
@@ -1860,7 +1986,7 @@ export async function listingView(
     iso2 === undefined ? undefined : corridorState(iso2, locale);
   // The sitemap builders ask the same function (TASK-116), so the robots meta this view carries
   // and the page's sitemap membership are one answer.
-  const verdict = listingPageIndexability(
+  const verdict = await listingPageIndexability(
     identity,
     options.deployment ?? deploymentDescriptor(process.env),
     options.parameterised === undefined
@@ -2684,24 +2810,17 @@ export async function thinCoreHubs(
 ): Promise<readonly ThinCoreHub[]> {
   const thin: ThinCoreHub[] = [];
   for (const locale of locales) {
-    // One core range per locale; each hub's count is `hubCoreProducts()`'s, the grid's own set.
-    const core = new Set((await coreRange(locale)).map((entry) => entry.sku));
     for (const page of await listingPages(locale)) {
       if (page.pageType !== "categoryHub" && page.pageType !== "occasionHub") {
         continue;
       }
-      const kind = page.pageType === "categoryHub" ? "category" : "occasion";
-      const tagged = await productsFor(
-        page.pageType,
-        page.entityKey,
-        kind,
-        undefined,
-      );
-      const coreCount = tagged.filter(
-        (product) =>
-          core.has(product.sku) &&
-          slugFor("product", product.sku, locale) !== undefined,
-      ).length;
+      // Each hub's count is `hubCoreState()`'s, the grid's own reading (TASK-438).
+      const state = await hubCoreState({
+        pageType: page.pageType,
+        locale,
+        ...(page.entityKey === undefined ? {} : { entityKey: page.entityKey }),
+      });
+      const coreCount = state?.coreCount ?? 0;
       if (coreCount >= PRODUCT_COUNT_FLOOR) continue;
       thin.push({
         locale,

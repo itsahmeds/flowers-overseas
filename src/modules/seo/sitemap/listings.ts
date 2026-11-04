@@ -25,7 +25,9 @@
  * `alternatesFor({ pathByLocale: listingAlternatePaths(identity) })` is the call every listing
  * route makes for its `<head>` cluster, so a row's `xhtml:link` set and the document's cluster are
  * one function's output (spec 008 AC-16, `plan/02` §8 "never a second generator"). A locale with
- * no authored slug has no page and therefore no alternate.
+ * no authored slug has no page and therefore no alternate, and a hub version with no core product
+ * that takes rule 2 is in no cluster (`cluster: true`; spec 008 §14 A-orchestrator-2026-11-04a,
+ * AC-94; TASK-438).
  *
  * ## Why the catalogue is imported lazily
  *
@@ -80,13 +82,17 @@ export async function listingSitemapEntries(
       ...(page.countryIso === undefined ? {} : { countryIso: page.countryIso }),
       ...(page.entityKey === undefined ? {} : { entityKey: page.entityKey }),
     };
-    const verdict = catalog.listingPageIndexability(identity, deployment);
+    const verdict = await catalog.listingPageIndexability(identity, deployment);
     if (!verdict.indexable) continue;
 
     const loc = absoluteUrl(page.path, { baseUrl });
     const cluster =
       alternatesFor(
-        { pathByLocale: await catalog.listingAlternatePaths(identity) },
+        {
+          pathByLocale: await catalog.listingAlternatePaths(identity, {
+            cluster: true,
+          }),
+        },
         { baseUrl },
       ).find((candidate) => candidate.url === loc)?.alternates ?? [];
     const dated = await catalog.listingDatedSources(identity);
