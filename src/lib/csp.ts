@@ -13,7 +13,9 @@
  * ≤1 KB inline Consent-Mode block that TASK-050 ships. The full argument, the alternatives and the
  * accepted trade-off are ADR-0016; the nonce plus `'strict-dynamic'` variant is reserved for the
  * `no-store` routes (checkout, account, admin, vendor) and belongs to the spec that ships the
- * first one.
+ * first one. Spec 013 (TASK-262) builds the first: `payStepCspValue()`, step 3's policy in `test`
+ * and `live`, which is this static policy plus a nonce, `'strict-dynamic'` and §5.4's Stripe
+ * origins. Which response carries it is open (`docs/tasks/TASK-262.md` `## Escalations`).
  *
  * ## Why the header lives in `next.config.ts` and not in `src/proxy.ts`
  *
@@ -170,14 +172,18 @@ const UPGRADES_INSECURE_REQUESTS: readonly DeploymentEnvironment[] = [
 
 const quoted = (hash: string): string => `'${hash}'`;
 
+type Directive = readonly [string, readonly string[]];
+
 /**
- * The policy string for an environment. Directive order and spacing are stable, because AC-23
- * asserts the whole string and a reviewer has to be able to read a diff of it.
+ * The static policy's directives, in the order AC-23 pins. One list, read by `cspValue()` and
+ * (with three directives widened) by `payStepCspValue()`, so the pay step's policy can only ever
+ * be this policy plus a nonce, `'strict-dynamic'` and Stripe's origins: never a second copy that
+ * drifts.
  */
-export function cspValue(
+function staticDirectives(
   environment: DeploymentEnvironment,
-  options: CspOptions = {},
-): string {
+  options: CspOptions,
+): readonly Directive[] {
   const previewFeedback = allowsPreviewFeedback(
     environment,
     options.platform ?? "local",
@@ -190,7 +196,7 @@ export function cspValue(
       ? [GOOGLE_TAG_MANAGER_ORIGIN, GOOGLE_ANALYTICS_ORIGIN]
       : [];
 
-  const directives: readonly (readonly [string, readonly string[]])[] = [
+  return [
     ["default-src", ["'self'"]],
     // `'self'` plus one hash per inline block — in Phase 0 exactly one application inline
     // script, the ≤1 KB Consent-Mode bootstrap of `src/lib/consent-bootstrap.ts` (TASK-050);
@@ -231,7 +237,13 @@ export function cspValue(
     ["report-to", [CSP_REPORT_GROUP]],
     ["report-uri", [CSP_REPORT_PATH]],
   ];
+}
 
+/** The directives as one header value, plus `upgrade-insecure-requests` where it applies. */
+function serialise(
+  environment: DeploymentEnvironment,
+  directives: readonly Directive[],
+): string {
   const parts = directives.map(
     ([name, values]) => `${name} ${values.join(" ")}`,
   );
@@ -243,6 +255,131 @@ export function cspValue(
     parts.push("upgrade-insecure-requests");
   }
   return `${parts.join("; ")};`;
+}
+
+/**
+ * The policy string for an environment. Directive order and spacing are stable, because AC-23
+ * asserts the whole string and a reviewer has to be able to read a diff of it.
+ */
+export function cspValue(
+  environment: DeploymentEnvironment,
+  options: CspOptions = {},
+): string {
+  return serialise(environment, staticDirectives(environment, options));
+}
+
+/**
+ * Step 3's Stripe sources, exactly spec 013 §5.4's list (spec 010 §12's three origins plus
+ * `*.js.stripe.com`, which Stripe's current CSP guidance for the Payment Element adds). Nothing
+ * broader: no `https://*.stripe.com`, no `m.stripe.network`, no `img-src` or `style-src`
+ * allowance, so a widening is a reviewed diff of this constant (ADR-0016).
+ */
+export const PAY_STEP_STRIPE_SOURCES = {
+  script: ["https://js.stripe.com", "https://*.js.stripe.com"],
+  frame: [
+    "https://js.stripe.com",
+    "https://*.js.stripe.com",
+    "https://hooks.stripe.com",
+  ],
+  connect: ["https://api.stripe.com"],
+} as const satisfies Readonly<Record<string, readonly string[]>>;
+
+/**
+ * A CSP nonce is base64 (RFC 4648 §4) per the CSP3 `nonce-source` grammar. Checked before it is
+ * written into a policy, so a value carrying `'`, `;` or a space can never end the source and
+ * open a directive of its own.
+ */
+const NONCE_GRAMMAR = /^[A-Za-z0-9+/]{22,}={0,2}$/u;
+
+/** Whether `value` is a nonce this module will put into a policy (22+ base64 characters). */
+export function isCspNonce(value: string): boolean {
+  return NONCE_GRAMMAR.test(value);
+}
+
+/**
+ * A fresh per-request nonce: 128 bits from the platform CSPRNG (Web Crypto, so the proxy and a
+ * route can both call it), base64. One per response, never stored, never reused: the response it
+ * goes into is `no-store` (spec 013 §5.4, ADR-0016).
+ */
+export function newCspNonce(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+export interface PayStepCspOptions extends CspOptions {
+  /** This response's nonce, from `newCspNonce()`; anything else throws. */
+  readonly nonce: string;
+}
+
+/**
+ * Step 3's policy in `test` and `live` (spec 013 §5.4, AC-2; ADR-0016, ADR-0020): the static
+ * policy of the same environment and options, with
+ *
+ *  - `script-src` gaining `'nonce-…'` and `'strict-dynamic'` after its own sources, then Stripe's
+ *    two script origins. `'strict-dynamic'` is what lets the nonced bundle insert Stripe.js
+ *    (`loadStripeJs`); a CSP3 browser then ignores `'self'` and the host sources, and a CSP2
+ *    browser falls back to them, which is why they stay;
+ *  - `frame-src` naming Stripe's three frame origins (instead of `'none'`; beside `vercel.live`
+ *    where a preview has it);
+ *  - `connect-src` gaining `https://api.stripe.com`.
+ *
+ * Every other directive is byte for byte the static one. The spec names no browser Sentry
+ * origin, and browser Sentry is not built, so none is added (TASK-262 brief, carry-forwards).
+ */
+export function payStepCspValue(
+  environment: DeploymentEnvironment,
+  options: PayStepCspOptions,
+): string {
+  if (!isCspNonce(options.nonce)) {
+    throw new Error("payStepCspValue: the nonce is not a base64 CSP nonce");
+  }
+  const directives = staticDirectives(environment, options).map(
+    ([name, values]): Directive => {
+      switch (name) {
+        case "script-src":
+          return [
+            name,
+            [
+              ...values,
+              `'nonce-${options.nonce}'`,
+              "'strict-dynamic'",
+              ...PAY_STEP_STRIPE_SOURCES.script,
+            ],
+          ];
+        case "frame-src":
+          return [
+            name,
+            [
+              ...PAY_STEP_STRIPE_SOURCES.frame,
+              ...values.filter((value) => value !== "'none'"),
+            ],
+          ];
+        case "connect-src":
+          return [name, [...values, ...PAY_STEP_STRIPE_SOURCES.connect]];
+        default:
+          return [name, values];
+      }
+    },
+  );
+  return serialise(environment, directives);
+}
+
+/**
+ * Step 3's header: the enforcing name only when the deployment enforces (`cspEnforced()`, the
+ * exact string `CSP_REPORT_ONLY=false`), the Report-Only name otherwise, so a report-only
+ * deployment can watch Stripe's loads before the flip exactly as every other page is watched.
+ */
+export function payStepCspHeader(
+  environment: DeploymentEnvironment,
+  options: PayStepCspOptions & { readonly enforce: boolean },
+): { key: string; value: string } {
+  return {
+    key: options.enforce ? CSP_HEADER : CSP_REPORT_ONLY_HEADER,
+    value: payStepCspValue(environment, options),
+  };
 }
 
 /**

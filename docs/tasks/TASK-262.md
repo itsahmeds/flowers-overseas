@@ -42,12 +42,17 @@ One dated bullet per `/review`, newest last.
   - **Copy:** 16 new keys, `.claude/state/record-approval-262.py --check` passes; `checkout.legal.payButton` is a lawyer-gated formula and stays unreviewed; de and pl are English echoes.
   - **Founder steps (Railway, when the Stripe account exists):** `STRIPE_SECRET_KEY` (`sk_test_` on staging, the restricted `rk_live_` on production), `STRIPE_PUBLISHABLE_KEY` (`pk_test_`/`pk_live_`), `STRIPE_WEBHOOK_SECRET`; then `payments.stripe` and the method flags (TASK-421 seeds `payments.method.*`) in admin. Without both keys nothing registers and the checkout stays demo.
   - **Gates not run tonight (founder, 2026-11-04):** lint, format:check, i18n:check, codebase:map --check as gates (pre-commit ran eslint and prettier on every staged file; the map was regenerated). Two unit files are red on main before this PR and untouched here: `url-pii.test.ts` (query keys in invoices/admin) and `home-honesty.test.ts` (de/pl `floristInbox.declineReason.productUnavailable`).
+- 2026-11-04 (builder CSP262, self-review; PR on `task/TASK-262-pay-step-csp`):
+  - **AC-2 policy value built, wiring open** (see `## Escalations`): `payStepCspValue`/`payStepCspHeader`/`newCspNonce` in `src/lib/csp.ts`, proven by `tests/unit/pay-step-csp.test.ts`; no response carries it yet.
+  - **Correction to the 2026-11-04 bullet above:** turning on `payments.stripe` where `CSP_REPORT_ONLY=false` does **not** block Stripe.js today. `/{locale}/checkout` is `force-dynamic`, never a cache entry, so the enforcing per-document header of `src/lib/csp-cache-handler.ts` never reaches it; it carries only the static Report-Only policy (`src/lib/csp.ts` header; ADR-0020 R-2 says the same of the uncached listing variants). Stripe's loads are reported, not blocked, and step 3 is unprotected by an enforced policy until the wiring lands.
+  - **`Permissions-Policy: payment=()`** on every path (`src/lib/csp.ts`) blocks the Payment Request API inside Stripe's frames, which Apple Pay and Google Pay in the Payment Element need. Relax it for the pay step before TASK-266 flips the wallets `available`; spec 013 names no value, so that is a spec question too.
+  - **Not built here:** browser Sentry (spec 013 names no ingest origin, so the policy adds none); step 4 and the two `form-action` provider origins of spec 013 §14 A-founder-2026-10-25a and spec 018 (TASK-413…425's); the `PaymentPanel` 6 144 B and route 131 072 B budgets and the T-02 crawl (need a build; not run tonight).
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-04 (builder CSP262, to the orchestrator; `open`): **which response carries step 3's policy?** Step 3 shares `/{locale}/checkout` with steps 1 and 2 and the `demo`/`closed` screens, and the page decides the screen and the mode from the draft row and the flags (database). A page cannot set a response header, and the proxy runs before the page and reads no database (spec 001 §11; `tests/unit/csp.test.ts` "keeps the policy out of src/proxy.ts"). So no mechanism can give step 3 in `test`/`live` the Stripe policy while steps 1, 2, `demo` and `closed` at the same URL carry none, as AC-2 reads. Options: **(a, recommended)** amend AC-2: where a Stripe step is registered (both Stripe keys in the env, which the proxy can read), every `/{locale}/checkout` page response carries `payStepCspHeader` (nonce, `'strict-dynamic'`, Stripe origins; enforced under `CSP_REPORT_ONLY=false`); deployments without the keys keep today's policy byte for byte; no HTML outside step 3 names Stripe. Cost: steps 1 and 2 may frame and connect to three Stripe origins; gain: a nonce on every checkout step, as spec 010 §5.4 already asks. (b) give step 3 its own address (e.g. `/{locale}/checkout/pay`), amending spec 010's "three steps on one URL". (c) read the draft's mode in the proxy, amending spec 001 §11. Any option also puts the policy on the **request** headers (Next reads the nonce from there to nonce its own scripts) and drops the csp.test.ts proxy assertion.
 
 ## Progress
 
@@ -57,6 +62,7 @@ here.
 
 - 2026-11-04 (builder PAY262): seam extended additively (`prepare`/`confirm`/`sync` on `CheckoutPaymentStep`); `stripeTestPaymentStep`/`stripeLivePaymentStep` in `src/modules/payments/pay-step.ts`, registered by `src/modules/payments/wiring.ts` only with both Stripe keys; `currentCheckoutMode` reads the registered steps, `payments.stripe` and the key kind; `runPay`/`runPaymentDeclined`/`paymentReturnLocation` in `src/modules/checkout/pay.ts`; the `unpaid` screen; `/{locale}/checkout/return`; `STRIPE_PUBLISHABLE_KEY`.
 - 2026-11-04: UI in `src/modules/ui/checkout/payment/` (controller, `PaymentPanel`, `PreContractBlock`, `PayButton`, `PaymentErrorNotice`), step 3 and the unpaid page in `_views/PayStep.tsx`; tests unit `pay-step.test.tsx` (21) and integration `pay-step.test.ts` (4, PG16); CSP and browser Sentry not built (carry-forward).
+- 2026-11-04 (builder CSP262): step 3's policy value (`payStepCspValue`, `payStepCspHeader`, `newCspNonce`, `isCspNonce`, `PAY_STEP_STRIPE_SOURCES`) in `src/lib/csp.ts`, the static policy refactored onto one directive list and unchanged byte for byte; `tests/unit/pay-step-csp.test.ts` 13 tests; wiring escalated (`## Escalations`), row `blocked` on it.
 
 ## Result
 
