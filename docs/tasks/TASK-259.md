@@ -35,7 +35,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-04 (ACC259), on TASK-361's open escalation (the refund dialog has no production provider): this PR adds the production provider, `stripeProviderFromEnv()` in `src/modules/payments/provider-env.ts`, used by `registerPaymentsOutbox` in the worker. It stays **inside** the payments module (the barrel's rule: provider types never leave it). The dialog itself (design artboard, `MoneyInput`, copy, axe, baselines) is UI work in TASK-361's scope, not small, so it is not wired here. What TASK-361 needs: one barrel export from payments (for example `adminRefundDeps()` returning `{ provider: stripeProviderFromEnv() }`, or the admin action taking a `() => PaymentProvider`), then the dialog. Without Stripe keys that path throws `PAYMENTS_NOT_CONFIGURED`, so the "not available" line should stay until the keys exist. Recorded in TASK-361's brief too.
 
 ## Progress
 
@@ -44,10 +44,17 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04 (ACC259): `deliverAcceptance` + `paymentAcceptedOrderEffect` (`src/modules/payments/acceptance.ts`), the acceptance branch and `registerPaymentsOutbox` (lazy env provider, `provider-env.ts`) in `cancel.ts`, the seam in `orders/demo/effect.ts` (test/live accept half = payments), `markOutForDelivery` calling `startProduction`; integration suite `payments-acceptance.test.ts` written. Next: run it on a local PG16, mutations, PR.
+- 2026-11-04 (ACC259): suites green on a throwaway PG16 (acceptance 13, florist-actions 7, routing-jobs 14, routing-no-partner 8, admin-order-reroute-cancel 17, payments-cancel-production 36); 12 mutations run, 11 red, 1 equivalent (see Result). PR 489 ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#489](https://github.com/itsahmeds/flowers-overseas/pull/489). `src/modules/payments/acceptance.ts`: `deliverAcceptance` (under the order lock: not `accepted` → nothing, `sent`; payment not `captured` → `PAYMENT_NOT_CAPTURED`; row 14 by `system:payments` with `payment_id` and `provider_call: false`, no provider call, `captured_at` untouched; row 16 in the same transaction only when `productionStartAt` has passed) and `paymentAcceptedOrderEffect` (the accept half for `test`/`live`: one `outbox.dispatch` for the order; a failed nudge is logged, the accept commits). `cancel.ts`: the `assignment.accepted` branch, the provider resolved lazily, `registerPaymentsOutbox()` (called in `src/jobs/handlers.ts`) over `provider-env.ts`'s `stripeProviderFromEnv()` (throws `PAYMENTS_NOT_CONFIGURED` without keys; refuses a live key outside production). `orders/demo/effect.ts`: `demo` keeps the demo effect (unconfigured in production); `test` and `live` take the payment effect in every environment. `markOutForDelivery`: a `paid` `test`/`live` order calls `startProduction(orderId, 'system:payments.production_start')` in the dispatch transaction before row 19; a refusal is `ORDER_STATE_CHANGED`. No migration. Tests: integration `payments-acceptance.test.ts` 13 (T-13 x7, early dispatch x3, T-16 50 runs with both arrival orders observed, the in-production writer scan); unit `payments-acceptance.test.ts` 9; `florist-inbox.test.ts` seam case rewritten; `payments-types.test.ts` barrel pin +5 names; `paid: quietAccept` added to three routing/admin suites. Mutations: 12 run, 11 red; the survivor (dropping the throw on a `startProduction` refusal) is equivalent, because the engine still refuses row 19 from `paid` with the same `ORDER_STATE_CHANGED`.
+
+**Carry-forwards (2026-11-04, self-review, PR 489):**
+- The nudge is enqueued inside the accept transaction (as spec 016's decline effect does); a dispatch that runs before the commit finds nothing and the minute tick delivers the row, so acceptance can lag by up to one tick.
+- Without Stripe keys the worker's `payments` deliveries of `order.cancelled` throw `PAYMENTS_NOT_CONFIGURED` and end `dead`, as they did with no handler; acceptances are delivered (no provider needed). The founder's runbook line for `PAYMENT_NOT_CAPTURED` (`outbox.dead`) is TASK-265's `docs/runbooks/payments.md`.
+- No staging run, no build, no CI (founder rule 2026-11-02); the 50-run race ran locally on PG16 only.
+- TASK-361's refund dialog: see Escalations; not wired here.
