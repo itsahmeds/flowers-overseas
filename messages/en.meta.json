@@ -3625,13 +3625,6 @@
     "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862",
     "retained": true
   },
-  "nav.search.help": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "a2e8387f57c99709c0ed45040673f95d949b1ae0779a7f960d6e9592de740eaf"
-  },
   "nav.search.label": {
     "source": "human",
     "reviewed": true,
@@ -7669,5 +7662,76 @@
     "reviewedBy": "founder (delegated), 2026-11-04: recorded by the orchestrator with record-approval-262.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
     "reviewedAt": "2026-11-04T00:20:03Z",
     "sourceHash": "7376b75a30316cdce510b0a8356ac969cce00b2253b96638377d4d44af754951"
+  },
+  "search.meta.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
+  },
+  "search.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
+  },
+  "search.resultsHeading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9691a6ea65c71032c35c3f8b1477d6f2064d9c1407d72f5d686382fe0d8239ec"
+  },
+  "search.pagesHeading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
+  },
+  "search.browseOccasions": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e26e4bce70f19c26c98ee03ec9d7b8fc390f3d98a7446bba347c6950ee414282"
+  },
+  "search.tooShort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "02a16962ce32a96e1f7ab54b0c55bfbc3b8da9c8d8493e9651f46e2d087160f9"
+  },
+  "search.noResults": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3c27590702339312eadfbbb4d8e77d3eba59e1ccd3b7ce154ad688fe046a997"
+  },
+  "search.didYouMean": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7cb1f249afabd24cae15df9a64aef8ed72c6a7bc2adcb73065aed1392c364987"
+  },
+  "search.hiddenByDate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "207afff18edb742d9d9b2a3c9444df46d7ff9d1a0ee693c68a51a9bc21a1d42d"
+  },
+  "search.anyDate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2d57931e168df9b14260a39a41f0071ad00193b8c44a649a3d97f8915b4dd898"
+  },
+  "search.previous": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1208ec01f223c616b981ee76749e4f435f9c6bc2998d6cc43a9f59d71bd6f697"
+  },
+  "search.next": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c08ac736a5e29c291b681cbdc15f06901a735f28d2e04645b92cf331861cb8c0"
+  },
+  "search.rateLimited": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a458f8db384a2030fb58f3b3e5b89b33ff571d3a869bd825fef7b8a0d8987fb8",
+    "retained": true
+  },
+  "search.ranking.disclosure": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "93825b1a7303843d56d880a037d35ba7986b269ec44138b1df03916bbbaa303b"
   }
 }

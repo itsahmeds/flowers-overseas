@@ -493,6 +493,22 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+    // TASK-402 (spec 045 §7, Appendix A): the results page's keys, `reviewed: false` until the
+    // record run (`.claude/state/record-approval-402.py`) attests the exact `en` texts.
+    "search.anyDate",
+    "search.browseOccasions",
+    "search.didYouMean",
+    "search.heading",
+    "search.hiddenByDate",
+    "search.meta.title",
+    "search.next",
+    "search.noResults",
+    "search.pagesHeading",
+    "search.previous",
+    "search.ranking.disclosure",
+    "search.rateLimited",
+    "search.resultsHeading",
+    "search.tooShort",
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
   ];
 

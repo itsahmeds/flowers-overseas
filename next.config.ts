@@ -11,6 +11,7 @@ import {
 } from "./src/lib/transactional-headers";
 import { floristHeaderRules } from "./src/lib/florist-headers";
 import { chooserHeaderRules } from "./src/lib/chooser-routes";
+import { searchHeaderRules, searchRewriteRules } from "./src/lib/search-routes";
 import { checkoutHeaderRules } from "./src/modules/seo/transactional";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
@@ -152,6 +153,10 @@ const headerRules = [
   // and `Referrer-Policy: no-referrer` on the token routes. **After** the security rules, because
   // the last rule to set a key wins and the site-wide referrer policy must lose on a token URL.
   ...trackHeaderRules(),
+  // The search results page (spec 045 §5.4, AC-3; TASK-402): `noindex, follow`, `private,
+  // no-store` and `Referrer-Policy: strict-origin`. After the security rules, whose site-wide
+  // referrer policy must lose on a search address (`src/lib/search-routes.ts`).
+  ...searchHeaderRules(),
 ];
 
 const nextConfig: NextConfig = {
@@ -224,6 +229,10 @@ const nextConfig: NextConfig = {
       // (spec 009 §14 A10; TASK-128): Next stops at the first rewrite whose destination resolves,
       // and the product rule below matches every query.
       beforeFiles: [
+        // `/{locale}/{searchSegment}` to the results page's own route, which renders per request
+        // (spec 045 §5.2; TASK-402; `src/lib/search-routes.ts`). Disjoint from every rule below:
+        // no listing or product address has two segments.
+        ...searchRewriteRules(),
         ...listingRewriteRules(),
         ...productParameterRewriteRules(),
         ...productRewriteRules(),

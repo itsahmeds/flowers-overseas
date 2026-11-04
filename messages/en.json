@@ -130,7 +130,6 @@
     },
     "search": {
       "label": "Search flowers, occasions, a city or a country",
-      "help": "Search opens when the shop does.",
       "submit": "Search"
     },
     "account": {
@@ -815,6 +814,26 @@
       "chooseCountry": "Choose where to send"
     },
     "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
+  },
+  "search": {
+    "meta": {
+      "title": "Search"
+    },
+    "heading": "Search",
+    "resultsHeading": "Results for “{query}”",
+    "pagesHeading": "Pages",
+    "browseOccasions": "Browse by occasion",
+    "tooShort": "Type at least two letters.",
+    "noResults": "We found nothing for “{query}”. Try a flower, a colour or an occasion.",
+    "didYouMean": "Did you mean {suggestion}?",
+    "hiddenByDate": "{count, plural, one {# more bouquet matches but cannot arrive on {date}.} other {# more bouquets match but cannot arrive on {date}.}}",
+    "anyDate": "Show every date",
+    "previous": "Previous page",
+    "next": "Next page",
+    "rateLimited": "Too many searches in a short time. Please wait a moment and try again.",
+    "ranking": {
+      "disclosure": "Bouquets that match your words most closely come first. Among equally close matches, those we can send to the destination you chose come first, then those with a photograph, then our own order. Nobody pays us to place a bouquet higher, and the order does not depend on who you are or where you are."
+    }
   },
   "categoryHub": {
     "h1": "{entity} to send abroad",

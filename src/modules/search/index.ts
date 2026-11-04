@@ -62,3 +62,28 @@ export type {
   SearchProduct,
   SearchSource,
 } from "./types";
+// The results page (spec 045 §2.2, §2.7, §5.3; TASK-402): the URL's parameters at the boundary,
+// the page's view around one search, and its Server Components.
+export {
+  type SearchParams,
+  type SearchParamsContext,
+  cleanSearchQuery,
+  searchParamsSchema,
+} from "./params";
+export {
+  type SearchCountryOption,
+  type SearchOccasionLink,
+  type SearchPageDeps,
+  type SearchPageOutcome,
+  type SearchPageView,
+  SLOW_SEARCH_COUNT,
+  SLOW_SEARCH_MS,
+  SLOW_SEARCH_WINDOW_MS,
+  searchPage,
+  searchPath,
+  slowSearchMonitor,
+} from "./page";
+export {
+  SearchResultsPage,
+  type SearchResultsPageProps,
+} from "./ui/SearchResultsPage";

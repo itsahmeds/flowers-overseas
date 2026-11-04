@@ -346,7 +346,6 @@ describe("the rendered header (AC-7, AC-14)", () => {
       account.orders,
       "Basket (",
       search.label,
-      search.help,
     ]) {
       expect(word, "a message the check reads").toBeTruthy();
       expect(html, String(word)).not.toContain(String(word));

@@ -355,7 +355,8 @@ const siteLinks = [
   {
     id: "search",
     labelKey: "nav.search.label",
-    descriptionKey: "nav.search.help",
+    // No `descriptionKey`: spec 045 §7 deletes `nav.search.help` ("Search opens when the shop
+    // does."), which the page it describes now contradicts (TASK-402).
     target: { kind: "pending" },
     published: false,
     owningSpec: "008",
