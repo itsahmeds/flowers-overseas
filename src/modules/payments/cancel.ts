@@ -33,10 +33,13 @@ import {
   withExecutor,
   type EngineConnection,
   type OrderErrorCode,
+  registerOutboxHandler,
   type OutboxHandler,
 } from "@/modules/orders";
 
 import "./events";
+import { deliverAcceptance } from "./acceptance.ts";
+import { stripeProviderFromEnv } from "./provider-env.ts";
 import { RefundReasonSchema, type RefundReason } from "./events.ts";
 import { refundCancelledOrder, type RefundDeps } from "./refunds.ts";
 
@@ -133,27 +136,57 @@ export async function cancelOrder(
   });
 }
 
+/** The provider, or how to build it at the first refund (the worker reads the env then). */
+export type ProviderSource =
+  RefundDeps["provider"] | (() => RefundDeps["provider"]);
+
+export interface PaymentsOutboxDeps extends Omit<RefundDeps, "provider"> {
+  readonly provider: ProviderSource;
+}
+
 /**
- * The `payments` outbox target's handler (spec 013 §5.2 "Outbox routes"): `order.cancelled` and
- * `order.cancelled_refunded` refund the cancelled order's remaining balance. The refund runs in
- * its own transactions (`refunds.ts`), never the delivery's, so a delivery that rolls back after
- * the provider answered resumes the same refund row and the same idempotency key.
+ * The `payments` outbox target's handler (spec 013 §5.2 "Outbox routes"):
  *
- * `assignment.accepted` (row 14 and, past the instant, row 16) is TASK-259's branch: until it
- * lands, the delivery throws and retries, exactly as the not-configured stand-in does. Registered
- * with `registerOutboxHandler('payments', …)` by TASK-259, with the production provider.
+ *  - `assignment.accepted`: the acceptance delivery (`./acceptance.ts`, TASK-259), in the
+ *    delivery's own transaction: row 14 and, past the production-start instant, row 16; nothing
+ *    for an order no longer `accepted`; `PAYMENT_NOT_CAPTURED` (retried, then `dead`) when the
+ *    payment is not captured. No provider call, so the provider is never built for it.
+ *  - `order.cancelled` and `order.cancelled_refunded`: refund the cancelled order's remaining
+ *    balance. The refund runs in its own transactions (`refunds.ts`), never the delivery's, so a
+ *    delivery that rolls back after the provider answered resumes the same refund row and the
+ *    same idempotency key.
+ *
+ * Registered with `registerOutboxHandler('payments', …)` by `registerPaymentsOutbox`.
  */
-export function paymentsOutboxHandler(deps: RefundDeps): OutboxHandler {
-  return async (event) => {
+export function paymentsOutboxHandler(deps: PaymentsOutboxDeps): OutboxHandler {
+  const now = deps.now ?? (() => new Date());
+  return async (event, context) => {
+    if (event.type === "assignment.accepted") {
+      await deliverAcceptance(event, context.executor, now());
+      return;
+    }
     if (
       event.type === "order.cancelled" ||
       event.type === "order.cancelled_refunded"
     ) {
-      await refundCancelledOrder(event.orderId, deps);
+      const provider =
+        typeof deps.provider === "function" ? deps.provider() : deps.provider;
+      await refundCancelledOrder(event.orderId, { ...deps, provider });
       return;
     }
     throw new Error(
       `PAYMENTS_NOT_CONFIGURED: no payments branch for ${event.type} yet`,
     );
   };
+}
+
+/**
+ * Registers the `payments` target's handler once per process (the worker's job table): the
+ * provider is built from the environment at the first refund, so a process without Stripe keys
+ * still delivers acceptances, and a cancel delivery there throws and is retried.
+ */
+export function registerPaymentsOutbox(
+  deps: PaymentsOutboxDeps = { provider: () => stripeProviderFromEnv() },
+): void {
+  registerOutboxHandler("payments", paymentsOutboxHandler(deps));
 }

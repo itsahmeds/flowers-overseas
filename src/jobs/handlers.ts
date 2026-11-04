@@ -47,7 +47,10 @@ import {
 // Spec 018 §5.2 (TASK-339): the succeeded refunds, outside the `orders` barrel (it reads `payments`).
 import { buyerRefundLines } from "../modules/orders/buyer-refund-lines";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
-import { runProductionStart } from "../modules/payments";
+import {
+  registerPaymentsOutbox,
+  runProductionStart,
+} from "../modules/payments";
 // Spec 030a §5.2 (TASK-363): the `payouts` target and F1's job, the worker's entry, not the barrel.
 import {
   closeDuePayouts,
@@ -79,6 +82,11 @@ const DERIVE_READ_TIMEOUT_MS = 60_000;
 // Spec 018 §5.2 (TASK-341): the `invoices` outbox target issues invoices and credit notes in the
 // delivery's transaction. Registered once, where the dispatcher's job is defined.
 registerOutboxHandler("invoices", invoicesOutboxHandler());
+
+// Spec 013 §5.2 (TASK-259): the `payments` target. `assignment.accepted` writes row 14 (and row 16
+// past the production-start instant) with no provider call; a cancel refunds through the Stripe
+// adapter built from the environment at the first refund, and is retried while no key is set.
+registerPaymentsOutbox();
 
 // Spec 018 §5.2 (TASK-342): the PLN VAT line's rate, NBP table A of the last business day before
 // the tax point, for every profile whose `vat_currency_code` differs from the invoice currency.

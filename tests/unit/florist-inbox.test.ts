@@ -339,7 +339,7 @@ describe("T-33 — the demo entry points refuse in production", () => {
 describe("the after-answer seam", () => {
   const ORDER = "0b8e7d6c-5a4f-4e3d-8c2b-1a0f9e8d7c6b";
 
-  it("demo orders get the demo effect outside production and the unconfigured one in it; test and live keep that accept half and take spec 016's router for the decline half (TASK-328)", async () => {
+  it("demo orders get the demo effect outside production and the unconfigured one in it; test and live take spec 013's payment effect for the accept half in every environment (never the demo effect, spec 013 AC-13) and spec 016's router for the decline half (TASK-328, TASK-259)", async () => {
     const demo = {
       afterAccept: vi.fn(async () => undefined),
       afterDecline: vi.fn(async () => undefined),
@@ -348,35 +348,44 @@ describe("the after-answer seam", () => {
       afterAccept: vi.fn(async () => undefined),
       afterDecline: vi.fn(async () => undefined),
     };
+    const paid = { afterAccept: vi.fn(async () => undefined) };
     const routed = { afterDecline: vi.fn(async () => undefined) };
     const choose = (mode: "demo" | "test" | "live", environment: string) =>
       acceptedOrderEffectFor(mode, environment, {
         demo,
         unconfigured,
         routed,
+        paid,
       });
     expect(choose("demo", "staging")).toBe(demo);
     expect(choose("demo", "production")).toBe(unconfigured);
 
     const cases = [
-      ["test", "preview", demo],
-      ["live", "staging", unconfigured],
-      ["test", "production", unconfigured],
-      ["live", "production", unconfigured],
+      ["test", "preview"],
+      ["test", "staging"],
+      ["live", "staging"],
+      ["test", "production"],
+      ["live", "production"],
     ] as const;
-    for (const [mode, environment, acceptHalf] of cases) {
+    for (const [mode, environment] of cases) {
       for (const spy of [demo, unconfigured]) {
         spy.afterAccept.mockClear();
         spy.afterDecline.mockClear();
       }
+      paid.afterAccept.mockClear();
       routed.afterDecline.mockClear();
       const effect = choose(mode, environment);
       await effect.afterAccept({ orderId: ORDER, mode });
       await effect.afterDecline({ orderId: ORDER, mode });
+      expect(paid.afterAccept, `${mode}/${environment}`).toHaveBeenCalledWith({
+        orderId: ORDER,
+        mode,
+      });
+      expect(demo.afterAccept, `${mode}/${environment}`).not.toHaveBeenCalled();
       expect(
-        acceptHalf.afterAccept,
+        unconfigured.afterAccept,
         `${mode}/${environment}`,
-      ).toHaveBeenCalledTimes(1);
+      ).not.toHaveBeenCalled();
       expect(
         routed.afterDecline,
         `${mode}/${environment}`,

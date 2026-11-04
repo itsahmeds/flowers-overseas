@@ -44,6 +44,7 @@ import {
 import { withDbContext, withSystemContext } from "@/lib/db";
 import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
+import { PRODUCTION_START_ACTOR, startProduction } from "@/modules/payments";
 
 import {
   acceptedOrderEffectFor,
@@ -160,6 +161,8 @@ export interface FloristCommandDeps {
   ) => AcceptedOrderEffect;
   /** Spec 010's `transition` (spied on by the tests). */
   readonly transition?: typeof transition;
+  /** Spec 013's `startProduction`, for the early dispatch (spied on by the tests). */
+  readonly startProduction?: typeof startProduction;
 }
 
 export interface PhotoCommandDeps extends FloristCommandDeps {
@@ -429,7 +432,18 @@ export async function respondToOffer(
 /* markOutForDelivery                                                         */
 /* -------------------------------------------------------------------------- */
 
-/** The bouquet leaves the shop (AC-29): `order.out_for_delivery`, once. */
+/**
+ * The bouquet leaves the shop (AC-29): `order.out_for_delivery`, once.
+ *
+ * **Early dispatch** (spec 013 §5.2, §12 request on spec 011; spec 002 §14 A10.1; TASK-259): a
+ * `test` or `live` order accepted days ahead stays `paid` until 06:00 destination-local on its
+ * delivery date. A florist who dispatches it on that date before the job has written row 16
+ * (before 06:00, or between two ticks) is not refused: under the lock, this command first calls
+ * spec 013's `startProduction(orderId, 'system:payments.production_start')` in the same
+ * transaction, then writes row 19. Before the delivery date `startProduction` refuses with
+ * `PRODUCTION_NOT_DUE` and the dispatch is refused as before (`ORDER_STATE_CHANGED`), nothing
+ * written.
+ */
 export async function markOutForDelivery(
   ctx: FloristCommandContext,
   assignmentId: string,
@@ -437,9 +451,20 @@ export async function markOutForDelivery(
 ): Promise<CommandResult> {
   const runtime = runtimeOf(deps);
   const visible = await visibleAssignment(runtime, ctx, assignmentId);
+  const now = (deps.now ?? (() => new Date()))();
+  const start = deps.startProduction ?? startProduction;
   return runtime.asSystem("florists.dispatch", async (executor) => {
     const locked = await lockForCommand(executor, ctx, visible);
     assertAcceptedAndLive(locked);
+    if (locked.order.status === "paid" && locked.order.mode !== "demo") {
+      const started = await start(locked.order.id, PRODUCTION_START_ACTOR, {
+        executor,
+        now: () => now,
+      });
+      if (started.kind !== "started") {
+        throw new FloristActionError("ORDER_STATE_CHANGED");
+      }
+    }
     await move(
       deps,
       executor,

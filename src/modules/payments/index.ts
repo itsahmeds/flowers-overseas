@@ -54,8 +54,31 @@ export type {
 
 // Spec 013 §5.2 (TASK-258): cancellation, the refund on cancel, and the delivery-morning start.
 // No amount parameter anywhere (AC-9): a cancel refunds the order's own remaining balance.
-export { cancelOrder, paymentsOutboxHandler } from "./cancel.ts";
-export type { CancelOrderRefusal, CancelOrderResult } from "./cancel.ts";
+export {
+  cancelOrder,
+  paymentsOutboxHandler,
+  registerPaymentsOutbox,
+} from "./cancel.ts";
+export type {
+  CancelOrderRefusal,
+  CancelOrderResult,
+  PaymentsOutboxDeps,
+  ProviderSource,
+} from "./cancel.ts";
+// Spec 013 §5.2 (TASK-259): the acceptance delivery (row 14, row 16 past the instant), the accept
+// half of spec 011's seam for `test` and `live`. The provider built from the environment
+// (`./provider-env.ts`) stays inside the module: `registerPaymentsOutbox` uses it.
+export {
+  createPaymentAcceptedOrderEffect,
+  deliverAcceptance,
+  paymentAcceptedOrderEffect,
+  PaymentNotCaptured,
+} from "./acceptance.ts";
+export type {
+  AcceptanceOutcome,
+  OutboxNudge,
+  PaymentAcceptEffect,
+} from "./acceptance.ts";
 export {
   PRODUCTION_START_ACTOR,
   productionStartAt,
