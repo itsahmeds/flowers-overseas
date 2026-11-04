@@ -223,6 +223,16 @@ describe("pagesOf(locale)", () => {
       }),
     });
     expect(evil.pagesOf("de")).toEqual(BUYER.pages);
+    // `//evil/account` is a valid site path to the path schema, and a scheme-relative URL to a
+    // browser: refused on its `//`.
+    const schemeRelative = buyer({
+      pagesFor: (locale) => ({
+        signIn: `/${locale}/account`,
+        confirm: `/${locale}/account/sign-in/confirm`,
+        home: `//evil/${locale}`,
+      }),
+    });
+    expect(schemeRelative.pagesOf("de")).toEqual(BUYER.pages);
     const throwing = buyer({
       pagesFor: () => {
         throw new Error("no such locale");

@@ -25,7 +25,10 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size S
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (self-review, for TASK-344, AC-48): the core's `SignInRequestSchema` (spec 012's, unchanged here) refuses `redacted+x@invalid` (single-label domain) and a unicode local part (`zoë@example.test`) with a bare `303` to the sign-in page, no `?state=sent`, no stored return path, no mail. AC-48 wants the same bytes as `?state=sent` for `redacted+x@invalid`; the buyer route (or a surface-level form schema, which would be a further core change) must decide it. Proven in `tests/integration/auth-core-extension.test.ts` "plus addressing ...".
+- 2026-11-04 (self-review, for TASK-344): `signOutEverywhere(userId)` deletes every `sessions` row of the user on every surface (C.3's words, AC-53), so a founder who is admin, florist and buyer is signed out of admin and the vendor inbox too. If the founder wants only buyer sessions, it is a one-line scope on the token prefix.
+- 2026-11-04 (self-review, not this task's scope): `tests/integration/auth-adapter.test.ts` "the keys into users exist with their delete rules" fails on `origin/main` before and after this change (the FK list lacks `admin_order_action_actor_user_id_users_id_fk` and later keys); it needs its own row.
+- 2026-11-04 (for the orchestrator): spec 012 §2.2's surface table gains the `buyer` row (spec 018 C.18); the spec text was not edited here.
 
 ## Escalations
 
@@ -40,10 +43,11 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04 B351: core extension built in `src/lib/auth/{schema,surface}.ts` and two mail tags in `mailer.ts`; tests `tests/unit/auth-core-extension.test.ts` (55) and `tests/integration/auth-core-extension.test.ts` (16) green on a local PG16; spec 012's and 011's suites unmodified and green. Next: self-review mutations, PR ready.
+- 2026-11-04 B351: 26 mutations, each red; one survivor (pagesFor `//` check) closed by a stronger case. PR opened and marked ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR](https://github.com/itsahmeds/flowers-overseas/pulls?q=head%3Atask%2FTASK-351-buyer-surface): the additive core extension of spec 018 §14 C.3 and C.4 in `src/lib/auth/schema.ts` (`name` `buyer`, `cookiePath` `/` covering every path, optional `pagesFor`, `returnTo`, `afterSignIn`) and `src/lib/auth/surface.ts` (`pagesOf`, `isSafeReturnPath`, locale-aware `requestSignIn`/`confirm`/`signOut`/`signInLocation`, `renderEmail(link, email, { locale })`, the return path stored in and read from the surface's `callback-url` cookie and kept from Auth.js, `afterSignIn` undone on failure, `signOutEverywhere`), plus the mail tags `buyer_sign_in` and `occasion_reminder`. Tests: unit 55 (`tests/unit/auth-core-extension.test.ts`), integration 16 (`tests/integration/auth-core-extension.test.ts`, local PG16). Spec 012's `auth-core.test.ts` (23) and spec 011's `florist-auth.test.ts` (17), `auth-after` (1) and the auth unit files (139) pass unmodified before and after. No migration. `src/lib/auth/buyer.ts`, its route, pages and T14 are TASK-344's. No build, browser or CI run (work order 2026-11-04).
