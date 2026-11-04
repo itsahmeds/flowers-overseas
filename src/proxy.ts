@@ -22,6 +22,11 @@
  * route (its `303` and its `Set-Cookie: fo_dest`). The split reads the path and the country
  * registry only (`src/lib/chooser-routes.ts`), and it is a **rewrite**: the proxy redirects
  * nothing and sets no cookie.
+ *
+ * **Step 3's policy** (spec 013 §5.4, AC-2; TASK-262): on `/{locale}/checkout`, and only there,
+ * when both Stripe keys are configured, the proxy sends the pay-step content security policy with
+ * a per-request nonce (`src/lib/checkout-csp.ts`). Every other path, and checkout without the
+ * keys, keeps the static policy of `next.config.ts`.
  */
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -32,6 +37,8 @@ import {
 } from "@/lib/basic-auth";
 import { FloristQuerySchema, isFloristPath } from "@/config/florists";
 import { chooserAddress, chooserTargetPath } from "@/lib/chooser-routes";
+import { checkoutCspHeaders } from "@/lib/checkout-csp";
+import { CSP_HEADER, CSP_REPORT_ONLY_HEADER } from "@/lib/csp";
 import { applicationBodyGate } from "@/lib/application-gate";
 import { appEnvironment } from "@/lib/env.schema";
 import {
@@ -144,6 +151,15 @@ export function proxy(request: NextRequest): NextResponse {
   if (query?.success === true && query.data.hl !== undefined) {
     headers.set(FLORIST_LANGUAGE_HEADER, query.data.hl);
   }
+  // Step 3's policy on the checkout steps page when both Stripe keys are set (spec 013 §5.4,
+  // AC-2 as ruled 2026-11-04; `src/lib/checkout-csp.ts`). On the request as well, because Next
+  // reads the nonce from there; any client-sent copy is dropped first, so the nonce is ours.
+  const checkoutCsp = checkoutCspHeaders(path, process.env);
+  if (checkoutCsp !== null) {
+    headers.delete(CSP_HEADER);
+    headers.delete(CSP_REPORT_ONLY_HEADER);
+    for (const { key, value } of checkoutCsp) headers.set(key, value);
+  }
   const chooser = chooserAddress(path);
   const response =
     chooser === undefined
@@ -155,6 +171,9 @@ export function proxy(request: NextRequest): NextResponse {
           },
         );
   response.headers.set(REQUEST_ID_HEADER, requestId);
+  for (const { key, value } of checkoutCsp ?? []) {
+    response.headers.set(key, value);
+  }
   // A florist page `GET` re-issues the session cookie for 30 more days (rolling, spec 011 §2).
   const rolled = rollingCookie({
     method,
