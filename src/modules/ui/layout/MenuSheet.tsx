@@ -10,7 +10,10 @@
  *  2. Send flowers, the full-width send pill;
  *  3. spec 003's `LocaleSwitcher`, mounted with its markup unchanged (spec 003 AC-3), and the
  *     currency as text with its localised label (AC-8: no cookie, the same for every visitor);
- *  4. the help line, the WhatsApp link the notice bar carries from `lg` up.
+ *  4. the help line, the WhatsApp link the notice bar carries from `lg` up;
+ *
+ * and, first, the header's search form (spec 045 §2.1, AC-1; TASK-404): the same GET form the `md`-up
+ * search panel holds, so the words can be typed without leaving the Menu.
  *
  * **A native disclosure** (`<details>`/`<summary>`): it opens and closes with JavaScript off, and
  * it is the one control below `md` besides the logo. With JavaScript on, the header's motion module (`MotionIsland`, TASK-194) adds `Esc`
@@ -60,6 +63,11 @@ export interface MenuSheetProps {
   readonly links: readonly MenuSheetLink[];
   /** Spec 003's `LocaleSwitcher`, as the header mounts it. */
   readonly switcher: ReactNode;
+  /**
+   * The header's search form (`HeaderSearchForm`, spec 045 §2.1; TASK-404), first in the panel;
+   * absent while search has no page.
+   */
+  readonly search?: ReactNode;
   readonly currency: { readonly code: string; readonly label: string };
   readonly help: { readonly href: string; readonly label: string };
   readonly className?: string;
@@ -76,6 +84,7 @@ export function MenuSheet({
   menu,
   links,
   switcher,
+  search,
   currency,
   help,
   className,
@@ -121,6 +130,11 @@ export function MenuSheet({
         className="bg-surface border-rule absolute start-0 end-0 top-full grid max-h-[calc(100dvh-65px)] gap-[16px] overflow-y-auto overscroll-contain border-b px-(--gutter-s) pt-[8px] pb-[24px] shadow-md"
         data-fo-menu-panel
       >
+        {search === undefined ? null : (
+          <div className="pt-[8px]" data-fo-menu-search="">
+            {search}
+          </div>
+        )}
         {menu}
         {links.length === 0 ? null : (
           <nav aria-label={navLabel}>

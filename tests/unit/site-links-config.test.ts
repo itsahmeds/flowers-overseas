@@ -189,6 +189,8 @@ describe("src/config/site-links.ts", () => {
     // so does a missing one.
     expect(published).toEqual([
       "locale-home",
+      // Spec 045 §2.1 (TASK-404): `/{locale}/{searchSegment}` answers 200 (TASK-402).
+      "search",
       // Spec 010 §14 A-founder-2026-10-22 D10 (TASK-349): `/{locale}/basket` answers 200.
       "basket",
       // Spec 011 §12 (TASK-210): the for-florists landing exists in all four locales.

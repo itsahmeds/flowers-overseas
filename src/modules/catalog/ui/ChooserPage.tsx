@@ -29,6 +29,11 @@ import { localeCode, registryLabel } from "./labels";
 
 export interface ChooserPageProps {
   readonly view: ChooserPageView;
+  /**
+   * Fields the form carries on to the choice (spec 045 §2.1; TASK-404): the search words `q` when
+   * the header's country-less search sent the visitor here with them. Hidden inputs, never a link.
+   */
+  readonly carry?: readonly { readonly name: string; readonly value: string }[];
 }
 
 /** Private-use markers a list of names is formatted around, so each name can become a link. */
@@ -64,7 +69,10 @@ function linkedList(
     });
 }
 
-export function ChooserPage({ view }: ChooserPageProps): ReactElement {
+export function ChooserPage({
+  view,
+  carry = [],
+}: ChooserPageProps): ReactElement {
   const t = useTranslations();
   const locale = localeCode(useLocale());
   const { state } = view;
@@ -99,6 +107,7 @@ export function ChooserPage({ view }: ChooserPageProps): ReactElement {
           }
           chips={view.chips}
           datalist={view.datalist}
+          hidden={carry}
           typed={state.kind === "noMatch" ? state.query : undefined}
         />
         {state.kind === "noMatch" ? (

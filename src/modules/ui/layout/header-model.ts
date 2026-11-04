@@ -27,6 +27,8 @@ import {
   linkLabelKey,
   siteLink,
 } from "../../../config/site-links.ts";
+import { CHOOSER_NEXT_WORDS } from "../../../config/commerce.ts";
+import { SEARCH_PARAM } from "../../../config/search.ts";
 import {
   documentFallbackLocale,
   getLocaleRegistry,
@@ -186,10 +188,51 @@ export function headerEndClusterItems(locale: string): readonly HeaderItem[] {
 }
 
 /**
- * Whether the header draws its search band: only once search has a page (spec 008 owns it).
- * Until then there is no band at all — not the field-shaped text §14 A4 drew, which looked like a
- * control and did nothing (spec 004 §14 A20).
+ * The phone row's search link (spec 045 §2.1, AC-1, AC-34; TASK-404): the locale's search page,
+ * with `?to={iso2}` when the page's URL names a destination with a shop (`iso2`, the mega menu's
+ * context: spec 043 §2 A's rule, the one the header's shop links use), or `undefined` while search
+ * has no page (not drawn, spec 004 A20). The country comes from the page's own URL only, never a
+ * cookie or a header, so the cached HTML is the same for every visitor (`/de/suche`,
+ * `/en/search?to=pl`).
  */
-export function headerSearchHref(locale: string): string | undefined {
-  return siteLinkHref(locale, SEARCH_LINK_ID);
+export function headerSearchHref(
+  locale: string,
+  iso2?: string | null,
+): string | undefined {
+  const path = siteLinkHref(locale, SEARCH_LINK_ID);
+  if (path === undefined) return undefined;
+  if (iso2 === undefined || iso2 === null) return path;
+  return `${path}?${new URLSearchParams({ [SEARCH_PARAM.to]: iso2.toLowerCase() }).toString()}`;
+}
+
+/** The header's one search form: where it goes and the destination it carries. */
+export interface HeaderSearchForm {
+  /** The locale's search path on a page with a destination, else the chooser's search path. */
+  readonly action: string;
+  /** The hidden `to` (lowercase ISO 3166-1), only on a page with a destination. */
+  readonly to: string | undefined;
+}
+
+/**
+ * The header's search form (spec 045 §2.1 as amended by §14 A-orchestrator-2026-10-24 items 1 and
+ * 4, AC-1, AC-34; TASK-404): on a page whose URL names a destination with a shop, the search path
+ * with a hidden `to`; on every other page the chooser path `/{locale}/{chooseSegment}/search`
+ * (spec 004 §14 A-founder-2026-10-24a item 3), which asks for the country and carries the words on
+ * (`/de/land-waehlen/search`). There is no default country: no code names one (spec 004 AC-73).
+ * `undefined` while search has no page.
+ */
+export function headerSearchForm(
+  locale: string,
+  iso2?: string | null,
+): HeaderSearchForm | undefined {
+  const path = siteLinkHref(locale, SEARCH_LINK_ID);
+  if (path === undefined) return undefined;
+  if (iso2 !== undefined && iso2 !== null) {
+    return { action: path, to: iso2.toLowerCase() };
+  }
+  const config = getLocaleRegistry().get(locale) ?? documentFallbackLocale();
+  return {
+    action: `/${config.code}/${config.chooseSegment}/${CHOOSER_NEXT_WORDS.search}`,
+    to: undefined,
+  };
 }

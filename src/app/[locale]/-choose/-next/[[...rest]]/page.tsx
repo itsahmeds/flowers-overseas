@@ -6,6 +6,9 @@
  *
  * Rendered per request, never cached: it reads the form's `to` (to show a no match) and the
  * remembered `fo_dest` (to lead with "Continue to {country}"), and it never forwards on its own.
+ * For `next=search` it also reads the search words `q` (the header's country-less search form
+ * sends them here; spec 045 §2.1, §2.4 item 3; TASK-404) and carries them in its form as a hidden
+ * field, so the choice lands on the results page with them; never in a link, never logged.
  * `noindex, nofollow` in its metadata and in its `X-Robots-Tag`, disallowed in `robots.txt`, in no
  * sitemap, no canonical and no hreflang. It sets no cookie and reads no IP, geo or language header.
  *
@@ -21,8 +24,10 @@ import type { ReactElement } from "react";
 import { PICKER_CHIPS } from "@/config/commerce";
 import { DEST_COOKIE_NAME } from "@/config/cookies";
 import { isLocaleCode } from "@/config/locales";
+import { SEARCH_PARAM } from "@/config/search";
 import {
   ChooserPage,
+  ChooserQuerySchema,
   ChooserSearchParamsSchema,
   chooserPageState,
   chooserPageView,
@@ -71,8 +76,23 @@ export default async function ChooserRoute({
   const { locale: requested, rest = [] } = await params;
   const locale = chooserLocale(requested);
   setRequestLocale(locale);
-  const to = ChooserSearchParamsSchema.parse(await searchParams);
+  const query = await searchParams;
+  const to = ChooserSearchParamsSchema.parse(query);
   const decision = await decideChooser(locale, rest, to);
+  // The search words, for `next=search` only, cleaned as the choice route cleans them.
+  const typed = query[SEARCH_PARAM.q];
+  const words =
+    decision.next.kind === "search"
+      ? ChooserQuerySchema.parse(
+          new URLSearchParams(
+            typeof typed === "string"
+              ? { [SEARCH_PARAM.q]: typed }
+              : Array.isArray(typed) && typed[0] !== undefined
+                ? { [SEARCH_PARAM.q]: typed[0] }
+                : {},
+          ),
+        )
+      : undefined;
   // The choice route sends a choice it cannot land back here with `to`; the page shows that
   // state and never answers a choice itself (no redirect, no cookie from here).
   const view = await chooserPageView(
@@ -84,5 +104,12 @@ export default async function ChooserRoute({
       chips: PICKER_CHIPS,
     },
   );
-  return <ChooserPage view={view} />;
+  return (
+    <ChooserPage
+      carry={
+        words === undefined ? [] : [{ name: SEARCH_PARAM.q, value: words }]
+      }
+      view={view}
+    />
+  );
 }
