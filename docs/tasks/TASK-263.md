@@ -30,6 +30,12 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (b) (2026-10-22):** spec 010 item 13 (f): the `test` and `live` confirmation renders every delivery of the purchase with its own projection under one page, the heading "Thank you. We have your order." while every delivery is in the paid projection. Spec 020a request 3 (§13 Q1 approved): an admin cancel with reason `buyer_cancel` reads "You cancelled this order" (TASK-362 proves it).
+- 2026-11-04 (builder PAY262, self-review; PR 487):
+  - **AC-46's date is impossible as written:** Friday 17 October 2026 does not exist (17 October 2026 is a Saturday). The tests use 2025-10-17, a Friday, so "Your flowers arrive in Kraków on Friday 17 October." matches exactly (the line prints no year); AC-52's Warsaw "Saturday 18 October" likewise. The spec (AC-46, AC-52, T-46, T-52) needs a one-line correction by the orchestrator.
+  - **No "Try again" link on "Your payment was not completed".** The board draws one to `/checkout?step=review`; AC-47 forbids any link to `/{locale}/checkout` on every status, `placed` included, so the AC wins and the state shows the sentence and the way home. A buyer reaches the resumed step 3 by going back; the designer and the spec should agree on one answer. The board's "Not charged" amount panel is not drawn either (the key is one sentence).
+  - **`test` shows spec 010's demo banner and the test label** as the `test` board draws them.
+  - **Refund line dates** under a later status print in UTC, not the destination's zone (the tracking page uses the zone).
+  - **Owed (founder 2026-11-04: no build, Playwright or screenshots):** T-06/T-46/T-47/T-52 e2e on the real page, axe and visual baselines (TASK-265), the 1440 and 390 pixel match.
 
 ## Escalations
 
@@ -43,11 +49,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (builder PAY262): `src/modules/payments/confirmation.ts` (the projection table, pure, and `getPaymentConfirmations`), `_views/PaymentConfirmation.tsx` registered for `test` and `live` (spec 018's block, the cancel line last in `<main>`, the dialog, the basket form of item 8), `payments.confirmation.yourOrder`; tests unit `payment-confirmation.test.tsx` (20) and integration `payment-confirmation.test.ts` (4, PG16).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#487](https://github.com/itsahmeds/flowers-overseas/pull/487) (TASK-262's feature PR). `confirmationProjection` maps A6.4's 26 statuses to §5.3's table (paid heading and arrival line; spec 018's buyer status with the arrival line and dated refund lines from `in_production` on; `notCompleted`; `cancelled`; the cancelled states keyed on `cancelledByOf`, refunding for the remaining balance until the succeeded refunds cover the order, then refunded for their sum; no reason ever returned). The `test`/`live` renderer mounts `PostPurchaseBlock`, `CancelLine` as the last element of `<main>` and `CancelDialog` exactly as TASK-340's reference renderer; a basket renders one heading, one block per delivery with its own projection line and cancel line, the masked email once, one total (AC-52). Tests: unit `tests/unit/payment-confirmation.test.tsx` 20 (26-status table, actor classes, amounts, the exact en-gb strings, no negative words, the line last, `no_partner_available`/`manual_reroute` byte-equal to `routed`, no edits over 26 statuses with a source scan, two deliveries), integration `tests/integration/payment-confirmation.test.ts` 4 on PG16 (26 walked statuses; buyer, admin `buyer_cancel` and no-partner expiry cancels through spec 013's `cancelOrder` and cancel handler, refunding then refunded). 12 mutations red (M1 to M8, M6b, I7, I8). Not run: e2e, visual baselines (desktop and mobile, en-gb, pl, /ar-XB), the pixel match.
