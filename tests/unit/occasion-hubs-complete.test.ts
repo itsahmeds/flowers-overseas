@@ -43,8 +43,13 @@ vi.mock("../../src/modules/catalog/read.ts", async (importOriginal) => {
   };
 });
 
-const { PRODUCT_COUNT_FLOOR, listingPages, listingView, publishedCountries } =
-  await import("../../src/modules/catalog/listing.ts");
+const {
+  PRODUCT_COUNT_FLOOR,
+  hubCoreState,
+  listingPages,
+  listingView,
+  publishedCountries,
+} = await import("../../src/modules/catalog/listing.ts");
 const { countProductsFor } = await import("../../src/modules/catalog/read.ts");
 
 afterEach(() => {
@@ -238,12 +243,20 @@ describe("AC-72: each Appendix A hub's country pages hold at least six cards (T-
           { from: FROM },
         );
         // The hub shows every core product it carries (spec 004 item 1; TASK-388), however few:
-        // its count is the core range's, never more than the hub's whole tagged set.
+        // its count is the core range's, never more than the hub's whole tagged set. A hub with
+        // none takes spec 008 §14 A-orchestrator-2026-11-04a's rule 1 or 2 (TASK-438).
         expect(view?.hubItems.length, `${locale} ${key}`).toBe(
           view?.resultCount,
         );
+        const state = await hubCoreState({
+          pageType: "occasionHub",
+          locale,
+          entityKey: key,
+        });
         expect(view?.resultCount ?? 0, `${locale} ${key}`).toBeLessThanOrEqual(
-          APPENDIX[key]?.count ?? 0,
+          (state?.coreCount ?? 0) > 0
+            ? (APPENDIX[key]?.count ?? 0)
+            : (state?.grid.length ?? 0),
         );
         // Q-24k's default: AC-72's six are read on the hub's country occasion pages (AC-73's).
         const countryPages = (await listingPages(locale)).filter(
@@ -318,9 +331,17 @@ describe("AC-73: the country occasion pages follow the hubs (T-73, unit half)", 
         // The country page lists the hub's whole tagged set (the hub itself shows only its core
         // products since TASK-388).
         expect(view?.resultCount, page.path).toBe(APPENDIX[key]?.count);
-        expect(hub?.resultCount ?? 0).toBeLessThanOrEqual(
-          view?.resultCount ?? 0,
-        );
+        // A hub that takes rule 1 shows the whole core range rather than its own (TASK-438).
+        const hubState = await hubCoreState({
+          pageType: "occasionHub",
+          locale: "en",
+          entityKey: key,
+        });
+        if ((hubState?.coreCount ?? 0) > 0) {
+          expect(hub?.resultCount ?? 0).toBeLessThanOrEqual(
+            view?.resultCount ?? 0,
+          );
+        }
       }
     }
     // 52 of the 59 country occasion pages are Appendix A occasions (Mother's Day is the rest).

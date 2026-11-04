@@ -148,7 +148,7 @@ import {
   ListingParamsSchema,
   ListingPageTypeSchema,
 } from "./schemas";
-import { coreRange, localSpecialSkus } from "./shop";
+import { type CoreRangeEntry, coreRange, localSpecialSkus } from "./shop";
 import { slugFor } from "./slugs";
 import type {
   Category,
@@ -1006,10 +1006,7 @@ export async function listingAlternatePaths(
     // A hub version with no core product that takes rule 2 is in no hreflang cluster, in any
     // environment (spec 008 §14 A-orchestrator-2026-11-04a, AC-16 as amended, AC-94; TASK-438).
     // Only the cluster drops it: every link to it (menu, switcher, popup) keeps its path.
-    if (
-      options.cluster === true &&
-      (await hubCoreState(here))?.coreStocked === false
-    ) {
+    if (options.cluster === true && (await hubCoreStocked(here)) === false) {
       continue;
     }
     const countrySlug =
@@ -1152,7 +1149,7 @@ export async function listingPageIndexability(
   const reviewed = entityRow?.reviewed ?? true;
   const iso2 = identity.countryIso;
   // A-orchestrator-2026-11-04a rule 2 (TASK-438): stated only by a hub that can take it.
-  const coreStocked = (await hubCoreState(identity))?.coreStocked;
+  const coreStocked = await hubCoreStocked(identity);
   return listingIndexability(
     identity,
     {
@@ -1369,9 +1366,11 @@ export async function hubCardView(
 async function hubCoreProducts(
   tagged: readonly Product[],
   locale: LocaleCode,
+  range?: readonly CoreRangeEntry[],
 ): Promise<readonly Product[]> {
   const bySku = new Map(tagged.map((product) => [product.sku, product]));
-  const core = (await coreRange(locale)).flatMap((entry) => {
+  // `range` lets a caller walking every hub of a locale read the core range once.
+  const core = (range ?? (await coreRange(locale))).flatMap((entry) => {
     const product = bySku.get(entry.sku);
     // A product with no slug in this locale has no page to choose a country for.
     return product === undefined ||
@@ -1443,7 +1442,52 @@ export async function hubCoreState(
   identity: ListingIdentity,
   tagged?: readonly Product[],
 ): Promise<HubCoreState | undefined> {
-  const { pageType, entityKey, locale } = identity;
+  const hub = await hubTagged(identity, tagged);
+  if (hub === undefined) return undefined;
+  const own = await hubCoreProducts(hub.tagged, identity.locale);
+  const coreStocked = hub.statesTerm ? own.length > 0 : undefined;
+
+  if (own.length > 0) {
+    return { coreCount: own.length, rule: "own", coreStocked, grid: own };
+  }
+  if (hub.statesTerm) {
+    return { coreCount: 0, rule: "unstocked", coreStocked, grid: [] };
+  }
+  // Rule 1: the whole core range, each product once, in the order every hub grid uses.
+  return {
+    coreCount: 0,
+    rule: "wholeRange",
+    coreStocked,
+    grid: await hubCoreProducts(await listProducts(), identity.locale),
+  };
+}
+
+/**
+ * `hubCoreState()`'s `coreStocked` alone, for the readers that need only the term (the robots
+ * meta, the sitemap row, the cluster): the same two readings, without drawing a grid, and without
+ * reading the core range for a hub whose kind never states the term.
+ */
+export async function hubCoreStocked(
+  identity: ListingIdentity,
+): Promise<boolean | undefined> {
+  const hub = await hubTagged(identity);
+  if (hub === undefined || !hub.statesTerm) return undefined;
+  return (await hubCoreProducts(hub.tagged, identity.locale)).length > 0;
+}
+
+/**
+ * A hub's tagged products and whether its kind states `coreStocked` (rule 2's kinds): a category
+ * of kind `productType` or `flowerType`, or an occasion every tagged product of which is a
+ * funeral piece. `undefined` for a page that is not a hub.
+ */
+async function hubTagged(
+  identity: ListingIdentity,
+  tagged?: readonly Product[],
+): Promise<
+  | { readonly tagged: readonly Product[]; readonly statesTerm: boolean }
+  | undefined
+> {
+  const { pageType, entityKey } = identity;
   if (pageType !== "categoryHub" && pageType !== "occasionHub") {
     return undefined;
   }
@@ -1451,8 +1495,6 @@ export async function hubCoreState(
   const kind = pageType === "categoryHub" ? "category" : "occasion";
   const products =
     tagged ?? (await productsFor(pageType, entityKey, kind, undefined));
-  const own = await hubCoreProducts(products, locale);
-
   const statesTerm =
     pageType === "categoryHub"
       ? UNSTOCKED_NOINDEX_CATEGORY_KINDS.includes(
@@ -1462,21 +1504,7 @@ export async function hubCoreState(
         products.every(
           (product) => product.productType === FUNERAL_PRODUCT_TYPE,
         );
-  const coreStocked = statesTerm ? own.length > 0 : undefined;
-
-  if (own.length > 0) {
-    return { coreCount: own.length, rule: "own", coreStocked, grid: own };
-  }
-  if (statesTerm) {
-    return { coreCount: 0, rule: "unstocked", coreStocked, grid: [] };
-  }
-  // Rule 1: the whole core range, each product once, in the order every hub grid uses.
-  return {
-    coreCount: 0,
-    rule: "wholeRange",
-    coreStocked,
-    grid: await hubCoreProducts(await listProducts(), locale),
-  };
+  return { tagged: products, statesTerm };
 }
 
 /**
@@ -2810,17 +2838,21 @@ export async function thinCoreHubs(
 ): Promise<readonly ThinCoreHub[]> {
   const thin: ThinCoreHub[] = [];
   for (const locale of locales) {
+    const range = await coreRange(locale);
     for (const page of await listingPages(locale)) {
       if (page.pageType !== "categoryHub" && page.pageType !== "occasionHub") {
         continue;
       }
       // Each hub's count is `hubCoreState()`'s, the grid's own reading (TASK-438).
-      const state = await hubCoreState({
+      const hub = await hubTagged({
         pageType: page.pageType,
         locale,
         ...(page.entityKey === undefined ? {} : { entityKey: page.entityKey }),
       });
-      const coreCount = state?.coreCount ?? 0;
+      const coreCount =
+        hub === undefined
+          ? 0
+          : (await hubCoreProducts(hub.tagged, locale, range)).length;
       if (coreCount >= PRODUCT_COUNT_FLOOR) continue;
       thin.push({
         locale,
