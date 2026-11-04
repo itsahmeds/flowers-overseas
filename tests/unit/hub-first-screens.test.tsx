@@ -29,7 +29,7 @@ import {
 import { CategoryHubPage } from "../../src/modules/catalog/ui/CategoryHubPage.tsx";
 import { OccasionHubPage } from "../../src/modules/catalog/ui/OccasionHubPage.tsx";
 import { OccasionsIndexPage } from "../../src/modules/catalog/ui/OccasionsIndexPage.tsx";
-import { formatDateParts, loadMessages } from "../../src/modules/i18n";
+import { loadMessages } from "../../src/modules/i18n";
 
 /**
  * The destinations hub reads spec 007's `corridorState()`; the R6 cases flip it per country here,
@@ -50,6 +50,7 @@ const { DestinationsHubPage } =
 
 const FROM = "2026-10-18";
 const NAMESPACES = [
+  "home",
   "shop",
   "categoryHub",
   "occasionHub",
@@ -125,7 +126,6 @@ function valueOf(key: string): unknown {
 
 const birthday = await view("occasionHub", "birthday");
 const sympathy = await view("occasionHub", "sympathy");
-const mothersDay = await view("occasionHub", "mothers-day");
 const anniversary = await view("occasionHub", "anniversary");
 const apology = await view("occasionHub", "i-am-sorry");
 const roses = await view("categoryHub", "roses");
@@ -182,36 +182,11 @@ describe("T-40: the approved hub strings, byte for byte (AC-38: A1–A5, A8; A24
   }
 });
 
-describe("R1: the band's register is the registry row's", () => {
-  it.each([
-    ["Birthday", birthday, OccasionHubPage, "warm"],
-    ["Sympathy", sympathy, OccasionHubPage, "quiet"],
-    ["Mother's Day", mothersDay, OccasionHubPage, "dated"],
-    ["roses", roses, CategoryHubPage, "ink"],
-    ["hand-tied bouquets", bouquets, CategoryHubPage, "cream"],
-  ] as const)(
-    "%s renders `data-register` %s",
-    (_name, built, Page, register) => {
-      expect(built.entity?.register).toBe(register);
-      const html = render(<Page view={built} />);
-      expect(hooks(html, "data-register")).toEqual([register]);
-    },
-  );
-
-  it("draws nothing rotated or taped in a band (A24 clause 2)", () => {
-    for (const html of [
-      render(<OccasionHubPage view={sympathy} />),
-      render(<OccasionHubPage view={birthday} />),
-      render(<CategoryHubPage view={roses} />),
-    ]) {
-      const band = /<section[^>]*data-fo-hub-band[\s\S]*?<\/section>/u.exec(
-        html,
-      )?.[0];
-      expect(band).toBeDefined();
-      expect(band).not.toMatch(/rotate|tilt|tape|postmark|stamp/u);
-    }
-  });
-});
+// R1 (the band's register), R2 (the lead figure), R3 (the dated hub's first-screen date cards)
+// and R4 (the category hub's destinations in the band) left with the band: the products-first hub
+// (spec 008 §14 A-founder-2026-10-24a "Hubs", AC-89; TASK-388) draws the head, the picker and the
+// grid, then the dates table, the copy and the destination rows. Their order and links are pinned
+// in `catalog-hub-pages.test.tsx` and `catalog-hub-core-cards.test.tsx`.
 
 describe("the deck and the about block (A23 clause 6, open item (iii))", () => {
   const deckOf = (html: string): string | undefined =>
@@ -252,114 +227,26 @@ describe("the deck and the about block (A23 clause 6, open item (iii))", () => {
     expect(block).toContain(birthday.intro?.slice(0, 40) ?? "-");
     // Bouquets: no eyebrow and no heading, the intro alone.
     const plain = render(<CategoryHubPage view={bouquets} />);
-    const bouquetAbout = plain.slice(plain.indexOf("data-fo-hub-about"));
+    const bouquetAbout = plain.slice(
+      plain.indexOf("data-fo-hub-about"),
+      plain.indexOf("data-fo-hub-destinations="),
+    );
     expect(bouquetAbout).not.toMatch(/<h2/u);
     expect(bouquetAbout).not.toContain('class="eyebrow');
   });
 
   it("names the grid with A3, and keeps the shipped heading where A3 reads badly", () => {
     expect(render(<OccasionHubPage view={birthday} />)).toMatch(
-      /id="hub-products-heading"[^>]*>Birthday <em[^>]*>flowers|id="hub-products-heading"[^>]*>(?:<em[^>]*>)?Birthday(?:<\/em>)? flowers/u,
+      /<section aria-label="Birthday flowers" data-fo-hub-products/u,
     );
+    // "I am sorry" carries no core product today, so its grid (and the name) is absent; with
+    // cards the grid takes the shipped heading as its name.
+    expect(apology.hubAbout?.plainProductsHeading).toBe(true);
     expect(
-      render(<OccasionHubPage view={apology} />).replace(/<[^>]+>/gu, ""),
-    ).toContain("Flowers for I am sorry");
-  });
-});
-
-describe("R2: the lead figure is the registry's `leadSku`", () => {
-  it("is the artboards' six, each in its hub's own product set", async () => {
-    for (const [pageType, entity, sku] of [
-      ["occasionHub", "birthday", "FO-BQ-023"],
-      ["occasionHub", "sympathy", "FO-BQ-016"],
-      ["occasionHub", "mothers-day", "FO-BQ-007"],
-      ["categoryHub", "roses", "FO-BQ-002"],
-      ["categoryHub", "hand-tied-bouquets", "FO-BQ-009"],
-      ["categoryHub", "plants", "FO-PT-002"],
-    ] as const) {
-      const built = await view(pageType, entity);
-      expect(built.hubLead?.productId, entity).toBe(sku);
-    }
-  });
-
-  it("falls back to the hub's first product where the registry names none", () => {
-    expect(anniversary.hubLead?.productId).toBe(
-      anniversary.hubItems[0]?.productId,
-    );
-  });
-});
-
-describe("R3: a dated hub's per-country dates in the first screen", () => {
-  const html = render(<OccasionHubPage view={mothersDay} />);
-
-  it("repeats the table: the same countries, in the table's order", () => {
-    const first = hooks(html, "data-fo-hub-first-date");
-    const table = hooks(html, "data-fo-hub-date");
-    expect(first).toHaveLength(7);
-    expect(first).toEqual(table);
-    // …and the first screen comes before the table.
-    expect(html.indexOf("data-fo-hub-first-date")).toBeLessThan(
-      html.indexOf('data-fo-hub-date="'),
-    );
-  });
-
-  it("prints each date as the parts of one `formatDateParts` value", () => {
-    for (const row of mothersDay.occasionDates ?? []) {
-      if (row.date === null) continue;
-      const parts = formatDateParts(
-        new Date(`${row.date}T12:00:00Z`),
-        "en-gb",
-        "UTC",
-      );
-      const card = new RegExp(
-        `data-fo-hub-first-date="${row.iso2}"[\\s\\S]*?>${parts.day}<[\\s\\S]*?${parts.month}`,
-        "u",
-      );
-      expect(html, row.iso2).toMatch(card);
-    }
-  });
-
-  it("links an entry only where its country occasion page exists", () => {
-    for (const row of mothersDay.occasionDates ?? []) {
-      expect(row.href, row.iso2).toMatch(/\/occasions\/mothers-day$/u);
-      expect(html).toMatch(
-        new RegExp(
-          `href="${row.href ?? "-"}"[^>]*data-fo-hub-first-date="${row.iso2}"|data-fo-hub-first-date="${row.iso2}"[^>]*href="${row.href ?? "-"}"`,
-          "u",
-        ),
-      );
-    }
-    // An evergreen hub's picker falls back to the category, but its date entries never do: it
-    // has none (§14 A1), and no entry links a category page.
-    expect(birthday.occasionDates?.some((row) => row.href !== undefined)).toBe(
-      false,
-    );
-  });
-});
-
-describe("R4: the category hub's destinations in the first screen", () => {
-  const html = render(<CategoryHubPage view={roses} />);
-  const band =
-    /<section[^>]*data-fo-hub-band[\s\S]*?<\/section>/u.exec(html)?.[0] ?? "";
-
-  it("puts every destination in the band, each one link named by `destinationLink`", () => {
-    expect(hooks(band, "data-fo-hub-destination")).toEqual([
-      "FR",
-      "DE",
-      "IT",
-      "NL",
-      "PL",
-      "RO",
-      "ES",
-    ]);
-    for (const destination of roses.links.destinations) {
-      expect(band).toContain(`href="${destination.href ?? "-"}"`);
-    }
-    expect(band).toContain('aria-label="See them with prices for Poland"');
-    expect(band.replace(/<[^>]+>/gu, " ")).toContain(
-      "We can make 15 of them there.",
-    );
-    expect(band).toContain("We show no price on this page");
+      render(
+        <OccasionHubPage view={{ ...apology, hubItems: birthday.hubItems }} />,
+      ),
+    ).toContain('aria-label="Flowers for I am sorry"');
   });
 });
 

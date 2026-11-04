@@ -27,9 +27,12 @@
  * are wrapped in `<bdi>` so a Latin product name inside an RTL run — `/ar-XB`, and Arabic when it
  * ships — cannot reorder the digits of the price beside it (T-30).
  *
- * **No approximate equivalents** (spec 004 §14 A-founder-2026-10-19b clause 2): the other
- * currencies are the product page's alone. The view model has no field for them, so there is
- * nothing here to print a second price line from. The `ItemList` builder reads the same `price`.
+ * **"From" and the equivalents line** (spec 004 §14 A-founder-2026-10-24a items 7 and 8, which
+ * reverse A-founder-2026-10-19b clause 2; spec 008 AC-6 as amended; TASK-389): a country card
+ * prints `catalog.price.from` around the smallest size's exact all-in price, the inclusive
+ * wording, and under it, smaller, the view model's `equivalents` through
+ * `catalog.price.equivalents` (absent where it is `null`), then item 10's reserved countdown box
+ * and, on a local special, `shop.card.localSpecial`. The `ItemList` builder reads no price at all.
  *
  * **Or no price at all** (spec 008 §14 **A3**, **AC-7**; TASK-112). A destination-less hub shows
  * the same card with the money removed: it takes a `HubCardView`, which is this schema without
@@ -67,6 +70,7 @@ import { Price } from "../primitives/Price.tsx";
 import { Stack } from "../primitives/layout.tsx";
 import { Display } from "../primitives/typography.tsx";
 
+import { equivalentsMessageValues } from "./equivalents.ts";
 import { type ListingCardView, hasCardPrice } from "./viewModel.ts";
 
 export interface ProductCardProps {
@@ -124,6 +128,11 @@ export interface ProductCardProps {
    * the hubs (TASK-388) and the menu's featured card reuse it.
    */
   readonly chooser?: boolean;
+  /**
+   * The listing's country name, resolved, for `shop.card.localSpecial` ("Only in {country}") on a
+   * card whose `localSpecial` is true (spec 008 AC-6; TASK-389). Without it no label prints.
+   */
+  readonly country?: string;
 }
 
 /** Where a card's own example label is displayed (`ProductCardProps.provenance`). */
@@ -151,6 +160,7 @@ export function ProductCard({
   priorityAt,
   qualifierBelow = false,
   chooser = false,
+  country,
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
   const shop = useTranslations("shop");
@@ -259,12 +269,28 @@ export function ProductCard({
           spec 003's price-display text). A hub card prints nothing here: the page says once why
           there is no price (spec 004 §14 A-founder-2026-10-19b clauses 1 and 4). */}
       {hasCardPrice(card) ? (
-        <Price
-          className="mt-[2px] md:mt-[6px]"
-          amount={formatMoney(card.price, locale)}
-          qualifier={catalog("price.inclusive")}
-          {...(qualifierBelow ? { qualifierBelow: true } : {})}
-        />
+        <>
+          {/* The country form (spec 008 AC-6 as amended; spec 004 §14 A-founder-2026-10-24a
+              items 7 and 8; TASK-389): "from" the smallest size's exact all-in price, the
+              inclusive wording, and under it, smaller, the equivalents line in item 7's order
+              (absent when the rate is past its display bound or the price is the fallback). */}
+          <Price
+            className="mt-[2px] md:mt-[6px]"
+            amount={catalog("price.from", {
+              price: formatMoney(card.price, locale),
+            })}
+            qualifier={catalog("price.inclusive")}
+            {...(qualifierBelow ? { qualifierBelow: true } : {})}
+            equivalents={
+              card.equivalents === null
+                ? undefined
+                : catalog(
+                    "price.equivalents",
+                    equivalentsMessageValues(card.equivalents, locale),
+                  )
+            }
+          />
+        </>
       ) : asks ? (
         <>
           {/* The reserved price box, with no price in it (the founder's "b", 2026-10-24). */}
@@ -330,6 +356,25 @@ export function ProductCard({
           {body}
         </a>
       )}
+      {hasCardPrice(card) ? (
+        <>
+          {/* Item 10's delivery line, in a box reserved now so the countdown (TASK-393) fills it
+              with no layout shift; empty and invisible until then (`.cm-cd.hold`). */}
+          <p
+            aria-hidden="true"
+            className="text-included invisible m-0 mt-[6px] flex min-h-[18px] items-center gap-[6px] text-xs font-bold"
+            data-fo-card-countdown=""
+          />
+          {card.localSpecial && country !== undefined ? (
+            <span
+              className="bg-leaf-wash text-ink mt-[6px] inline-flex min-h-[22px] items-center self-start rounded-full px-[9px] text-xs font-bold"
+              data-fo-card-local=""
+            >
+              {shop("card.localSpecial", { country })}
+            </span>
+          ) : null}
+        </>
+      ) : null}
       {lead ? null : note}
     </Stack>
   );

@@ -492,6 +492,7 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+    // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

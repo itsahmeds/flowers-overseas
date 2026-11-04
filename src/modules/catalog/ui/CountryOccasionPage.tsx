@@ -160,6 +160,7 @@ export function CountryOccasionPage({
           <ListingGrid
             cards={view.items}
             locale={code}
+            country={country}
             priority
             provenance="grid"
           />

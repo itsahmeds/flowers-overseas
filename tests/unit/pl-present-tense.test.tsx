@@ -49,6 +49,7 @@ const FUTURE = new RegExp(
 const FRESH = new Date("2026-09-09T12:00:00Z");
 
 const NAMESPACES = [
+  "home",
   "shop",
   "categoryHub",
   "occasionHub",

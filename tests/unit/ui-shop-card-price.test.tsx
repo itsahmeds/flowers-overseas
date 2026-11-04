@@ -4,10 +4,12 @@
  *
  * Rendered against the real `messages/*.json`, so every expected string is the one that ships:
  *
- *  1. a priced card prints `formatMoney(card.price)` and, beside it, the locale's resolved
- *     `catalog.price.inclusive`, and nothing else in the price element;
- *  2. no card prints an equivalents line yet; the country card's schema carries a nullable field
- *     for one since spec 004 §14 A-founder-2026-10-24a item 7 (TASK-381), which TASK-389 renders;
+ *  1. a priced card prints `catalog.price.from` around `formatMoney(card.price)` and, beside it,
+ *     the locale's resolved `catalog.price.inclusive` (spec 008 AC-6 as amended; spec 004 §14
+ *     A-founder-2026-10-24a item 8; TASK-389);
+ *  2. under it, smaller, the equivalents line where the view model carries one, never the card's
+ *     own currency, and none where the field is `null` (item 7, AC-105; TASK-389); then item 10's
+ *     reserved countdown box, and on a local special `shop.card.localSpecial`;
  *  3. a hub card prints the photograph and the name only: no `shop.card.noPrice`, no price element;
  *  4. the example label's three modes (`gridProvenanceMode`) and what the grid does with each card's
  *     own label: hidden at every width in an all-example grid, from `md` up in a mixed one, and
@@ -129,10 +131,10 @@ describe("a priced card: one price, with the locale's VAT-and-delivery words bes
       <ProductCard card={card} locale={locale} manifest={MANIFEST} />,
       locale,
     );
-    // The whole price element is the amount and the inclusive words: no "all in", no second
-    // amount, no equivalents.
+    // The whole price element is "from" the amount and the inclusive words: no "all in", no
+    // second amount, and no equivalents where the field is null.
     expect(priceText(html)).toBe(
-      `${formatMoney(card.price, locale)}${message(locale, "catalog", "price.inclusive")}`,
+      `${message(locale, "catalog", "price.from").replace("{price}", formatMoney(card.price, locale))}${message(locale, "catalog", "price.inclusive")}`,
     );
     expect(html.split('data-fo-price="card"')).toHaveLength(2);
   });
@@ -195,9 +197,99 @@ describe("a priced card: one price, with the locale's VAT-and-delivery words bes
   });
 });
 
-describe("no equivalents on a card (clause 2; A21's amended test bullet)", () => {
+describe("the equivalents line on a country card (item 7, AC-105, T-111)", () => {
+  const LINE: ProductCardView["equivalents"] = {
+    asOf: "2026-09-08",
+    amounts: [
+      { amountMinor: 3935, currency: "GBP" },
+      { amountMinor: 5331, currency: "USD" },
+      { amountMinor: 19_819, currency: "PLN" },
+    ],
+  };
+
   it.each(LOCALES)(
-    "%s: a fixture card renders no equivalents line",
+    "%s: prints the view model's line, in its order, under the price and smaller",
+    (locale) => {
+      const card: ProductCardView = { ...EUR_CARD, equivalents: LINE };
+      const html = render(
+        <ProductCard card={card} locale={locale} manifest={MANIFEST} />,
+        locale,
+      );
+      const values = equivalentsMessageValues(LINE!, locale);
+      const line = message(locale, "catalog", "price.equivalents")
+        .replace("{amounts}", values.amounts)
+        .replace("{date}", values.date);
+      expect(html.split("data-fo-price-equivalents")).toHaveLength(2);
+      const at = html.indexOf("data-fo-price-equivalents");
+      const span = html.slice(html.lastIndexOf("<span", at), at);
+      // Smaller than the price (the amount is the body size, bold; the line `text-xs`).
+      expect(span).toContain("text-xs");
+      expect(span).toContain("text-ink-subtle");
+      expect(decode(html.slice(at, html.indexOf("</span>", at)))).toContain(
+        line,
+      );
+      // The order is the view model's: GBP before USD before PLN.
+      const text = decode(html.slice(at, html.indexOf("</span>", at)));
+      const gbp = text.indexOf(formatMoney(LINE!.amounts[0]!, locale));
+      const usd = text.indexOf(formatMoney(LINE!.amounts[1]!, locale));
+      const pln = text.indexOf(formatMoney(LINE!.amounts[2]!, locale));
+      expect(gbp).toBeGreaterThan(-1);
+      expect(usd).toBeGreaterThan(gbp);
+      expect(pln).toBeGreaterThan(usd);
+      // Never the card's own currency.
+      expect(text).not.toContain(formatMoney(EUR_CARD.price, locale));
+    },
+  );
+
+  it("reserves the countdown box on every country card, invisible and empty (item 10)", () => {
+    const html = render(
+      <ProductCard card={EUR_CARD} locale="en" manifest={MANIFEST} />,
+      "en",
+    );
+    const box = /<p[^>]*data-fo-card-countdown=""[^>]*><\/p>/u.exec(html)?.[0];
+    expect(box).toBeDefined();
+    expect(box).toContain("invisible");
+    expect(box).toContain("min-h-[18px]");
+    expect(box).toContain('aria-hidden="true"');
+  });
+
+  it("prints `shop.card.localSpecial` with the listing's country on a local special, and nowhere else", () => {
+    const special: ProductCardView = { ...EUR_CARD, localSpecial: true };
+    const only = message("en", "shop", "card.localSpecial").replace(
+      "{country}",
+      "Rivendell",
+    );
+    const html = render(
+      <ProductCard
+        card={special}
+        country="Rivendell"
+        locale="en"
+        manifest={MANIFEST}
+      />,
+      "en",
+    );
+    expect(decode(html)).toContain(only);
+    expect(html.split("data-fo-card-local")).toHaveLength(2);
+    const plain = render(
+      <ProductCard
+        card={EUR_CARD}
+        country="Rivendell"
+        locale="en"
+        manifest={MANIFEST}
+      />,
+      "en",
+    );
+    expect(plain).not.toContain("data-fo-card-local");
+    expect(
+      render(
+        <ProductCard card={HUB_CARD} country="Rivendell" locale="en" />,
+        "en",
+      ),
+    ).not.toContain("data-fo-card-local");
+  });
+
+  it.each(LOCALES)(
+    "%s: a card whose field is null renders no equivalents line",
     (locale) => {
       const html = render(
         <ProductCard card={EUR_CARD} locale={locale} manifest={MANIFEST} />,
@@ -256,7 +348,7 @@ describe("a hub card: the photograph and the name only (clause 4; T-07 amended)"
       string,
       unknown
     >;
-    expect(shop, locale).not.toHaveProperty("card");
+    expect(shop["card"], locale).not.toHaveProperty("noPrice");
   });
 });
 

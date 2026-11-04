@@ -57,8 +57,8 @@ const APPROVED: Readonly<Record<string, string>> = {
   "shop.cardNote.heading": "Every one of these comes with a card, at no cost.",
   // `shop.listing.eyebrow` left this batch: spec 043 §14 A-founder-2026-10-22 item 1 (revised
   // 2026-10-24) removed the country occasion's eyebrow and its key (TASK-289).
-  "shop.note.label": "A note before you choose",
-  "shop.note.mark": "P.S.",
+  // `shop.note.label` and `shop.note.mark` left this batch: the products-first hubs print
+  // `shop.hub.noMoney` as one plain line, so the P.S. note has no renderer (TASK-388).
   "shop.root.tilesSubheading": "Narrow it down",
 };
 

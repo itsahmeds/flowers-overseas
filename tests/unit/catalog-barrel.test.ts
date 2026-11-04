@@ -487,6 +487,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/HubHero.tsx`,
+      // The products-first hub blocks (spec 008 §14 A-founder-2026-10-24a; TASK-388).
+      `${moduleDir}/ui/HubProductsFirst.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
       `${moduleDir}/ui/ListingChrome.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,

@@ -192,13 +192,10 @@
       "plant": "Something that is still there next season.",
       "roses": "Red for love, white for a loss, pink and orange for everything in between."
     },
-    "destinationCount": "{count, plural, one {Możemy tam wykonać # z nich.} few {Możemy tam wykonać # z nich.} many {Możemy tam wykonać # z nich.} other {Możemy tam wykonać # z nich.}}",
     "destinationLink": "See them with prices for {country}",
-    "destinationPending": "No page yet. This becomes a link the day we start delivering here.",
     "destinationsEyebrow": "First, the destination",
     "destinationsHeading": "Where are they?",
     "h1": "{entity} to send abroad",
-    "productsEyebrow": "Then, what we make",
     "productsHeading": "Our {entity}"
   },
   "checkout": {
@@ -1221,7 +1218,6 @@
     "destinationLink": "{entity} flowers for {country}",
     "destinationsHeading": "Where we have a page for it",
     "h1": "{entity}, country by country",
-    "productsEyebrow": "What we make for it",
     "productsHeading": "{entity} flowers",
     "productsHeadingPlain": "Flowers for {entity}"
   },
@@ -1362,6 +1358,9 @@
     "vat": "VAT {rate}"
   },
   "shop": {
+    "card": {
+      "localSpecial": "Only in {country}"
+    },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."
     },
@@ -1395,10 +1394,6 @@
     },
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
-    },
-    "note": {
-      "label": "A note before you choose",
-      "mark": "P.S."
     },
     "occasion": {
       "dateNote": "That is the date {country} keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.",

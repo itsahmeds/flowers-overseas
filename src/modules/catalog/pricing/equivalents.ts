@@ -16,11 +16,13 @@
  *    withheld. A native charged price (the charged currency is the catalogue currency — `/pl` to
  *    Poland, PLN) took no rate, so the equivalents use the latest snapshot available to the same
  *    render (the same `now`), and every leg must share that snapshot's `as_of`.
- *  - **(b) Mid rate.** `fxRateFor()` is the rate seam (it derives inverses and euro crosses, and
- *    it fails closed past `MAX_FX_AGE_HOURS`); the conversion here applies **no `FX_BUFFER_BP`**
+ *  - **(b) Mid rate.** `displayRateFor()` is the rate seam (the same derivation of inverses and
+ *    euro crosses as `fxRateFor()`, with spec 004 §14 A-founder-2026-10-24a item 7 (d)'s display
+ *    bound of `EQUIVALENTS_MAX_AGE_DAYS` instead of `MAX_FX_AGE_HOURS`; TASK-389); the conversion
+ *    here applies **no `FX_BUFFER_BP`**
  *    and **no psychological rounding**, because the line describes what the buyer pays, not what
  *    we would charge in that currency. The amount is rounded to the nearest minor unit (half up).
- *  - **(d) Stale fails closed.** `fxRateFor()` returning `null` for any leg, or a charged price
+ *  - **(d) Stale fails closed.** `displayRateFor()` returning `null` for any leg, or a charged price
  *    that is the stale-FX destination-currency fallback (`fxReasonKey`), yields `null`: no line at
  *    all, never a partial or stale one.
  *  - **(b) Never in structured data.** The result is a display value only. `offerProjection()`,
@@ -29,25 +31,53 @@
  * Pure in the sense AC-12 means: no clock (the instant is injected), no float, no `/` — the one
  * division is `divideMinorHalfUp()`'s `BigInt` one in `money.ts`.
  */
-import { type CurrencyCode, currencyConfig } from "@/config/currencies";
+import {
+  type CurrencyCode,
+  currencyConfig,
+  isCurrencyCode,
+} from "@/config/currencies";
+import { type LocaleCode, localeConfig } from "@/config/locales";
 
 import { IntegerMoneySchema } from "../schemas";
 import type { IntegerMoney, IsoDate, PriceProjection } from "../types";
 
-import { fxRateFor } from "./fx";
+import { displayRateFor } from "./fx";
 import { divideMinorHalfUp } from "./money";
 
 /**
- * The equivalents set, in display order (A21 clause 6 (b)). USD is **equivalent-only**: it has a
- * `currencies.ts` row and an ECB rate so it can be converted *to*, but its `currency.USD` flag is
- * off, so it is never charged, never prominent and never in `priceTable()`.
+ * The equivalents set, in display order (spec 004 §14 A-founder-2026-10-24a item 7 (b): "then
+ * GBP, EUR, USD, PLN"; TASK-389). The locale's display currency goes first when it is not the
+ * displayed one (`equivalentsOrder()`). USD is **equivalent-only**: it has a `currencies.ts` row
+ * and an ECB rate so it can be converted *to*, but its `currency.USD` flag is off, so it is never
+ * charged, never prominent and never in `priceTable()`.
  */
 export const EQUIVALENT_CURRENCIES = [
-  "EUR",
   "GBP",
-  "PLN",
+  "EUR",
   "USD",
+  "PLN",
 ] as const satisfies readonly CurrencyCode[];
+
+/**
+ * The currencies of one line, in item 7's order: `lead` (the locale's display currency) first
+ * when it is in the set and is not `displayed`, then the rest of `EQUIVALENT_CURRENCIES`, never
+ * `displayed`. Pure.
+ */
+export function equivalentsOrder(
+  displayed: CurrencyCode,
+  lead?: CurrencyCode,
+): readonly CurrencyCode[] {
+  const first =
+    lead !== undefined && lead !== displayed && isEquivalentCurrency(lead)
+      ? [lead]
+      : [];
+  return [
+    ...first,
+    ...EQUIVALENT_CURRENCIES.filter(
+      (code) => code !== displayed && !first.includes(code),
+    ),
+  ];
+}
 
 /** The message key the equivalents line is printed with: `{amounts}` and `{date}`. */
 export const EQUIVALENTS_LABEL_KEY = "catalog.price.equivalents" as const;
@@ -122,6 +152,7 @@ function isEquivalentCurrency(
 export async function priceEquivalents(
   charged: ChargedPrice,
   now: Date,
+  options: { readonly locale?: LocaleCode } = {},
 ): Promise<PriceEquivalents | null> {
   if (charged.fxReasonKey !== undefined) return null;
   const price = IntegerMoneySchema.parse(charged.displayPrice);
@@ -134,9 +165,16 @@ export async function priceEquivalents(
 
   const amounts: IntegerMoney[] = [];
   let asOf: IsoDate | undefined = native ? undefined : charged.fxAsOf;
-  for (const target of EQUIVALENT_CURRENCIES) {
-    if (target === price.currency) continue;
-    const rate = await fxRateFor(price.currency, target, now);
+  const leadCode =
+    options.locale === undefined
+      ? undefined
+      : localeConfig(options.locale).currencyDefault;
+  const lead =
+    leadCode !== undefined && isCurrencyCode(leadCode) ? leadCode : undefined;
+  for (const target of equivalentsOrder(price.currency, lead)) {
+    // The display bound (item 7 (d), AC-106): the same rate as `fxRateFor()` inside 48 hours,
+    // and still shown for `EQUIVALENTS_MAX_AGE_DAYS`. Never a charging rate.
+    const rate = await displayRateFor(price.currency, target, now);
     if (rate === null) return null;
     asOf ??= rate.asOf;
     if (rate.asOf !== asOf) return null;

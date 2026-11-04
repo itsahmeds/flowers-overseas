@@ -8,11 +8,12 @@
  * so the state in which its absence means something (CI serves a stale snapshot, where no line
  * would print anyway). On each page:
  *
- *  - every card's price element is `formatMoney(view.items[i].price)` and the locale's
- *    `catalog.price.inclusive`, in grid order, and `ItemList`'s `Offer` price is that same amount
- *    (schema price = visible price);
- *  - no card, and nothing on the page, carries an equivalents line (the card's field is `null`
- *    until TASK-389 renders it, spec 004 §14 A-founder-2026-10-24a item 7);
+ *  - every card's price element is `catalog.price.from` around `formatMoney(view.items[i].price)`,
+ *    the locale's `catalog.price.inclusive` and the equivalents line, in grid order (spec 008
+ *    AC-6 as amended; spec 004 §14 A-founder-2026-10-24a items 7 and 8; TASK-389), and that
+ *    amount is the product page's smallest size (the card says "from" the exact price there);
+ *  - at a fresh rate every card carries exactly one equivalents line, which never names the
+ *    card's own currency; at a stale rate (the fallback) none does (item 7 (d));
  *  - the grid's example label is **one** element, displayed at every width, before the grid: on the
  *    count line's row of a country listing, on the heading row of a hub; every card's own label
  *    is in the HTML and hidden;
@@ -26,7 +27,6 @@ import { describe, expect, it } from "vitest";
 import {
   type ListingView,
   listingView,
-  productJsonLd,
   productView,
 } from "../../src/modules/catalog";
 import { CategoryHubPage } from "../../src/modules/catalog/ui/CategoryHubPage.tsx";
@@ -34,11 +34,11 @@ import { CountryCategoryPage } from "../../src/modules/catalog/ui/CountryCategor
 import { CountryOccasionPage } from "../../src/modules/catalog/ui/CountryOccasionPage.tsx";
 import { CountryShopRootPage } from "../../src/modules/catalog/ui/CountryShopRootPage.tsx";
 import { OccasionHubPage } from "../../src/modules/catalog/ui/OccasionHubPage.tsx";
+import { formatMoney, loadMessages } from "../../src/modules/i18n";
 import {
-  formatMoney,
-  loadMessages,
-  moneyDecimalString,
-} from "../../src/modules/i18n";
+  type PriceEquivalentsView,
+  equivalentsMessageValues,
+} from "../../src/modules/ui";
 
 /** Inside the 48-hour window of the 2026-09-08 snapshot. */
 const FRESH = new Date("2026-09-09T12:00:00Z");
@@ -58,6 +58,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  "home",
+  "occasionsIndex",
 ] as const;
 
 function render(node: ReactElement, locale: string): string {
@@ -119,11 +121,39 @@ function priceTexts(html: string): string[] {
   return out;
 }
 
-function inclusive(locale: string): string {
+function prices(locale: string): {
+  inclusive: string;
+  from: string;
+  equivalents: string;
+} {
   const catalog = loadMessages(locale, ["catalog"])["catalog"] as {
-    price: { inclusive: string };
+    price: { inclusive: string; from: string; equivalents: string };
   };
-  return catalog.price.inclusive;
+  return catalog.price;
+}
+
+function inclusive(locale: string): string {
+  return prices(locale).inclusive;
+}
+
+/** The card's "from {price}" text in `locale` (`catalog.price.from`). */
+function fromText(
+  money: Parameters<typeof formatMoney>[0],
+  locale: Parameters<typeof formatMoney>[1],
+): string {
+  return prices(locale).from.replace("{price}", formatMoney(money, locale));
+}
+
+/** The equivalents line's text in `locale` (`catalog.price.equivalents`), or "" when absent. */
+function equivalentsText(
+  line: PriceEquivalentsView | null,
+  locale: Parameters<typeof formatMoney>[1],
+): string {
+  if (line === null) return "";
+  const values = equivalentsMessageValues(line, locale);
+  return prices(locale)
+    .equivalents.replace("{amounts}", values.amounts)
+    .replace("{date}", values.date);
 }
 
 /** The shop root's country slug in each locale. */
@@ -180,12 +210,12 @@ const HUB_PAGES = [
   },
   {
     name: "the occasion hub",
-    identity: { locale: "en", pageType: "occasionHub", entity: "mothers-day" },
+    identity: { locale: "en", pageType: "occasionHub", entity: "birthday" },
     page: (v: ListingView) => <OccasionHubPage view={v} />,
   },
 ] as const;
 
-describe("country listings at a fresh rate: one price per card, with the inclusive words, and no equivalents", () => {
+describe('country listings at a fresh rate: "from" the exact price, the inclusive words and one equivalents line per card', () => {
   it.each(COUNTRY_PAGES)("$name", async ({ identity, page, locale }) => {
     const v = await view(identity as Identity, FRESH);
     const html = render(page(v), locale);
@@ -193,17 +223,23 @@ describe("country listings at a fresh rate: one price per card, with the inclusi
     expect(v.items.length).toBeGreaterThan(0);
     expect(priceTexts(html)).toEqual(
       v.items.map(
-        (item) => `${formatMoney(item.price, locale)}${inclusive(locale)}`,
+        (item) =>
+          `${fromText(item.price, locale)}${inclusive(locale)}${equivalentsText(item.equivalents, locale)}`,
       ),
     );
-    expect(occurrences(html, LINE)).toBe(0);
-    // The field exists since TASK-381 (spec 004 item 7) and stays null until TASK-389 fills it.
-    for (const item of v.items) expect(item.equivalents).toBeNull();
+    // Item 7 (b): one line under every card's price, three other currencies, never its own.
+    expect(occurrences(html, LINE)).toBe(v.items.length);
+    for (const item of v.items) {
+      expect(item.equivalents, item.productId).not.toBeNull();
+      const codes = item.equivalents?.amounts.map((a) => a.currency) ?? [];
+      expect(codes).toHaveLength(3);
+      expect(codes).not.toContain(item.price.currency);
+    }
     expect(html).not.toContain("data-fo-fx-fallback");
   });
 
   it.each(["en", "en-gb", "de", "pl"] as const)(
-    "%s shop root: each card's price is the Offer.price the product page's JSON-LD emits",
+    "%s shop root: each card's price is the product page's smallest size, in the same currency",
     async (locale) => {
       const v = await view(
         { locale, pageType: "countryShopRoot", country: POLAND[locale] },
@@ -215,26 +251,12 @@ describe("country listings at a fresh rate: one price per card, with the inclusi
           { parameterised: false, now: FRESH },
         );
         if (pdp === undefined) throw new Error(`${item.productId}: no view`);
-        // The gate opened on the view (Phase 0 keeps it shut everywhere): the builder reads only
-        // the view, so the offer it would emit is this one.
-        const product = productJsonLd(
-          {
-            ...pdp,
-            country: { ...pdp.country, state: "live" as const },
-            delivery: { ...pdp.delivery, state: "live" as const },
-            indexability: { ...pdp.indexability, indexable: true },
-          },
-          (key) => key,
-          { baseUrl: "https://flowersoverseas.com" },
-        ).find((node) => node?.["@type"] === "Product");
-        const offer = product?.["offers"] as
-          Record<string, unknown> | undefined;
-        expect(offer?.["price"], item.productId).toBe(
-          moneyDecimalString(item.price),
+        // "from" the smallest size's exact all-in price (spec 004 item 8; `fromPriceProjection`):
+        // the cheapest tier the product page sells, in the currency it charges.
+        const smallest = pdp.tiers.reduce((low, tier) =>
+          tier.price.amountMinor < low.price.amountMinor ? tier : low,
         );
-        expect(offer?.["priceCurrency"], item.productId).toBe(
-          item.price.currency,
-        );
+        expect(item.price, item.productId).toEqual(smallest.price);
       }
     },
   );
@@ -280,7 +302,8 @@ describe("the grid's example label: one element, displayed at every width (claus
       expect(occurrences(html, "data-fo-grid-provenance=")).toBe(1);
       const at = html.indexOf("data-fo-grid-provenance=");
       expect(html.slice(at, at + 40)).toContain('"all"');
-      expect(at).toBeGreaterThan(html.indexOf('id="hub-products-heading"'));
+      // On the count line's row, above the grid (the products-first boards' `.cm-tool`).
+      expect(at).toBeGreaterThan(html.indexOf("data-fo-hub-count="));
       expect(at).toBeLessThan(html.indexOf("data-fo-product-card="));
       for (const part of cards(html)) {
         expect(part).toContain('data-fo-card-provenance="hidden"');
@@ -296,9 +319,14 @@ describe("a destination-less hub: no price on any card, and the reason said once
     expect(cards(html).length).toBeGreaterThan(0);
     expect(occurrences(html, LINE)).toBe(0);
     expect(html).not.toContain('data-fo-price="card"');
-    // Each hub card's text is its name and its (hidden) example label, and nothing else.
+    // Each hub card's text is its name, `shop.price.choose`, `shop.cta.chooseCountry` and its
+    // (hidden) example label, and nothing else (spec 008 AC-6's country-less form; TASK-388).
     const media = loadMessages("en", ["media"])["media"] as {
       provenance: { aiExample: string };
+    };
+    const ask = loadMessages("en", ["shop"])["shop"] as {
+      price: { choose: string };
+      cta: { chooseCountry: string };
     };
     cards(html).forEach((part, index) => {
       const card = part.slice(0, part.indexOf("</article>"));
@@ -306,7 +334,9 @@ describe("a destination-less hub: no price on any card, and the reason said once
         decode(card.slice(card.indexOf(">") + 1).replace(/<[^>]+>/gu, ""))
           .replace(media.provenance.aiExample, "")
           .trim(),
-      ).toBe(v.hubItems[index]?.name);
+      ).toBe(
+        `${v.hubItems[index]?.name}${ask.price.choose}${ask.cta.chooseCountry}`,
+      );
     });
     expect(decode(html)).not.toContain(
       "No price here. The price depends on the destination.",
@@ -326,10 +356,12 @@ describe("a stale rate: still one price per card, and the page says which curren
       const html = render(page(v), "en");
       expect(priceTexts(html)).toEqual(
         v.items.map(
-          (item) => `${formatMoney(item.price, "en")}${inclusive("en")}`,
+          (item) => `${fromText(item.price, "en")}${inclusive("en")}`,
         ),
       );
+      // The fallback price carries `fxReasonKey`, which hides the line (item 7 (d)).
       expect(occurrences(html, LINE)).toBe(0);
+      for (const item of v.items) expect(item.equivalents).toBeNull();
       expect(occurrences(html, "data-fo-fx-fallback")).toBe(1);
     },
   );

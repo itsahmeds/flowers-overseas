@@ -185,6 +185,43 @@ export async function isCore(
 }
 
 /**
+ * Of `skus`, the **local specials** of `iso2` (spec 004 §14 A-founder-2026-10-24a item 1; spec
+ * 008 AC-6's "Only in {country}"; TASK-389): the non-core products saleable in `iso2` and in no
+ * other country of the shop set, by the same saleability `coreRange()` reads (the demo mapping
+ * while the shop set is the demo stand-in). Empty when `iso2` is not in the shop set: a label that
+ * says "only here" needs a set to be the only one of. Reads no header, cookie or IP (AC-72).
+ */
+export async function localSpecialSkus(
+  locale: LocaleCode,
+  iso2: string,
+  skus: readonly string[],
+  data: ShopData = committedShopData,
+): Promise<ReadonlySet<string>> {
+  const { mode, countries } = await shopSet(locale, data);
+  if (!countries.includes(iso2)) return new Set();
+  const saleable = mode === "open" ? data.liveSaleable : data.demoSaleable;
+  const others = countries.filter((country) => country !== iso2);
+  const ranked = new Map(
+    (await data.products()).map((product) => [product.sku, product.coreRank]),
+  );
+  const specials = new Set<string>();
+  for (const sku of skus) {
+    const rank = ranked.get(sku);
+    if (rank !== undefined && rank !== null) continue;
+    if (!(await saleable(sku, iso2))) continue;
+    let elsewhere = false;
+    for (const other of others) {
+      if (await saleable(sku, other)) {
+        elsewhere = true;
+        break;
+      }
+    }
+    if (!elsewhere) specials.add(sku);
+  }
+  return specials;
+}
+
+/**
  * Is a core list of this many products inside `CORE_RANGE_SIZE`? The one comparison
  * `pnpm seed:check` and the admin share.
  */

@@ -63,6 +63,8 @@ const AMBER = "FO-BQ-001";
 const CURRENT = "2026-09-08";
 const FRESH = new Date("2026-09-09T12:00:00Z");
 const STALE = new Date("2026-09-11T00:00:01Z");
+/** Past the equivalents line's display bound: 2026-09-08 + 14 days, plus one millisecond. */
+const PAST_DISPLAY = new Date("2026-09-23T00:00:00.000Z");
 /** A publication date well past the bound at `FRESH`. */
 const OLD = "2026-08-31";
 
@@ -163,7 +165,8 @@ describe('A21 clause 6 as spec 009 §14 A12 move 2 reads it: one line, in "The p
     expect(view.fx.state).toBe("converted");
     const html = render(view);
     const expected =
-      "about 48.79 £, 245.68 PLN or 66.08 US$ at the rate of 8 September";
+      // Item 7's order (TASK-389): GBP, EUR, USD, PLN, the displayed euro left out.
+      "about 48.79 £, 66.08 US$ or 245.68 PLN at the rate of 8 September";
     expect(lines(block(html, "data-fo-pdp-price"))).toEqual([]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
     expect(pageLines(html)).toEqual([expected]);
@@ -182,7 +185,8 @@ describe('A21 clause 6 as spec 009 §14 A12 move 2 reads it: one line, in "The p
     });
     expect(view.price.fxAsOf).toBe(undefined);
     const expected =
-      "ok. 55,35 €, 47,46 GBP lub 64,29 USD po kursie z 8 września";
+      // Item 7's order (TASK-389): GBP, EUR, USD, the displayed złoty left out.
+      "ok. 47,46 GBP, 55,35 € lub 64,29 USD po kursie z 8 września";
     const html = render(view);
     expect(lines(block(html, "data-fo-pdp-price"))).toEqual([]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
@@ -213,21 +217,32 @@ describe('A21 clause 6 as spec 009 §14 A12 move 2 reads it: one line, in "The p
     }
   });
 
-  it("prints no line past the 48-hour bound, converted page or native", async () => {
+  it("past the 48-hour bound: no line on the fallback; the native page keeps its line to the display bound", async () => {
     for (const locale of LOCALES) {
       const view = await viewOf(locale, { now: STALE });
       // `/pl` to Poland is charged in złoty with no rate (native); every other locale falls back
-      // to złoty and says so. Either way no leg is current, so no line.
+      // to złoty and says so. The fallback carries `fxReasonKey`, which hides the line; the native
+      // price converts nothing it charges, so its line holds through `as_of + 14` (spec 004 §14
+      // A-founder-2026-10-24a item 7 (d), AC-106; TASK-389).
       expect(view.fx.state, locale).toBe(
         locale === "pl" ? "native" : "fallback",
       );
-      expect(view.equivalents, locale).toEqual({});
       const html = render(view);
-      expect(occurrences(html, LINE), locale).toBe(0);
+      if (locale === "pl") {
+        expect(view.equivalents.price?.asOf, locale).toBe(CURRENT);
+        expect(pageLines(html), locale).toHaveLength(1);
+      } else {
+        expect(view.equivalents, locale).toEqual({});
+        expect(occurrences(html, LINE), locale).toBe(0);
+      }
       expect(occurrences(html, "data-fo-fx-notice"), locale).toBe(
         locale === "pl" ? 0 : 1,
       );
     }
+    // One millisecond past the display bound the native line goes too.
+    const past = await viewOf("pl", { now: PAST_DISPLAY });
+    expect(past.equivalents).toEqual({});
+    expect(occurrences(render(past), LINE)).toBe(0);
   });
 });
 

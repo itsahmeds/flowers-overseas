@@ -18,7 +18,10 @@
  * white card with the airmail edge (the home's one device), the label a 25 px line (20 px on a
  * phone) under the page's own `<h1>`, the country buttons one sideways row on a phone, and no
  * history hook: Back from the shop root returns to the home, which the chooser's replace would
- * skip. The selector's flat panel is TASK-384's skin.
+ * skip. `variant="flat"` is the hubs' (TASK-388; `category-hub-*` and `occasion-hub-*`
+ * `.cm-picker.flat`): the home's inline layout on a white card with a hairline instead of the
+ * shadow and the airmail edge, the label an `<h2>` (22 px on a phone, 25 px from `md`), and no
+ * history hook for the home's reason. The selector's flat panel is TASK-384's skin.
  *
  * `data-fo-choose` is the motion module's hook: with JavaScript on, the submit becomes
  * `location.replace()` of the same GET, so the chooser leaves the history (AC-79). With a
@@ -43,7 +46,7 @@ export interface CountryPickerChoice {
 export interface CountryPickerProps {
   /** The chooser path of the page the visitor wanted, no country and no query. */
   readonly action: string;
-  readonly variant: "page" | "home";
+  readonly variant: "page" | "home" | "flat";
   /** `home.picker.label`. */
   readonly label: string;
   /** `home.picker.search`: the field's label and its placeholder. */
@@ -87,7 +90,9 @@ export function CountryPicker({
   typed,
   idPrefix,
 }: CountryPickerProps): ReactElement {
-  const home = variant === "home";
+  // The home and the hubs share the inline layout; only the card's skin and the label differ.
+  const home = variant !== "page";
+  const flat = variant === "flat";
   const headingId = `${idPrefix}-l`;
   const fieldId = `${idPrefix}-to`;
   const listId = "fo-countries";
@@ -96,15 +101,28 @@ export function CountryPicker({
       action={action}
       method="get"
       aria-labelledby={headingId}
-      {...(home
+      {...(flat
         ? {
             className:
-              "airmail-edge bg-surface-card rounded-letter shadow-letter relative overflow-hidden px-[16px] pt-[18px] pb-[16px] md:px-[26px] md:pt-[24px] md:pb-[22px]",
-            "data-fo-home-picker": "",
+              "bg-surface-card rounded-letter relative overflow-hidden px-[16px] pt-[18px] pb-[16px] shadow-[inset_0_0_0_1px_var(--color-rule)] md:px-[26px] md:pt-[24px] md:pb-[22px]",
+            "data-fo-hub-picker": "",
           }
-        : { "data-fo-choose": "" })}
+        : home
+          ? {
+              className:
+                "airmail-edge bg-surface-card rounded-letter shadow-letter relative overflow-hidden px-[16px] pt-[18px] pb-[16px] md:px-[26px] md:pt-[24px] md:pb-[22px]",
+              "data-fo-home-picker": "",
+            }
+          : { "data-fo-choose": "" })}
     >
-      {home ? (
+      {flat ? (
+        <h2
+          id={headingId}
+          className="display m-0 mb-[10px] block text-[22px] leading-[1.2] [font-variation-settings:var(--font-variation-display)] md:mb-[12px] md:text-[25px]"
+        >
+          {label}
+        </h2>
+      ) : home ? (
         <p
           id={headingId}
           className="display m-0 mb-[8px] block text-[20px] leading-[1.2] [font-variation-settings:var(--font-variation-display)] md:mb-[12px] md:text-[25px]"

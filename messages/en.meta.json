@@ -1012,26 +1012,12 @@
     "sourceHash": "f647ed8788feac99d2b45ea110df02f10a6f52f54de9195ba370c0b2b70df9d4",
     "retained": true
   },
-  "categoryHub.destinationCount": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/category-hub-{desktop,mobile}.dc.html and occasion-hub-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-112)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "19ccf94a00fc535b720ff43fcd6bd4940a3e9816f1ce5040298f782a1ee2d138"
-  },
   "categoryHub.destinationLink": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
     "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "401d41f4d61cc74f76a6bb229c21b43d312434cde799f1b7907f154a4c186e57"
-  },
-  "categoryHub.destinationPending": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "8747594d0ba5fa6b00f21845df3a1f77eb21ad319439a3aee67fabfe9b700f73",
-    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
-    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "categoryHub.destinationsEyebrow": {
     "source": "human",
@@ -1053,13 +1039,6 @@
     "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
     "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "0b3c59d0436c6c910a8fc7635b5c027d697aa7432286a5a1423ed15251ac7a85"
-  },
-  "categoryHub.productsEyebrow": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/category-hub-{desktop,mobile}.dc.html and occasion-hub-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-112)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "49827550360bc1158ae932daab3416871ffe0f43e162946be9d1d6cc1f95da51"
   },
   "categoryHub.productsHeading": {
     "source": "human",
@@ -3766,13 +3745,6 @@
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "48695298cd5baa712cdae671b3a0f392d18e0082f1b882fc70f69776a4164b11"
   },
-  "occasionHub.productsEyebrow": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/category-hub-{desktop,mobile}.dc.html and occasion-hub-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-112)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "d2b2901ebd36c8640300a9b96366ce4707cac214167e51d3120f8f7d0babb7aa"
-  },
   "occasionHub.productsHeading": {
     "source": "human",
     "reviewed": true,
@@ -4158,6 +4130,13 @@
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "7d1e11c5aab8c80b7e6169b91dcb26aa7cc5930e44260f85665c3553029c81d1"
   },
+  "shop.card.localSpecial": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-04: recorded by the orchestrator with record-approval-389.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; the founder did not read this text",
+    "reviewedAt": "2026-11-04T00:12:04Z",
+    "sourceHash": "ec10005485b900bc0c769b8c4656061681acc67949118dbfd214faa5b3a019e8"
+  },
   "shop.cardNote.heading": {
     "source": "human",
     "reviewed": true,
@@ -4263,20 +4242,6 @@
     "reviewedBy": "founder (docs/design/wireframes/category-hub-{desktop,mobile}.dc.html and occasion-hub-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-112)",
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "d6c78659f21708394b63d5fd407783f26e51433cb3559df3339d7f98f7905a68"
-  },
-  "shop.note.label": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "c4eea6824149d50fa3efe20da911e3396308effc1996bba539b3f46f63250315",
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
-    "reviewedAt": "2026-10-03T21:49:22Z"
-  },
-  "shop.note.mark": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "073f4407e1c072ce2f793b3994691ddef81b1f31090225bf71aa144a76df99ba",
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
-    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.occasion.dateNote": {
     "source": "human",
