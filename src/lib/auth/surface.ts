@@ -32,6 +32,25 @@
  * straight there without spending the token. A used, unknown or expired token still lands on the
  * expired page.
  *
+ * **The buyer extension (spec 018 §14 A-founder-2026-10-22 C.3, C.4; TASK-351), additive.** A
+ * surface may name `buyer`, scope its cookies to `/` (which covers every path), and declare:
+ *
+ *  - `pagesFor(locale)`: the pages of a request locale, used instead of `pages` when the caller
+ *    passes a locale (`requestSignIn`, `confirm`, `signOut`, `signInLocation`); its answer is
+ *    parsed, and anything that is not a set of site paths falls back to `pages`. The email is
+ *    rendered with `renderEmail(link, email, { locale })`.
+ *  - `returnTo(path)`: the request may name a return path; one that passes `isSafeReturnPath` and
+ *    the predicate is stored in the surface's `callback-url` cookie (`Max-Age` one hour, the
+ *    link's life), anything else clears it. `confirm` reads the cookie, checks it again and lands
+ *    there, else on the locale's home, and clears it. The answer still does not depend on the
+ *    address (AC-2's bytes).
+ *  - `afterSignIn(userId, email)`: run once per successful confirm. When it throws, the confirm
+ *    commits nothing: the new session row is deleted, no cookie is sent, the token is put back
+ *    and the answer is the expired page.
+ *
+ * and every surface gains `signOutEverywhere(userId)`, which deletes every `sessions` row of the
+ * user. A surface that declares none of these (admin, florist) behaves exactly as before.
+ *
  * Session tokens are surface-bound (`{surface}.{32 random bytes}`, TASK-212): the one `sessions`
  * table serves admin and florists, and a token minted by one surface authenticates nothing on the
  * other, even for a person who is both an admin and a florist member.
@@ -48,6 +67,7 @@
  * transaction each. Auth.js's logger is routed through `src/lib/logger.ts` (redaction applies).
  */
 import { and, eq, gt } from "drizzle-orm";
+import { z } from "zod";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import type { EmailConfig } from "next-auth/providers/email";
 import { NextRequest, after } from "next/server";
@@ -67,6 +87,9 @@ import {
   ConfirmSignInSchema,
   SignInRequestSchema,
   type SignInState,
+  SurfaceLocaleSchema,
+  type SurfacePages,
+  SurfacePagesSchema,
 } from "./schema";
 import { claimSend } from "./send-limit";
 import {
@@ -115,6 +138,8 @@ export interface AuthSurfaceDeps {
   readonly renderEmail: (
     link: string,
     email: string,
+    /** The locale of the page the link was requested from (spec 018 §14 C.3); absent if none. */
+    context?: { readonly locale: string },
   ) => SignInEmail | Promise<SignInEmail>;
   /** The clock. */
   readonly now?: () => Date;
@@ -125,6 +150,34 @@ export interface AuthSurfaceDeps {
 /** Next's `after()`: the task runs once the response has been sent. */
 function deferAfterResponse(task: () => Promise<void>): void {
   after(task);
+}
+
+/** How long a stored return path lives: one hour, the life of the link it belongs to. */
+export const RETURN_PATH_MAX_AGE_SECONDS = 60 * 60;
+
+/** The longest return path the core stores. */
+const RETURN_PATH_MAX_LENGTH = 512;
+
+/**
+ * Whether `path` is a same-origin site path the core may store and land on (spec 018 §14 C.4):
+ * one or more segments of `[A-Za-z0-9_-]` after single slashes, nothing else. So no origin, no
+ * scheme, no `//`, no backslash, no `%` (an encoded anything), no dot segment, no query, no
+ * fragment, no trailing slash, no root. The surface's `returnTo` then decides which of these it
+ * admits.
+ */
+export function isSafeReturnPath(path: string): boolean {
+  return (
+    path.length <= RETURN_PATH_MAX_LENGTH &&
+    /^(?:\/[A-Za-z0-9_-]+)+$/u.test(path)
+  );
+}
+
+/** What the surface's route passes along with a request (spec 018 §14 C.3, C.4). */
+export interface SignInOptions {
+  /** The request's locale: the pages of `pagesFor(locale)` and the email's language. */
+  readonly locale?: string;
+  /** A return path for the sign-in to land on (`requestSignIn` only). */
+  readonly returnTo?: string;
 }
 
 /** The three cookie names of a surface. */
@@ -199,15 +252,22 @@ export interface AuthSurface {
   /** The Auth.js configuration (for the contract test and the route). */
   authConfig(): NextAuthConfig;
   /** `POST` of the email form. */
-  requestSignIn(request: Request): Promise<Response>;
+  requestSignIn(request: Request, options?: SignInOptions): Promise<Response>;
   /** `POST` of the confirm page's "Continue". */
-  confirm(request: Request): Promise<Response>;
+  confirm(request: Request, options?: SignInOptions): Promise<Response>;
   /** `POST` of the sign-out button. */
-  signOut(request: Request): Promise<Response>;
+  signOut(request: Request, options?: SignInOptions): Promise<Response>;
   /** The user id of a live session token, or null. */
   sessionUserId(sessionToken: string | undefined): Promise<string | null>;
-  /** Where the sign-in page sends a state. */
-  signInLocation(state?: SignInState): string;
+  /** Where the sign-in page sends a state, in the locale's pages when given. */
+  signInLocation(state?: SignInState, locale?: string): string;
+  /** The pages of `locale` (`pagesFor`), or the surface's `pages`. */
+  pagesOf(locale?: string): SurfacePages;
+  /**
+   * Deletes every `sessions` row of the user (spec 018 §14 C.3, C.7.2 "Sign out on all
+   * devices"), on every surface; answers how many there were.
+   */
+  signOutEverywhere(userId: string): Promise<number>;
   /**
    * A link for `userId` that lands on `callbackPath` once confirmed (spec 016 §5.2), or `null`
    * when the user has no address or the surface does not allow it now. Throws when the path is
@@ -259,10 +319,60 @@ export function createAuthSurface(
   const adapter = createAuthAdapter(run);
   const log = logger.child({ surface: config.name });
 
-  const signInLocation = (state?: SignInState): string =>
-    state === undefined
-      ? config.pages.signIn
-      : `${config.pages.signIn}?state=${state}`;
+  const underCookiePath = (path: string): boolean =>
+    config.cookiePath === "/" || path.startsWith(config.cookiePath);
+
+  /**
+   * The pages of `locale`: `pagesFor`'s answer when the locale is a tag and the answer is three
+   * site paths under the cookie path with no `//` (never a scheme-relative `Location`); else
+   * `pages`. A `pagesFor` that throws is a fallback too, never a 500.
+   */
+  function pagesOf(locale?: string): SurfacePages {
+    if (config.pagesFor === undefined || locale === undefined) {
+      return config.pages;
+    }
+    if (!SurfaceLocaleSchema.safeParse(locale).success) return config.pages;
+    let answer: unknown;
+    try {
+      answer = config.pagesFor(locale);
+    } catch {
+      return config.pages;
+    }
+    const parsed = SurfacePagesSchema.safeParse(answer);
+    if (!parsed.success) return config.pages;
+    const paths = Object.values(parsed.data);
+    return paths.every((path) => !path.includes("//") && underCookiePath(path))
+      ? parsed.data
+      : config.pages;
+  }
+
+  const signInLocation = (state?: SignInState, locale?: string): string => {
+    const signIn = pagesOf(locale).signIn;
+    return state === undefined ? signIn : `${signIn}?state=${state}`;
+  };
+
+  /** The usable locale of a request: a tag, on a surface with `pagesFor`; else none. */
+  const localeOf = (locale: string | undefined): string | undefined =>
+    config.pagesFor !== undefined &&
+    locale !== undefined &&
+    SurfaceLocaleSchema.safeParse(locale).success
+      ? locale
+      : undefined;
+
+  /** A return path the surface admits: safe in shape, and passing its `returnTo`. */
+  const returnPathAdmitted = (
+    path: string | null | undefined,
+  ): path is string =>
+    typeof path === "string" &&
+    config.returnTo !== undefined &&
+    isSafeReturnPath(path) &&
+    config.returnTo(path) === true;
+
+  /** The `callback-url` cookie storing `path`, or clearing it. Admitted paths need no escaping. */
+  const returnPathCookie = (path: string | undefined): string =>
+    path === undefined
+      ? `${names.callbackUrl}=; Path=${config.cookiePath}; Max-Age=0; Secure; HttpOnly; SameSite=Lax`
+      : `${names.callbackUrl}=${path}; Path=${config.cookiePath}; Max-Age=${String(RETURN_PATH_MAX_AGE_SECONDS)}; Secure; HttpOnly; SameSite=Lax`;
 
   const emailProvider: EmailConfig = {
     id: EMAIL_PROVIDER_ID,
@@ -332,7 +442,7 @@ export function createAuthSurface(
    * the mail — runs **after** the response (`defer`, Next's `after()` by default). The answer is
    * then the same bytes at the same moment for every address: no content and no timing oracle.
    */
-  async function sendLink(email: string): Promise<void> {
+  async function sendLink(email: string, locale?: string): Promise<void> {
     const identifier_hash = hashIdentifier(email);
     try {
       if (!(await config.allow(email))) {
@@ -351,10 +461,12 @@ export function createAuthSurface(
         });
         // The token is base64url, so it needs no escaping in a query value.
         const link = new URL(
-          `${config.pages.confirm}?t=${token}`,
+          `${pagesOf(locale).confirm}?t=${token}`,
           deps.siteOrigin(),
         );
-        const message = await deps.renderEmail(link.toString(), email);
+        const message = await (locale === undefined
+          ? deps.renderEmail(link.toString(), email)
+          : deps.renderEmail(link.toString(), email, { locale }));
         const mailer = (deps.mailer ?? getMailer)();
         await mailer.send({ tag: config.mailTag, to: email, ...message });
         log.info({ identifier_hash }, `${config.name}.sign_in.sent`);
@@ -367,20 +479,36 @@ export function createAuthSurface(
     }
   }
 
-  async function requestSignIn(request: Request): Promise<Response> {
-    if (!sameOrigin(request)) return seeOther(signInLocation());
+  async function requestSignIn(
+    request: Request,
+    options: SignInOptions = {},
+  ): Promise<Response> {
+    const locale = localeOf(options.locale);
+    if (!sameOrigin(request))
+      return seeOther(signInLocation(undefined, locale));
     let parsed: ReturnType<typeof SignInRequestSchema.safeParse>;
     try {
       parsed = SignInRequestSchema.safeParse(
         Object.fromEntries(await request.formData()),
       );
     } catch {
-      return seeOther(signInLocation());
+      return seeOther(signInLocation(undefined, locale));
     }
-    if (!parsed.success) return seeOther(signInLocation());
+    if (!parsed.success) return seeOther(signInLocation(undefined, locale));
     const { email } = parsed.data;
-    (deps.defer ?? deferAfterResponse)(() => sendLink(email));
-    return seeOther(signInLocation("sent"));
+    (deps.defer ?? deferAfterResponse)(() => sendLink(email, locale));
+    if (config.returnTo === undefined) {
+      return seeOther(signInLocation("sent", locale));
+    }
+    // The return path depends on the request alone, never on the address (AC-2's bytes).
+    const stored = new Headers();
+    stored.append(
+      "set-cookie",
+      returnPathCookie(
+        returnPathAdmitted(options.returnTo) ? options.returnTo : undefined,
+      ),
+    );
+    return seeOther(signInLocation("sent", locale), stored);
   }
 
   const callbackAdmitted = (path: string | null | undefined): path is string =>
@@ -464,8 +592,95 @@ export function createAuthSurface(
     return row.callbackPath;
   }
 
-  async function confirm(request: Request): Promise<Response> {
-    const expired = seeOther(signInLocation("expired"));
+  /** The live token row, for putting it back when `afterSignIn` fails. */
+  async function tokenRow(token: string): Promise<{
+    identifier: string;
+    expires: Date;
+    callbackPath: string | null;
+  } | null> {
+    const hashed = hashSignInToken(token, deps.secret());
+    const at = now();
+    return run(async (db) => {
+      const [row] = await db
+        .select({
+          identifier: verificationTokens.identifier,
+          expires: verificationTokens.expires,
+          callbackPath: verificationTokens.callbackPath,
+        })
+        .from(verificationTokens)
+        .where(
+          and(
+            eq(verificationTokens.token, hashed),
+            gt(verificationTokens.expires, at),
+          ),
+        );
+      return row ?? null;
+    });
+  }
+
+  /**
+   * Runs `afterSignIn` for the session Auth.js just created. On failure the confirm is undone:
+   * the session row is deleted and the token row put back, so nothing is half-committed and the
+   * same link works again. Answers whether the sign-in stands.
+   */
+  async function runAfterSignIn(
+    response: Response,
+    token: string,
+    row: { identifier: string; expires: Date; callbackPath: string | null },
+  ): Promise<boolean> {
+    const hook = config.afterSignIn;
+    if (hook === undefined) return true;
+    const sessionToken = readCookie(
+      response.headers
+        .getSetCookie()
+        .filter((cookie) => cookie.startsWith(`${names.sessionToken}=`))
+        .map((cookie) => cookie.split(";", 1)[0] ?? "")
+        .join("; "),
+      names.sessionToken,
+    );
+    try {
+      const owner =
+        sessionToken === undefined
+          ? undefined
+          : await run(async (db) => {
+              const [found] = await db
+                .select({ userId: sessions.userId, email: users.email })
+                .from(sessions)
+                .innerJoin(users, eq(users.id, sessions.userId))
+                .where(eq(sessions.sessionToken, sessionToken));
+              return found;
+            });
+      if (owner === undefined) throw new Error("no session after confirm");
+      await hook(owner.userId, normaliseEmail(owner.email));
+      return true;
+    } catch (error) {
+      log.error(
+        { error_name: error instanceof Error ? error.name : "unknown" },
+        `${config.name}.sign_in.after_failed`,
+      );
+      if (sessionToken !== undefined)
+        await adapter.deleteSession?.(sessionToken);
+      await run((db) =>
+        db
+          .insert(verificationTokens)
+          .values({
+            identifier: row.identifier,
+            token: hashSignInToken(token, deps.secret()),
+            expires: row.expires,
+            callbackPath: row.callbackPath,
+          })
+          .onConflictDoNothing(),
+      );
+      return false;
+    }
+  }
+
+  async function confirm(
+    request: Request,
+    options: SignInOptions = {},
+  ): Promise<Response> {
+    const locale = localeOf(options.locale);
+    const expired = seeOther(signInLocation("expired", locale));
     if (!sameOrigin(request)) return expired;
     let parsed: ReturnType<typeof ConfirmSignInSchema.safeParse>;
     try {
@@ -477,11 +692,25 @@ export function createAuthSurface(
     }
     if (!parsed.success) return expired;
     // Read before Auth.js spends the token (its row, and the path with it, is deleted on use).
-    let landing = config.pages.home;
+    let landing = pagesOf(locale).home;
+    let fromToken = false;
     if (config.callbackAllowed !== undefined) {
       const path = (await liveToken(parsed.data.t))?.callbackPath;
-      if (callbackAdmitted(path)) landing = path;
+      if (callbackAdmitted(path)) {
+        landing = path;
+        fromToken = true;
+      }
     }
+    // The return path stored at request time (C.4), checked again at use.
+    if (!fromToken && config.returnTo !== undefined) {
+      const stored = readCookie(
+        request.headers.get("cookie"),
+        names.callbackUrl,
+      );
+      if (returnPathAdmitted(stored)) landing = stored;
+    }
+    const spent =
+      config.afterSignIn === undefined ? null : await tokenRow(parsed.data.t);
     // Built in process and handed to Auth.js directly: never sent, never logged.
     const callback = new URL(
       `${config.basePath}/callback/${EMAIL_PROVIDER_ID}?${new URLSearchParams({ token: parsed.data.t, callbackUrl: config.pages.home }).toString()}`,
@@ -497,6 +726,17 @@ export function createAuthSurface(
     ]) {
       const value = request.headers.get(name);
       if (value !== null) headers.set(name, value);
+    }
+    // A surface with a return path owns its `callback-url` cookie (read above): Auth.js never
+    // sees it, so a malformed or planted value cannot fail the sign-in (`InvalidCallbackUrl`).
+    const cookieHeader = headers.get("cookie");
+    if (config.returnTo !== undefined && cookieHeader !== null) {
+      const kept = cookieHeader
+        .split(";")
+        .filter((part) => part.split("=", 1)[0]?.trim() !== names.callbackUrl)
+        .join(";");
+      if (kept.trim() === "") headers.delete("cookie");
+      else headers.set("cookie", kept);
     }
     let response: Response;
     try {
@@ -518,11 +758,32 @@ export function createAuthSurface(
         .getSetCookie()
         .some((cookie) => cookie.startsWith(`${names.sessionToken}=`));
     if (!signedIn) return expired;
-    return seeOther(landing, response.headers);
+    if (
+      spent !== null &&
+      !(await runAfterSignIn(response, parsed.data.t, spent))
+    ) {
+      return expired;
+    }
+    if (config.returnTo === undefined) {
+      return seeOther(landing, response.headers);
+    }
+    // The return path is used up: Auth.js's own `callback-url` cookie is replaced by a clearing one.
+    const landed = new Headers();
+    for (const cookie of response.headers.getSetCookie()) {
+      if (!cookie.startsWith(`${names.callbackUrl}=`)) {
+        landed.append("set-cookie", cookie);
+      }
+    }
+    landed.append("set-cookie", returnPathCookie(undefined));
+    return seeOther(landing, landed);
   }
 
-  async function signOut(request: Request): Promise<Response> {
-    if (!sameOrigin(request)) return seeOther(config.pages.home);
+  async function signOut(
+    request: Request,
+    options: SignInOptions = {},
+  ): Promise<Response> {
+    const locale = localeOf(options.locale);
+    if (!sameOrigin(request)) return seeOther(pagesOf(locale).home);
     const token = readCookie(request.headers.get("cookie"), names.sessionToken);
     if (token !== undefined) await adapter.deleteSession?.(token);
     const cleared = new Headers();
@@ -531,7 +792,22 @@ export function createAuthSurface(
       `${names.sessionToken}=; Path=${config.cookiePath}; Max-Age=0; Secure; HttpOnly; SameSite=Lax`,
     );
     log.info({}, `${config.name}.session.signed_out`);
-    return seeOther(signInLocation("signed-out"), cleared);
+    return seeOther(signInLocation("signed-out", locale), cleared);
+  }
+
+  async function signOutEverywhere(userId: string): Promise<number> {
+    const id = z.uuid().parse(userId);
+    const deleted = await run((db) =>
+      db
+        .delete(sessions)
+        .where(eq(sessions.userId, id))
+        .returning({ sessionToken: sessions.sessionToken }),
+    );
+    log.info(
+      { count: deleted.length },
+      `${config.name}.session.signed_out_everywhere`,
+    );
+    return deleted.length;
   }
 
   /** A rolling session is extended at most once a day (Auth.js's own `updateAge` rule). */
@@ -587,6 +863,8 @@ export function createAuthSurface(
     signOut,
     sessionUserId,
     signInLocation,
+    pagesOf,
+    signOutEverywhere,
     createSignInLink,
     signedInLanding,
   };

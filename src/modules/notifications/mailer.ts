@@ -43,6 +43,10 @@ export const mailTags = [
   "florist_application_alert",
   // Spec 018 §5.2 (TASK-339): T16, the tracking lookup's answer.
   "tracking_link",
+  // Spec 018 §14 A-founder-2026-10-22 C.3, C.7.4 (TASK-351): T14, the buyer's sign-in link, and
+  // T18, the occasion reminder.
+  "buyer_sign_in",
+  "occasion_reminder",
 ] as const;
 export type MailTag = (typeof mailTags)[number];
 
