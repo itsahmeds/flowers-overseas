@@ -1,9 +1,10 @@
 /**
  * The sign-in core's boundary schemas (spec 012 §2.2, §5.2; spec 011 §5.2; ruling R2; TASK-217).
  *
- * `AuthSurfaceSchema` is what a surface (admin here, the florist inbox in TASK-212) hands the
- * factory; `SignInRequestSchema` is the email form; `ConfirmSignInSchema` is the emailed link's
- * one parameter, verbatim from spec 012 §5.2.
+ * `AuthSurfaceSchema` is what a surface (admin here, the florist inbox in TASK-212, the buyer
+ * account of spec 018 §14 C.3 with TASK-351's additive fields) hands the factory;
+ * `SignInRequestSchema` is the email form; `ConfirmSignInSchema` is the emailed link's one
+ * parameter, verbatim from spec 012 §5.2.
  */
 import { z } from "zod";
 
@@ -16,6 +17,33 @@ const PathSchema = z
     /^\/[a-z0-9/_-]*[a-z0-9_-]$/u,
     "a path with a leading slash and no trailing slash",
   );
+
+/**
+ * The path a surface's cookies are scoped to: a site path as above, or `/` (spec 018 §14 C.3: the
+ * buyer's account lives under four locale prefixes and checkout reads its session).
+ */
+const CookiePathSchema = z.union([z.literal("/"), PathSchema]);
+
+/** The three pages of a surface. */
+export const SurfacePagesSchema = z
+  .object({
+    /** The sign-in page; its `?state=` names `sent`, `expired`, `signed-out`. */
+    signIn: PathSchema,
+    /** The confirm page the emailed link opens (`GET` renders "Continue"). */
+    confirm: PathSchema,
+    /** Where a confirmed sign-in lands. */
+    home: PathSchema,
+  })
+  .strict();
+export type SurfacePages = z.infer<typeof SurfacePagesSchema>;
+
+/**
+ * A request locale the core accepts for `pagesFor` and `renderEmail` (spec 018 §14 C.3): a
+ * lower-case language tag such as `en`, `en-gb`, `de`, `pl`. Anything else uses `pages`.
+ */
+export const SurfaceLocaleSchema = z
+  .string()
+  .regex(/^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/u);
 
 /** A cookie-name prefix: `__Secure-fo-admin` gives `__Secure-fo-admin.session-token`. */
 const CookiePrefixSchema = z
@@ -31,26 +59,28 @@ const CookiePrefixSchema = z
  */
 export const AuthSurfaceSchema = z
   .object({
-    /** The surface's name, used in log events and the mail tag (`admin`, `florist`). */
-    name: z.enum(["admin", "florist"]),
+    /** The surface's name, used in log events and the mail tag (`admin`, `florist`, `buyer`). */
+    name: z.enum(["admin", "florist", "buyer"]),
     /** Where the Auth.js handlers answer, e.g. `/admin/api/auth`. */
     basePath: PathSchema,
-    /** The path every cookie of the surface is scoped to, e.g. `/admin`. */
-    cookiePath: PathSchema,
+    /** The path every cookie of the surface is scoped to, e.g. `/admin`; `/` covers every path. */
+    cookiePath: CookiePathSchema,
     cookiePrefix: CookiePrefixSchema,
     /** Session length in seconds. */
     sessionMaxAgeSeconds: z.number().int().positive(),
     rolling: z.boolean(),
-    pages: z
-      .object({
-        /** The sign-in page; its `?state=` names `sent`, `expired`, `signed-out`. */
-        signIn: PathSchema,
-        /** The confirm page the emailed link opens (`GET` renders "Continue"). */
-        confirm: PathSchema,
-        /** Where a confirmed sign-in lands. */
-        home: PathSchema,
-      })
-      .strict(),
+    /** The pages; for a surface with `pagesFor`, those of a request without a usable locale. */
+    pages: SurfacePagesSchema,
+    /**
+     * The pages of one request locale (spec 018 §14 C.3: `/{locale}/account` and its confirm
+     * page), used instead of `pages` when present. Its answer is parsed by the core; one that is
+     * not a set of site paths under the cookie path falls back to `pages`.
+     */
+    pagesFor: z
+      .custom<(locale: string) => SurfacePages>(
+        (value) => typeof value === "function",
+      )
+      .optional(),
     /** The mail tag of the surface's sign-in email. */
     mailTag: z.enum(mailTags),
     /** May this normalised address receive a link? */
@@ -65,14 +95,33 @@ export const AuthSurfaceSchema = z
     callbackAllowed: z
       .custom<(path: string) => boolean>((value) => typeof value === "function")
       .optional(),
+    /**
+     * The return paths a sign-in may land on (spec 018 §14 C.4). Present: `requestSignIn` stores
+     * an admitted path in the surface's `callback-url` cookie (and clears it otherwise), and
+     * `confirm` lands there when the path passes `isSafeReturnPath` and this predicate again.
+     * Absent: no cookie is written and every sign-in lands on home.
+     */
+    returnTo: z
+      .custom<(path: string) => boolean>((value) => typeof value === "function")
+      .optional(),
+    /**
+     * Called once per successful `confirm` with the user and the normalised address (spec 018
+     * §14 C.4, the first sign-in's customer). When it throws, the confirm commits nothing.
+     */
+    afterSignIn: z
+      .custom<(userId: string, email: string) => Promise<void>>(
+        (value) => typeof value === "function",
+      )
+      .optional(),
   })
   .strict()
   .refine(
     (surface) =>
-      surface.basePath.startsWith(`${surface.cookiePath}/`) &&
-      surface.pages.signIn.startsWith(surface.cookiePath) &&
-      surface.pages.confirm.startsWith(surface.cookiePath) &&
-      surface.pages.home.startsWith(surface.cookiePath),
+      surface.cookiePath === "/" ||
+      (surface.basePath.startsWith(`${surface.cookiePath}/`) &&
+        surface.pages.signIn.startsWith(surface.cookiePath) &&
+        surface.pages.confirm.startsWith(surface.cookiePath) &&
+        surface.pages.home.startsWith(surface.cookiePath)),
     { message: "every path of a surface lies under its cookie path" },
   );
 export type AuthSurfaceConfig = z.infer<typeof AuthSurfaceSchema>;

@@ -39,7 +39,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 B351: core extension built in `src/lib/auth/{schema,surface}.ts` and two mail tags in `mailer.ts`; tests `tests/unit/auth-core-extension.test.ts` (55) and `tests/integration/auth-core-extension.test.ts` (16) green on a local PG16; spec 012's and 011's suites unmodified and green. Next: self-review mutations, PR ready.
 
 ## Result
 
