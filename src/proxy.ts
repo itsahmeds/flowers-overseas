@@ -30,7 +30,7 @@
  *
  * **Search abuse protection** (spec 045 §2.8, §11, AC-26; TASK-403): a search address and
  * `/api/search/*` pass the process's limiter (`src/modules/search/gate.ts`, the one reader of
- * `CF-Connecting-IP`). Over the per-client limit the answer is 429, over the concurrency cap 503,
+ * the client's address). Over the per-client limit the answer is 429, over the concurrency cap 503,
  * each with `Retry-After`; a results request is then **rewritten** with that status to the results
  * route with `x-fo-search-gate` set, so the page renders the "rate limited" state and its form
  * without searching. The proxy deletes any client-sent `x-fo-search-gate` from every request. One

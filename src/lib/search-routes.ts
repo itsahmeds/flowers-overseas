@@ -102,14 +102,10 @@ export function searchRouteKind(path: string): "results" | "suggest" | null {
  * is covered without an edit; group 1 is the kept address.
  */
 export function searchLocationPattern(): RegExp {
-  const locales = LOCALES.map((locale) => literal(locale.code)).join("|");
-  const segments = [
-    ...new Set([
-      ...LOCALES.map((locale) => locale.pathSegments.search),
-      SEARCH_ROUTE_SEGMENT,
-    ]),
-  ]
-    .map(literal)
-    .join("|");
-  return new RegExp(`(\\/(?:${locales})\\/(?:${segments})\\/?)[?#].*$`, "u");
+  const addresses = LOCALES.flatMap((locale) =>
+    [locale.pathSegments.search, SEARCH_ROUTE_SEGMENT].map(
+      (segment) => `${literal(locale.code)}\\/${literal(segment)}`,
+    ),
+  ).join("|");
+  return new RegExp(`(\\/(?:${addresses})\\/?)[?#].*$`, "u");
 }
