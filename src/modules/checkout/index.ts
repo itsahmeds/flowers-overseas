@@ -191,6 +191,8 @@ export {
   type StepState,
 } from "./steps";
 export {
+  payAction,
+  paymentDeclinedAction,
   placeOrderAction,
   removeLineAction,
   saveCardAndBuyerStep,
@@ -220,12 +222,26 @@ export {
   type PlaceOutcome,
   type PlacementRefusal,
 } from "./place";
+// Spec 013 (TASK-262): step 3's pay and decline runners and the return route's target.
+export {
+  PAYMENT_RETURN_HEADERS,
+  paymentReturnLocation,
+  runPay,
+  runPaymentDeclined,
+  type DeclineOutcome,
+  type PayOutcome,
+} from "./pay";
 export {
   demoPaymentStep,
   paymentStepFor,
   registerPaymentStep,
   type CheckoutPaymentStep,
+  type ConfirmOutcome,
+  type PaymentPreparation,
+  type PaymentPrepareInput,
   type PaymentStepContext,
+  type PrepareOutcome,
+  type SyncOutcome,
 } from "./payment-step";
 
 // TASK-204: what `/{locale}/checkout` draws.

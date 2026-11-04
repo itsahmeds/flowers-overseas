@@ -4,6 +4,8 @@
  * `src/modules/checkout/start.ts`. `GET` answers 405; every answer is `no-store`.
  */
 import { checkoutMethodNotAllowed, startCheckout } from "@/modules/checkout";
+// Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
+import "@/modules/payments/wiring";
 
 /** Never cached, never prerendered: it writes a draft and sets a cookie. */
 export const dynamic = "force-dynamic";

@@ -40,6 +40,8 @@ import {
 } from "@/modules/ui/checkout";
 
 import { sampleValues } from "../_views/CheckoutView";
+// Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
+import "@/modules/payments/wiring";
 
 const ROUTING = new Set<string>(Object.values(CHECKOUT_FORM_FIELDS));
 const IDLE = { status: "idle" } as const;

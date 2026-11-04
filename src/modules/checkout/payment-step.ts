@@ -27,11 +27,60 @@ export interface PaymentStepContext {
   readonly orderIds: readonly string[];
 }
 
-/** One mode's payment step (spec 013 adds `test` and `live`). */
+/**
+ * What step 3 hands the Payment Element before any order exists (spec 013 §5.2 "Payment step",
+ * deferred intent): the amount and currency of the draft's confirmed total, the method types,
+ * automatic capture, the publishable key and the Element's locale. No intent exists yet.
+ */
+export interface PaymentPreparation {
+  readonly elementOptions: {
+    readonly mode: "payment";
+    readonly amountMinor: number;
+    readonly currency: string;
+    readonly methodTypes: readonly string[];
+    readonly captureMethod: "automatic";
+  };
+  readonly publishableKey: string;
+  readonly stripeLocale: string;
+}
+
+/** What a step asks the provider for at step 3: the draft's total and the declared country. */
+export interface PaymentPrepareInput {
+  readonly amountMinor: number;
+  readonly currency: string;
+  readonly buyerCountryDeclared: string;
+  readonly locale: string;
+}
+
+export type PrepareOutcome =
+  | { readonly kind: "ready"; readonly preparation: PaymentPreparation }
+  | { readonly kind: "payments_unavailable" };
+
+/** `confirm`'s answer: the intent's client secret for the island only, or why not. */
+export type ConfirmOutcome =
+  | { readonly kind: "confirm"; readonly clientSecret: string }
+  | { readonly kind: "payments_unavailable" }
+  | { readonly kind: "not_payable" };
+
+/** `sync`'s answer: whether the purchase is now paid, still unpaid, or what the decline was. */
+export type SyncOutcome =
+  | { readonly kind: "paid" }
+  | { readonly kind: "unpaid"; readonly messageKey: string | null };
+
+/**
+ * One mode's payment step (spec 013 adds `test` and `live`). `prepare`, `confirm` and `sync` are
+ * spec 013's (§5.2 "Payment step"): optional, so the demo step needs none of them.
+ */
 export interface CheckoutPaymentStep {
   readonly mode: DraftMode;
   /** Authorises every order of the purchase, inside the placement transaction. */
   authorise(context: PaymentStepContext): Promise<void>;
+  /** Step 3's Element options from the draft's total (no intent yet). */
+  prepare?(input: PaymentPrepareInput): Promise<PrepareOutcome>;
+  /** After placement commits: the purchase's one intent (a second call returns the same one). */
+  confirm?(purchaseId: string): Promise<ConfirmOutcome>;
+  /** Reads the provider and reconciles the purchase (the return route, a decline). */
+  sync?(purchaseId: string): Promise<SyncOutcome>;
 }
 
 /** The demo: no provider, no payment row; the guard authorises (§2, AC-2, AC-20). */

@@ -597,7 +597,7 @@ const repoFile = (relative: string): string =>
  * here is what `validateEnv()` does with the answer.
  */
 describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
-  it("carries APP_ENV and NEXT_PUBLIC_APP_ENV, and 41 keys in total", () => {
+  it("carries APP_ENV and NEXT_PUBLIC_APP_ENV, and 42 keys in total", () => {
     expect(ENV_KEYS).toContain(APP_ENV_KEY);
     expect(ENV_KEYS).toContain(NEXT_PUBLIC_APP_ENV_KEY);
     // PR #62's 26-key contract plus the two spec 040 adds. The number is spelled out because
@@ -607,8 +607,9 @@ describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
     // `SIGNED_LINK_SECRET`; spec 013 (TASK-260) adds `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`;
     // spec 022a (TASK-368) the two review keys: `REVIEW_TOKEN_SECRET`, `TRUSTPILOT_AFS_ADDRESS`;
     // spec 016 (TASK-331) `OPS_ALERT_EMAIL`; spec 011 (TASK-213) the application alert's
-    // `FLORIST_APPLICATIONS_NOTIFY_EMAIL`; spec 016 (TASK-335) `RESEND_WEBHOOK_SECRET`.
-    expect(ENV_KEYS).toHaveLength(41);
+    // `FLORIST_APPLICATIONS_NOTIFY_EMAIL`; spec 016 (TASK-335) `RESEND_WEBHOOK_SECRET`; spec 013
+    // (TASK-262) the Payment Element's `STRIPE_PUBLISHABLE_KEY`.
+    expect(ENV_KEYS).toHaveLength(42);
     expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
   });
 

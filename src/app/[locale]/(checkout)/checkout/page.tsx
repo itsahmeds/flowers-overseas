@@ -27,6 +27,8 @@ import {
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 import { CheckoutStatePage, CheckoutStepPage } from "../_views/CheckoutView";
 import { checkoutAction } from "./actions";
+// Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
+import "@/modules/payments/wiring";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
