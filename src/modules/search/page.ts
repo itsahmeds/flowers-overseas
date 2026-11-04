@@ -29,6 +29,7 @@ import {
 import { type LocaleCode, localeConfig } from "@/config/locales";
 import { logger } from "@/lib/logger";
 import { captureAlert } from "@/lib/sentry";
+import { type SearchEvent, searchEvent } from "@/modules/analytics";
 import {
   chooserPageView,
   countryDisplayName,
@@ -38,8 +39,10 @@ import {
 
 import { searchEngine } from "./default-engine";
 import type { SearchEngine } from "./engine";
+import { type RateLimiter, searchGate } from "./gate";
 import { type SearchParams, searchParamsSchema } from "./params";
 import type { SearchResultView } from "./schemas";
+import { normaliseForSearch, tokenise } from "./text";
 
 /** `/{locale}/{searchSegment}`: the bare search path, the page's canonical (§6). */
 export function searchPath(locale: LocaleCode): string {
@@ -82,10 +85,21 @@ export interface SearchPageView {
     readonly chips: readonly SearchCountryOption[];
     readonly datalist: readonly string[];
   } | null;
+  /**
+   * The GA4 `search` event (§8, AC-23; TASK-403): counts only, never the words; `null` with no
+   * words and in the "rate limited" state.
+   */
+  readonly analytics: SearchEvent | null;
 }
 
+/**
+ * `rateLimited` (§2.7, AC-26; TASK-403): the proxy refused the request (429 or 503, its status), or
+ * the process reached its concurrency cap between the proxy's check and this search. The view has
+ * the words and the destination for the form and nothing searched.
+ */
 export type SearchPageOutcome =
   | { readonly kind: "page"; readonly view: SearchPageView }
+  | { readonly kind: "rateLimited"; readonly view: SearchPageView }
   | { readonly kind: "notFound" };
 
 /** `alert=search.slow` (§11): more than 10 requests over 1 000 ms within 5 minutes. */
@@ -260,6 +274,112 @@ export async function searchPage(
               chips: picker.chips.map(({ code, name }) => ({ code, name })),
               datalist: picker.datalist,
             },
+      analytics: searchEvent({
+        locale,
+        destination: view.destination,
+        count: view.count,
+        tokens: tokenise(normaliseForSearch(view.query), locale).length,
+      }),
     },
   };
+}
+
+/** A result with nothing searched: the words for the form, the destination for its select. */
+function unsearched(
+  query: string,
+  destination: string | null,
+): SearchResultView {
+  return {
+    query,
+    destination,
+    dateApplied: null,
+    hiddenByDate: 0,
+    pages: [],
+    cards: [],
+    selection: [],
+    count: 0,
+    page: 1,
+    pageCount: 0,
+    didYouMean: null,
+    state: "empty",
+    countryLess: null,
+  };
+}
+
+/**
+ * The "rate limited" state's view (§2.7, AC-26; TASK-403): the parameters through the same
+ * schema, so the form keeps the words and the destination select its country, and **no search**:
+ * no engine call, no catalogue list, no request log (the proxy logged `search.rate_limited`).
+ */
+export async function rateLimitedSearchPage(
+  locale: LocaleCode,
+  raw: Readonly<Record<string, string | string[] | undefined>>,
+  deps: Pick<SearchPageDeps, "shops" | "takesDates"> = {},
+): Promise<SearchPageView> {
+  const shopCodes = (await (deps.shops ?? shopCountries)(locale)).filter(
+    isCountryIso2,
+  );
+  const params = searchParamsSchema({
+    shops: new Set(shopCodes.map((iso2) => iso2.toLowerCase())),
+    takesDates: deps.takesDates ?? takesDatesFromRegistry,
+  }).parse(raw);
+  const to =
+    params.to !== undefined && isCountryIso2(params.to.toUpperCase())
+      ? (params.to.toUpperCase() as CountryIso2)
+      : undefined;
+  return {
+    locale,
+    path: searchPath(locale),
+    result: unsearched(params.q, to ?? null),
+    destination:
+      to === undefined
+        ? null
+        : {
+            ...countryOption(to, locale),
+            orderingOpen: deliveryDatesOpen(to),
+          },
+    destinations: shopCodes.map((iso2) => countryOption(iso2, locale)),
+    occasions: [],
+    picker: null,
+    analytics: null,
+  };
+}
+
+export interface SearchRouteOptions {
+  /** The proxy refused this request (`x-fo-search-gate` was set by it). */
+  readonly refused: boolean;
+  readonly gate?: RateLimiter;
+  readonly deps?: SearchPageDeps;
+}
+
+/**
+ * What the route renders (§2.7, §2.8, AC-26; TASK-403): the "rate limited" view when the proxy
+ * refused the request, else one search counted against the process's concurrency cap (`enter()`
+ * before, `leave()` after, even when the search throws). A search that finds the cap reached here,
+ * after the proxy let it through, renders the "rate limited" state too: the cap is never exceeded.
+ */
+export async function searchRoutePage(
+  locale: LocaleCode,
+  raw: Readonly<Record<string, string | string[] | undefined>>,
+  options: SearchRouteOptions,
+): Promise<SearchPageOutcome> {
+  const deps = options.deps ?? {};
+  if (options.refused) {
+    return {
+      kind: "rateLimited",
+      view: await rateLimitedSearchPage(locale, raw, deps),
+    };
+  }
+  const gate = options.gate ?? searchGate();
+  if (!gate.enter()) {
+    return {
+      kind: "rateLimited",
+      view: await rateLimitedSearchPage(locale, raw, deps),
+    };
+  }
+  try {
+    return await searchPage(locale, raw, deps);
+  } finally {
+    gate.leave();
+  }
 }

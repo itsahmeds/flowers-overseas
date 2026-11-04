@@ -38,14 +38,18 @@
  *   `?t=` are replaced by `:token` (`scrubUrlTokens`, `./url-tokens.ts`) in `request.url`, the
  *   transaction name and every string of the breadcrumbs (a navigation's `from`/`to`, a fetch's
  *   `url`). The query string is dropped whole, as before.
+ * - **Search words** (spec 045 §2.8, AC-23; TASK-403): a `q` value becomes `:q`
+ *   (`scrubSearchTerms`, `./url-tokens.ts`) in every string of the same places and of `extra`,
+ *   `tags` and `contexts` (a span's `url.full` or `url.query`), in `beforeSend` and, for the SDK's
+ *   own buffer, in `beforeBreadcrumb`.
  * - Org region: EU (`de.sentry.io`), spec 001 §13 Q6. The region lives in the DSN the founder
  *   pastes into the Vercel env store; no code depends on it.
  */
 import { captureMessage, getCurrentScope } from "@sentry/nextjs";
-import type { ErrorEvent, EventHint } from "@sentry/nextjs";
+import type { Breadcrumb, ErrorEvent, EventHint } from "@sentry/nextjs";
 
 import { REDACTED, isRedactedLogKey, redact, scrubText } from "./logger";
-import { scrubUrlTokens } from "./url-tokens.ts";
+import { scrubSearchTerms, scrubUrlTokens } from "./url-tokens.ts";
 
 /**
  * Tags that may be attached to an event, with the reason each is not PII (spec 003 §11).
@@ -245,12 +249,20 @@ function scrubException(exception: { values?: unknown }): {
   };
 }
 
-/** Every string at any depth with its URL tokens replaced (arrays and plain records walked). */
+/** A URL (or any string) with its tokens and its search words replaced. */
+function scrubUrl(text: string): string {
+  return scrubSearchTerms(scrubUrlTokens(text));
+}
+
+/**
+ * Every string at any depth with its URL tokens and search words replaced (arrays and plain
+ * records walked).
+ */
 function scrubTokensDeep(
   value: unknown,
   seen = new WeakSet<object>(),
 ): unknown {
-  if (typeof value === "string") return scrubUrlTokens(value);
+  if (typeof value === "string") return scrubUrl(value);
   if (value === null || typeof value !== "object") return value;
   if (seen.has(value)) return value;
   seen.add(value);
@@ -275,9 +287,7 @@ export function beforeSend<T extends ScrubbableEvent>(event: T): T {
     scrubbed.request = {
       ...omit(scrubbed.request, ["cookies", "data", "query_string", "headers"]),
       ...(headers === undefined ? {} : { headers: scrubRecord(headers) }),
-      ...(typeof url === "string"
-        ? { url: scrubUrlTokens(scrubText(url)) }
-        : {}),
+      ...(typeof url === "string" ? { url: scrubUrl(scrubText(url)) } : {}),
     };
   }
 
@@ -285,16 +295,31 @@ export function beforeSend<T extends ScrubbableEvent>(event: T): T {
     scrubbed.user = scrubRecord(omit(scrubbed.user, ["ip_address"]));
   }
 
-  if (scrubbed.extra) scrubbed.extra = scrubRecord(scrubbed.extra);
-  if (scrubbed.tags) scrubbed.tags = scrubRecord(scrubbed.tags);
-  if (scrubbed.contexts) scrubbed.contexts = scrubRecord(scrubbed.contexts);
+  // A span's `url.full`, `url.query` or `http.query` can sit in any of these (spec 045 AC-23).
+  if (scrubbed.extra) {
+    scrubbed.extra = scrubTokensDeep(scrubRecord(scrubbed.extra)) as Record<
+      string,
+      unknown
+    >;
+  }
+  if (scrubbed.tags) {
+    scrubbed.tags = scrubTokensDeep(scrubRecord(scrubbed.tags)) as Record<
+      string,
+      unknown
+    >;
+  }
+  if (scrubbed.contexts) {
+    scrubbed.contexts = scrubTokensDeep(
+      scrubRecord(scrubbed.contexts),
+    ) as Record<string, unknown>;
+  }
   if (scrubbed.breadcrumbs !== undefined) {
     scrubbed.breadcrumbs = scrubTokensDeep(
       scrubBreadcrumbs(scrubbed.breadcrumbs),
     );
   }
   if (typeof scrubbed["transaction"] === "string") {
-    (scrubbed as Record<string, unknown>)["transaction"] = scrubUrlTokens(
+    (scrubbed as Record<string, unknown>)["transaction"] = scrubUrl(
       scrubbed["transaction"],
     );
   }
@@ -304,6 +329,16 @@ export function beforeSend<T extends ScrubbableEvent>(event: T): T {
   if (scrubbed.message !== undefined) scrubbed.message = REDACTED;
 
   return scrubbed;
+}
+
+/**
+ * `beforeBreadcrumb` (spec 045 §2.8, AC-23; TASK-403): the same breadcrumb scrub `beforeSend`
+ * applies, at the moment the SDK records the crumb, so a navigation's or a fetch's URL never holds
+ * the search words or a token even in the SDK's buffer. Returns a scrubbed copy.
+ */
+export function beforeBreadcrumb<T extends object>(crumb: T): T {
+  const [scrubbed] = scrubTokensDeep(scrubBreadcrumbs([crumb])) as T[];
+  return scrubbed ?? crumb;
 }
 
 /**
@@ -323,6 +358,7 @@ export interface SentryOptions {
   readonly sendDefaultPii: false;
   readonly tracesSampleRate: number;
   readonly beforeSend: (event: ErrorEvent, hint: EventHint) => ErrorEvent;
+  readonly beforeBreadcrumb: (breadcrumb: Breadcrumb) => Breadcrumb;
 }
 
 /**
@@ -370,5 +406,6 @@ export function sentryOptions(
     // No performance data in Phase 0; spec 025 sets a real rate when alerts exist.
     tracesSampleRate: 0,
     beforeSend: scrubEvent,
+    beforeBreadcrumb: (breadcrumb: Breadcrumb) => beforeBreadcrumb(breadcrumb),
   };
 }

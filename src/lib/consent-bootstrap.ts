@@ -31,7 +31,10 @@
  *  4. only if `data-fo-ga4` is present, queues `js` and `config` for the tag that follows, with
  *     `page_location` set to the address with every token replaced by `:token` (spec 018 AC-14;
  *     TASK-339): the tracking link's path token and a signed link's `?t=`, through the two
- *     expressions of `./url-tokens.ts`, so `page_view` never carries a credential.
+ *     expressions of `./url-tokens.ts`, so `page_view` never carries a credential; and on a search
+ *     address (`/{locale}/{searchSegment}`) without its query string or fragment (spec 045 §8,
+ *     AC-23; TASK-403), through `searchLocationPattern()` of `./search-routes.ts`, so the words a
+ *     buyer typed never reach GA4.
  *
  * With no id, steps 1–3 still run: `dataLayer` carries a default-denied entry on every localised
  * document, which is exactly what AC-18 asserts and what makes Phase 0 AC 7 true the moment the
@@ -39,6 +42,7 @@
  */
 import { createHash } from "node:crypto";
 
+import { searchLocationPattern } from "./search-routes.ts";
 import {
   QUERY_TOKEN,
   TOKEN_PLACEHOLDER,
@@ -83,7 +87,8 @@ export const CONSENT_BOOTSTRAP_SCRIPT =
   `g("set","url_passthrough",false);g("set","ads_data_redaction",true);` +
   `var s=document.currentScript,i=s&&s.getAttribute("${GA4_ID_ATTRIBUTE}");` +
   `if(i){var l=location.href.replace(/${TRACK_PATH_TOKEN.source}/g,"$1${TOKEN_PLACEHOLDER}")` +
-  `.replace(/${QUERY_TOKEN.source}/g,"$1${TOKEN_PLACEHOLDER}");` +
+  `.replace(/${QUERY_TOKEN.source}/g,"$1${TOKEN_PLACEHOLDER}")` +
+  `.replace(/${searchLocationPattern().source}/,"$1");` +
   `g("js",new Date());g("config",i,{page_location:l})}}();`;
 
 /**

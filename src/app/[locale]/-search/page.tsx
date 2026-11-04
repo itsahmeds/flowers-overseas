@@ -5,23 +5,32 @@
  * (`noindex, follow`, `private, no-store`, `Referrer-Policy: strict-origin`) come from the same
  * file's header rules.
  *
- * Thin: the parameters, the search and the view are `searchPage()`'s (`src/modules/search`); a
- * bad `page` or a page past the last is spec 008's 404. Rendered on every request: it reads the
- * query string. It reads no header, cookie or IP (ADR-0006), sets no cookie, and its metadata is
- * `noindex,follow` with the bare search path as the canonical, no hreflang and no JSON-LD (§6).
+ * Thin: the parameters, the search and the view are `searchRoutePage()`'s (`src/modules/search`);
+ * a bad `page` or a page past the last is spec 008's 404. **Abuse protection** (§2.8, AC-26;
+ * TASK-403): the proxy answers an over-limit request with 429 or 503 and hands it here with
+ * `x-fo-search-gate` set (only the proxy can set it); the page then renders the "rate limited"
+ * state without searching. Rendered on every request: it reads the query string. It reads no
+ * cookie or IP and no header but that one of the proxy's (ADR-0006), sets no cookie, and its
+ * metadata is `noindex,follow` with the bare search path as the canonical, no hreflang and no JSON-LD (§6).
  * The `<title>` is `search.meta.title`, never the query.
  *
  * @purpose The search results page (SSR, noindex)
  * @spec 045
  */
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactElement } from "react";
 
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { launchLocaleCodes, routableLocale } from "@/modules/i18n";
-import { SearchResultsPage, searchPage, searchPath } from "@/modules/search";
+import {
+  SEARCH_GATE_HEADER,
+  SearchResultsPage,
+  searchPath,
+  searchRoutePage,
+} from "@/modules/search";
 import {
   NOINDEX_FOLLOW,
   canonicalFor,
@@ -74,7 +83,15 @@ export default async function SearchRoute({
 }: SearchRouteProps): Promise<ReactElement> {
   const locale = searchLocale((await params).locale);
   setRequestLocale(locale);
-  const outcome = await searchPage(locale, await searchParams);
+  const refused = (await headers()).get(SEARCH_GATE_HEADER) !== null;
+  const outcome = await searchRoutePage(locale, await searchParams, {
+    refused,
+  });
   if (outcome.kind === "notFound") notFound();
-  return <SearchResultsPage view={outcome.view} />;
+  return (
+    <SearchResultsPage
+      rateLimited={outcome.kind === "rateLimited"}
+      view={outcome.view}
+    />
+  );
 }

@@ -76,13 +76,32 @@ export {
   type SearchPageDeps,
   type SearchPageOutcome,
   type SearchPageView,
+  type SearchRouteOptions,
   SLOW_SEARCH_COUNT,
   SLOW_SEARCH_MS,
   SLOW_SEARCH_WINDOW_MS,
+  rateLimitedSearchPage,
   searchPage,
   searchPath,
+  searchRoutePage,
   slowSearchMonitor,
 } from "./page";
+// Abuse protection (spec 045 §2.8, AC-26; TASK-403). The proxy imports `./gate` directly, not
+// through this barrel, so its bundle carries none of the page's components.
+export {
+  type Admission,
+  CLIENT_ADDRESS_HEADER,
+  CONCURRENCY_RETRY_AFTER_SECONDS,
+  RATE_WINDOW_MS,
+  type RateLimiter,
+  type RefusalReason,
+  SEARCH_GATE_HEADER,
+  type SearchRouteKind,
+  clientAddress,
+  installSearchGate,
+  rateLimiter,
+  searchGate,
+} from "./gate";
 export {
   SearchResultsPage,
   type SearchResultsPageProps,

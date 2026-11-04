@@ -73,3 +73,43 @@ export function searchHeaderRules(): HeaderRule[] {
     { source: `/:locale/${SEARCH_ROUTE_SEGMENT}`, headers },
   ];
 }
+
+/** The suggestions route's prefix (spec 045 §5.2; TASK-409 builds the route). */
+export const SEARCH_API_PREFIX = "/api/search/";
+
+/**
+ * Which rate limit a path is counted against (§2.8, AC-26; TASK-403): `results` for a locale's
+ * search address and a direct request to the internal route, `suggest` for `/api/search/*`, and
+ * `null` for every other path. Exact, case-sensitive matches of the registry's segments, as the
+ * rewrite matches them; the query string is not part of `path`.
+ */
+export function searchRouteKind(path: string): "results" | "suggest" | null {
+  if (path.startsWith(SEARCH_API_PREFIX)) return "suggest";
+  const [, locale, segment, ...rest] = path.split("/");
+  if (rest.length > 1 || (rest.length === 1 && rest[0] !== "")) return null;
+  const config = LOCALES.find((entry) => entry.code === locale);
+  if (config === undefined) return null;
+  return segment === config.pathSegments.search ||
+    segment === SEARCH_ROUTE_SEGMENT
+    ? "results"
+    : null;
+}
+
+/**
+ * A pattern for a search address followed by its query string or fragment, for the consent
+ * bootstrap's `page_location` (§8, AC-23): the address is kept and everything from `?` or `#` on
+ * is dropped, so GA4 never receives the words. Built from the registry, so a new locale's segment
+ * is covered without an edit; group 1 is the kept address.
+ */
+export function searchLocationPattern(): RegExp {
+  const locales = LOCALES.map((locale) => literal(locale.code)).join("|");
+  const segments = [
+    ...new Set([
+      ...LOCALES.map((locale) => locale.pathSegments.search),
+      SEARCH_ROUTE_SEGMENT,
+    ]),
+  ]
+    .map(literal)
+    .join("|");
+  return new RegExp(`(\\/(?:${locales})\\/(?:${segments})\\/?)[?#].*$`, "u");
+}

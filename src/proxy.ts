@@ -27,6 +27,14 @@
  * when both Stripe keys are configured, the proxy sends the pay-step content security policy with
  * a per-request nonce (`src/lib/checkout-csp.ts`). Every other path, and checkout without the
  * keys, keeps the static policy of `next.config.ts`.
+ *
+ * **Search abuse protection** (spec 045 §2.8, §11, AC-26; TASK-403): a search address and
+ * `/api/search/*` pass the process's limiter (`src/modules/search/gate.ts`, the one reader of
+ * `CF-Connecting-IP`). Over the per-client limit the answer is 429, over the concurrency cap 503,
+ * each with `Retry-After`; a results request is then **rewritten** with that status to the results
+ * route with `x-fo-search-gate` set, so the page renders the "rate limited" state and its form
+ * without searching. The proxy deletes any client-sent `x-fo-search-gate` from every request. One
+ * `search.rate_limited` line (route and kind, never the address or the query).
  */
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -48,7 +56,21 @@ import {
 } from "@/lib/florist-headers";
 import { logger } from "@/lib/logger";
 import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/request-id";
+import { NOINDEX_HEADER_NAME } from "@/lib/robots-headers";
+import {
+  SEARCH_CACHE_CONTROL,
+  SEARCH_REFERRER_POLICY,
+  SEARCH_ROBOTS,
+  SEARCH_ROUTE_SEGMENT,
+  searchRouteKind,
+} from "@/lib/search-routes";
 import { parseLocaleFromPath } from "@/modules/i18n/routing";
+import {
+  type Admission,
+  SEARCH_GATE_HEADER,
+  clientAddress,
+  searchGate,
+} from "@/modules/search/gate";
 
 /** Downstream request header carrying the locale parsed from the path (spec 003 §11). */
 export const LOCALE_HEADER = "x-fo-locale";
@@ -68,6 +90,36 @@ function chooserTarget(request: NextRequest, path: string): URL {
   const target = new URL(path, request.url);
   target.search = request.nextUrl.search;
   return target;
+}
+
+/**
+ * A refused search (AC-26): the results page in its "rate limited" state with the refusal's status
+ * (a rewrite, so the address stays the search address), or an empty answer for `/api/search/*`.
+ * Both carry `Retry-After` and the search headers (§5.4: `noindex`, `private, no-store`,
+ * `strict-origin`).
+ */
+function refusedSearch(
+  request: NextRequest,
+  path: string,
+  kind: "results" | "suggest",
+  admission: Extract<Admission, { admitted: false }>,
+  headers: Headers,
+): NextResponse {
+  const init = {
+    status: admission.status,
+    headers: {
+      "Retry-After": String(admission.retryAfterSeconds),
+      [NOINDEX_HEADER_NAME]: SEARCH_ROBOTS,
+      "Cache-Control": SEARCH_CACHE_CONTROL,
+      "Referrer-Policy": SEARCH_REFERRER_POLICY,
+    },
+  };
+  if (kind === "suggest") return new NextResponse(null, init);
+  const locale = path.split("/")[1] ?? "";
+  headers.set(SEARCH_GATE_HEADER, admission.reason);
+  const target = new URL(`/${locale}/${SEARCH_ROUTE_SEGMENT}`, request.url);
+  target.search = request.nextUrl.search;
+  return NextResponse.rewrite(target, { ...init, request: { headers } });
 }
 
 export function proxy(request: NextRequest): NextResponse {
@@ -140,6 +192,45 @@ export function proxy(request: NextRequest): NextResponse {
   const headers = new Headers(request.headers);
   headers.set(REQUEST_ID_HEADER, requestId);
   if (locale !== undefined) headers.set(LOCALE_HEADER, locale);
+  // Only the proxy says a search was refused (below); a client-sent copy never reaches a page.
+  headers.delete(SEARCH_GATE_HEADER);
+
+  // Search abuse protection (spec 045 §2.8, AC-26): before anything renders or searches.
+  const searchKind = searchRouteKind(path);
+  if (searchKind !== null) {
+    const admission = searchGate().admit(
+      clientAddress(request.headers),
+      searchKind,
+    );
+    if (!admission.admitted) {
+      log.info(
+        {
+          event: "search.rate_limited",
+          route: searchKind,
+          kind: admission.reason,
+        },
+        "search rate limited",
+      );
+      const refused = refusedSearch(
+        request,
+        path,
+        searchKind,
+        admission,
+        headers,
+      );
+      refused.headers.set(REQUEST_ID_HEADER, requestId);
+      log.info(
+        {
+          method,
+          path,
+          status: refused.status,
+          duration_ms: Date.now() - started,
+        },
+        "request end",
+      );
+      return refused;
+    }
+  }
   // Before sign-in the florist pages speak `?hl=` (spec 011 §7): handed to the florist layout,
   // which renders `<html lang>` and cannot read the query. Any client-sent copy is dropped first.
   headers.delete(FLORIST_LANGUAGE_HEADER);
