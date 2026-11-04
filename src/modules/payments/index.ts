@@ -133,6 +133,24 @@ export {
   REFUNDABLE_STATES,
 } from "./states.ts";
 
+// Spec 013 §5.2, §11 (TASK-264): the two monitors of `payments.monitor`.
+export {
+  PAID_NOT_ROUTED_ALERT,
+  paidNotRoutedDue,
+  PAYMENTS_MONITOR_JOB,
+  runPaymentsMonitor,
+  WEBHOOK_SILENT_ALERT,
+  webhookSilent,
+} from "./monitor.ts";
+export type {
+  FirstOfferRule,
+  MonitorAlert,
+  PaymentsMonitorCounts,
+  PaymentsMonitorDeps,
+  UnroutedOrder,
+  WebhookSilenceFacts,
+} from "./monitor.ts";
+
 // Spec 013 §5.2 "Webhook inbox" (TASK-260): the endpoint's body, the job and the replay.
 export {
   ingestStripeWebhook,

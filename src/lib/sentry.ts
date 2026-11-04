@@ -127,15 +127,23 @@ export function captureGuardError(
  * personal data (spec 013 §11). `fields` go to `extra` and pass the same key-based scrubber as any
  * other event data. A no-op when no client is initialised (no DSN); the caller logs the same
  * fields through `src/lib/logger.ts` regardless.
+ *
+ * `options.fingerprint` (spec 013 AC-39, TASK-264): a monitor that raises the same alert on every
+ * minute tick passes `[alert, order_id]`, so every tick for one order groups into one Sentry issue
+ * rather than the default grouping by message and stack. Without it, Sentry's default applies.
  */
 export function captureAlert(
   alert: string,
   fields: Readonly<Record<string, unknown>> & {
     readonly order_id?: string;
   } = {},
+  options: { readonly fingerprint?: readonly string[] } = {},
 ): void {
   captureMessage(alert, {
     level: "error",
+    ...(options.fingerprint === undefined
+      ? {}
+      : { fingerprint: [...options.fingerprint] }),
     tags: {
       alert,
       ...(fields.order_id === undefined ? {} : { order_id: fields.order_id }),

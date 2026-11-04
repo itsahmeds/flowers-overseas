@@ -49,6 +49,7 @@ import { buyerRefundLines } from "../modules/orders/buyer-refund-lines";
 import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
 import {
   registerPaymentsOutbox,
+  runPaymentsMonitor,
   runProductionStart,
 } from "../modules/payments";
 // Spec 030a §5.2 (TASK-363): the `payouts` target and F1's job, the worker's entry, not the barrel.
@@ -218,6 +219,12 @@ export const JOB_HANDLERS: JobHandlers = {
   // each due order is locked `SKIP LOCKED` and re-read; a second run finds it `in_production`.
   "payments.production_start": async () => {
     await runProductionStart();
+  },
+  // Spec 013 §5.2, §11 (TASK-264): the two monitors, AC-39 and AC-40. Read-only: it writes no
+  // table and calls no provider, so a re-run raises the same alerts, which Sentry groups by their
+  // fingerprint (`[alert, order_id]`) into the issue already open.
+  "payments.monitor": async () => {
+    await runPaymentsMonitor();
   },
   // Spec 016 §5.2 (TASK-335): one stored Resend webhook. Idempotent: the inbox row is locked
   // `SKIP LOCKED` and a settled one is skipped; a `failed` run throws so pg-boss retries it, and
