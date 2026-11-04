@@ -8,7 +8,7 @@
  * is `@/jobs/runtime` (`ensureQueues`, then `runTick` with the handlers of `@/jobs/handlers`) over
  * `DATABASE_URL_UNPOOLED`, on a pg-boss instance that lives for this request only. Every tick
  * first enqueues one `outbox.dispatch` (spec 013 §5.2, TASK-254), one `payments.production_start`
- * (TASK-258), one `order.close_sweep` (spec 022a §5.2, TASK-369, under a `singletonKey`) and one
+ * (TASK-258), one `payments.monitor` (TASK-264, under a `singletonKey`), one `order.close_sweep` (spec 022a §5.2, TASK-369, under a `singletonKey`) and one
  * `routing.sla_watch` (spec 016 §5.2, TASK-328, likewise), which the same tick consumes; and,
  * once an hour (a `singletonKey` unique for 3600 seconds), `payouts.close` and `payouts.watch`
  * (spec 030a §5.2, TASK-364).
@@ -45,6 +45,16 @@ export function POST(request: Request): Promise<Response> {
           "payments.production_start",
           {},
           { requestId: "system:jobs.tick" },
+        );
+        // Spec 013 §5.2, §11 (TASK-264): the payment monitors, once a minute.
+        await enqueue(
+          boss,
+          "payments.monitor",
+          {},
+          {
+            requestId: "system:jobs.tick",
+            singletonKey: "payments.monitor",
+          },
         );
         // Spec 022a §5.2 (TASK-369): one close sweep per minute, one at a time.
         await enqueue(

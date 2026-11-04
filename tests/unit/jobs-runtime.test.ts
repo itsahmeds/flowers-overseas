@@ -192,6 +192,7 @@ describe("ensureQueues", () => {
       "order.no_partner_expire",
       "order.route",
       "outbox.dispatch",
+      "payments.monitor",
       "payments.production_start",
       "payouts.close",
       "payouts.prepaid_ready",
@@ -403,7 +404,7 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), order.close_sweep (TASK-369), spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready (TASK-363), payouts.close and payouts.watch (TASK-364), payouts.statement_email (TASK-365), spec 018's invoice.render and invoice.render_sweep (TASK-342), spec 016's webhook.resend.process (TASK-335) and invoice.email (TASK-334), and spec 020a's notifications.resend (TASK-360), nothing else yet", async () => {
+  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), payments.monitor (TASK-264), order.close_sweep (TASK-369), spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready (TASK-363), payouts.close and payouts.watch (TASK-364), payouts.statement_email (TASK-365), spec 018's invoice.render and invoice.render_sweep (TASK-342), spec 016's webhook.resend.process (TASK-335) and invoice.email (TASK-334), and spec 020a's notifications.resend (TASK-360), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
       "assignment.photo_remind",
@@ -418,6 +419,7 @@ describe("runTick — each job settled exactly once", () => {
       "order.no_partner_expire",
       "order.route",
       "outbox.dispatch",
+      "payments.monitor",
       "payments.production_start",
       "payouts.close",
       "payouts.prepaid_ready",

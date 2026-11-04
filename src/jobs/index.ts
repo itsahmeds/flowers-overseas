@@ -11,6 +11,8 @@
  *    (TASK-025), `neon.usage_probe` (TASK-029), `db.backup_verify` (TASK-028), `outbox.dispatch`
  *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick),
  *    `payments.production_start` (spec 013 §5.2, TASK-258: row 16 on the delivery morning),
+ *    `payments.monitor` (spec 013 §5.2, §11, TASK-264: the paid-not-routed and webhook-silence
+ *    monitors, read-only, enqueued by every minute tick),
  *    `webhook.process` (spec 013 §5.2, TASK-260: one stored webhook), `webhook.resend.process`
  *    (spec 016 §5.2, TASK-335: one stored Resend webhook, 7 retries), `notifications.resend`
  *    (spec 020a §5.2, TASK-360: one admin resend row, keyed by row, `short`, 7 retries), `order.close_sweep`
@@ -79,6 +81,12 @@ export const OutboxDispatchPayload = z
  * production start. Takes nothing: every `paid` order whose instant has passed is due.
  */
 export const PaymentsProductionStartPayload = z.object({}).strict();
+
+/**
+ * `payments.monitor` (spec 013 §5.2, §11, AC-39, AC-40; TASK-264): one minute's look for paid
+ * orders not yet routed and for a silent Stripe endpoint. Takes nothing; reads only.
+ */
+export const PaymentsMonitorPayload = z.object({}).strict();
 
 /**
  * `webhook.process` (spec 013 §5.2, AC-22, TASK-260): process one stored webhook. The handler is
@@ -218,6 +226,7 @@ export const REGISTERED_JOBS = {
     version: 1,
     payload: PaymentsProductionStartPayload,
   },
+  "payments.monitor": { version: 1, payload: PaymentsMonitorPayload },
   "webhook.process": { version: 1, payload: WebhookProcessPayload },
   "webhook.resend.process": {
     version: 1,
