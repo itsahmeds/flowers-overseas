@@ -7,3 +7,14 @@ export {
   consentSources,
 } from "./consent-sources";
 export { AnalyticsScripts } from "./ui/AnalyticsScripts";
+export {
+  type Gtag,
+  RESULTS_BUCKETS,
+  type ResultsBucket,
+  SEARCH_EVENT_NAME,
+  type SearchEvent,
+  SearchEventSchema,
+  resultsBucket,
+  searchEvent,
+  sendPageAnalytics,
+} from "./search-event";

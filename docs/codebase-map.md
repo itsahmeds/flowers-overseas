@@ -13,20 +13,20 @@ task actually touches.
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +19 |
-| `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
+| `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +2 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +120 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +12 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +133 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +135 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +20 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +17 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +26 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +15 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
-| `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +8 |
+| `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +10 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +40 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +70 |
 
@@ -128,7 +128,9 @@ task actually touches.
 | `[locale]/(track)/track/page.tsx` | Tracking lookup page | 018 |
 | `[locale]/-choose/-next/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchil… | 009 |
+| `[locale]/-search/limited/page.tsx` | The search page's rate-limited state (429/503) | 045 |
 | `[locale]/-search/page.tsx` | The search results page (SSR, noindex) | 045 |
+| `[locale]/-search/search-locale.ts` | The search routes' locale or 404 | 045 |
 | `[locale]/@header/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | The header of the product parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
@@ -139,6 +141,7 @@ task actually touches.
 | `[locale]/@header/(track)/track/page.tsx` | Tracking lookup header | 018 |
 | `[locale]/@header/-choose/-next/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot… | 043 |
+| `[locale]/@header/-search/limited/page.tsx` | The rate-limited search page's header (the… | 045 |
 | `[locale]/@header/-search/page.tsx` | The search page's header, out of context | 045 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{chi… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{chi… | 043 |
@@ -153,6 +156,7 @@ task actually touches.
 | `[locale]/@header/fuer-floristen/bewerben/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben… | 043 |
 | `[locale]/@header/page.tsx` | The locale home's header: out of context, and… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |
+| `[locale]/@switcher/-search/limited/page.tsx` | The rate-limited search page's language links… | 045 |
 | `[locale]/@switcher/-search/page.tsx` | Search page language links (bare search paths) | 045 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/page.tsx` | Depth-3 language links | 003 |
@@ -336,7 +340,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 485 |
+| `tests/unit/` | 487 |
 | `tests/integration/` | 98 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |

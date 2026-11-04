@@ -469,11 +469,81 @@ function NoResults({ view }: { readonly view: SearchPageView }): ReactElement {
 
 export interface SearchResultsPageProps {
   readonly view: SearchPageView;
+  /**
+   * The "rate limited" state (§2.7, AC-26; TASK-403): the H1, `search.rateLimited` as a status
+   * message, the form with the words and the destination pill, and nothing searched. The status
+   * (429 or 503) and `Retry-After` are the proxy's.
+   */
+  readonly rateLimited?: boolean;
+}
+
+/** The "rate limited" state, the board's "Rate limited · HTTP 429" frame. */
+function RateLimited({
+  view,
+}: {
+  readonly view: SearchPageView;
+}): ReactElement {
+  const search = useTranslations("search");
+  const nav = useTranslations("nav");
+  return (
+    <Container as="main" data-fo-search-state="rateLimited" id="main">
+      <div className="pt-[18px] pb-(--section-fluid)" data-fo-search>
+        <Display
+          as="h1"
+          className="leading-[1.06] tracking-[-0.02em] [font-variation-settings:var(--font-variation-display-hero)]"
+          size="display-s"
+        >
+          {search("heading")}
+        </Display>
+        <div
+          className="mt-[8px] mb-[16px] grid max-w-[60ch] justify-items-start gap-[6px] md:mb-[20px]"
+          data-fo-search-rate-limited
+          role="status"
+        >
+          <p className="text-ink m-0 text-[17px] leading-[1.45] md:text-[19px]">
+            {search("rateLimited")}
+          </p>
+        </div>
+        <div className="grid items-center gap-[12px] md:grid-cols-[minmax(0,1fr)_auto]">
+          <SearchForm
+            label={nav("search.label")}
+            submit={nav("search.submit")}
+            view={view}
+          />
+          <DestinationForm view={view} />
+        </div>
+      </div>
+    </Container>
+  );
+}
+
+/**
+ * The GA4 `search` event's payload (§8, AC-23; TASK-403): one hidden element's
+ * `data-fo-analytics`, counts only, never the words. Spec 023's deferred chunk reads it and sends
+ * it only with analytics granted (`sendPageAnalytics`).
+ */
+function SearchAnalytics({
+  view,
+}: {
+  readonly view: SearchPageView;
+}): ReactElement | null {
+  if (view.analytics === null) return null;
+  return <div data-fo-analytics={JSON.stringify(view.analytics)} hidden />;
 }
 
 export function SearchResultsPage({
   view,
+  rateLimited = false,
 }: SearchResultsPageProps): ReactElement {
+  if (rateLimited) return <RateLimited view={view} />;
+  return <SearchResultsBody view={view} />;
+}
+
+function SearchResultsBody({
+  view,
+}: {
+  readonly view: SearchPageView;
+}): ReactElement {
   const t = useTranslations();
   const search = useTranslations("search");
   const shop = useTranslations("shop");
@@ -525,6 +595,7 @@ export function SearchResultsPage({
       id="main"
     >
       <div className="pt-[18px] pb-(--section-fluid)" data-fo-search>
+        <SearchAnalytics view={view} />
         <Display
           as="h1"
           className="leading-[1.06] tracking-[-0.02em] [font-variation-settings:var(--font-variation-display-hero)]"

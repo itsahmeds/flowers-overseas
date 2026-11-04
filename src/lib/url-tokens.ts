@@ -31,3 +31,21 @@ export function scrubUrlTokens(text: string): string {
     .replace(TRACK_PATH_TOKEN, `$1${TOKEN_PLACEHOLDER}`)
     .replace(QUERY_TOKEN, `$1${TOKEN_PLACEHOLDER}`);
 }
+
+/**
+ * `?q={words}`, `&q={words}` or a bare `q={words}` at the start of a string (a span's `url.query`):
+ * the value of a `q` query parameter, the site search's words (spec
+ * 045 §2.8, AC-23; TASK-403). A buyer may type a name, an address or a phone number into it, so a
+ * URL that leaves the process for Sentry carries `q=:q` instead (`scrubSearchTerms`, used by
+ * `beforeSend` and `beforeBreadcrumb` in `./sentry.ts`). GA4's `page_location` drops a search
+ * address's whole query string instead (`searchLocationPattern`, `./search-routes.ts`).
+ */
+export const QUERY_SEARCH_TERM = /((?:^|[?&])q=)[^&#]*/g;
+
+/** What the search words are replaced with. */
+export const SEARCH_TERM_PLACEHOLDER = ":q";
+
+/** `text` with every `q` query value replaced by `:q`. */
+export function scrubSearchTerms(text: string): string {
+  return text.replace(QUERY_SEARCH_TERM, `$1${SEARCH_TERM_PLACEHOLDER}`);
+}

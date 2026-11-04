@@ -26,7 +26,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (SR403, self-review, not a `/review`): left for a built site, none run on the founder's no-CI night:
+  (1) T-14's e2e half: served-body hashes for `/en/search?q=roses&to=pl`, `/pl/szukaj?q=roze` and `/de/suche` across the cf-ipcountry, address, Accept-Language and cookie permutations (the unit test proves the proxy's answer is the same across them, and the source scans);
+  (2) T-23's built-site half (a real `next start` request log and a real Sentry transport);
+  (3) T-26 on `next start`: that Next 16 serves the proxy's rewrite with its 429 or 503 status (the unit test proves the proxy returns it; `resolve-routes.js` sets `res.statusCode` from the proxy's response before the render) and that the proxy and the page share the one limiter through `globalThis` in one process;
+  (4) axe and visual baselines for the "rate limited" state (the board's "Rate limited · HTTP 429" frame).
+- 2026-11-04 (SR403): the GA4 `search` payload is rendered as `data-fo-analytics` and `sendPageAnalytics` is the adapter, but nothing calls it until spec 023's deferred chunk lands (TASK for spec 023's client events): that chunk must call `sendPageAnalytics` with the attribute's value. The bootstrap's `page_location` already drops a search address's query string today.
+- 2026-11-04 (SR403): with no `CF-Connecting-IP` (a request that reached Railway without Cloudflare) there is no per-client limit, only the 32-search cap; TASK-408's runbook should say the origin answers only Cloudflare, and record Railway's HTTP log retention (it may log query strings, §8 "Processors").
+- 2026-11-04 (SR403): `search.rateLimited` is now rendered; its `retained: true` in `messages/en.meta.json` can go in the next copy batch (left untouched here to keep the copy records out of this diff).
 
 ## Escalations
 
@@ -40,11 +47,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (SR403): limiter `src/modules/search/gate.ts` (HMAC per process, fixed 60 s windows, 32-search cap, `globalThis` singleton), proxy wiring (429/503 with `Retry-After`, rewrite to `/{locale}/-search/limited`), route `searchRoutePage()` and the "rate limited" view, Sentry `q` scrub in `beforeSend` and `beforeBreadcrumb`, bootstrap `page_location` without the query on search addresses, GA4 `search` event payload; tests `search-gate` (16) and `search-privacy` (28) green; RoPA row 18.
+- 2026-11-04 (SR403): the refused request now goes to its own route `src/app/[locale]/-search/limited/page.tsx` (slots re-export the search page's), because TASK-402's scan forbids `headers()` in the search route; locale helper shared in `-search/search-locale.ts`. 14 mutations, each red. Next: PR self-review, then TASK-404.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 497](https://github.com/itsahmeds/flowers-overseas/pull/497): the proxy counts every search address (and `/api/search/*`) against `searchGate()`, an HMAC-SHA-256 of `CF-Connecting-IP` under a per-process random key in 60 s windows (60 results, 120 suggest), and the process's searches in flight (32); over a limit it answers 429 (seconds left in the window) or 503 (`Retry-After: 5`) by rewriting to its own route `/{locale}/-search/limited` (the results route reads no header, TASK-402's scan), which renders the "rate limited" state (H1, `search.rateLimited` as a status, the form with the words and the destination) without searching; one `search.rate_limited` line (route, kind). The page counts its search in flight (`enter`/`leave`, released on a throw) and renders the same state if the cap is reached after the proxy's check. Sentry replaces any `q` value with `:q` in the request URL, transaction, breadcrumbs, extra, tags and contexts, in `beforeSend` and the new `beforeBreadcrumb`; the consent bootstrap sends a search address's `page_location` without its query string; the results page renders the GA4 `search` event (`locale`, `destination_country`, `results_bucket`, `query_tokens`; no `search_term`, strict schema) as `data-fo-analytics`, and `sendPageAnalytics` sends it only with analytics granted. RoPA row 18 "Search abuse protection". Unit tests: 16 in `search-gate`, 28 in `search-privacy`; the existing proxy, chooser-proxy, Sentry, url-tokens, consent-bootstrap and search-routes suites unchanged and green. No build, Playwright, Lighthouse or screenshot ran (founder's no-CI night); the e2e halves are carry-forwards above.

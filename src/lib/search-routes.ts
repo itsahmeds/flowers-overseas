@@ -27,6 +27,14 @@ import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
 /** The results page's internal first segment (`src/app/[locale]/-search`). */
 export const SEARCH_ROUTE_SEGMENT = "-search";
 
+/**
+ * The "rate limited" state's own route under it (`src/app/[locale]/-search/limited`; spec 045
+ * §2.7, AC-26; TASK-403): the proxy rewrites a refused results request there with its 429 or 503,
+ * so the page knows the request was refused from its path alone, reads no header and searches
+ * nothing. A direct request to it shows the same state, which tells nobody anything.
+ */
+export const SEARCH_LIMITED_SEGMENT = "limited";
+
 /** `noindex, follow` (§6): a crawler that arrives from an outside link still reaches the products. */
 export const SEARCH_ROBOTS = "noindex, follow";
 /** Never stored by a shared or a browser cache (§2.8: the query can hold personal data). */
@@ -71,5 +79,45 @@ export function searchHeaderRules(): HeaderRule[] {
   return [
     ...searchSources().map((source) => ({ source, headers })),
     { source: `/:locale/${SEARCH_ROUTE_SEGMENT}`, headers },
+    {
+      source: `/:locale/${SEARCH_ROUTE_SEGMENT}/${SEARCH_LIMITED_SEGMENT}`,
+      headers,
+    },
   ];
+}
+
+/** The suggestions route's prefix (spec 045 §5.2; TASK-409 builds the route). */
+export const SEARCH_API_PREFIX = "/api/search/";
+
+/**
+ * Which rate limit a path is counted against (§2.8, AC-26; TASK-403): `results` for a locale's
+ * search address and a direct request to the internal route, `suggest` for `/api/search/*`, and
+ * `null` for every other path. Exact, case-sensitive matches of the registry's segments, as the
+ * rewrite matches them; the query string is not part of `path`.
+ */
+export function searchRouteKind(path: string): "results" | "suggest" | null {
+  if (path.startsWith(SEARCH_API_PREFIX)) return "suggest";
+  const [, locale, segment, ...rest] = path.split("/");
+  if (rest.length > 1 || (rest.length === 1 && rest[0] !== "")) return null;
+  const config = LOCALES.find((entry) => entry.code === locale);
+  if (config === undefined) return null;
+  return segment === config.pathSegments.search ||
+    segment === SEARCH_ROUTE_SEGMENT
+    ? "results"
+    : null;
+}
+
+/**
+ * A pattern for a search address followed by its query string or fragment, for the consent
+ * bootstrap's `page_location` (§8, AC-23): the address is kept and everything from `?` or `#` on
+ * is dropped, so GA4 never receives the words. Built from the registry, so a new locale's segment
+ * is covered without an edit; group 1 is the kept address.
+ */
+export function searchLocationPattern(): RegExp {
+  const addresses = LOCALES.flatMap((locale) =>
+    [locale.pathSegments.search, SEARCH_ROUTE_SEGMENT].map(
+      (segment) => `${literal(locale.code)}\\/${literal(segment)}`,
+    ),
+  ).join("|");
+  return new RegExp(`(\\/(?:${addresses})\\/?)[?#].*$`, "u");
 }
