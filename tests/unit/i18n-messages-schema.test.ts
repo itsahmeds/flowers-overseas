@@ -360,12 +360,7 @@ describe("the shipped catalogues and manifests", () => {
     // (`.claude/state/record-approval-333.py`) attests them.
     // TASK-365's florist payout statement keys (PR 475) left this queue under the delegation, all
     // but the lawyer-gated `deleteReminder` (spec 030a §13 Q12; TASK-436).
-    // TASK-431 (spec 007 §14 A-orchestrator-2026-11-01b, AC-37): the hub's three lines with the
-    // country count as an ICU plural, `reviewed: false` until the record run
-    // (`.claude/state/record-approval-431.py`) attests the exact `en` texts.
-    "destinationsHub.intro",
-    "destinationsHub.phoneIntro",
-    "destinationsHub.seoDescription",
+    // TASK-431's three `destinationsHub.*` count lines (spec 007 AC-37) left this queue under the delegation.
     "emails.floristPayoutStatement.deleteReminder",
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
