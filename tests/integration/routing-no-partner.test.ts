@@ -214,6 +214,7 @@ describe.skipIf(server.url === undefined)(
             acceptedOrderEffectFor(mode, environment, {
               demo: quietAccept,
               unconfigured: quietAccept,
+              paid: quietAccept,
               routed: createRoutingDeclineEffect(schedule),
             }),
         },

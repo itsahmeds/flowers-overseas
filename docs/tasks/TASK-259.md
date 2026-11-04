@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (ACC259): `deliverAcceptance` + `paymentAcceptedOrderEffect` (`src/modules/payments/acceptance.ts`), the acceptance branch and `registerPaymentsOutbox` (lazy env provider, `provider-env.ts`) in `cancel.ts`, the seam in `orders/demo/effect.ts` (test/live accept half = payments), `markOutForDelivery` calling `startProduction`; integration suite `payments-acceptance.test.ts` written. Next: run it on a local PG16, mutations, PR.
 
 ## Result
 

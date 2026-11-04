@@ -17,7 +17,8 @@
  *    `ORDER_TRANSITION_ILLEGAL` (AC-45). `demo` orders are never touched (spec 011's demo effect).
  *  - `startProduction(orderId, actor)`: the same write for one order, refused with
  *    `PRODUCTION_NOT_DUE` before the delivery date has begun in the destination's zone. Spec 011's
- *    dispatch command calls it in its own transaction (TASK-259 wires it).
+ *    dispatch command calls it in its own transaction, before row 19, when it meets a `paid`
+ *    order (TASK-259).
  *
  * Logs carry ids and counts only.
  */
@@ -115,10 +116,13 @@ const TimingRow = z.object({
   delivery_date: z.string().regex(ISO_DATE),
   zone: z.string().min(1),
 });
-type Timing = z.infer<typeof TimingRow>;
+export type Timing = z.infer<typeof TimingRow>;
 
-/** The order's status, mode and timing; `lock` takes the row lock (`skip` skips a locked row). */
-async function readTiming(
+/**
+ * The order's status, mode and timing; `lock` takes the row lock (`skip` skips a locked row).
+ * Module-internal: the acceptance delivery reads it too (`./acceptance.ts`, TASK-259).
+ */
+export async function readProductionTiming(
   executor: OrderExecutor,
   orderId: string,
   lock: "none" | "wait" | "skip",
@@ -185,7 +189,7 @@ export async function startProduction(
     options,
     "payments.production_start",
     async (executor) => {
-      const row = await readTiming(executor, id, "wait");
+      const row = await readProductionTiming(executor, id, "wait");
       if (row === null) return { kind: "refused", code: "ORDER_NOT_FOUND" };
       if (!deliveryDayBegun(timingOf(row), now)) {
         return { kind: "refused", code: "PRODUCTION_NOT_DUE" };
@@ -258,7 +262,7 @@ export async function runProductionStart(
   let skipped = 0;
   for (const candidate of due) {
     const wrote = await transaction(async (executor) => {
-      const row = await readTiming(executor, candidate.id, "skip");
+      const row = await readProductionTiming(executor, candidate.id, "skip");
       if (row?.status !== "paid" || row.mode === "demo") return false;
       await transition(
         row.id,

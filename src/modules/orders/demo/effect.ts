@@ -2,16 +2,19 @@
  * What happens after a florist answers: the `AcceptedOrderEffect` seam (spec 011 §2 "What happens
  * after accept is a seam", §5.2; TASK-214 builds the seam, TASK-215's commands call it).
  *
- *  - `demoOrderEffect`: an order whose `order.mode` is `demo` or `test`, outside `production`.
- *    After an accept it walks the arrows `plan/11` §2 draws after acceptance, `order.captured`
+ *  - `demoOrderEffect`: an order whose `order.mode` is `demo`, outside `production` (spec 013
+ *    §12: `demoOrderEffect` keeps `demo` orders only). After an accept it walks the arrows `plan/11` §2 draws after acceptance, `order.captured`
  *    then `order.in_production`, by `system:demo`, so the florist sees "being made"; after a
  *    decline it records the exhausted arrow, `order.no_partner_available`. Every write is
  *    spec 010's `transition`; payloads carry `demo: true`.
- *  - `unconfiguredOrderEffect`: a `live` order with no real effect registered (Phase 0): one
- *    `warn` with the order id and nothing else.
+ *  - `unconfiguredOrderEffect`: a `demo` order in `production`, where no demo write may happen:
+ *    one `warn` with the order id and nothing else.
+ *  - **Spec 013's `paymentAcceptedOrderEffect`** (its §5.2 and §12 request on spec 011;
+ *    TASK-259): the accept half for a `test` or `live` order, in every environment. It writes
+ *    nothing; it asks the outbox dispatcher to deliver the order's `assignment.accepted` row now,
+ *    whose `payments` handler writes row 14 (and row 16 past the production-start instant).
  *  - `acceptedOrderEffectFor(mode, environment)` picks one. Nothing here reads `source`, which
- *    spec 002 keeps for telling seed rows from real ones. Specs 013/015 replace the `test` and
- *    `live` choices without a change to the commands.
+ *    spec 002 keeps for telling seed rows from real ones.
  *  - **Spec 016's `afterDecline`** (its §12 request on spec 011; TASK-328): for a `test` or
  *    `live` order the decline half is always the router's (`routingDeclineEffect`: the next
  *    offer through `order.route`), in every environment; the accept half stays what the mode
@@ -20,6 +23,11 @@
  */
 import { appEnvironment } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
+// Not the reverse: `payments` imports the `orders` barrel, which never loads `./demo`.
+import {
+  paymentAcceptedOrderEffect,
+  type PaymentAcceptEffect,
+} from "@/modules/payments";
 
 import {
   routingDeclineEffect,
@@ -107,10 +115,10 @@ export const unconfiguredOrderEffect: AcceptedOrderEffect = {
 };
 
 /**
- * The effect for an order of `mode` in `environment`. The accept half: the demo effect's for a
- * `demo` or `test` order outside production, the unconfigured one otherwise (a `live` order, or
- * anything in production, where no demo write may happen). The decline half: the same for a
- * `demo` order; spec 016's router for a `test` or `live` one.
+ * The effect for an order of `mode` in `environment`. A `demo` order: the demo effect outside
+ * production, the unconfigured one in it, both halves. A `test` or `live` order: spec 013's
+ * `paymentAcceptedOrderEffect` for the accept half (never the demo effect, spec 013 AC-13) and
+ * spec 016's router for the decline half, in every environment.
  */
 export function acceptedOrderEffectFor(
   mode: OrderMode,
@@ -119,18 +127,18 @@ export function acceptedOrderEffectFor(
     readonly demo?: AcceptedOrderEffect;
     readonly unconfigured?: AcceptedOrderEffect;
     readonly routed?: RoutingDeclineEffect;
+    readonly paid?: PaymentAcceptEffect;
   } = {},
 ): AcceptedOrderEffect {
-  const demo = effects.demo ?? demoOrderEffect;
-  const unconfigured = effects.unconfigured ?? unconfiguredOrderEffect;
-  const base =
-    environment !== "production" && (mode === "demo" || mode === "test")
-      ? demo
-      : unconfigured;
-  if (mode === "demo") return base;
+  if (mode === "demo") {
+    return environment !== "production"
+      ? (effects.demo ?? demoOrderEffect)
+      : (effects.unconfigured ?? unconfiguredOrderEffect);
+  }
+  const paid = effects.paid ?? paymentAcceptedOrderEffect;
   const routed = effects.routed ?? routingDeclineEffect;
   return {
-    afterAccept: (context) => base.afterAccept(context),
+    afterAccept: (context) => paid.afterAccept(context),
     afterDecline: (context) => routed.afterDecline(context),
   };
 }
