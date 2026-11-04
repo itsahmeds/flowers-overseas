@@ -492,9 +492,7 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
-    // TASK-389: the country card's local-special label (spec 004 §14 A-founder-2026-10-24a item 8,
-    // its i18n table), `reviewed: false` until the record run (`.claude/state/record-approval-389.py`).
-    "shop.card.localSpecial",
+    // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
