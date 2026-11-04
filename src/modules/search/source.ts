@@ -23,6 +23,7 @@ import {
   COUNTRIES,
   type CountryIso2,
   countrySlug,
+  deliveryDatesOpen,
   isCountryIso2,
 } from "@/config/countries";
 import type { LocaleCode } from "@/config/locales";
@@ -30,20 +31,27 @@ import { isPublished } from "@/config/site-links";
 import {
   type Product,
   availability,
+  chooserPath,
+  coreRange,
   entityCopy,
   getCategory,
   getOccasion,
   getProduct,
   hasCardPhoto,
+  hubCardView,
   listProducts,
   listingHref,
   productCardView,
   rankBandsFor,
   topProductsForPrebuild,
 } from "@/modules/catalog";
-import { corridorLinkHref } from "@/modules/geo";
+import { corridorLinkHref, deliveryCalendar } from "@/modules/geo";
 import { launchLocaleCodes, loadMessages } from "@/modules/i18n";
-import type { ProductCardView } from "@/modules/ui";
+import {
+  type CountryLessCardView,
+  CountryLessCardViewSchema,
+  type ProductCardView,
+} from "@/modules/ui";
 
 import { searchLanguage } from "./text";
 import type {
@@ -305,6 +313,63 @@ export function catalogSearchSource(): SearchSource {
 
     rankBands(iso2) {
       return rankBandsFor(destinationIso2(iso2));
+    },
+
+    // The country-less set (§2.7 "No destination"; TASK-402): `coreRange(locale)` in its rank
+    // order, nothing else (spec 004 §14 A-founder-2026-10-24a item 1: no non-core product before
+    // a choice). Saleable by construction (saleable in every shop country); bands are per
+    // country, so none applies.
+    async coreProducts(locale) {
+      const range = await coreRange(locale);
+      const products: SearchProduct[] = [];
+      for (const [rank, entry] of range.entries()) {
+        const product = await getProduct(entry.sku);
+        if (product === null) continue;
+        const copy = entityCopy("product", product.sku, locale);
+        products.push({
+          sku: product.sku,
+          name: copy?.name ?? product.name,
+          facetLabels: facetLabels(memo, product, locale),
+          altLabels: altLabels(memo, product, locale),
+          description: copy?.description ?? "",
+          hasPhoto: hasCardPhoto(product.sku, locale),
+          curationIndex: rank,
+          saleable: true,
+        });
+      }
+      return products;
+    },
+
+    // Spec 008 AC-6's first form, as the hubs draw it (TASK-388): the photograph and the name,
+    // one link through the chooser with `next=product/{slug}`, no field for money.
+    async countryLessCards(locale, skus) {
+      const cards: CountryLessCardView[] = [];
+      for (const sku of skus) {
+        const product = await getProduct(sku);
+        if (product === null) continue;
+        const card = await hubCardView(product, locale);
+        cards.push(
+          CountryLessCardViewSchema.parse({
+            ...card,
+            href: chooserPath(locale, { locale, kind: "product", sku }),
+          }),
+        );
+      }
+      return cards;
+    },
+
+    async dateOpen(iso2, date) {
+      if (!isCountryIso2(iso2) || !deliveryDatesOpen(iso2)) return false;
+      return deliveryCalendar().isDateAvailable({ countryIso: iso2, date });
+    },
+
+    async deliverableOn(iso2, sku, date) {
+      const verdict = await availability({
+        productId: sku,
+        countryIso: destinationIso2(iso2),
+        date,
+      });
+      return verdict.saleable;
     },
 
     async cards(locale, iso2, skus) {

@@ -45,7 +45,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (SR402): engine gains the country-less set (`coreProducts`, `countryLessCards`, `view.countryLess`) and the date filter (`dateOpen`, `deliverableOn`, `dateApplied`, `hiddenByDate`); `searchParamsSchema` and `searchPage()` in `src/modules/search/`; the chooser's `next=search` choice now lands on `/{locale}/{search}?to=..&q=..`. Next: the route, slots, rewrite and headers, the components, the keys, the tests.
 
 ## Result
 

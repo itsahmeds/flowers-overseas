@@ -65,6 +65,14 @@ export interface CountryPickerProps {
   readonly typed?: string | undefined;
   /** Prefix of the form's ids, unique on the page. */
   readonly idPrefix: string;
+  /**
+   * Hidden fields the choice carries on (spec 045's results page: the words as `q`, AC-13). None
+   * may be named `to`: that is the choice itself.
+   */
+  readonly hidden?: readonly {
+    readonly name: string;
+    readonly value: string;
+  }[];
 }
 
 /** The pill both submit buttons share (`.cm-pbtn`). */
@@ -89,6 +97,7 @@ export function CountryPicker({
   datalist,
   typed,
   idPrefix,
+  hidden = [],
 }: CountryPickerProps): ReactElement {
   // The home and the hubs share the inline layout; only the card's skin and the label differ.
   const home = variant !== "page";
@@ -115,6 +124,16 @@ export function CountryPicker({
             }
           : { "data-fo-choose": "" })}
     >
+      {hidden
+        .filter((field) => field.name !== QUERY_KEY.to)
+        .map((field) => (
+          <input
+            key={field.name}
+            name={field.name}
+            type="hidden"
+            value={field.value}
+          />
+        ))}
       {flat ? (
         <h2
           id={headingId}

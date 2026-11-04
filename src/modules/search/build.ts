@@ -226,7 +226,22 @@ export async function buildIndex(source: SearchSource): Promise<SearchIndex> {
       shops.set(destination.iso2, index);
       documents += index.documents.length;
     }
-    locales.set(locale, { locale, destinations, shops });
+    // The country-less set (§2.7 "No destination"; TASK-402): the core range, every band 0
+    // (bands are per country), the same hubs, so the Pages block and "Did you mean" work there.
+    let core: DestinationIndex | undefined;
+    const coreProducts = (await source.coreProducts?.(locale)) ?? [];
+    if (coreProducts.length > 0) {
+      core = destinationIndex(
+        "",
+        locale,
+        coreProducts,
+        await source.hubs(locale, ""),
+        new Map(),
+        fieldCache,
+      );
+      documents += core.documents.length;
+    }
+    locales.set(locale, { locale, destinations, shops, core });
   }
 
   return { locales, documents };

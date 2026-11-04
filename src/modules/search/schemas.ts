@@ -11,7 +11,7 @@ import { z } from "zod";
 
 import { type LocaleCode, isLocaleCode, launchLocales } from "@/config/locales";
 import { SEARCH_CONFIG } from "@/config/search";
-import { ProductCardViewSchema } from "@/modules/ui";
+import { CountryLessCardViewSchema, ProductCardViewSchema } from "@/modules/ui";
 
 /** A destination code as the registry spells it (`PL`), or the URL's lowercase form, upper-cased. */
 const Iso2Schema = z
@@ -32,12 +32,18 @@ export const SearchRequestSchema = z.strictObject({
   /** The `to` parameter, already checked by the route; the words still beat it (§2.4). */
   to: Iso2Schema.optional(),
   page: z.number().int().min(1).max(SEARCH_CONFIG.maxPages).default(1),
+  /**
+   * The `date` parameter (ISO `YYYY-MM-DD`), already checked by the route; honoured only when the
+   * destination the search ends up with takes that date (§2.4 "Deliverability"; TASK-402).
+   */
+  date: z.iso.date().optional(),
 });
 export type SearchRequest = z.input<typeof SearchRequestSchema>;
 
 /**
- * The page states the engine decides (§2.7). The route adds the ones only it can know (rate
- * limited, the date states, demo) in TASK-402; `noDestination`'s country-less cards arrive with it.
+ * The page states the engine decides (§2.7). The date states ride on `dateApplied` and
+ * `hiddenByDate`, the demo state on the destination's registry status, and the rate-limited state
+ * is the route's (TASK-403); `noDestination` carries its country-less cards in `countryLess`.
  */
 export const searchStates = [
   "empty",
@@ -72,5 +78,18 @@ export const SearchResultViewSchema = z.strictObject({
   pageCount: z.number().int().nonnegative(),
   didYouMean: z.string().nullable(),
   state: z.enum(searchStates),
+  /**
+   * The `noDestination` state's own content (§2.7, §14 A-orchestrator-2026-10-24 item 1;
+   * TASK-402): the query's state over `coreRange(locale)`, its matches and its "Our selection",
+   * each a country-less card, which has no field a price could arrive in. `null` in every other
+   * state.
+   */
+  countryLess: z
+    .strictObject({
+      state: z.enum(["empty", "tooShort", "results", "noResults"]),
+      cards: z.array(CountryLessCardViewSchema).readonly(),
+      selection: z.array(CountryLessCardViewSchema).readonly(),
+    })
+    .nullable(),
 });
 export type SearchResultView = z.infer<typeof SearchResultViewSchema>;

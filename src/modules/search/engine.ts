@@ -252,7 +252,7 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
   async function addHubLinks(
     pages: PageLink[],
     locale: LocaleCode,
-    iso2: string,
+    iso2: string | undefined,
     shop: DestinationIndex,
     tokens: readonly string[],
   ): Promise<void> {
@@ -315,7 +315,13 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
       fields: Pick<
         SearchResultView,
         "pages" | "cards" | "selection" | "count" | "pageCount" | "state"
-      > & { readonly didYouMean?: string | null },
+      > &
+        Partial<
+          Pick<
+            SearchResultView,
+            "didYouMean" | "countryLess" | "dateApplied" | "hiddenByDate"
+          >
+        >,
     ): SearchOutcome => ({
       view: SearchResultViewSchema.parse({
         query,
@@ -324,6 +330,7 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
         hiddenByDate: 0,
         page,
         didYouMean: null,
+        countryLess: null,
         ...fields,
       }),
       tierCounts,
@@ -338,17 +345,19 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
             selectionOrder(shop).slice(0, config.pageSize),
           );
 
-    // No destination: the country-less state (§2.7, frame 3). Its core-range cards are the
-    // results route's, with the chooser (TASK-402); the engine names the state and stops.
+    // No destination: the country-less state (§2.7, frame 3; §14 A-orchestrator-2026-10-24 item
+    // 1). The words are matched among `coreRange(locale)` only, by the same tiers and §2.5's key
+    // with every band 0, and drawn as country-less cards: no price anywhere (TASK-402).
     if (destination === undefined) {
-      return outcome({
+      return countryLessOutcome(
+        locale,
+        localeIndex?.core,
+        query,
+        parsed,
+        page,
         pages,
-        cards: [],
-        selection: [],
-        count: 0,
-        pageCount: 0,
-        state: "noDestination",
-      });
+        outcome,
+      );
     }
 
     let early: SearchState | undefined;
@@ -370,7 +379,35 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
     await addHubLinks(pages, locale, destination, shop, parsed.tokens);
     const linked = pages.slice(0, config.pagesBlockMax);
 
-    const ranked = rankMatches(matchDocuments(shop, parsed.tokens, config));
+    const matched = rankMatches(matchDocuments(shop, parsed.tokens, config));
+    // The date (§2.4 "Deliverability"; AC-15): honoured only when the destination takes delivery
+    // dates and the date is bookable; what cannot arrive on it leaves the results and is counted.
+    const dateApplied =
+      parsedRequest.date !== undefined &&
+      (await sourceNow().dateOpen?.(destination, parsedRequest.date)) === true
+        ? parsedRequest.date
+        : null;
+    let ranked = matched;
+    if (dateApplied !== null) {
+      const source = sourceNow();
+      const kept: Match[] = [];
+      for (const match of matched) {
+        if (
+          (await source.deliverableOn?.(
+            destination,
+            match.sku,
+            dateApplied,
+          )) !== false
+        ) {
+          kept.push(match);
+        }
+      }
+      ranked = kept;
+    }
+    const dated = {
+      dateApplied,
+      hiddenByDate: matched.length - ranked.length,
+    };
     for (const match of ranked) tierCounts[match.tier] += 1;
 
     if (ranked.length === 0) {
@@ -380,8 +417,13 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
         selection: await selection(),
         count: 0,
         pageCount: 0,
-        didYouMean: didYouMean(shop, parsed.tokens, locale, config),
+        // "Did you mean" only when the words matched nothing (not when a date hid them all).
+        didYouMean:
+          matched.length === 0
+            ? didYouMean(shop, parsed.tokens, locale, config)
+            : null,
         state: "noResults",
+        ...dated,
       });
     }
 
@@ -397,6 +439,7 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
         count: ranked.length,
         pageCount,
         state: "outOfRange",
+        ...dated,
       });
     }
     const slice = ranked
@@ -409,6 +452,118 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
       count: ranked.length,
       pageCount,
       state: "results",
+      ...dated,
+    });
+  }
+
+  async function countryLessCards(
+    locale: LocaleCode,
+    documents: readonly IndexedDocument[],
+  ): Promise<NonNullable<SearchResultView["countryLess"]>["cards"]> {
+    if (documents.length === 0) return [];
+    return (
+      (await sourceNow().countryLessCards?.(
+        locale,
+        documents.map((document) => document.sku),
+      )) ?? []
+    );
+  }
+
+  /**
+   * The country-less state's content (§2.7 "No destination"): the same steps as a destination's
+   * search over `core`, its cards country-less. The Pages block links hubs (no country page:
+   * there is no country), occasions before categories.
+   */
+  async function countryLessOutcome(
+    locale: LocaleCode,
+    core: DestinationIndex | undefined,
+    query: string,
+    parsed: ReturnType<typeof parseQuery>,
+    page: number,
+    pages: PageLink[],
+    outcome: (
+      fields: Pick<
+        SearchResultView,
+        "pages" | "cards" | "selection" | "count" | "pageCount" | "state"
+      > &
+        Partial<Pick<SearchResultView, "didYouMean" | "countryLess">>,
+    ) => SearchOutcome,
+  ): Promise<SearchOutcome> {
+    const empty = {
+      pages,
+      cards: [],
+      selection: [],
+      count: 0,
+      pageCount: 0,
+      state: "noDestination" as const,
+    };
+    const selection = async (): Promise<
+      NonNullable<SearchResultView["countryLess"]>["selection"]
+    > =>
+      core === undefined
+        ? []
+        : countryLessCards(
+            locale,
+            selectionOrder(core).slice(0, config.pageSize),
+          );
+    let early: "empty" | "tooShort" | undefined;
+    if (query === "" || parsed.tokens.length === 0) early = "empty";
+    if (query !== "" && parsed.letters < config.minQueryLetters) {
+      early = "tooShort";
+    }
+    if (early !== undefined || core === undefined) {
+      return outcome({
+        ...empty,
+        countryLess: {
+          state: early ?? "noResults",
+          cards: [],
+          selection: await selection(),
+        },
+      });
+    }
+    await addHubLinks(pages, locale, undefined, core, parsed.tokens);
+    const linked = pages.slice(0, config.pagesBlockMax);
+    const ranked = rankMatches(matchDocuments(core, parsed.tokens, config));
+    if (ranked.length === 0) {
+      return outcome({
+        ...empty,
+        pages: linked,
+        didYouMean: didYouMean(core, parsed.tokens, locale, config),
+        countryLess: {
+          state: "noResults",
+          cards: [],
+          selection: await selection(),
+        },
+      });
+    }
+    const pageCount = Math.min(
+      Math.ceil(ranked.length / config.pageSize),
+      config.maxPages,
+    );
+    if (page > pageCount) {
+      return outcome({
+        ...empty,
+        pages: linked,
+        count: ranked.length,
+        pageCount,
+        state: "outOfRange",
+      });
+    }
+    return outcome({
+      ...empty,
+      pages: linked,
+      count: ranked.length,
+      pageCount,
+      countryLess: {
+        state: "results",
+        cards: await countryLessCards(
+          locale,
+          ranked
+            .slice((page - 1) * config.pageSize, page * config.pageSize)
+            .map((match) => match.document),
+        ),
+        selection: [],
+      },
     });
   }
 

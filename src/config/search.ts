@@ -174,3 +174,16 @@ export const SEARCH_CONFIG: SearchConfig = SearchConfigSchema.parse({
   suggestions: false,
   suggestMax: 6,
 });
+
+/**
+ * The results page's parameter names (§2.2, §5.2; TASK-402). Not in `QUERY_KEYS`
+ * (`src/config/url-keys.ts`): those send a listing request to the parameter route, and a `q` on a
+ * listing is a stray key like `utm_source`. The chooser's choice route carries `q` back to the
+ * results page after a choice (`chooserChoiceResponse`).
+ */
+export const SEARCH_PARAM = {
+  q: "q",
+  to: "to",
+  date: "date",
+  page: "page",
+} as const;
