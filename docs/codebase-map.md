@@ -128,7 +128,9 @@ task actually touches.
 | `[locale]/(track)/track/page.tsx` | Tracking lookup page | 018 |
 | `[locale]/-choose/-next/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchil… | 009 |
+| `[locale]/-search/limited/page.tsx` | The search page's rate-limited state (429/503) | 045 |
 | `[locale]/-search/page.tsx` | The search results page (SSR, noindex) | 045 |
+| `[locale]/-search/search-locale.ts` | The search routes' locale or 404 | 045 |
 | `[locale]/@header/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | The header of the product parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
@@ -139,6 +141,7 @@ task actually touches.
 | `[locale]/@header/(track)/track/page.tsx` | Tracking lookup header | 018 |
 | `[locale]/@header/-choose/-next/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot… | 043 |
+| `[locale]/@header/-search/limited/page.tsx` | The rate-limited search page's header (the… | 045 |
 | `[locale]/@header/-search/page.tsx` | The search page's header, out of context | 045 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{chi… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{chi… | 043 |
@@ -153,6 +156,7 @@ task actually touches.
 | `[locale]/@header/fuer-floristen/bewerben/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben… | 043 |
 | `[locale]/@header/page.tsx` | The locale home's header: out of context, and… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |
+| `[locale]/@switcher/-search/limited/page.tsx` | The rate-limited search page's language links… | 045 |
 | `[locale]/@switcher/-search/page.tsx` | Search page language links (bare search paths) | 045 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/page.tsx` | Depth-3 language links | 003 |
