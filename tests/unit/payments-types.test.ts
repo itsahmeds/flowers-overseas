@@ -48,7 +48,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
     // service and its admin action: the amount is a refund, capped by the order's and the
     // payment's own totals (AC-28). `requestRefund` is `refund`'s first step on the caller's
     // transaction (spec 020a §12 request 1, TASK-359): the same refund amount, the same checks.
-    // Every other export takes no amount at all.
+    // Every other export takes no amount at all, spec 013 §11's monitors (TASK-264) included.
     expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<
       "refund" | "requestRefund"
     >();
@@ -57,7 +57,9 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "AdminRefundInputSchema",
       "CANCELLED_STATES",
       "DISPUTABLE_STATES",
+      "PAID_NOT_ROUTED_ALERT",
       "PAYMENTS_ACTOR",
+      "PAYMENTS_MONITOR_JOB",
       "PAYMENT_ERROR_KEYS",
       "PAYMENT_RECORD_STATUSES",
       "PRODUCTION_START_ACTOR",
@@ -68,6 +70,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "SWEEP_ACTOR",
       "WEBHOOK_MAX_ATTEMPTS",
       "WEBHOOK_MAX_BYTES",
+      "WEBHOOK_SILENT_ALERT",
       "adminCancel",
       "adminRefund",
       "adminRefundDeps",
@@ -76,6 +79,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "declineMessageKey",
       "deliverAcceptance",
       "ingestStripeWebhook",
+      "paidNotRoutedDue",
       "paymentAcceptedOrderEffect",
       "paymentForOrder",
       "paymentForPurchase",
@@ -88,6 +92,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "replayStripeWebhooks",
       "replayWebhooks",
       "requestRefund",
+      "runPaymentsMonitor",
       "runProductionStart",
       "startPayment",
       "startProduction",
@@ -95,6 +100,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "succeededRefunds",
       "sweepPayments",
       "syncFromProvider",
+      "webhookSilent",
     ]);
   });
 

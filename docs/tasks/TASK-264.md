@@ -26,7 +26,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-04 (self-review, MON264): a stuck order raises one Sentry **event** per minute tick, grouped into **one issue** by its fingerprint (AC-39 as written). An order stuck for a day is 1,440 events against Sentry's monthly quota; if that matters, rate-limit in Sentry's alert rule or add a "first crossing only" rule by a spec amendment, not here.
+- 2026-11-04 (self-review, MON264): the 200-order batch is ordered by secured instant, so 200 night orders not yet due could hold a due order back a tick; far beyond Phase 1 volume.
+- 2026-11-04 (self-review, MON264): the quiet-site rule reads any `payment` with a `provider_ref` regardless of its `livemode` (AC-40 names no livemode for payments; each environment has its own database).
+- 2026-11-04 (self-review, MON264): the runbook lines for the two alerts (`payments.md`, `payment-webhook-down.md`) are TASK-265's, as its row says.
+- 2026-11-04 (self-review, MON264): `tests/unit/zod-boundaries.test.ts` (T-57, real tree) fails on main too (42 to 43 `src/app` entries, none in this diff); not this task's.
 
 ## Escalations
 
@@ -41,10 +45,11 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04 MON264: worktree `../fo-wt-264`, branch `task/TASK-264-payment-monitors` from main 0f339f1f2; row in_progress. Next: monitor module, job registry entry, unit + integration tests.
+- 2026-11-04 MON264: `src/modules/payments/monitor.ts` (`runPaymentsMonitor`, pure `paidNotRoutedDue`/`webhookSilent`), constants in `src/config/payments.ts`, `captureAlert` gains an optional fingerprint, `payments.monitor` registered, handled and enqueued by the minute tick; unit 17 + integration 9 green on a throwaway PG16; 13 mutations all red. PR 496 ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#496](https://github.com/itsahmeds/flowers-overseas/pull/496). `payments.monitor` (registry v1, empty payload; handler; enqueued by the minute tick under its own `singletonKey`) runs `runPaymentsMonitor` (`src/modules/payments/monitor.ts`): read-only, one `system` transaction, then `payment.paid_not_routed` per `test`/`live` order still `authorised`/`paid_unrouted` more than 5 minutes after spec 016's `expectedFirstOfferAt` (secured instant = the order's event out of `placed`; no destination operations falls back to that instant), fingerprinted `[alert, order_id]`; and `webhook.silent_24h` (flag on, no Stripe inbox row of the environment's `livemode` in 24 h, a payment with a `provider_ref` in 7 days), fingerprinted `[alert]`. `captureAlert` takes an optional fingerprint (additive). `NON_PII_TAGS` already held `alert` and `order_id` (TASK-257). No migration. Tests: unit `payments-monitor.test.ts` 17, integration `payments-monitor.test.ts` 9 (T-39 x3 incl. DST night and the engine path with a fault-injected router; T-40 x6), plus the job registry, runtime, tick and payments-barrel lists. No build, browser or CI run (founder's 11-04 rules).
