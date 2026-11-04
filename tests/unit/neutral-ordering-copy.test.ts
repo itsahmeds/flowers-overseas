@@ -55,10 +55,9 @@ const APPROVED = {
     "corridor.coverage.bodyNone",
     "We are not delivering in {country} yet, so this page lists no towns.",
   ],
-  N6: [
-    "categoryHub.destinationPending",
-    "No page yet. This becomes a link the day we start delivering here.",
-  ],
+  // N6 (`categoryHub.destinationPending`) left with its renderer: the products-first category hub
+  // lists only the countries whose page exists, each a direct link (spec 008 §14
+  // A-founder-2026-10-24a "Hubs"; TASK-388).
   N7: [
     "catalog.availability.noPartner",
     "We do not deliver to this destination yet.",

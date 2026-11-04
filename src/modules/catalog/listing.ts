@@ -61,6 +61,7 @@
  */
 import { z } from "zod";
 
+import { HUB_PAGE_SIZE, PICKER_CHIPS } from "@/config/commerce";
 import {
   type CountryIso2,
   COUNTRY_CODES,
@@ -143,7 +144,7 @@ import {
   ListingParamsSchema,
   ListingPageTypeSchema,
 } from "./schemas";
-import { localSpecialSkus } from "./shop";
+import { coreRange, localSpecialSkus } from "./shop";
 import { slugFor } from "./slugs";
 import type {
   Category,
@@ -436,11 +437,26 @@ export const ListingViewSchema = z
      */
     nextOccasions: z.array(ListingOccasionEntrySchema).readonly().optional(),
     /**
-     * A hub's lead figure (spec 004 §14 A23 **R2**; TASK-188): the registry's `leadSku`, falling
-     * back to the hub's first product. A card view with no money, like every hub card. It is not
-     * a grid card and not an `ItemList` element: the grid keeps every product in its own place.
+     * A hub's country picker (spec 004 §14 A-founder-2026-10-24a items 3 and 6; spec 008 §14
+     * A-founder-2026-10-24a "Hubs"; TASK-388): the chooser's form with `next` set to the hub's own
+     * key, its buttons the first `PICKER_CHIPS` shop countries, its `<datalist>` every registry
+     * country. The same `chooserPageView()` the home and the chooser page read. Absent on every
+     * other page type (it replaces TASK-188's lead figure, which the products-first boards drop).
      */
-    hubLead: HubCardViewSchema.optional(),
+    hubPicker: z
+      .object({
+        action: z.string().min(1),
+        chips: z
+          .array(
+            z
+              .object({ code: z.string().min(2), name: z.string().min(1) })
+              .strict(),
+          )
+          .readonly(),
+        datalist: z.array(z.string().min(1)).readonly(),
+      })
+      .strict()
+      .optional(),
     /**
      * A hub's deck (A23 clause 6): an approved message (`key`, A1 and A5), or one verbatim
      * sentence of the hub's own authored intro, chosen by the registry's `deckSentence`. Absent
@@ -1314,6 +1330,78 @@ export async function hubCardView(
 }
 
 /**
+ * A hub's core products (spec 008 §14 A-founder-2026-10-24a "Hubs"; AC-88; TASK-388): of the
+ * products tagged to the hub, those in `coreRange()` (core, and saleable in every shop country
+ * today), in "Our order": photographed first, then the core range's rank. Nothing here reads a
+ * header, a cookie or an IP.
+ */
+async function hubCoreProducts(
+  tagged: readonly Product[],
+  locale: LocaleCode,
+): Promise<readonly Product[]> {
+  const bySku = new Map(tagged.map((product) => [product.sku, product]));
+  const core = (await coreRange(locale)).flatMap((entry) => {
+    const product = bySku.get(entry.sku);
+    // A product with no slug in this locale has no page to choose a country for.
+    return product === undefined ||
+      slugFor("product", product.sku, locale) === undefined
+      ? []
+      : [product];
+  });
+  // "Our order" (spec 045 §2.5; spec 043 AC-13): an approved photograph first, then the rank.
+  return photoFirst(
+    core.map((product) => ({
+      product,
+      photo: photoFor(product.sku, locale).photo,
+    })),
+  ).map(({ product }) => product);
+}
+
+/**
+ * The **country-less card** of a hub (spec 008 AC-6's first form; spec 004 §14
+ * A-founder-2026-10-24a items 2 and 6; TASK-388): `hubCardView()`'s photograph and name, and one
+ * link through the chooser with `next=product/{slug}`. No price, currency, equivalent or slot:
+ * the schema has no field one could arrive in.
+ */
+async function chooserCardView(
+  product: Product,
+  locale: LocaleCode,
+): Promise<HubCardView> {
+  // Imported when called: `chooser.ts` reads `product.ts`, which reads this module, so a static
+  // import would close a cycle at load time.
+  const { chooserPath } = await import("./chooser");
+  const { photo, provenance } = photoFor(product.sku, locale);
+  return HubCardViewSchema.parse({
+    productId: product.sku,
+    name: copyRow("product", product.sku, locale)?.name ?? product.name,
+    href: chooserPath(locale, { locale, kind: "product", sku: product.sku }),
+    photo,
+    provenance,
+  });
+}
+
+/** The hub's picker: the chooser's form with `next` the hub's own key (items 3 and 6). */
+async function hubPickerOf(
+  locale: LocaleCode,
+  kind: "category" | "occasion",
+  key: string,
+): Promise<NonNullable<ListingView["hubPicker"]>> {
+  // Imported when called, for `chooserCardView()`'s reason.
+  const { chooserPageView } = await import("./chooser-choice");
+  const picker = await chooserPageView(
+    locale,
+    { locale, kind, key },
+    { kind: "ask" },
+    { remembered: undefined, chips: PICKER_CHIPS },
+  );
+  return {
+    action: picker.action,
+    chips: picker.chips.map(({ code, name }) => ({ code, name })),
+    datalist: picker.datalist,
+  };
+}
+
+/**
  * One category tile on a country shop root (§2): the count of products in it for this
  * destination, and the **one** "from" price the spec allows — the lowest payable price inside the
  * tile, which is labelled as a floor by the component.
@@ -1693,11 +1781,22 @@ export async function listingView(
       photo: photoFor(product.sku, locale).photo,
     })),
   ).map(({ product }) => product);
-  const total = ordered.length;
-  const pageCount = Math.ceil(total / LISTING_PAGE_SIZE);
+  /*
+   * **A hub shows only its core products, in the core range's order** (spec 008 §14
+   * A-founder-2026-10-24a "Hubs", AC-7 as amended, AC-88; spec 004 item 1; TASK-388): every
+   * product of `coreRange()` tagged to the hub, 24 per page. A florist's own bouquet and every
+   * other non-core product never shows before a country is chosen. The hub still *exists* by the
+   * count of every tagged product (AC-70 unchanged), so a hub may hold fewer core cards than the
+   * floor, or none (the brief's escalation: then no grid and no count line).
+   */
+  const hubCore = hub ? await hubCoreProducts(ordered, locale) : undefined;
+  const listed = hubCore ?? ordered;
+  const pageSize = hub ? HUB_PAGE_SIZE : LISTING_PAGE_SIZE;
+  const total = listed.length;
+  const pageCount = Math.ceil(total / pageSize);
   if (page > 1 && page > pageCount) return undefined;
   const pageOf = <T>(all: readonly T[]): readonly T[] =>
-    all.slice((page - 1) * LISTING_PAGE_SIZE, page * LISTING_PAGE_SIZE);
+    all.slice((page - 1) * pageSize, page * pageSize);
 
   /*
    * **Sort the whole set, then paginate** (§2 "Sort", §5.4; `/review 76`). Page 1 of
@@ -1712,7 +1811,7 @@ export async function listingView(
   let hubItems: readonly HubCardView[] = [];
   if (iso2 === undefined) {
     hubItems = await Promise.all(
-      pageOf(photographedFirst).map((product) => hubCardView(product, locale)),
+      pageOf(hubCore ?? []).map((product) => chooserCardView(product, locale)),
     );
   } else {
     const productLinks = options.productLinks ?? false;
@@ -1860,12 +1959,13 @@ export async function listingView(
           ]),
         }
       : {}),
+    ...(hub && entityKey !== undefined && kind !== undefined
+      ? { hubPicker: await hubPickerOf(locale, kind, entityKey) }
+      : {}),
     ...(hubPresentation === undefined
       ? {}
-      : await hubFirstScreen(
+      : hubFirstScreen(
           hubPresentation,
-          ordered,
-          locale,
           authoredIntro(kind ?? "category", entityKey ?? "", locale),
         )),
     ...(pageType === "occasionHub" && entityKey !== undefined
@@ -1981,25 +2081,21 @@ export function introSentences(intro: string): readonly string[] {
 
 /**
  * A hub's first-screen extras (spec 004 §14 A23 **R2** and clause 6; TASK-188), all read off the
- * presentation registry and never chosen by a component: the lead figure (the registry's
- * `leadSku`, else the hub's first product in its own order), the deck (an approved message, else
- * the intro sentence the registry names, else none) and the about block's approved keys.
+ * presentation registry and never chosen by a component: the deck (an approved message, else the
+ * intro sentence the registry names, else none) and the about block's approved keys. The lead
+ * figure left with the products-first hub (spec 008 §14 A-founder-2026-10-24a; TASK-388): the
+ * boards draw the grid's first card as the page's one photograph above the fold.
  */
-async function hubFirstScreen(
+function hubFirstScreen(
   row: {
-    readonly leadSku?: string | undefined;
     readonly deckKey?: string | undefined;
     readonly deckSentence?: number | undefined;
     readonly aboutEyebrowKey?: string | undefined;
     readonly aboutHeadingKey?: string | undefined;
     readonly plainProductsHeading?: true | undefined;
   },
-  ordered: readonly Product[],
-  locale: LocaleCode,
   intro: string | undefined,
-): Promise<Pick<ListingView, "hubLead" | "hubDeck" | "hubAbout">> {
-  const leadProduct =
-    ordered.find((product) => product.sku === row.leadSku) ?? ordered[0];
+): Pick<ListingView, "hubDeck" | "hubAbout"> {
   const sentence =
     row.deckSentence === undefined || intro === undefined
       ? undefined
@@ -2016,9 +2112,6 @@ async function hubFirstScreen(
       : { plainProductsHeading: row.plainProductsHeading }),
   };
   return {
-    ...(leadProduct === undefined
-      ? {}
-      : { hubLead: await hubCardView(leadProduct, locale) }),
     ...(row.deckKey !== undefined
       ? { hubDeck: { key: row.deckKey } }
       : sentence === undefined
@@ -2549,7 +2642,12 @@ export async function writeExistenceSummary(
   env: Readonly<Record<string, string | undefined>> = process.env,
   write: (text: string) => void = writeStepSummaryStdout,
 ): Promise<string> {
-  const summary = existenceSummaryMarkdown(await existenceCounts());
+  const summary = [
+    existenceSummaryMarkdown(await existenceCounts()),
+    thinCoreHubsMarkdown(await thinCoreHubs()),
+  ]
+    .filter((part) => part !== "")
+    .join("\n\n");
   const stepSummary = env["GITHUB_STEP_SUMMARY"];
   if (stepSummary !== undefined && stepSummary !== "") {
     // `node:fs` is reached by a **dynamic** import, and only on the branch that needs it: this
@@ -2564,6 +2662,69 @@ export async function writeExistenceSummary(
     write(`${summary}\n`);
   }
   return summary;
+}
+
+/** One hub that shows fewer core cards than the listing floor (spec 008 §14 A-founder-2026-10-24a). */
+export interface ThinCoreHub {
+  readonly locale: LocaleCode;
+  readonly pageType: "categoryHub" | "occasionHub";
+  readonly entityKey: string;
+  readonly path: string;
+  readonly coreCount: number;
+}
+
+/**
+ * The hubs whose grid holds fewer core products than `PRODUCT_COUNT_FLOOR` (spec 008 §14
+ * A-founder-2026-10-24a "Hubs": such a hub "still exists ... the build's listing summary prints
+ * each such hub as a warning for the coverage matrix"; TASK-388). Existence is unchanged (AC-70
+ * counts every tagged product); this is the coverage signal only.
+ */
+export async function thinCoreHubs(
+  locales: readonly LocaleCode[] = listingLocales(),
+): Promise<readonly ThinCoreHub[]> {
+  const thin: ThinCoreHub[] = [];
+  for (const locale of locales) {
+    // One core range per locale; each hub's count is `hubCoreProducts()`'s, the grid's own set.
+    const core = new Set((await coreRange(locale)).map((entry) => entry.sku));
+    for (const page of await listingPages(locale)) {
+      if (page.pageType !== "categoryHub" && page.pageType !== "occasionHub") {
+        continue;
+      }
+      const kind = page.pageType === "categoryHub" ? "category" : "occasion";
+      const tagged = await productsFor(
+        page.pageType,
+        page.entityKey,
+        kind,
+        undefined,
+      );
+      const coreCount = tagged.filter(
+        (product) =>
+          core.has(product.sku) &&
+          slugFor("product", product.sku, locale) !== undefined,
+      ).length;
+      if (coreCount >= PRODUCT_COUNT_FLOOR) continue;
+      thin.push({
+        locale,
+        pageType: page.pageType,
+        entityKey: page.entityKey ?? "",
+        path: page.path,
+        coreCount,
+      });
+    }
+  }
+  return thin;
+}
+
+/** The thin hubs as a warning list for the step summary; empty when there are none. */
+export function thinCoreHubsMarkdown(hubs: readonly ThinCoreHub[]): string {
+  if (hubs.length === 0) return "";
+  return [
+    `Warning: ${String(hubs.length)} hubs show fewer than ${String(PRODUCT_COUNT_FLOOR)} core products (coverage matrix):`,
+    "",
+    ...hubs.map(
+      (hub) => `- ${hub.path}: ${String(hub.coreCount)} core products`,
+    ),
+  ].join("\n");
 }
 
 /** The counts as the Markdown table §11 asks CI to print. No colour, no emoji, one table. */

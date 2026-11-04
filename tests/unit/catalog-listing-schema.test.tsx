@@ -244,11 +244,13 @@ const CASES: readonly { readonly label: string; readonly view: ListingView }[] =
       }),
     },
     {
-      label: "/en/occasions/mothers-day (occasion hub)",
+      // Birthday: an occasion hub with core products (Mother's Day carries none today, so its
+      // page has no grid and no ItemList; TASK-388).
+      label: "/en/occasions/birthday (occasion hub)",
       view: await view({
         locale: "en",
         pageType: "occasionHub",
-        entity: "mothers-day",
+        entity: "birthday",
       }),
     },
     {
@@ -429,15 +431,20 @@ describe("the ItemList carries an order and nothing else (AC-17, AC-18)", () => 
     }
     const hub = CASES.find((c) => c.view.pageType === "occasionHub")
       ?.view as ListingView;
-    for (const item of listItems(
+    const hubItems = listItems(
       nodeOf(listingJsonLd(hub, labelFor("en"), BASE), "ItemList"),
-    )) {
-      // A hub card is a tile with no `<a>` (no destination, no product page): no url.
+    );
+    expect(hubItems.length).toBe(hub.hubItems.length);
+    for (const [index, item] of hubItems.entries()) {
+      // A hub card links through the chooser (spec 004 item 2; TASK-388): its url is that link,
+      // and nothing else, never a price.
       expect(Object.keys(item).sort()).toStrictEqual([
         "@type",
         "name",
         "position",
+        "url",
       ]);
+      expect(item["url"]).toBe(`${BASE.baseUrl}${hub.hubItems[index]?.href}`);
     }
   });
 });

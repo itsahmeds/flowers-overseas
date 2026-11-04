@@ -53,6 +53,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  "home",
+  "occasionsIndex",
 ] as const;
 
 /**
@@ -144,7 +146,7 @@ describe("a hub carries no money, and the type is what says so (AC-7, §14 A3)",
 
   for (const [name, view, Page] of [
     ["category hub", roses, CategoryHubPage],
-    ["occasion hub", mothersDay, OccasionHubPage],
+    ["occasion hub", birthday, OccasionHubPage],
   ] as const) {
     it(`${name}: renders no currency symbol and does render the explanation`, () => {
       const html = render(<Page view={view} />, "en");
@@ -178,31 +180,18 @@ describe("a hub carries no money, and the type is what says so (AC-7, §14 A3)",
   }
 });
 
-describe("the priority image per width on a hub (spec 004 §14 A24 clause 5, AC-36; spec 008 §14 A11)", () => {
+describe("the priority image on a products-first hub: the first grid card at every width (spec 006 AC-19; TASK-388)", () => {
   /**
-   * A24 clause 5 rebinds AC-24's "exactly one" per width: **from `md` up** the one priority image
-   * is R2's lead figure, and **below `md`** it is the first grid card's photograph; each width has
-   * exactly one displayed `fetchpriority="high"` image and exactly one preload whose `media`
-   * matches it, naming that image's own ladder. The lead figure is never downloaded below `md`
-   * (its `<picture>` selects a blank source there). A11's zero holds per width: a width whose
-   * candidate is a placeholder nominates nothing, and no lower photograph is promoted.
+   * The products-first boards draw no lead figure (spec 008 §14 A-founder-2026-10-24a; TASK-388):
+   * the grid's first card is the page's one priority image at every width, with one preload. A11's
+   * zero holds: a placeholder first card nominates nothing, and no lower photograph is promoted.
    */
-  /** A real hub view with the named cards' photographs (and optionally the lead's) withdrawn. */
   function withPlaceholderAt(
     view: ListingView,
     indices: readonly number[],
-    lead = false,
   ): ListingView {
     return {
       ...view,
-      ...(lead && view.hubLead !== undefined
-        ? {
-            hubLead: {
-              ...view.hubLead,
-              photo: { kind: "placeholder", slot: "grid" } as const,
-            },
-          }
-        : {}),
       hubItems: view.hubItems.map((card, index) =>
         indices.includes(index)
           ? { ...card, photo: { kind: "placeholder", slot: "grid" } as const }
@@ -211,116 +200,38 @@ describe("the priority image per width on a hub (spec 004 §14 A24 clause 5, AC-
     };
   }
 
-  /** The `<picture>` inside the lead figure, and the first one inside the grid's first card. */
-  function subjects(html: string): {
-    readonly lead: number | undefined;
-    readonly firstCard: number | undefined;
-  } {
-    const leadAt = html.indexOf("data-fo-hub-lead=");
-    const cardAt = html.indexOf("data-fo-product-card=");
-    const nextCard = html.indexOf("data-fo-product-card=", cardAt + 1);
-    const all = pictures(html);
-    const inside = (from: number, to: number): number | undefined =>
-      all.find((picture) => picture.index > from && picture.index < to)?.index;
-    return {
-      lead:
-        leadAt === -1
-          ? undefined
-          : inside(leadAt, cardAt === -1 ? html.length : cardAt),
-      firstCard:
-        cardAt === -1
-          ? undefined
-          : inside(cardAt, nextCard === -1 ? html.length : nextCard),
-    };
-  }
-
   for (const [name, view, Page] of [
     ["category hub (roses)", roses, CategoryHubPage],
     ["occasion hub (Birthday)", birthday, OccasionHubPage],
-    ["occasion hub (Mother's Day)", mothersDay, OccasionHubPage],
   ] as const) {
-    it(`${name}: the lead from \`md\` up and the first card below \`md\`, one each`, () => {
-      expect(view.hubLead?.photo.kind).toBe("asset");
+    it(`${name}: one priority image, the first card's, at both widths`, () => {
       expect(view.hubItems[0]?.photo.kind).toBe("asset");
       const html = render(<Page view={view} />, "en");
-      const at = subjects(html);
-      const desktop = atWidth(html, "md-up");
-      const phone = atWidth(html, "below-md");
-
-      expect(desktop.high).toHaveLength(1);
-      expect(desktop.high[0]?.index).toBe(at.lead);
-      expect(desktop.preloads).toHaveLength(1);
-      expect(desktop.preloads[0]?.srcset).toBe(desktop.high[0]?.srcset);
-      expect(desktop.preloads[0]?.sizes).toBe(desktop.high[0]?.sizes);
-      expect(desktop.eager).toHaveLength(1);
-
-      expect(phone.high).toHaveLength(1);
-      expect(phone.high[0]?.index).toBe(at.firstCard);
-      expect(phone.preloads).toHaveLength(1);
-      expect(phone.preloads[0]?.srcset).toBe(phone.high[0]?.srcset);
-      expect(phone.preloads[0]?.sizes).toBe(phone.high[0]?.sizes);
-      expect(phone.eager).toHaveLength(1);
-
-      // The lead figure is never downloaded below `md`: its picture is displayed from `md` only.
-      expect(
-        pictures(html).find((picture) => picture.index === at.lead)
-          ?.displayedAt,
-      ).toBe("md-up");
+      const cardAt = html.indexOf("data-fo-product-card=");
+      const nextCard = html.indexOf("data-fo-product-card=", cardAt + 1);
+      const first = pictures(html).find(
+        (picture) => picture.index > cardAt && picture.index < nextCard,
+      )?.index;
+      for (const width of ["md-up", "below-md"] as const) {
+        const at = atWidth(html, width);
+        expect(at.high, width).toHaveLength(1);
+        expect(at.high[0]?.index, width).toBe(first);
+        expect(at.preloads, width).toHaveLength(1);
+        expect(at.preloads[0]?.srcset, width).toBe(at.high[0]?.srcset);
+      }
+      expect(html).not.toContain("data-fo-hub-lead");
     });
   }
 
-  it("is the registry's `leadSku`, outside the grid's order and not an `ItemList` element (R2)", () => {
-    expect(birthday.hubLead?.productId).toBe("FO-BQ-023");
-    expect(roses.hubLead?.productId).toBe("FO-BQ-002");
-    expect(mothersDay.hubLead?.productId).toBe("FO-BQ-007");
-    const html = render(<OccasionHubPage view={birthday} />, "en");
-    // The figure is a figure: no link, no card, no list item.
-    const figure =
-      /<figure[^>]*data-fo-hub-lead[\s\S]*?<\/figure>/u.exec(html)?.[0] ?? "";
-    expect(figure).not.toBe("");
-    expect(figure).not.toContain("<a ");
-    expect(figure).not.toContain("data-fo-product-card");
-  });
-
-  it("nominates nothing at all where every photograph is a placeholder", () => {
-    const allPlaceholders = withPlaceholderAt(
-      mothersDay,
-      mothersDay.hubItems.map((_card, index) => index),
-      true,
+  it("nominates nothing where the first card is a placeholder, and promotes no lower one", () => {
+    const html = render(
+      <CategoryHubPage view={withPlaceholderAt(roses, [0])} />,
+      "en",
     );
-    const html = render(<OccasionHubPage view={allPlaceholders} />, "en");
     for (const width of ["md-up", "below-md"] as const) {
       const at = atWidth(html, width);
       expect(at.high, width).toHaveLength(0);
-      expect(at.eager, width).toHaveLength(0);
       expect(at.preloads, width).toHaveLength(0);
-    }
-    expect(pictures(html)).toHaveLength(0);
-  });
-
-  it("promotes no lower photograph below `md` when the first card is a placeholder", () => {
-    for (const [name, html] of [
-      [
-        "orchids",
-        render(
-          <CategoryHubPage view={withPlaceholderAt(orchids, [0])} />,
-          "en",
-        ),
-      ],
-      [
-        "all-saints-day",
-        render(
-          <OccasionHubPage view={withPlaceholderAt(allSaints, [0])} />,
-          "en",
-        ),
-      ],
-    ] as const) {
-      const phone = atWidth(html, "below-md");
-      expect(phone.high, name).toHaveLength(0);
-      expect(phone.eager, name).toHaveLength(0);
-      expect(phone.preloads, name).toHaveLength(0);
-      // From `md` up the lead figure is still the one image (its own photograph).
-      expect(atWidth(html, "md-up").high, name).toHaveLength(1);
     }
   });
 });
@@ -336,11 +247,13 @@ describe("the category hub (§5.3 row 3, §13 Q4)", () => {
     expect(text).toContain("Roses in red, pink, white");
   });
 
-  it("puts the destinations before the products (§13 Q4: countries first)", () => {
-    const destinations = html.indexOf("data-fo-hub-pills");
+  it("puts the products first and the destination rows after the copy (AC-89)", () => {
     const products = html.indexOf("data-fo-hub-products");
-    expect(destinations).toBeGreaterThan(-1);
-    expect(destinations).toBeLessThan(products);
+    const about = html.indexOf("data-fo-hub-about");
+    const destinations = html.indexOf("data-fo-hub-destinations=");
+    expect(products).toBeGreaterThan(-1);
+    expect(about).toBeGreaterThan(products);
+    expect(destinations).toBeGreaterThan(about);
   });
 
   it("names every published destination, in `collator(locale)` order", () => {
@@ -364,26 +277,21 @@ describe("the category hub (§5.3 row 3, §13 Q4)", () => {
         `href="${destination.href ?? ""}"`,
       );
     }
-    expect(html).toContain('data-fo-hub-destination-kind="link"');
-    // R4: each pill is one link named by `categoryHub.destinationLink`, its visible text the
-    // country and the count.
+    // Each row is one direct link named by `categoryHub.destinationLink`, its visible text the
+    // country (AC-82: never through the chooser).
     expect(html).toContain('aria-label="See them with prices for Poland"');
-    expect(text).toContain("We can make 15 of them there.");
+    expect(html).toContain('href="/en/poland/flowers/roses"');
   });
 
-  it("names a destination in words where it has no page, and links nothing", () => {
+  it("draws no destination rows where no country has the page, and still no money", () => {
     // `orchids` is below the six-product floor in every destination, so its hub has no country
-    // page to link at anywhere — the artboard's "text, not links" state, over the real corpus.
+    // page to link at anywhere: the products-first board lists only links, so nothing renders.
     const orchidsHtml = render(<CategoryHubPage view={orchids} />, "en");
     expect(orchids.links.destinations.every((d) => d.href === undefined)).toBe(
       true,
     );
-    expect(orchidsHtml).not.toContain('data-fo-hub-destination-kind="link"');
-    expect(
-      orchidsHtml.match(/data-fo-hub-destination-kind="text"/gu),
-    ).toHaveLength(orchids.links.destinations.length);
-    expect(textOf(orchidsHtml)).toContain("No page yet.");
-    // A picker with no link is still a list of the destinations we serve, and still no money.
+    expect(orchidsHtml).not.toContain("data-fo-hub-destinations=");
+    expect(orchidsHtml).not.toContain("data-fo-hub-destination=");
     expect(textOf(orchidsHtml)).not.toMatch(MONEY);
   });
 
@@ -398,11 +306,12 @@ describe("the category hub (§5.3 row 3, §13 Q4)", () => {
     expect(html).toContain('aria-current="page"');
   });
 
-  it("adds no client island, no inline script and no form", () => {
+  it("adds no client island and no inline script; its one form is the picker's GET (item 3)", () => {
     expect(html).not.toContain("<script");
     expect(html).not.toContain("onclick");
-    expect(html).not.toMatch(/<form/iu);
-    expect(html).not.toMatch(/<button/iu);
+    expect(html.match(/<form/giu)).toHaveLength(1);
+    expect(html).toMatch(/<form[^>]*method="get"/u);
+    expect(html).toContain("data-fo-hub-picker");
   });
 });
 
@@ -432,18 +341,26 @@ describe("the occasion hub's date table (AC-11, §14 A1, A10, design-round Q6)",
     expect(html).toContain('scope="col"');
   });
 
-  it("puts its chip row of destinations above the grid, and none after it (AC-33; TASK-241)", () => {
-    // Spec 008 §14 A-founder-2026-10-14c: on a hub where a chip row renders, it precedes the grid.
-    // Since TASK-188 a dated hub (this one) draws its dates table in the band instead of the
-    // destination pills, so the chip row is the undated hub's (Birthday).
-    expect(html).not.toContain("data-fo-hub-destination=");
+  it("puts the grid, then the dates, then the copy and the destination rows (AC-89)", () => {
+    // Mother's Day carries no core product today, so its grid is absent (the brief's escalation):
+    // the dates follow the picker. Birthday, evergreen, has the grid and the "any day" dates.
+    expect(html).not.toContain("data-fo-listing-grid=");
+    expect(html.indexOf("data-fo-hub-picker")).toBeLessThan(
+      html.indexOf("data-fo-hub-dates="),
+    );
+    expect(html.indexOf("data-fo-hub-dates=")).toBeLessThan(
+      html.indexOf("data-fo-hub-destinations="),
+    );
     const evergreen = render(<OccasionHubPage view={birthday} />, "en");
-    const chips = evergreen.indexOf("data-fo-hub-destination=");
     const grid = evergreen.indexOf("data-fo-listing-grid=");
-    expect(chips).toBeGreaterThan(-1);
-    expect(grid).toBeGreaterThan(-1);
-    expect(chips).toBeLessThan(grid);
-    expect(evergreen.slice(grid)).not.toContain("data-fo-hub-destination=");
+    const dates = evergreen.indexOf("data-fo-hub-dates=");
+    const about = evergreen.indexOf("data-fo-hub-about");
+    const rows = evergreen.indexOf("data-fo-hub-destinations=");
+    expect(grid).toBeGreaterThan(evergreen.indexOf("data-fo-hub-picker"));
+    expect(dates).toBeGreaterThan(grid);
+    expect(about).toBeGreaterThan(dates);
+    expect(rows).toBeGreaterThan(about);
+    expect(evergreen.slice(0, grid)).not.toContain("data-fo-hub-destination=");
   });
 
   it("has two columns: the third is TASK-111's (§14 A10)", () => {
@@ -467,7 +384,9 @@ describe("the occasion hub's date table (AC-11, §14 A1, A10, design-round Q6)",
     // rows — a column that could only ever say "no" is not information.
     const evergreen = render(<OccasionHubPage view={birthday} />, "en");
     expect(birthday.occasionDates?.every((row) => !row.observed)).toBe(true);
-    expect(evergreen).not.toContain("data-fo-hub-dates");
+    // The boards' "The dates · Any day of the year" stands in the table's place (TASK-388).
+    expect(evergreen).toContain('data-fo-hub-dates="0"');
+    expect(textOf(evergreen)).toContain("Any day of the year");
     expect(evergreen).not.toContain("<table");
     // …and the page is still a page: heading, intro, sentence and cards.
     expect(evergreen.match(/<h1/gu)).toHaveLength(1);

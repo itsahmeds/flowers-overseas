@@ -130,10 +130,12 @@ const FIXTURES: Readonly<Record<string, Record<string, unknown>>> = {
     pageType: "categoryHub",
     entity: "hand-tied-bouquets",
   }),
+  // Birthday: Mother's Day carries no core product today, so its hub has no grid and no
+  // ItemList (spec 008 §14 A-founder-2026-10-24a; TASK-388).
   "listing-occasion-hub.json": await documentFor({
     locale: "en",
     pageType: "occasionHub",
-    entity: "mothers-day",
+    entity: "birthday",
   }),
   "listing-occasions-index.json": await documentFor({
     locale: "en",

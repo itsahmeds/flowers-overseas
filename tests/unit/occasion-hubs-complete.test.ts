@@ -221,9 +221,9 @@ describe("AC-71: Appendix A's tags are the data (T-71)", () => {
   });
 });
 
-describe("AC-72: each Appendix A hub renders at least six cards (T-72, unit half)", () => {
+describe("AC-72: each Appendix A hub's country pages hold at least six cards (T-72, unit half; read on the country occasion pages since spec 008 §14 A-founder-2026-10-24a)", () => {
   it.each(LOCALES)(
-    "%s: listingView() gives every Appendix hub six or more hubItems",
+    "%s: every Appendix hub shows its core products, and each of its country occasion pages six or more",
     async (locale) => {
       const hubs = new Map(
         (await listingPages(locale))
@@ -237,13 +237,33 @@ describe("AC-72: each Appendix A hub renders at least six cards (T-72, unit half
           { locale, pageType: "occasionHub", entity: slug },
           { from: FROM },
         );
-        expect(
-          view?.hubItems.length ?? 0,
-          `${locale} ${key}`,
-        ).toBeGreaterThanOrEqual(PRODUCT_COUNT_FLOOR);
-        expect(view?.resultCount, `${locale} ${key}`).toBe(
-          APPENDIX[key]?.count,
+        // The hub shows every core product it carries (spec 004 item 1; TASK-388), however few:
+        // its count is the core range's, never more than the hub's whole tagged set.
+        expect(view?.hubItems.length, `${locale} ${key}`).toBe(
+          view?.resultCount,
         );
+        expect(view?.resultCount ?? 0, `${locale} ${key}`).toBeLessThanOrEqual(
+          APPENDIX[key]?.count ?? 0,
+        );
+        // Q-24k's default: AC-72's six are read on the hub's country occasion pages (AC-73's).
+        const countryPages = (await listingPages(locale)).filter(
+          (page) =>
+            page.pageType === "countryOccasion" && page.entityKey === key,
+        );
+        for (const page of countryPages) {
+          const country = await listingView(
+            {
+              locale,
+              pageType: "countryOccasion",
+              country: page.countrySlug,
+              entity: page.slug,
+            },
+            { from: FROM },
+          );
+          expect(country?.resultCount ?? 0, page.path).toBeGreaterThanOrEqual(
+            PRODUCT_COUNT_FLOOR,
+          );
+        }
       }
     },
   );
@@ -295,7 +315,12 @@ describe("AC-73: the country occasion pages follow the hubs (T-73, unit half)", 
           },
           { from: FROM },
         );
-        expect(view?.resultCount, page.path).toBe(hub?.resultCount);
+        // The country page lists the hub's whole tagged set (the hub itself shows only its core
+        // products since TASK-388).
+        expect(view?.resultCount, page.path).toBe(APPENDIX[key]?.count);
+        expect(hub?.resultCount ?? 0).toBeLessThanOrEqual(
+          view?.resultCount ?? 0,
+        );
       }
     }
     // 52 of the 59 country occasion pages are Appendix A occasions (Mother's Day is the rest).

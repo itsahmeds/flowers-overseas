@@ -7,7 +7,6 @@
  *  - the hub's dates table holds, in the Poland row, both days in order, joined the way
  *    `Intl.ListFormat` joins them; the Spanish row (26 July) and the Italian row (2 October) one
  *    date each;
- *  - the hub's first-screen Poland card holds both days the same way;
  *  - the Poland country occasion page's dated line holds both;
  *  - the corridor calendar for Poland, the occasions index's "next six" and the shop root's
  *    "Coming up" list `grandparents_day` once, by its primary date.
@@ -39,6 +38,7 @@ const NOW = new Date("2026-10-21T12:00:00Z");
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 const NAMESPACES = [
+  "home",
   "shop",
   "categoryHub",
   "occasionHub",
@@ -148,7 +148,7 @@ describe.each(LOCALES)("AC-76 in %s: the Grandparents' Day hub", (locale) => {
     expect(rows.get("IT")?.alsoDates).toBeUndefined();
   });
 
-  it("prints both Polish days in the table's Poland cell and the Poland card, Spain and Italy one", async () => {
+  it("prints both Polish days in the table's Poland cell, Spain and Italy one", async () => {
     const html = render(
       <OccasionHubPage view={await hubView(locale)} />,
       locale,
@@ -157,11 +157,9 @@ describe.each(LOCALES)("AC-76 in %s: the Grandparents' Day hub", (locale) => {
     const polandRow = readable(element(html, "tr", 'data-fo-hub-date="PL"'));
     expect(polandRow).toContain(joined(POLAND, locale, "calendarDate"));
 
-    const polandCard = readable(
-      element(html, "div", 'data-fo-hub-first-date="PL"') ||
-        element(html, "a", 'data-fo-hub-first-date="PL"'),
-    );
-    expect(polandCard).toContain(joined(POLAND, locale, "dayMonth"));
+    // The first screen's per-country date cards left with the band (products-first hub,
+    // TASK-388): the table is the one place the hub prints its dates.
+    expect(html).not.toContain("data-fo-hub-first-date");
 
     const spainRow = readable(element(html, "tr", 'data-fo-hub-date="ES"'));
     const spainDate = day("2027-07-26", locale, "calendarDate");

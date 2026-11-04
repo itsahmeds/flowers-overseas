@@ -38,6 +38,7 @@ vi.mock("../../src/modules/ui/shop/photoFirst.ts", async (importActual) => {
 
 import {
   type ListingView,
+  coreRange,
   listingView,
   photoFirst,
   productView,
@@ -251,26 +252,32 @@ describe("country listings in default order: photographs first, spec 005's order
   );
 });
 
-describe("hub grids: photographs first (AC-13)", () => {
-  it("the plants hub ends with the two plants without a photograph, each group in the hub's order", async () => {
-    const hub = await view({
-      locale: "en",
-      pageType: "categoryHub",
-      entity: "plants",
-    });
-    const kinds = hub.hubItems.map((card) => card.photo.kind);
-    const firstBox = kinds.indexOf("placeholder");
-    expect(firstBox).toBeGreaterThan(0);
-    expect(kinds.slice(firstBox).every((kind) => kind === "placeholder")).toBe(
-      true,
-    );
-    expect(hub.hubItems.slice(firstBox).map((card) => card.name)).toEqual([
-      "Olive Sapling",
-      "Peace Lily",
-    ]);
-    // The hub's order is the locale's collation of the name, inside each group.
-    const names = hub.hubItems.slice(0, firstBox).map((card) => card.name);
-    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, "en")));
+describe("hub grids: photographs first, then the core rank (AC-13; spec 008 AC-88; TASK-388)", () => {
+  it("every hub lists its core products, photographed first, each group in rank order", async () => {
+    const range = await coreRange("en");
+    const rank = new Map(range.map((entry) => [entry.sku, entry.coreRank]));
+    for (const entity of ["plants", "roses", "hand-tied-bouquets"]) {
+      const hub = await view({ locale: "en", pageType: "categoryHub", entity });
+      const kinds = hub.hubItems.map((card) => card.photo.kind);
+      const firstBox = kinds.indexOf("placeholder");
+      if (firstBox > -1) {
+        expect(
+          kinds.slice(firstBox).every((kind) => kind === "placeholder"),
+          entity,
+        ).toBe(true);
+      }
+      for (const group of [
+        hub.hubItems.filter((card) => card.photo.kind === "asset"),
+        hub.hubItems.filter((card) => card.photo.kind === "placeholder"),
+      ]) {
+        const ranks = group.map((card) => rank.get(card.productId) ?? -1);
+        expect(ranks, entity).toEqual([...ranks].sort((x, y) => x - y));
+        expect(
+          ranks.every((r) => r > 0),
+          entity,
+        ).toBe(true);
+      }
+    }
   });
 });
 

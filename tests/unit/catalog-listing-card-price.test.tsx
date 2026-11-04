@@ -58,6 +58,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  "home",
+  "occasionsIndex",
 ] as const;
 
 function render(node: ReactElement, locale: string): string {
@@ -208,7 +210,7 @@ const HUB_PAGES = [
   },
   {
     name: "the occasion hub",
-    identity: { locale: "en", pageType: "occasionHub", entity: "mothers-day" },
+    identity: { locale: "en", pageType: "occasionHub", entity: "birthday" },
     page: (v: ListingView) => <OccasionHubPage view={v} />,
   },
 ] as const;
@@ -300,7 +302,8 @@ describe("the grid's example label: one element, displayed at every width (claus
       expect(occurrences(html, "data-fo-grid-provenance=")).toBe(1);
       const at = html.indexOf("data-fo-grid-provenance=");
       expect(html.slice(at, at + 40)).toContain('"all"');
-      expect(at).toBeGreaterThan(html.indexOf('id="hub-products-heading"'));
+      // On the count line's row, above the grid (the products-first boards' `.cm-tool`).
+      expect(at).toBeGreaterThan(html.indexOf("data-fo-hub-count="));
       expect(at).toBeLessThan(html.indexOf("data-fo-product-card="));
       for (const part of cards(html)) {
         expect(part).toContain('data-fo-card-provenance="hidden"');
@@ -316,9 +319,14 @@ describe("a destination-less hub: no price on any card, and the reason said once
     expect(cards(html).length).toBeGreaterThan(0);
     expect(occurrences(html, LINE)).toBe(0);
     expect(html).not.toContain('data-fo-price="card"');
-    // Each hub card's text is its name and its (hidden) example label, and nothing else.
+    // Each hub card's text is its name, `shop.price.choose`, `shop.cta.chooseCountry` and its
+    // (hidden) example label, and nothing else (spec 008 AC-6's country-less form; TASK-388).
     const media = loadMessages("en", ["media"])["media"] as {
       provenance: { aiExample: string };
+    };
+    const ask = loadMessages("en", ["shop"])["shop"] as {
+      price: { choose: string };
+      cta: { chooseCountry: string };
     };
     cards(html).forEach((part, index) => {
       const card = part.slice(0, part.indexOf("</article>"));
@@ -326,7 +334,9 @@ describe("a destination-less hub: no price on any card, and the reason said once
         decode(card.slice(card.indexOf(">") + 1).replace(/<[^>]+>/gu, ""))
           .replace(media.provenance.aiExample, "")
           .trim(),
-      ).toBe(v.hubItems[index]?.name);
+      ).toBe(
+        `${v.hubItems[index]?.name}${ask.price.choose}${ask.cta.chooseCountry}`,
+      );
     });
     expect(decode(html)).not.toContain(
       "No price here. The price depends on the destination.",

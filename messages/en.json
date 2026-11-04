@@ -790,10 +790,6 @@
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
     },
-    "note": {
-      "mark": "P.S.",
-      "label": "A note before you choose"
-    },
     "card": {
       "localSpecial": "Only in {country}"
     },
@@ -824,10 +820,7 @@
     "h1": "{entity} to send abroad",
     "destinationsEyebrow": "First, the destination",
     "destinationsHeading": "Where are they?",
-    "destinationCount": "{count, plural, one {We can make # of them there.} other {We can make # of them there.}}",
     "destinationLink": "See them with prices for {country}",
-    "destinationPending": "No page yet. This becomes a link the day we start delivering here.",
-    "productsEyebrow": "Then, what we make",
     "productsHeading": "Our {entity}",
     "deck": {
       "roses": "Red for love, white for a loss, pink and orange for everything in between.",
@@ -849,7 +842,6 @@
     "countryColumn": "Country",
     "dateColumn": "Date",
     "dateUnknown": "Omitted: we cannot compute this country's date yet",
-    "productsEyebrow": "What we make for it",
     "productsHeading": "{entity} flowers",
     "destinationsHeading": "Where we have a page for it",
     "destinationLink": "{entity} flowers for {country}",

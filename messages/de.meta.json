@@ -669,20 +669,10 @@
     "reviewed": false,
     "sourceHash": "9ebdc631909fcc688e3e8baee4040eb2ca5645b5b51f5c86bfedc41c71ef4e9f"
   },
-  "categoryHub.destinationCount": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "19ccf94a00fc535b720ff43fcd6bd4940a3e9816f1ce5040298f782a1ee2d138"
-  },
   "categoryHub.destinationLink": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "401d41f4d61cc74f76a6bb229c21b43d312434cde799f1b7907f154a4c186e57"
-  },
-  "categoryHub.destinationPending": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "8747594d0ba5fa6b00f21845df3a1f77eb21ad319439a3aee67fabfe9b700f73"
   },
   "categoryHub.destinationsEyebrow": {
     "source": "machine",
@@ -698,11 +688,6 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "0b3c59d0436c6c910a8fc7635b5c027d697aa7432286a5a1423ed15251ac7a85"
-  },
-  "categoryHub.productsEyebrow": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "49827550360bc1158ae932daab3416871ffe0f43e162946be9d1d6cc1f95da51"
   },
   "categoryHub.productsHeading": {
     "source": "machine",
@@ -3164,11 +3149,6 @@
     "reviewed": false,
     "sourceHash": "48695298cd5baa712cdae671b3a0f392d18e0082f1b882fc70f69776a4164b11"
   },
-  "occasionHub.productsEyebrow": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "d2b2901ebd36c8640300a9b96366ce4707cac214167e51d3120f8f7d0babb7aa"
-  },
   "occasionHub.productsHeading": {
     "source": "machine",
     "reviewed": false,
@@ -3673,16 +3653,6 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "d6c78659f21708394b63d5fd407783f26e51433cb3559df3339d7f98f7905a68"
-  },
-  "shop.note.label": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "c4eea6824149d50fa3efe20da911e3396308effc1996bba539b3f46f63250315"
-  },
-  "shop.note.mark": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "073f4407e1c072ce2f793b3994691ddef81b1f31090225bf71aa144a76df99ba"
   },
   "shop.occasion.dateNote": {
     "source": "machine",
