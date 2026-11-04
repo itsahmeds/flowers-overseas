@@ -1100,7 +1100,8 @@
       "amount": "Price"
     },
     "legal": {
-      "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that."
+      "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that.",
+      "payButton": "Pay {amount} and place order"
     }
   },
   "confirmation": {
@@ -1193,7 +1194,22 @@
     "step": {
       "testLabel": "Test mode. Use a test card. No real money moves.",
       "noScript": "Paying needs JavaScript. Turn it on, or call or message us and we will help you order.",
-      "submitting": "Processing your payment…"
+      "submitting": "Processing your payment…",
+      "payTitle": "Payment",
+      "preContractTitle": "Before you pay",
+      "draftLabel": "Draft, not in force",
+      "whatYouBuy": "What you buy",
+      "item": "{name}, {details}",
+      "printedCard": "with a printed card",
+      "total": "Total",
+      "totalIncluded": "{amount}, VAT and delivery included",
+      "delivery": "Delivery",
+      "deliveryWhen": "{date}, {city}",
+      "deliveryItem": "Delivery {n} of {total}: {item} · {date}, {city}",
+      "cancelling": "Cancelling",
+      "seller": "Seller",
+      "processedBy": "Card payments are processed by Stripe. We never store card numbers.",
+      "notPaidYet": "Not paid yet. Nothing was charged."
     },
     "confirmation": {
       "paid": "Thank you. We have your order.",
@@ -1203,7 +1219,8 @@
       "cancelledByYouRefunding": "You cancelled this order. We are refunding {amount} to your original payment method.",
       "cancelledByYouRefunded": "You cancelled this order. We have refunded {amount}.",
       "notDeliveredRefunding": "We could not deliver this order. We are refunding {amount} to your original payment method.",
-      "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}."
+      "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}.",
+      "yourOrder": "Your order"
     }
   },
   "floristAuth": {

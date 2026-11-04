@@ -14,21 +14,21 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +18 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +116 |
-| `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +10 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +117 |
+| `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +12 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +129 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +131 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +19 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +15 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +16 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +26 |
-| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +11 |
+| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +13 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +37 |
-| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +68 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +69 |
 
 ## Config (`src/config/`)
 
@@ -103,6 +103,8 @@ task actually touches.
 | `[locale]/(checkout)/_views/CheckoutHeader.tsx` | The checkout's header | 010 |
 | `[locale]/(checkout)/_views/CheckoutView.tsx` | `/{locale}/checkout`, drawn (spec 010 §2 "The… | 010 |
 | `[locale]/(checkout)/_views/ConfirmationView.tsx` | `/{locale}/checkout/done`, drawn (spec 010 §2… | 010 |
+| `[locale]/(checkout)/_views/PayStep.tsx` | Step 3 in `test` and `live` (spec 013 §5.3… | 013 |
+| `[locale]/(checkout)/_views/PaymentConfirmation.tsx` | `/{locale}/checkout/done` in `test` and `live`… | 013 |
 | `[locale]/(checkout)/_views/PostPurchaseBlock.tsx` | Spec 018's post-purchase block, its quiet… | 018 |
 | `[locale]/(checkout)/basket/BasketView.tsx` | The basket page's body (spec 010 §14… | 010 |
 | `[locale]/(checkout)/basket/page.tsx` | `/{locale}/basket` (spec 010 §14… | 010 |
@@ -111,6 +113,8 @@ task actually touches.
 | `[locale]/(checkout)/checkout/done/buyer-cancel.ts` | The confirmation's buyer cancel, the part that… | 018 |
 | `[locale]/(checkout)/checkout/done/page.tsx` | `/{locale}/checkout/done` (spec 010 §2… | 010 |
 | `[locale]/(checkout)/checkout/page.tsx` | `/{locale}/checkout` (spec 010 §2 "The… | 010 |
+| `[locale]/(checkout)/checkout/pay-actions.ts` | Step 3's two payment actions for the… | 013 |
+| `[locale]/(checkout)/checkout/return/route.ts` | GET: the 3DS and bank-redirect return;… | 013 |
 | `[locale]/(track)/track/LookupForm.tsx` | Tracking lookup page body and form | 018 |
 | `[locale]/(track)/track/[token]/ShareTile.tsx` | Share-link island | 018 |
 | `[locale]/(track)/track/[token]/TrackingPageView.tsx` | Tracking and not-working page bodies | 018 |
@@ -328,8 +332,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 474 |
-| `tests/integration/` | 93 |
+| `tests/unit/` | 476 |
+| `tests/integration/` | 95 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |

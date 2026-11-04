@@ -21,12 +21,17 @@ import {
   CHECKOUT_COOKIE_NAME,
   CHECKOUT_ECHO_COOKIE_NAME,
   checkoutScreen,
+  confirmationFor,
   decodeCheckoutEcho,
   isDraftToken,
+  unpaidPurchase,
 } from "@/modules/checkout";
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 import { CheckoutStatePage, CheckoutStepPage } from "../_views/CheckoutView";
+import { UnpaidPayPage } from "../_views/PayStep";
 import { checkoutAction } from "./actions";
+// Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
+import "@/modules/payments/wiring";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -70,6 +75,27 @@ export default async function CheckoutPage({
     line: query.line,
   });
   if (screen.kind === "placed") redirect(`/${locale}/checkout/done`);
+  if (screen.kind === "unpaid") {
+    // Spec 013 (TASK-262, AC-5): placed and not paid, step 3 again from the purchase's orders.
+    const token = isDraftToken(value) ? value : null;
+    const [confirmation, unpaid] = await Promise.all([
+      confirmationFor(token),
+      unpaidPurchase({ locale, token }),
+    ]);
+    if (confirmation.kind !== "placed" || unpaid === null) {
+      redirect(`/${locale}/checkout/done`);
+    }
+    return (
+      <main id="main">
+        {await UnpaidPayPage({
+          locale,
+          mode: screen.mode,
+          confirmation,
+          unpaid,
+        })}
+      </main>
+    );
+  }
   const echo = decodeCheckoutEcho(jar.get(CHECKOUT_ECHO_COOKIE_NAME)?.value);
   const matched =
     screen.kind === "step" &&

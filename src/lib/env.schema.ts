@@ -316,6 +316,13 @@ export const serverEnvSchema = z.object({
    */
   STRIPE_WEBHOOK_SECRET: optionalText,
   /**
+   * Stripe publishable key (`pk_test_` outside production, `pk_live_` there; spec 013 §5.2
+   * "Payment step"; TASK-262). Not secret: step 3 hands it to the Payment Element. Optional until
+   * the Stripe account exists; without it no Stripe payment step registers, so the checkout stays
+   * `demo` or `closed`. A live prefix outside production is refused (AC-10).
+   */
+  STRIPE_PUBLISHABLE_KEY: optionalText,
+  /**
    * The signing secret of the environment's Resend webhook (`whsec_…`, Svix's scheme; spec 016
    * §5.2 "Resend webhooks", §12 "Env contract"; TASK-335). SECRET: never logged, never in an
    * error. Optional at boot, required at use: without it `POST /api/webhooks/resend` answers 503

@@ -46,6 +46,7 @@ import { appEnvironment, deploymentEnvironments } from "@/lib/env.schema";
 import { pickerState, pickerStates } from "@/modules/geo";
 
 import { addressFormModel } from "./address";
+import { paymentStepFor } from "./payment-step";
 
 /* -------------------------------------------------------------------------- */
 /* The vocabulary                                                              */
@@ -294,7 +295,7 @@ export {
 
 /** Where `currentCheckoutMode()` reads a flag: TASK-219's `isEnabled`, or a test's fake. */
 export type CheckoutFlagReader = (
-  key: (typeof CHECKOUT_FLAG_KEYS)["open" | "demoGuard"],
+  key: (typeof CHECKOUT_FLAG_KEYS)["open" | "demoGuard" | "stripe"],
   scope?: { readonly kind: "country"; readonly ref: string },
 ) => Promise<boolean>;
 
@@ -320,9 +321,10 @@ export interface CheckoutModeRequest {
  * global `checkout.demo_guard` through `isEnabled`, spec 009's `pickerState()`, the destination's
  * address format and the deployment's `APP_ENV`, and hands them to `checkoutMode()`.
  *
- * Spec 013's inputs are absent in Phase 0 and are passed as such: no payment step is registered,
- * `payments.stripe` is not a registered flag yet, and no Stripe key is declared in the env schema,
- * so the key kind is `absent`. Spec 013 replaces these three lines, here and nowhere else.
+ * Spec 013's inputs (TASK-262, the three lines below): whether its test and live payment steps
+ * are registered (`paymentStepFor`), the global `payments.stripe` flag (read only while a Stripe
+ * step is registered, so a Phase 0 deployment reads no extra flag), and the kind of the
+ * environment's `STRIPE_SECRET_KEY`, here and nowhere else.
  *
  * An unknown destination is `closed` without a read.
  */
@@ -339,19 +341,25 @@ export async function currentCheckoutMode(
     flags(CHECKOUT_FLAG_KEYS.demoGuard),
   ]);
   const model = addressFormModel(request.countryIso);
+  const testStepRegistered = paymentStepFor("test") !== null;
+  const liveStepRegistered = paymentStepFor("live") !== null;
+  const stripeFlag =
+    testStepRegistered || liveStepRegistered
+      ? await flags(CHECKOUT_FLAG_KEYS.stripe)
+      : false;
   return checkoutMode({
     countryCheckoutOpen,
     addressFormat: model.status === "closed" ? "generic" : "authored",
     pickerState: pickerState(request.countryIso),
     demoGuard,
-    testStepRegistered: false,
-    stripeFlag: false,
-    stripeKeyKind: stripeKeyKind(undefined),
+    testStepRegistered,
+    stripeFlag,
+    stripeKeyKind: stripeKeyKind(process.env["STRIPE_SECRET_KEY"]),
     appEnv: appEnvironment(process.env),
     legalReady: legalReadiness(
       request.locale,
       request.buyerCountry ?? request.countryIso,
     ),
-    liveStepRegistered: false,
+    liveStepRegistered,
   });
 }

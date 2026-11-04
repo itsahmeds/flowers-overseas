@@ -34,6 +34,12 @@ import {
   CHECKOUT_COOKIE_NAME,
   isDraftToken,
 } from "./cookie";
+import {
+  type DeclineOutcome,
+  type PayOutcome,
+  runPay,
+  runPaymentDeclined,
+} from "./pay";
 import { runPlaceOrder } from "./place";
 import {
   type StepContext,
@@ -159,4 +165,30 @@ export async function placeOrderAction(
   if (!bound.success) return { status: "expired" };
   const ctx = await context(bound.data);
   return answer(await runPlaceOrder(ctx, form), ctx.token);
+}
+
+/**
+ * Step 3's "Pay" in `test` and `live` (spec 013 §5.2 flow 2 to 3; TASK-262): the island calls it
+ * after `elements.submit()` and gets the client secret, a message key or a place to go. The
+ * basket is placed by now (or was already), so its header count is cleared, as on placement.
+ */
+export async function payAction(
+  locale: unknown,
+  form: FormData,
+): Promise<PayOutcome> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { kind: "redirect", location: "/" };
+  const ctx = await context(bound.data);
+  const outcome = await runPay(ctx, form);
+  if (outcome.kind !== "error") (await cookies()).delete(BASKET_COOKIE_NAME);
+  return outcome;
+}
+
+/** After `confirmPayment` reports a decline: reconcile, then our message key (AC-5). */
+export async function paymentDeclinedAction(
+  locale: unknown,
+): Promise<DeclineOutcome> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { kind: "redirect", location: "/" };
+  return runPaymentDeclined(await context(bound.data));
 }

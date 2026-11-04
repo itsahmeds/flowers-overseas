@@ -21,6 +21,8 @@ import {
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 
 import { ConfirmationPage } from "../../_views/ConfirmationView";
+// Spec 013 §5.3 (TASK-263): registers the `test` and `live` states with spec 010's seam.
+import "../../_views/PaymentConfirmation";
 import { cancelUiStateFrom } from "./buyer-cancel";
 
 export const dynamic = "force-dynamic";

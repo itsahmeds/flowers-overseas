@@ -344,6 +344,7 @@ describe("the shipped catalogues and manifests", () => {
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
     "checkout.legal.cancellation",
+    "checkout.legal.payButton",
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet
     // cancel line and its dialog, the spec's and the boards' words, `reviewed: false` until the
     // record run (`.claude/state/record-approval-340.py`) attests them.

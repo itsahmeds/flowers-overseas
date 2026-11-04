@@ -14,6 +14,9 @@
  * Read-only: nothing here writes (a `GET` of the page never changes the basket, except that
  * `loadDraft` deletes a draft it finds expired).
  */
+import { sql } from "drizzle-orm";
+import { z } from "zod";
+
 import { CHECKOUT_STEPS, type CheckoutStep } from "@/config/checkout";
 import { type CountryIso2 } from "@/config/countries";
 import type { CurrencyCode } from "@/config/currencies";
@@ -43,6 +46,7 @@ import {
   type DraftConnection,
   type DraftMode,
   loadDraft,
+  withDraftConnection,
 } from "./draft";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
 import {
@@ -122,6 +126,11 @@ export interface StepScreen {
 export type CheckoutScreen =
   | { readonly kind: "expired" }
   | { readonly kind: "placed" }
+  /**
+   * Spec 013 §5.2 (TASK-262): a `test` or `live` basket placed but not paid (a decline, a
+   * refresh, a failed 3DS): step 3 again, rebuilt from the purchase's orders.
+   */
+  | { readonly kind: "unpaid"; readonly mode: "test" | "live" }
   | { readonly kind: "empty" }
   | {
       readonly kind: "closed";
@@ -303,6 +312,22 @@ async function offeredAddons(
   return offered;
 }
 
+const StatusRow = z.object({ status: z.string() });
+
+/** Every order of the purchase is still `placed`: placed, not paid (spec 013 §5.2). */
+async function purchaseUnpaid(
+  purchaseId: string,
+  connection: DraftConnection | undefined,
+): Promise<boolean> {
+  const rows = await withDraftConnection(connection, (executor) =>
+    executor.execute(
+      sql`SELECT status FROM "order" WHERE purchase_id = ${purchaseId}`,
+    ),
+  );
+  const statuses = rows.map((row) => StatusRow.parse(row).status);
+  return statuses.length > 0 && statuses.every((status) => status === "placed");
+}
+
 /** The screen for a request (the file header). */
 export async function checkoutScreen(
   request: ScreenRequest,
@@ -311,7 +336,15 @@ export async function checkoutScreen(
   const lookup = await loadDraft(request.token, now, request.connection);
   if (lookup.status !== "active") return { kind: "expired" };
   const draft = lookup.draft;
-  if (draft.purchaseId !== null) return { kind: "placed" };
+  if (draft.purchaseId !== null) {
+    if (
+      (draft.mode === "test" || draft.mode === "live") &&
+      (await purchaseUnpaid(draft.purchaseId, request.connection))
+    ) {
+      return { kind: "unpaid", mode: draft.mode };
+    }
+    return { kind: "placed" };
+  }
   if (draft.lines.length === 0) return { kind: "empty" };
   const locale = request.locale;
   const assessed = await assessBasket(draft, {

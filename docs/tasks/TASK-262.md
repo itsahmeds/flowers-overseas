@@ -32,6 +32,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (b) (2026-10-22):** spec 010 §14 A-founder-2026-10-22 gives this task AC-77 (T-77): in `test` and `live`, one pre-contract block naming each delivery's main characteristics and date, the total and the cancellation item once, directly above the Pay button; the Pay button names the purchase total (item 13 (f)). Depends on TASK-350 (Q19). Spec 022a's `checkout.reviewNotice` renders on this step (owned by TASK-373).
+- 2026-11-04 (builder PAY262, self-review; PR 487):
+  - **AC-2 CSP not built.** Step 3's per-request policy (nonce, `'strict-dynamic'`, §5.4's Stripe origins) needs a nonce for `no-store` routes, which nothing in the repo issues yet (ADR-0016 reserves it), and the proxy cannot know the mode or step without a database read. Stripe.js is loaded only by `PaymentPanel`, which renders only on step 3 in `test`/`live`, so no other page's HTML names a Stripe origin; the header half, the crawl and the `PaymentPanel` 6 144 B / route 131 072 B budgets are owed. **Must land before `payments.stripe` is turned on where `CSP_REPORT_ONLY=false`**, or the static policy blocks js.stripe.com.
+  - **Browser Sentry on step 3 only:** not built (no `beforeSend` fixture either; TASK-265 owns the fixture).
+  - **AC-1 GBP and EUR:** the Element options and the adapter parameters are proven in all three currencies (unit); the full placement path ran in PLN only (the checkout fixture prices `pl` in PLN). AC-1's staging half, AC-5's test-card e2e and the keyboard 4242 run stay TASK-266's.
+  - **Equivalent mutant:** `runPay`'s resume branch (reuse the draft's `purchaseId`) can be removed without a red run: `placeBasket`'s own replay returns the same purchase, so the intent is the same. Kept to skip the placement checks on a retry.
+  - **Mobile sticky bar:** in `test`/`live` the sticky total bar carries no button (the pay button is the panel's own, under the Element); the mobile board was not pixel-checked tonight (no screenshots).
+  - **Seller row:** trading name, plus the legal name once `company.ts` has one; the full identity line (address, registry) follows the company data.
+  - **Copy:** 16 new keys, `.claude/state/record-approval-262.py --check` passes; `checkout.legal.payButton` is a lawyer-gated formula and stays unreviewed; de and pl are English echoes.
+  - **Founder steps (Railway, when the Stripe account exists):** `STRIPE_SECRET_KEY` (`sk_test_` on staging, the restricted `rk_live_` on production), `STRIPE_PUBLISHABLE_KEY` (`pk_test_`/`pk_live_`), `STRIPE_WEBHOOK_SECRET`; then `payments.stripe` and the method flags (TASK-421 seeds `payments.method.*`) in admin. Without both keys nothing registers and the checkout stays demo.
+  - **Gates not run tonight (founder, 2026-11-04):** lint, format:check, i18n:check, codebase:map --check as gates (pre-commit ran eslint and prettier on every staged file; the map was regenerated). Two unit files are red on main before this PR and untouched here: `url-pii.test.ts` (query keys in invoices/admin) and `home-honesty.test.ts` (de/pl `floristInbox.declineReason.productUnavailable`).
 
 ## Escalations
 
@@ -45,11 +55,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (builder PAY262): seam extended additively (`prepare`/`confirm`/`sync` on `CheckoutPaymentStep`); `stripeTestPaymentStep`/`stripeLivePaymentStep` in `src/modules/payments/pay-step.ts`, registered by `src/modules/payments/wiring.ts` only with both Stripe keys; `currentCheckoutMode` reads the registered steps, `payments.stripe` and the key kind; `runPay`/`runPaymentDeclined`/`paymentReturnLocation` in `src/modules/checkout/pay.ts`; the `unpaid` screen; `/{locale}/checkout/return`; `STRIPE_PUBLISHABLE_KEY`.
+- 2026-11-04: UI in `src/modules/ui/checkout/payment/` (controller, `PaymentPanel`, `PreContractBlock`, `PayButton`, `PaymentErrorNotice`), step 3 and the unpaid page in `_views/PayStep.tsx`; tests unit `pay-step.test.tsx` (21) and integration `pay-step.test.ts` (4, PG16); CSP and browser Sentry not built (carry-forward).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#487](https://github.com/itsahmeds/flowers-overseas/pull/487) (feature PR with TASK-263). The two Stripe steps in spec 010's registry (deferred-intent `prepare`, `confirm` over `startPayment(purchaseId)`, `sync` over `syncFromProvider` with our decline key), the mode wired to them, step 3's `PaymentPanel` island with the server-rendered pre-contract block above Pay (AC-77, one row per delivery), the `<noscript>` notice, the resumed unpaid step 3, `payAction`/`paymentDeclinedAction` and the return route (303 to done, no query, three headers). Tests: unit `tests/unit/pay-step.test.tsx` 21 (Element options in GBP/EUR/PLN, no BLIK, registration, the mode in and out of production, the controller against a Stripe.js double, the block's exact cancellation item, the pay button, the return route), integration `tests/integration/pay-step.test.ts` 4 on a throwaway PG16 (1, 2 and 5 deliveries: one intent for `purchase.total_minor`, seven metadata keys, references, no receipt/shipping, one intent on a second Pay; a 3-order decline: our key, three `placed`, attempts 1, three events and none on a repeat, the unpaid screen, retry and return to `paid_unrouted`, no client secret in any log line). 16 mutations red (U1 to U10, I1 to I5; I6 equivalent, see carry-forwards). Not run tonight: build, Playwright, Lighthouse, the byte budget.
