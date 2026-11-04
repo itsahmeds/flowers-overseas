@@ -312,6 +312,28 @@ describe("results (AC-3's markup half, the H1, How we sort, the pager)", () => {
   });
 });
 
+describe("awkward queries (the breaker's cases)", () => {
+  it("a 200-character query is cut to 80 code points and still renders one form value", async () => {
+    const page = await view("en", { q: "roses ".repeat(34), to: "pl" });
+    expect([...page.result.query].length).toBeLessThanOrEqual(80);
+    expect(html(page)).toContain('maxLength="80"');
+  });
+
+  it("Polish with and without accents finds the same bouquets on /pl", async () => {
+    const accented = await view("pl", { q: "róże", to: "pl" });
+    const plain = await view("pl", { q: "roze", to: "pl" });
+    expect(accented.result.cards.length).toBeGreaterThan(0);
+    expect(plain.result.cards.map((card) => card.productId)).toEqual(
+      accented.result.cards.map((card) => card.productId),
+    );
+  });
+
+  it("right-to-left words are printed inside <bdi>, so they cannot reorder the sentence", async () => {
+    const markup = html(await view("en", { q: "roses ורדים", to: "pl" }));
+    expect(markup).toMatch(/<bdi><em[^>]*>roses ורדים<\/em><\/bdi>/u);
+  });
+});
+
 describe("the Pages block (AC-10)", () => {
   const birthday: [LocaleCode, string][] = [
     ["en", "birthday"],
@@ -342,15 +364,39 @@ describe("the Pages block (AC-10)", () => {
     },
   );
 
-  it("roses adds the roses category link, occasions before categories, at most three", async () => {
+  it("roses adds Poland's roses category page (the country page, since it exists)", async () => {
     const page = await view("en", { q: "roses", to: "pl" });
-    const kinds = page.result.pages.map((link) => link.kind);
-    expect(kinds).toContain("category");
-    expect(kinds.join(",")).toMatch(/^(occasion,)*(category,?)*$/u);
-    expect(page.result.pages.length).toBeLessThanOrEqual(3);
-    expect(page.result.pages.some((link) => link.href.endsWith("/roses"))).toBe(
-      true,
-    );
+    const country = await listingHref({
+      pageType: "countryCategory",
+      locale: "en",
+      countryIso: "PL",
+      entityKey: "roses",
+    });
+    expect(country).toBeDefined();
+    expect(page.result.pages.map((link) => [link.kind, link.href])).toEqual([
+      ["category", country],
+    ]);
+  });
+
+  it("sympathy: occasions before categories, at most three, each link a page that exists", async () => {
+    const page = await view("en", { q: "sympathy", to: "pl" });
+    expect(page.result.pages.map((link) => link.kind)).toEqual([
+      "occasion",
+      "category",
+      "category",
+    ]);
+    for (const link of page.result.pages) {
+      const key = link.href.split("/").at(-1) ?? "";
+      expect(key).not.toBe("");
+    }
+    const hub = await listingHref({
+      pageType: "occasionHub",
+      locale: "en",
+      entityKey: "sympathy",
+    });
+    expect(page.result.pages[0]?.href).toBe(hub);
+    const markup = html(page);
+    expect(markup).toContain('data-fo-search-pages="3"');
   });
 });
 
