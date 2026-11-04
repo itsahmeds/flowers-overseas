@@ -175,6 +175,7 @@ export const INDEXABILITY_TERMS = [
   "indexingEnvironment",
   "operational",
   "unparameterised",
+  "coreStocked",
 ] as const;
 
 export type IndexabilityTerm = (typeof INDEXABILITY_TERMS)[number];
@@ -190,8 +191,17 @@ export type IndexabilityTerm = (typeof INDEXABILITY_TERMS)[number];
  * literal outside `modules/seo`" holds. `?page=N` is deliberately **not** part of it: a paginated
  * URL is a real page that inherits the base page's directive and is self-canonical (`plan/02` §7),
  * so the term names the parameters that make a *duplicate*, not the one that makes a page.
+ *
+ * `coreStocked` is spec 008 §14 A-orchestrator-2026-11-04a's rule 2 (AC-94; TASK-438): a hub
+ * whose grid would hold no core product is thin, so it is `noindex,follow` until one exists. It
+ * is stated only by the hubs that take rule 2 (a category hub of kind `productType` or
+ * `flowerType`, and an occasion hub whose tagged products are all funeral pieces, Q-04a-2) and
+ * omitted by every other page type, which leaves it out of their conjunction. Registered here for
+ * the reason the two terms above were: a term is not a branch, it can only remove `index`, and no
+ * robots literal is written outside `modules/seo` (AC-14).
  */
-export type OptionalIndexabilityTerm = "operational" | "unparameterised";
+export type OptionalIndexabilityTerm =
+  "operational" | "unparameterised" | "coreStocked";
 
 export type IndexabilityTerms = Readonly<
   Record<Exclude<IndexabilityTerm, OptionalIndexabilityTerm>, boolean>
@@ -211,6 +221,7 @@ export interface IndexabilityVerdict {
 export const OPTIONAL_INDEXABILITY_TERMS = [
   "operational",
   "unparameterised",
+  "coreStocked",
 ] as const satisfies readonly IndexabilityTerm[];
 
 function isOptionalTerm(term: IndexabilityTerm): boolean {
@@ -271,6 +282,12 @@ export interface PageDescriptor {
    * page's directive.
    */
   readonly unparameterised?: boolean;
+  /**
+   * Spec 008 §14 A-orchestrator-2026-11-04a's core gate (AC-94; TASK-438): the hub's grid holds at
+   * least one core product in this locale. Stated only by a hub that takes rule 2; omitted by
+   * every other page, whose conjunction it then leaves.
+   */
+  readonly coreStocked?: boolean;
 }
 
 /**
@@ -294,5 +311,8 @@ export function pageIndexability(
     ...(page.unparameterised === undefined
       ? {}
       : { unparameterised: page.unparameterised }),
+    ...(page.coreStocked === undefined
+      ? {}
+      : { coreStocked: page.coreStocked }),
   });
 }

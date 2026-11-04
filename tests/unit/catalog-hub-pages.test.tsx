@@ -342,10 +342,13 @@ describe("the occasion hub's date table (AC-11, §14 A1, A10, design-round Q6)",
   });
 
   it("puts the grid, then the dates, then the copy and the destination rows (AC-89)", () => {
-    // Mother's Day carries no core product today, so its grid is absent (the brief's escalation):
-    // the dates follow the picker. Birthday, evergreen, has the grid and the "any day" dates.
-    expect(html).not.toContain("data-fo-listing-grid=");
+    // Mother's Day carries no core product today, so it shows the whole core range (spec 008 §14
+    // A-orchestrator-2026-11-04a rule 1; TASK-438): the grid follows the picker and the dates
+    // follow the grid. Birthday, evergreen, has the grid and the "any day" dates.
     expect(html.indexOf("data-fo-hub-picker")).toBeLessThan(
+      html.indexOf("data-fo-listing-grid="),
+    );
+    expect(html.indexOf("data-fo-listing-grid=")).toBeLessThan(
       html.indexOf("data-fo-hub-dates="),
     );
     expect(html.indexOf("data-fo-hub-dates=")).toBeLessThan(

@@ -154,11 +154,15 @@ describe("AC-88: every hub shows its core products, and only those, as chooser c
         for (const id of ids)
           expect(coreSkus.has(id), `${hub.path} ${id}`).toBe(true);
         if (hub.pageType === "occasionHub") {
-          // Exactly the core products carrying the occasion: none left out.
+          // Exactly the core products carrying the occasion: none left out. With none, AC-88 as
+          // amended by A-orchestrator-2026-11-04a (TASK-438): the whole slugged core range
+          // (rule 1), or no grid (rule 2); `catalog-empty-hubs.test.tsx` pins both.
           const tagged = core
             .map((entry) => entry.sku)
             .filter((sku) => occasionsOf.get(sku)?.includes(hub.entityKey));
-          expect([...ids].sort(), hub.path).toEqual([...tagged].sort());
+          if (tagged.length > 0) {
+            expect([...ids].sort(), hub.path).toEqual([...tagged].sort());
+          }
         }
         for (const group of [
           hub.view.hubItems.filter((c) => c.photo.kind === "asset"),
@@ -302,7 +306,7 @@ describe("AC-82: the picker's next is the hub's key; destination rows link direc
   });
 });
 
-describe("a hub with no core product (the brief's escalation)", () => {
+describe("a hub with no grid (a zero-core hub that takes A-orchestrator-2026-11-04a rule 2)", () => {
   const empty = HUBS.filter((hub) => hub.view.hubItems.length === 0);
 
   it("renders the head, noMoney and the picker, with no grid, no count line and no placeholder card", () => {
