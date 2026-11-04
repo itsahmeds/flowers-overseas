@@ -37,7 +37,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-04 (SR402, to the orchestrator, default applied, not blocking): AC-13 words the inline chooser's `action` as `/en/choose-country/search`; TASK-385's chooser form (`CountryPicker`, `chooserPageView().action`) posts to the choice route `/api/choose/{locale}/search`, and a GET to the chooser page with `to` re-asks by design (no 303 from a page render). The results page uses the chooser's own action, so choosing Germany answers the 303 to `/en/search?to=de&q=roses` that AC-13 requires. `open` until the spec text is aligned (one-line pointer amendment).
 
 ## Progress
 
@@ -46,10 +46,18 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-04 (SR402): engine gains the country-less set (`coreProducts`, `countryLessCards`, `view.countryLess`) and the date filter (`dateOpen`, `deliverableOn`, `dateApplied`, `hiddenByDate`); `searchParamsSchema` and `searchPage()` in `src/modules/search/`; the chooser's `next=search` choice now lands on `/{locale}/{search}?to=..&q=..`. Next: the route, slots, rewrite and headers, the components, the keys, the tests.
+- 2026-11-04 (SR402): route `src/app/[locale]/-search/page.tsx` behind a `beforeFiles` rewrite and header rules (`src/lib/search-routes.ts`), `@header`/`@switcher` slots, `SearchResultsPage`, the 14 `search.*` keys (de/pl echoes, `nav.search.help` deleted), the chooser's `next=search` choice carrying `q`; tests `search-params`, `search-page`, `search-routes` green; record script `.claude/state/record-approval-402.py --check` passes. Left: e2e, visual, axe (carry-forwards below).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 490](https://github.com/itsahmeds/flowers-overseas/pull/490): `/{locale}/{search segment}` served per request by `src/app/[locale]/-search/page.tsx` through a `beforeFiles` rewrite, with `X-Robots-Tag: noindex, follow`, `Cache-Control: private, no-store` and `Referrer-Policy: strict-origin` mounted after the security rules; meta `noindex,follow`, canonical to the bare path, no hreflang, no JSON-LD; `searchParamsSchema` (q cleaned and cut at 80 code points, `to` only with a shop, `date` only where dates are taken, bad `page` 404 before the engine); every §2.7 state but rate limited (TASK-403): empty, too short, results, no results with "Did you mean" as a GET button, no destination (core-range matches as country-less cards, `shop.hub.noMoney` once, the chooser carrying `q`), date hides some (engine `dateOpen`/`deliverableOn`), out of range 404, demo (the listing's "Ordering opens soon" quiet line); the Pages block, destination select, "How we sort" with `search.ranking.disclosure`, GET-form pager; `search.request` log and `alert=search.slow`. Unit tests: 25 in `search-params`, 33 in `search-page`, 5 in `search-routes`, plus updated chooser, header, i18n and freshness suites. `en` 0.2 % to 2.2 % unreviewed before the record run, 0.15 % after; `en-gb` 0.3 % to 2.4 %, 0.30 % after. No build, Playwright, Lighthouse or screenshot ran (founder's no-CI night).
+
+**Carry-forwards.**
+- e2e and crawl halves of T-03, T-05, T-10, T-12, T-13, T-15, T-37 (served headers and status on `next start`, the sitemap and `href` crawl, the 303 chain with JavaScript off): not written or run tonight; TASK-410 or a follow-up row.
+- Visual baselines at 1440, 1280 and 390 px and `/ar-XB` (AC-30's visual half), axe per state: not taken; the pixel match with `search-results-*.dc.html` is unverified.
+- The chooser page reached from a country-less header form (TASK-404) does not yet put `q` in its own form; the choice route already carries it on for `next=search`.
+- `search.rateLimited` ships `retained: true` for TASK-403's 429 state; `search.ranking.disclosureWithMargin` is TASK-406's.
+- The header on the results page is out of context (a slot cannot read `to`).
