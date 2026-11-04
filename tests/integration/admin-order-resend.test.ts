@@ -20,10 +20,12 @@
  *  - Awkward: the same `actionId` twice is one resend (`replayed`); two resends that overlap list
  *    in lock order, not transaction-start order; an order already closed still resends B1, not B3.
  *  - Logs: no buyer address and no token in any pipeline log line of the suite.
+ *
+ * TASK-361 adds T-32 (AC-31): the log and Sentry spy of `support/pii-watch.ts` over the suite.
  */
 import { randomBytes, randomUUID } from "node:crypto";
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { AdminSession } from "@/lib/auth/admin";
 import { createLogger, type Logger } from "@/lib/logger";
@@ -61,8 +63,19 @@ import {
   type Tx,
 } from "./support/scratch-db.ts";
 import { runnerOf } from "./support/sql-runner.ts";
+import { watchLogsAndSentry } from "./support/pii-watch.ts";
+
+const sentry = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+  captureException: vi.fn(),
+}));
+vi.mock("@sentry/nextjs", async (original) => ({
+  ...(await original<typeof import("@sentry/nextjs")>()),
+  ...sentry,
+}));
 
 const server = await probeLocalServer();
+const watch = watchLogsAndSentry(sentry);
 registerFixtureEventSchemas();
 
 const ORIGIN = "https://staging.example.test";
@@ -1070,6 +1083,24 @@ describe.skipIf(server.url === undefined)(
       expect(all).not.toContain(BUYER_EMAIL);
       expect(all).not.toContain("@example.test");
       for (const token of tokens) expect(all).not.toContain(token);
+    });
+
+    it("T-32 (AC-31): over this suite no log line or Sentry event carries a person, the note, a token or a link", async () => {
+      const publicTokens = (
+        await scratch.sql<
+          { public_token: string }[]
+        >`SELECT public_token FROM "order"`
+      ).map((row) => row.public_token);
+      expect(watch.captured()).toContain("admin.order_action");
+      watch.expectClean([
+        BUYER_EMAIL,
+        "@example.test",
+        "Test Recipient",
+        "+48500000000",
+        // The florist sign-in links' tokens minted in this suite.
+        ...tokens,
+        ...publicTokens,
+      ]);
     });
   },
 );

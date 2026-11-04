@@ -49,6 +49,22 @@ export function parseMinorUnits(
   return { ok: true, amountMinor };
 }
 
+/**
+ * The plain digits `parseMinorUnits` reads back to the same amount ("13.00" for 1 300 EUR minor
+ * units): what a suggestion puts into the money field (TASK-361). Digit shifting on the integer's
+ * string, never a float; no grouping and no symbol, a "." before the minor units.
+ */
+export function minorUnitsText(
+  amountMinor: bigint,
+  currency: CurrencyCode,
+): string {
+  if (amountMinor < 0n) throw new RangeError("a negative amount");
+  const exponent = currencyConfig(currency).minorUnitExponent;
+  if (exponent === 0) return amountMinor.toString();
+  const digits = amountMinor.toString().padStart(exponent + 1, "0");
+  return `${digits.slice(0, -exponent)}.${digits.slice(-exponent)}`;
+}
+
 /** `refund.status` values that hold part of the captured amount (spec 020a §5.2, AC-17). */
 export const REFUND_STATUSES_HOLDING_BALANCE = [
   "requested",

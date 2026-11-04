@@ -15,6 +15,8 @@
  *    first with who, what, when, reason code and amount; two rows with one timestamp come back in
  *    one fixed order; the admin's note and the buyer's strings are never in it; a read writes
  *    nothing.
+ *
+ * TASK-361 adds T-32 (AC-31): the log and Sentry spy of `support/pii-watch.ts` over the suite.
  */
 import { randomUUID } from "node:crypto";
 
@@ -47,6 +49,7 @@ import {
   type ScratchDatabase,
 } from "./support/scratch-db.ts";
 import { runnerOf } from "./support/sql-runner.ts";
+import { watchLogsAndSentry } from "./support/pii-watch.ts";
 
 vi.stubEnv("__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS", "true");
 
@@ -58,7 +61,17 @@ vi.mock("@/lib/auth/admin", async (importOriginal) => {
   return { ...actual, getAdminSession: () => Promise.resolve(current) };
 });
 
+const sentry = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+  captureException: vi.fn(),
+}));
+vi.mock("@sentry/nextjs", async (original) => ({
+  ...(await original<typeof import("@sentry/nextjs")>()),
+  ...sentry,
+}));
+
 const server = await probeLocalServer();
+const watch = watchLogsAndSentry(sentry);
 
 const ROLES = ["admin", "ops", "finance", "content"] as const;
 type Role = (typeof ROLES)[number];
@@ -604,5 +617,22 @@ describe.skipIf(server.url === undefined)(
         ]);
       }
     }, 120_000);
+
+    it("T-32 (AC-31): over this suite no log line or Sentry event carries a person, the note, a token or a link", async () => {
+      const tokens = (
+        await scratch.sql<
+          { public_token: string }[]
+        >`SELECT public_token FROM "order"`
+      ).map((row) => row.public_token);
+      expect(watch.captured()).toContain("admin.order_action");
+      watch.expectClean([
+        "SENTINEL-NOTE-357",
+        BUYER_STRING,
+        "Test Recipient",
+        "+48500000000",
+        "@example.test",
+        ...tokens,
+      ]);
+    });
   },
 );

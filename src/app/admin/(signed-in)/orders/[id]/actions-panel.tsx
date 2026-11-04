@@ -1,5 +1,5 @@
 /**
- * @purpose The order page's Actions card: reroute and cancel, their dialogs, results and every "Not available" reason (020a AC-3, AC-9 to AC-15)
+ * @purpose The order page's Actions card: reroute, cancel and refund, their dialogs, results, every "Not available" reason, the phone sheet (020a AC-3, AC-9 to AC-23)
  * @spec 020a
  *
  * Server-rendered (spec 020a §5.3; artboards `admin-order-actions-*`, `admin-order-reroute-*`,
@@ -17,9 +17,16 @@
  *
  * TASK-361: under the buttons, "Not available" lists every control that cannot act, one reason
  * line each (`panel-reasons.ts`), so the card answers all four controls for every status, mode
- * and role (AC-3). Refund controls the table allows are listed there too, with the `provider`
- * line, until the refund dialog lands with the card provider's production wiring (escalated).
- * Resend results are the emails list's (`order-lists.tsx`), not this card's.
+ * and role (AC-3). Resend results are the emails list's (`order-lists.tsx`), not this card's.
+ *
+ * TASK-361 (finish): the refund dialogs (`admin-order-refund-*`): "Refund in full" (the remaining
+ * balance, never typed; on a cancelled order with a failed automatic refund "Retry in full", with
+ * the cancellation's reason fixed by the server; on the abandoned anomaly reason Other, fixed),
+ * and "Refund in part" (`MoneyInput`, `suggestedRefunds`, `ReasonPicker`), both posting to
+ * `refundOrderAction`. They render only while the card provider has keys (`refundReady`); until
+ * then each refund control the table allows reads the `provider` line under "Not available", and
+ * a forged post refuses with `PROVIDER_NOT_CONFIGURED`. On a phone the card folds into the
+ * Actions bar and its sheet (`AdminActionsSheet`) whenever it has a control.
  */
 import { randomUUID } from "node:crypto";
 
@@ -27,12 +34,16 @@ import type { ReactElement, ReactNode } from "react";
 
 import { isCurrencyCode } from "@/config/currencies";
 import {
+  ADMIN_AMOUNT_TEXT_MAX,
   ADMIN_NAV,
   ADMIN_NOTE_MAX,
+  adminRefundReasons,
   adminT,
   availableActions,
   graceEndDisplay,
   isOrderActionStatus,
+  minorUnitsText,
+  suggestedRefunds,
 } from "@/modules/admin";
 import { formatMoney } from "@/modules/i18n";
 import type { AdminOrderDetail } from "@/modules/orders";
@@ -41,6 +52,7 @@ import type {
   RerouteCandidate,
 } from "@/modules/orders/routing/jobs";
 import { AdminActionDialog } from "@/modules/ui/admin/AdminActionDialog";
+import { AdminActionsSheet } from "@/modules/ui/admin/AdminActionsSheet";
 import { AdminCancelForm } from "@/modules/ui/admin/AdminCancelForm";
 import { AdminRefusal, AdminToast } from "@/modules/ui/admin/AdminControls";
 import {
@@ -54,12 +66,18 @@ import {
 import { AdminPendingSubmit } from "@/modules/ui/admin/AdminPendingSubmit";
 
 import { deliveryDay } from "../view";
-import { cancelOrderAction, rerouteOrderAction } from "./actions";
+import {
+  cancelOrderAction,
+  refundOrderAction,
+  rerouteOrderAction,
+} from "./actions";
 import {
   PANEL_CONTROLS,
   type PanelControl,
   unavailableReason,
 } from "./panel-reasons";
+import { refundReasonText } from "./order-lists";
+import { AdminRefundForm, type RefundFormCopy } from "./refund-form";
 
 /** What the page read for the panel. */
 export interface OrderActionsData {
@@ -72,10 +90,25 @@ export interface OrderActionsData {
   readonly refundInFlight: boolean;
   /** The automatic refund a cancel caused, once its row exists (the done line's amount). */
   readonly cancelRefundMinor: bigint | null;
+  /** A cancelled order's automatic refund, when it failed: the retry's banner. */
+  readonly failedAutomatic: {
+    readonly amountMinor: bigint;
+    readonly reason: string;
+  } | null;
+  /** The refund a submission just requested (`?ref=`), for the done line. */
+  readonly requestedRefundMinor: bigint | null;
+  /** The card provider has keys, so the refund dialogs can act (payments' `adminRefundDeps`). */
+  readonly refundReady: boolean;
   readonly candidates: readonly RerouteCandidate[];
   readonly grace: NoPartnerGrace | null;
   /** `?action=…&result=…` of the last submission. */
   readonly outcome: { readonly action: string; readonly result: string } | null;
+}
+
+type RefundKind = "refund_full" | "refund_partial";
+
+function isRefund(action: string): action is RefundKind {
+  return action === "refund_full" || action === "refund_partial";
 }
 
 /** The refusal message of a code, per action (§5.2 "Result": one admin key per code). */
@@ -283,18 +316,20 @@ const CONTROL_LABEL: Readonly<
 
 /**
  * Every control that cannot act now, in the card's order, with its reason (AC-3). A refund the
- * table allows is listed with the `provider` line: its dialog is not built yet (TASK-361
- * escalation). On a cancelled order "Refund in full" is the retry, labelled so.
+ * table allows is listed with the `provider` line while the card provider has no keys
+ * (`refundReady` false). On a cancelled order "Refund in full" is the retry, labelled so.
  */
 export function notAvailable(
   available: ReturnType<typeof availableActions>,
   status: Parameters<typeof unavailableReason>[2],
+  refundReady: boolean,
 ): UnavailableLine[] {
   const lines: UnavailableLine[] = [];
   for (const control of PANEL_CONTROLS) {
     const state = available[control];
     const cause = state.available
-      ? control === "refundFull" || control === "refundPartial"
+      ? (control === "refundFull" || control === "refundPartial") &&
+        !refundReady
         ? "provider"
         : null
       : state.cause;
@@ -311,6 +346,125 @@ export function notAvailable(
     });
   }
   return lines;
+}
+
+/** A refund's refusal: under the amount field when it is about the amount, else at the top. */
+function refundRefusal(
+  kind: RefundKind,
+  code: string,
+  data: OrderActionsData,
+): { readonly field: "amount" | null; readonly message: string } {
+  const left = money(data.remainingMinor, data.order.currency);
+  if (kind === "refund_partial") {
+    if (code === "AMOUNT_INVALID") {
+      return {
+        field: "amount",
+        message: adminT("admin.orderActions.refund.invalid"),
+      };
+    }
+    if (code === "REFUND_EXCEEDS_CAPTURED") {
+      return {
+        field: "amount",
+        message: adminT("admin.orderActions.refund.exceeds", { amount: left }),
+      };
+    }
+    if (code === "USE_FULL_REFUND") {
+      return {
+        field: "amount",
+        message: adminT("admin.orderActions.refund.whole"),
+      };
+    }
+  }
+  switch (code) {
+    case "ORDER_CHANGED": {
+      // Another refund got there first (two tabs): say how much is left now (artboard state
+      // "Another refund got there first"); any other change reads the stale-page line.
+      const last = data.order.events.reduce<
+        (typeof data.order.events)[number] | undefined
+      >(
+        (latest, event) =>
+          latest === undefined || event.seq > latest.seq ? event : latest,
+        undefined,
+      );
+      return {
+        field: null,
+        message:
+          last?.type.startsWith("order.refund") === true
+            ? adminT("admin.orderActions.refused.REFUND_ORDER_CHANGED", {
+                amount: left,
+              })
+            : adminT("admin.orderActions.refused.ORDER_CHANGED"),
+      };
+    }
+    case "NOT_REFUNDABLE":
+    case "CURRENCY_MISMATCH":
+    case "PROVIDER_NOT_CONFIGURED":
+    case "DEMO_ORDER":
+    case "FORBIDDEN":
+    case "INPUT_INVALID":
+      return {
+        field: null,
+        message: adminT(`admin.orderActions.refused.${code}`),
+      };
+    default:
+      return {
+        field: null,
+        message: adminT("admin.orderActions.refused.other"),
+      };
+  }
+}
+
+/** The reason of the order's latest cancellation event, if it carries one. */
+function cancellationReason(order: AdminOrderDetail): string | undefined {
+  const event = order.events
+    .filter(
+      (e) =>
+        e.type === "order.cancelled" || e.type === "order.cancelled_refunded",
+    )
+    .at(-1);
+  const reason = event?.payload["reason"];
+  return typeof reason === "string" ? reason : undefined;
+}
+
+function refundCopy(remaining: string, currency: string): RefundFormCopy {
+  return {
+    amount: adminT("admin.orderActions.refund.amount"),
+    amountName: adminT("admin.orderActions.refund.amountName", { currency }),
+    amountPlaceholder: adminT("admin.orderActions.refund.amountPlaceholder"),
+    amountHint: adminT("admin.orderActions.refund.amountHint", {
+      amount: remaining,
+    }),
+    invalid: adminT("admin.orderActions.refund.invalid"),
+    exceeds: adminT("admin.orderActions.refund.exceeds", { amount: remaining }),
+    whole: adminT("admin.orderActions.refund.whole"),
+    suggested: adminT("admin.orderActions.refund.suggested"),
+    suggestedHint: adminT("admin.orderActions.refund.suggestedHint"),
+    reason: adminT("admin.orderActions.refund.reason"),
+    reasonRequired: adminT("admin.orderActions.refund.reasonRequired"),
+    note: adminT("admin.orderActions.cancel.note"),
+    noteOptional: adminT("admin.orderActions.cancel.noteOptional"),
+    noteHint: adminT("admin.orderActions.cancel.noteHint"),
+    noteCount: adminT.raw("admin.orderActions.cancel.noteCount"),
+    noteRequired: adminT("admin.orderActions.cancel.noteRequired"),
+    goesBack: adminT("admin.orderActions.refund.goesBack"),
+    buyerGets: adminT("admin.orderActions.refund.buyerGets"),
+    keep: adminT("admin.orderActions.refund.keep"),
+    submit: adminT.raw("admin.orderActions.refund.submit"),
+    submitBare: adminT("admin.orderActions.refund.submitBare"),
+    refunding: adminT("admin.orderActions.refund.refunding"),
+  };
+}
+
+/** The dialog title: the words, then the order's reference in the smaller grey (`.num`). */
+function refundTitle(words: string, reference: string): ReactElement {
+  return (
+    <>
+      {words}{" "}
+      <span className="text-ink-3 text-[16px] font-normal tabular-nums">
+        {reference}
+      </span>
+    </>
+  );
 }
 
 export function OrderActionsPanel({
@@ -370,9 +524,13 @@ export function OrderActionsPanel({
                 order.currency,
               ),
             })
-          : undefined;
+          : isRefund(outcome.action) && data.requestedRefundMinor !== null
+            ? adminT("admin.orderActions.refund.done", {
+                amount: money(data.requestedRefundMinor, order.currency),
+              })
+            : undefined;
 
-  const unavailable = notAvailable(available, order.status);
+  const unavailable = notAvailable(available, order.status, data.refundReady);
 
   const grace =
     order.status === "no_partner_available" && data.grace !== null ? (
@@ -388,6 +546,7 @@ export function OrderActionsPanel({
       wide
       initiallyOpen={rerouteRefusal !== undefined}
       closeLabel={adminT("admin.orderActions.close")}
+      sheetCloseLabel={adminT("admin.orderActions.close")}
       title={adminT("admin.orderActions.reroute.title", {
         reference: order.reference,
       })}
@@ -430,6 +589,7 @@ export function OrderActionsPanel({
         openLabel={adminT("admin.orderActions.cancel.open")}
         openTone="danger"
         initiallyOpen={cancelRefusal !== undefined}
+        sheetCloseLabel={adminT("admin.orderActions.close")}
         title={adminT("admin.orderActions.cancel.title", {
           reference: order.reference,
         })}
@@ -473,6 +633,193 @@ export function OrderActionsPanel({
     );
   }
 
+  const remaining = money(data.remainingMinor, order.currency);
+  const refundRefused = (kind: RefundKind) =>
+    outcome?.action === kind && outcome.result !== "done"
+      ? refundRefusal(kind, outcome.result, data)
+      : null;
+  const currency = isCurrencyCode(order.currency) ? order.currency : null;
+  const reasonOptions = adminRefundReasons.map((reason) => ({
+    value: reason,
+    label: refundReasonText(reason),
+  }));
+  const refundHidden = () => ({ ...base, actionId: randomUUID() });
+
+  let refundFull: ReactNode = null;
+  let retryBanner: ReactNode = null;
+  if (data.refundReady && currency !== null && available.refundFull.available) {
+    const source = available.refundFull.reasonSource;
+    const retry = source === "cancellation";
+    const fixed =
+      source === "chosen"
+        ? null
+        : refundReasonText(
+            source === "other"
+              ? "other"
+              : (cancellationReason(order) ??
+                  data.failedAutomatic?.reason ??
+                  "other"),
+          );
+    if (retry && data.failedAutomatic !== null) {
+      // `.ad-banner.bad`: the failed refund on the blush.
+      retryBanner = (
+        <p
+          role="note"
+          className="bg-blush text-ink rounded-[10px] px-[14px] py-[10px] text-[14px]"
+        >
+          {adminT("admin.orderActions.refund.failedAutomatic", {
+            amount: money(data.failedAutomatic.amountMinor, order.currency),
+            reason: fixed ?? "",
+          })}
+        </p>
+      );
+    }
+    const refused = refundRefused("refund_full");
+    refundFull = (
+      <AdminActionDialog
+        id="order-action-refund-full"
+        openLabel={adminT(
+          retry
+            ? "admin.orderActions.refund.openRetry"
+            : "admin.orderActions.refund.openFull",
+          { amount: remaining },
+        )}
+        openTone={retry ? "primary" : "ghost"}
+        size="medium"
+        initiallyOpen={refused !== null}
+        sheetCloseLabel={adminT("admin.orderActions.close")}
+        title={refundTitle(
+          adminT(
+            retry
+              ? "admin.orderActions.refund.titleRetry"
+              : "admin.orderActions.refund.titleFull",
+          ),
+          order.reference,
+        )}
+      >
+        <AdminRefundForm
+          action={refundOrderAction}
+          kind="full"
+          hidden={refundHidden()}
+          currency={currency}
+          remainingMinor={data.remainingMinor.toString()}
+          summary={[
+            {
+              key: "charged",
+              label: adminT("admin.orderActions.refunds.charged"),
+              value: money(data.capturedMinor, order.currency),
+            },
+            {
+              key: "onItsWay",
+              label: adminT("admin.orderActions.refunds.onItsWay"),
+              value: money(
+                data.capturedMinor - data.remainingMinor,
+                order.currency,
+              ),
+            },
+            {
+              key: "now",
+              label: adminT("admin.orderActions.refund.now"),
+              value: remaining,
+            },
+          ]}
+          reasons={reasonOptions}
+          fixedReason={
+            fixed === null
+              ? null
+              : {
+                  line: adminT("admin.orderActions.refund.fixedReason", {
+                    reason: fixed,
+                  }),
+                  // The schema needs one of the seven; for a fixed source the server ignores it
+                  // and records its own reason (`adminOrderRefund`). Goodwill needs no note.
+                  value: "goodwill",
+                }
+          }
+          suggestions={[]}
+          copy={refundCopy(remaining, order.currency)}
+          noteMax={ADMIN_NOTE_MAX}
+          fieldMaxLength={ADMIN_AMOUNT_TEXT_MAX}
+          refusal={refused}
+        />
+      </AdminActionDialog>
+    );
+  }
+
+  let refundPartial: ReactNode = null;
+  if (
+    data.refundReady &&
+    currency !== null &&
+    available.refundPartial.available
+  ) {
+    const lines = new Map(order.lines.map((line) => [line.lineId, line]));
+    const suggestions = suggestedRefunds({
+      lines: order.lines.map((line) => ({
+        id: line.lineId,
+        kind: line.kind,
+        qty: line.qty,
+        unitRetailMinor: BigInt(line.unitRetailMinor),
+      })),
+      buyerTotalMinor: BigInt(order.totalMinor),
+      remainingMinor: data.remainingMinor,
+    }).map((suggestion) => {
+      const line =
+        suggestion.lineId === undefined
+          ? undefined
+          : lines.get(suggestion.lineId);
+      const reasonText = refundReasonText(suggestion.reason);
+      return {
+        key: suggestion.lineId ?? suggestion.reason,
+        reason: suggestion.reason,
+        label:
+          line === undefined
+            ? reasonText
+            : adminT("admin.orderActions.refund.suggestedAddon", {
+                item:
+                  line.qty === 1
+                    ? (line.name ?? adminT("admin.orders.detail.addon"))
+                    : adminT("admin.orders.detail.quantity", {
+                        name: line.name ?? adminT("admin.orders.detail.addon"),
+                        qty: line.qty,
+                      }),
+              }),
+        text: minorUnitsText(suggestion.amountMinor, currency),
+        amount: money(suggestion.amountMinor, order.currency),
+      };
+    });
+    const refused = refundRefused("refund_partial");
+    refundPartial = (
+      <AdminActionDialog
+        id="order-action-refund-partial"
+        openLabel={adminT("admin.orderActions.refund.openPartial")}
+        openTone="ghost"
+        size="medium"
+        initiallyOpen={refused !== null}
+        sheetCloseLabel={adminT("admin.orderActions.close")}
+        title={refundTitle(
+          adminT("admin.orderActions.refund.titlePartial"),
+          order.reference,
+        )}
+      >
+        <AdminRefundForm
+          action={refundOrderAction}
+          kind="partial"
+          hidden={refundHidden()}
+          currency={currency}
+          remainingMinor={data.remainingMinor.toString()}
+          summary={[]}
+          reasons={reasonOptions}
+          fixedReason={null}
+          suggestions={suggestions}
+          copy={refundCopy(remaining, order.currency)}
+          noteMax={ADMIN_NOTE_MAX}
+          fieldMaxLength={ADMIN_AMOUNT_TEXT_MAX}
+          refusal={refused}
+        />
+      </AdminActionDialog>
+    );
+  }
+
   const outcomeRefusal =
     outcome !== null &&
     outcome.result !== "done" &&
@@ -483,19 +830,31 @@ export function OrderActionsPanel({
           outcome.action === "reroute" ? "reroute" : "cancel",
           outcome.result,
         )
-      : undefined;
+      : outcome !== null &&
+          outcome.result !== "done" &&
+          isRefund(outcome.action) &&
+          (outcome.action === "refund_full" ? refundFull : refundPartial) ===
+            null
+        ? refundRefusal(outcome.action, outcome.result, data).message
+        : undefined;
 
-  return card(
+  const controls = [reroute, cancel, refundFull, refundPartial].filter(
+    (control) => control !== null,
+  ).length;
+  const panel = card(
     <>
       {done === undefined ? null : <AdminToast>{done}</AdminToast>}
       {outcomeRefusal === undefined ? null : (
         <AdminRefusal>{outcomeRefusal}</AdminRefusal>
       )}
       {grace}
-      {reroute === null && cancel === null ? null : (
+      {retryBanner}
+      {controls === 0 ? null : (
         <div className="grid gap-[8px]">
           {reroute}
           {cancel}
+          {refundFull}
+          {refundPartial}
         </div>
       )}
       {unavailable.length === 0 ? null : (
@@ -513,5 +872,36 @@ export function OrderActionsPanel({
         </div>
       )}
     </>,
+  );
+  // A card with no control stays in place on a phone too (artboard: "Finished and demo orders
+  // have no bar; their reasons sit in a card").
+  if (controls === 0) return panel;
+
+  const graceBar =
+    order.status === "no_partner_available" && data.grace !== null
+      ? graceEndDisplay(
+          data.grace.graceEnd,
+          data.grace.destinationZone,
+          data.viewerZone,
+        )
+      : null;
+  return (
+    <AdminActionsSheet
+      title={adminT("admin.orderActions.title")}
+      openLabel={adminT("admin.orderActions.title")}
+      closeLabel={adminT("admin.orderActions.close")}
+      barLine={
+        graceBar === null
+          ? adminT("admin.orderActions.bar.count", { count: controls })
+          : adminT("admin.orderActions.grace", {
+              time: graceBar.viewer.time,
+              city: graceBar.viewer.city,
+            })
+      }
+      barLineStrong={graceBar !== null}
+      initiallyOpen={outcome !== null && outcome.action !== "resend"}
+    >
+      {panel}
+    </AdminActionsSheet>
   );
 }

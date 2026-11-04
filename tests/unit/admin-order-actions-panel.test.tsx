@@ -108,6 +108,11 @@ function data(
     remainingMinor: 5_800n,
     refundInFlight: false,
     cancelRefundMinor: null,
+    failedAutomatic: null,
+    requestedRefundMinor: null,
+    // The refund dialogs are `admin-order-refund-dialog.test.tsx`'s; off here, so the cancel
+    // form's reason radios are the only ones in the HTML.
+    refundReady: false,
     candidates: CANDIDATES,
     grace: {
       // graceEnd of an order exhausted at 21:00 Warsaw for the next day (spec 016).

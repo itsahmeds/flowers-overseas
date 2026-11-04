@@ -16,12 +16,15 @@ export function AdminPendingSubmit({
   label,
   pendingLabel,
   accessibleName,
+  sheet = false,
 }: {
   readonly tone?: AdminButtonTone;
   readonly label: string;
   readonly pendingLabel: string;
   /** A fuller name than the visible words ("Offer this order to Pracownia Wola"). */
   readonly accessibleName?: string;
+  /** In a phone sheet (`.ad-sheet .ad-btn`): 44 px tall below 768 px (TASK-361). */
+  readonly sheet?: boolean;
 }): ReactElement {
   const { pending } = useFormStatus();
   return (
@@ -31,7 +34,7 @@ export function AdminPendingSubmit({
       {...(accessibleName === undefined || pending
         ? {}
         : { "aria-label": accessibleName })}
-      className={adminButtonClass(pending ? "busy" : tone)}
+      className={`${adminButtonClass(pending ? "busy" : tone)}${sheet ? "max-md:min-h-[44px]" : ""}`}
     >
       {pending ? pendingLabel : label}
     </button>

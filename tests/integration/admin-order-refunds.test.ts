@@ -7,10 +7,12 @@
  * admin-context transaction (`app.role = admin`, `app.audit_action`, `app.audit_reason`, then
  * `SET LOCAL ROLE app_web`, so RLS and spec 012's audit trigger are live) → spec 013's
  * `requestRefund` → after the commit `submitRefund` on the fake. Each case pays its own purchase.
+ *
+ * TASK-361 adds T-32 (AC-31): the log and Sentry spy of `support/pii-watch.ts` over the suite.
  */
 import { randomUUID } from "node:crypto";
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { PAYMENT_METHODS } from "@/config/payment-methods";
 import {
@@ -48,8 +50,19 @@ import {
   type Tx,
 } from "./support/scratch-db.ts";
 import { runnerOf, sqlText } from "./support/sql-runner.ts";
+import { watchLogsAndSentry } from "./support/pii-watch.ts";
+
+const sentry = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+  captureException: vi.fn(),
+}));
+vi.mock("@sentry/nextjs", async (original) => ({
+  ...(await original<typeof import("@sentry/nextjs")>()),
+  ...sentry,
+}));
 
 const server = await probeLocalServer();
+const watch = watchLogsAndSentry(sentry);
 
 const T0 = new Date("2026-11-02T08:00:00.000Z");
 const FAR_DATE = "2027-12-24";
@@ -1003,6 +1016,23 @@ describe.skipIf(server.url === undefined)(
           { transaction: adminTransaction },
         ),
       ).toBeNull();
+    });
+
+    it("T-32 (AC-31): over this suite no log line or Sentry event carries a person, the note, a token or a link", async () => {
+      const tokens = (
+        await scratch.sql<
+          { public_token: string }[]
+        >`SELECT public_token FROM "order"`
+      ).map((row) => row.public_token);
+      expect(watch.captured()).toContain("admin.order_action");
+      watch.expectClean([
+        "SENTINEL-NOTE-7",
+        BUYER_NAME,
+        "Test Recipient",
+        "+48500000000",
+        "@example.test",
+        ...tokens,
+      ]);
     });
   },
 );
