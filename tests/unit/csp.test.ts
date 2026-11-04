@@ -429,11 +429,13 @@ describe("next.config.ts wiring", () => {
     expect(source).toContain("platform,");
   });
 
-  it("keeps the policy out of src/proxy.ts", () => {
+  it("keeps the static policy out of src/proxy.ts: the proxy sends only step 3's, on checkout (TASK-262)", () => {
     const proxy = readFileSync(
       resolve(__dirname, "../../src/proxy.ts"),
       "utf8",
     );
     expect(proxy).not.toContain("Content-Security-Policy");
+    expect(proxy).not.toMatch(/\b(cspValue|cspHeader|securityHeaderRules)\b/u);
+    expect(proxy).toContain("checkoutCspHeaders(path, process.env)");
   });
 });
