@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 MON264: worktree `../fo-wt-264`, branch `task/TASK-264-payment-monitors` from main 0f339f1f2; row in_progress. Next: monitor module, job registry entry, unit + integration tests.
 
 ## Result
 
