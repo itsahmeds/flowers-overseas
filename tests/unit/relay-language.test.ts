@@ -497,8 +497,9 @@ const APPROVED = {
     "Made by our florist, a few streets from their door.",
   "home.destinations.body":
     "We open one country at a time, and only when we can promise the same flowers and the same care.",
-  "destinationsHub.intro":
-    "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open delivery after it. Where we are not delivering yet, this page says so in the same words on every row.",
+  // `destinationsHub.intro` (R-batch) left this list when TASK-431 replaced its "Seven countries in
+  // Europe" with the data's count (spec 007 §14 A-orchestrator-2026-11-01b); its new text is pinned
+  // in `destinations-hub-count.test.tsx`.
   "corridor.steps.guide.twoBody":
     "Our florist sees the recipient's address and your card message, and nothing else about you.",
   "corridor.steps.live.twoBody":

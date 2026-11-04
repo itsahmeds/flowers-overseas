@@ -29,7 +29,8 @@
  * destination has a page renders the whole-page empty state instead of three empty headings
  * (the artboards' "Empty states" block).
  *
- * **What the hub does not carry**: no price, no count of countries, no map, no flag, no photo and
+ * **What the hub does not carry**: no price, no country count written into copy (the intro and
+ * the meta description state `destinations.length` through an ICU plural, AC-37), no map, no flag, no photo and
  * no "featured" section (founder ruling (c)); no waiting-list field (§13 Q4); and no per-country
  * copy of its own — a linked destination's teaser is the guide's own authored `seoDescription`,
  * so the hub cannot describe a country in words nobody reviewed.
@@ -150,7 +151,8 @@ function destinationView(
  * `nameOf` is a parameter for `finder-model.ts`'s reason: this module reads no catalogue, so the
  * collation order can be asserted in a unit test with a stub name function and the component
  * passes next-intl's. It defaults to the key itself for the one caller that needs the *shape* of
- * the page and not its order — `generateMetadata`, which reads `path` and `anyReviewed` only.
+ * the page and not its order — `generateMetadata`, which reads `path`, `anyReviewed` and the
+ * length of `destinations` (the meta description's country count, AC-37).
  */
 export function hubView(
   locale: string,

@@ -176,7 +176,9 @@ export async function generateMetadata({
 
   return pageMetadata({
     title: t("seoTitle"),
-    description: t("seoDescription"),
+    // The country count is the length of the list the page renders, from the same `hubView()`
+    // (spec 007 §14 A-orchestrator-2026-11-01b, AC-37; TASK-431): never a constant, never copy.
+    description: t("seoDescription", { count: view.destinations.length }),
     directive: verdict.directive,
     canonical: canonicalFor(match.locale, view.path, {
       baseUrl: deployment.siteUrl,

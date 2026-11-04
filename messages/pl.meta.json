@@ -2022,7 +2022,7 @@
   "destinationsHub.intro": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "359d44d09dfeadd1c76b748e58d458f2d01a0cec8418607920fc7dee767a121a"
+    "sourceHash": "1ddda7025d89c558795979a61cc6f6ad8348adeb26567dcec4a13f73292fc861"
   },
   "destinationsHub.noGuide": {
     "source": "machine",
@@ -2032,7 +2032,7 @@
   "destinationsHub.phoneIntro": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "fcb2b92fcbc41b400242a461b156398dba9b146e8e9b97d8b6307e50392f5577"
+    "sourceHash": "69d1e8d20c63dda56efbc2df46aefab06b736fb11a7393c1f23b11354682f372"
   },
   "destinationsHub.readGuide": {
     "source": "machine",
@@ -2062,7 +2062,7 @@
   "destinationsHub.seoDescription": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "c0d8400f2261b33e580e8ffdf2b78cdd6c5d4815ea4e90d64131c378ff9141a9"
+    "sourceHash": "083d9375ecf7e1efb258604d9c30c78de67c77614f9deef27c19d1f93c824715"
   },
   "destinationsHub.seoTitle": {
     "source": "machine",
