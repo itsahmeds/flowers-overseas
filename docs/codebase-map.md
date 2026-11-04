@@ -14,12 +14,12 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +18 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +115 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +117 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +12 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +130 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +131 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +19 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +16 |
@@ -28,7 +28,7 @@ task actually touches.
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +37 |
-| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +68 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +69 |
 
 ## Config (`src/config/`)
 
@@ -185,10 +185,12 @@ task actually touches.
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
-| `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card needs… | 020 |
+| `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card and… | 020 |
 | `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute and… | 020 |
-| `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute and cancel actions,… | 020 |
+| `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute, cancel and resend… | 020 |
+| `admin/(signed-in)/orders/[id]/order-lists.tsx` | The order page's refunds list, emails list with… | 020 |
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
+| `admin/(signed-in)/orders/[id]/panel-reasons.ts` | The Actions card's "Not available" reason per… | 020 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
@@ -330,8 +332,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 469 |
-| `tests/integration/` | 93 |
+| `tests/unit/` | 476 |
+| `tests/integration/` | 95 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
