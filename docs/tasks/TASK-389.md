@@ -30,9 +30,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Escalations
 
-One dated bullet per escalation: the question, who it went to, the answer or `open`.
-
-_None recorded._
+- **2026-11-04 (builder S388), keyless strings:** none. The one new key is the amendment's `shop.card.localSpecial` ("Only in {country}"), recorded by `.claude/state/record-approval-389.py` (`--check` passes; en 0.30 % now, 0.15 % after).
 
 ## Progress
 
@@ -40,11 +38,14 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 S388: `displayRateFor()` and `EQUIVALENTS_MAX_AGE_DAYS = 14` (`fx.ts` shares one derivation with `fxRateFor()`, whose bound and signal are unchanged); `priceEquivalents()` in item 7's order with the locale's currency first; `productCardView()` takes `fromPriceProjection()` plus equivalents and `localSpecial` (`localSpecialSkus()`); `ProductCard` prints "from", the line, the reserved countdown box and "Only in {country}"; the product page's lines take the new order and bound. Pushed on PR 486.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR 486 (with TASK-388). Country cards (listings, the in-context menu's featured cards, the product page's related row and search results all read `productCardView()`) print `catalog.price.from` around the smallest size's exact all-in price, `catalog.price.inclusive`, the equivalents line (GBP, EUR, USD, PLN without the displayed currency, the locale's currency first when it is not the displayed one, mid rate, half up), an invisible 18 px countdown box for TASK-393, and `shop.card.localSpecial` on a non-core product saleable in one shop country only. `displayRateFor()` holds a rate through the end of day `as_of + 14` and `null` one millisecond later; spec 005's FX tests (`catalog-pricing-fx`, `catalogue-fx`) are unedited and green. The equivalents never reach JSON-LD, `ItemList`, `Offer`, sitemap, quote or checkout (the projection's `displayPrice` is the only field those read). Unit: `catalog-equivalents-display-bound.test.ts` (T-112, T-111 unit), `catalog-listing-card-equivalents.test.ts` (renamed from `...-no-card-equivalents`), updated card, listing, product page and equivalents tests. The price sort now orders by the "from" price (the displayed price), which moved `listing-country-shop-root-sorted.json`.
 
-_Pending._
+## Carry-forwards (from this build)
+
+- **E2E, visual and axe (CI's, not run tonight):** T-111's five placements in a browser, size and 4.5:1 contrast of the line (`text-ink-subtle` = `--color-ink-3`, the product page's existing line), the structured-data and checkout scan, the country listing visual baselines (cards gained a line and a box, so `country-*` baselines move).
+- **Card price styling:** the card keeps the shipped `Price` primitive (qualifier in leaf green, line in `text-xs`) rather than the board's `.cm-pr` (qualifier in ink-3, line at 12.5 px); a pixel pass against `country-shop-*` is owed with the baselines.
+- **Local specials with today's data:** the demo shop set is seven countries; whether any non-core product is priced in one only is the seed's answer, so the label may not show anywhere today. AC-92's fixture case is TASK-390's.
