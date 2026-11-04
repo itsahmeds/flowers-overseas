@@ -228,8 +228,10 @@ export {
   paymentReturnLocation,
   runPay,
   runPaymentDeclined,
+  unpaidPurchase,
   type DeclineOutcome,
   type PayOutcome,
+  type UnpaidPurchase,
 } from "./pay";
 export {
   demoPaymentStep,
@@ -258,6 +260,7 @@ export {
 
 // TASK-206: the confirmation the cookie leads to.
 export {
+  chosenAddonNameKeys,
   confirmationFor,
   type Confirmation,
   type ConfirmedDelivery,

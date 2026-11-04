@@ -84,6 +84,7 @@ import {
   type CheckoutAction,
   type CheckoutFormIntent,
 } from "@/modules/ui/checkout";
+import { PayArea } from "./PayStep";
 
 /** What a refused post is drawn again with. */
 export interface CheckoutEcho {
@@ -1204,6 +1205,8 @@ export async function CheckoutStepPage({
   }));
   const summary = summaryFor(screen, all, t);
   const total = screen.total;
+  // Spec 013 (TASK-262): step 3 pays through the registered Stripe step in `test` and `live`.
+  const paying = screen.mode === "test" || screen.mode === "live";
   const gone =
     line?.availability.status === "date_gone" ? line.availability : null;
   const goneDay =
@@ -1243,12 +1246,22 @@ export async function CheckoutStepPage({
 
   return (
     <>
-      {screen.mode === "demo" ? (
+      {screen.mode === "demo" || screen.mode === "test" ? (
         <DemoBanner
           body={t("demo.bannerBody")}
           innerClassName={PAGE_FRAME}
           title={t("demo.bannerTitle")}
         />
+      ) : null}
+      {/* Spec 013 §5.3 (TASK-262): `test` adds the test-mode label under spec 010's banner. */}
+      {screen.mode === "test" ? (
+        <p
+          className={`${PAGE_FRAME} text-ink-2 m-0 pt-[10px] text-sm`}
+          data-fo-test-label=""
+          role="note"
+        >
+          {all("payments.step.testLabel")}
+        </p>
       ) : null}
       <div className={`${PAGE_FRAME} pb-[56px]`} data-fo-checkout={screen.step}>
         <div className="grid items-start gap-[28px] pt-[16px] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-[56px] lg:pt-[28px]">
@@ -1372,6 +1385,9 @@ export async function CheckoutStepPage({
                     {rich(STEP_TITLES.review, { em: emphasis })}
                   </h1>
                   <ReviewList screen={screen} />
+                  {/* Spec 013 (TASK-262): in `test` and `live`, the Payment Element, the
+                      pre-contract block and Pay; nothing in `demo`. */}
+                  {paying ? await PayArea({ screen }) : null}
                 </div>
               ) : (
                 <StepForm
@@ -1451,24 +1467,31 @@ export async function CheckoutStepPage({
                     },
                   }
                 : {})}
-              {...(screen.step === "review"
+              {...(screen.step === "review" && paying
                 ? {
                     vatLines: summary.vat,
                     currencyLine: t("price.currencyLine", {
                       buyerCurrency: total.currency,
                     }),
-                    action: (
-                      <StepForm action={action} id={CHECKOUT_FORM_IDS.place}>
-                        <PlaceArea
-                          screen={screen}
-                          {...(echo?.refused === undefined
-                            ? {}
-                            : { refused: echo.refused })}
-                        />
-                      </StepForm>
-                    ),
                   }
-                : {})}
+                : screen.step === "review"
+                  ? {
+                      vatLines: summary.vat,
+                      currencyLine: t("price.currencyLine", {
+                        buyerCurrency: total.currency,
+                      }),
+                      action: (
+                        <StepForm action={action} id={CHECKOUT_FORM_IDS.place}>
+                          <PlaceArea
+                            screen={screen}
+                            {...(echo?.refused === undefined
+                              ? {}
+                              : { refused: echo.refused })}
+                          />
+                        </StepForm>
+                      ),
+                    }
+                  : {})}
             />
           )}
         </div>
@@ -1478,8 +1501,10 @@ export async function CheckoutStepPage({
           locale={locale}
           total={total}
           totalLabel={t("summary.total")}
-          // The daily cap leaves no place control, in the panel or here (AC-27).
-          {...(screen.step === "review" && echo?.refused === "cap"
+          // The daily cap leaves no place control, in the panel or here (AC-27); in `test` and
+          // `live` the pay button is the panel's own, under the Element (spec 013).
+          {...((screen.step === "review" && echo?.refused === "cap") ||
+          (screen.step === "review" && paying)
             ? {}
             : {
                 action: (

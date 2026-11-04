@@ -19,12 +19,13 @@
  *
  * Every refusal is a typed answer; nothing here logs a client secret, a token or a person's data.
  */
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
 import { logger } from "@/lib/logger";
 
-import { loadDraft } from "./draft";
+import { loadDraft, withDraftConnection } from "./draft";
 import { paymentStepFor } from "./payment-step";
 import { PlaceOrderFormSchema, placeBasket } from "./place";
 import { formValues, stepPath, type StepContext } from "./steps";
@@ -167,4 +168,54 @@ export async function paymentReturnLocation(
     }
   }
   return donePath(locale.data);
+}
+
+const UnpaidRow = z.object({
+  total_minor: z.coerce.number().int().positive(),
+  currency: z.string().regex(/^[A-Z]{3}$/u),
+  buyer_country: z
+    .string()
+    .regex(/^[A-Z]{2}$/u)
+    .nullable(),
+});
+
+/** What step 3 needs to resume an unpaid purchase: its total and the declared buyer country. */
+export interface UnpaidPurchase {
+  readonly purchaseId: string;
+  readonly total: { readonly amountMinor: number; readonly currency: string };
+  readonly buyerCountry: string;
+}
+
+/**
+ * The cookie's purchase while it is placed and unpaid (a refresh after a decline, AC-5): read
+ * from the purchase and its first order's buyer snapshot, since placement cleared the draft's
+ * personal fields. `null` for anything else.
+ */
+export async function unpaidPurchase(
+  context: StepContext,
+): Promise<UnpaidPurchase | null> {
+  const now = (context.now ?? (() => new Date()))();
+  const lookup = await loadDraft(context.token, now, context.connection);
+  if (lookup.status !== "active" || lookup.draft.purchaseId === null) {
+    return null;
+  }
+  const purchaseId = lookup.draft.purchaseId;
+  const [raw] = await withDraftConnection(context.connection, (executor) =>
+    executor.execute(sql`
+      SELECT p.total_minor::text AS total_minor, p.buyer_currency_code AS currency,
+             (SELECT o.buyer_snapshot ->> 'countryIso2' FROM "order" o
+               WHERE o.purchase_id = p.id ORDER BY o.created_at, o.id LIMIT 1) AS buyer_country
+        FROM purchase p
+       WHERE p.id = ${purchaseId}
+         AND NOT EXISTS (SELECT 1 FROM "order" o
+                          WHERE o.purchase_id = p.id AND o.status <> 'placed')`),
+  );
+  if (raw === undefined) return null;
+  const row = UnpaidRow.parse(raw);
+  if (row.buyer_country === null) return null;
+  return {
+    purchaseId,
+    total: { amountMinor: row.total_minor, currency: row.currency },
+    buyerCountry: row.buyer_country,
+  };
 }
