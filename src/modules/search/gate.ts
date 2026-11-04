@@ -36,13 +36,6 @@ import { SEARCH_CONFIG, type SearchConfig } from "@/config/search";
 /** The header the client address is read from (Cloudflare's, ADR-0018). */
 export const CLIENT_ADDRESS_HEADER = "cf-connecting-ip";
 
-/**
- * The request header the proxy sets on a refused results request it hands to the page, so the page
- * renders the "rate limited" state without searching. The proxy deletes any client-sent copy from
- * every request first, so only the proxy can set it.
- */
-export const SEARCH_GATE_HEADER = "x-fo-search-gate";
-
 /** The concurrency cap's `Retry-After`, in seconds (§2.8). */
 export const CONCURRENCY_RETRY_AFTER_SECONDS = 5;
 

@@ -346,7 +346,7 @@ export async function rateLimitedSearchPage(
 }
 
 export interface SearchRouteOptions {
-  /** The proxy refused this request (`x-fo-search-gate` was set by it). */
+  /** The proxy refused this request and rewrote it to the "rate limited" route. */
   readonly refused: boolean;
   readonly gate?: RateLimiter;
   readonly deps?: SearchPageDeps;

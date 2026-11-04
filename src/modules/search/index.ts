@@ -95,7 +95,6 @@ export {
   RATE_WINDOW_MS,
   type RateLimiter,
   type RefusalReason,
-  SEARCH_GATE_HEADER,
   type SearchRouteKind,
   clientAddress,
   installSearchGate,

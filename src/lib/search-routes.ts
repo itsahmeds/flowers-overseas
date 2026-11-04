@@ -27,6 +27,14 @@ import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
 /** The results page's internal first segment (`src/app/[locale]/-search`). */
 export const SEARCH_ROUTE_SEGMENT = "-search";
 
+/**
+ * The "rate limited" state's own route under it (`src/app/[locale]/-search/limited`; spec 045
+ * §2.7, AC-26; TASK-403): the proxy rewrites a refused results request there with its 429 or 503,
+ * so the page knows the request was refused from its path alone, reads no header and searches
+ * nothing. A direct request to it shows the same state, which tells nobody anything.
+ */
+export const SEARCH_LIMITED_SEGMENT = "limited";
+
 /** `noindex, follow` (§6): a crawler that arrives from an outside link still reaches the products. */
 export const SEARCH_ROBOTS = "noindex, follow";
 /** Never stored by a shared or a browser cache (§2.8: the query can hold personal data). */
@@ -71,6 +79,10 @@ export function searchHeaderRules(): HeaderRule[] {
   return [
     ...searchSources().map((source) => ({ source, headers })),
     { source: `/:locale/${SEARCH_ROUTE_SEGMENT}`, headers },
+    {
+      source: `/:locale/${SEARCH_ROUTE_SEGMENT}/${SEARCH_LIMITED_SEGMENT}`,
+      headers,
+    },
   ];
 }
 

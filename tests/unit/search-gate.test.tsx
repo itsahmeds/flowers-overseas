@@ -17,12 +17,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SEARCH_CONFIG } from "../../src/config/search.ts";
+import { searchHeaderRules } from "../../src/lib/search-routes.ts";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import { loadMessages } from "../../src/modules/i18n/index.ts";
 import {
   CONCURRENCY_RETRY_AFTER_SECONDS,
   type RateLimiter,
-  SEARCH_GATE_HEADER,
   SearchResultsPage,
   installSearchGate,
   rateLimiter,
@@ -171,9 +171,6 @@ describe("the proxy wears the limiter (AC-26)", () => {
       const response = call(path, { "cf-connecting-ip": ADDRESS_A });
       expect(response.status, `request ${n}`).toBe(200);
       expect(response.headers.get("x-middleware-rewrite")).toBeNull();
-      expect(
-        response.headers.get(`x-middleware-request-${SEARCH_GATE_HEADER}`),
-      ).toBeNull();
     }
     const refused = call(path, { "cf-connecting-ip": ADDRESS_A });
     expect(refused.status).toBe(429);
@@ -182,11 +179,8 @@ describe("the proxy wears the limiter (AC-26)", () => {
     expect(refused.headers.get("cache-control")).toBe("private, no-store");
     expect(refused.headers.get("referrer-policy")).toBe("strict-origin");
     expect(refused.headers.get("x-middleware-rewrite")).toBe(
-      `${ORIGIN}/en/-search?q=roses&to=pl`,
+      `${ORIGIN}/en/-search/limited?q=roses&to=pl`,
     );
-    expect(
-      refused.headers.get(`x-middleware-request-${SEARCH_GATE_HEADER}`),
-    ).toBe("client");
 
     const other = call(path, { "cf-connecting-ip": ADDRESS_B });
     expect(other.status).toBe(200);
@@ -243,9 +237,9 @@ describe("the proxy wears the limiter (AC-26)", () => {
     });
     expect(refused.status).toBe(503);
     expect(refused.headers.get("retry-after")).toBe("5");
-    expect(
-      refused.headers.get(`x-middleware-request-${SEARCH_GATE_HEADER}`),
-    ).toBe("concurrency");
+    expect(refused.headers.get("x-middleware-rewrite")).toBe(
+      `${ORIGIN}/pl/-search/limited?q=roze`,
+    );
     limiter.leave();
     expect(call("/pl/szukaj?q=roze").status).toBe(200);
   });
@@ -266,19 +260,22 @@ describe("the proxy wears the limiter (AC-26)", () => {
     ).toBe(429);
   });
 
-  it("drops a client-sent x-fo-search-gate, so only the proxy can ask for the rate-limited page", () => {
-    install();
-    const response = call("/en/search?q=roses", {
-      "cf-connecting-ip": ADDRESS_A,
-      [SEARCH_GATE_HEADER]: "client",
-    });
-    expect(response.status).toBe(200);
+  it("the rate-limited route carries the search headers, and a direct request to it is not counted", () => {
+    const { limiter } = install();
+    const rule = searchHeaderRules().find(
+      (entry) => entry.source === "/:locale/-search/limited",
+    );
+    expect(rule?.headers).toEqual([
+      { key: "X-Robots-Tag", value: "noindex, follow" },
+      { key: "Cache-Control", value: "private, no-store" },
+      { key: "Referrer-Policy", value: "strict-origin" },
+    ]);
+    const spy = vi.spyOn(limiter, "admit");
     expect(
-      response.headers.get(`x-middleware-request-${SEARCH_GATE_HEADER}`),
-    ).toBeNull();
-    expect(
-      response.headers.get("x-middleware-override-headers") ?? "",
-    ).not.toContain(SEARCH_GATE_HEADER);
+      call("/en/-search/limited?q=roses", { "cf-connecting-ip": ADDRESS_A })
+        .status,
+    ).toBe(200);
+    expect(spy).not.toHaveBeenCalled();
   });
 
   it("logs search.rate_limited with the route and kind, and no line holds either address or the query", () => {

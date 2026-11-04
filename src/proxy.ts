@@ -31,10 +31,10 @@
  * **Search abuse protection** (spec 045 §2.8, §11, AC-26; TASK-403): a search address and
  * `/api/search/*` pass the process's limiter (`src/modules/search/gate.ts`, the one reader of
  * the client's address). Over the per-client limit the answer is 429, over the concurrency cap 503,
- * each with `Retry-After`; a results request is then **rewritten** with that status to the results
- * route with `x-fo-search-gate` set, so the page renders the "rate limited" state and its form
- * without searching. The proxy deletes any client-sent `x-fo-search-gate` from every request. One
- * `search.rate_limited` line (route and kind, never the address or the query).
+ * each with `Retry-After`; a results request is then **rewritten** with that status to the "rate
+ * limited" route `/{locale}/-search/limited` (the query kept), which renders that state and its
+ * form without searching. One `search.rate_limited` line (route and kind, never the address or the
+ * query).
  */
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -59,6 +59,7 @@ import { REQUEST_ID_HEADER, resolveRequestId } from "@/lib/request-id";
 import { NOINDEX_HEADER_NAME } from "@/lib/robots-headers";
 import {
   SEARCH_CACHE_CONTROL,
+  SEARCH_LIMITED_SEGMENT,
   SEARCH_REFERRER_POLICY,
   SEARCH_ROBOTS,
   SEARCH_ROUTE_SEGMENT,
@@ -67,7 +68,6 @@ import {
 import { parseLocaleFromPath } from "@/modules/i18n/routing";
 import {
   type Admission,
-  SEARCH_GATE_HEADER,
   clientAddress,
   searchGate,
 } from "@/modules/search/gate";
@@ -116,8 +116,10 @@ function refusedSearch(
   };
   if (kind === "suggest") return new NextResponse(null, init);
   const locale = path.split("/")[1] ?? "";
-  headers.set(SEARCH_GATE_HEADER, admission.reason);
-  const target = new URL(`/${locale}/${SEARCH_ROUTE_SEGMENT}`, request.url);
+  const target = new URL(
+    `/${locale}/${SEARCH_ROUTE_SEGMENT}/${SEARCH_LIMITED_SEGMENT}`,
+    request.url,
+  );
   target.search = request.nextUrl.search;
   return NextResponse.rewrite(target, { ...init, request: { headers } });
 }
@@ -192,8 +194,6 @@ export function proxy(request: NextRequest): NextResponse {
   const headers = new Headers(request.headers);
   headers.set(REQUEST_ID_HEADER, requestId);
   if (locale !== undefined) headers.set(LOCALE_HEADER, locale);
-  // Only the proxy says a search was refused (below); a client-sent copy never reaches a page.
-  headers.delete(SEARCH_GATE_HEADER);
 
   // Search abuse protection (spec 045 §2.8, AC-26): before anything renders or searches.
   const searchKind = searchRouteKind(path);
