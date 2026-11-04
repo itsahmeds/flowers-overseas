@@ -371,8 +371,9 @@ describe("R6 (T-37, T-39): the destinations hub's state line", () => {
     const rows = hooks(html, "data-fo-hub-row");
     expect(pills).toEqual(["FR", "DE", "IT", "NL", "PL", "RO", "ES"]);
     expect(rows).toEqual(pills);
+    // The phone line counts the same list (spec 007 AC-37; TASK-431).
     expect(html).toContain(
-      "Seven countries in Europe, each with a guide we wrote ourselves.",
+      `${pills.length} countries, each with a guide we wrote ourselves.`,
     );
   });
 });
