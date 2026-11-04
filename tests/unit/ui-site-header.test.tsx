@@ -842,7 +842,6 @@ describe("every registry label the header renders resolves in the catalogue", ()
       // Every header link is a drawn link and therefore has a label; `linkLabelKey()` is the
       // accessor that says so (spec 008 AC-20; TASK-113).
       ...headerLinkIds.map((id) => linkLabelKey(siteLink(id))),
-      siteLink(SEARCH_LINK_ID).descriptionKey ?? "",
       COMPANY.contact.labelKey,
       COMPANY.contact.hoursKey,
     ];

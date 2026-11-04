@@ -597,7 +597,11 @@ export function SearchResultsPage({
                 action={view.picker.action}
                 chips={view.picker.chips}
                 datalist={view.picker.datalist}
-                hidden={[{ name: SEARCH_PARAM.q, value: result.query }]}
+                hidden={
+                  result.query === ""
+                    ? []
+                    : [{ name: SEARCH_PARAM.q, value: result.query }]
+                }
                 idPrefix="search-picker"
                 label={home("picker.label")}
                 rememberLine={shop("choose.remember")}

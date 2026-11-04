@@ -346,10 +346,13 @@ describe("countryVersionOf: that country's version of next (AC-78's 303 target)"
     ).toEqual({ kind: "page", path: "/en/italy/flowers?price=mid" });
   });
 
-  it("search is the shop root until spec 045 publishes its results page", async () => {
+  it("search is spec 045's results page in that country (TASK-402, AC-13)", async () => {
     expect(
       await countryVersionOf(parseChooserNext("en", "search"), "ES"),
-    ).toEqual({ kind: "page", path: "/en/spain/flowers" });
+    ).toEqual({ kind: "page", path: "/en/search?to=es" });
+    expect(
+      await countryVersionOf(parseChooserNext("pl", "search"), "DE"),
+    ).toEqual({ kind: "page", path: "/pl/szukaj?to=de" });
   });
 
   it("speaks the locale of next: de's shop root is in German", async () => {

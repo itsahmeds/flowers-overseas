@@ -234,7 +234,7 @@ describe("chooserChoiceResponse(): the 303 and the one cookie (AC-78, AC-90)", (
       "product/vistula-red": "/en/poland/product/vistula-red",
       "price/low": "/en/poland/flowers?price=low",
       // Spec 045's results page is unpublished: the shop root (TASK-381's carry-forward).
-      search: "/en/poland/flowers",
+      search: "/en/search?to=pl",
     };
     for (const next of SHAPES) {
       for (const response of [

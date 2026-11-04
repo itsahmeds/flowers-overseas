@@ -7,8 +7,8 @@
  *
  *  - `q`: NFC, control and format characters removed (`\u0000`, the zero-width space), trimmed,
  *    truncated at `maxQueryChars` (80) code points, never between the halves of a surrogate pair;
- *  - `to`: the lowercase ISO code of a destination **with a shop** (`PL` folds to `pl`), else no
- *    destination at all (`xx`, a country with no shop, two values);
+ *  - `to`: the lowercase ISO code of a destination **with a shop** (upper case folds to lower),
+ *    else no destination at all (an unknown code, a country with no shop);
  *  - `date`: an ISO calendar date, kept only when the destination in `to` takes delivery dates
  *    (`deliveryDatesOpen`); the engine checks the bookable window and the destination the words
  *    name (§2.4);

@@ -13,7 +13,7 @@ import { type LocaleCode, isLocaleCode, launchLocales } from "@/config/locales";
 import { SEARCH_CONFIG } from "@/config/search";
 import { CountryLessCardViewSchema, ProductCardViewSchema } from "@/modules/ui";
 
-/** A destination code as the registry spells it (`PL`), or the URL's lowercase form, upper-cased. */
+/** A destination code as the registry spells it (two capitals), or the URL's lowercase form, upper-cased. */
 const Iso2Schema = z
   .string()
   .regex(/^[A-Za-z]{2}$/u)
