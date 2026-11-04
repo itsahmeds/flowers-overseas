@@ -157,6 +157,45 @@ describe("logs (AC-23)", () => {
   );
 });
 
+describe("the breaker's awkward queries (AC-23)", () => {
+  const LONG = "roses for anna kowalska ul lipowa ".repeat(6).trim();
+  const RTL = "ورود حمراء إلى آنا";
+
+  it.each([LONG, RTL])(
+    "%j reaches no log line, no Sentry URL and no analytics payload, and counts at most 8 tokens",
+    async (query) => {
+      expect(LONG.length).toBeGreaterThan(200);
+      captureStdout();
+      const outcome = await searchPage(
+        "en",
+        { q: query, to: "pl" },
+        {
+          slow: { record: () => undefined },
+        },
+      );
+      if (outcome.kind !== "page") throw new Error("expected a page");
+      const view = outcome.view;
+      // The page keeps at most 80 code points of the words, rendered inside <bdi> only.
+      expect([...view.result.query].length).toBeLessThanOrEqual(80);
+      const payload = JSON.stringify(view.analytics);
+      // Arabic letters normalise to spaces (§2.3), so the RTL query has no token and no event.
+      expect(view.analytics?.params.query_tokens ?? 0).toBeLessThanOrEqual(8);
+      expect(view.analytics === null).toBe(query === RTL);
+      const event = beforeSend({
+        request: {
+          url: `${ORIGIN}/en/search?${new URLSearchParams({ q: query }).toString()}`,
+        },
+      });
+      for (const text of [lines.join("\n"), payload, JSON.stringify(event)]) {
+        expect(text).not.toContain(view.result.query);
+        expect(text).not.toContain(encodeURIComponent(query).slice(0, 30));
+        expect(text).not.toContain("kowalska");
+        expect(text).not.toContain("حمراء");
+      }
+    },
+  );
+});
+
 describe("Sentry (AC-23)", () => {
   it.each(PII)(
     "beforeSend leaves none of %j in the URL, transaction, breadcrumbs, contexts, extra or tags",

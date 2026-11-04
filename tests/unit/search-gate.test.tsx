@@ -92,6 +92,17 @@ describe("rateLimiter() (AC-26)", () => {
     expect(limiter.admit(ADDRESS_A, "results")).toEqual({ admitted: true });
   });
 
+  it("admits 30 searches in a minute from one client, every one of them", () => {
+    const time = clock();
+    const limiter = rateLimiter(undefined, time.now);
+    for (let n = 1; n <= 30; n += 1) {
+      expect(limiter.admit(ADDRESS_A, "results"), `search ${n}`).toEqual({
+        admitted: true,
+      });
+      time.advance(2_000);
+    }
+  });
+
   it("admits 120 suggest requests a minute and answers the 121st 429, in its own bucket", () => {
     const time = clock();
     const limiter = rateLimiter(undefined, time.now);
