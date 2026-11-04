@@ -9,9 +9,15 @@
  * → spec 016's `manualReroute` / spec 013's `cancelOrder` on that transaction. The routing world
  * (one country per case, florists, offers, declines and timeouts) is `routing-no-partner.test.ts`'s;
  * the paid purchases on the in-memory `FakePaymentProvider` are `admin-order-refunds.test.ts`'s.
+ *
+ * TASK-361 adds T-29 (AC-28: a reroute sends the buyer nothing and the tracking page reads "We
+ * have your order" before and after, in `en-gb` and `pl`) and T-32 (AC-31: the log and Sentry
+ * spy of `support/pii-watch.ts` over the whole suite).
  */
 import { randomUUID } from "node:crypto";
 
+import { createTranslator } from "next-intl";
+import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { PAYMENT_METHODS } from "@/config/payment-methods";
@@ -36,12 +42,16 @@ import {
   type FloristCommandRuntime,
   respondToOffer,
 } from "@/modules/orders/florist-actions";
+import { loadMessages } from "@/modules/i18n";
+import { MESSAGE_NAMESPACES } from "@/modules/i18n/messages";
 import {
   dispatchOutbox,
+  getTrackingView,
   type HandlerRegistry,
   type OrderExecutor,
   transition,
 } from "@/modules/orders";
+import { buyerRefundLines } from "@/modules/orders/buyer-refund-lines";
 import {
   createRoutingDeclineEffect,
   expireNoPartner,
@@ -75,9 +85,41 @@ import {
   type ScratchDatabase,
   type Tx,
 } from "./support/scratch-db.ts";
+import { watchLogsAndSentry } from "./support/pii-watch.ts";
 import { runnerOf, sqlText } from "./support/sql-runner.ts";
 
+const sentry = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+  captureException: vi.fn(),
+}));
+vi.mock("@sentry/nextjs", async (original) => ({
+  ...(await original<typeof import("@sentry/nextjs")>()),
+  ...sentry,
+}));
+
+// The tracking page's server translations, from the catalogues (as `tracking-page.test.ts`).
+vi.mock("next-intl/server", () => ({
+  getTranslations: ({
+    locale,
+    namespace,
+  }: {
+    locale: string;
+    namespace?: string;
+  }) =>
+    Promise.resolve(
+      createTranslator({
+        locale,
+        messages: loadMessages(locale, MESSAGE_NAMESPACES),
+        ...(namespace === undefined ? {} : { namespace }),
+      } as Parameters<typeof createTranslator>[0]),
+    ),
+}));
+
+const { TrackingPageView } =
+  await import("../../src/app/[locale]/(track)/track/[token]/TrackingPageView.tsx");
+
 const server = await probeLocalServer();
+const watch = watchLogsAndSentry(sentry);
 
 const SKU = "FO-BQ-358";
 const TIER = "stems_15";
@@ -773,6 +815,78 @@ describe.skipIf(server.url === undefined)(
       expect(audits[0]?.row_text).not.toContain(BUYER_NAME);
     }, 120_000);
 
+    /** The tracking page's headline and projection for the order, in `en-gb` and `pl`. */
+    async function trackingLabel(orderId: string): Promise<{
+      projection: string;
+      headline: Record<string, boolean>;
+    }> {
+      return (await scratch.sql.begin(async (tx) => {
+        await asApp(tx, { role: "system" });
+        const view = await getTrackingView(orderId, {
+          executor: runnerOf(tx),
+          refundLines: buyerRefundLines,
+        });
+        const headline: Record<string, boolean> = {};
+        for (const locale of ["en-gb", "pl"] as const) {
+          const messages = loadMessages(locale, MESSAGE_NAMESPACES) as {
+            tracking: { headline: { confirmed: string } };
+          };
+          const html = renderToStaticMarkup(
+            await TrackingPageView({
+              locale,
+              view,
+              photoHref: `/${locale}/track/T/photo`,
+              calendarHref: `/${locale}/track/T/calendar.ics`,
+            }),
+          );
+          headline[locale] = html.includes(
+            messages.tracking.headline.confirmed,
+          );
+        }
+        return { projection: view.projection, headline };
+      })) as { projection: string; headline: Record<string, boolean> };
+    }
+
+    it('T-29 (AC-28): a reroute sends the buyer nothing, and the tracking page reads "We have your order" before and after, in en-gb and pl', async () => {
+      const c = await noPartnerCase();
+      const before = await trackingLabel(c.orderId);
+      expect(before).toEqual({
+        projection: "confirmed",
+        headline: { "en-gb": true, pl: true },
+      });
+      const result = await reroute(
+        c.orderId,
+        c.declined.partnerId,
+        rerouteDeps(at(70), { reroute: rerouteAt(at(70)) }),
+      );
+      expect(result).toMatchObject({ ok: true, kind: "reroute" });
+      expect(await status(c.orderId)).toBe("routed");
+      expect(await trackingLabel(c.orderId)).toEqual(before);
+      expect(
+        (
+          await scratch.sql<{ n: number }[]>`
+            SELECT count(*)::int AS n FROM notification_delivery
+            WHERE order_id = ${c.orderId} AND audience = 'buyer'`
+        )[0]?.n,
+      ).toBe(0);
+      for (const type of [
+        "order.manual_reroute",
+        "order.routed",
+        "assignment.offered",
+      ] as const) {
+        const [row] = await scratch.sql<{ from_status: string }[]>`
+          SELECT from_status FROM order_event
+          WHERE order_id = ${c.orderId} AND type = ${type}
+          ORDER BY seq DESC LIMIT 1`;
+        expect(
+          notificationsFor(type, row?.from_status ?? "", "live").filter(
+            (rule) => rule.audience === "buyer",
+          ),
+          type,
+        ).toEqual([]);
+      }
+    }, 120_000);
+
     it("T-06 (AC-5): one reroute actionId twice in sequence and twice in parallel: one order.manual_reroute, order.routed and assignment.offered; the second replayed with the first resultRef", async () => {
       for (const parallel of [false, true]) {
         const c = await noPartnerCase();
@@ -1302,5 +1416,26 @@ describe.skipIf(server.url === undefined)(
       });
       expect((await counts(demo)).actions).toBe(0);
     }, 120_000);
+
+    /* ---------------------------------------------------------------------- */
+    /* T-32 (AC-31), last: the log and Sentry spy over every case above        */
+    /* ---------------------------------------------------------------------- */
+
+    it("T-32 (AC-31): over this suite no log line or Sentry event carries a person, the note, a token or a link", async () => {
+      const tokens = (
+        await scratch.sql<
+          { public_token: string }[]
+        >`SELECT public_token FROM "order"`
+      ).map((row) => row.public_token);
+      expect(watch.captured()).toContain("admin.order_action");
+      watch.expectClean([
+        "SENTINEL-NOTE-7",
+        BUYER_NAME,
+        "Test Recipient",
+        "+48500000000",
+        "@example.test",
+        ...tokens,
+      ]);
+    });
   },
 );
