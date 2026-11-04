@@ -40,11 +40,23 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-04 (D431): TASK-291 is `todo`, not in flight, so no clash on `destinationsHub.intro`. The three keys became ICU plurals in en/de/pl (de/pl machine drafts, all `reviewed: false`), and the page and `generateMetadata` pass `hubView().destinations.length`.
+- 2026-11-04 (D431): T-38 is in `tests/unit/destinations-hub-count.test.tsx` (26 cases, green). The old "Seven countries" pins moved there, and the three keys are in the review queue. `.claude/state/record-approval-431.py --check` exits 0. PR 499 is open and was marked ready without CI (wo-1104).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 499 (https://github.com/itsahmeds/flowers-overseas/pull/499).
+
+What changed: `destinationsHub.seoDescription`, `.intro` and `.phoneIntro` now take `{count}` in an ICU plural (en and de `one`/`other`; pl `one`/`few`/`many`/`other`). `DestinationsHubPage` and the route's `generateMetadata` pass the length of `hubView(locale).destinations`.
+
+Tests: one unit file, `tests/unit/destinations-hub-count.test.tsx`, with 26 cases. It renders the page and calls `generateMetadata` in four locales against the committed registry and against fixture registries (one more destination with a guide, and registries of 1, 2 and 5). It also scans the three keys for a country count and pins the text. Mutation runs: the count written back into en gave 7 red; the count read from a constant gave 5 red.
+
+Gates (no CI tonight, per wo-1104): typecheck exit 0, and the touched unit files are green with `--maxWorkers=2`. `i18n:check` exits 1 with the same 6 problems as main 6daab0f81, none of them in `destinationsHub`.
+
+Carry-forwards:
+- The orchestrator runs `.claude/state/record-approval-431.py`.
+- The hub's visual baselines move with the changed words. Refresh them when CI returns.
+- Running no expensive gate was deliberate.

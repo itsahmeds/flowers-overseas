@@ -18,8 +18,8 @@ task actually touches.
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +12 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +136 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +44 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +137 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +20 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +17 |
@@ -340,7 +340,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 488 |
+| `tests/unit/` | 489 |
 | `tests/integration/` | 98 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |

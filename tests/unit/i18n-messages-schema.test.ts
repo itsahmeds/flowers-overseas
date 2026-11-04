@@ -360,6 +360,7 @@ describe("the shipped catalogues and manifests", () => {
     // (`.claude/state/record-approval-333.py`) attests them.
     // TASK-365's florist payout statement keys (PR 475) left this queue under the delegation, all
     // but the lawyer-gated `deleteReminder` (spec 030a §13 Q12; TASK-436).
+    // TASK-431's three `destinationsHub.*` count lines (spec 007 AC-37) left this queue under the delegation.
     "emails.floristPayoutStatement.deleteReminder",
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",

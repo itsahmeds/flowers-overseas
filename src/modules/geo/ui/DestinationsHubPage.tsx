@@ -17,7 +17,8 @@
  * Which of the two a destination is in is `hubView()`'s answer, not this component's, so a
  * `guidePublished` flip moves a destination between them with no template edit (AC-7).
  *
- * What is deliberately absent: no price (§13 Q2), no count of countries, no map, no flag, no
+ * What is deliberately absent: no price (§13 Q2), no country count written into the copy (the
+ * intro's number is `view.destinations.length`, through an ICU plural; AC-37), no map, no flag, no
  * photo, no "featured" section (founder ruling 2026-09-15 (c)), no waiting-list field (§13 Q4)
  * and no client island — the page renders with JavaScript disabled (AC-24).
  */
@@ -186,6 +187,10 @@ export function DestinationsHubPage({
   const hub = useTranslations("destinationsHub");
   const footer = useTranslations("footer");
   const view = hubView(locale, (nameKey) => registryLabel(t, nameKey));
+  // The intro's country count is this view's own list (spec 007 §14 A-orchestrator-2026-11-01b,
+  // AC-37; TASK-431): the rows below and the number above are one array, so a hub row added by a
+  // data flip changes both in the same render, with no copy or code change.
+  const count = view.destinations.length;
   const named = (destination: HubDestinationView): string =>
     countryName(t, destination.nameKey);
   // R6: while any destination is a guide, the first screen says so in real text; when none is,
@@ -233,8 +238,14 @@ export function DestinationsHubPage({
                   <StateLine live={false} text={t(GUIDE_STATE_KEY)} />
                 </span>
               ) : null}
-              <Text as="p" size="sm" tone="subtle" className="md:hidden">
-                {hub("phoneIntro")}
+              <Text
+                as="p"
+                size="sm"
+                tone="subtle"
+                className="md:hidden"
+                id="destinations-phone-intro"
+              >
+                {hub("phoneIntro", { count })}
               </Text>
             </div>
             {view.empty ? null : (
@@ -304,7 +315,7 @@ export function DestinationsHubPage({
         {/* The lede, directly under the first screen (A24 clause 2: over two lines, it moves). */}
         <div className="pt-[32px] max-md:hidden md:pt-[28px]" data-fo-hub-lede>
           <Text size="lg" tone="muted" className="max-w-(--measure-lede)">
-            {hub("intro")}
+            {hub("intro", { count })}
           </Text>
         </div>
 
