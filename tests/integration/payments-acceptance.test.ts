@@ -332,7 +332,8 @@ describe.skipIf(server.url === undefined)(
           transaction: transactionOf(),
           orderId,
           retryBaseSeconds: 0,
-          now: () => clock,
+          // The backoff is read against `updated_at` (the database's clock), not the order's.
+          now: () => new Date(Date.now() + 60_000),
           alert: (alert, fields) => {
             alerts.push({ alert, fields: { ...fields } });
           },
