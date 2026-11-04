@@ -22,8 +22,10 @@
  *
  * **Every entry with no page is absent** (AC-14 as §14 A20 amends it; TASK-173). An entry is drawn
  * exactly when `./header-model.ts` resolves it to a URL; this file has no `published` branch, so a
- * go-live is a data flip in `src/config/site-links.ts`. No search and no account cluster: each
- * would be a control that does nothing. The phone's Menu opens something real (A24 clause 3 lifts
+ * go-live is a data flip in `src/config/site-links.ts`. No account cluster: it would be a control
+ * that does nothing. **Search** (spec 045 §2.1, TASK-404): from `md` an icon summary in the mega
+ * menu's `<details>` group whose panel holds the header's one GET search form, below `md` an icon
+ * link in the row and the same form in the Menu (`./HeaderSearch.tsx`). The phone's Menu opens something real (A24 clause 3 lifts
  * A20 clause 2's omission of it), and so does the Basket link since `/{locale}/basket` answers 200
  * (spec 010 §14 A-founder-2026-10-22 D10, item 13 "Spec 004"; TASK-349): an icon link at the end
  * of the row, beside the Menu on a phone, with a count slot the motion module fills after the LCP
@@ -70,6 +72,11 @@ import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
+import {
+  HeaderSearchDisclosure,
+  HeaderSearchForm,
+  HeaderSearchLink,
+} from "./HeaderSearch.tsx";
 import { MegaMenuAccordions, MegaMenuNav } from "./MegaMenu.tsx";
 import { MenuSheet } from "./MenuSheet.tsx";
 import {
@@ -77,11 +84,36 @@ import {
   headerBasketHref,
   headerCurrencyCode,
   headerEndClusterItems,
+  headerSearchForm,
+  headerSearchHref,
 } from "./header-model.ts";
 import type { MegaMenuModel } from "./mega-model.ts";
 
 /** No menu: a header with no route behind it draws none rather than a wrong one. */
 const EMPTY_MEGA_MENU: MegaMenuModel = { context: null, panels: [] };
+
+/**
+ * The masthead's columns by how many controls end the row (1 + the search icon + the Basket):
+ * below `xl` the logo's flexible column and one `auto` column per control (the Menu, or from `md`
+ * the end cluster); from `xl` the logo, the six items and the same controls. Literal class names,
+ * so Tailwind compiles each; the item row under `xl` spans all of them.
+ */
+const MASTHEAD_COLUMNS = {
+  1: "grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto]",
+  2: "grid-cols-[minmax(0,1fr)_auto_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto_auto]",
+  3: "grid-cols-[minmax(0,1fr)_auto_auto_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto]",
+} as const;
+const ITEM_ROW_SPAN = {
+  1: "col-span-2",
+  2: "col-span-3",
+  3: "col-span-4",
+} as const;
+/** The phone Menu's column: after the logo, the search link and the Basket where drawn. */
+const MENU_COLUMN = {
+  1: "col-start-2",
+  2: "col-start-3",
+  3: "col-start-4",
+} as const;
 
 /**
  * next-intl's translator, deliberately **unnamespaced**: the registries carry fully-qualified keys
@@ -229,6 +261,17 @@ export function SiteHeader({
   // between the logo and the Menu; from `md` after "Send flowers".
   const basketHref = headerBasketHref(locale);
   const basket = basketHref !== undefined;
+  // The search (spec 045 §2.1, AC-1; TASK-404): the destination is the mega menu's context, the
+  // URL's country with a shop (spec 043 §2 A's rule), never a cookie or a header.
+  const destination = megaMenu.context;
+  const searchForm = headerSearchForm(locale, destination);
+  const searchHref = headerSearchHref(locale, destination);
+  const search = searchForm !== undefined && searchHref !== undefined;
+  const searchLabels = {
+    label: t("nav.search.label"),
+    submit: t("nav.search.submit"),
+  };
+  const controls = (1 + (basket ? 1 : 0) + (search ? 1 : 0)) as 1 | 2 | 3;
   const { contact, tradingName } = COMPANY;
   /** A19's single chrome predicate: may this document assert a delivery date at all? */
   const datesOpen = anyDeliveryDatesOpen();
@@ -339,7 +382,7 @@ export function SiteHeader({
           <MotionLoader />
         </AfterPaint>
         <div
-          className={`grid ${basket ? "grid-cols-[minmax(0,1fr)_auto_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto]"} grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-rows-[76px] xl:gap-x-[18px] ${CHROME_WRAP}`}
+          className={`grid ${MASTHEAD_COLUMNS[controls]} grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-rows-[76px] xl:gap-x-[18px] ${CHROME_WRAP}`}
           data-fo-header-band="masthead"
         >
           {/* The logo: the mark and the outlined wordmark; the wordmark's name (the trading name)
@@ -364,7 +407,7 @@ export function SiteHeader({
               which does not scroll; below `md` in the Menu. The panels hang from the header, the
               sticky frame, so opening one moves nothing below it (AC-102). */}
           <MegaMenuNav
-            className={`border-rule ${basket ? "col-span-3" : "col-span-2"} row-start-2 -mx-(--gutter-s) flex min-h-[48px] items-center border-t px-[calc(var(--gutter)-11px)] max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0 xl:ms-[6px] xl:min-h-0 xl:border-t-0 xl:px-0`}
+            className={`border-rule ${ITEM_ROW_SPAN[controls]} row-start-2 -mx-(--gutter-s) flex min-h-[48px] items-center border-t px-[calc(var(--gutter)-11px)] max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0 xl:ms-[6px] xl:min-h-0 xl:border-t-0 xl:px-0`}
             locale={locale}
             model={megaMenu}
             navLabel={registryLabel(t, MEGA_MENU_NAV_LABEL_KEY)}
@@ -391,6 +434,26 @@ export function SiteHeader({
             </ul>
           )}
 
+          {/* The search (spec 045 §2.1 as amended by §14 A-orchestrator-2026-10-24 item 4; TASK-404):
+              below `md` the 64 px row's icon link to the search page; from `md` the icon as the
+              summary of a `<details>` in the mega menu's group, its panel under the row holding
+              the header's one search form. Before the Basket, as PR 372's rows draw it. */}
+          {search ? (
+            <>
+              <HeaderSearchLink
+                className="col-start-2 row-start-1 justify-self-end md:hidden"
+                href={searchHref}
+                name={searchLabels.submit}
+              />
+              <HeaderSearchDisclosure
+                className="row-start-1 justify-self-end max-md:hidden md:col-start-3 xl:col-start-4"
+                form={searchForm}
+                label={searchLabels.label}
+                submit={searchLabels.submit}
+              />
+            </>
+          ) : null}
+
           {/* The Basket link (spec 010 §14 A-founder-2026-10-22 D10, AC-70): the same static
               HTML for every visitor, `rel="nofollow"` (the page is `noindex` and disallowed in
               robots), its name `nav.basket` and an empty badge slot of a fixed 20 x 20 px. The
@@ -401,7 +464,7 @@ export function SiteHeader({
           {basketHref === undefined ? null : (
             <a
               aria-current={basketCurrent ? "page" : undefined}
-              className={`${BASKET_LINK} col-start-2 row-start-1 justify-self-end md:col-start-3 xl:col-start-4`}
+              className={`${BASKET_LINK} ${search ? "col-start-3 md:col-start-4 xl:col-start-5" : "col-start-2 md:col-start-3 xl:col-start-4"} row-start-1 justify-self-end`}
               data-fo-basket={JSON.stringify(
                 basketCountStates(locale, t("nav.basket"), (count) =>
                   nav("basketCount", { count }),
@@ -420,11 +483,7 @@ export function SiteHeader({
               selector (TASK-384), the six items as accordions with the desktop panels' entries,
               the switcher, the currency and the help line; from `md` up it is `display: none`. */}
           <MenuSheet
-            className={
-              basket
-                ? "col-start-3 row-start-1 justify-self-end md:hidden [&>summary]:gap-[8px] [&>summary]:px-[12px]"
-                : "col-start-2 row-start-1 justify-self-end md:hidden"
-            }
+            className={`${MENU_COLUMN[controls]} row-start-1 justify-self-end md:hidden ${basket || search ? "[&>summary]:gap-[8px] [&>summary]:px-[12px]" : ""}`}
             currency={{
               code: currency,
               label: nav("currency.label", { currency }),
@@ -442,6 +501,18 @@ export function SiteHeader({
               label: registryLabel(t, item.labelKey),
             }))}
             menu={<MegaMenuAccordions locale={locale} model={megaMenu} />}
+            {...(searchForm === undefined
+              ? {}
+              : {
+                  search: (
+                    <HeaderSearchForm
+                      form={searchForm}
+                      idPrefix="menu-search"
+                      label={searchLabels.label}
+                      submit={searchLabels.submit}
+                    />
+                  ),
+                })}
             navLabel={registryLabel(t, MEGA_MENU_NAV_LABEL_KEY)}
             switcher={switcher}
           />

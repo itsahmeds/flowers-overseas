@@ -211,7 +211,7 @@ describe("headerCurrencyCode (AC-8)", () => {
 });
 
 describe("the header's registry projections (AC-14, spec 004 §14 A20)", () => {
-  it("projects no account item, no end-cluster item and no search while none has a page", () => {
+  it("projects no account item, the one end-cluster item, and search since it has a page (spec 045 AC-34)", () => {
     for (const locale of LOCALES) {
       expect(headerAccountItems(locale), locale).toEqual([]);
       // Spec 011 §12 (TASK-210): the for-florists landing exists in all four locales.
@@ -219,7 +219,9 @@ describe("the header's registry projections (AC-14, spec 004 §14 A20)", () => {
         headerEndClusterItems(locale).map((item) => [item.id, item.href]),
         locale,
       ).toEqual([["for-florists", localePath(locale, "forFlorists")]]);
-      expect(headerSearchHref(locale), locale).toBeUndefined();
+      expect(headerSearchHref(locale), locale).toBe(
+        localePath(locale, "search"),
+      );
     }
   });
 });
@@ -260,13 +262,14 @@ describe("a published registry entry becomes a link with no template edit (AC-14
 });
 
 describe("the rendered header (AC-7, AC-14)", () => {
-  it("is a `banner` landmark with a named category `navigation` and no `search` landmark", () => {
+  it("is a `banner` landmark with a named category `navigation` and the search forms (spec 045 AC-1)", () => {
     const html = render("en");
     expect(html).toContain("<header");
     expect(html).toContain('aria-label="Categories"');
-    // There is no search control in Phase 0, so there is no `search` landmark to name either
-    // (§14 A4): a landmark that contains no control is a promise the header cannot keep.
-    expect(html).not.toContain('role="search"');
+    // Since spec 045 (TASK-404) search has a page: one `search` form in the `md`-up panel and the
+    // same form in the phone Menu; each holds its field and its button, so the landmark is a
+    // promise the header keeps (§14 A4). One of the two is `display: none` at any width.
+    expect([...html.matchAll(/role="search"/gu)]).toHaveLength(2);
   });
 
   it("links the lockup to the locale home, in every locale", () => {
@@ -286,12 +289,15 @@ describe("the rendered header (AC-7, AC-14)", () => {
       // Internal: the lockup, the switcher's sibling shown locales (`en`, `en-gb`; spec 003 §14
       // A-founder-2026-10-14c), every link entry of the six panels and each featured card, the
       // Basket (spec 010 D10, TASK-349), `For florists` at the row's end (spec 011 AC-9, TASK-210),
-      // and nothing else: no Send pill (Q-24d), no account item, no search (A20).
+      // the phone row's search link (spec 045, TASK-404), and nothing else: no Send pill (Q-24d),
+      // no account item (A20).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
           `/${locale}/basket`,
           localePath(locale, "forFlorists"),
+          // The phone row's search link (spec 045 AC-1; TASK-404), out of context: no `to`.
+          localePath(locale, "search"),
           ...SHOWN.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
@@ -314,7 +320,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(
         items.map(({ id }) => id),
         locale,
-      ).toEqual(["for-florists", "basket"]);
+      ).toEqual(["for-florists", "search", "basket"]);
       for (const { id, tag } of items) {
         expect(tag, `${locale}/${id}`).toMatch(/^<a\s/);
       }
@@ -326,9 +332,11 @@ describe("the rendered header (AC-7, AC-14)", () => {
       nav: Record<string, unknown>;
     };
     expect(UNPUBLISHED_HEADER_IDS).toEqual(
-      expect.arrayContaining(["search", "sign-in", "my-orders"]),
+      expect.arrayContaining(["sign-in", "my-orders"]),
     );
     expect(UNPUBLISHED_HEADER_IDS).not.toContain("for-florists");
+    // Spec 045 publishes search (TASK-404).
+    expect(UNPUBLISHED_HEADER_IDS).not.toContain("search");
     for (const locale of LOCALES) {
       const html = render(locale);
       for (const id of UNPUBLISHED_HEADER_IDS) {
@@ -340,13 +348,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
     // The words the founder read as dead controls are not in the document at all.
     const html = render("en");
     const account = en.nav.account as Record<string, string>;
-    const search = en.nav.search as Record<string, string>;
-    for (const word of [
-      account.signIn,
-      account.orders,
-      "Basket (",
-      search.label,
-    ]) {
+    for (const word of [account.signIn, account.orders, "Basket ("]) {
       expect(word, "a message the check reads").toBeTruthy();
       expect(html, String(word)).not.toContain(String(word));
     }
@@ -362,31 +364,26 @@ describe("the rendered header (AC-7, AC-14)", () => {
     }
   });
 
-  it("draws no search band and no glyph that opens nothing: nothing that looks like a control and is not (§14 A20)", () => {
+  it("draws the search controls and no glyph that opens nothing: every control is real (§14 A20, spec 045 AC-1)", () => {
     const html = render("en");
-    // No search band while search has no page — not even the text shaped like a field that §14
-    // A4 drew — and no form control of any kind.
-    expect(html).not.toContain("data-fo-header-search");
-    for (const control of [
-      "<form",
-      "<input",
-      "<button",
-      "<select",
-      "<textarea",
-      "placeholder=",
-      "<label",
-      'role="search"',
-    ]) {
+    // Search has a page (spec 045, TASK-404): the `md`-up disclosure, the phone link and the two
+    // GET forms (the panel's and the Menu's), each with exactly its field and its button.
+    expect([...html.matchAll(/data-fo-header-search=""/gu)]).toHaveLength(1);
+    expect([...html.matchAll(/<form\b/gu)]).toHaveLength(2);
+    expect([...html.matchAll(/<input\b/gu)]).toHaveLength(2);
+    expect([...html.matchAll(/<button\b/gu)]).toHaveLength(2);
+    expect([...html.matchAll(/<label\b/gu)]).toHaveLength(2);
+    for (const control of ["<select", "<textarea"]) {
       expect(html, control).not.toContain(control);
     }
     // No dead menu glyph (`/review 31`, §14 A20). The phone's Menu is a native `<details>` that
     // opens a real panel (A24 clause 3 lifts A20's omission), never a `<button>` or a labelled icon.
     expect(html).not.toContain("data-fo-header-menu");
     expect(html).not.toContain('aria-label="Menu"');
-    // The Menu, then the six mega menu items and their six accordions inside the Menu: every
-    // `<details>` opens a real panel.
+    // The Menu, the search disclosure, then the six mega menu items and their six accordions
+    // inside the Menu: every `<details>` opens a real panel.
     expect([...html.matchAll(/<details\b/g)]).toHaveLength(
-      1 + 2 * (MENUS.en?.panels.length ?? 0),
+      2 + 2 * (MENUS.en?.panels.length ?? 0),
     );
   });
 
@@ -461,9 +458,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
   it("draws one menu in one order for both rows, and no Send flowers pill (Q-24d)", () => {
     const html = render("en");
     expect(html).not.toMatch(/\border-\d+\b/u);
-    // The Basket icon link (spec 010 D10; TASK-349) is the one keyed header item.
-    // The Basket and, since spec 011 (TASK-210), `For florists`.
-    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(2);
+    // The Basket icon link (spec 010 D10; TASK-349), since spec 011 (TASK-210) `For florists`,
+    // and since spec 045 (TASK-404) the phone row's search link.
+    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(3);
     expect([...html.matchAll(/data-fo-header-item="basket"/g)]).toHaveLength(1);
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.

@@ -356,10 +356,11 @@ const siteLinks = [
     id: "search",
     labelKey: "nav.search.label",
     // No `descriptionKey`: spec 045 §7 deletes `nav.search.help` ("Search opens when the shop
-    // does."), which the page it describes now contradicts (TASK-402).
-    target: { kind: "pending" },
-    published: false,
-    owningSpec: "008",
+    // does."), which the page it describes now contradicts (TASK-402). Published by spec 045
+    // (TASK-404): `/{locale}/{searchSegment}` answers 200 in every launch locale (TASK-402).
+    target: { kind: "route", pageType: "search" },
+    published: true,
+    owningSpec: "045",
     surfaces: ["header"],
   },
   {
@@ -880,7 +881,7 @@ export const CATEGORY_ROW_LINK_IDS = [
   "for-florists",
 ] as const satisfies readonly SiteLinkId[];
 
-/** The search form's target (spec 008 wires the backend; until then the header draws no search). */
+/** The header search's target (spec 045 §2.1; TASK-404): the results page, published. */
 export const SEARCH_LINK_ID = "search" satisfies SiteLinkId;
 
 /** The product page link id: the trending cards' permission (spec 008 §14 A14 (e)). */
