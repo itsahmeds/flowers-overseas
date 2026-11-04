@@ -11,7 +11,11 @@
  * @purpose The chooser's 303 and its one fo_dest cookie
  * @spec 004
  */
-import { ChooserToSchema, chooserChoiceResponse } from "@/modules/catalog";
+import {
+  ChooserQuerySchema,
+  ChooserToSchema,
+  chooserChoiceResponse,
+} from "@/modules/catalog";
 
 /** Never cached, never prerendered: it answers one visitor's choice and sets a cookie. */
 export const dynamic = "force-dynamic";
@@ -22,6 +26,9 @@ export async function GET(
   { params }: { params: Promise<{ locale: string; rest?: string[] }> },
 ): Promise<Response> {
   const { locale, rest = [] } = await params;
-  const to = ChooserToSchema.parse(new URL(request.url).searchParams);
-  return chooserChoiceResponse({ locale, segments: rest, to });
+  const query = new URL(request.url).searchParams;
+  const to = ChooserToSchema.parse(query);
+  // The search words, carried on to the results page for `next=search` only (spec 045 AC-13).
+  const q = ChooserQuerySchema.parse(query);
+  return chooserChoiceResponse({ locale, segments: rest, to, q });
 }

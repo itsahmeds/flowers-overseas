@@ -7,8 +7,8 @@
  * fixture price change and its invalidation reach the next results; `search.index_built` names no
  * query; the module reads no database and imports other modules only through their barrels.
  */
-import { readFileSync, readdirSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { dirname, join, relative, resolve, sep } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -64,6 +64,20 @@ afterEach(() => {
 
 function subscribe(listener: (tags: readonly string[]) => void): void {
   unsubscribes.push(onInvalidate(listener));
+}
+
+/** Every source file under `dir`, as a path relative to it (the module's `ui/` included). */
+function moduleFiles(dir: string): string[] {
+  const out: string[] = [];
+  const walk = (current: string): void => {
+    for (const name of readdirSync(current)) {
+      const path = join(current, name);
+      if (statSync(path).isDirectory()) walk(path);
+      else out.push(relative(dir, path));
+    }
+  };
+  walk(dir);
+  return out.sort();
 }
 
 describe("AC-31 (T-31): the engine on static providers, with no database URL", () => {
@@ -271,7 +285,7 @@ describe("AC-31: the module's boundaries", () => {
   it("imports other modules only through their public index.ts", () => {
     const dir = join(repoRoot, "src/modules/search");
     const offending: string[] = [];
-    for (const file of readdirSync(dir)) {
+    for (const file of moduleFiles(dir)) {
       const source = readFileSync(join(dir, file), "utf8");
       for (const match of source.matchAll(/from\s+"([^"]+)"/gu)) {
         const specifier = match[1] ?? "";
@@ -279,7 +293,11 @@ describe("AC-31: the module's boundaries", () => {
           if (!/^@\/modules\/[a-z0-9]+$/u.test(specifier)) {
             offending.push(`${file}: ${specifier}`);
           }
-        } else if (specifier.startsWith("../")) {
+        } else if (
+          specifier.startsWith("../") &&
+          // A file in a subfolder (`ui/`) may reach its own module's root; nothing may leave it.
+          !resolve(dir, dirname(file), specifier).startsWith(`${dir}${sep}`)
+        ) {
           offending.push(`${file}: ${specifier}`);
         }
       }
@@ -289,7 +307,7 @@ describe("AC-31: the module's boundaries", () => {
 
   it("names no destination: no ISO code literal and no country name in its source", () => {
     const dir = join(repoRoot, "src/modules/search");
-    for (const file of readdirSync(dir)) {
+    for (const file of moduleFiles(dir)) {
       const source = readFileSync(join(dir, file), "utf8");
       expect(source, file).not.toMatch(
         /"(PL|DE|FR|ES|IT|RO|NL|pl|de|fr|es|it|ro|nl)"/u,

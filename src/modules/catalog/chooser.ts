@@ -17,7 +17,7 @@
  * | `{occasions}/{slug}` | the country occasion of that key (an evergreen one: the same-key category, as the hub's own row), else the shop root |
  * | `{product}/{slug}` | the product page, else the not-available page |
  * | `price/{band}` | the shop root with `?price={band}` |
- * | `search` | spec 045's results (the shop root until spec 045 is published) |
+ * | `search` | spec 045's results with `to`, the form's `q` added by the choice route |
  *
  * **Validation** (item 3): every segment lowercase ASCII words, digits and hyphens, the whole at
  * most `CHOOSER_NEXT_MAX_CHARS`, and one of the shapes above with a slug that names something in
@@ -267,10 +267,15 @@ export async function countryVersionOf(
   const root = shopRootPath(locale, iso2);
   switch (next.kind) {
     case "home":
-    case "search":
-      // Spec 045's results page is not published (its site link is off), so search lands on the
-      // shop root; spec 045's task gives this case its results URL with the form's `q`.
       return { kind: "page", path: root };
+    case "search":
+      // Spec 045's results page in the chosen country (§14 A-orchestrator-2026-10-24 item 1,
+      // AC-13; TASK-402): `/{locale}/{searchSegment}?to={iso2}`. The words travel only in the
+      // form's own `q`, which the choice route adds to this address (`chooserChoiceResponse`).
+      return {
+        kind: "page",
+        path: `/${locale}/${localeConfig(locale).pathSegments.search}?${new URLSearchParams({ [QUERY_KEY.to]: iso2.toLowerCase() }).toString()}`,
+      };
     case "price":
       return {
         kind: "page",

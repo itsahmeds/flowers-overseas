@@ -6,8 +6,31 @@ import {
   megaMenuModel,
   pageDestination,
 } from "@/modules/catalog";
-import { documentFallbackLocale, routableLocale } from "@/modules/i18n";
+import { isLocaleCode } from "@/config/locales";
+import {
+  LocaleSwitcher,
+  documentFallbackLocale,
+  launchLocaleCodes,
+  routableLocale,
+} from "@/modules/i18n";
+import { searchPath } from "@/modules/search";
 import { NoticePriceClaim, SiteHeader } from "@/modules/ui";
+
+/**
+ * The search page's language links (spec 045 §6; TASK-402): each launch locale's bare search page,
+ * never with the query (no `<a href>` we render carries `q=`).
+ */
+export function SearchLocaleSwitcher({
+  locale,
+}: {
+  readonly locale: string;
+}): ReactElement {
+  const paths: Record<string, string> = {};
+  for (const code of launchLocaleCodes()) {
+    if (isLocaleCode(code)) paths[code] = searchPath(code);
+  }
+  return <LocaleSwitcher locale={locale} paths={paths} />;
+}
 
 /**
  * The commerce header **as one route draws it** (spec 043 §2 A, §5.3 A, §5.4, AC-1 to AC-4;
@@ -41,6 +64,7 @@ export async function RouteHeader({
   switcherSegments,
   home = false,
   basketCurrent = false,
+  search = false,
 }: {
   readonly locale: string;
   readonly segments: readonly string[];
@@ -49,6 +73,8 @@ export async function RouteHeader({
   readonly home?: boolean;
   /** The basket page: its header link is the current page (spec 010 D10). */
   readonly basketCurrent?: boolean;
+  /** The search results page: its language links go to each locale's bare search page. */
+  readonly search?: boolean;
 }): Promise<ReactElement> {
   const locale = (routableLocale(requested) ?? documentFallbackLocale()).code;
   setRequestLocale(locale);
@@ -64,7 +90,11 @@ export async function RouteHeader({
       priceClaim={home ? null : <NoticePriceClaim />}
       basketCurrent={basketCurrent}
       switcher={
-        <PageLocaleSwitcher locale={locale} segments={switcherSegments} />
+        search ? (
+          <SearchLocaleSwitcher locale={locale} />
+        ) : (
+          <PageLocaleSwitcher locale={locale} segments={switcherSegments} />
+        )
       }
     />
   );

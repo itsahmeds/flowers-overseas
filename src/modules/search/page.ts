@@ -1,0 +1,265 @@
+/**
+ * The results page's view (spec 045 §2.2, §2.4, §2.7, §5.3, §11; TASK-402): the URL's
+ * parameters through `searchParamsSchema`, one `search()`, and the page's own reads around it,
+ * resolved into data the components render. The route file stays thin: it calls `searchPage()`
+ * and renders, or answers 404.
+ *
+ * What it adds to the engine's view, each from data:
+ *
+ *  - the destination with a shop, its name and whether ordering is open there (the quiet line's
+ *    "Ordering opens soon" while it is not: a `demo` destination's state line, as its listing);
+ *  - the destination select's options: the shop countries in the one country order;
+ *  - "Browse by occasion": exactly the occasion links the page's header draws (the header of a
+ *    search page is out of context, so the hubs);
+ *  - with no destination, the chooser's form (`next=search`), whose choice comes back here with
+ *    the words (`countryVersionOf`'s `search` case);
+ *  - the `search.request` log line, and `alert=search.slow` (§11). Never the query: the line holds
+ *    the locale, the destination, the state, the tier counts, the result count, the page, the
+ *    duration and the index generation.
+ *
+ * No header, cookie or IP is read (ADR-0006, AC-14), and no country is named.
+ */
+import { PICKER_CHIPS } from "@/config/commerce";
+import {
+  type CountryIso2,
+  countryConfig,
+  deliveryDatesOpen,
+  isCountryIso2,
+} from "@/config/countries";
+import { type LocaleCode, localeConfig } from "@/config/locales";
+import { logger } from "@/lib/logger";
+import { captureAlert } from "@/lib/sentry";
+import {
+  chooserPageView,
+  countryDisplayName,
+  megaMenuModel,
+  shopCountries,
+} from "@/modules/catalog";
+
+import { searchEngine } from "./default-engine";
+import type { SearchEngine } from "./engine";
+import { type SearchParams, searchParamsSchema } from "./params";
+import type { SearchResultView } from "./schemas";
+
+/** `/{locale}/{searchSegment}`: the bare search path, the page's canonical (§6). */
+export function searchPath(locale: LocaleCode): string {
+  return `/${locale}/${localeConfig(locale).pathSegments.search}`;
+}
+
+/** One option of the destination select, and one chip of the inline chooser. */
+export interface SearchCountryOption {
+  /** Lowercase, the form's `to`. */
+  readonly code: string;
+  readonly name: string;
+}
+
+/** One "Browse by occasion" link: the header's own entry. */
+export interface SearchOccasionLink {
+  readonly id: string;
+  readonly href: string;
+  /** The hub's own name where the menu prints it, else `labelKey`'s text. */
+  readonly label: string | undefined;
+  readonly labelKey: string;
+}
+
+export interface SearchPageView {
+  readonly locale: LocaleCode;
+  /** The bare search path: the forms' `action`, the canonical. */
+  readonly path: string;
+  readonly result: SearchResultView;
+  /** The destination searched, with a shop; `null` is the country-less state. */
+  readonly destination: {
+    readonly code: string;
+    readonly name: string;
+    /** `deliveryDatesOpen`: false for a `demo` destination, whose quiet line says so. */
+    readonly orderingOpen: boolean;
+  } | null;
+  readonly destinations: readonly SearchCountryOption[];
+  readonly occasions: readonly SearchOccasionLink[];
+  /** The inline chooser (country-less state only). */
+  readonly picker: {
+    readonly action: string;
+    readonly chips: readonly SearchCountryOption[];
+    readonly datalist: readonly string[];
+  } | null;
+}
+
+export type SearchPageOutcome =
+  | { readonly kind: "page"; readonly view: SearchPageView }
+  | { readonly kind: "notFound" };
+
+/** `alert=search.slow` (§11): more than 10 requests over 1 000 ms within 5 minutes. */
+export const SLOW_SEARCH_MS = 1000;
+export const SLOW_SEARCH_COUNT = 10;
+export const SLOW_SEARCH_WINDOW_MS = 5 * 60 * 1000;
+
+/**
+ * The slow-request counter behind `alert=search.slow`: per process, timestamps only (never a
+ * query). Raises the alert once when the count in the window passes `SLOW_SEARCH_COUNT`, and again
+ * only after the window has emptied.
+ */
+export function slowSearchMonitor(raise: (alert: string) => void): {
+  record(durationMs: number, at: number): void;
+} {
+  let slow: number[] = [];
+  let raised = false;
+  return {
+    record(durationMs, at) {
+      slow = slow.filter((time) => at - time < SLOW_SEARCH_WINDOW_MS);
+      if (slow.length === 0) raised = false;
+      if (durationMs <= SLOW_SEARCH_MS) return;
+      slow.push(at);
+      if (slow.length > SLOW_SEARCH_COUNT && !raised) {
+        raised = true;
+        raise("search.slow");
+      }
+    },
+  };
+}
+
+const slowSearches = slowSearchMonitor((alert) => {
+  logger.error({ alert }, "search slow");
+  captureAlert(alert);
+});
+
+interface RequestLog {
+  info(fields: Record<string, unknown>, msg?: string): void;
+}
+
+export interface SearchPageDeps {
+  readonly engine?: SearchEngine;
+  readonly now?: () => number;
+  readonly log?: RequestLog;
+  readonly slow?: { record(durationMs: number, at: number): void };
+  /** The shop countries in the one country order (`shopCountries`). */
+  readonly shops?: (locale: LocaleCode) => Promise<readonly string[]>;
+  readonly takesDates?: (iso2: string) => boolean;
+}
+
+function takesDatesFromRegistry(iso2: string): boolean {
+  const upper = iso2.toUpperCase();
+  return isCountryIso2(upper) && deliveryDatesOpen(upper);
+}
+
+function countryOption(
+  iso2: CountryIso2,
+  locale: LocaleCode,
+): SearchCountryOption {
+  return {
+    code: iso2.toLowerCase(),
+    name: countryDisplayName(countryConfig(iso2), locale),
+  };
+}
+
+/** The header's occasion links, out of context: the occasions panel's entries that are links. */
+async function occasionLinks(
+  locale: LocaleCode,
+): Promise<SearchOccasionLink[]> {
+  const model = await megaMenuModel(locale, null);
+  const panel = model.panels.find((entry) => entry.id === "occasions");
+  if (panel === undefined) return [];
+  return panel.columns.flatMap((column) =>
+    column.entries.flatMap((entry): SearchOccasionLink[] =>
+      entry.kind === "link"
+        ? [
+            {
+              id: entry.id,
+              href: entry.href,
+              label: entry.label,
+              labelKey: entry.labelKey,
+            },
+          ]
+        : [],
+    ),
+  );
+}
+
+/**
+ * One results page. `raw` is Next's `searchParams` as the route received it. `notFound` for a bad
+ * `page` (before the engine) and for a page past the last (`outOfRange`), both spec 008's 404.
+ */
+export async function searchPage(
+  locale: LocaleCode,
+  raw: Readonly<Record<string, string | string[] | undefined>>,
+  deps: SearchPageDeps = {},
+): Promise<SearchPageOutcome> {
+  const now = deps.now ?? Date.now;
+  const started = now();
+  const shopCodes = (await (deps.shops ?? shopCountries)(locale)).filter(
+    isCountryIso2,
+  );
+  const params: SearchParams = searchParamsSchema({
+    shops: new Set(shopCodes.map((iso2) => iso2.toLowerCase())),
+    takesDates: deps.takesDates ?? takesDatesFromRegistry,
+  }).parse(raw);
+  if (params.page === "notFound") return { kind: "notFound" };
+
+  const outcome = await (deps.engine ?? searchEngine()).search({
+    locale,
+    query: params.q,
+    ...(params.to === undefined ? {} : { to: params.to }),
+    ...(params.date === undefined ? {} : { date: params.date }),
+    page: params.page,
+  });
+  const { view } = outcome;
+
+  const durationMs = now() - started;
+  // §11's request line. Never the query, an address, a band or a money value.
+  (deps.log ?? logger).info(
+    {
+      event: "search.request",
+      locale,
+      destination: view.destination,
+      state: view.countryLess?.state ?? view.state,
+      tier_counts: outcome.tierCounts,
+      results: view.count,
+      page: view.page,
+      duration_ms: durationMs,
+      generation: outcome.generation,
+    },
+    "search request",
+  );
+  (deps.slow ?? slowSearches).record(durationMs, now());
+
+  if (view.state === "outOfRange") return { kind: "notFound" };
+
+  const destination =
+    view.destination !== null && isCountryIso2(view.destination)
+      ? view.destination
+      : undefined;
+  const picker =
+    destination === undefined
+      ? await chooserPageView(
+          locale,
+          { locale, kind: "search" },
+          { kind: "ask" },
+          { remembered: undefined, chips: PICKER_CHIPS },
+        )
+      : undefined;
+
+  return {
+    kind: "page",
+    view: {
+      locale,
+      path: searchPath(locale),
+      result: view,
+      destination:
+        destination === undefined
+          ? null
+          : {
+              ...countryOption(destination, locale),
+              orderingOpen: deliveryDatesOpen(destination),
+            },
+      destinations: shopCodes.map((iso2) => countryOption(iso2, locale)),
+      occasions: await occasionLinks(locale),
+      picker:
+        picker === undefined
+          ? null
+          : {
+              action: picker.action,
+              chips: picker.chips.map(({ code, name }) => ({ code, name })),
+              datalist: picker.datalist,
+            },
+    },
+  };
+}

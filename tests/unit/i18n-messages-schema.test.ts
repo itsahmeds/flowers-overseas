@@ -493,6 +493,7 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+    // TASK-402's 14 `search.*` keys (spec 045 Appendix A) left this queue under the delegation.
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
   ];
 
@@ -593,6 +594,8 @@ describe("the shipped catalogues and manifests", () => {
       // state. Every component that reads it is a Server Component, so it reaches no client
       // provider and costs no client bytes (spec 008 §5.4).
       "shop",
+      // Spec 045 §7's results page (TASK-402): its H1, states, pager and ranking sentence.
+      "search",
       // Spec 008 §7's two hub namespaces (TASK-112): the `h1` patterns, the destination picker's
       // headings and the date table's caption and columns. The "prices depend on where it is
       // going" sentence is **one** key in `shop.hub` rather than one per hub, because both

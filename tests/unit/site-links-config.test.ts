@@ -516,7 +516,8 @@ describe("src/config/site-links.ts", () => {
     expect(isPublished(BASKET_LINK_ID)).toBe(true);
     expect(siteLink(BASKET_LINK_ID).surfaces).toEqual(["header"]);
     expect([...CATEGORY_ROW_LINK_IDS]).toEqual(["for-florists"]);
-    expect(siteLink(SEARCH_LINK_ID).descriptionKey).toBe("nav.search.help");
+    // Spec 045 §7 deleted `nav.search.help` (TASK-402): the search link carries no description.
+    expect(siteLink(SEARCH_LINK_ID).descriptionKey).toBeUndefined();
     for (const id of [...MASTHEAD_LINK_IDS, ...CATEGORY_ROW_LINK_IDS]) {
       expect(siteLink(id).surfaces, id).toContain("header");
     }

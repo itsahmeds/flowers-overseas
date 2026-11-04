@@ -47,6 +47,7 @@ import {
   regionHeadingKey,
 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
+import { SEARCH_CONFIG, SEARCH_PARAM } from "@/config/search";
 import { QUERY_KEY } from "@/config/url-keys";
 import { launchLocaleCodes } from "@/modules/i18n";
 
@@ -309,11 +310,37 @@ export function choiceRoutePath(next: ChooserNext): string {
 }
 
 /** The chooser page's address for `next`, with `to` when the page must show what was typed. */
-function chooserPageHref(next: ChooserNext, to?: string): string {
+function chooserPageHref(next: ChooserNext, to?: string, q?: string): string {
   const path = chooserPath(next.locale, next);
-  return to === undefined
-    ? path
-    : `${path}?${new URLSearchParams({ [QUERY_KEY.to]: to }).toString()}`;
+  const query = new URLSearchParams();
+  if (to !== undefined) query.set(QUERY_KEY.to, to);
+  if (q !== undefined) query.set(SEARCH_PARAM.q, q);
+  const text = query.toString();
+  return text === "" ? path : `${path}?${text}`;
+}
+
+/**
+ * The search words a choice carries (spec 045 §2.7 "No destination", AC-13; TASK-402): the
+ * results page's inline chooser and the header's country-less form send the words as `q` to the
+ * choice of `next=search`, and the choice hands them on to the results page in the chosen
+ * country. Only for `next=search`; at most `maxQueryChars` code points; an empty value is none.
+ * The words are the buyer's own, in the address they submitted; nothing logs them.
+ */
+export const ChooserQuerySchema = z
+  .instanceof(URLSearchParams)
+  .transform((params) => {
+    const value = params.get(SEARCH_PARAM.q)?.normalize("NFC").trim() ?? "";
+    const points = [...value];
+    const words = points.slice(0, SEARCH_CONFIG.maxQueryChars).join("").trim();
+    return words === "" ? undefined : words;
+  })
+  .catch(undefined);
+
+/** `location` with the search words added, for a `next=search` choice. */
+function withWords(location: string, next: ChooserNext, q?: string): string {
+  if (q === undefined || next.kind !== "search") return location;
+  const separator = location.includes("?") ? "&" : "?";
+  return `${location}${separator}${new URLSearchParams({ [SEARCH_PARAM.q]: q }).toString()}`;
 }
 
 /** A country as the chooser page prints it. */
@@ -449,6 +476,8 @@ export async function chooserChoiceResponse(
     readonly locale: string;
     readonly segments: readonly string[];
     readonly to: readonly string[];
+    /** The search words (`ChooserQuerySchema`), carried on for `next=search` only. */
+    readonly q?: string | undefined;
   },
   data: ShopData = committedShopData,
 ): Promise<Response> {
@@ -474,6 +503,7 @@ export async function chooserChoiceResponse(
         ...(cookie === undefined ? {} : { "Set-Cookie": cookie }),
       },
     });
+  const words = decision.next.kind === "search" ? params.q : undefined;
   if (decision.kind === "page") {
     const { state } = decision;
     return answer(
@@ -484,14 +514,15 @@ export async function chooserChoiceResponse(
           : state.kind === "ask"
             ? undefined
             : state.iso2.toLowerCase(),
+        words,
       ),
     );
   }
   const cookie = destCookieHeader(decision.iso2);
   return decision.version.kind === "page"
-    ? answer(decision.version.path, cookie)
+    ? answer(withWords(decision.version.path, decision.next, words), cookie)
     : answer(
-        chooserPageHref(decision.next, decision.iso2.toLowerCase()),
+        chooserPageHref(decision.next, decision.iso2.toLowerCase(), words),
         cookie,
       );
 }

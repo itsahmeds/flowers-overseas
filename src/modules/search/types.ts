@@ -8,7 +8,7 @@
  * the index, and `SearchResultViewSchema` has no field that could carry it (§2.5 "Never shown").
  */
 import type { LocaleCode } from "@/config/locales";
-import type { ProductCardView } from "@/modules/ui";
+import type { CountryLessCardView, ProductCardView } from "@/modules/ui";
 
 /** A label or name in one launch locale. */
 export interface SearchLabel {
@@ -83,6 +83,24 @@ export interface SearchSource {
     iso2: string,
     skus: readonly string[],
   ): Promise<readonly ProductCardView[]>;
+  /**
+   * The country-less search set (§2.7 "No destination", §14 A-orchestrator-2026-10-24 item 1;
+   * TASK-402): `coreRange(locale)`'s products, in its rank order (`curationIndex`), every band 0.
+   * Absent: a search with no destination matches nothing.
+   */
+  coreProducts?(locale: LocaleCode): Promise<readonly SearchProduct[]>;
+  /** The country-less cards for these SKUs in this order: no price, a chooser link (spec 008 AC-6). */
+  countryLessCards?(
+    locale: LocaleCode,
+    skus: readonly string[],
+  ): Promise<readonly CountryLessCardView[]>;
+  /**
+   * Does the destination take this delivery date (§2.4 "Deliverability"): `deliveryDatesOpen(iso2)`
+   * and the date inside the bookable window. Absent: no date is ever honoured.
+   */
+  dateOpen?(iso2: string, date: string): Promise<boolean>;
+  /** Can this product arrive in the destination on that date (spec 009's cutoff evaluator)? */
+  deliverableOn?(iso2: string, sku: string, date: string): Promise<boolean>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -141,6 +159,8 @@ export interface LocaleIndex {
   readonly destinations: ReadonlyMap<string, SearchDestination>;
   /** Destinations with a shop in this locale, indexed. */
   readonly shops: ReadonlyMap<string, DestinationIndex>;
+  /** The country-less set, `coreRange(locale)` (`iso2` empty), when the source has one. */
+  readonly core: DestinationIndex | undefined;
 }
 
 export interface SearchIndex {

@@ -463,6 +463,7 @@ export {
   type ChooserPageState,
   type ChooserPageView,
   type ChooserRegionView,
+  ChooserQuerySchema,
   ChooserSearchParamsSchema,
   ChooserToSchema,
   choiceRoutePath,
