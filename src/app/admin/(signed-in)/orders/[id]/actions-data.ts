@@ -7,9 +7,14 @@
  * the viewer may reroute, spec 016's `rerouteCandidates` and `noPartnerGrace`. The last
  * submission's outcome is the page's query string, parsed with `ActionOutcomeSchema` there.
  * TASK-361 adds the emails list (`orderEmails`, spec 020a TASK-360) and the action history
- * (`orderActionHistory`), and keeps the whole refunds list for the Payments section.
+ * (`orderActionHistory`), and keeps the whole refunds list for the Payments section; then the
+ * refund dialogs' inputs: whether the card provider is connected (payments' `adminRefundDeps`),
+ * the failed automatic refund a cancelled order may retry, and the amount of the refund a
+ * submission just requested (its row named by `?ref=`).
  */
 import { z } from "zod";
+
+import { adminRefundDeps } from "@/modules/payments";
 
 import type { AdminSession } from "@/lib/auth/admin";
 import {
@@ -33,9 +38,15 @@ import type { OrderActionsData } from "./actions-panel";
 
 /** `?action=…&result=…` after a submission: the action and a code, nothing else. */
 export const ActionOutcomeSchema = z.object({
-  action: z.enum(["reroute", "cancel", "resend"]),
+  action: z.enum([
+    "reroute",
+    "cancel",
+    "resend",
+    "refund_full",
+    "refund_partial",
+  ]),
   result: z.string().regex(/^(?:done|[A-Z_]{3,40})$/u),
-  /** A resend's new delivery row. */
+  /** A resend's new delivery row, or a refund's new refund row. */
   ref: z.uuid().optional(),
 });
 export type ActionOutcome = z.infer<typeof ActionOutcomeSchema>;
@@ -66,6 +77,8 @@ export async function readOrderActionsData(
   outcome: ActionOutcome | null,
   /** The refund state `readOrderLists` read, so the page reads it once. */
   refunds: OrderRefunds | null,
+  /** Whether the card provider has keys; tests pass their own. */
+  refundReady: () => boolean = () => adminRefundDeps() !== null,
 ): Promise<OrderActionsData> {
   const reroutable =
     order.mode !== "demo" &&
@@ -80,6 +93,12 @@ export async function readOrderActionsData(
   const automatic = refunds?.refunds
     .filter((refund) => refund.requestedBy.kind === "system")
     .at(-1);
+  const cancelled =
+    order.status === "cancelled" || order.status === "cancelled_refunded";
+  const requested =
+    outcome?.result === "done" && outcome.ref !== undefined
+      ? refunds?.refunds.find((refund) => refund.id === outcome.ref)
+      : undefined;
   return {
     order,
     roles: session.roles,
@@ -88,6 +107,12 @@ export async function readOrderActionsData(
     remainingMinor: refunds?.remainingMinor ?? 0n,
     refundInFlight: refunds?.refundInFlight ?? false,
     cancelRefundMinor: automatic?.amountMinor ?? null,
+    failedAutomatic:
+      cancelled && automatic?.status === "failed"
+        ? { amountMinor: automatic.amountMinor, reason: automatic.reason }
+        : null,
+    requestedRefundMinor: requested?.amountMinor ?? null,
+    refundReady: order.mode !== "demo" && refundReady(),
     candidates,
     grace,
     outcome,

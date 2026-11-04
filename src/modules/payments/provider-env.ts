@@ -12,6 +12,7 @@
 import { appEnvironment, LIVE_STRIPE_KEY_PREFIXES } from "@/lib/env.schema";
 
 import type { PaymentProvider } from "./provider.ts";
+import type { RefundDeps } from "./refunds.ts";
 import { createStripeProvider } from "./stripe/adapter.ts";
 
 /** Thrown when the environment holds no usable Stripe keys. */
@@ -52,4 +53,22 @@ export function stripeProviderFromEnv(
     );
   }
   return createStripeProvider({ secretKey, webhookSecret });
+}
+
+/**
+ * The refund dependencies of spec 020a's admin refund dialog (TASK-361, the one barrel export
+ * TASK-259's hand-off asked for): the Stripe adapter over the environment's keys, or `null` when
+ * the keys are missing or refused. The admin page renders its refund controls only when this is
+ * not `null`, and the refund action refuses without writing anything when it is, so no refund row
+ * waits on a provider that does not exist. Any other failure is a bug and is thrown.
+ */
+export function adminRefundDeps(
+  source: EnvSource = process.env,
+): RefundDeps | null {
+  try {
+    return { provider: stripeProviderFromEnv(source) };
+  } catch (error) {
+    if (error instanceof PaymentsNotConfigured) return null;
+    throw error;
+  }
 }

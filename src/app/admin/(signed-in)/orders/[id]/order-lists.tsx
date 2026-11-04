@@ -90,6 +90,13 @@ function isRefundReason(reason: string): reason is RefundReason {
   return (REFUND_REASONS as readonly string[]).includes(reason);
 }
 
+/** A reason code as its admin label in plain text, or the code itself (the refund dialogs). */
+export function refundReasonText(reason: string): string {
+  return isRefundReason(reason)
+    ? adminT(`admin.orderActions.refunds.reason.${reason}`)
+    : reason;
+}
+
 /** A reason code as its admin label, or the code itself when no label exists. */
 export function ReasonLabel({
   reason,

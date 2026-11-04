@@ -79,6 +79,9 @@ export type {
   OutboxNudge,
   PaymentAcceptEffect,
 } from "./acceptance.ts";
+// Spec 020a (TASK-361): the admin refund dialog's provider from the environment, `null` without
+// keys. The provider itself stays typed as `RefundDeps["provider"]`; no amount parameter (AC-9).
+export { adminRefundDeps } from "./provider-env.ts";
 export {
   PRODUCTION_START_ACTOR,
   productionStartAt,

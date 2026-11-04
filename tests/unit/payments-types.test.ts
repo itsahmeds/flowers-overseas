@@ -70,6 +70,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "WEBHOOK_MAX_BYTES",
       "adminCancel",
       "adminRefund",
+      "adminRefundDeps",
       "cancelOrder",
       "createPaymentAcceptedOrderEffect",
       "declineMessageKey",

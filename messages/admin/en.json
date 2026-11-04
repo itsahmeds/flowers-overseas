@@ -796,6 +796,36 @@
         "cancelling": "Cancelling…",
         "done": "Order cancelled. A refund of {amount} is on its way."
       },
+      "refund": {
+        "openFull": "Refund in full · {amount}",
+        "openRetry": "Retry in full · {amount}",
+        "openPartial": "Refund in part",
+        "titleFull": "Refund in full",
+        "titleRetry": "Retry in full",
+        "titlePartial": "Refund in part",
+        "failedAutomatic": "The automatic refund of {amount} failed. Retry it with the cancellation’s reason, {reason}.",
+        "now": "Refund now",
+        "amount": "Amount",
+        "amountName": "Amount, {currency}",
+        "amountPlaceholder": "0.00",
+        "amountHint": "Less than {amount}, what is left to refund. A dot or a comma before the cents.",
+        "invalid": "Enter an amount like 12.50 or 12,50.",
+        "exceeds": "That is more than the {amount} left to refund.",
+        "whole": "That is everything left to refund. Use Refund in full.",
+        "suggested": "Suggested",
+        "suggestedAddon": "Add-on missing · {item}",
+        "suggestedHint": "Fills the amount and the reason. Nothing is sent until you press Refund.",
+        "reason": "Reason",
+        "fixedReason": "Reason: {reason}. Set by the order, not chosen here.",
+        "reasonRequired": "Choose a reason.",
+        "goesBack": "Refunds go to the card or wallet the buyer paid with.",
+        "buyerGets": "The buyer receives the refund email and a credit note.",
+        "keep": "Keep",
+        "submit": "Refund {amount}",
+        "submitBare": "Refund",
+        "refunding": "Refunding…",
+        "done": "Refund of {amount} requested."
+      },
       "refused": {
         "ORDER_CHANGED": "This order changed after you opened it. Nothing was done. Reload to see it as it is now.",
         "DEMO_ORDER": "Demo order: no actions. Nothing was done.",
@@ -808,7 +838,11 @@
         "CANCEL_REASON_NOT_ALLOWED": "Once a florist has accepted, only “The buyer asked” can cancel. Nothing was done.",
         "other": "Nothing was done. Reload and try again.",
         "RESEND_NOT_ALLOWED": "This email cannot be resent now. Nothing was sent.",
-        "RESEND_RATE_LIMITED": "Already resent 3 times in 24 hours. Nothing was sent."
+        "RESEND_RATE_LIMITED": "Already resent 3 times in 24 hours. Nothing was sent.",
+        "NOT_REFUNDABLE": "This order cannot be refunded now. Nothing was done.",
+        "CURRENCY_MISMATCH": "The amount is not in the currency the buyer paid in. Nothing was done.",
+        "PROVIDER_NOT_CONFIGURED": "Refunds from this page start once the card provider is connected. Nothing was done.",
+        "REFUND_ORDER_CHANGED": "Another refund was made meanwhile. Only {amount} is left now. Nothing was done."
       },
       "notAvailable": "Not available",
       "control": {
@@ -974,6 +1008,9 @@
           "resend": "Resend"
         },
         "resendWhat": "{email}, {to}"
+      },
+      "bar": {
+        "count": "{count, plural, one {# action} other {# actions}}"
       }
     },
     "payouts": {

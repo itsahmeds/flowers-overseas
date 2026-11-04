@@ -6,9 +6,9 @@
  * the artboards' reason lines (`admin-order-actions-*`, "The action panel, by status group"),
  * never read from `ORDER_ACTION_AVAILABILITY`.
  *
- * Refund controls the table allows render as "Not available" with the provider line until the
- * refund dialog lands (TASK-361's escalation: the card provider's production wiring, spec 013
- * TASK-259 and TASK-256); the fixture says so per row.
+ * Refund controls render as their dialogs' openers while the card provider has keys
+ * (`refundReady`, payments' `adminRefundDeps`); without keys each one the table allows reads the
+ * provider line under "Not available" (the last case below).
  */
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -54,6 +54,9 @@ function data(
     remainingMinor: 5_800n,
     refundInFlight: false,
     cancelRefundMinor: null,
+    failedAutomatic: null,
+    requestedRefundMinor: null,
+    refundReady: true,
     candidates: [],
     grace: null,
     outcome: null,
@@ -69,7 +72,9 @@ function controls(d: OrderActionsData): {
   const element = OrderActionsPanel({ data: d });
   const html = element === null ? "" : renderToStaticMarkup(element);
   const buttons = [
-    ...html.matchAll(/id="order-action-(reroute|cancel)"/gu),
+    ...html.matchAll(
+      /id="order-action-(reroute|cancel|refund-full|refund-partial)"/gu,
+    ),
   ].map((match) => match[1] ?? "");
   const unavailable = [
     ...html.matchAll(/<li><b class="text-ink">([^<]+)<\/b> · ([^<]+)<\/li>/gu),
@@ -81,6 +86,8 @@ const REROUTE = "Reroute · Only when no florist has taken the order.";
 const CANCEL_ENDED = "Cancel the order · The order has ended.";
 const CANCEL_MADE =
   "Cancel the order · The bouquet is being made or delivered. Refund instead.";
+const FULL = "refund-full";
+const PART = "refund-partial";
 const FULL_PROVIDER =
   "Refund in full · Refunds from this page start once the card provider is connected.";
 const PART_PROVIDER =
@@ -113,11 +120,10 @@ const TABLE: readonly Row[] = [
     (status) =>
       [
         status,
-        [],
+        [FULL],
         [
           REROUTE,
           CANCEL_ENDED,
-          FULL_PROVIDER,
           "Refund in part · Only a full refund, reason Other, for a payment taken on an abandoned order.",
         ],
       ] satisfies Row,
@@ -128,7 +134,7 @@ const TABLE: readonly Row[] = [
   ),
   ["no_partner_available", ["reroute", "cancel"], CANCEL_INSTEAD],
   ["accepted", ["cancel"], [REROUTE, ...CANCEL_INSTEAD]],
-  ["paid", ["cancel"], [REROUTE, FULL_PROVIDER, PART_PROVIDER]],
+  ["paid", ["cancel", FULL, PART], [REROUTE]],
   ...(
     [
       "in_production",
@@ -142,22 +148,16 @@ const TABLE: readonly Row[] = [
       "resolved",
     ] as const
   ).map(
-    (status) =>
-      [
-        status,
-        [],
-        [REROUTE, CANCEL_MADE, FULL_PROVIDER, PART_PROVIDER],
-      ] satisfies Row,
+    (status) => [status, [FULL, PART], [REROUTE, CANCEL_MADE]] satisfies Row,
   ),
   ...(["cancelled", "cancelled_refunded"] as const).map(
     (status) =>
       [
         status,
-        [],
+        [FULL],
         [
           REROUTE,
           CANCEL_ENDED,
-          "Retry in full · Refunds from this page start once the card provider is connected.",
           "Refund in part · A cancelled order is retried in full only.",
         ],
       ] satisfies Row,
@@ -206,8 +206,8 @@ describe("the Actions card's control set (spec 020a AC-3)", () => {
       unavailable: CANCEL_INSTEAD,
     });
     expect(controls(data("paid", {}, "test"))).toEqual({
-      buttons: ["cancel"],
-      unavailable: [REROUTE, FULL_PROVIDER, PART_PROVIDER],
+      buttons: ["cancel", FULL, PART],
+      unavailable: [REROUTE],
     });
   });
 
@@ -242,14 +242,14 @@ describe("the Actions card's control set (spec 020a AC-3)", () => {
       "Refund in full · Nothing is left to refund.",
       "Refund in part · Too little is left for a part refund. Refund in full instead.",
     ]);
-    expect(
-      controls(data("in_production", { remainingMinor: 1n })).unavailable,
-    ).toEqual([
-      REROUTE,
-      CANCEL_MADE,
-      FULL_PROVIDER,
-      "Refund in part · Too little is left for a part refund. Refund in full instead.",
-    ]);
+    expect(controls(data("in_production", { remainingMinor: 1n }))).toEqual({
+      buttons: [FULL],
+      unavailable: [
+        REROUTE,
+        CANCEL_MADE,
+        "Refund in part · Too little is left for a part refund. Refund in full instead.",
+      ],
+    });
     expect(
       controls(data("cancelled", { refundInFlight: true })).unavailable[2],
     ).toBe("Retry in full · A refund is on its way. Wait until it settles.");
@@ -259,5 +259,24 @@ describe("the Actions card's control set (spec 020a AC-3)", () => {
     ).toBe(
       "Refund in full · No payment was taken, so there is nothing to refund.",
     );
+  });
+
+  it("without the card provider's keys every refund the table allows reads the provider line, and no refund opener renders", () => {
+    const off = { refundReady: false };
+    expect(controls(data("paid", off))).toEqual({
+      buttons: ["cancel"],
+      unavailable: [REROUTE, FULL_PROVIDER, PART_PROVIDER],
+    });
+    expect(controls(data("in_production", off))).toEqual({
+      buttons: [],
+      unavailable: [REROUTE, CANCEL_MADE, FULL_PROVIDER, PART_PROVIDER],
+    });
+    expect(controls(data("cancelled", off)).unavailable).toEqual([
+      REROUTE,
+      CANCEL_ENDED,
+      "Retry in full · Refunds from this page start once the card provider is connected.",
+      "Refund in part · A cancelled order is retried in full only.",
+    ]);
+    expect(controls(data("abandoned", off)).unavailable[2]).toBe(FULL_PROVIDER);
   });
 });

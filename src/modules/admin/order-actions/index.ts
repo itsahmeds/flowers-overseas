@@ -26,6 +26,7 @@ export {
   unavailableCauses,
 } from "./availability.ts";
 export {
+  minorUnitsText,
   type ParsedMinorUnits,
   parseMinorUnits,
   REFUND_STATUSES_HOLDING_BALANCE,

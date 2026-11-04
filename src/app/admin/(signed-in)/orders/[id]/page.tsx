@@ -625,7 +625,8 @@ export default async function AdminOrderPage({
 
   return (
     <AdminFrame session={session} current="orders">
-      <div className="grid gap-[16px] md:gap-[20px]">
+      {/* On a phone the Actions bar is fixed at the foot; the page keeps its height free. */}
+      <div className="grid gap-[16px] max-md:has-[[data-actions-bar]]:pb-[69px] md:gap-[20px]">
         <AdminBackLink href="/admin/orders">
           {adminT("admin.orders.detail.back")}
         </AdminBackLink>
@@ -657,7 +658,8 @@ export default async function AdminOrderPage({
               summary
             ) : (
               <div className="grid gap-[16px]">
-                {actionsPanel}
+                {/* On a phone a card without controls sits under the summary (TASK-361). */}
+                <div className="min-w-0 max-md:order-last">{actionsPanel}</div>
                 {summary}
               </div>
             )
