@@ -533,6 +533,17 @@ The action panel spec 012 left out of the order page, in the same admin system: 
 | Emails list and Resend: each status, held, rate limited, test order | `wireframes/admin-order-resend-desktop.dc.html` · `wireframes/admin-order-resend-mobile.dc.html` | 020a tasks 4, 5 |
 | Flow: no florist, reroute; cancel, refund, resend, and what the buyer receives | `flows/admin-order-actions.dc.html` | 020a |
 
+### Admin risk review and the two checkout states (spec 021)
+
+The held-order queue, one review and its three decisions, and the order page's Risk card, in spec 012's admin system and spec 020a's dialog and sheet patterns. Nothing about the recipient appears; the buyer's email and name only with `orders.view_pii`. Every string not yet in `messages/admin/en.json` is a `[slot]` drawn as proposed wording with a dotted underline, owned by spec 021 §7 (`admin.risk.*`). On the buyer side only two states are drawn, and neither names a check: the step 3 email field error and the step 4 notice after the fifth declined try, with spec 021 §7's sentences verbatim (spec 021 says "step 1" and "step 3" in the three-step numbering; the four-step checkout asks the email on step 3 and pays on step 4). Held and risk-cancelled orders look exactly as any other order to the buyer, so nothing else is drawn. New primitives on `system/components.dc.html` "Risk review": `SignalRow` and `DeadlineChip`, with the score badge and the signal tags.
+
+| Page type | Wireframe artboards | Owning spec |
+|---|---|---|
+| Risk review queue: open reviews by deadline, decided in the last 7 days, due soon, decide now, empty, polling paused, shadow mode, no permission | `wireframes/admin-risk-desktop.dc.html` · `wireframes/admin-risk-mobile.dc.html` | 021 task 3 (TASK-494) |
+| One review: open, without `orders.view_pii`, without `risk.blocklist`, decided, decided at the deadline, closed without action, after routing with and without a deadline; the Approve, Cancel and refund, and Cancel, refund and block dialogs with their refusals and toasts | `wireframes/admin-risk-desktop.dc.html` · `wireframes/admin-risk-mobile.dc.html` | 021 tasks 3, 4 (TASK-494) |
+| Order page Risk card: held, passed, decided, decided at the deadline, recorded only, not checked yet, demo, without `risk.evidence`; Download evidence pack | `wireframes/admin-risk-desktop.dc.html` · `wireframes/admin-risk-mobile.dc.html` (on spec 012's `admin-order-detail-*` page) | 021 tasks 3, 4 (TASK-494) |
+| Checkout: step 3 disposable email refused, step 4 tries used up; small: forwarding address passes, demo, reused refusal notices, tries 1 to 4, `/ar-XB` | `wireframes/checkout-desktop.dc.html` · `wireframes/checkout-mobile.dc.html` (section "Spec 021") | 021 task 2 (TASK-493) |
+
 ### Emails (spec 016)
 
 Not pages: nothing is indexed and nothing is in `plan/05`. One React Email layout under `emails/` with an `audience` prop, one template per key of spec 016 §5.2, each with a plain-text part. The 1440 sheet draws each email at 600 px beside its plain text, its build notes (trigger, what it carries, every string marked verbatim or proposed with its key) and its states; the 390 sheet draws it at 375 px, as a phone mail client shows it.
