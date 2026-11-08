@@ -8189,13 +8189,6 @@
     "reviewedAt": "2026-11-08T14:08:41Z",
     "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
   },
-  "search.pagesHeading": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (delegated), 2026-11-04: recorded by the orchestrator with record-approval-402.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A verbatim; the founder did not read this text",
-    "reviewedAt": "2026-11-04T00:41:00Z",
-    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
-  },
   "floristInbox.bouquets.title": {
     "source": "human",
     "reviewed": true,
