@@ -20,7 +20,7 @@ import { AdminBackLink, AdminRecordHead } from "@/modules/ui/admin/AdminRecord";
 import { PartnerStatusChip } from "../view";
 
 export type PartnerTabKey =
-  "profile" | "payoutTerms" | "money" | "relationship";
+  "profile" | "payoutTerms" | "money" | "relationship" | "contracts";
 
 interface PartnerTabDefinition {
   readonly key: PartnerTabKey;
@@ -36,6 +36,7 @@ export const PARTNER_TABS: readonly PartnerTabDefinition[] = [
   { key: "payoutTerms", path: "#terms", anyOf: [] },
   { key: "money", path: "/money", anyOf: ["finance.view"] },
   { key: "relationship", path: "/relationship", anyOf: ["partner.crm.view"] },
+  { key: "contracts", path: "/contracts", anyOf: ["partner.contract.view"] },
 ];
 
 /** The tabs `roles` may open, each with its href; `current` carries `aria-current`. */

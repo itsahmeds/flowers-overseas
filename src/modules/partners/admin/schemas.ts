@@ -579,6 +579,9 @@ export const ACTIVATION_CONDITIONS = [
   "coverage",
   "mapping",
   "contact",
+  // Spec 030b §14.2 A, §13 Q21 (founder 2026-10-24, "Q21 blocks"; TASK-442): a current signed
+  // `agreement` row in `partner_contract`. Unmet, it reads "No signed agreement on file".
+  "agreement",
 ] as const;
 export type ActivationCondition = (typeof ACTIVATION_CONDITIONS)[number];
 
@@ -592,6 +595,8 @@ export interface PreflightFacts {
   readonly notificationChannel: string;
   readonly contactEmail: string | null;
   readonly contactPhone: string | null;
+  /** A current (not superseded, not withdrawn) `agreement` row exists (spec 030b §13 Q21). */
+  readonly currentAgreement: boolean;
 }
 
 /** Each condition of `→ active`, met or not. */
@@ -611,6 +616,7 @@ export function activationPreflight(facts: PreflightFacts): PreflightResult {
     coverage: facts.coverageRows > 0,
     mapping: facts.fulfillableMappings > 0,
     contact,
+    agreement: facts.currentAgreement,
   };
 }
 

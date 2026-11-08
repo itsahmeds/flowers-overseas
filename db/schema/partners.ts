@@ -964,9 +964,10 @@ export const partnerContract = pgTable(
       .notNull()
       .defaultNow(),
     supersededAt: timestamp("superseded_at", { withTimezone: true }),
+    /** Deferred to commit in the migration (`DEFERRABLE INITIALLY DEFERRED`). */
     supersededBy: uuid("superseded_by").references(
       (): AnyPgColumn => partnerContract.id,
-      { onDelete: "restrict" },
+      { onDelete: "no action" },
     ),
     ...timestamps,
   },

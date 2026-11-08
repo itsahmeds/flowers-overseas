@@ -311,9 +311,10 @@ describe("T-18 (pure) · the §2.5 status graph (AC-16)", () => {
     notificationChannel: "email",
     contactEmail: "piotr@example.com",
     contactPhone: null,
+    currentAgreement: true,
   };
 
-  it("passes the preflight when all four conditions hold", () => {
+  it("passes the preflight when all five conditions hold", () => {
     expect(unmetConditions(activationPreflight(MET))).toEqual([]);
   });
 
@@ -323,6 +324,8 @@ describe("T-18 (pure) · the §2.5 status graph (AC-16)", () => {
     ["mapping", { fulfillableMappings: 0 }],
     ["contact", { notificationChannel: "whatsapp", contactPhone: null }],
     ["contact", { contactEmail: "not-an-email" }],
+    // Spec 030b §13 Q21 (TASK-442): no signed agreement on file.
+    ["agreement", { currentAgreement: false }],
   ] as const)("names %s as the one unmet condition", (condition, change) => {
     expect(unmetConditions(activationPreflight({ ...MET, ...change }))).toEqual(
       [condition],
@@ -335,6 +338,7 @@ describe("T-18 (pure) · the §2.5 status graph (AC-16)", () => {
       "coverage",
       "mapping",
       "contact",
+      "agreement",
     ]);
   });
 });

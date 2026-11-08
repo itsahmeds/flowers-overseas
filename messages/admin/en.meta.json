@@ -2202,7 +2202,7 @@
   "admin.partners.state.appears": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "b3a7a5b628f8c80adbb7b6f427711c97562376b4995172ed84c180d5d0f3612c"
+    "sourceHash": "87cf6689294b24c5d4fd6516fb8213e02baf794efd1c83cd948652df768f182c"
   },
   "admin.partners.state.before": {
     "source": "human",
@@ -7288,5 +7288,540 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "d29947e3da26c085a51205c63aa44d3e764828abb3a9b9c337f86a54daade367"
+  },
+  "admin.partners.tab.contracts": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0488acc63d8b513587cc45e2d7dd7c17cb873266452b23273c6dedb651764243"
+  },
+  "admin.partners.state.condition.agreement.met": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bd76f2f04276b75fa50722a1b9b81a5282266dbc5bb556e4e7d972e223f12fdb"
+  },
+  "admin.partners.state.condition.agreement.missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48d308f2e001768e8627ae7b379f103ac7af6309df5c24784705b72838e8c1fd"
+  },
+  "admin.partners.state.agreementLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5a9e727aa46f273a946a713e86f04d60b11410b00403b62e225e488f1cdcf11d"
+  },
+  "admin.partners.contracts.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f6379c9d1601fafb750460108e8304fe6e12ddf96c406544c2c4a46cc8bf4fda"
+  },
+  "admin.partners.contracts.upload": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01e738db94517ce6b88dabbb248ab6e72b57f19bfa9c670f4d693e8059557ec0"
+  },
+  "admin.partners.contracts.uploadSubmit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "865e89de78d94c747184d6a7e6f5244b453d8062343c07e014ae698cfb0260e8"
+  },
+  "admin.partners.contracts.section.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aa526fa0f60736ba07cc800da6521f39c22b160ae894a61d578d8dd0c86def71"
+  },
+  "admin.partners.contracts.section.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "17960e3e740f9623ba58cfd4dc10da046ec27446e386ce139821d8b674f3fcd6"
+  },
+  "admin.partners.contracts.section.annex": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9b4d4adc28fefeca616dc6b8bafb4a9458f875fd2a6bb8c8066970014726ff32"
+  },
+  "admin.partners.contracts.kind.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aa526fa0f60736ba07cc800da6521f39c22b160ae894a61d578d8dd0c86def71"
+  },
+  "admin.partners.contracts.kind.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "17960e3e740f9623ba58cfd4dc10da046ec27446e386ce139821d8b674f3fcd6"
+  },
+  "admin.partners.contracts.kind.annex": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4d61017c9cda0cdfeae20174c328786efa217b62f2444a8d50daa34b6747b5ef"
+  },
+  "admin.partners.contracts.version": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9ee0960adaf2b799be51c2e338b058d46a333db62080666fc579fc632c4c3acd"
+  },
+  "admin.partners.contracts.current": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e0d1b68224bf0b31ef16b206c65b5f8f6b89d18161f4a7cdcb8d0ac8d952549a"
+  },
+  "admin.partners.contracts.superseded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e5830d265452f1ed47a8fb8891fdc488ab355a71ff18cebee2fe3dd1df2f295b"
+  },
+  "admin.partners.contracts.containsDpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "053730ae06955b96d0fa8381ba1be3d499163269d1e32d161dc41eb577f4e2ab"
+  },
+  "admin.partners.contracts.coveredBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4204805c30a3c384499175a64d92099a23e13029d61718357209614bfd3df98c"
+  },
+  "admin.partners.contracts.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c4450bf419a128081523442f308a51a179f07b418929527fca8bbf48753c973d"
+  },
+  "admin.partners.contracts.review": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "admin.partners.contracts.reviewLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "932a89b355799657c53cfd10d94e4edcc1772c8e27a24f20289e7af2f0857c17"
+  },
+  "admin.partners.contracts.uploaded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3cc3767e7032c703d4db6ca48d483d08a88f54d126630fdec044436ad29fa1df"
+  },
+  "admin.partners.contracts.uploadedLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "187c5382fee66b085c71bdfcdaaa17f5927d9016c4b2be48aca77807618dbbbc"
+  },
+  "admin.partners.contracts.file": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "50009ce1da4d15e1c4a04024df691eed5f0d598e2c4c67092f205366d0adf99e"
+  },
+  "admin.partners.contracts.fileLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6575ff93935c9767534e79bb0fc08aa4837b8c0be716380ef8e1957feb58c50c"
+  },
+  "admin.partners.contracts.size": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a83ef288d840286291aa3b79df6f8005b0e36205ae66cff64947e1ac2826246b"
+  },
+  "admin.partners.contracts.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5f14829918ae77baa9081f480570ac9d24763857324c6e5bfe6eab81f761f32"
+  },
+  "admin.partners.contracts.download": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d6eafe82359100423c93c5ce53c352c1b51ca1e699215fcec3f5c5dd9bf12d24"
+  },
+  "admin.partners.contracts.downloadLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1b2f113d9b18fc4a50a85cb11b7702fae6d5e0436a05902bae44478aacc6697a"
+  },
+  "admin.partners.contracts.edit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fd9c61ac500e51185a5844b7f373df989d56c8e19246f3a34700aadc853e93b2"
+  },
+  "admin.partners.contracts.editTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6780093d8b7157c318520ef0df1ee2096ffad0c910458bfbac9620a265670e50"
+  },
+  "admin.partners.contracts.editNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0667e32687b50a868b417d7b32886c968184a1a380b5bd4a66be3201a98b3018"
+  },
+  "admin.partners.contracts.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "admin.partners.contracts.field.file": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1b6da3c107e01c58b3ee0ff51c72dd624dc1e80c8079d79f8957c5aab106cb8"
+  },
+  "admin.partners.contracts.field.fileHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "73b14933ab714f84c3ec9c182d3e4ab9773af77320e68ef176d8e7c54818b4bd"
+  },
+  "admin.partners.contracts.field.kind": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
+  },
+  "admin.partners.contracts.field.template": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c5f9189de3a2e439b251063ef8641f6875970878a6c8e4eedc52b1273fd2a9e"
+  },
+  "admin.partners.contracts.field.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "admin.partners.contracts.field.signedOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8f280aa2d34f361ac705b9af6421ea22d78019aa306e605ba67c9520ef0deaa8"
+  },
+  "admin.partners.contracts.field.effectiveOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4f86b19b388a6998e282b4993cfcd272c9ce164040266db8995d62868e59ac91"
+  },
+  "admin.partners.contracts.field.reviewOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3409139dd5714497ec858453aef035afa27ce0ed141f7b5ad50f1dd958371689"
+  },
+  "admin.partners.contracts.field.notice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "633d41ca042d96375a48d6c5be3830af32f2b909cc4b9be71ce5630fffaf57f0"
+  },
+  "admin.partners.contracts.field.includesDpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4f879f18b420571b2d334d5130c9ead1111a5911997c82fb066b88012a9bab95"
+  },
+  "admin.partners.contracts.field.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d8da2c49df39d91df7ecd199b92da7bf264f026242ccc69b08daeadfe587c45b"
+  },
+  "admin.partners.contracts.field.noteHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ac6a610686dbd51c32e68124cdc673ff61e3223957c087dfd4878d744d217191"
+  },
+  "admin.partners.contracts.withdraw.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "164546a9c54814805d81b2474160728961ec0230d8efe0c5eb1626c7a2b55fe7"
+  },
+  "admin.partners.contracts.withdraw.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "555d6e8f09a717c436301a9b1e9ab14f25106a953dcea7283e5c416df6c9ae0c"
+  },
+  "admin.partners.contracts.withdraw.previous": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "422f6477d6c300ed4b434aa014ca78712065611d5be79e2ef37cd0f87b448270"
+  },
+  "admin.partners.contracts.withdraw.only": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f18e304c4a693775302cfa3a6a84feeea746816a284e0fc9ec1a95a8213cc20b"
+  },
+  "admin.partners.contracts.withdraw.other": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0653a8f4dcd209c0bc2e35264467ba891ceba78ef7440509c4cc62ba3052d9ec"
+  },
+  "admin.partners.contracts.withdraw.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.partners.contracts.withdraw.reasonHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ac927ad5d8c236799918532d1abff68a3748f8ed15ddf3fd81cfbf58c5408f6"
+  },
+  "admin.partners.contracts.withdraw.confirm": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "164546a9c54814805d81b2474160728961ec0230d8efe0c5eb1626c7a2b55fe7"
+  },
+  "admin.partners.contracts.withdraw.until": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eef4d070e89545f18cbb23f5daac580395171289d0c412fd8a297ea47a3cca56"
+  },
+  "admin.partners.contracts.withdraw.closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c39a5e9676f4b391ce7aac0d37d04c6bd1a60b06255e1de3d968541d2af586d4"
+  },
+  "admin.partners.contracts.flag.no_agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48d308f2e001768e8627ae7b379f103ac7af6309df5c24784705b72838e8c1fd"
+  },
+  "admin.partners.contracts.flag.no_dpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c2fca980fb95a3b48ed3d19d47dd986eabc88199e8e6c54461b34a77c9cd8808"
+  },
+  "admin.partners.contracts.flag.terms_mismatch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6c92dab359890528bb509e4953eda8f25d29a8b063b640d7caf370b203f5fc08"
+  },
+  "admin.partners.contracts.flag.review_due": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "382406a506011f6aa4958087b8008c3e10a41971219a91aa69c7934366f4fe0d"
+  },
+  "admin.partners.contracts.flag.review_passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "32f3dc563a4882cb8e5fe13c96d5077eb308016d0276d513fc5596c92726e9fa"
+  },
+  "admin.partners.contracts.flag.cannotGoLive": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4dafb6d242aa8d85f20c4e93dc66a1d36ce5efddb7543d9d212f9051f57c452f"
+  },
+  "admin.partners.contracts.flagHint.no_agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8ced4f37d7ebfd435b9720044b5fc3ad179573790d0036506f76e6ffd87d4670"
+  },
+  "admin.partners.contracts.flagHint.no_dpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b17eeb909bca846cfb60a59b9024b09f9068431d0adbefc5f1ffc57cf057c9d2"
+  },
+  "admin.partners.contracts.flagHint.terms_mismatch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f1ed358ac97909ec8800e8248c08ddc8f1eef9f308d9f5a56de5c4b69dbc04f3"
+  },
+  "admin.partners.contracts.flagHint.review_due": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "57b53b6952332621cacc36b3841edf9942a5d3a7f91aa06e903e12b6af89a99a"
+  },
+  "admin.partners.contracts.flagHint.review_passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "563374dd5f061fa0b01d6112a18383c0445a6e36c5101bb248740f6d596026ea"
+  },
+  "admin.partners.contracts.onFile.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9cf0a262638bd3b0f716ce38e90848fc50768c74a33379d376484e4b6cf237e0"
+  },
+  "admin.partners.contracts.onFile.signed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "944a735a294867e6afaecbde2d170e9efdb1b814bbe941acf88e9920161dd1aa"
+  },
+  "admin.partners.contracts.onFile.terms": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0438f6c59b81e7e4d0ae8926dbf69ddc9e6f4bef67dec83770540484a315ac6a"
+  },
+  "admin.partners.contracts.onFile.review": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31151e9f9bd4e781799039ef08b316adea0188818b0da525b2965217a20c9dfc"
+  },
+  "admin.partners.contracts.onFile.noReview": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "40b28de678ac65455788b10d1b6db4aa39b321ca921c43c7a538a78db482745b"
+  },
+  "admin.partners.contracts.onFile.private": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1448e3fdd8dd8b574f53b6db9db9496a96c40a7418bb75a4b16c768a99a46cbe"
+  },
+  "admin.partners.contracts.rule.too_large": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01b8d188e3399215c9d617778591b5ab08a83070a269f1264597bb29b29db7b3"
+  },
+  "admin.partners.contracts.rule.not_pdf": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b30a33d2955bbf9e23fc45ef0c64a0d6ee09a63be724ef98d4a31fe5935aa21"
+  },
+  "admin.partners.contracts.rule.unreadable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ca4c5c6b1cbfc09bf76d433695479aba389cb610286da603cbae0a54895d0876"
+  },
+  "admin.partners.contracts.rule.no_pages": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81914eeeca60ca77ab1cf9950aba8fb6d681d596276f588e4684469b4166f1b"
+  },
+  "admin.partners.contracts.rule.encrypted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "30e557d3ec7b84f29b790c3d9fb5d4b26df090af17f88b47a5144238092395a4"
+  },
+  "admin.partners.contracts.rule.active_content": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec1c70be6cbb06e894d487a951f4885cf7372e79cd0e6ecf239fa425a80819d0"
+  },
+  "admin.partners.contracts.result.uploaded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "71dbb1331399dbe3c87a78ec73849b85d7679c451deba457f767c0daccd73ed0"
+  },
+  "admin.partners.contracts.result.saved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9673bcab6e04cc278e34fde52bc0c7666b5315c213b2544fdca1242463acf288"
+  },
+  "admin.partners.contracts.result.withdrawn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3e019159aa04d3046288d1fdd7e17f1af6d204b717c9467076b1b063b606a645"
+  },
+  "admin.partners.contracts.result.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "37d3ea699fcc0a35114c7047a49e4e9aa5c61d69bc896b72dd02ae1cf3476c3d"
+  },
+  "admin.partners.contracts.result.rule": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "32c791f563bc54667e9789ec9fbbcdfc01819e7d7079d9635b4d25c23fe8abff"
+  },
+  "admin.partners.contracts.result.conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "af02e91a9ba980b96e79573b647d3ac04f31c986e6d66c08695a27761b5da3b2"
+  },
+  "admin.partners.contracts.result.version_conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b3b371a9099d91ef16eb6141c4867e1fdc8efbb0c079afa3a25352f1ed50b3d3"
+  },
+  "admin.partners.contracts.result.window_closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "60249938ce6b55ffd23fcfbdbe9a5e20687d160a1b78b8dd50cd34fe7139a8b0"
+  },
+  "admin.partners.contracts.result.not_found": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d65e7e75ffb6acb6d9aae9337923e8b54016e8430cda3ea0af60e5e9c321c294"
+  },
+  "admin.partners.contracts.error.required": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1582db22cf0e47c769b87ad87032239c192fe2da4f03c1061b534a87c8743134"
+  },
+  "admin.partners.contracts.error.choice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f031e7ea7dc5926041a7f22636542e09b5ad26a777752c5a51c18d5a2f5935cb"
+  },
+  "admin.partners.contracts.error.template": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d4e7a59977e1b6577bf633ac6fa517166e42549a28feea660426032467eacc7d"
+  },
+  "admin.partners.contracts.error.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e35697809859e187661e74bb5f47628d32b66b447fb2bb3a69fd226e8369c55"
+  },
+  "admin.partners.contracts.error.date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ca2dd53d714296214d80d68c8162f7b203d4f0549c12e587f754542fbb01fc86"
+  },
+  "admin.partners.contracts.error.dateFuture": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4bcfb4d0895a9cf1204f996587bfebecac4a249c7e5eb58fa096a498b3882af9"
+  },
+  "admin.partners.contracts.error.reviewOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2672cfcc083e8304d54522f5c96eb31f254b34cdd45c625d818f6bf2539e384c"
+  },
+  "admin.partners.contracts.error.notice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "570f7564fdf93584b85b713e83d5bf17cb4acab4a8b6a1f683cfbf603dcd4ce1"
+  },
+  "admin.partners.contracts.error.tooLong": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51ccdf73164ee49bcd13080eb33687db795e5012498c8bcfe678ffb82db1fad1"
+  },
+  "admin.partners.contracts.error.contactDetails": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f0beef41f312711159188e64dc9dc0830184408443fc6a47d2f0ec1f0743a384"
+  },
+  "admin.partners.contracts.error.reasonLength": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2caa89fe29f304acfb5d3b54cebcb8554c8823f4599cc4644485bfd3236d0a57"
+  },
+  "admin.partners.contracts.error.target": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d65e7e75ffb6acb6d9aae9337923e8b54016e8430cda3ea0af60e5e9c321c294"
+  },
+  "admin.partners.contracts.loading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c104bbb3ee46ce106df03b2c0cd16822846c5f7fd1809e173f159710d3c94aa"
+  },
+  "admin.partners.list.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2dff10f6a8b7e6985b6ad779a205a3cf95f95d5966402e50d288696519bbe2ac"
+  },
+  "admin.partners.list.agreementNone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48d308f2e001768e8627ae7b379f103ac7af6309df5c24784705b72838e8c1fd"
+  },
+  "admin.partners.list.agreementOk": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0955fff443f20e3d861d9f09d0fc7ff438cfc5ea4584b3cbde84ac24187d3483"
+  },
+  "admin.partners.list.contractsDue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36cd81ce10b8d3dd6870442893dc48e9958b25e4e7a0b6142dbcdee50379e69b"
+  },
+  "admin.partners.list.contractsDueLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "00825f03545c7e397cf0bd437d3f17a34862411cf2a8f2faa12bd71bbd1023bf"
+  },
+  "admin.partners.list.contractsDueState.due": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9071738f145962a67ca1f1db834560031606ced93aa9161f48c493afe31d0a7c"
+  },
+  "admin.partners.list.contractsDueState.passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "436fe71bb9561f0596161c4d50c7b23327b4189acaf63dc89f4f9205b67a7528"
   }
 }

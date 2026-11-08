@@ -40,6 +40,9 @@ export const adminPermissions = [
   "finance.export",
   "partner.crm.view",
   "partner.crm.write",
+  // spec 030b §14.4 (TASK-442): the florist contract register, admin only (§13 Q15).
+  "partner.contract.view",
+  "partner.contract.write",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -73,6 +76,9 @@ export const ADMIN_PERMISSIONS: Readonly<
   "finance.export": ["admin"],
   "partner.crm.view": ["admin", "ops"],
   "partner.crm.write": ["admin", "ops"],
+  // spec 030b §13 Q15: who sees and uploads contracts? Admin only.
+  "partner.contract.view": ["admin"],
+  "partner.contract.write": ["admin"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

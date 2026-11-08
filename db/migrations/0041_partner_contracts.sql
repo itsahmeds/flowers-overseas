@@ -59,8 +59,11 @@ CREATE TABLE public.partner_contract (
     REFERENCES public.locale (code) ON DELETE RESTRICT,
   CONSTRAINT partner_contract_uploaded_by_users_id_fk FOREIGN KEY (uploaded_by)
     REFERENCES public.users (id) ON DELETE RESTRICT,
+  -- Deferred to commit: superseding marks the old row before the new one is inserted (the
+  -- partial unique index allows one current row), and withdrawing deletes the new row before the
+  -- old one is current again. At commit every link must resolve; `NO ACTION` is `RESTRICT` there.
   CONSTRAINT partner_contract_superseded_by_partner_contract_id_fk FOREIGN KEY (superseded_by)
-    REFERENCES public.partner_contract (id) ON DELETE RESTRICT,
+    REFERENCES public.partner_contract (id) ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
   CONSTRAINT partner_contract_object_key_key UNIQUE (object_key),
   CONSTRAINT partner_contract_partner_kind_version_key UNIQUE (partner_id, doc_kind, version_no),
   CONSTRAINT partner_contract_doc_kind_check

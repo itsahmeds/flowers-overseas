@@ -12,7 +12,7 @@
  * sign-in address, and "Not signed in yet" or the day of the first sign-in in the viewer's zone.
  *
  * The status card offers exactly the moves the §2.5 graph allows from this status (AC-16).
- * **Make active is absent, not disabled**, until all four conditions hold, and the card lists
+ * **Make active is absent, not disabled**, until all five conditions hold, and the card lists
  * each, met or missing (decision 6); the command reads the preflight again under the row lock.
  * A demo florist is offered Offboard only. Every form carries the row's `updated_at`; a stale
  * save changes nothing and says so. The URL carries the code, never a name.
@@ -20,6 +20,7 @@
  * Spec 030b (TASK-441): the tab bar under the head (`./tabs.tsx`); this route is the Profile tab
  * and the "Payout terms" tab is a link to its block here (`#terms`).
  */
+import Link from "next/link";
 import { forbidden, notFound } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 
@@ -343,10 +344,12 @@ function isMove(to: string): to is Move {
 function StatusCard({
   partner,
   canMove,
+  canViewContracts,
   result,
 }: {
   readonly partner: PartnerDetail;
   readonly canMove: boolean;
+  readonly canViewContracts: boolean;
   readonly result: PartnerResult;
 }): ReactElement {
   const unmet = ACTIVATION_CONDITIONS.filter(
@@ -396,6 +399,14 @@ function StatusCard({
           />
           {unmet.length > 0 ? (
             <AdminQuiet>{adminT("admin.partners.state.appears")}</AdminQuiet>
+          ) : null}
+          {!partner.preflight.agreement && canViewContracts ? (
+            <Link
+              href={`/admin/partners/${encodeURIComponent(partner.code)}/contracts`}
+              className="text-ink text-[14px] underline underline-offset-2"
+            >
+              {adminT("admin.partners.state.agreementLink")}
+            </Link>
           ) : null}
         </>
       ) : null}
@@ -1071,6 +1082,7 @@ export default async function AdminPartnerPage({
             <StatusCard
               partner={partner}
               canMove={can(session.roles, "partner.status")}
+              canViewContracts={can(session.roles, "partner.contract.view")}
               result={result}
             />
           }

@@ -579,7 +579,7 @@
       "state": {
         "title": "Status",
         "before": "Before this florist can be active",
-        "appears": "Make active appears when all four are met.",
+        "appears": "Make active appears when all five are met.",
         "met": "Met",
         "missing": "Missing",
         "condition": {
@@ -598,6 +598,10 @@
           "contact": {
             "met": "{channel, select, whatsapp {WhatsApp number for the chosen channel} other {Email for the chosen channel}}",
             "missing": "{channel, select, whatsapp {WhatsApp number for the chosen channel} other {Email for the chosen channel}}"
+          },
+          "agreement": {
+            "met": "Signed agreement on file",
+            "missing": "No signed agreement on file"
           }
         },
         "move": {
@@ -607,7 +611,8 @@
         },
         "demo": "A demo florist can only be offboarded. Demo florists exist for staging and demo calls; they never receive a real order.",
         "offboarded": "This florist is offboarded. Its status cannot change again.",
-        "readOnly": "Only admin and ops can change a florist's status."
+        "readOnly": "Only admin and ops can change a florist's status.",
+        "agreementLink": "Open contracts"
       },
       "result": {
         "saved": "Saved.",
@@ -674,7 +679,8 @@
         "profile": "Profile",
         "payoutTerms": "Payout terms",
         "money": "Money",
-        "relationship": "Relationship"
+        "relationship": "Relationship",
+        "contracts": "Contracts"
       },
       "list": {
         "followUpsDue": "Follow-ups due",
@@ -683,7 +689,16 @@
         "lastAccepted": "Last accepted {date}",
         "followUpCount": "{count, plural, one {# follow-up due} other {# follow-ups due}}",
         "owed": "owed {amount}",
-        "noMoney": "No money"
+        "noMoney": "No money",
+        "agreement": "Agreement",
+        "agreementNone": "No signed agreement on file",
+        "agreementOk": "{template}",
+        "contractsDue": "Contracts due",
+        "contractsDueLine": "{florist}: {kind} v{version}, review {date}",
+        "contractsDueState": {
+          "due": "Due",
+          "passed": "Passed"
+        }
       },
       "money": {
         "loading": "Loading figures…",
@@ -853,6 +868,124 @@
           "not_found": "That was already removed. Nothing was saved.",
           "no_follow_up": "That entry has no follow-up date. Nothing was saved."
         }
+      },
+      "contracts": {
+        "lead": "The signed PDFs we hold for this florist. Upload a new version to replace one; earlier versions are kept.",
+        "upload": "Upload a document",
+        "uploadSubmit": "Upload",
+        "section": {
+          "agreement": "Florist agreement",
+          "dpa_addendum": "Data-processing addendum",
+          "annex": "Annexes"
+        },
+        "kind": {
+          "agreement": "Florist agreement",
+          "dpa_addendum": "Data-processing addendum",
+          "annex": "Annex"
+        },
+        "version": "{kind} v{version}",
+        "current": "Current",
+        "superseded": "Superseded",
+        "containsDpa": "Contains the data-processing clauses",
+        "coveredBy": "Covered by agreement v{version}",
+        "none": "Nothing on file yet.",
+        "review": "Review",
+        "reviewLine": "{date}, reminder {days, plural, one {# day} other {# days}} before",
+        "uploaded": "Uploaded",
+        "uploadedLine": "{when} ({zone}) by {by}",
+        "file": "File",
+        "fileLine": "{size} · {pages, plural, one {# page} other {# pages}}",
+        "size": "{mb} MB",
+        "when": "{when} ({zone})",
+        "download": "Download",
+        "downloadLabel": "Download {kind} v{version}",
+        "edit": "Edit details",
+        "editTitle": "Edit details of {kind} v{version}",
+        "editNote": "The file, its kind, version and upload are fixed. Changing the review date sets a new reminder.",
+        "save": "Save",
+        "field": {
+          "file": "Signed PDF",
+          "fileHint": "PDF only, up to 10 MB. Stored exactly as uploaded.",
+          "kind": "Kind",
+          "template": "Template version",
+          "language": "Language",
+          "signedOn": "Signed on",
+          "effectiveOn": "Effective from",
+          "reviewOn": "Review on (optional)",
+          "notice": "Reminder, days before",
+          "includesDpa": "This agreement contains the data-processing clauses",
+          "note": "Note",
+          "noteHint": "Optional, up to {max} characters. Business facts only; no contact details."
+        },
+        "withdraw": {
+          "open": "Withdraw",
+          "title": "Withdraw {kind} v{version}?",
+          "previous": "Use this only for a wrong upload. The file is deleted and agreement v{version} becomes current again, with its date and version copied back to the profile.",
+          "only": "Use this only for a wrong upload. The file is deleted and this florist has no agreement on file; an active florist is paused until a new one is uploaded.",
+          "other": "Use this only for a wrong upload. The file is deleted and the previous version, if any, becomes current again.",
+          "reason": "Reason",
+          "reasonHint": "At least 10 characters. Kept in the audit log.",
+          "confirm": "Withdraw",
+          "until": "Possible until {when}",
+          "closed": "Withdraw closed on {when}. To correct it, upload a new version; both are kept."
+        },
+        "flag": {
+          "no_agreement": "No signed agreement on file",
+          "no_dpa": "No data-processing addendum on file",
+          "terms_mismatch": "Profile terms differ from the agreement on file",
+          "review_due": "Review due",
+          "review_passed": "Review date passed",
+          "cannotGoLive": "Cannot go live until one is uploaded."
+        },
+        "flagHint": {
+          "no_agreement": "Upload the signed florist agreement below.",
+          "no_dpa": "Upload the data-processing addendum, or mark the agreement as containing its clauses.",
+          "terms_mismatch": "Upload a new version or correct the profile.",
+          "review_due": "The notice window before a review date has opened.",
+          "review_passed": "A review date has passed and that version is still current."
+        },
+        "onFile": {
+          "title": "On file",
+          "signed": "v{version}, signed {date}",
+          "terms": "Profile terms",
+          "review": "Next review",
+          "noReview": "No review date set",
+          "private": "Private: admins only. Each download is logged and opens as an attachment, never in the browser."
+        },
+        "rule": {
+          "too_large": "This file is larger than 10 MB. Scan it at a lower resolution, then upload it again.",
+          "not_pdf": "This file is not a PDF. Upload the signed contract as a PDF.",
+          "unreadable": "This PDF cannot be read. Save it again as a PDF, then upload it again.",
+          "no_pages": "This PDF has no pages.",
+          "encrypted": "This PDF needs a password to open. Upload a copy without a password.",
+          "active_content": "This PDF contains scripts, attached files or forms. Print it to a new PDF and upload that."
+        },
+        "result": {
+          "uploaded": "Document uploaded.",
+          "saved": "Details saved.",
+          "withdrawn": "Document withdrawn.",
+          "invalid": "Check the fields marked below. Nothing was saved.",
+          "rule": "This file was refused. Nothing was saved.",
+          "conflict": "This document changed while you had it open. Nothing was saved. Reload to see it.",
+          "version_conflict": "Someone uploaded a newer version while you had this open. Nothing was saved. Reload to see it, then upload again if yours is still needed.",
+          "window_closed": "The 7 days to withdraw this upload have passed. Upload a new version instead; both are kept.",
+          "not_found": "This document is no longer on file."
+        },
+        "error": {
+          "required": "Fill this in.",
+          "choice": "Choose one of the options.",
+          "template": "Use letters, digits, dots and dashes, up to 40 characters.",
+          "language": "Choose a language.",
+          "date": "Enter a date.",
+          "dateFuture": "This date cannot be in the future.",
+          "reviewOrder": "The review date must come after the effective date.",
+          "notice": "Enter a whole number of days from 0 to 365.",
+          "tooLong": "This is too long.",
+          "contactDetails": "Leave out email addresses and phone numbers.",
+          "reasonLength": "Write at least 10 characters.",
+          "target": "This document is no longer on file."
+        },
+        "loading": "Loading documents…"
       }
     },
     "applications": {

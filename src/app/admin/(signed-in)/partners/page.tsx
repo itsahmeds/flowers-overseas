@@ -14,6 +14,10 @@
  * 3 ratings"); Follow-ups (open entries due today or earlier in the viewer's zone) and the
  * "Follow-ups due" list for `partner.crm.view` (admin, ops); Owed now (draft plus sent payouts per
  * currency) for `finance.view` only, so ops see no money (AC-2). A demo florist takes no money.
+ *
+ * Spec 030b §14.2 A (TASK-442; AC-36, AC-39, AC-42): the Agreement column (the current agreement's
+ * template version, or "None on file", plus any other contract flag) and the "Contracts due" list
+ * (review dates inside their notice window or passed) for `partner.contract.view` (admin) only.
  */
 import Link from "next/link";
 import { forbidden } from "next/navigation";
@@ -68,6 +72,12 @@ import {
   followUpsDue,
   partnerListCrm,
 } from "@/modules/partners/crm";
+import {
+  type ContractDue,
+  contractsDue,
+  type PartnerAgreementColumn,
+  partnersContractFlags,
+} from "@/modules/partners/contracts";
 
 import { native } from "../finance/view";
 import { AdminFrame } from "../frame";
@@ -134,6 +144,64 @@ function owed(
 
 function dueDay(iso: string): string {
   return formatDate(new Date(`${iso}T12:00:00Z`), "en", "dayMonth", "UTC");
+}
+
+function agreementText(column: PartnerAgreementColumn | undefined): string {
+  if (column === undefined) return adminT("admin.partners.list.agreementNone");
+  const head =
+    column.templateVersion === null
+      ? adminT("admin.partners.list.agreementNone")
+      : adminT("admin.partners.list.agreementOk", {
+          template: column.templateVersion,
+        });
+  const rest = column.flags
+    .filter((flag) => flag !== "no_agreement")
+    .map((flag) => adminT(`admin.partners.contracts.flag.${flag}`));
+  return [head, ...rest].join(" · ");
+}
+
+function ContractsDueList({
+  due,
+}: {
+  readonly due: readonly ContractDue[];
+}): ReactElement | null {
+  if (due.length === 0) return null;
+  return (
+    <section
+      aria-labelledby="contracts-due"
+      className="bg-card grid gap-[8px] rounded-[12px] px-[16px] py-[14px] shadow-[inset_0_0_0_1px_var(--color-rule)] md:px-[20px]"
+    >
+      <h2 id="contracts-due" className="text-[18px] leading-[1.2]">
+        {adminT("admin.partners.list.contractsDue")}{" "}
+        <span className="text-ink-3 text-[14px] font-normal tabular-nums">
+          {formatNumber(due.length, "en")}
+        </span>
+      </h2>
+      <ul className="m-0 grid list-none gap-[8px] p-0">
+        {due.map((entry) => (
+          <li
+            key={entry.contractId}
+            className="flex flex-wrap items-center gap-[8px] text-[14px]"
+          >
+            <Link
+              href={`/admin/partners/${encodeURIComponent(entry.partnerCode)}/contracts`}
+              className="text-link underline underline-offset-[3px]"
+            >
+              {adminT("admin.partners.list.contractsDueLine", {
+                florist: entry.partnerName,
+                kind: adminT(`admin.partners.contracts.kind.${entry.docKind}`),
+                version: entry.versionNo,
+                date: dueDay(entry.reviewOn),
+              })}
+            </Link>
+            <AdminChip tone={entry.state === "due" ? "warn" : "bad"}>
+              {adminT(`admin.partners.list.contractsDueState.${entry.state}`)}
+            </AdminChip>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 function FollowUpsDueList({
@@ -222,6 +290,11 @@ export default async function AdminPartnersPage({
   const canMoney = can(session.roles, "finance.view");
   const crm = await partnerListCrm(actor, zone, now);
   const due = canCrm ? await followUpsDue(actor, zone, now) : [];
+  const canContracts = can(session.roles, "partner.contract.view");
+  const agreements = canContracts
+    ? await partnersContractFlags(actor, now)
+    : undefined;
+  const contractsDueRows = canContracts ? await contractsDue(actor, now) : [];
   const owedNow = canMoney
     ? await readFinance(actor, (executor) => partnersOwedNow(executor))
     : undefined;
@@ -270,6 +343,9 @@ export default async function AdminPartnersPage({
           },
         ]
       : []),
+    ...(canContracts
+      ? [{ key: "agreement", label: adminT("admin.partners.list.agreement") }]
+      : []),
     ...(canMoney
       ? [
           {
@@ -305,6 +381,7 @@ export default async function AdminPartnersPage({
         {canCrm ? (
           <FollowUpsDueList due={due} today={today} zone={zone} />
         ) : null}
+        {canContracts ? <ContractsDueList due={contractsDueRows} /> : null}
         <AdminFilterBar
           label={adminT("admin.partners.filter.label")}
           action="/admin/partners"
@@ -375,6 +452,11 @@ export default async function AdminPartnersPage({
                         {formatNumber(crm.get(item.id)?.followUps ?? 0, "en")}
                       </AdminCell>
                     ) : null}
+                    {agreements === undefined ? null : (
+                      <AdminCell>
+                        {agreementText(agreements.get(item.id))}
+                      </AdminCell>
+                    )}
                     {owedNow === undefined ? null : (
                       <AdminCell align="end">
                         {owed(item, owedNow.get(item.id))}
@@ -426,6 +508,9 @@ export default async function AdminPartnersPage({
                                   }),
                                 ]
                               : []),
+                            ...(agreements === undefined
+                              ? []
+                              : [agreementText(agreements.get(item.id))]),
                             ...(owedNow === undefined || item.status === "demo"
                               ? []
                               : [

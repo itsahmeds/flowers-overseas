@@ -366,7 +366,14 @@ export async function partnerDetail(
       .groupBy(productTier.tierKey)
       .orderBy(asc(productTier.tierKey));
 
+    const agreementRows = await db.execute(
+      sql`SELECT 1 FROM public.partner_contract c
+          WHERE c.partner_id = ${row.id}::uuid AND c.doc_kind = 'agreement'
+            AND c.superseded_at IS NULL`,
+    );
     const preflight = activationPreflight({
+      currentAgreement:
+        Array.from(agreementRows as Iterable<unknown>).length > 0,
       termsSignedAt: row.termsSignedAt,
       termsVersion: row.termsVersion,
       coverageRows: zones.length,
