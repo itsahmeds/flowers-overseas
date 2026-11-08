@@ -164,6 +164,37 @@ export function buyerFrame(t: EmailTranslator, reference: string): EmailFrame {
   };
 }
 
+/**
+ * The buyer frame of an email about the account rather than an order (spec 018 §14 C.3, T14): the
+ * same footer as `buyerFrame`, with its last line saying why the address received it, no reference.
+ */
+export function accountFrame(t: EmailTranslator, whyKey: string): EmailFrame {
+  const identity = operatedBy(t);
+  return {
+    audience: "buyer",
+    audienceLabel: null,
+    brand: TRADING_NAME,
+    footer: [
+      { html: text(t(COMPANY.descriptionKey)) },
+      { html: helpLine(t, "emails.layout.buyerHours"), ink: true },
+      ...(identity === null ? [] : [{ html: text(identity) }]),
+      { html: text(t(whyKey)) },
+    ],
+  };
+}
+
+/** `accountFrame`'s footer as plain text, after the `--` line. */
+export function accountFooterText(t: EmailTranslator, whyKey: string): string {
+  const identity = operatedBy(t);
+  return [
+    "--",
+    t(COMPANY.descriptionKey),
+    helpLineText(t, "emails.layout.buyerHours"),
+    ...(identity === null ? [] : [identity]),
+    t(whyKey),
+  ].join("\n");
+}
+
 /** The buyer frame's footer as plain text, after the `--` line. */
 export function buyerFooterText(t: EmailTranslator, reference: string): string {
   const identity = operatedBy(t);
