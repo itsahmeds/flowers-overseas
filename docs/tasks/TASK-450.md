@@ -27,12 +27,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- Token mint on retry: if a send's commit fails after Resend accepted it, the retry mints new tokens and Resend's 409 marks the row sent with hashes that do not match the email already delivered (its links then show link-ended). Low likelihood; a fix is to persist the hashes before the send.
+- Email keys live under `emails.basketReminder.*` (as every other email) not the spec's `email.`.
+- The template is `src/modules/notifications/emails/basket-reminder.ts` (HTML helpers, as the other emails), not `emails/basket-reminder.tsx`; `reminderLineStates` takes a fourth `isAvailable` parameter.
+- Env missing at send time skips as `flag_off`.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-08, open, to the founder: AC-25's fixtures contradict §13 Q9's thresholds (1 complaint in 60 sends is 1.7%, over the 0.3% line; 3 bounces in 60 is 5%, over 4%), so AC-25 as worded cannot pass with Q9's numbers. Built and tested to Q9 (`AUTO_PAUSE` in `src/config/basket-reminders.ts`); AC-25's wording needs an amendment.
 
 ## Progress
 
@@ -40,11 +44,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: scan (10-minute tick, singleton), send with the nine checks in order, deferred delete, token mint, Mailer `stream: marketing` with RFC 8058 headers and idempotency key; auto-pause; R1 email render. Pushed.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/523. Jobs `basket-reminders.scan` and `basket-reminders.send` (retry 3, then `failed` plus an alert), `scanAbandonedBaskets`, `sendBasketReminder`, `shouldAutoPause`/`autoPauseCheck` turning the flag off as `system:basket_reminders.auto_pause`, R1 email (no price, name or tracking; dates via `formatDate` deliveryDate), Mailer `headers` and `stream` with `MARKETING_MAIL_FROM`. Tests: unit basket-reminder-email, jobs-registry, jobs-internal, jobs-runtime; integration basket-reminder-send (16).

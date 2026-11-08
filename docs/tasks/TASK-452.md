@@ -27,6 +27,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- Logger redaction of `email_hmac`, `restore_token`, `unsubscribe_token` keys is not added (no code logs them; adding them touches the pinned redaction list and RoPA row 1).
+- The admin page's HTTP gates of AC-24 (no session, 403 for other roles, no email/hash/token in HTML) have no e2e; the page reuses `requireAdminPage("finance.view")`, admin only.
+- Admin plurals and pl/de of admin keys are not needed (admin is English only).
+- RoPA row 3 is not rewritten for the `contact` subject; row 20 states it.
+- Founder steps before production: the new ADR for Resend marketing (§13 Q8), spec 041's privacy paragraph, the Resend marketing domain, Railway keys `CONTACT_HMAC_SECRET` and `MARKETING_MAIL_FROM`, Appendix A via `.claude/state/record-approval-449.py`.
 
 ## Escalations
 
@@ -40,11 +45,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: attribution and pending-cancel in placement, `basketReminderMetrics` and flag state, admin page and nav item "Basket emails" (finance.view, admin only), runbook, RoPA row 20. Pushed.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/523. `cancelPendingForDraft` and `attributeRecovery` run in the placement transaction after `markDraftPlaced` (live only, 7-day window, once per purchase); `/admin/basket-reminders` with 7/30/90-day ranges, counts, skip reasons, recovery rate from basis points, revenue per currency via `formatMoney`, off and auto-paused banners; `docs/runbooks/basket-reminders.md`; RoPA row 20. Tests: integration basket-reminder-recovery (5: AC-22 cancel, window, test mode, once only, restored draft; AC-24 counts, rate, per-currency revenue as the admin role).
