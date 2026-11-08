@@ -6553,5 +6553,10 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "b72200854e9c579d89c23505e06f3eb3cd84169e1b2d7fa3324af2e2904001a9"
+  },
+  "admin.flags.description.marketing.basket_reminder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e4ec2da6b8730431718167632abc8c1eb51c95030e0c67579dc11da65f772238"
   }
 }

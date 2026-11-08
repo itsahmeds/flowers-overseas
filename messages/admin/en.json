@@ -343,6 +343,9 @@
         },
         "alerts": {
           "push": "Push founder alerts to the phone. Production pushes unless this is off; staging pushes only while it is on. Email is always sent."
+        },
+        "marketing": {
+          "basket_reminder": "Sends one basket reminder email, only to buyers who ticked the box at checkout. Off: the box is hidden and nothing is sent; links in emails already sent keep working."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
