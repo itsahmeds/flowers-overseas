@@ -98,6 +98,11 @@ export const customer = pgTable(
     reviewInviteOptOutAt: timestamp("review_invite_opt_out_at", {
       withTimezone: true,
     }),
+    /**
+     * Spec 018 §14 C.4, C.11 (migration `0036_buyer_sign_in`, TASK-344): set by every confirmed
+     * buyer sign-in; the inactive-account sweep (C.9) reads it.
+     */
+    lastSignedInAt: timestamp("last_signed_in_at", { withTimezone: true }),
   },
   (table) => [
     check(

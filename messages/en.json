@@ -1400,6 +1400,15 @@
         "button": "Track your order",
         "paste": "Or paste this link into your browser:",
         "ignore": "If you did not ask for this link, you can ignore this email."
+      },
+      "signIn": {
+        "subject": "Your sign-in link",
+        "preheader": "It works once, for one hour.",
+        "body": "Here is your link to your Flowers Overseas account. It works once, for one hour.",
+        "button": "Sign in",
+        "paste": "Or paste this link into your browser:",
+        "ignore": "If you did not ask for this, you can ignore this email.",
+        "why": "You receive this email because someone asked to sign in with this address."
       }
     },
     "floristPayoutStatement": {
@@ -1739,6 +1748,55 @@
     "line": {
       "surcharge": "Delivery surcharge",
       "quantity": "{name} × {qty}"
+    }
+  },
+  "auth": {
+    "account": {
+      "title": "Your account",
+      "intro": "Enter your email and we will send you a link to sign in. No password needed.",
+      "email": "Email",
+      "emailInvalid": "Please enter an email address in the form name@example.com.",
+      "submit": "Email me a link",
+      "guestNote": "You never need an account to order.",
+      "sent": "Check your inbox. If the address is right, your link is on its way. It works once, for one hour.",
+      "expired": "That link has expired or was already used. Enter your email for a new one.",
+      "signedOut": "You are signed out.",
+      "confirmSubmit": "Continue"
+    }
+  },
+  "account": {
+    "nav": {
+      "orders": "Orders",
+      "signOut": "Sign out"
+    },
+    "orders": {
+      "title": "Your orders",
+      "empty": "No orders yet with this email.",
+      "choose": "Choose flowers",
+      "groupHeading": "Ordered on {date}",
+      "groupCount": "{count, plural, one {# delivery} other {# deliveries, paid together}}",
+      "line": "Order {reference} · {city} · {date}",
+      "lineNoCity": "Order {reference} · {date}",
+      "stems": "{count, plural, one {# stem} other {# stems}}",
+      "details": "Details",
+      "track": "Track",
+      "invoice": "Invoice"
+    },
+    "detail": {
+      "back": "Orders",
+      "eyebrow": "Order {reference}",
+      "recipientTitle": "Who it is for",
+      "recipient": "Recipient",
+      "date": "Date",
+      "card": "Card",
+      "removed": "We removed the recipient's details on {date}.",
+      "orderTitle": "Your order",
+      "placed": "Order {reference} · placed {date}",
+      "paid": "You paid",
+      "documentsTitle": "Documents",
+      "invoice": "Invoice",
+      "creditNote": "Credit note",
+      "pdf": "PDF"
     }
   }
 }

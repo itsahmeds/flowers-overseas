@@ -21,7 +21,7 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +44 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +137 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
-| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +22 |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +17 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +26 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +15 |
@@ -35,6 +35,7 @@ task actually touches.
 | File | Purpose | Spec |
 |---|---|---|
 | `address-formats.ts` | Address formats per destination country | 003 |
+| `auth.ts` | The buyer sign-in's limits and session length | 018 |
 | `basket.ts` | The basket's two numbers | 010 |
 | `card-message.ts` | The printed card's one limit (spec 004 §14… | 004 |
 | `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6… | 005 |
@@ -99,7 +100,17 @@ task actually touches.
 | `[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/-product/{segment}/{child}/{gr… | 009 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the… | 008 |
-| `[locale]/(account)/account/invoices/[invoiceId]/route.ts` | GET: the invoice PDF for a signed link | 018 |
+| `[locale]/(account)/account/_parts/AccountShell.tsx` | The signed-in account's frame… | 018 |
+| `[locale]/(account)/account/_parts/OrdersView.tsx` | `/{locale}/account` with a buyer session… | 018 |
+| `[locale]/(account)/account/_parts/SignInView.tsx` | `/{locale}/account` without a buyer session… | 018 |
+| `[locale]/(account)/account/_parts/account-request.ts` | The account pages' request helpers (spec 018… | 018 |
+| `[locale]/(account)/account/_parts/order-display.ts` | What the account's list and detail share | 018 |
+| `[locale]/(account)/account/invoices/[invoiceId]/route.ts` | GET: the invoice PDF for a signed link or the… | 018 |
+| `[locale]/(account)/account/orders/[reference]/OrderDetailView.tsx` | One order for its owner (`account-order-detail-*… | 018 |
+| `[locale]/(account)/account/orders/[reference]/actions.ts` | The account order detail's one server action:… | 018 |
+| `[locale]/(account)/account/orders/[reference]/page.tsx` | The buyer's one order: timeline, recipient,… | 018 |
+| `[locale]/(account)/account/page.tsx` | The buyer account: sign-in form without a… | 018 |
+| `[locale]/(account)/account/sign-in/confirm/page.tsx` | The buyer sign-in link's page: one Continue… | 018 |
 | `[locale]/(checkout)/_views/CheckoutHeader.tsx` | The checkout's header | 010 |
 | `[locale]/(checkout)/_views/CheckoutView.tsx` | `/{locale}/checkout`, drawn (spec 010 §2 "The… | 010 |
 | `[locale]/(checkout)/_views/ConfirmationView.tsx` | `/{locale}/checkout/done`, drawn (spec 010 §2… | 010 |
@@ -134,6 +145,9 @@ task actually touches.
 | `[locale]/@header/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | The header of the product parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
+| `[locale]/@header/(account)/account/orders/[reference]/page.tsx` | Account order detail header | 018 |
+| `[locale]/@header/(account)/account/page.tsx` | Account header | 018 |
+| `[locale]/@header/(account)/account/sign-in/confirm/page.tsx` | Account sign-in confirm header | 018 |
 | `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
 | `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header | 010 |
 | `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header | 010 |
@@ -230,6 +244,10 @@ task actually touches.
 | `admin/sign-in/confirm/page.tsx` | GET: one Continue button, uses nothing (AC-9) | 012 |
 | `admin/sign-in/page.tsx` | GET /admin/sign-in: form and its states | 012 |
 | `admin/unauthorized.tsx` | Admin 401, noindex (AC-1) | 012 |
+| `api/auth/buyer/[...nextauth]/route.ts` | Every buyer Auth.js endpoint answers 404 | 018 |
+| `api/auth/buyer/confirm/route.ts` | POST: confirm the buyer sign-in, use the token… | 018 |
+| `api/auth/buyer/request/route.ts` | POST: ask for a buyer sign-in link, one 303 for… | 018 |
+| `api/auth/buyer/sign-out/route.ts` | POST: buyer sign-out, the session row deleted… | 018 |
 | `api/checkout/start/route.ts` | `POST /api/checkout/start`: the product page's… | 010 |
 | `api/choose/[locale]/[[...rest]]/route.ts` | The chooser's 303 and its one fo_dest cookie | 004 |
 | `api/consent/route.ts` | `POST /api/consent` | 004 |
@@ -340,7 +358,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 490 |
+| `tests/unit/` | 491 |
 | `tests/integration/` | 99 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
