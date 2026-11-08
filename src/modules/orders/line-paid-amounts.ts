@@ -31,7 +31,7 @@ const RowSchema = z.object({
   vat_rate_bp: z.coerce.number().int(),
 });
 
-/** Every line of `orderId`, in insertion order, with its paid amount. */
+/** Every line of `orderId` (bouquet, add-ons, surcharge), with its paid amount. */
 export async function linePaidAmounts(
   orderId: string,
   connection?: EngineConnection,
@@ -44,7 +44,8 @@ export async function linePaidAmounts(
         sql`SELECT id, kind, unit_retail_minor * qty - discount_minor AS paid_minor,
                  currency_code, vat_rate_bp
             FROM public.order_line WHERE order_id = ${orderId}::uuid
-           ORDER BY created_at, id`,
+           ORDER BY created_at,
+                    CASE kind WHEN 'product' THEN 0 WHEN 'addon' THEN 1 ELSE 2 END, id`,
       );
       return rows.map((raw) => {
         const row = RowSchema.parse(raw);

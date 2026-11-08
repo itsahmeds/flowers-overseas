@@ -39,7 +39,9 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 DC445: migration `0037_discount_codes` + guarded down, Drizzle mirror (`db/schema/discounts.ts`, `order_line.discount_minor`, four draft columns), `db:check` snapshot regenerated; round trip run on a scratch PG16.
+- 2026-11-08 DC445: `src/config/discounts.ts`, `src/modules/discounts` (schemas, normalise, allocate, evaluate, issue, redeem, finance), flag `checkout.discount_codes` registered, `linePaidAmounts` in `modules/orders`; unit tests `discounts-core` (45) and `discounts-source-scan` (4) green.
+- 2026-11-08 DC445: integration `tests/integration/discounts.test.ts` (22) green on a scratch PG16: DB refusals, issueCode audit, RLS, cap of 3 under five concurrent placements, per-email fold, per-mode and per-status counting, a basket is one use, payout invariance, refund ceiling at the discounted total, rollback guard. Next: TASK-446 admin pages in the same PR.
 
 ## Result
 
