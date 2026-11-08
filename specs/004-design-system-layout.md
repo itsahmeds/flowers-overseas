@@ -4447,3 +4447,9 @@ The known Lighthouse LCP flake on `/en` and `/en-gb` cannot be pleaded by this a
 - **AC-55's deferred set** gains spec 045's `SearchSuggest`.
 - **Item 13's table**, row "spec 045's default search destination", now reads "none: the country-less results page (spec 045 A-founder-2026-11-08a)".
 - **Tasks.** TASK-520 builds the header and search parts. TASK-397 (AC-87's gates) reads AC-87 and T-93 as amended here.
+
+### A-orchestrator-2026-11-08a: AC-45 exempts the spec 042 route line SVG (no new AC or T id here)
+
+- **Ruling.** The orchestrator's, 2026-11-08, under the founder's delegation, recorded as delegated; not the founder's words. The founder asked for the route line by name (the 2026-10-19 ideas), so spec 042 AC-19 wins over AC-45 where they meet on the guide's first screen.
+- **AC-45** now reads, in its ornament clause: "no `aria-hidden` element at least 48 × 48 px in the first viewport, except the one spec 042 route-line SVG (`aria-hidden`, `data-fo-route-line`, at most 180 × 120 px)". Every other ornament rule is unchanged.
+- **T-50** skips that one marked element and only it: a second marked element, an element larger than 180 × 120, or an unmarked `aria-hidden` element of 48 × 48 or more stays red. TASK-311 (PR 316) applies it in `tests/e2e/corridor-first-screen.spec.ts`.
