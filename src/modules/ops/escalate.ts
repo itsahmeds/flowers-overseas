@@ -12,9 +12,10 @@
  *     at most 3 pages per alert in 24 hours (`pages_24h`), after which email only;
  *  4. **bump**: an order alert still open at `act_by` minus 60 minutes rises one level and is
  *     dispatched once as `bump`, under the quiet-hours rule at its new level;
- *  5. **reminder**: a P2 open and unacknowledged for 4 hours, outside quiet hours, gets one push;
- *  6. **held digest**: outside quiet hours, alerts held overnight and still open get **one** grouped
+ *  5. **held digest**: outside quiet hours, alerts held overnight and still open get **one** grouped
  *     push (priority 2 if any is P1), recorded against each; resolved ones get nothing;
+ *  6. **reminder**: a P2 open and unacknowledged for 4 hours, outside quiet hours, whose last push
+ *     is 4 hours old, gets one push (a P2 held all night is covered by the digest instead);
  *  7. **safety net**: an open alert with no notification two minutes after it was raised (its
  *     enqueue failed) is dispatched now;
  *  8. **daily summary**: from 08:00 in the configured zone, `alerts.daily_summary` for today's date
@@ -367,6 +368,11 @@ async function remind(
         SELECT a.id FROM ops_alert a
          WHERE a.environment = ${d.environment} AND a.status = 'open' AND a.severity = 'P2'
            AND a.first_seen_at <= ${before}::timestamptz
+           AND EXISTS (SELECT 1 FROM ops_alert_notification p
+                        WHERE p.alert_id = a.id AND p.channel = 'push' AND p.status = 'sent')
+           AND NOT EXISTS (SELECT 1 FROM ops_alert_notification p
+                            WHERE p.alert_id = a.id AND p.channel = 'push' AND p.status = 'sent'
+                              AND p.created_at > ${before}::timestamptz)
            AND NOT EXISTS (SELECT 1 FROM ops_alert_notification n
                             WHERE n.alert_id = a.id AND n.kind = 'reminder')
          LIMIT 20`),
@@ -493,8 +499,8 @@ export async function runEscalation(
   const escalated = await escalate(d, now);
   const repaged = await repage(d, now);
   const bumped = await bump(d, deps, now);
-  const reminded = await remind(d, setting, now);
   const digested = await digest(d, setting, now);
+  const reminded = await remind(d, setting, now);
   const redispatched = await redispatch(d, deps, now);
   let summaryEnqueued = false;
   const today = localDate(now, setting.timeZone);
