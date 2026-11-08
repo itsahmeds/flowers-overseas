@@ -25,6 +25,7 @@ import {
   cacheTagsFor,
   listProductPages,
   listingPages,
+  pricesDocuments,
 } from "@/modules/catalog";
 import {
   type PickerState,
@@ -160,7 +161,8 @@ function catalogTag(iso2: CountryIso2): string {
  * Every catalogue document with the tags it declares (spec 008 §5.4, spec 009 §5.4, §14 A10;
  * spec 012 §2.4; TASK-220, TASK-128): every country shop listing (the shop root, the country
  * categories and occasions) with `catalog:{iso2}` and `catalog:{iso2}:{locale}`, and every product
- * page with `productCachePolicy()`'s tags for its destination's picker state, read from the
+ * page with `productCachePolicy()`'s tags for its destination's picker state, every prices
+ * document (`/api/prices/{locale}/{iso2}`, TASK-391) with `catalog:{iso2}`, read from the
  * catalogue's own existence sets, `listingPages()` and `listProductPages()`, which
  * `generateStaticParams`, the sitemaps and the crawl read too. Listings first, then products, each
  * in registry order.
@@ -198,7 +200,13 @@ async function catalogueDocuments(): Promise<TaggedDocument[]> {
       },
     ];
   });
-  return [...listings, ...products];
+  // The remembered country's prices documents (spec 004 §14 A-founder-2026-10-24a item 3,
+  // "Rendering"; TASK-391): one per launch locale and shop country, under its `catalog:{iso2}`.
+  const prices = (await pricesDocuments()).map((document) => ({
+    path: document.path,
+    tags: [catalogTag(document.iso2)],
+  }));
+  return [...listings, ...products, ...prices];
 }
 
 /**

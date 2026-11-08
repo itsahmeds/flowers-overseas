@@ -27,6 +27,10 @@
  *    submitter's `to` included, so the chooser leaves the history. The pending button is the
  *    submitter when it carries `data-fo-pending`. With the module not loaded the GET is native and
  *    Back shows the chooser again, which never forwards on its own.
+ *  - **The remembered country** (spec 004 §14 A-founder-2026-10-24a item 3, AC-80, AC-81;
+ *    TASK-391): `../shop/remembered-country.ts`. On a country page an existing `fo_dest` follows
+ *    the URL's country; on a country-less page with `fo_dest` set, one cached document fills the
+ *    cards' reserved price boxes, the chooser links and the "Sending to" line.
  *  - **Motion 4, the sentence's shimmer.** 800 ms after load, once, unless the form was touched.
  *  - **The open phone Menu** (spec 004 §14 A-founder-2026-10-19c clause 3, AC-47; TASK-282). A tap
  *    on its scrim closes it; `Tab` and `Shift+Tab` keep focus inside it and its summary. On the
@@ -51,12 +55,20 @@
 import { useEffect } from "react";
 
 import { fillBasketCount } from "../basket/basket-count.ts";
+import {
+  fillRememberedCountry,
+  followUrlCountry,
+} from "../shop/remembered-country.ts";
 
 export function MotionIsland(): null {
   useEffect(() => {
     const d = document;
     // The header's basket count (spec 010 D10, AC-71), after the paint like everything here.
     fillBasketCount(d);
+    // The remembered country (spec 004 item 3, AC-80, AC-81; TASK-391): the URL rule on a country
+    // page, the price and link fill on a country-less one.
+    followUrlCountry(d);
+    void fillRememberedCountry(d);
     const root = d.documentElement;
     const here = location;
     const fold = innerHeight;

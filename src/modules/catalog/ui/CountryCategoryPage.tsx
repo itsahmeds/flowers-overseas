@@ -56,6 +56,7 @@ import {
 import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import { ListingFacetLine, facetQuery } from "./ListingFacetLine";
 import {
   ListingCategoriesToggle,
   ListingFootNote,
@@ -96,7 +97,9 @@ export function CountryCategoryPage({
       as="main"
       id="main"
       data-fo-shop-category={view.entity?.key ?? ""}
-      data-fo-listing-state="populated"
+      data-fo-listing-state={
+        view.items.length === 0 ? "facet-empty" : "populated"
+      }
     >
       <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} tone="quiet" />
@@ -115,7 +118,13 @@ export function CountryCategoryPage({
           }}
           parts={listingStatusParts(t, view)}
           partsBelowMd="head"
-          sort={<ListingSortForm path={view.path} sort={view.sort} />}
+          sort={
+            <ListingSortForm
+              keep={facetQuery(view, { withSort: false })}
+              path={view.path}
+              sort={view.sort}
+            />
+          }
           start={
             <ListingCategoriesToggle
               groups={chipGroups(siblings, view, {
@@ -128,22 +137,30 @@ export function CountryCategoryPage({
           }
         />
 
+        {/* A facet result's line and its way back to the bare page (AC-90, TASK-390). */}
+        <ListingFacetLine view={view} />
+
         <section aria-labelledby="category-grid-heading" data-fo-shop-listing>
           {/* The grid's heading repeats the H1 word for word, so it is visually hidden and stays
               the list's accessible name (spec 008 §14 A15 (d), AC-32). */}
           <VisuallyHidden as="h2" id="category-grid-heading">
             {shop("h1.countryCategory", { country, entity })}
           </VisuallyHidden>
-          <ListingGrid
-            cards={view.items}
-            locale={code}
-            country={country}
-            priority
-            provenance="grid"
-          />
-          <ListingFootNote
-            gridProvenance={{ cards: view.items, locale: code }}
-          />
+          {/* A facet with no match renders no grid: the line and its link say it all. */}
+          {view.items.length === 0 ? null : (
+            <>
+              <ListingGrid
+                cards={view.items}
+                locale={code}
+                country={country}
+                priority
+                provenance="grid"
+              />
+              <ListingFootNote
+                gridProvenance={{ cards: view.items, locale: code }}
+              />
+            </>
+          )}
           {view.fxFallback ? (
             <div className="mt-[28px]" data-fo-fx-fallback>
               <Text measure size="sm" tone="muted">
@@ -154,6 +171,7 @@ export function CountryCategoryPage({
           <div className="mt-[28px]">
             <Pagination
               baseHref={view.path}
+              keep={facetQuery(view, { withSort: true })}
               locale={code}
               page={view.page}
               pageCount={view.pageCount}

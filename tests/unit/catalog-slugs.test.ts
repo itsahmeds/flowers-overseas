@@ -426,6 +426,7 @@ describe("ListingSearchParamsSchema (spec 008 §5.2, AC-15)", () => {
       page: 2,
       sort: "price-asc",
       honoured: ["page", "sort"],
+      facets: {},
       ignored: [],
     });
   });
@@ -435,6 +436,7 @@ describe("ListingSearchParamsSchema (spec 008 §5.2, AC-15)", () => {
       page: 1,
       sort: "default",
       honoured: [],
+      facets: {},
       ignored: [],
     });
   });
@@ -457,13 +459,32 @@ describe("ListingSearchParamsSchema (spec 008 §5.2, AC-15)", () => {
   });
 
   it("reports every facet-shaped parameter for resolveFacets() and honours none", () => {
-    const parsed = parse({ colour: "red", price: "under-50", utm_source: "x" });
+    const parsed = parse({
+      colour: "banana",
+      price: "under-50",
+      occasion: "birthday",
+      utm_source: "x",
+    });
     expect(parsed).toEqual({
       page: 1,
       sort: "default",
       honoured: [],
-      ignored: ["colour", "price", "utm_source"],
+      facets: {},
+      ignored: ["colour", "occasion", "price", "utm_source"],
     });
+  });
+
+  it("honours a band key as `price` and a catalogue colour as `colour` (spec 008 AC-90; TASK-390)", () => {
+    expect(parse({ price: "mid", colour: "white", utm_source: "x" })).toEqual({
+      page: 1,
+      sort: "default",
+      honoured: ["price", "colour"],
+      facets: { price: "mid", colour: "white" },
+      ignored: ["utm_source"],
+    });
+    // A typed threshold or an amount is not a band: neutralised, never a filter.
+    expect(parse({ price: "2500" }).facets).toEqual({});
+    expect(parse({ price: "MID" }).facets).toEqual({});
   });
 
   it("takes the first value of a repeated parameter and never throws", () => {

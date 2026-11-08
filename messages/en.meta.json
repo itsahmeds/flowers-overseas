@@ -5322,6 +5322,34 @@
     "reviewedAt": "2026-10-31T19:01:01Z",
     "sourceHash": "dfb38a11fff7bc6264ec646a6dc5e2d0c6c52b5dd8e3e55584ab63f9c7ab8c92"
   },
+  "shop.price.band.under": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-390.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 004 A-founder-2026-10-24a i18n table (TASK-390, TASK-391); the founder did not read this text",
+    "reviewedAt": "2026-11-08T13:11:42Z",
+    "sourceHash": "34c702a6c5faac44226fc092eddcb308584f436465adb567cb623213b2b72dd9"
+  },
+  "shop.price.band.between": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-390.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 004 A-founder-2026-10-24a i18n table (TASK-390, TASK-391); the founder did not read this text",
+    "reviewedAt": "2026-11-08T13:11:42Z",
+    "sourceHash": "ba318cc195ceff48d9bfce7c522735ca505029deb9c5ebc27de705dc12c20e4f"
+  },
+  "shop.price.band.over": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-390.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 004 A-founder-2026-10-24a i18n table (TASK-390, TASK-391); the founder did not read this text",
+    "reviewedAt": "2026-11-08T13:11:42Z",
+    "sourceHash": "7974bac64cc056a666344aaa2e4ed54b743ae2529a49dc855e8849c3fb31d245"
+  },
+  "shop.chosen.line": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-390.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 004 A-founder-2026-10-24a i18n table (TASK-390, TASK-391); the founder did not read this text",
+    "reviewedAt": "2026-11-08T13:11:42Z",
+    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f"
+  },
   "shop.toolbar.howWeSort": {
     "source": "human",
     "reviewed": true,

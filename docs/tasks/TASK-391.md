@@ -23,6 +23,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
+- **Owed to the later test pass:** T-86 and T-87 e2e (byte-identical served HTML with and without `fo_dest`, layout shift at most 0.01, the fill against the shop root's cards in a browser, JavaScript off unchanged, the `Set-Cookie` scan of cached responses) and the **deferred island byte share**: the fill and URL rule ride the existing `motions` chunk (`src/modules/ui/shop/remembered-country.ts`, about 150 lines of source); its Brotli growth was not measured (no build run) and must be printed against the 2,560 B shared budget.
+- **Prices document size:** measured in unit, Brotli 795 to 883 B per document (en/pl, en-gb/de, de/pl, pl/pl), well under 8,192 B.
 - **Deferred island budget, shared:** TASK-384 (hover, selector label), TASK-385 (history replace), TASK-391 (fill, URL rule) and TASK-393 (countdown) together add at most 2,560 B Brotli to the existing deferred set, no new island on any route (spec 004 item "Rendering"). Print this PR's share and the running total; if it will not fit, drop the hover first (Q-24g), then stop and report.
 - **From `/plan-tasks` (orchestrator, 2026-10-24), keyless strings:** the boards mark several strings `[slot]` with no message key. Do not invent a key or text: list each one this PR needs, with a proposed key and text, in the PR and here as an escalation for the founder's copy batch.
 
@@ -30,7 +32,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+_None recorded._ (No `[slot]` string was needed: `shop.chosen.line` is in the amendment's table and `product.destination.change` is reviewed.)
 
 ## Progress
 
@@ -38,11 +40,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 (builder L390, in PR 504 with TASK-390): `rememberedPricesView()` and `pricesDocuments()` (`src/modules/catalog/remembered-prices.ts`), the route `src/app/api/prices/[locale]/[iso2]/route.ts` (ISR 3,600 s, `public` Cache-Control, no cookie/header/query read, 404 outside launch locales and the shop set), its paths under `catalog:{iso2}` in `src/lib/cache.ts`, the island half in `src/modules/ui/shop/remembered-country.ts` called from `MotionIsland` (no new island), `shop.chosen.line` added unreviewed. Done; PR ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 504 (with TASK-390). With `fo_dest` naming a shop country on a country-less page (the header's `data-fo-mega-context` empty), the motions chunk fetches `/api/prices/{locale}/{iso2}` once after paint, fills each card's reserved price box (`data-fo-card-ask`) with the server-formatted "from" price and inclusive wording and the CTA box with the equivalents line (no-break space when none), rewrites chooser links from the link map (home, every category and occasion hub, each core product) or to the path form (price bands, products not sold there), and swaps the no-money box for `shop.chosen.line` with the reviewed "change destination" link. On a country page an existing `fo_dest` naming another country becomes the URL's; none is created. Unit: 15 cases in `tests/unit/remembered-country.test.ts` (fake DOM, the view against the shop root's cards, the route's headers, 404s and Brotli size). The cache pins in `cache-invalidate`/`cache-product-tags` now include the prices documents.

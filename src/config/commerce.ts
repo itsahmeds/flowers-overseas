@@ -64,6 +64,14 @@ export const CHOOSER_INPUT_MAX_CHARS = 64;
 export const CHOICE_ROUTE_PREFIX = "/api/choose";
 
 /**
+ * The remembered country's prices document (spec 004 §14 A-founder-2026-10-24a item 3 "With a
+ * remembered country", AC-80; TASK-391): `/api/prices/{locale}/{iso2}`, ISR, public, read by the
+ * deferred island after the paint when `fo_dest` names a shop country. Under `/api/`, which
+ * `robots.txt` disallows.
+ */
+export const PRICES_ROUTE_PREFIX = "/api/prices";
+
+/**
  * The home's occasion tabs (spec 004 §14 A-founder-2026-10-24a item 4.4): catalogue occasion keys,
  * in the order the tabs are drawn. A tab renders only where at least `HOME_SECTION_MIN_PRODUCTS`
  * core products carry the occasion, so a key here is a candidate, never a promise; every key names

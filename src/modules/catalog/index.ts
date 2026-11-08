@@ -455,6 +455,14 @@ export {
   parseChooserNext,
   parseChooserPath,
 } from "./chooser";
+// The remembered country's prices document (spec 004 §14 A-founder-2026-10-24a item 3, AC-80;
+// TASK-391): what `/api/prices/{locale}/{iso2}` formats for the deferred island.
+export {
+  type PricesDocument,
+  type RememberedPricesView,
+  pricesDocuments,
+  rememberedPricesView,
+} from "./remembered-prices";
 // The chooser's answer (spec 004 §14 A-founder-2026-10-24a item 3, AC-77, AC-78; TASK-385): the
 // one decision `src/proxy.ts`, the choice route and the chooser page share, and the page's view.
 export {

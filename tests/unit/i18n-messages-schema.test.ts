@@ -494,6 +494,7 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+    // TASK-390's three `shop.price.band.*` texts and TASK-391's `shop.chosen.line` left this queue under the delegation.
     // TASK-402's 14 `search.*` keys (spec 045 Appendix A) left this queue under the delegation.
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
   ];

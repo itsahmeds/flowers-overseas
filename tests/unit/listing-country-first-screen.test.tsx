@@ -110,27 +110,32 @@ function cardsIn(html: string): string[] {
 }
 
 const roses = await view("countryCategory", "roses");
-const rosesPage2 = await view("countryCategory", "roses", { page: 2 });
+// The roses (15) are one page at 24 (AC-10 as amended; TASK-390); mixed flowers (50) are three.
+const mixed = await view("countryCategory", "mixed-flowers");
+const mixedPage2 = await view("countryCategory", "mixed-flowers", { page: 2 });
 const shopRoot = await view("countryShopRoot", undefined);
 const shopRootPage2 = await view("countryShopRoot", undefined, { page: 2 });
 const mothersDay = await view("countryOccasion", "mothers-day");
 
-describe("spec 008 T-35: the lead is `items[0]`, and page 1 is twelve products (AC-31, AC-29)", () => {
-  it("pages the 15 roses as 12 then 3, page 2 starting at the thirteenth", async () => {
-    expect(LISTING_PAGE_SIZE).toBe(12);
+describe("spec 008 T-35: the lead is `items[0]`, and page 1 is 24 products (AC-31, AC-29, AC-10 as amended)", () => {
+  it("pages the 15 roses as one page and the 50 mixed flowers as 24, 24 and 2", async () => {
+    expect(LISTING_PAGE_SIZE).toBe(24);
     expect(roses.resultCount).toBe(15);
-    expect(roses.items).toHaveLength(12);
-    expect(rosesPage2.items).toHaveLength(3);
-    // The whole set in the default order, as one page of 15 would hold it: page 2 is exactly
-    // items 12 to 14 of it, and the union of the two pages is the count, each product once.
-    const all = [...roses.items, ...rosesPage2.items].map(
+    expect(roses.items).toHaveLength(15);
+    expect(roses.pageCount).toBe(1);
+    expect(mixed.resultCount).toBe(50);
+    expect(mixed.pageCount).toBe(3);
+    expect(mixed.items).toHaveLength(24);
+    expect(mixedPage2.items).toHaveLength(24);
+    // Page 2 continues the one order: the union of the two pages is 48 products, each once.
+    const all = [...mixed.items, ...mixedPage2.items].map(
       (card) => card.productId,
     );
-    expect(new Set(all).size).toBe(15);
-    expect(rosesPage2.items[0]?.productId).not.toBe(roses.items[0]?.productId);
+    expect(new Set(all).size).toBe(48);
+    expect(mixedPage2.items[0]?.productId).not.toBe(mixed.items[0]?.productId);
   });
 
-  it("renders page 1 with `items[0]` as the grid's first card and twelve products, each once", () => {
+  it("renders page 1 with `items[0]` as the grid's first card and up to 24 products, each once", () => {
     for (const [page, subject] of [
       [<CountryCategoryPage key="c" view={roses} />, roses],
       [<CountryShopRootPage key="s" view={shopRoot} />, shopRoot],
@@ -143,7 +148,7 @@ describe("spec 008 T-35: the lead is `items[0]`, and page 1 is twelve products (
       );
       expect(cards[0], subject.path).toBe(subject.items[0]?.productId);
       expect(cards.length, subject.path).toBe(
-        Math.min(12, subject.resultCount),
+        Math.min(24, subject.resultCount),
       );
       // No product URL twice in `<main>` (AC-31's last bullet): each card's link once.
       for (const card of subject.items) {
@@ -179,7 +184,7 @@ describe("spec 008 T-35: the lead is `items[0]`, and page 1 is twelve products (
 
   it("renders the same head on page 2, its quiet line the count with the page and nothing else (spec 043 AC-52)", () => {
     for (const [page, subject] of [
-      [<CountryCategoryPage key="c" view={rosesPage2} />, rosesPage2],
+      [<CountryCategoryPage key="c" view={mixedPage2} />, mixedPage2],
       [<CountryShopRootPage key="s" view={shopRootPage2} />, shopRootPage2],
     ] as const) {
       const html = render(page, "en-gb");

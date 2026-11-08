@@ -20,7 +20,8 @@
  * | `?page=N`, `N > pageCount` | **404** (`listingView()` answers `undefined`; never an empty grid) |
  * | `?page=0`, `?page=1.5`, `?page=abc` | 200 page 1, and a **neutralised** parameter: `noindex,follow`, canonical to the base |
  * | `?sort=price-asc` (or any valid sort, `default` included) | 200 sorted, `noindex,follow`, canonical to the base |
- * | `?sort=banana`, `?colour=red` (any facet name) | 200 base content, `noindex,follow`, canonical to the base |
+ * | `?price=mid`, `?colour=white` (a band key, a catalogue colour; TASK-390) | 200 filtered on the shop root and a country category (base content on a country occasion page), `noindex,follow`, canonical to the base |
+ * | `?sort=banana`, `?colour=banana`, `?occasion=x` (any other facet name or value) | 200 base content, `noindex,follow`, canonical to the base |
  * | `?utm_source=x`, `?gclid=…` (no listing key) | **the prebuilt bare document**, byte for byte: the bare URL's own directive and its canonical to the base. This function is never asked — the request is not rewritten to the parameter route (TASK-170, `src/lib/listing-rewrites.ts`; spec 007 §14 A5's canonical stripping) |
  *
  * **Why a malformed `page` is neutralised rather than redirected** (`/review 72`'s carry-forward,
@@ -53,7 +54,11 @@
  * with `canonicalPage` passed through.
  */
 import { ListingSearchParamsSchema } from "./schemas.ts";
-import type { ListingSearchParams, ListingSort } from "./types.ts";
+import type {
+  ListingFacets,
+  ListingSearchParams,
+  ListingSort,
+} from "./types.ts";
 
 /**
  * What one listing request does, in the six values a route needs and no more.
@@ -70,6 +75,12 @@ export interface ListingRequest {
   readonly page: number;
   /** The order to render in. A neutralised or absent `sort` is the curation order. */
   readonly sort: ListingSort;
+  /**
+   * The honoured `?price=` and `?colour=` (spec 008 §14 A-founder-2026-10-24a "Facets";
+   * TASK-390). `listingView()` filters by them on the shop root and a country category; either
+   * one makes the request `parameterised`.
+   */
+  readonly facets: ListingFacets;
   /**
    * The URL carries a **sort or facet** parameter, so it is a duplicate of the base URL:
    * `noindex,follow` with a canonical to the base (AC-15). `?page=N` alone is *not* parameterised
@@ -110,11 +121,15 @@ export function listingRequest(
   const redirectToBare = search.honoured.includes("page") && search.page === 1;
 
   const parameterised =
-    search.honoured.includes("sort") || search.ignored.length > 0;
+    search.honoured.includes("sort") ||
+    search.facets.price !== undefined ||
+    search.facets.colour !== undefined ||
+    search.ignored.length > 0;
 
   return {
     page: search.page,
     sort: search.sort,
+    facets: search.facets,
     parameterised,
     canonicalPage: !parameterised && search.page >= 2 ? search.page : undefined,
     titlePage: search.page >= 2 ? search.page : undefined,

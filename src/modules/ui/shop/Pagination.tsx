@@ -42,6 +42,13 @@ export interface PaginationProps {
   readonly pageCount: number;
   /** The listing's unparameterised URL. Page 1 is this, exactly; page N is this + `?page=N`. */
   readonly baseHref: string;
+  /**
+   * Query parameters a facet result carries from page to page (`price`, `colour`, `sort`;
+   * TASK-390). With any, the pages are buttons of one `GET` form with these as hidden fields,
+   * because no `<a href>` may carry `price=` or `colour=` (spec 008 AC-90); page 1's button sends
+   * no `page`, so it lands on the facet's own first page rather than `?page=1`'s redirect.
+   */
+  readonly keep?: Readonly<Record<string, string>>;
 }
 
 /** `?page=N`, with page 1 as the bare URL (AC-10). The one place a listing page URL is built. */
@@ -68,9 +75,30 @@ export function Pagination({
   page,
   pageCount,
   baseHref,
+  keep = {},
 }: PaginationProps): ReactElement | null {
   const t = useTranslations("shop");
   if (pageCount <= 1) return null;
+  const kept = Object.entries(keep);
+  if (kept.length > 0) {
+    return (
+      <FormPagination
+        baseHref={baseHref}
+        kept={kept}
+        label={t("pagination.label")}
+        locale={locale}
+        nextLabel={t("pagination.next")}
+        page={page}
+        pageCount={pageCount}
+        pageLabel={(n) => t("pagination.page", { page: n })}
+        pageOfLabel={t("pagination.pageOf", {
+          page: formatNumber(page, locale),
+          total: formatNumber(pageCount, locale),
+        })}
+        previousLabel={t("pagination.previous")}
+      />
+    );
+  }
 
   const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
 
@@ -129,6 +157,96 @@ export function Pagination({
           {t("pagination.next")}
         </a>
       ) : null}
+    </nav>
+  );
+}
+
+/** A page button's `name`/`value`: none on page 1, so the form sends the kept fields alone. */
+function pageField(n: number): { name?: string; value?: string } {
+  return n <= 1 ? {} : { name: "page", value: String(n) };
+}
+
+/**
+ * The same control as one `GET` form (a facet result, TASK-390): identical pills and order, each
+ * page a submit button. Rendered by `Pagination` only; the labels are its translations.
+ */
+function FormPagination({
+  baseHref,
+  kept,
+  label,
+  locale,
+  nextLabel,
+  page,
+  pageCount,
+  pageLabel,
+  pageOfLabel,
+  previousLabel,
+}: {
+  readonly baseHref: string;
+  readonly kept: readonly (readonly [string, string])[];
+  readonly label: string;
+  readonly locale: LocaleCode;
+  readonly nextLabel: string;
+  readonly page: number;
+  readonly pageCount: number;
+  readonly pageLabel: (n: number) => string;
+  readonly pageOfLabel: string;
+  readonly previousLabel: string;
+}): ReactElement {
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
+  return (
+    <nav aria-label={label} data-fo-pagination={pageCount}>
+      <form
+        action={baseHref}
+        className="flex flex-wrap items-center gap-[6px] max-md:gap-[12px]"
+        method="get"
+      >
+        {kept.map(([name, value]) => (
+          <input key={name} name={name} type="hidden" value={value} />
+        ))}
+        {page > 1 ? (
+          <button className={STEP_CLASS} type="submit" {...pageField(page - 1)}>
+            {previousLabel}
+          </button>
+        ) : null}
+        <span
+          className="text-ink-muted text-sm md:hidden"
+          data-fo-pagination-compact
+        >
+          {pageOfLabel}
+        </span>
+        {pages.map((n) =>
+          n === page ? (
+            <b
+              aria-current="page"
+              className={`${CURRENT_CLASS} max-md:hidden`}
+              key={n}
+            >
+              {formatNumber(n, locale)}
+            </b>
+          ) : (
+            <button
+              aria-label={pageLabel(n)}
+              className={`${LINK_CLASS} max-md:hidden`}
+              key={n}
+              type="submit"
+              {...pageField(n)}
+            >
+              {formatNumber(n, locale)}
+            </button>
+          ),
+        )}
+        {page < pageCount ? (
+          <button
+            className={`${STEP_CLASS} ${NEXT_PHONE_CLASS}`}
+            data-fo-pagination-next
+            type="submit"
+            {...pageField(page + 1)}
+          >
+            {nextLabel}
+          </button>
+        ) : null}
+      </form>
     </nav>
   );
 }

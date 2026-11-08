@@ -9,7 +9,7 @@
  * expectation of what the page shows; the page shows it.
  *
  * The fixtures are the ones T-17 names: a **paginated** listing (page 2 of the shop root and of a
- * country category over twelve products) and a **sorted** one (price ascending and descending), on
+ * country category over 24 products) and a **sorted** one (price ascending and descending), on
  * top of page 1 of every type. A sort that changed the grid and not the list, or a page slice the
  * list ignored, turns a case red.
  */
@@ -195,13 +195,14 @@ const CASES: readonly { readonly label: string; readonly view: ListingView }[] =
       }),
     },
     {
-      label: "/en-gb/poland/flowers/roses?page=2 (paginated)",
+      // Roses are one page at 24 (TASK-390); mixed flowers (50) are three.
+      label: "/en-gb/poland/flowers/mixed-flowers?page=2 (paginated)",
       view: await view(
         {
           locale: "en-gb",
           pageType: "countryCategory",
           country: "poland",
-          entity: "roses",
+          entity: "mixed-flowers",
         },
         { page: 2 },
       ),

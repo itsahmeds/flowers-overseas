@@ -62,6 +62,7 @@ import {
 import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import { ListingFacetLine, facetQuery } from "./ListingFacetLine";
 import {
   ListingCategoriesToggle,
   ListingFootNote,
@@ -101,12 +102,18 @@ export function CountryShopRootPage({
       as="main"
       id="main"
       data-fo-shop-root={view.country?.iso2 ?? ""}
-      data-fo-listing-state={view.items.length === 0 ? "empty" : "populated"}
+      data-fo-listing-state={
+        view.items.length === 0
+          ? view.facet === undefined
+            ? "empty"
+            : "facet-empty"
+          : "populated"
+      }
     >
       <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} tone="quiet" />
 
-        {view.items.length === 0 ? (
+        {view.items.length === 0 && view.facet === undefined ? (
           /* AC-8. One sentence and the ways out — and the page stops here: no heading that
              promises a catalogue, no tiles, no dates, no grid, no skeleton, no placeholder card. */
           <div className="pt-xl">
@@ -132,7 +139,13 @@ export function CountryShopRootPage({
               }}
               parts={listingStatusParts(t, view)}
               partsBelowMd="head"
-              sort={<ListingSortForm path={view.path} sort={view.sort} />}
+              sort={
+                <ListingSortForm
+                  keep={facetQuery(view, { withSort: false })}
+                  path={view.path}
+                  sort={view.sort}
+                />
+              }
               start={
                 <ListingCategoriesToggle
                   groups={chipGroups(
@@ -153,22 +166,30 @@ export function CountryShopRootPage({
               }
             />
 
+            {/* A facet result's line and its way back to the bare page (AC-90, TASK-390). */}
+            <ListingFacetLine view={view} />
+
             {/* Products before prose (§5.3 row 1). The grid's heading names the section for a
                 screen reader; the artboards draw none. */}
             <section aria-labelledby="shop-grid-heading" data-fo-shop-listing>
               <VisuallyHidden as="h2" id="shop-grid-heading">
                 {shop("root.listingHeading", { country })}
               </VisuallyHidden>
-              <ListingGrid
-                cards={view.items}
-                locale={code}
-                country={country}
-                priority
-                provenance="grid"
-              />
-              <ListingFootNote
-                gridProvenance={{ cards: view.items, locale: code }}
-              />
+              {/* A facet with no match renders no grid: the line and its link say it all. */}
+              {view.items.length === 0 ? null : (
+                <>
+                  <ListingGrid
+                    cards={view.items}
+                    locale={code}
+                    country={country}
+                    priority
+                    provenance="grid"
+                  />
+                  <ListingFootNote
+                    gridProvenance={{ cards: view.items, locale: code }}
+                  />
+                </>
+              )}
               {view.fxFallback ? (
                 /* Stale FX (spec 005 §14 A3): one sentence for the page, because one rate priced
                    all of it. */
@@ -184,6 +205,7 @@ export function CountryShopRootPage({
               <div className="mt-[28px]">
                 <Pagination
                   baseHref={view.path}
+                  keep={facetQuery(view, { withSort: true })}
                   locale={code}
                   page={view.page}
                   pageCount={view.pageCount}

@@ -148,6 +148,12 @@ export interface ListingSortFormProps {
   readonly path: string;
   /** The `<select>`'s id. */
   readonly id?: string;
+  /**
+   * Query parameters the form carries as hidden fields (a facet result's `price` and `colour`,
+   * TASK-390), so a re-sort keeps the filter. With any, the island is not mounted (it navigates
+   * to `{path}?sort=` alone) and the submit button shows at every width instead.
+   */
+  readonly keep?: Readonly<Record<string, string>>;
 }
 
 /** The chevron the select and "How we sort" draw: a down-pointing stroke, never rotated (AC-45). */
@@ -190,8 +196,18 @@ export function ListingSortForm({
   sort,
   path,
   id = "listing-sort",
+  keep = {},
 }: ListingSortFormProps): ReactElement {
   const t = useTranslations("shop");
+  const kept = Object.entries(keep);
+  const submit = (
+    <button
+      className="text-ink bg-card ms-[6px] inline-grid min-h-[36px] place-items-center rounded-full px-[14px] text-sm font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
+      type="submit"
+    >
+      {t("toolbar.submit")}
+    </button>
+  );
   return (
     <form
       className="border-border-strong bg-card inline-flex min-h-(--target-min) max-w-full items-center gap-[6px] rounded-full border ps-[14px] pe-[12px] md:gap-[8px] md:ps-[16px] md:pe-[14px]"
@@ -221,22 +237,24 @@ export function ListingSortForm({
         </select>
         <ChevronDown className="text-ink-muted pointer-events-none absolute end-[2px]" />
       </span>
-      <noscript>
-        <button
-          className="text-ink bg-card ms-[6px] inline-grid min-h-[36px] place-items-center rounded-full px-[14px] text-sm font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
-          type="submit"
-        >
-          {t("toolbar.submit")}
-        </button>
-      </noscript>
-      <AfterPaint island="listing-sort" on="paint">
-        <SortLoader
-          current={sort}
-          defaultSort={LISTING_SORTS[0]}
-          path={path}
-          selectId={id}
-        />
-      </AfterPaint>
+      {kept.map(([name, value]) => (
+        <input key={name} name={name} type="hidden" value={value} />
+      ))}
+      {kept.length > 0 ? (
+        submit
+      ) : (
+        <>
+          <noscript>{submit}</noscript>
+          <AfterPaint island="listing-sort" on="paint">
+            <SortLoader
+              current={sort}
+              defaultSort={LISTING_SORTS[0]}
+              path={path}
+              selectId={id}
+            />
+          </AfterPaint>
+        </>
+      )}
     </form>
   );
 }

@@ -91,6 +91,7 @@ export async function countryListingMetadata(
         page: request.page,
         sort: request.sort,
         parameterised: request.parameterised,
+        facets: request.facets,
       },
     ),
   );
@@ -184,6 +185,7 @@ export async function CountryListing({
         page: request.page,
         sort: request.sort,
         parameterised: request.parameterised,
+        facets: request.facets,
         // Spec 009 publishes the `product` link id, so each card becomes a link (AC-20).
         productLinks: isPublished("product"),
       },

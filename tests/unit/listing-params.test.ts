@@ -125,7 +125,7 @@ describe("`?sort=` and the facet shapes (AC-9, AC-15)", () => {
     for (const sort of ["default", "price-asc", "price-desc"] as const) {
       const request = listingRequest({ sort });
       expect(request.sort, sort).toBe(sort);
-      // Even `?sort=default` is a duplicate of the bare URL: it renders the same twelve cards.
+      // Even `?sort=default` is a duplicate of the bare URL: it renders the same cards.
       expect(request.parameterised, sort).toBe(true);
     }
     // Anything else reads as absent — a crawler cannot break the page with a typo, and it cannot
@@ -205,10 +205,12 @@ describe("the view model answers the parameters (AC-9, AC-10)", () => {
       { from: "2026-09-15", page, sort, parameterised },
     );
 
-  it("pages by twelve and 404s past the last page, never an empty grid", async () => {
+  it("pages by 24 and 404s past the last page, never an empty grid (AC-10, AC-91)", async () => {
     const first = await view(1, "default");
-    expect(first?.items).toHaveLength(12);
+    expect(first?.items).toHaveLength(24);
     expect(first?.pageCount).toBeGreaterThan(1);
+    // The last page's number is the ceiling of the count over 24 (AC-91).
+    expect(first?.pageCount).toBe(Math.ceil((first?.resultCount ?? 0) / 24));
     const last = await view(first?.pageCount ?? 1, "default");
     expect(last?.items.length).toBeGreaterThan(0);
     // `undefined` is what the route turns into `notFound()` — a real 404, not a soft one.
@@ -231,7 +233,7 @@ describe("the view model answers the parameters (AC-9, AC-10)", () => {
         left > right ? -1 : left < right ? 1 : 0,
       ),
     );
-    // Page 2 of an ascending sort continues from the thirteenth cheapest, so its first card is
+    // Page 2 of an ascending sort continues from the 25th cheapest, so its first card is
     // never cheaper than page 1's last (`/review 76`'s "sort before paginate").
     const secondPage = await view(2, "price-asc");
     const lastOfFirst = amounts(ascending).at(-1) ?? 0n;

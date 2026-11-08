@@ -14,12 +14,12 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +19 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +2 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +121 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +123 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +13 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +44 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +137 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +138 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +17 |
@@ -28,7 +28,7 @@ task actually touches.
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +10 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +40 |
-| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +71 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +72 |
 
 ## Config (`src/config/`)
 
@@ -257,6 +257,7 @@ task actually touches.
 | `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts… | 002 |
 | `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e | 012 |
 | `api/internal/payments/replay-webhooks/route.ts` | POST: secret-gated replay of missed Stripe… | 013 |
+| `api/prices/[locale]/[iso2]/route.ts` | The cached prices document the deferred island… | 004 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
 | `api/webhooks/resend/route.ts` | POST: Resend webhook endpoint, Svix verify,… | 016 |
@@ -358,7 +359,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 493 |
+| `tests/unit/` | 495 |
 | `tests/integration/` | 99 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |

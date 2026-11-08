@@ -61,7 +61,11 @@
  */
 import { z } from "zod";
 
-import { HUB_PAGE_SIZE, PICKER_CHIPS } from "@/config/commerce";
+import {
+  HUB_PAGE_SIZE,
+  PICKER_CHIPS,
+  PRICE_BAND_KEYS,
+} from "@/config/commerce";
 import {
   type CountryIso2,
   COUNTRY_CODES,
@@ -79,6 +83,7 @@ import {
   type CategoryKind,
   type ProductType,
   CATALOGUE_LOCALE,
+  colours,
 } from "@/config/catalogue/schemas";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
 import {
@@ -100,6 +105,7 @@ import {
 } from "@/modules/geo";
 import {
   type ListingTarget,
+  MoneySchema,
   listingPath,
   localePath,
   productPath,
@@ -131,6 +137,8 @@ import {
 
 import { copyRow, copyRows } from "./copy";
 import { orderedCountryCodes } from "./country-order";
+import { ourOrder } from "./our-order";
+import { type PriceBands, bandOf, priceBands } from "./price-bands";
 import { priceEquivalents } from "./pricing/equivalents";
 import { fromPriceProjection, priceProjection } from "./pricing/project";
 import { resolvePrice } from "./pricing/resolve";
@@ -149,10 +157,12 @@ import {
   ListingPageTypeSchema,
 } from "./schemas";
 import { type CoreRangeEntry, coreRange, localSpecialSkus } from "./shop";
+import { rankBandsFor } from "./search-reads";
 import { slugFor } from "./slugs";
 import type {
   Category,
   IsoDate,
+  ListingFacets,
   ListingPageType,
   ListingSort,
   Occasion,
@@ -172,8 +182,12 @@ import type {
  */
 export const PRODUCT_COUNT_FLOOR = 6;
 
-/** Products per page (§2 "Pagination", §5.4 — 12 keeps the image budget inside spec 006's). */
-export const LISTING_PAGE_SIZE = 12;
+/**
+ * Products per page on a country listing (spec 008 AC-10 as amended by §14 A-founder-2026-10-24a:
+ * "24 per page"; spec 004 §14 A-founder-2026-10-24a item 8; TASK-390). The hubs' size is the same
+ * number (`HUB_PAGE_SIZE`), so every listing pages alike.
+ */
+export const LISTING_PAGE_SIZE = HUB_PAGE_SIZE;
 
 /**
  * The shop root's occasion window, in months (§5.3 row 1's "Coming up in {country}"; the corridor
@@ -508,6 +522,28 @@ export const ListingViewSchema = z
      * that produced it, and an unconverted one is never shown without saying so.
      */
     fxFallback: z.boolean(),
+    /**
+     * The honoured facets of this request (spec 008 §14 A-founder-2026-10-24a "Facets", AC-90;
+     * TASK-390), present only on a country shop root or country category that was asked for one.
+     * `price` carries its band's bounds as money (absent bound: the lowest or highest band), so
+     * the facet line prints the amounts `priceBands()` computed for this country; `bareCount` is
+     * the unfiltered listing's size, for the clear link back to the bare page.
+     */
+    facet: z
+      .object({
+        price: z
+          .object({
+            key: z.enum(PRICE_BAND_KEYS),
+            from: MoneySchema.optional(),
+            to: MoneySchema.optional(),
+          })
+          .strict()
+          .optional(),
+        colour: z.enum(colours).optional(),
+        bareCount: z.int().nonnegative(),
+      })
+      .strict()
+      .optional(),
     resultCount: z.int().nonnegative(),
     page: z.int().min(1),
     pageCount: z.int().nonnegative(),
@@ -1649,6 +1685,87 @@ async function inDefaultOrder(
   );
 }
 
+/**
+ * "Our order" over a country's list (spec 008 AC-9 as amended, AC-91; spec 045's key; TASK-390):
+ * photograph first, then the margin band high first (`rankBandsFor()`, all 0 until spec 045's
+ * signal, TASK-405), then spec 005's curation (the position in `curated`, which is
+ * `inDefaultOrder()`'s `topProductsForPrebuild()` order), then SKU. `products` may be a filtered
+ * subset of `curated`; their curation positions are the whole list's.
+ */
+async function inOurOrder(
+  products: readonly Product[],
+  curated: readonly Product[],
+  locale: LocaleCode,
+  iso2: CountryIso2,
+): Promise<readonly Product[]> {
+  const curation = new Map(
+    curated.map((product, index) => [product.sku, index]),
+  );
+  const bands = await rankBandsFor(iso2);
+  return ourOrder(
+    products.map((product) => ({
+      product,
+      sku: product.sku,
+      hasPhoto: photoFor(product.sku, locale).photo.kind === "asset",
+      marginBand: bands.get(product.sku) ?? 0,
+      curationIndex: curation.get(product.sku) ?? curated.length,
+    })),
+  ).map(({ product }) => product);
+}
+
+/**
+ * One country's price bands and the displayed card price of every product its shop lists (spec
+ * 008 §14 A-founder-2026-10-24a "Price bands", AC-90; TASK-390): the "from" price the card prints
+ * (`fromPriceProjection()`'s `displayPrice` at `now`), so a band, the card and the price sort read
+ * one number. The bands are the **country's**, over its whole shop list, so a product has the same
+ * band on the shop root, on every country category and in the chooser's `price/{band}`.
+ *
+ * The page quotes one currency (the projection's; spec 005 §14 A3's fallback moves every card at
+ * once), so the bands are computed in the first price's currency and a price in any other has no
+ * band.
+ */
+export async function countryPriceBands(
+  locale: LocaleCode,
+  iso2: CountryIso2,
+  now: Date,
+): Promise<{
+  /** `undefined` when the shop lists nothing: no price, no band. */
+  readonly bands: PriceBands | undefined;
+  readonly prices: ReadonlyMap<string, ProductCardView["price"]>;
+}> {
+  const products = await listProducts({ countryIso: iso2 });
+  const prices = new Map(
+    await Promise.all(
+      products.map(
+        async (product) =>
+          [
+            product.sku,
+            (
+              await fromPriceProjection(locale, {
+                productId: product.sku,
+                countryIso: iso2,
+                now,
+              })
+            ).displayPrice,
+          ] as const,
+      ),
+    ),
+  );
+  const currency = [...prices.values()][0]?.currency;
+  return {
+    bands:
+      currency === undefined
+        ? undefined
+        : priceBands(
+            [...prices.values()]
+              .filter((price) => price.currency === currency)
+              .map((price) => price.amountMinor),
+            currency,
+          ),
+    prices,
+  };
+}
+
 /** Price ascending or descending, over the same all-in amount the card prints. */
 function byPrice(
   cards: readonly ProductCardView[],
@@ -1686,6 +1803,13 @@ export interface ListingViewOptions {
    * neither of them should announce.
    */
   readonly parameterised?: boolean;
+  /**
+   * The honoured `?price=` and `?colour=` (`listingRequest().facets`; spec 008 §14
+   * A-founder-2026-10-24a "Facets", AC-90; TASK-390). Acted on by the country shop root and the
+   * country category only; every other page type renders its base content (the request is still
+   * `parameterised`, so `noindex,follow` with a canonical to the base).
+   */
+  readonly facets?: ListingFacets;
   readonly deployment?: DeploymentDescriptor;
   /**
    * The one instant every card's price is evaluated at (spec 004 §14 A21 clause 6 (b); TASK-178).
@@ -1920,17 +2044,58 @@ export async function listingView(
   const products = await productsFor(pageType, entityKey, kind, iso2);
   const ordered = await inDefaultOrder(products, locale, iso2);
   /*
-   * **Photographed products first** (spec 043 §5.3 F, AC-13; spec 008 AC-9 as amended; TASK-290):
-   * the default order, and every hub, is spec 005's order partitioned by `photoFirst()`, over the
-   * **whole** set before paging, so page 1 holds the photographs. The price sorts below read the
-   * unpartitioned `ordered`: a price order is the price order, ties included.
+   * **The facets** (spec 008 §14 A-founder-2026-10-24a "Facets", AC-90; TASK-390): on the shop
+   * root and a country category, `?colour=` keeps the products whose `colours` hold it and
+   * `?price=` those whose displayed card price is in that band of this country's
+   * `priceBands()`. Every other page type ignores them (its request is still `parameterised`).
+   * A facet that matches nothing renders the honest empty state, never a 404 (page 1 always
+   * exists).
    */
-  const photographedFirst = photoFirst(
-    ordered.map((product) => ({
-      product,
-      photo: photoFor(product.sku, locale).photo,
-    })),
-  ).map(({ product }) => product);
+  const facets: ListingFacets =
+    iso2 !== undefined &&
+    (pageType === "countryShopRoot" || pageType === "countryCategory")
+      ? (options.facets ?? {})
+      : {};
+  const faceted = facets.price !== undefined || facets.colour !== undefined;
+  let filtered = ordered;
+  let priceFacet: NonNullable<ListingView["facet"]>["price"];
+  if (facets.colour !== undefined) {
+    const colour = facets.colour;
+    filtered = filtered.filter((product) => product.colours.includes(colour));
+  }
+  if (facets.price !== undefined && iso2 !== undefined) {
+    const key = facets.price;
+    const { bands, prices } = await countryPriceBands(locale, iso2, now);
+    const band = bands?.bands.find((candidate) => candidate.key === key);
+    filtered =
+      bands === undefined || band === undefined
+        ? []
+        : filtered.filter((product) => {
+            const price = prices.get(product.sku);
+            return (
+              price !== undefined &&
+              price.currency === bands.currency &&
+              bandOf(bands, price.amountMinor) === key
+            );
+          });
+    priceFacet = {
+      key,
+      ...(bands === undefined || band?.fromMinor === undefined
+        ? {}
+        : { from: { amountMinor: band.fromMinor, currency: bands.currency } }),
+      ...(bands === undefined || band?.toMinor === undefined
+        ? {}
+        : { to: { amountMinor: band.toMinor, currency: bands.currency } }),
+    };
+  }
+  /*
+   * **"Our order"** (spec 008 AC-9 as amended, AC-91; TASK-390): photograph first, margin band,
+   * curation, SKU, over the **whole** (filtered) set before paging, so page 1 holds the
+   * photographs. The price sorts below read the unpartitioned `filtered`: a price order is the
+   * price order, ties in curation order.
+   */
+  const ourOrdered =
+    iso2 === undefined ? [] : await inOurOrder(filtered, ordered, locale, iso2);
   /*
    * **A hub shows only its core products, in the core range's order** (spec 008 §14
    * A-founder-2026-10-24a "Hubs", AC-7 as amended, AC-88; spec 004 item 1; TASK-388): every
@@ -1944,7 +2109,7 @@ export async function listingView(
   const hubCore = hub
     ? (await hubCoreState(identity, ordered))?.grid
     : undefined;
-  const listed = hubCore ?? ordered;
+  const listed = hubCore ?? filtered;
   const pageSize = hub ? HUB_PAGE_SIZE : LISTING_PAGE_SIZE;
   const total = listed.length;
   const pageCount = Math.ceil(total / pageSize);
@@ -1954,11 +2119,11 @@ export async function listingView(
 
   /*
    * **Sort the whole set, then paginate** (§2 "Sort", §5.4; `/review 76`). Page 1 of
-   * `?sort=price-asc` is the twelve cheapest products of the listing and page 2 continues from
-   * the thirteenth — not the default page re-ordered inside itself, which is what slicing first
+   * `?sort=price-asc` is the 24 cheapest products of the listing and page 2 continues from
+   * the 25th — not the default page re-ordered inside itself, which is what slicing first
    * produced and what a reader comparing two pages would catch before a test did.
    *
-   * The default order needs no price to order by, so it pages first and projects twelve cards; a
+   * The default order needs no price to order by, so it pages first and projects one page of cards; a
    * price sort has to project the whole set to order it, which is the cost of the honest answer.
    */
   let items: readonly ProductCardView[] = [];
@@ -1989,8 +2154,8 @@ export async function listingView(
       );
     items =
       sort === "default"
-        ? await cards(pageOf(photographedFirst))
-        : pageOf(byPrice(await cards(ordered), sort));
+        ? await cards(pageOf(ourOrdered))
+        : pageOf(byPrice(await cards(filtered), sort));
   }
 
   const entityRow =
@@ -2190,6 +2355,15 @@ export async function listingView(
         }
       : {}),
     fxFallback: await pageFxFallback(locale, iso2, ordered[0], now),
+    ...(faceted
+      ? {
+          facet: {
+            ...(priceFacet === undefined ? {} : { price: priceFacet }),
+            ...(facets.colour === undefined ? {} : { colour: facets.colour }),
+            bareCount: ordered.length,
+          },
+        }
+      : {}),
     resultCount: total,
     page,
     pageCount,
