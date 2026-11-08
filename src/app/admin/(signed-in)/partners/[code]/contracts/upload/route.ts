@@ -99,6 +99,16 @@ export async function POST(
   for (const [key, value] of form.entries()) {
     if (typeof value === "string" && !key.startsWith("$")) fields[key] = value;
   }
+  // The page carries the current row of each superseding kind it showed; the chosen kind's one
+  // is the upload's `expectedCurrentId` (a newer upload meanwhile is `version_conflict`).
+  const expectedField =
+    fields["docKind"] === "agreement"
+      ? "expectedAgreement"
+      : fields["docKind"] === "dpa_addendum"
+        ? "expectedAddendum"
+        : undefined;
+  fields["expectedCurrentId"] =
+    expectedField === undefined ? "" : (fields[expectedField] ?? "");
   if (!(file instanceof Blob) || file.size === 0) {
     return back(head.code, { result: "invalid", err: "file:required" });
   }
