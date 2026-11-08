@@ -6,7 +6,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 ## Binding
 
 Spec 042 §5.3.1 and §13 Q1 (answered (a) with transform-only keyframes; advisor fix F2 narrows it to `lg` and up).
-- **ACs owned:** AC-7, AC-8, AC-9; tests T-7 to T-9. AC-9's two LCP medians (five CI runs each, switch on and off) go in `## Result`.
+- **ACs owned:** AC-7, AC-8, AC-9; tests T-7 to T-9. AC-9's two LCP medians (five CI runs each, switch on and off) go in `
+- 2026-11-08 rebased onto main `ec41cb020` (97 commits): the switch is now main's typed `interactions.morph` beside `cardPreviewMotion`; the CSS and budget test files merged with TASK-308's blocks; the home's `TrendingRow` case dropped (main's home draws `ProductCard` itself, whose no-name case stays). typecheck 0; the three unit files 35/35.
+
+## Result`.
 - After TASK-244 (PR 253: the motion module's deferral; the `pageswap` handler is JS).
 - Spec 004 §14's narrow exception to A23 clause 11 and AC-44 (in PR 284) is the only allowance: same-origin card navigation only, never a first load or reload, at most 320 ms.
 - Never beside TASK-285's feature PR (TASK-285 and TASK-290 edit `ProductCard`).
@@ -70,7 +73,7 @@ here.
 ## Result
 
 PR 407. Spec 042 idea 1, motion 14: `src/modules/ui/motion/morph.ts`, `Gallery`'s
-`<style data-fo-morph>`, motion 14 in `globals.css`, `INTERACTIONS.morph` in
+`<style data-fo-morph>`, motion 14 in `globals.css`, `interactions.morph` in
 `src/config/interactions.ts`. Tests: unit `interactions-css` (18), `interactions-morph` (8),
 `interactions-budget` (3); e2e `photo-morph.spec.ts` (desktop project, 11 cases: T-7 at 1440 x 900
 and 1280 x 800, T-8 eight cases, T-9 one). AC-1 row (idea 1): JS 375 B Brotli (cap 400), CSS

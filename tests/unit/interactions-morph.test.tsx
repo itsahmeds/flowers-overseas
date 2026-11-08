@@ -6,7 +6,7 @@
  *    exactly one `<style data-fo-morph>`: `@view-transition { navigation: auto }` and the hero
  *    photograph's name, both inside `prefers-reduced-motion: no-preference` and `min-width: 64rem`
  *    (red with the `lg` condition or the `no-preference` one dropped from `MORPH_MEDIA`).
- *  - **The kill switch.** With `INTERACTIONS.morph` off, no `<style>` at all (spec 042 §12).
+ *  - **The kill switch.** With `interactions.morph` off, no `<style>` at all (spec 042 §12).
  *  - **Nothing for a placeholder, nothing unsafe.** The placeholder gallery has no photograph to
  *    name; an asset id outside kebab-case never reaches a stylesheet.
  *  - **No static name on any card** (AC-8: "before any click, no card carries a
@@ -20,9 +20,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import en from "../../messages/en.json";
-import { listProductPages } from "../../src/modules/catalog";
 import { type MessageNamespace, loadMessages } from "../../src/modules/i18n";
-import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
 import {
   MORPH_ASSET_ID,
   MORPH_MEDIA,
@@ -33,8 +31,8 @@ import { Gallery } from "../../src/modules/ui/product/Gallery.tsx";
 import { ProductCard } from "../../src/modules/ui/shop/ProductCard.tsx";
 import type { ProductCardView } from "../../src/modules/ui/shop/viewModel.ts";
 
-const switches = vi.hoisted(() => ({ morph: true }));
-vi.mock("@/config/interactions", () => ({ INTERACTIONS: switches }));
+const switches = vi.hoisted(() => ({ morph: true, cardPreviewMotion: true }));
+vi.mock("@/config/interactions", () => ({ interactions: switches }));
 
 const NAMESPACES = Object.keys(en) as MessageNamespace[];
 const HERO = "fo-bq-001-hero";
@@ -152,12 +150,4 @@ describe("the card's half: no static name, no byte (AC-8, §5.3.0)", () => {
       );
     },
   );
-
-  it("the home's trending cards carry no name either", async () => {
-    const pages = await listProductPages("en");
-    const html = render(<TrendingRow locale="en" productPages={pages} />);
-    expect(html).toContain("data-fo-media-asset=");
-    expect(html).not.toContain("view-transition");
-    expect(html).not.toContain("data-fo-morph");
-  });
 });
