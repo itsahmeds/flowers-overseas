@@ -11,12 +11,14 @@
  * (TASK-258), one `payments.monitor` (TASK-264, under a `singletonKey`), one `order.close_sweep` (spec 022a §5.2, TASK-369, under a `singletonKey`) and one
  * `routing.sla_watch` (spec 016 §5.2, TASK-328, likewise), which the same tick consumes; and,
  * once an hour (a `singletonKey` unique for 3600 seconds), `payouts.close` and `payouts.watch`
- * (spec 030a §5.2, TASK-364).
+ * (spec 030a §5.2, TASK-364); and one `alerts.monitor` and one `alerts.escalate` (spec 025 §5.2,
+ * TASK-489), after which a tick that reached the database pings the heartbeat (AC-27).
  */
 import { JOB_HANDLERS } from "@/jobs/handlers";
 import { tickResponse } from "@/jobs/internal";
 import { enqueue, ensureQueues, runTick, withBoss } from "@/jobs/runtime";
 import { env } from "@/lib/env";
+import { type QueueReader, tickHeartbeat } from "@/modules/ops";
 
 /** Never cached, never prerendered: a write path. */
 export const dynamic = "force-dynamic";
@@ -99,7 +101,19 @@ export function POST(request: Request): Promise<Response> {
             },
           );
         }
-        return runTick(boss, JOB_HANDLERS);
+        // Spec 025 §5.2 (TASK-489): the alert monitors and the escalation pass, once a minute.
+        for (const name of ["alerts.monitor", "alerts.escalate"] as const) {
+          await enqueue(
+            boss,
+            name,
+            {},
+            { requestId: "system:jobs.tick", singletonKey: name },
+          );
+        }
+        const counts = await runTick(boss, JOB_HANDLERS);
+        // Spec 025 AC-27: the dead man's switch, only after a tick that reached the database.
+        await tickHeartbeat(boss.getDb() as QueueReader);
+        return counts;
       }),
   });
 }

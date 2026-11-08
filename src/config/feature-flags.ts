@@ -235,6 +235,17 @@ const REGISTRY = [
     risk: "standard",
     dirties: [],
   },
+  // Spec 025 §5.5, §12 (migration `0040_ops_alerts`, TASK-488): founder alert push, global. Push
+  // is sent in production unless a global row turns it off, elsewhere only while one turns it on;
+  // email is always sent. Alerts run on the worker, so it dirties no page.
+  {
+    key: "alerts.push",
+    scopeKinds: ["global"],
+    description:
+      "Founder alerts are pushed to the phone (spec 025). Production pushes unless this is turned off; staging and preview push only while it is on. Email is always sent.",
+    risk: "standard",
+    dirties: [],
+  },
 ] as const satisfies readonly FeatureFlagDefinition[];
 
 /** Every registered key. */

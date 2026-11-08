@@ -13,7 +13,8 @@
 --   2. `ops_alert_notification`: every push and email decided for an alert, sent or not, with the
 --      provider's reference and, on failure, the error class and HTTP status only.
 --   3. `ops_alert_setting`: the one row of quiet hours and their IANA zone, seeded 23:00 to 07:00
---      `Asia/Karachi` (§13 Q2).
+--      `Asia/Karachi` (§13 Q2), and `summary_sent_for`, the local date of the last daily summary
+--      sent, so a second run for the same date sends nothing (AC-28).
 --   4. RLS: staff (`admin`, `system`) only on all three; florists, buyers and the public read none.
 --   5. Retention: `ops_alert`, resolved alerts deleted 12 months after their resolve, with their
 --      notifications (cascade). Open alerts are never swept.
@@ -53,6 +54,7 @@ CREATE TABLE public.ops_alert (
   context           jsonb       NOT NULL DEFAULT '{}'::jsonb,
   pages_24h         integer     NOT NULL DEFAULT 0,
   last_page_at      timestamptz NULL,
+  -- Consecutive clear monitor runs since the last raise: 2 resolve an auto_monitor alert (§5.5).
   clear_runs        integer     NOT NULL DEFAULT 0,
   created_at        timestamptz NOT NULL DEFAULT now(),
   updated_at        timestamptz NOT NULL DEFAULT now(),
@@ -142,6 +144,7 @@ CREATE TABLE public.ops_alert_setting (
   time_zone   text        NOT NULL DEFAULT 'Asia/Karachi',
   updated_at  timestamptz NOT NULL DEFAULT now(),
   updated_by  text        NULL,
+  summary_sent_for date   NULL,
   CONSTRAINT ops_alert_setting_id_check CHECK (id = 1),
   CONSTRAINT ops_alert_setting_window_check CHECK (quiet_start <> quiet_end),
   CONSTRAINT ops_alert_setting_time_zone_check CHECK (time_zone ~ '^[A-Za-z_]+(/[A-Za-z0-9_+-]+)*$'),

@@ -74,6 +74,8 @@
  *    enough, so an injected clock ahead of real time selects nothing younger.
  *  - `auth_email_send` (7 days after the send, delete; spec 012 §2.2, §8 item 1; TASK-221): the
  *    sign-in send log of both surfaces, whose rows hold a hashed address and a time.
+ *  - `ops_alert` (12 months after the resolve, delete; spec 025 §5.1, AC-36; TASK-488): resolved
+ *    alerts and their notifications. Open alerts are never swept.
  *  A key with no handler here is reported `no_handler` and nothing is written for it.
  *
  * `dryRun` writes nothing — no row, no object — and reports the same counts, because every count
@@ -857,6 +859,29 @@ const authEmailSend: PolicyHandler = async ({ db, cutoff, dryRun }) => {
   };
 };
 
+/**
+ * `ops_alert` (12 months after the resolve, delete; spec 025 §5.1 item 4, AC-36; TASK-488):
+ * resolved alerts whose `resolved_at` is at or before the cut-off, with their notifications
+ * (cascade). An open or acknowledged alert is never selected, whatever its age.
+ */
+const opsAlert: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = await rows<{ count: number }>(
+    db,
+    sql`SELECT count(*)::int AS count FROM public.ops_alert
+        WHERE status = 'resolved' AND resolved_at <= ${ts(cutoff)}`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`DELETE FROM public.ops_alert WHERE status = 'resolved' AND resolved_at <= ${ts(cutoff)}`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { ops_alert: due[0]?.count ?? 0 },
+    skipped: {},
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -873,6 +898,7 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   demo_order_personal: demoOrderPersonal,
   audit_log: auditLog,
   auth_email_send: authEmailSend,
+  ops_alert: opsAlert,
 };
 
 /**

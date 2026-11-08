@@ -32,7 +32,7 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue and spec 047's checkout.discount_codes", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue, spec 047's checkout.discount_codes and spec 025's alerts.push", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
@@ -45,6 +45,7 @@ describe("T-16 — the registry", () => {
       "notifications.email",
       "payouts.accrue",
       "checkout.discount_codes",
+      "alerts.push",
     ]);
   });
 

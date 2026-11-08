@@ -10,6 +10,7 @@
 import { sql } from "drizzle-orm";
 import {
   check,
+  date,
   index,
   integer,
   jsonb,
@@ -202,6 +203,7 @@ export const opsAlertSetting = pgTable(
     timeZone: text("time_zone").notNull().default("Asia/Karachi"),
     updatedAt: at("updated_at").notNull().defaultNow(),
     updatedBy: text("updated_by"),
+    summarySentFor: date("summary_sent_for"),
   },
   (table) => [
     check("ops_alert_setting_id_check", sql`${table.id} = 1`),

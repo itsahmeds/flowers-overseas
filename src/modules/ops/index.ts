@@ -105,3 +105,41 @@ export {
   type SentryAlert,
 } from "./context.ts";
 export { OPS_LOG_FIELDS, allowlisted } from "./log.ts";
+export {
+  type EscalateCounts,
+  type EscalateDeps,
+  runEscalation,
+} from "./escalate.ts";
+export {
+  type CheckOutcome,
+  type DeadlineRule,
+  type MonitorCounts,
+  type MonitorDeps,
+  type ProbeMemory,
+  type ProbeResult,
+  bounceRateFires,
+  complaintSeverity,
+  dispatchRiskSeverity,
+  errorRateFires,
+  fxState,
+  neonSeverity,
+  notAcceptedSeverity,
+  notDeliveredDue,
+  photoMissingSeverity,
+  probeUrl,
+  runMonitor,
+  siteDecision,
+  weekdayHoursBetween,
+} from "./monitor.ts";
+export {
+  type SummaryDeps,
+  type SummaryResult,
+  runDailySummary,
+} from "./summary.ts";
+export {
+  type QueueReader,
+  heartbeat,
+  lastMonitorCompletion,
+  resetHeartbeatNotes,
+  tickHeartbeat,
+} from "./heartbeat.ts";
