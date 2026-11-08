@@ -12,6 +12,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [branch-protection](branch-protection.md) | Required checks, merge method and review policy on `main`, and the verifier |
 | [payment-webhook-down](payment-webhook-down.md) | Stripe/Mollie webhooks failing or delayed |
 | [alerts](alerts.md) | What each routing and notification alert means and what to do: `routing.no_partner`, `routing.sla_overdue`, `notifications.florist_bounce`, `webhook.dead` (Resend), the `webhook-signature:resend` rule |
+| [discount-codes](discount-codes.md) | Creating a code, the below-cost and reduction-claim warnings, announcing it, disabling it, reading its cost, what the lawyer and the accountant confirm |
 | [invoices](invoices.md) | An invoice refused, a stuck render, a hash mismatch, re-issuing, the year's series, the backfill |
 | [florist-declines-peak](florist-declines-peak.md) | A partner declines during a peak day |
 | [whatsapp-phase1](whatsapp-phase1.md) | Pasting the offer and stop messages of a WhatsApp florist from the founder email (spec 016 W) |

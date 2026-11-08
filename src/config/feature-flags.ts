@@ -217,6 +217,14 @@ const REGISTRY = [
     risk: "high",
     dirties: [],
   },
+  {
+    key: "payouts.accrue",
+    scopeKinds: ["global"],
+    description:
+      "Florist payouts are written (spec 030a): the amount fixed at acceptance, prepaid payouts and payout lines. Off: the payouts outbox rows wait, held and never dropped, until it is on again. Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
   // Spec 047 §12 (migration `0037_discount_codes`, TASK-445): the discount code control at
   // checkout, per destination, off by default. Checkout is `no-store`, so it dirties no page.
   {
@@ -225,14 +233,6 @@ const REGISTRY = [
     description:
       'The "Add a discount code" control at checkout for a destination (spec 047). Off until the founder turns it on per destination; codes themselves are made and disabled in Discounts.',
     risk: "standard",
-    dirties: [],
-  },
-  {
-    key: "payouts.accrue",
-    scopeKinds: ["global"],
-    description:
-      "Florist payouts are written (spec 030a): the amount fixed at acceptance, prepaid payouts and payout lines. Off: the payouts outbox rows wait, held and never dropped, until it is on again. Admin only; type the key to confirm.",
-    risk: "high",
     dirties: [],
   },
 ] as const satisfies readonly FeatureFlagDefinition[];

@@ -231,8 +231,7 @@ CREATE INDEX order_discount_code_mode_idx
  * ------------------------------------------------------------------------ */
 
 ALTER TABLE public.order_line ADD COLUMN discount_minor bigint NOT NULL DEFAULT 0;
-ALTER TABLE public.order_line ADD CONSTRAINT order_line_discount_minor_check
-  CHECK (discount_minor >= 0 AND discount_minor <= unit_retail_minor * qty);
+ALTER TABLE public.order_line ADD CONSTRAINT order_line_discount_minor_check CHECK (discount_minor >= 0 AND discount_minor <= unit_retail_minor * qty);
 
 COMMENT ON COLUMN public.order_line.discount_minor IS
   'Spec 047 §5.1: this line''s share of the order''s discount; paid amount = unit_retail_minor * qty - discount_minor. Never read by payouts (AC-19).';
@@ -248,8 +247,7 @@ ALTER TABLE public.checkout_draft ADD COLUMN discount_locked_until timestamptz N
 ALTER TABLE public.checkout_draft
   ADD CONSTRAINT checkout_draft_discount_code_id_discount_code_id_fk FOREIGN KEY (discount_code_id)
     REFERENCES public.discount_code (id) ON DELETE SET NULL;
-ALTER TABLE public.checkout_draft ADD CONSTRAINT checkout_draft_discount_failed_attempts_check
-  CHECK (discount_failed_attempts >= 0);
+ALTER TABLE public.checkout_draft ADD CONSTRAINT checkout_draft_discount_failed_attempts_check CHECK (discount_failed_attempts >= 0);
 
 /* ---------------------------------------------------------------------------
  * 8. RLS: staff only

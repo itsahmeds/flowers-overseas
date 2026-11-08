@@ -32,7 +32,7 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches and spec 030a's payouts.accrue", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue and spec 047's checkout.discount_codes", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
@@ -44,7 +44,18 @@ describe("T-16 — the registry", () => {
       "routing.auto",
       "notifications.email",
       "payouts.accrue",
+      "checkout.discount_codes",
     ]);
+  });
+
+  it("registers spec 047's checkout.discount_codes per country, standard risk, dirtying nothing (§12)", () => {
+    expect(flagDefinition("checkout.discount_codes")).toEqual({
+      key: "checkout.discount_codes",
+      scopeKinds: ["country"],
+      risk: "standard",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
   });
 
   it("registers spec 030a's payouts.accrue as global and high-risk (§5.1, §12)", () => {

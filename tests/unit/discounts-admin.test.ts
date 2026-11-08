@@ -72,20 +72,10 @@ describe("permissions (AC-3)", () => {
       "updateDiscountCodeAction",
     ]);
     for (const [, name, first] of bodies) {
-      if (
-        name === "disableDiscountCodeAction" ||
-        name === "enableDiscountCodeAction"
-      ) {
-        expect(first).toMatch(/await setStatus\(/u);
-      } else {
-        expect(first, name).toMatch(
-          /await requirePermission\("discounts\.(read|write)"\)/u,
-        );
-      }
+      expect(first, name).toMatch(
+        /await requirePermission\("discounts\.(read|write)"\)/u,
+      );
     }
-    expect(source).toMatch(
-      /async function setStatus[^{]*\{\s*const session = await requirePermission\("discounts\.write"\)/u,
-    );
     expect(source).toMatch(
       /previewDiscountCostAction[\s\S]*?requirePermission\("discounts\.read"\)/u,
     );
@@ -314,5 +304,30 @@ describe("the form (AC-2, form half)", () => {
     expect(
       instantToWallClock(new Date("2026-07-01T08:00:00Z"), "Europe/London"),
     ).toBe("2026-07-01T09:00");
+  });
+});
+
+describe("records (AC-32)", () => {
+  const read = (path: string) =>
+    readFileSync(resolve(import.meta.dirname, "../..", path), "utf8");
+
+  it("carries the RoPA rows, the runbook sections and the architecture row", () => {
+    const ropa = read("docs/compliance/ropa.md");
+    expect(ropa).toContain("a hashed key of the buyer's email");
+    expect(ropa).toContain(
+      "the discount code applied (its id, until placement)",
+    );
+    const runbook = read("docs/runbooks/discount-codes.md");
+    for (const heading of [
+      "## 1. Create a code",
+      "## 2. The two warnings, before saving",
+      "## 3. Announcing a code",
+      "## 4. Disable a code",
+      "## 5. Reading its cost",
+      "## 6. What the lawyer and the accountant confirm",
+    ]) {
+      expect(runbook).toContain(heading);
+    }
+    expect(read("docs/architecture.md")).toMatch(/^\| `discounts` \|/mu);
   });
 });

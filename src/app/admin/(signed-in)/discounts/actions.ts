@@ -104,15 +104,16 @@ export async function updateDiscountCodeAction(
   return state(result, typed);
 }
 
-async function setStatus(
+/** Where a status change lands: the code's page with the outcome, or the list. */
+async function afterStatus(
+  userId: string,
   formData: FormData,
   status: "active" | "disabled",
 ): Promise<never> {
-  const session = await requirePermission("discounts.write");
   const id = IdSchema.safeParse(formData.get("id"));
   if (!id.success) redirect("/admin/discounts");
   const result = await setDiscountCodeStatus(
-    await actor(session.userId),
+    await actor(userId),
     id.data,
     status,
   );
@@ -125,13 +126,15 @@ async function setStatus(
 export async function disableDiscountCodeAction(
   formData: FormData,
 ): Promise<void> {
-  await setStatus(formData, "disabled");
+  const session = await requirePermission("discounts.write");
+  await afterStatus(session.userId, formData, "disabled");
 }
 
 export async function enableDiscountCodeAction(
   formData: FormData,
 ): Promise<void> {
-  await setStatus(formData, "active");
+  const session = await requirePermission("discounts.write");
+  await afterStatus(session.userId, formData, "active");
 }
 
 /** The cost preview of the offer as typed; reads only, writes nothing. */
