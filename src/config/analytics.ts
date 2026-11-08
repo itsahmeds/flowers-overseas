@@ -58,6 +58,3 @@ export const ALLOWED_QUERY_KEYS: readonly string[] = [
   "utm_term",
   "utm_content",
 ];
-
-/** Milliseconds `requestIdleCallback` may wait before the deferred chunk is imported anyway. */
-export const ANALYTICS_IDLE_TIMEOUT_MS = 4000;

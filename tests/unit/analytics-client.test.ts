@@ -205,9 +205,21 @@ describe("the first-load loader (AC-1, AC-2)", () => {
   beforeEach(() => {
     fake = installDom();
     startDeferred.mockClear();
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", ID);
   });
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it("imports nothing in a build without a measurement id, even with a grant", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", undefined);
+    fake.jar.set("fo_consent", GRANT);
+    const { startAnalyticsIfGranted } = await load();
+    startAnalyticsIfGranted("fo_consent", 1);
+    await settle();
+    expect(startDeferred).not.toHaveBeenCalled();
+    expect(fake.idle).toHaveLength(0);
   });
 
   const load = async () => import("../../src/modules/analytics/client/loader");
