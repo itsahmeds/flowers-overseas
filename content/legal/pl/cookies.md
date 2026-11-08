@@ -2,13 +2,16 @@
 seoTitle: "Pliki cookie"
 seoDescription: "Pliki cookie, które ta strona zapisuje lub planuje zapisywać, do czego służy każdy z nich, jak długo jest przechowywany i jak zmienić wybór."
 h1: "Pliki cookie"
-version: "0.1.0"
+version: "0.2.0"
 effectiveFrom: "2026-10-24"
 inForce: true
 lawyerReviewed: false
 lawyerReviewedAt: null
 regime: eu
 changeLog:
+  - version: "0.2.0"
+    date: "2026-10-25"
+    summary: "Dodano plik cookie fo_dest, który zapamiętuje kraj wybrany przez Państwa jako cel wysyłki kwiatów."
   - version: "0.1.0"
     date: "2026-10-24"
     summary: "Pierwsza wersja, opublikowana przed sprawdzeniem przez prawnika."
@@ -49,6 +52,8 @@ Plik cookie to mały fragment tekstu, który strona internetowa prosi przegląda
 [[register]]
 
 „Zapisywany dziś” oznacza, że ta strona zapisuje go już teraz. „Planowany” oznacza, że zapisze go późniejsza część strony. Wymieniamy go już teraz, aby nigdy nie zapisać niczego, czego ta strona wcześniej nie wymieniła.
+
+**Wybrany przez Państwa kraj.** Gdy wybierają Państwo kraj, do którego chcą Państwo wysłać kwiaty, zapisujemy ten wybór w pliku cookie fo_dest na 180 dni, abyśmy mogli pokazać Państwu ceny dla tego kraju i następnym razem zaproponować go jako pierwszy. Plik ten jest zapisywany tylko wtedy, gdy wybiorą Państwo kraj, nigdy tylko dlatego, że otworzyli Państwo stronę, i zawiera wyłącznie dwuliterowy kod kraju. Nie prosimy o Państwa zgodę na ten plik, ponieważ jest on niezbędny do świadczenia usługi, o którą Państwo prosili: pokazania cen dla wybranego kraju (dyrektywa o prywatności i łączności elektronicznej, art. 5 ust. 3; w Wielkiej Brytanii regulation 6(4)(b) Privacy and Electronic Communications Regulations 2003). W każdej chwili mogą Państwo wybrać inny kraj.
 
 ## Trzy grupy {#the-three-groups}
 

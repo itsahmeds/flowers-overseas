@@ -2,13 +2,16 @@
 seoTitle: "Cookies"
 seoDescription: "Die Cookies, die diese Website setzt oder setzen will, wofür jedes dient, wie lange es gespeichert wird und wie Sie Ihre Wahl ändern."
 h1: "Cookies"
-version: "0.1.0"
+version: "0.2.0"
 effectiveFrom: "2026-10-24"
 inForce: true
 lawyerReviewed: false
 lawyerReviewedAt: null
 regime: eu
 changeLog:
+  - version: "0.2.0"
+    date: "2026-10-25"
+    summary: "Das Cookie fo_dest ergänzt, das sich das Land merkt, in das Sie Blumen senden möchten."
   - version: "0.1.0"
     date: "2026-10-24"
     summary: "Erste Fassung, veröffentlicht, bevor ein Anwalt sie geprüft hat."
@@ -49,6 +52,8 @@ Ein Cookie ist ein kleines Stück Text, das eine Website Ihren Browser speichern
 [[register]]
 
 „Heute gesetzt“ bedeutet, dass diese Website es jetzt schreibt. „Geplant“ bedeutet, dass ein späterer Teil der Website es schreiben wird. Wir führen es schon jetzt auf, damit nie etwas gesetzt wird, das diese Seite nicht vorher genannt hat.
+
+**Das Land, das Sie wählen.** Wenn Sie ein Land wählen, in das Sie Blumen senden möchten, speichern wir diese Wahl 180 Tage lang im Cookie fo_dest, damit wir Ihnen die Preise dieses Landes zeigen und es Ihnen beim nächsten Mal zuerst anbieten können. Es wird nur gesetzt, wenn Sie ein Land wählen, nie schon deshalb, weil Sie eine Seite geöffnet haben, und es enthält nichts als den zweistelligen Code des Landes. Wir bitten dafür nicht um Ihre Einwilligung, weil es unbedingt erforderlich ist, um Ihnen den Dienst zu erbringen, den Sie angefordert haben: Preise für das Land, das Sie gewählt haben (ePrivacy-Richtlinie, Artikel 5 Absatz 3; im Vereinigten Königreich Regulation 6(4)(b) der Privacy and Electronic Communications Regulations 2003). Sie können jederzeit ein anderes Land wählen.
 
 ## Die drei Gruppen {#the-three-groups}
 

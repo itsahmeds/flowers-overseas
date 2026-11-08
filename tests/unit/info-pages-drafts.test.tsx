@@ -49,6 +49,14 @@ import {
 } from "../../src/modules/seo/index.ts";
 import { staticSitemapEntries } from "../../src/modules/seo/sitemap/statics.ts";
 
+/**
+ * Spec 041's ten pages, the trust and legal families. Spec 011's florists' pages (TASK-210) share
+ * the registry and the untranslated line, but their drafts and their cluster are that spec's.
+ */
+const SPEC_041_PAGE_IDS = INFO_PAGE_IDS.filter(
+  (pageId) => infoPage(pageId).family !== "florists",
+);
+
 const DRAFT_LOCALES = ["de", "pl"] as const;
 const INDEXING: DeploymentDescriptor = {
   environment: "production",
@@ -80,7 +88,7 @@ const WITH_MAILBOX: { readonly company: Company } = {
 
 /** The `en` value each draft translates, and the line each draft must render. */
 const UNTRANSLATED: Readonly<Record<string, string>> = {
-  de: "Diese Übersetzung wurde noch nicht geprüft. Wenn sie von der englischen Fassung abweicht, gilt die englische Fassung.",
+  de: "Diese Übersetzung wurde noch nicht geprüft. Weicht sie von der englischen Fassung ab, gilt die englische Fassung.",
   pl: "To tłumaczenie nie zostało jeszcze sprawdzone. Jeśli różni się od wersji angielskiej, obowiązuje wersja angielska.",
 };
 
@@ -136,7 +144,7 @@ function noteText(html: string, attribute: string): string | undefined {
 
 describe("T-23 / AC-23: a draft file for each of the ten pages, in de and pl", () => {
   for (const locale of DRAFT_LOCALES) {
-    for (const pageId of INFO_PAGE_IDS) {
+    for (const pageId of SPEC_041_PAGE_IDS) {
       it(`${locale}/${pageId} is committed as a machine draft nobody has checked`, () => {
         const path = `${dirOf(pageId)}/${locale}/${pageId}.md`;
         const file = committed(path);
@@ -170,9 +178,15 @@ describe("T-23 / AC-23: a draft file for each of the ten pages, in de and pl", (
   }
 
   it("no de or pl draft is marked reviewed or human anywhere in the corpus", () => {
-    const drafts = INFO_CONTENT_FILES.filter((file) =>
-      /^(?:pages|legal)\/(?:de|pl)\//u.test(file.path),
-    );
+    const drafts = INFO_CONTENT_FILES.filter((file) => {
+      const match = /^(?:pages|legal)\/(?:de|pl)\/([a-z-]+)\.md$/u.exec(
+        file.path,
+      );
+      return (
+        match !== null &&
+        (SPEC_041_PAGE_IDS as readonly string[]).includes(match[1] ?? "")
+      );
+    });
     expect(drafts).toHaveLength(20);
     for (const file of drafts) {
       expect(file.source, file.path).toMatch(/^source: machine$/mu);
@@ -184,7 +198,7 @@ describe("T-23 / AC-23: a draft file for each of the ten pages, in de and pl", (
 
 describe("T-23 / AC-23: each draft renders the untranslated line under its h1", () => {
   for (const locale of DRAFT_LOCALES) {
-    for (const pageId of INFO_PAGE_IDS) {
+    for (const pageId of SPEC_041_PAGE_IDS) {
       it(`${locale}/${pageId} renders infoPages.status.untranslated in ${locale}`, () => {
         const html = pageHtml(pageId, locale);
         // The one value, in the draft's own language (mutation: dropping the line, or rendering
@@ -214,7 +228,7 @@ describe("T-23 / AC-23: each draft renders the untranslated line under its h1", 
 
   it("no en or en-gb page renders the line, unreviewed as they are", () => {
     for (const locale of ["en", "en-gb"]) {
-      for (const pageId of INFO_PAGE_IDS) {
+      for (const pageId of SPEC_041_PAGE_IDS) {
         expect(pageHtml(pageId, locale), `${locale}/${pageId}`).not.toContain(
           "data-fo-untranslated",
         );
@@ -256,7 +270,7 @@ describe("T-23 / AC-23: each draft renders the untranslated line under its h1", 
 
 describe("T-23 / AC-23, AC-17: every draft is noindex,follow", () => {
   for (const locale of DRAFT_LOCALES) {
-    for (const pageId of INFO_PAGE_IDS) {
+    for (const pageId of SPEC_041_PAGE_IDS) {
       it(`${locale}/${pageId} is noindex,follow in the indexing environment`, () => {
         const head = infoPageHeadView(pageId, locale, WITH_MAILBOX);
         expect(head, `${locale}/${pageId}`).toBeDefined();
@@ -291,7 +305,7 @@ describe("T-23 / AC-23, AC-17: every draft is noindex,follow", () => {
 describe("T-23 / AC-23, AC-20: no draft is in any sitemap", () => {
   it("static.xml in every launch locale lists no de or pl info page", () => {
     const paths = new Set(
-      INFO_PAGE_IDS.flatMap((pageId) =>
+      SPEC_041_PAGE_IDS.flatMap((pageId) =>
         DRAFT_LOCALES.flatMap((locale) => {
           const view =
             infoPageView(pageId, locale) ?? legalDocumentView(pageId, locale);
@@ -406,7 +420,7 @@ describe("the de/pl message drafts of the infoPages keys (spec 003 §14 A15 clau
     });
   }
 
-  it("en carries the untranslated line's source, unreviewed and attributed to nobody", () => {
+  it("en carries the untranslated line's source, its hash the current value", () => {
     const meta = read("en.meta.json") as Record<
       string,
       Record<string, unknown>
@@ -414,9 +428,9 @@ describe("the de/pl message drafts of the infoPages keys (spec 003 §14 A15 clau
     expect(en["infoPages.status.untranslated"]).toBe(
       "This translation has not been checked yet. If it differs from the English version, the English version applies.",
     );
-    expect(meta["infoPages.status.untranslated"]).toEqual({
+    // Recorded under the founder's delegation on main since; the draft keys hash this value.
+    expect(meta["infoPages.status.untranslated"]).toMatchObject({
       source: "human",
-      reviewed: false,
       sourceHash: sha(en["infoPages.status.untranslated"] ?? ""),
     });
   });
