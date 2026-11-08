@@ -474,7 +474,6 @@ describe("the shipped catalogues and manifests", () => {
     "invoice.title.receiptOnBehalf",
     "invoice.title.vatInvoice",
     // The header Basket link's name and count (spec 010 D10; TASK-349).
-    "nav.search.label",
     "payments.confirmation.arrival",
     "payments.confirmation.cancelled",
     "payments.confirmation.cancelledByYouRefunded",
@@ -500,21 +499,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
     // TASK-520 (spec 045 §14 A-founder-2026-11-08a, Appendix A; the board slots): the 14 `search.*`
     // texts and the changed `nav.search.label`, sorted in above, until record-approval-520.py.
-
-    "search.chip.choose",
-    "search.chip.remove",
-    "search.groups.bouquets",
-    "search.groups.categories",
-    "search.groups.destinations",
-    "search.groups.help",
-    "search.groups.occasions",
-    "search.suggest.all",
-    "search.suggest.count",
-    "search.suggest.kind.category",
-    "search.suggest.kind.destination",
-    "search.suggest.kind.occasion",
-    "search.suggest.kind.page",
-    "search.suggest.kind.product",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
