@@ -21,6 +21,7 @@ import {
   type ObjectLocation,
   type Storage,
   StorageIntegrityError,
+  StorageKeyError,
 } from "../../../src/lib/storage.ts";
 
 export interface StorageContractHarness {
@@ -350,6 +351,46 @@ export function describeStorageContract(
       harness.advanceSeconds(60);
       expect((await harness.fetch(url)).status).toBe(200);
       harness.advanceSeconds(1);
+      expect((await harness.fetch(url)).status).toBe(403);
+    });
+
+    // Spec 030b §14.3 (TASK-442, AC-40, AC-58): a florist's contract is stored at
+    // `originals/contract/{id}` only, and its signed URL downloads as a named PDF attachment.
+    it("stores a contract at originals/contract/{id} and serves it as a named PDF attachment", async (context) => {
+      const harness = makeHarness();
+      const id = "0b5c3d26-7210-4c2e-9a1b-3f4e5d6c7b8a";
+      const key = harness.storage.objectKey("contract", id, "original");
+      expect(key).toBe(`originals/contract/${id}`);
+      expect(() =>
+        harness.storage.objectKey("contract", id, {
+          variant: "w640",
+          format: "webp",
+        }),
+      ).toThrow(StorageKeyError);
+      const location = at(harness, key);
+      const body = bytesOf("%PDF-1.7 a signed agreement");
+      await harness.storage.put({ ...location, body, mime: "application/pdf" });
+      const url = await harness.storage.getSignedUrl(location, 60, {
+        downloadName: "contract-pl-krk-01-agreement-v2.pdf",
+      });
+      await expect(
+        harness.storage.getSignedUrl(location, 60, {
+          downloadName: "../etc/passwd",
+        }),
+      ).rejects.toThrow();
+      if (harness.advanceSeconds === undefined) {
+        context.skip();
+        return;
+      }
+      harness.advanceSeconds(59);
+      const response = await harness.fetch(url);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-disposition")).toBe(
+        'attachment; filename="contract-pl-krk-01-agreement-v2.pdf"',
+      );
+      expect(response.headers.get("content-type")).toBe("application/pdf");
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(body);
+      harness.advanceSeconds(2);
       expect((await harness.fetch(url)).status).toBe(403);
     });
   });

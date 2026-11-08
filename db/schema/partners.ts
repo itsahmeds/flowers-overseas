@@ -26,6 +26,7 @@
  */
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   bigint,
   boolean,
   check,
@@ -917,5 +918,127 @@ export const partnerContactLog = pgTable(
     index("partner_contact_log_follow_up_idx")
       .on(table.followUpOn)
       .where(sql`follow_up_on is not null and follow_up_done_at is null`),
+  ],
+);
+
+/* -------------------------------------------------------------------------- */
+/* partner_contract (spec 030b §14.3, `0041_partner_contracts`, TASK-442)     */
+/* -------------------------------------------------------------------------- */
+
+/** The kinds of stored florist document (spec 030b §14.2 A). */
+export const contractDocKinds = ["agreement", "dpa_addendum", "annex"] as const;
+
+/**
+ * The florist contract register: one row per stored PDF version; the file lives in the private
+ * bucket at `object_key`. Staff only; `note` is masked in `audit_log`. File facts are immutable
+ * (`partner_contract_guard`).
+ */
+export const partnerContract = pgTable(
+  "partner_contract",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    partnerId: uuid("partner_id")
+      .notNull()
+      .references(() => fulfillmentPartner.id, { onDelete: "restrict" }),
+    docKind: text("doc_kind").notNull(),
+    versionNo: integer("version_no").notNull(),
+    templateVersion: text("template_version").notNull(),
+    languageCode: text("language_code")
+      .notNull()
+      .references(() => locale.code, { onDelete: "restrict" }),
+    includesDpa: boolean("includes_dpa").notNull().default(false),
+    signedOn: date("signed_on", { mode: "string" }).notNull(),
+    effectiveOn: date("effective_on", { mode: "string" }).notNull(),
+    reviewOn: date("review_on", { mode: "string" }),
+    noticeDays: integer("notice_days").notNull().default(30),
+    note: text("note"),
+    bucket: text("bucket").notNull(),
+    objectKey: text("object_key").notNull(),
+    bytes: integer("bytes").notNull(),
+    pageCount: integer("page_count").notNull(),
+    checksumSha256: text("checksum_sha256").notNull(),
+    uploadedBy: uuid("uploaded_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    uploadedAt: timestamp("uploaded_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    supersededAt: timestamp("superseded_at", { withTimezone: true }),
+    supersededBy: uuid("superseded_by").references(
+      (): AnyPgColumn => partnerContract.id,
+      { onDelete: "restrict" },
+    ),
+    ...timestamps,
+  },
+  (table) => [
+    unique("partner_contract_object_key_key").on(table.objectKey),
+    unique("partner_contract_partner_kind_version_key").on(
+      table.partnerId,
+      table.docKind,
+      table.versionNo,
+    ),
+    check(
+      "partner_contract_doc_kind_check",
+      sql.raw(`doc_kind in ('agreement', 'dpa_addendum', 'annex')`),
+    ),
+    check("partner_contract_version_no_check", sql`${table.versionNo} >= 1`),
+    check(
+      "partner_contract_template_version_check",
+      sql.raw(`template_version ~ '^[a-z0-9][a-z0-9.-]{0,39}$'`),
+    ),
+    check(
+      "partner_contract_notice_days_check",
+      sql`${table.noticeDays} between 0 and 365`,
+    ),
+    check(
+      "partner_contract_note_check",
+      sql`${table.note} is null or char_length(btrim(${table.note})) between 1 and 500`,
+    ),
+    check(
+      "partner_contract_object_key_check",
+      sql.raw(
+        `object_key ~ '^originals/contract/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'`,
+      ),
+    ),
+    check(
+      "partner_contract_bytes_check",
+      sql`${table.bytes} between 1 and 10485760`,
+    ),
+    check("partner_contract_page_count_check", sql`${table.pageCount} >= 1`),
+    check(
+      "partner_contract_checksum_sha256_check",
+      sql.raw(`checksum_sha256 ~ '^[0-9a-f]{64}$'`),
+    ),
+    check(
+      "partner_contract_review_on_check",
+      sql`${table.reviewOn} is null or ${table.reviewOn} > ${table.effectiveOn}`,
+    ),
+    check(
+      "partner_contract_includes_dpa_check",
+      sql.raw(`doc_kind = 'agreement' or not includes_dpa`),
+    ),
+    check(
+      "partner_contract_superseded_check",
+      sql`(${table.supersededAt} is null) = (${table.supersededBy} is null)`,
+    ),
+    check(
+      "partner_contract_annex_check",
+      sql.raw(`doc_kind <> 'annex' or superseded_at is null`),
+    ),
+    check(
+      "partner_contract_superseded_self_check",
+      sql`${table.supersededBy} is null or ${table.supersededBy} <> ${table.id}`,
+    ),
+    uniqueIndex("partner_contract_current_idx")
+      .on(table.partnerId, table.docKind)
+      .where(
+        sql.raw(
+          `superseded_at is null and doc_kind in ('agreement', 'dpa_addendum')`,
+        ),
+      ),
+    index("partner_contract_review_idx")
+      .on(table.reviewOn)
+      .where(sql.raw(`superseded_at is null and review_on is not null`)),
+    index("partner_contract_superseded_by_idx").on(table.supersededBy),
   ],
 );
