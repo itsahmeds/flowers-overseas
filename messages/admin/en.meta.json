@@ -834,6 +834,11 @@
     "reviewed": false,
     "sourceHash": "b7782038d9c09c78393acb1caacd36bb49fe0455371c1d375f3b837595139590"
   },
+  "admin.flags.description.checkout.discount_codes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dbcd71540a3cd6e4346dc6fff95fb3582a8717358bc404fa55198c20c77f4640"
+  },
   "admin.flags.description.invoice.issue": {
     "source": "human",
     "reviewed": false,

@@ -120,6 +120,9 @@ export type {
   TrackingLookupInput,
   TrackingLookupOutcome,
 } from "./tracking-lookup";
+// Spec 047 §5.2 (TASK-445): what the buyer paid per line, price minus its share of a discount.
+export { linePaidAmounts } from "./line-paid-amounts";
+export type { LinePaidAmount } from "./line-paid-amounts";
 // Spec 018 §5.2 (TASK-339): the buyer's refund lines' shape and their one formatter.
 // `buyerRefundLines` itself reads spec 013's `succeededRefunds`, so it is imported from
 // `./buyer-refund-lines` directly and stays out of this barrel (see that file).

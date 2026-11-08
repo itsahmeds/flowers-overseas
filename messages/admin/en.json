@@ -313,7 +313,8 @@
       "description": {
         "checkout": {
           "open": "Lets the product page's demo button lead to the checkout, per country.",
-          "demo_guard": "Keeps every checkout in demo mode: nothing is charged."
+          "demo_guard": "Keeps every checkout in demo mode: nothing is charged.",
+          "discount_codes": "Shows the \"Add a discount code\" link at checkout, per country. Codes themselves are made and disabled under Discounts."
         },
         "account": {
           "open": "Opens the customer account and its privacy requests, everywhere or per language."
