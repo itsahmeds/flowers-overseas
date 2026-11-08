@@ -148,7 +148,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(38);
+    expect(new Set(JOB_NAMES).size).toBe(39);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 
