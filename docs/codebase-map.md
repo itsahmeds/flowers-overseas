@@ -400,8 +400,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 520 |
-| `tests/integration/` | 106 |
+| `tests/unit/` | 521 |
+| `tests/integration/` | 107 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |
