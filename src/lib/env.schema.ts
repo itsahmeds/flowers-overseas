@@ -117,6 +117,32 @@ const httpsUrl = z.url().refine((value) => value.startsWith("https://"), {
   message: "must use https",
 });
 
+/** Base64 (standard or url-safe, padded or not) of at least 32 bytes (spec 034 AC-28). */
+const base64Secret = z
+  .string()
+  .regex(/^[A-Za-z0-9+/_-]+={0,2}$/u, "must be base64")
+  .refine(
+    (value) =>
+      Buffer.from(value.replace(/-/gu, "+").replace(/_/gu, "/"), "base64")
+        .length >= 32,
+    { message: "must decode to at least 32 bytes (`openssl rand -base64 32`)" },
+  );
+
+/** An RFC 5322 mailbox: `Name <address>` or a bare address (spec 034 §5.2, AC-28). */
+const mailbox = z
+  .string()
+  .max(320)
+  .refine(
+    (value) => {
+      const match = /^(?:[^<>\r\n]*<([^<>\s]+)>|([^<>\s]+))$/u.exec(
+        value.trim(),
+      );
+      const address = match?.[1] ?? match?.[2];
+      return address !== undefined && z.email().safeParse(address).success;
+    },
+    { message: "must be a mailbox: Name <address> or address" },
+  );
+
 /** A Pushover application token or user key: 30 characters, letters and digits (spec 025 AC-35). */
 const pushoverToken = z
   .string()
@@ -407,6 +433,22 @@ export const serverEnvSchema = z.object({
     emptyToUndefined,
     httpsUrl.optional(),
   ),
+  /**
+   * The key of `contactHmac` (spec 034 §5.2 "Env", AC-28; TASK-449): base64 of at least 32
+   * random bytes (`openssl rand -base64 32`). The basket reminder's consent proof, suppression and
+   * per-address gap know an email only as HMAC-SHA256 under this key. SECRET: never logged. Never
+   * rotated except on compromise (`docs/runbooks/basket-reminders.md`). **Optional at boot, read
+   * at use**: absent in `development` and `test`, a fixed test secret is used; absent in a
+   * deployed environment, the box is not shown and the scan refuses (`basket_reminder.scan_refused
+   * {reason: 'env'}`).
+   */
+  CONTACT_HMAC_SECRET: z.preprocess(emptyToUndefined, base64Secret.optional()),
+  /**
+   * The sender of the basket reminder (spec 034 §5.2 "Mailer", §13 Q7, AC-14; TASK-450): a
+   * mailbox (`Name <address>` or a bare address) on the marketing subdomain verified in Resend.
+   * Not secret. Optional at boot, read at use, with `CONTACT_HMAC_SECRET`'s rule.
+   */
+  MARKETING_MAIL_FROM: z.preprocess(emptyToUndefined, mailbox.optional()),
   /**
    * Where each stored florist application is emailed (spec 011 §2 "The founder alert", §12, §13
    * Q8; TASK-213). Not secret. Optional at boot, resolved at use by

@@ -27,7 +27,12 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the implementer (2026-11-08):** not built in PR #525, owed by this task:
+  - `partners.contract_reminders` (hourly job) and the founder emails `contract-review-due` / `contract-review-passed` (AC-42 job half; the rule `contractReminderDue` and the list's "Contracts due" are built and tested).
+  - The `partner_contract` retention handler in `src/jobs/retention.ts` (object then row, keep the row on failure, third-failure alert `partners.contract_purge_failed`); until then the sweep reports `no_handler` for it, which is harmless (no row is due for 10 years).
+  - AC-57 rollback round trip test for 0041 and the guarded down's `PARTNER_CONTRACTS_ROLLBACK_ROWS_IN_USE` case; AC-56 axe on the Contracts tab; AC-36 route-level 401/403 tests for the upload, download and actions (guards are in place: `requirePermission` first); AC-43 RLS rows for partner/customer/public roles.
+  - Sentry `beforeSend` dropping request bodies on the upload route (§14.6).
+  - Migration is 0041 while 0040 belongs to another open PR: `db:check` reports the gap until that merges; renumber only if 0040 is abandoned.
 
 ## Escalations
 
@@ -41,7 +46,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: migration 0041, storage `contract` kind and `downloadName`, `checkPdf` (@cantoo/pdf-lib), upload and download routes, edit and withdraw, flags and terms sync, the activation gate (trigger and preflight), Contracts tab, Agreement column, Contracts due, runbook sections, RoPA row 22 (renumbered at merge); unit and integration tests green on scratch PG16 with a local-only 0040 placeholder.
 
 ## Result
 
@@ -49,3 +54,5 @@ What shipped, in one paragraph: the PR, the tests added per layer, the numbers a
 (budgets, counts), and anything handed to a later task.
 
 _Pending._
+
+PR #525 (with TASK-441). Migration 0041 with guarded down, `partner_contract`, guard and activation triggers; `checkPdf`; upload/download routes; edit and withdraw; Contracts tab; Agreement column and Contracts due; activation preflight gains `agreement`. New dependency `@cantoo/pdf-lib` 2.11.1 (maintained pdf-lib fork, pure JS). Tests: unit `tests/unit/partners-contracts.test.ts` (29), integration `tests/integration/partners-contracts-030b.test.ts` (10), storage contract suites (+contract kind), and agreement fixtures in three existing integration suites. Carry-forwards above.

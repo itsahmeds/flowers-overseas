@@ -59,6 +59,8 @@ export const consentSubjectKinds = [
   "visitor",
   "customer",
   "recipient",
+  // Spec 034 §5.1 D (`0040_basket_reminder`): an address known only as its `contactHmac`.
+  "contact",
 ] as const;
 
 /** `('a', 'b')` for a `CHECK … IN` list, from the tuples above. */
@@ -251,6 +253,8 @@ export const consentLog = pgTable(
     occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
     /** A network, never a host (`plan/07` §5): IPv4 /24 or wider, IPv6 /48 or wider. */
     sourceIpTruncated: cidr("source_ip_truncated"),
+    /** Spec 034 §5.1 D: a `contact` subject's `contactHmac(email)`; null for every other kind. */
+    subjectHmac: text("subject_hmac"),
     /** Written once, never updated, so there is no `updated_at`. */
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -263,13 +267,14 @@ export const consentLog = pgTable(
     ),
     check(
       "consent_log_subject_check",
-      sql`case ${table.subjectKind} when 'visitor' then ${table.anonymousId} is not null and ${table.subjectRef} is null else ${table.subjectRef} is not null end`,
+      sql`case ${table.subjectKind} when 'visitor' then ${table.anonymousId} is not null and ${table.subjectRef} is null and ${table.subjectHmac} is null when 'contact' then ${table.subjectHmac} is not null and ${table.subjectHmac} ~ '^[0-9a-f]{64}$' and ${table.subjectRef} is null and ${table.anonymousId} is null else ${table.subjectRef} is not null and ${table.subjectHmac} is null end`,
     ),
     check(
       "consent_log_choices_check",
       sql`jsonb_typeof(${table.choices}) = 'object'`,
     ),
     check("consent_log_policy_version_check", sql`${table.policyVersion} > 0`),
+    index("consent_log_subject_hmac_idx").on(table.subjectHmac),
     check(
       "consent_log_source_ip_truncated_check",
       sql`(family(${table.sourceIpTruncated}) = 4 and masklen(${table.sourceIpTruncated}) <= 24) or (family(${table.sourceIpTruncated}) = 6 and masklen(${table.sourceIpTruncated}) <= 48)`,

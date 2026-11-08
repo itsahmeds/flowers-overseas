@@ -29,7 +29,8 @@
       "users": "Users",
       "payouts": "Payouts",
       "discounts": "Discounts",
-      "finance": "Finance"
+      "finance": "Finance",
+      "basketReminders": "Basket emails"
     },
     "roles": {
       "admin": "admin",
@@ -344,6 +345,9 @@
         "alerts": {
           "push": "Push founder alerts to the phone. Production pushes unless this is off; staging pushes only while it is on. Email is always sent."
         },
+        "marketing": {
+          "basket_reminder": "Sends one basket reminder email, only to buyers who ticked the box at checkout. Off: the box is hidden and nothing is sent; links in emails already sent keep working."
+        },
         "analytics": {
           "mp_send": "Sends each purchase and refund to Google Analytics from our server, only for buyers who accepted analytics. Off: nothing is sent and each one is recorded as skipped."
         }
@@ -479,7 +483,11 @@
         "city": "City",
         "status": "Status",
         "zones": "Zones",
-        "products": "Products"
+        "products": "Products",
+        "lastAccepted": "Last accepted",
+        "rating": "Rating",
+        "followUps": "Follow-ups",
+        "owedNow": "Owed now"
       },
       "termsLine": "Terms {version}, {date}",
       "termsNone": "Not recorded",
@@ -578,7 +586,7 @@
       "state": {
         "title": "Status",
         "before": "Before this florist can be active",
-        "appears": "Make active appears when all four are met.",
+        "appears": "Make active appears when all five are met.",
         "met": "Met",
         "missing": "Missing",
         "condition": {
@@ -597,6 +605,10 @@
           "contact": {
             "met": "{channel, select, whatsapp {WhatsApp number for the chosen channel} other {Email for the chosen channel}}",
             "missing": "{channel, select, whatsapp {WhatsApp number for the chosen channel} other {Email for the chosen channel}}"
+          },
+          "agreement": {
+            "met": "Signed agreement on file",
+            "missing": "No signed agreement on file"
           }
         },
         "move": {
@@ -606,7 +618,8 @@
         },
         "demo": "A demo florist can only be offboarded. Demo florists exist for staging and demo calls; they never receive a real order.",
         "offboarded": "This florist is offboarded. Its status cannot change again.",
-        "readOnly": "Only admin and ops can change a florist's status."
+        "readOnly": "Only admin and ops can change a florist's status.",
+        "agreementLink": "Open contracts"
       },
       "result": {
         "saved": "Saved.",
@@ -645,7 +658,9 @@
         "product": "Choose a product.",
         "cadence": "Choose weekly or per order.",
         "prepaidLimit": "Enter a whole number from 0 to 50.",
-        "wiseRecipient": "Enter the id Wise shows: 1 to 20 digits."
+        "wiseRecipient": "Enter the id Wise shows: 1 to 20 digits.",
+        "tooShort": "Enter 2 to 120 characters.",
+        "contactDetails": "A name only. Contact details go in the contact fields."
       },
       "where": "{city}, {country}",
       "payoutTerms": {
@@ -665,6 +680,319 @@
         "notSet": "Not set: this florist's statements cannot go into a Wise export yet.",
         "wiseNone": "Not set",
         "readOnly": "Only admin and finance can change payout terms."
+      },
+      "tab": {
+        "label": "Florist pages",
+        "profile": "Profile",
+        "payoutTerms": "Payout terms",
+        "money": "Money",
+        "relationship": "Relationship",
+        "contracts": "Contracts"
+      },
+      "list": {
+        "followUpsDue": "Follow-ups due",
+        "noneDue": "No follow-ups due. You are up to date.",
+        "dueWhen": "Today or earlier, {zone} time",
+        "lastAccepted": "Last accepted {date}",
+        "followUpCount": "{count, plural, one {# follow-up due} other {# follow-ups due}}",
+        "owed": "owed {amount}",
+        "noMoney": "No money",
+        "agreement": "Agreement",
+        "agreementNone": "No signed agreement on file",
+        "agreementOk": "{template}",
+        "contractsDue": "Contracts due",
+        "contractsDueLine": "{florist}: {kind} v{version}, review {date}",
+        "contractsDueState": {
+          "due": "Due",
+          "passed": "Passed"
+        }
+      },
+      "money": {
+        "loading": "Loading figures…",
+        "nothing": "None",
+        "demo": {
+          "title": "A demo florist takes no money",
+          "body": "Demo orders are never charged and never appear in finance figures."
+        },
+        "sales": {
+          "title": "Sales and margin",
+          "settled": "Sales, settled",
+          "none": "No orders in this range, {from} to {to}. What we owe and what we paid still show, because they do not depend on it.",
+          "rates": "Each order at its own rates: ECB on its paid day, Stripe as settled.",
+          "provisional": "Includes {count, plural, one {# order} other {# orders}} whose figures can still change. Each says why in Finance, orders."
+        },
+        "paid": {
+          "title": "Paid",
+          "caption": "Statements paid in this range",
+          "statement": "Statement",
+          "paidOn": "Paid on",
+          "amount": "Amount",
+          "noneInRange": "No statement was paid in this range.",
+          "inRange": "In this range",
+          "allTime": "All time",
+          "since": "{amount} since {date}"
+        },
+        "owe": {
+          "title": "What we owe",
+          "nothingOwed": "Nothing owed",
+          "statement": "Statement {number}, sent {date}, not paid yet",
+          "undecided": "Amount not decided.",
+          "settle": "Settle or waive in Payouts"
+        },
+        "outcomes": {
+          "title": "Orders and offers",
+          "accepted": "Accepted",
+          "delivered": "Delivered",
+          "cancelled": "Cancelled after acceptance",
+          "declined": "Offers declined",
+          "timedOut": "Offers timed out",
+          "see": "See these orders"
+        }
+      },
+      "relationship": {
+        "loading": "Loading the record…"
+      },
+      "crm": {
+        "hint": "Business facts only. No details about buyers, recipients, health or family. Contact details go in the contact fields.",
+        "cancel": "Cancel",
+        "close": "Close",
+        "when": "{when} ({zone})",
+        "banner": {
+          "today": "Follow-up due today",
+          "overdue": "Follow-up overdue since {date}",
+          "from": "{topic}, from the contact on {date}:"
+        },
+        "note": {
+          "title": "Notes",
+          "add": "Add a note",
+          "field": "Note",
+          "pin": "Pin this note",
+          "limit": "Up to {max, number} characters.",
+          "save": "Save note",
+          "empty": "No notes yet.",
+          "pinned": "Pinned",
+          "edit": "Edit",
+          "editTitle": "Edit the note",
+          "pinAction": "Pin",
+          "unpin": "Unpin",
+          "delete": "Delete",
+          "deleteTitle": "Delete this note?",
+          "deleteBody": "It is removed for good. The audit log keeps only that a note was deleted, not its text.",
+          "deleteConfirm": "Delete note"
+        },
+        "contact": {
+          "title": "Contact log",
+          "add": "Log a contact",
+          "edit": "Edit",
+          "editTitle": "Edit the contact",
+          "empty": "No contacts logged yet.",
+          "when": "When",
+          "whenHint": "{zone} time. Not more than 5 minutes ahead.",
+          "channel": "Channel",
+          "direction": "Direction",
+          "topic": "Topic",
+          "summary": "Summary",
+          "followUp": "Follow up on (optional)",
+          "save": "Save"
+        },
+        "channel": {
+          "phone": "Phone",
+          "email": "Email",
+          "whatsapp": "WhatsApp",
+          "video": "Video",
+          "in_person": "In person",
+          "other": "Other"
+        },
+        "direction": {
+          "inbound": "Inbound",
+          "outbound": "Outbound"
+        },
+        "topic": {
+          "onboarding": "Onboarding",
+          "order_issue": "Order issue",
+          "payout": "Payout",
+          "pricing": "Pricing",
+          "quality": "Quality",
+          "other": "Other"
+        },
+        "followUp": {
+          "none": "No follow-up",
+          "done": "Done, was due {due}",
+          "today": "Due today",
+          "overdue": "Overdue since {date}",
+          "on": "Follow up on {date}",
+          "mark": "Mark follow-up done"
+        },
+        "standing": {
+          "title": "Standing",
+          "status": "Status",
+          "termsLabel": "Terms",
+          "terms": "{version}, signed {date}",
+          "rating": "Rating",
+          "ratingValue": "{rating} out of 5 (90 days)",
+          "ratingShort": "{rating} out of 5",
+          "fewRatings": "Fewer than 3 ratings",
+          "acceptance": "Acceptance",
+          "noOffers": "No offers yet",
+          "lastAccepted": "Last accepted order",
+          "noOrders": "No orders yet",
+          "note": "Status and terms change on the Profile tab."
+        },
+        "contactBlock": {
+          "title": "Contact",
+          "person": "Contact person",
+          "personHint": "A name only. 2 to 120 characters.",
+          "save": "Save",
+          "noPerson": "Not recorded",
+          "noPhone": "None",
+          "language": "Language",
+          "noLanguage": "Not set yet",
+          "note": "Email, phone and channel change on the Profile tab."
+        },
+        "error": {
+          "required": "Fill this in.",
+          "tooShort": "Enter 2 to 120 characters.",
+          "tooLong": "This is too long.",
+          "contactDetails": "This looks like a phone number or an email address. Put contact details in the contact fields, not in notes.",
+          "contactNameDetails": "A name only. The email goes in Contact email.",
+          "choice": "Choose one from the list.",
+          "date": "Enter a date.",
+          "future": "That is more than 5 minutes ahead of now.",
+          "target": "Reload the page and try again."
+        },
+        "result": {
+          "saved": {
+            "note": "Note saved.",
+            "noteEdit": "Note saved.",
+            "noteDelete": "Note deleted.",
+            "contact": "Contact logged.",
+            "contactEdit": "Contact saved.",
+            "followUp": "Follow-up marked done.",
+            "contactName": "Contact person saved."
+          },
+          "invalid": "Nothing was saved. Check the fields marked below.",
+          "conflict": "Someone changed this after you opened it. Nothing was saved. Reload to see their change, then make yours again.",
+          "not_found": "That was already removed. Nothing was saved.",
+          "no_follow_up": "That entry has no follow-up date. Nothing was saved."
+        }
+      },
+      "contracts": {
+        "lead": "The signed PDFs we hold for this florist. Upload a new version to replace one; earlier versions are kept.",
+        "upload": "Upload a document",
+        "uploadSubmit": "Upload",
+        "section": {
+          "agreement": "Florist agreement",
+          "dpa_addendum": "Data-processing addendum",
+          "annex": "Annexes"
+        },
+        "kind": {
+          "agreement": "Florist agreement",
+          "dpa_addendum": "Data-processing addendum",
+          "annex": "Annex"
+        },
+        "version": "{kind} v{version}",
+        "current": "Current",
+        "superseded": "Superseded",
+        "containsDpa": "Contains the data-processing clauses",
+        "coveredBy": "Covered by agreement v{version}",
+        "none": "Nothing on file yet.",
+        "review": "Review",
+        "reviewLine": "{date}, reminder {days, plural, one {# day} other {# days}} before",
+        "uploaded": "Uploaded",
+        "uploadedLine": "{when} ({zone}) by {by}",
+        "file": "File",
+        "fileLine": "{size} · {pages, plural, one {# page} other {# pages}}",
+        "size": "{mb} MB",
+        "when": "{when} ({zone})",
+        "download": "Download",
+        "downloadLabel": "Download {kind} v{version}",
+        "edit": "Edit details",
+        "editTitle": "Edit details of {kind} v{version}",
+        "editNote": "The file, its kind, version and upload are fixed. Changing the review date sets a new reminder.",
+        "save": "Save",
+        "field": {
+          "file": "Signed PDF",
+          "fileHint": "PDF only, up to 10 MB. Stored exactly as uploaded.",
+          "kind": "Kind",
+          "template": "Template version",
+          "language": "Language",
+          "signedOn": "Signed on",
+          "effectiveOn": "Effective from",
+          "reviewOn": "Review on (optional)",
+          "notice": "Reminder, days before",
+          "includesDpa": "This agreement contains the data-processing clauses",
+          "note": "Note",
+          "noteHint": "Optional, up to {max} characters. Business facts only; no contact details."
+        },
+        "withdraw": {
+          "open": "Withdraw",
+          "title": "Withdraw {kind} v{version}?",
+          "previous": "Use this only for a wrong upload. The file is deleted and agreement v{version} becomes current again, with its date and version copied back to the profile.",
+          "only": "Use this only for a wrong upload. The file is deleted and this florist has no agreement on file; an active florist is paused until a new one is uploaded.",
+          "other": "Use this only for a wrong upload. The file is deleted and the previous version, if any, becomes current again.",
+          "reason": "Reason",
+          "reasonHint": "At least 10 characters. Kept in the audit log.",
+          "confirm": "Withdraw",
+          "until": "Possible until {when}",
+          "closed": "Withdraw closed on {when}. To correct it, upload a new version; both are kept."
+        },
+        "flag": {
+          "no_agreement": "No signed agreement on file",
+          "no_dpa": "No data-processing addendum on file",
+          "terms_mismatch": "Profile terms differ from the agreement on file",
+          "review_due": "Review due",
+          "review_passed": "Review date passed",
+          "cannotGoLive": "Cannot go live until one is uploaded."
+        },
+        "flagHint": {
+          "no_agreement": "Upload the signed florist agreement below.",
+          "no_dpa": "Upload the data-processing addendum, or mark the agreement as containing its clauses.",
+          "terms_mismatch": "Upload a new version or correct the profile.",
+          "review_due": "The notice window before a review date has opened.",
+          "review_passed": "A review date has passed and that version is still current."
+        },
+        "onFile": {
+          "title": "On file",
+          "signed": "v{version}, signed {date}",
+          "terms": "Profile terms",
+          "review": "Next review",
+          "noReview": "No review date set",
+          "private": "Private: admins only. Each download is logged and opens as an attachment, never in the browser."
+        },
+        "rule": {
+          "too_large": "This file is larger than 10 MB. Scan it at a lower resolution, then upload it again.",
+          "not_pdf": "This file is not a PDF. Upload the signed contract as a PDF.",
+          "unreadable": "This PDF cannot be read. Save it again as a PDF, then upload it again.",
+          "no_pages": "This PDF has no pages.",
+          "encrypted": "This PDF needs a password to open. Upload a copy without a password.",
+          "active_content": "This PDF contains scripts, attached files or forms. Print it to a new PDF and upload that."
+        },
+        "result": {
+          "uploaded": "Document uploaded.",
+          "saved": "Details saved.",
+          "withdrawn": "Document withdrawn.",
+          "invalid": "Check the fields marked below. Nothing was saved.",
+          "rule": "This file was refused. Nothing was saved.",
+          "conflict": "This document changed while you had it open. Nothing was saved. Reload to see it.",
+          "version_conflict": "Someone uploaded a newer version while you had this open. Nothing was saved. Reload to see it, then upload again if yours is still needed.",
+          "window_closed": "The 7 days to withdraw this upload have passed. Upload a new version instead; both are kept.",
+          "not_found": "This document is no longer on file."
+        },
+        "error": {
+          "required": "Fill this in.",
+          "choice": "Choose one of the options.",
+          "template": "Use letters, digits, dots and dashes, up to 40 characters.",
+          "language": "Choose a language.",
+          "date": "Enter a date.",
+          "dateFuture": "This date cannot be in the future.",
+          "reviewOrder": "The review date must come after the effective date.",
+          "notice": "Enter a whole number of days from 0 to 365.",
+          "tooLong": "This is too long.",
+          "contactDetails": "Leave out email addresses and phone numbers.",
+          "reasonLength": "Write at least 10 characters.",
+          "target": "This document is no longer on file."
+        },
+        "loading": "Loading documents…"
       }
     },
     "applications": {
@@ -1823,6 +2151,46 @@
         "notPaid": "No captured payment yet, so this order has no money figures.",
         "noFigures": "No rate"
       }
+    },
+    "basketReminders": {
+      "title": "Basket emails",
+      "intro": "Live baskets only. Counts are this period's sends; revenue per currency.",
+      "range": {
+        "label": "Period",
+        "7d": "7 days",
+        "30d": "30 days",
+        "90d": "90 days"
+      },
+      "sent": "Sent",
+      "recovered": "Baskets bought after the email",
+      "rate": "Recovery rate",
+      "revenue": "Revenue from recovered baskets, before refunds",
+      "revenueNone": "None in this period",
+      "linksOpened": "Links opened (includes automatic link checks by some email providers)",
+      "failed": "Failed to send",
+      "stopped": "Stopped",
+      "bounced": "Bounced",
+      "complained": "Marked as spam",
+      "skipped": "Not sent, by reason",
+      "column": {
+        "reason": "Reason",
+        "count": "Count"
+      },
+      "reason": {
+        "purchased": "Bought before the email",
+        "purchased_elsewhere": "Bought in another basket",
+        "consent_withdrawn": "Box unticked",
+        "suppressed": "Address stopped, bounced or marked as spam",
+        "recent_reminder": "Already emailed in the last 7 days",
+        "no_available_line": "Nothing left that we can deliver",
+        "no_email": "No email saved",
+        "too_late": "Too late to send",
+        "flag_off": "Basket emails were off"
+      },
+      "empty": "No basket emails sent in this period.",
+      "off": "Basket emails are off.",
+      "paused": "Basket emails were paused automatically on {date} because too many were marked as spam or bounced.",
+      "pausedHint": "Turn them back on in Flags once the cause is fixed."
     }
   },
   "emails": {

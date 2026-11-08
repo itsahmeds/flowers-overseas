@@ -27,6 +27,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- 2026-11-08 (TASK-449 build): `tests/unit/rls-policies.test.ts` "staff-only tables have no other policy" fails on `review_read` on main already; not this feature's, left as is. The same file found `ops_alert`, `ops_alert_notification`, `ops_alert_setting` unclassified on main; this PR lists them in `STAFF_ONLY_TABLES`.
+- e2e and axe of the step 3 box (AC-29 journey scan, AC-30 runtime) are not written; CI's browser jobs cover the page shell only.
 
 ## Escalations
 
@@ -40,11 +42,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: first commit fixes main's red `tests/unit/jobs-runtime.test.ts` (alerts.* queues, pg-boss `getDb`, `queue` in the handler context). Then migration 0040 + guarded down, schema, env keys, config, flag; isAbandoned, reminderLineStates, contactHmac; step 3 box, consent records, retention handlers. Pushed, PR 523.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/523 (feature PR, closes TASK-449 to TASK-452). First commit 1bee5be56 fixes main's red jobs-runtime unit test (alerts.* queues and pg-boss `getDb` were missing from the suite). Shipped: migration `0040_basket_reminder` with its guarded down (refuses while contact consent rows exist), Drizzle mirror, RLS (`basket_reminder` system write and admin read, `email_suppression` system only), optional env `CONTACT_HMAC_SECRET` and `MARKETING_MAIL_FROM` (read at call time, never at import), flag `marketing.basket_reminder` (off), the unticked step 3 box (shown only when the flag is on, env set and the locale's keys reviewed), consent proof in `consent_log` (subject `contact`, keyed hash). Tests: unit basket-reminder-eligibility, reminder-consent-checkbox, env, feature-flags, rls-policies, jobs-runtime; integration basket-reminder-data (7), basket-reminder-step (3).

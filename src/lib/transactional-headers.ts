@@ -92,3 +92,24 @@ export function accountHeaderRules(): TransactionalHeaderRule[] {
     { source: "/:locale/account/:path*", headers },
   ];
 }
+
+/**
+ * The headers of spec 034's basket reminder routes (§5.4, §6, AC-16, AC-31; TASK-451): the restore
+ * route, `link-ended` and the unsubscribe page under `/{locale}/basket/…`, and the one-click
+ * `POST /api/basket-reminders/unsubscribe/{token}`. `X-Robots-Tag: noindex, nofollow`,
+ * `Cache-Control: no-store, private` and `Referrer-Policy: no-referrer`, so a token never leaves in
+ * a `Referer`. After `securityHeaderRules()` in `next.config.ts`, so this referrer policy wins.
+ */
+export function basketReminderHeaderRules(): TransactionalHeaderRule[] {
+  const headers = [
+    { ...BASKET_ROBOTS_HEADER },
+    { ...BASKET_CACHE_HEADER },
+    { ...TRACK_REFERRER_HEADER },
+  ];
+  return [
+    { source: "/:locale/basket/restore/:token", headers },
+    { source: "/:locale/basket/link-ended", headers },
+    { source: "/:locale/basket/unsubscribe/:token", headers },
+    { source: "/api/basket-reminders/unsubscribe/:token", headers },
+  ];
+}

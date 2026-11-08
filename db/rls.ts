@@ -275,6 +275,12 @@ export const SELF_SCOPED_TABLES = [
 /** Staff only (`admin`, `system`): no other policy. */
 export const STAFF_ONLY_TABLES = [
   "accounts",
+  // spec 025 §5.1 (migration `0038_ops_alerts`, TASK-488): the founder's alert log, its
+  // notifications and the quiet-hours setting. Staff only (classified here by TASK-449, whose
+  // suite found them unlisted on main).
+  "ops_alert",
+  "ops_alert_notification",
+  "ops_alert_setting",
   // spec 012 (migration `0014_admin_identity`, TASK-217): the admin profile and the sign-in
   // core's send log. RLS and the staff policy are in `0014` itself, not in `0011`.
   "admin_profile",
@@ -357,6 +363,9 @@ export const SYSTEM_ONLY_TABLES = [
   // and the dispatch outcomes, read and written only by placement and the outbox handler.
   "order_analytics",
   "analytics_dispatch",
+  // spec 034 §5.1 C (migration `0040_basket_reminder`, TASK-449): an address that stopped basket
+  // emails, as its keyed hash. Read and written only by the reminder's system transactions.
+  "email_suppression",
 ] as const;
 
 /**
@@ -366,7 +375,12 @@ export const SYSTEM_ONLY_TABLES = [
  * item 2 A (migration `0019_purchase`, TASK-347): a purchase groups a buyer's orders, so no
  * partner, customer or public policy exists and a florist never sees a sibling order through it.
  */
-export const SYSTEM_WRITE_ADMIN_READ_TABLES = ["purchase"] as const;
+export const SYSTEM_WRITE_ADMIN_READ_TABLES = [
+  "purchase",
+  // spec 034 §5.1 B (migration `0040_basket_reminder`, TASK-449): the reminders, read by the
+  // admin metrics page; no email, name or money column.
+  "basket_reminder",
+] as const;
 
 /**
  * Tables without RLS, and why. `schema_migrations` is the runner's bookkeeping: created and owned

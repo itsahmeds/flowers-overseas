@@ -433,6 +433,15 @@ export const JOB_HANDLERS: JobHandlers = {
   "payments.balance_sweep": async () => {
     await runBalanceSweep({ enqueue: (job) => enqueueBalanceFetch(job) });
   },
+  // Spec 034 §5.2 (TASK-450): the basket reminder's scan and one reminder's send.
+  "basket-reminders.scan": async () => {
+    const { runBasketReminderScan } = await import("./basket-reminders");
+    await runBasketReminderScan();
+  },
+  "basket-reminders.send": async (payload, context) => {
+    const { runBasketReminderSend } = await import("./basket-reminders");
+    await runBasketReminderSend(payload.reminderId, context.retryCount ?? 0);
+  },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.
   "retention.sweep": async (payload) => {

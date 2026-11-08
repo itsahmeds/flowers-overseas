@@ -31,6 +31,7 @@ import {
   partnerNotificationChannels,
   partnerStatuses,
 } from "../../../../db/schema/partners";
+import { parseContactName } from "../crm/schemas";
 
 export type PartnerStatus = (typeof partnerStatuses)[number];
 export type PartnerChannel = (typeof partnerNotificationChannels)[number];
@@ -74,6 +75,9 @@ export const partnerFieldErrors = [
   "reason",
   "target",
   "product",
+  // Spec 030b §5.2 (TASK-441): the contact person, 2 to 120 characters, no contact details.
+  "tooShort",
+  "contactDetails",
 ] as const;
 export type PartnerFieldError = (typeof partnerFieldErrors)[number];
 export type PartnerFieldErrors = Readonly<Record<string, PartnerFieldError>>;
@@ -171,6 +175,11 @@ export interface PartnerProfile {
   readonly contactPhone: string | null;
   readonly payoutCurrency: string;
   readonly capacityPerDay: number;
+  /**
+   * The contact person (spec 030b §5.2: `PartnerEditSchema` gains `contactName`): `undefined`
+   * when the form carried no such field, so a save leaves the column alone; `null` clears it.
+   */
+  readonly contactName?: string | null;
 }
 
 /** The form's fields; anything else is ignored. */
@@ -183,6 +192,7 @@ export const PartnerEditFormSchema = z.object({
   contactPhone: z.string().optional(),
   payoutCurrency: z.string().optional(),
   capacityPerDay: z.string().optional(),
+  contactName: z.string().optional(),
 });
 
 const EmailSchema = z.email().max(254);
@@ -255,6 +265,14 @@ export function parsePartnerProfile(
     errors["capacityPerDay"] = "capacity";
   }
 
+  const contactName =
+    fields.contactName === undefined
+      ? undefined
+      : parseContactName(fields.contactName);
+  if (contactName !== undefined && "error" in contactName) {
+    errors["contactName"] = contactName.error;
+  }
+
   if (
     Object.keys(errors).length > 0 ||
     legalName === undefined ||
@@ -278,6 +296,9 @@ export function parsePartnerProfile(
       contactPhone,
       payoutCurrency,
       capacityPerDay: capacity,
+      ...(contactName !== undefined && "name" in contactName
+        ? { contactName: contactName.name }
+        : {}),
     },
   };
 }
@@ -558,6 +579,9 @@ export const ACTIVATION_CONDITIONS = [
   "coverage",
   "mapping",
   "contact",
+  // Spec 030b §14.2 A, §13 Q21 (founder 2026-10-24, "Q21 blocks"; TASK-442): a current signed
+  // `agreement` row in `partner_contract`. Unmet, it reads "No signed agreement on file".
+  "agreement",
 ] as const;
 export type ActivationCondition = (typeof ACTIVATION_CONDITIONS)[number];
 
@@ -571,6 +595,8 @@ export interface PreflightFacts {
   readonly notificationChannel: string;
   readonly contactEmail: string | null;
   readonly contactPhone: string | null;
+  /** A current (not superseded, not withdrawn) `agreement` row exists (spec 030b §13 Q21). */
+  readonly currentAgreement: boolean;
 }
 
 /** Each condition of `→ active`, met or not. */
@@ -590,6 +616,7 @@ export function activationPreflight(facts: PreflightFacts): PreflightResult {
     coverage: facts.coverageRows > 0,
     mapping: facts.fulfillableMappings > 0,
     contact,
+    agreement: facts.currentAgreement,
   };
 }
 

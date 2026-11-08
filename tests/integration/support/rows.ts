@@ -69,6 +69,26 @@ export async function partner(
   return row?.id ?? "";
 }
 
+/**
+ * A current signed agreement for `partnerId` (spec 030b §14.3; TASK-442), so the activation gate
+ * (`partner_activation_requires_agreement`) lets the florist go `active`. Its uploader is a fresh
+ * fake user; the object key is never fetched.
+ */
+export async function agreement(tx: Tx, partnerId: string): Promise<string> {
+  const uploader = randomUUID();
+  await tx`INSERT INTO users (id, email) VALUES (${uploader}, ${`${unique("admin")}@example.test`})`;
+  await tx`INSERT INTO locale (code, bcp47, name) VALUES ('en', 'en', 'English') ON CONFLICT DO NOTHING`;
+  const [row] = await tx<{ id: string }[]>`
+    INSERT INTO partner_contract (partner_id, doc_kind, version_no, template_version, language_code,
+                                  signed_on, effective_on, bucket, object_key, bytes, page_count,
+                                  checksum_sha256, uploaded_by)
+    VALUES (${partnerId}, 'agreement', 1, 'pa-test-1', 'en', '2026-10-01', '2026-10-01',
+            'fo-private-test', ${`originals/contract/${randomUUID()}`}, 1000, 1, ${"0".repeat(64)},
+            ${uploader})
+    RETURNING id`;
+  return row?.id ?? "";
+}
+
 export interface AssetOptions {
   readonly kind?: "product" | "delivery_proof" | "brand" | "partner";
   readonly visibility?: "public" | "private";

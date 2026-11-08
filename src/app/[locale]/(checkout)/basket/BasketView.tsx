@@ -266,6 +266,19 @@ export async function BasketView({
                 <p className="m-0">{t("basket.added")}</p>
               </div>
             ) : null}
+            {notice === "restored" || notice === "restored_details" ? (
+              <div
+                className={NOTICE_CALM}
+                data-fo-basket-notice={notice}
+                role="status"
+              >
+                <p className="m-0">
+                  {notice === "restored"
+                    ? t("basket.restored")
+                    : t("basket.restoredDetails")}
+                </p>
+              </div>
+            ) : null}
             {notice === "full" ||
             notice === "other_mode" ||
             notice === "other_currency" ? (

@@ -149,6 +149,14 @@ export class FakeS3 {
         if (object === undefined) return new Response(null, { status: 404 });
         const responseHeaders = new Headers(object.headers);
         responseHeaders.set("content-length", String(object.body.byteLength));
+        // S3's signed response overrides on a presigned GET (spec 030b §14.3's download name).
+        for (const [param, header] of [
+          ["response-content-disposition", "content-disposition"],
+          ["response-content-type", "content-type"],
+        ] as const) {
+          const value = url.searchParams.get(param);
+          if (value !== null) responseHeaders.set(header, value);
+        }
         return new Response(
           method === "HEAD" ? null : new Uint8Array(object.body),
           { status: 200, headers: responseHeaders },

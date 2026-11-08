@@ -184,6 +184,8 @@ export {
   catalogueUpdatedAt,
   isLocaleIndexable,
   localeBetaTag,
+  messageSourceHash,
+  messagesReviewedFor,
   unreviewedShare,
 } from "./review.ts";
 

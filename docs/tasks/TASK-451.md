@@ -27,6 +27,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- AC-18 (restored basket in a new browser through spec 010's date-gone and price-changed notices) has no e2e; covered only by the restore route's integration cases.
+- AC-31's robots and `X-Robots-Tag` matcher is set in `src/lib/transactional-headers.ts` but no e2e asserts it; AC-32 (visual) not run.
 
 ## Escalations
 
@@ -40,11 +42,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: restore route, link-ended page, unsubscribe page and action, RFC 8058 one-click POST (GET 405), Resend webhook status and suppression for reminders. Pushed.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/523. Routes `/{locale}/basket/restore/[token]`, `/{locale}/basket/link-ended`, `/{locale}/basket/unsubscribe/[token]` (+ `/done`), `POST /api/basket-reminders/unsubscribe/[token]`; `noindex` and `no-store` header rules; Resend webhook applies precedence and suppresses on complaint or hard bounce. Tests: integration basket-reminder-links (6).

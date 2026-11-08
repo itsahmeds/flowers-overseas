@@ -53,6 +53,9 @@
  * Spec 023 (TASK-491, migration `0042_analytics_ga4`) adds `analytics.mp_send`, global, standard
  * risk, off by default: the GA4 Measurement Protocol kill switch. It dirties no page.
  *
+ * Spec 034 (TASK-449, migration `0040_basket_reminder`) adds `marketing.basket_reminder`, global,
+ * standard risk, off by default: the consented basket reminder. It dirties no page.
+ *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
 import { z } from "zod";
@@ -271,6 +274,18 @@ const REGISTRY = [
     scopeKinds: ["global"],
     description:
       "Sends purchase and refund to GA4 by Measurement Protocol for buyers who accepted analytics (spec 023). Off: each delivery is recorded as skipped (disabled); nothing is sent.",
+    risk: "standard",
+    dirties: [],
+  },
+  // Spec 034 §5.1 E, §12 (migration `0040_basket_reminder`, TASK-449): the one consented basket
+  // reminder email. Off hides the step 3 box and stops scheduling and sending; restore and
+  // unsubscribe always work. The auto-pause turns it off; only a person turns it on. The box sits
+  // on a `no-store` checkout step, so no page is dirtied.
+  {
+    key: "marketing.basket_reminder",
+    scopeKinds: ["global"],
+    description:
+      "One basket reminder email, only to buyers who ticked the box on checkout step 3 (spec 034). Off: the box is hidden and nothing is scheduled or sent; restore and unsubscribe links keep working.",
     risk: "standard",
     dirties: [],
   },

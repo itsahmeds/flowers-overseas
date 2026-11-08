@@ -74,6 +74,9 @@
  *    enough, so an injected clock ahead of real time selects nothing younger.
  *  - `auth_email_send` (7 days after the send, delete; spec 012 §2.2, §8 item 1; TASK-221): the
  *    sign-in send log of both surfaces, whose rows hold a hashed address and a time.
+ *  - `basket_reminder_tokens` (60 days after the send, clear), `basket_reminder` (395 days,
+ *    delete) and `email_suppression` (5 years after `updated_at`, delete): spec 034 §5.1 E, AC-27;
+ *    TASK-449. `checkout_draft_personal` also clears the draft's reminder consent (AC-9).
  *  - `ops_alert` (12 months after the resolve, delete; spec 025 §5.1, AC-36; TASK-488): resolved
  *    alerts and their notifications. Open alerts are never swept.
  *  - `order_analytics_ga_ids` (60 days after placement, pseudonymise; spec 023 §5.1, AC-30;
@@ -657,7 +660,7 @@ const checkoutDraftPersonal: PolicyHandler = async ({ db, cutoff, dryRun }) => {
     sql`SELECT
           (SELECT count(*)::int FROM public.checkout_draft d
             WHERE ${draftIdleSince(cutoff)}
-              AND (d.buyer IS NOT NULL OR EXISTS (
+              AND (d.buyer IS NOT NULL OR d.reminder_consent_at IS NOT NULL OR EXISTS (
                 SELECT 1 FROM public.checkout_draft_line l
                  WHERE l.draft_id = d.id AND (l.recipient IS NOT NULL OR l.card IS NOT NULL)))) AS drafts,
           (SELECT count(*)::int FROM public.checkout_draft_line l
@@ -672,9 +675,13 @@ const checkoutDraftPersonal: PolicyHandler = async ({ db, cutoff, dryRun }) => {
            WHERE d.id = l.draft_id AND ${draftIdleSince(cutoff)}
              AND (l.recipient IS NOT NULL OR l.card IS NOT NULL)`,
     );
+    // Spec 034 §5.2 (AC-9): the consent belongs to an email the draft no longer holds, so it is
+    // cleared with the buyer. Its `consent_log` proof is kept (`consent_records`).
     await db.execute(
-      sql`UPDATE public.checkout_draft d SET buyer = NULL
-           WHERE ${draftIdleSince(cutoff)} AND d.buyer IS NOT NULL`,
+      sql`UPDATE public.checkout_draft d
+             SET buyer = NULL, reminder_consent_at = NULL, reminder_consent_version = NULL
+           WHERE ${draftIdleSince(cutoff)}
+             AND (d.buyer IS NOT NULL OR d.reminder_consent_at IS NOT NULL)`,
     );
   }
   return {
@@ -885,6 +892,62 @@ const opsAlert: PolicyHandler = async ({ db, cutoff, dryRun }) => {
 };
 
 /**
+ * `basket_reminder_tokens` (60 days, pseudonymise; spec 034 §5.1 E, AC-27; TASK-449): a
+ * reminder's two token hashes, `restore_expires_at` and `email_hmac` are cleared 60 days after
+ * `sent_at`, or after `created_at` for a reminder never sent. The row itself stays for the metrics.
+ */
+const basketReminderTokens: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = sql`COALESCE(sent_at, created_at) <= ${ts(cutoff)}
+    AND (restore_token_sha256 IS NOT NULL OR unsubscribe_token_sha256 IS NOT NULL
+         OR email_hmac IS NOT NULL)`;
+  const counted = await rows<{ count: number }>(
+    db,
+    sql`SELECT count(*)::int AS count FROM public.basket_reminder WHERE ${due}`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`UPDATE public.basket_reminder
+             SET restore_token_sha256 = NULL, restore_expires_at = NULL,
+                 unsubscribe_token_sha256 = NULL, email_hmac = NULL
+           WHERE ${due}`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { basket_reminder: counted[0]?.count ?? 0 },
+    skipped: {},
+  };
+};
+
+/**
+ * `basket_reminder` (395 days, delete) and `email_suppression` (5 years after `updated_at`,
+ * delete; spec 034 §5.1 E, AC-27; TASK-449). Deleting a reminder never touches its purchase.
+ */
+function basketReminderRows(
+  table: "basket_reminder" | "email_suppression",
+): PolicyHandler {
+  const name = sql.raw(table);
+  const column = sql.raw(
+    table === "basket_reminder" ? "created_at" : "updated_at",
+  );
+  return async ({ db, cutoff, dryRun }) => {
+    const due = sql`${column} <= ${ts(cutoff)}`;
+    const counted = await rows<{ count: number }>(
+      db,
+      sql`SELECT count(*)::int AS count FROM public.${name} WHERE ${due}`,
+    );
+    if (!dryRun) {
+      await db.execute(sql`DELETE FROM public.${name} WHERE ${due}`);
+    }
+    return {
+      status: dryRun ? "dry_run" : "applied",
+      counts: { [table]: counted[0]?.count ?? 0 },
+      skipped: {},
+    };
+  };
+}
+
+/**
  * Spec 030b §5.1, §13 Q11 (TASK-439): a florist's notes and contact log are deleted once the
  * florist has been offboarded for the policy's period (`offboarded_at` at or before `cutoff`).
  * A florist that is not offboarded keeps every row; the founder deletes notes by hand.
@@ -964,6 +1027,9 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   partner_note: partnerCrmRows("partner_note"),
   partner_contact_log: partnerCrmRows("partner_contact_log"),
   order_analytics_ga_ids: orderAnalyticsGaIds,
+  basket_reminder_tokens: basketReminderTokens,
+  basket_reminder: basketReminderRows("basket_reminder"),
+  email_suppression: basketReminderRows("email_suppression"),
 };
 
 /**

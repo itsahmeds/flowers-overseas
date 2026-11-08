@@ -46,6 +46,9 @@ const MATRIX: Record<string, readonly string[]> = {
   "finance.export": ["admin"],
   "partner.crm.view": ["admin", "ops"],
   "partner.crm.write": ["admin", "ops"],
+  // spec 030b §13 Q15 (TASK-442): contracts are admin only.
+  "partner.contract.view": ["admin"],
+  "partner.contract.write": ["admin"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

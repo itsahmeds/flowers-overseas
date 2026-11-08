@@ -40,13 +40,17 @@ import { z } from "zod";
 /* Vocabulary                                                                 */
 /* -------------------------------------------------------------------------- */
 
-/** §5.2's `ObjectKind`: the four `media_asset.kind` values plus the database dump. */
+/**
+ * §5.2's `ObjectKind`: the four `media_asset.kind` values plus the database dump, and spec 030b
+ * §14.3's `contract` (a florist's signed PDF, private, `originals/contract/{id}` only; TASK-442).
+ */
 export const objectKinds = [
   "product",
   "delivery_proof",
   "brand",
   "partner",
   "backup",
+  "contract",
 ] as const;
 export const ObjectKind = z.enum(objectKinds);
 export type ObjectKind = z.infer<typeof ObjectKind>;
@@ -149,6 +153,23 @@ export const PutInput = z.strictObject({
 });
 export type PutInput = z.infer<typeof PutInput>;
 
+/**
+ * The file name a signed URL downloads as (spec 030b §14.3): lowercase, a `.pdf` file, no path.
+ * The URL then answers `Content-Disposition: attachment; filename="{downloadName}"` and
+ * `Content-Type: application/pdf`, so the browser saves it rather than rendering it.
+ */
+export const DownloadNameSchema = z
+  .string()
+  .regex(
+    /^[a-z0-9][a-z0-9._-]{0,99}\.pdf$/u,
+    "a download name is a lowercase .pdf file name",
+  );
+
+export const SignedUrlOptionsSchema = z.strictObject({
+  downloadName: DownloadNameSchema.optional(),
+});
+export type SignedUrlOptions = z.infer<typeof SignedUrlOptionsSchema>;
+
 /** The interface of spec 002 §5.2. Implementations: `InMemoryStorage` here, R2 in spec 006. */
 export interface Storage {
   objectKey(kind: ObjectKind, id: string, variant: VariantRef): string;
@@ -157,7 +178,11 @@ export interface Storage {
   /** The facts of a stored object, or `null` when nothing is stored at the location. */
   head(location: ObjectLocation): Promise<StorageObject | null>;
   /** A time-limited read URL; `ttlSeconds` is a whole number in 1 … 604 800. */
-  getSignedUrl(location: ObjectLocation, ttlSeconds: number): Promise<string>;
+  getSignedUrl(
+    location: ObjectLocation,
+    ttlSeconds: number,
+    options?: SignedUrlOptions,
+  ): Promise<string>;
   /** Remove an object; removing an absent object succeeds, as on S3. */
   delete(location: ObjectLocation): Promise<void>;
 }
@@ -235,6 +260,11 @@ export function objectKey(
   if (id.length > MAX_ID_LENGTH || !SEGMENT_PATTERN.test(id)) {
     throw new StorageKeyError(
       `objectKey: \`id\` must be one lowercase path segment of at most ${String(MAX_ID_LENGTH)} characters`,
+    );
+  }
+  if (parsedKind.data === "contract" && ref !== "original") {
+    throw new StorageKeyError(
+      'objectKey: a contract has only its "original": it is stored unchanged',
     );
   }
   if (ref === "original") return `originals/${parsedKind.data}/${id}`;
@@ -342,12 +372,18 @@ export class InMemoryStorage implements Storage {
   async getSignedUrl(
     location: ObjectLocation,
     ttlSeconds: number,
+    options: SignedUrlOptions = {},
   ): Promise<string> {
     const parsed = parseLocation(location);
     assertTtl(ttlSeconds);
+    const { downloadName } = SignedUrlOptionsSchema.parse(options);
     const expires = this.#now().getTime() + ttlSeconds * 1000;
-    // Expiry and signature ride in the path, not the query: the fake has no query string at all.
-    return `https://${parsed.bucket}${FAKE_HOST_SUFFIX}/${String(expires)}/${this.#sign(parsed, expires)}/${parsed.objectKey}`;
+    // Expiry and signature ride in the path; the download name, when asked for, is the one query
+    // parameter, and it is signed too.
+    const base = `https://${parsed.bucket}${FAKE_HOST_SUFFIX}/${String(expires)}/${this.#sign(parsed, expires, downloadName)}/${parsed.objectKey}`;
+    return downloadName === undefined
+      ? base
+      : `${base}?download=${encodeURIComponent(downloadName)}`;
   }
 
   async delete(location: ObjectLocation): Promise<void> {
@@ -366,10 +402,16 @@ export class InMemoryStorage implements Storage {
       objectKey: path?.[3] ?? "",
     });
     const expires = Number(path?.[1]);
+    const download = parsed.searchParams.get("download") ?? undefined;
+    const downloadName =
+      download === undefined
+        ? undefined
+        : DownloadNameSchema.safeParse(download);
     const valid =
       location.success &&
       Number.isSafeInteger(expires) &&
-      this.#verify(location.data, expires, path?.[2] ?? "") &&
+      (downloadName === undefined || downloadName.success) &&
+      this.#verify(location.data, expires, path?.[2] ?? "", download) &&
       this.#now().getTime() <= expires;
     if (!valid) return new Response(null, { status: 403 });
 
@@ -379,7 +421,13 @@ export class InMemoryStorage implements Storage {
     }
     return new Response(new Uint8Array(entry.body), {
       status: 200,
-      headers: { "content-type": entry.facts.mime },
+      headers:
+        download === undefined
+          ? { "content-type": entry.facts.mime }
+          : {
+              "content-type": "application/pdf",
+              "content-disposition": `attachment; filename="${download}"`,
+            },
     });
   }
 
@@ -387,9 +435,17 @@ export class InMemoryStorage implements Storage {
     return `${location.bucket}\u0000${location.objectKey}`;
   }
 
-  #sign(location: ObjectLocation, expires: number): string {
+  #sign(
+    location: ObjectLocation,
+    expires: number,
+    downloadName?: string,
+  ): string {
     return createHmac("sha256", this.#secret)
-      .update(`${location.bucket}\n${location.objectKey}\n${String(expires)}`)
+      .update(
+        `${location.bucket}\n${location.objectKey}\n${String(expires)}${
+          downloadName === undefined ? "" : `\n${downloadName}`
+        }`,
+      )
       .digest("hex");
   }
 
@@ -397,8 +453,12 @@ export class InMemoryStorage implements Storage {
     location: ObjectLocation,
     expires: number,
     signature: string,
+    downloadName?: string,
   ): boolean {
-    const expected = Buffer.from(this.#sign(location, expires), "hex");
+    const expected = Buffer.from(
+      this.#sign(location, expires, downloadName),
+      "hex",
+    );
     const given = Buffer.from(signature, "hex");
     return given.length === expected.length && timingSafeEqual(given, expected);
   }

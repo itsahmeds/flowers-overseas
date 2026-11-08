@@ -32,7 +32,7 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue, spec 047's checkout.discount_codes and spec 025's alerts.push", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue, spec 047's checkout.discount_codes, spec 025's alerts.push, spec 030b's payments.balance_fetch and spec 034's marketing.basket_reminder", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
@@ -48,7 +48,18 @@ describe("T-16 — the registry", () => {
       "alerts.push",
       "payments.balance_fetch",
       "analytics.mp_send",
+      "marketing.basket_reminder",
     ]);
+  });
+
+  it("registers spec 034's marketing.basket_reminder as global, standard risk, dirtying nothing (§5.1 E, §12)", () => {
+    expect(flagDefinition("marketing.basket_reminder")).toEqual({
+      key: "marketing.basket_reminder",
+      scopeKinds: ["global"],
+      risk: "standard",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
   });
 
   it("registers spec 047's checkout.discount_codes per country, standard risk, dirtying nothing (§12)", () => {

@@ -77,6 +77,8 @@ export interface PartnerListItem {
   readonly termsVersion: string | null;
   readonly zones: number;
   readonly products: number;
+  /** The payout currency (spec 030b's "Owed now" reads 0.00 in it when nothing is owed). */
+  readonly payoutCurrency: string;
 }
 
 export interface PartnerList {
@@ -113,6 +115,7 @@ export async function listPartners(
         status: fulfillmentPartner.status,
         termsSignedAt: fulfillmentPartner.termsSignedAt,
         termsVersion: fulfillmentPartner.termsVersion,
+        payoutCurrency: fulfillmentPartner.payoutCurrencyCode,
         zones: sql<number>`(SELECT count(*)::int FROM public.partner_coverage c WHERE c.partner_id = ${sql.raw('"fulfillment_partner"."id"')})`,
         products: sql<number>`(SELECT count(*)::int FROM public.partner_catalog_mapping m WHERE m.partner_id = ${sql.raw('"fulfillment_partner"."id"')} AND m.can_fulfil AND m.partner_payout_minor > 0)`,
       })
@@ -363,7 +366,14 @@ export async function partnerDetail(
       .groupBy(productTier.tierKey)
       .orderBy(asc(productTier.tierKey));
 
+    const agreementRows = await db.execute(
+      sql`SELECT 1 FROM public.partner_contract c
+          WHERE c.partner_id = ${row.id}::uuid AND c.doc_kind = 'agreement'
+            AND c.superseded_at IS NULL`,
+    );
     const preflight = activationPreflight({
+      currentAgreement:
+        Array.from(agreementRows as Iterable<unknown>).length > 0,
       termsSignedAt: row.termsSignedAt,
       termsVersion: row.termsVersion,
       coverageRows: zones.length,
@@ -452,5 +462,46 @@ export async function partnerCodeById(
       .from(fulfillmentPartner)
       .where(eq(fulfillmentPartner.id, id.data));
     return row?.code;
+  });
+}
+
+/** What every florist tab shows above its tab bar (spec 030b §5.3): name, code, place, status. */
+export interface PartnerHead {
+  readonly id: string;
+  readonly code: string;
+  readonly legalName: string;
+  readonly cityLabel: string;
+  readonly countryName: string;
+  readonly status: PartnerStatus;
+}
+
+/** One florist's head by code (the URL's), or `undefined` when no florist has it. */
+export async function partnerHead(
+  actor: DbActor,
+  code: string,
+  run: PartnerAdminRunner = partnerAdminRunner,
+): Promise<PartnerHead | undefined> {
+  const parsed = z
+    .string()
+    .max(60)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)
+    .safeParse(code);
+  if (!parsed.success) return undefined;
+  return run({ ...actor, action: PARTNER_ACTIONS.read }, async (db) => {
+    const [row] = await db
+      .select({
+        id: fulfillmentPartner.id,
+        code: fulfillmentPartner.code,
+        legalName: fulfillmentPartner.legalName,
+        cityLabel: fulfillmentPartner.cityLabel,
+        countryName,
+        status: fulfillmentPartner.status,
+      })
+      .from(fulfillmentPartner)
+      .innerJoin(country, eq(country.id, fulfillmentPartner.countryId))
+      .where(eq(fulfillmentPartner.code, parsed.data));
+    return row === undefined
+      ? undefined
+      : { ...row, status: z.enum(partnerStatuses).parse(row.status) };
   });
 }

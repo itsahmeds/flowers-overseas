@@ -55,6 +55,8 @@ import {
   PutInput,
   StorageIntegrityError,
   StorageObject,
+  type SignedUrlOptions,
+  SignedUrlOptionsSchema,
   assertTtl,
   objectKey,
   parseLocation,
@@ -263,6 +265,8 @@ export function presignGet(options: {
   readonly region: string;
   readonly now: Date;
   readonly expiresSeconds: number;
+  /** Signed response overrides (`response-content-disposition`, `response-content-type`). */
+  readonly response?: Readonly<Record<string, string>>;
 }): string {
   const { amzDate, dateStamp } = amzDates(options.now);
   const scope = `${dateStamp}/${options.region}/${SERVICE}/aws4_request`;
@@ -272,6 +276,7 @@ export function presignGet(options: {
     "X-Amz-Date": amzDate,
     "X-Amz-Expires": String(options.expiresSeconds),
     "X-Amz-SignedHeaders": "host",
+    ...(options.response ?? {}),
   };
   const path = canonicalPath(options.path);
   const query = canonicalQuery(params);
@@ -607,9 +612,11 @@ export class R2Storage implements Storage {
   async getSignedUrl(
     location: ObjectLocation,
     ttlSeconds: number,
+    options: SignedUrlOptions = {},
   ): Promise<string> {
     const parsed = parseLocation(location);
     assertTtl(ttlSeconds);
+    const { downloadName } = SignedUrlOptionsSchema.parse(options);
     this.#declared(parsed.bucket);
     return presignGet({
       origin: this.#origin,
@@ -619,6 +626,15 @@ export class R2Storage implements Storage {
       region: R2_REGION,
       now: this.#now(),
       expiresSeconds: ttlSeconds,
+      // Spec 030b §14.3: a contract downloads as an attachment, never rendered on any origin.
+      ...(downloadName === undefined
+        ? {}
+        : {
+            response: {
+              "response-content-disposition": `attachment; filename="${downloadName}"`,
+              "response-content-type": "application/pdf",
+            },
+          }),
     });
   }
 
