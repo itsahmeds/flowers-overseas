@@ -51,6 +51,10 @@ here.
 
 - 2026-11-08: migration 0038 (first written as 0040) + Drizzle mirror; `src/modules/ops` (registry, schemas, raise with dedup and reopen, Pushover adapter, messages, dispatch with quiet hours, storm, test cap, channel failure); every `captureAlert` call site moved to `raiseLegacyAlert`; env keys, flag, jobs, retention; unit, contract and integration suites green; build green. TASK-489 built in the same PR.
 
+## Copy approval
+
+- founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-488.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 025 (TASK-488, TASK-489); the founder did not read this text: the 93 admin texts of spec 025 (`admin.alerts.*`, `admin.flags.description.alerts.push`), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
