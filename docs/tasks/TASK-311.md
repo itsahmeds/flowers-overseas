@@ -8,7 +8,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 Spec 042 §5.3.6 and §13 Q8 (every default: the corridor page only, the unlabelled "you" dot, the abstract arc, hidden below `md`).
 - **AC owned:** AC-19; test T-19. The document is byte-identical with `CF-IPCountry`, `X-Forwarded-For` and `Accept-Language` varied (ADR-0006: no IP personalisation).
 - `docs/design/` artboards from PR 297 (spec 042): `system/motion-interactions.dc.html` motion 18, `corridor-country-desktop`, `corridor-country-mobile` (not shown). Match them pixel for pixel.
-- Spec 042's shared ACs (AC-1 to AC-6) are TASK-313's; this PR still records its own idea's row of the §5.3.0 byte table in `## Result` (AC-1) and runs AC-3 to AC-6 for its idea. The first idea PR to land creates `tests/unit/interactions-budget.test.ts` and `interactions-css.test.ts`; later ones extend them.
+- Spec 042's shared ACs (AC-1 to AC-6) are TASK-313's; this PR still records its own idea's row of the §5.3.0 byte table in `
+- 2026-11-08 (finisher F-OLD): rebased onto `ec41cb020` (97 commits): `globals.css` keeps main's occasion-tabs block and adds the route line's after it; `laptop-guide.png` took main's image (it needs a re-render once CI shows the diff). typecheck 0; the three unit files 29/29. T-50 (AC-45 vs AC-19) is still in main's `corridor-first-screen.spec.ts`, so the escalation stays open and the row stays `blocked`: merging this PR as it stands turns that e2e red.
+
+## Result` (AC-1) and runs AC-3 to AC-6 for its idea. The first idea PR to land creates `tests/unit/interactions-budget.test.ts` and `interactions-css.test.ts`; later ones extend them.
 - One build-time boolean per idea in `src/config/interactions.ts` (§12): no runtime flag, no database read on the render path.
 - No counted message key is added (AC-5: the `en-gb` unreviewed share is unchanged by the diff).
 - **Review class: review-only** under the Light rule (CLAUDE.md DoD 4): SEO markup on an indexable first screen, no money or legal text; the reviewer may call the breaker, and that call binds.
