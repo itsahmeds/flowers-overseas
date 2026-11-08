@@ -3374,6 +3374,11 @@
     "reviewed": false,
     "sourceHash": "15a49a3afca5ab88b823e451646bbb196925a1ef6b1f7d0382fd66218d6925c5"
   },
+  "admin.nav.discounts": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bbf45efe4f37dcd66b38cf37ae0cb4bcd3dda10f634ec2ae53ce65f93113a9a7"
+  },
   "admin.partners.error.cadence": {
     "source": "human",
     "reviewed": false,
@@ -4698,5 +4703,620 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "51786e7ea57b3d806cf7253299b97c553c2406ce6b12adc7210f8ebbde35f92e"
+  },
+  "admin.discounts.list.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2c7e8c34240f11af7ee3a1592e528e7a3a05fd5cbfd2f63c072bd1bd3716673e"
+  },
+  "admin.discounts.list.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "82bf62420088b0a8ccdf775fb20299f278c740ce5b4256e8e132c839145aa0d5"
+  },
+  "admin.discounts.list.new": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3edce074d60711e799f3ebf89c7d2b12069c421558d76340108e13cdc16c6e57"
+  },
+  "admin.discounts.list.statusFilter": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.discounts.list.anyStatus": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ac78229d6b822ce5ab1df22e38cd10c8d31d718c851f8b55a0899e82f9006b71"
+  },
+  "admin.discounts.list.apply": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31e392d1c0378beca611de66c0f4c71cba29159905cc54242d9bddee5b23d851"
+  },
+  "admin.discounts.list.footnote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3ef9b63c3d9b595ec5e736f3427857e45a7e6194f90566e5fc7d1abb76992fa"
+  },
+  "admin.discounts.list.noMatch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c214f7f1a7a683ecbd76831589d8dab93f0b8a5eaded542d4eff3bb0f54a486c"
+  },
+  "admin.discounts.column.code": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "340f463033e0fd5ddeabb922df4d4f1b5747494d0f5ed9894f13b6e13ca831f5"
+  },
+  "admin.discounts.column.campaign": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "268286d2ef7573e03e27c7a78d6c1b45f707646cfb20e9a8a2469c4e72aad4fb"
+  },
+  "admin.discounts.column.offer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0cf57c63eb976556a273198f34e8816a586471aefa434f80dab8b77667c0a981"
+  },
+  "admin.discounts.column.valid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8791afe5a9f5a4d45d381d379865d8821e810b3caae1e59e0cd9336e99029adf"
+  },
+  "admin.discounts.column.uses": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e6151acb057025d16cbccee815e728994335db9c3c980e9489194be2f7937c2"
+  },
+  "admin.discounts.column.given": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e8808b4454f5b56b9a8684111957f522f60da7cf0e2b1cddc8653c2d41fac68c"
+  },
+  "admin.discounts.column.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.discounts.valid.range": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ba318cc195ceff48d9bfce7c522735ca505029deb9c5ebc27de705dc12c20e4f"
+  },
+  "admin.discounts.valid.from": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3e10e9511b1ea0fcc879a346cbf4f2edd7074854b17f51e58865e11c0b7b1dd"
+  },
+  "admin.discounts.uses.capped": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eb5d100193e81ff6c44135d08997bc5a654f43f6ce1361341ae4421a018dbb08"
+  },
+  "admin.discounts.separator.offer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "005e1574a2b5c816304606c9672c7c18a7f1b343917e36fc1ed596dd80984650"
+  },
+  "admin.discounts.separator.given": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "588da410532073f8daec0cc62c6904f9d8a150b41ae3b1565c10069742cb18fc"
+  },
+  "admin.discounts.status.scheduled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4724f344c1c0e4a1c5e4085610cc31bf67d0959dfda9793d4605b7b329399775"
+  },
+  "admin.discounts.status.active": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "admin.discounts.status.ended": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7cdc804e6996997d599232fbf8ce066a4f6c0696e7b586fc7b3ee499f35d4559"
+  },
+  "admin.discounts.status.used_up": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cc2a6d1c6f5ae15bf0eda7fb63712edd099f0767dba1bca2443e8a2c5bd826c9"
+  },
+  "admin.discounts.status.disabled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "75081b593d15cf6e631971bc6768723f593b88b172477e40ae7d363e4829816d"
+  },
+  "admin.discounts.empty.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3ad7f8d1846647ef58a17b87e563c1ce2a98ed0f9017c316a851f2fc1f7610d9"
+  },
+  "admin.discounts.empty.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "33a1c2e8911c25a51a81984922b112bc2bfa0f773e8c5c411a15a8dc4156af84"
+  },
+  "admin.discounts.back": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2c7e8c34240f11af7ee3a1592e528e7a3a05fd5cbfd2f63c072bd1bd3716673e"
+  },
+  "admin.discounts.new.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8ae70cac9658a52d53bbe7d9456d58ebbe5eb17a43007d8b98f78b0e4ed79a0d"
+  },
+  "admin.discounts.new.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "27e7be79af63cdfc4c0d82942c9bdb730af46c419d27d288ec33b742840c203d"
+  },
+  "admin.discounts.form.section": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "73887dbb42d2b4d6a4a0b3f4d3fac190a2cef9dea95a2254d73d03d1681cb022"
+  },
+  "admin.discounts.form.code": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "340f463033e0fd5ddeabb922df4d4f1b5747494d0f5ed9894f13b6e13ca831f5"
+  },
+  "admin.discounts.form.generate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e49bb4401e67bd54ffe1e9ab6c2af87ddad0cdc8ca1c84ba1b4e94234438ba"
+  },
+  "admin.discounts.form.codeHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e597a27e40167c3b107c161b2a3ebb713a8a34ca99a63f1545b15102abf085bd"
+  },
+  "admin.discounts.form.campaign": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "268286d2ef7573e03e27c7a78d6c1b45f707646cfb20e9a8a2469c4e72aad4fb"
+  },
+  "admin.discounts.form.campaignHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fbed17dabada446bd0cfc2e66339b5f627e4b9f9511b9bd4df27be47dc3483db"
+  },
+  "admin.discounts.form.offer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0cf57c63eb976556a273198f34e8816a586471aefa434f80dab8b77667c0a981"
+  },
+  "admin.discounts.form.kind.percent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3ef91808fe1d28b20e4bd55cfdf029487093d3acf9a59f9ad824061edbbcc185"
+  },
+  "admin.discounts.form.kind.fixed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d4815c72aaa08b4a3d709c614470297cb6fbb0af54809a033cb0ac305129df5d"
+  },
+  "admin.discounts.form.percent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "716d633b125adb76832f17bee5bce63be33094820cd46ef1222cec4a7ae8eb58"
+  },
+  "admin.discounts.form.percentHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1861aa17a7c6f2b95c3479bdef320a64211e417f5a16cfea5ab65938a124c2c3"
+  },
+  "admin.discounts.form.perCurrency": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e5ab65c5c57d10dd25aaefe183261e6c875d8ed0ed55c2e69ce133004480c43b"
+  },
+  "admin.discounts.form.currency": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3ac1a9ec4fa7a9fa612a30803f3d88fa479a45431f644190ebcc18d3eaafdb3a"
+  },
+  "admin.discounts.form.amountOff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d4815c72aaa08b4a3d709c614470297cb6fbb0af54809a033cb0ac305129df5d"
+  },
+  "admin.discounts.form.minOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c33ab96f72d10b23b6b95dca47bfec7be07169ddf04b574dc472c99fe51f6358"
+  },
+  "admin.discounts.form.amountLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5affc6b1258e66d79b3627c199a1ea9e5cab45c1826ec467d955a4ea28528d6e"
+  },
+  "admin.discounts.form.minLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc07f17bab5ba992cad2f3f9c9cf8e46da313513d4142e66b6e38d3084873647"
+  },
+  "admin.discounts.form.fixedOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "44c8b2a31296aa0812744cefcd142f1d25d25dcfc4c09408d8e421b14719bc5c"
+  },
+  "admin.discounts.form.starts": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "96dbedeca7dfb7fa61e7ab52091a397e48cb56c9259f068c834a666de1088b2f"
+  },
+  "admin.discounts.form.startsHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2a83b248b26d2424e583e6d34d0f3f7e2ecb5a46da40cd582e5f405aa08f7d06"
+  },
+  "admin.discounts.form.ends": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e98982c9f2ba33327b96c1016a93926533a029aedc82afd029bcb956f3f9b21a"
+  },
+  "admin.discounts.form.optional": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a9aaf97cc9e9ce8a8778726775a058f6e317e5f7f5f9d30fc96078d534378b30"
+  },
+  "admin.discounts.form.zone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b9fe1464783e1c0d3a12dbde2686e883482a4fa03f33351af3e576d7a9d32fe0"
+  },
+  "admin.discounts.form.maxRedemptions": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "98d2d412b8a206a6ab314cf26d5985dd721d228189744b55f878c087315baf45"
+  },
+  "admin.discounts.form.maxRedemptionsHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d5cb51d6e563518f2d17efe666bf812912706af4d0732d3a232446d6af3156ee"
+  },
+  "admin.discounts.form.maxPerEmail": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9bba1f7c685bc2aecc395cacc25ccb7dd091ebad5a9c7c44f61f7ea52cef2f6a"
+  },
+  "admin.discounts.form.maxPerEmailHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "075b5714f9fbb0c528a83f42571e6b7777e54248fcb1196069c3ff71e2a38bac"
+  },
+  "admin.discounts.form.destinations": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
+  },
+  "admin.discounts.form.destinationsHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5162124d9d31d5facb478dc65be46c5f0cc6743d62bc380d98de30fb23d4bf3"
+  },
+  "admin.discounts.form.allDestinations": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0fc7d71eb828a862691b7273d6c7f34344de1aa2276b842d65ece2911df0961f"
+  },
+  "admin.discounts.form.bouquets": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c03f1370d259142adc1545af7da216e51468270dfacf8e60179f90b27e9ab275"
+  },
+  "admin.discounts.form.bouquetsHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "248225ae09d9ac4d7a10847dcae58574b373a307c13fb590409be7536aa48639"
+  },
+  "admin.discounts.form.allBouquets": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1e1f65ba0d55b562fa761f8c2b10fc7240f01295e70067098393521f0610ea48"
+  },
+  "admin.discounts.form.chosen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f7b32c12fb740049410aa0c0be11f2287e0c7642d92af4491f065e1f69ab55fb"
+  },
+  "admin.discounts.form.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d8da2c49df39d91df7ecd199b92da7bf264f026242ccc69b08daeadfe587c45b"
+  },
+  "admin.discounts.form.create": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "231db95a3c8de4e6de2cd02bd56d31b682fe17379afbaedd7b2bd8bb31f25998"
+  },
+  "admin.discounts.form.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dd0ae7a5cbcf233968657563dce34639e681861e2df6d3f845c08d49981c0999"
+  },
+  "admin.discounts.form.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.discounts.form.frozen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7dd4e23475fd28ae811e2f51ad776a4b906a79835f4a9c4bf7636309dedf2313"
+  },
+  "admin.discounts.preview.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "13404504cc0c55af368a0219b923d4c07425af907355572b677f21bc5ac8834b"
+  },
+  "admin.discounts.preview.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c9e9a251f2aa3db5ae60fd064ea1e4b29a0e7048358124722d01cf382d00a5a"
+  },
+  "admin.discounts.preview.belowTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aae262f52230146f4fb6194b71c91c36b8ce14b5f3ee9d41e5c63a7469582d5f"
+  },
+  "admin.discounts.preview.belowItem": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "023b0f9855cbea9625c3959b633399f6e1134995675681f48b04ad4e85fba0bc"
+  },
+  "admin.discounts.preview.claimTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "04a9df974457b881aabe81b2a4ca6c4d008914d820ece242fbc51123bf23c16e"
+  },
+  "admin.discounts.preview.claimItem": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7fba8e9627aa6fb68e5ee4a799db7ac4dfa7abd8819bb51b18de6613ebf3851d"
+  },
+  "admin.discounts.preview.column.bouquet": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
+  },
+  "admin.discounts.preview.column.destination": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "293d404a500f5f9a149916d810ff4f4231bd5d6ecd25eb0f55a867e2095eca48"
+  },
+  "admin.discounts.preview.column.price": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "93c91c851e7acc17d881c9b89ea954be1183070254014be03a93d169cf52dbbd"
+  },
+  "admin.discounts.preview.column.discount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cb72ec985b5f3d754e23f4172dea5964e9255088c0bcd5ef0bf73cc72059019b"
+  },
+  "admin.discounts.preview.column.vat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4885a17383f949c7b45650abce6474987141080831e902c37623e8a09ec3188f"
+  },
+  "admin.discounts.preview.column.payout": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0a29a00af32de7af081c9237f067e024a8ad5b97b52f5b9dd2327e2da04af961"
+  },
+  "admin.discounts.preview.column.margin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1dac0d0f1bbea78006efcc29462b6b48a9c1982cca28b29b1e36abebb30914c8"
+  },
+  "admin.discounts.preview.vatRate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7d1e11c5aab8c80b7e6169b91dcb26aa7cc5930e44260f85665c3553029c81d1"
+  },
+  "admin.discounts.preview.notMapped": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9ea56193b0e782bb93822632eb05ebab98aac44493f081d57e7548fa5471aaa0"
+  },
+  "admin.discounts.preview.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b8b6ea4bd957a709c627c0a7a3aea47a84d01a4d34c5000ebca5c2fba8b39c62"
+  },
+  "admin.discounts.preview.truncated": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "debf75d89eb09bfff10307d879f0a9b271ab09ab11b0251d56a62eb9ed89541d"
+  },
+  "admin.discounts.preview.updating": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d9fca37296370f9a4cbc7c3b89e5d1cb9ba7b355370c9881499578c15ee94ee2"
+  },
+  "admin.discounts.stats.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9f3ed608e14bfb0beec89019764ed22cbc4d4d97ec0014daa33b1d3ce204e88e"
+  },
+  "admin.discounts.stats.liveUses": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8dc68fa1ebb93606c2106d84bfedb3b1490a1e93406ec78b6f7e67469a433845"
+  },
+  "admin.discounts.stats.given": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e8808b4454f5b56b9a8684111957f522f60da7cf0e2b1cddc8653c2d41fac68c"
+  },
+  "admin.discounts.stats.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "adb85cf22bfc3254304164852b939485b2071dc53cd828a40828eb8505057ccd"
+  },
+  "admin.discounts.stats.created": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "admin.discounts.stats.createdLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "297d2da1b7050ff853f8a8d129491bb1c1073acfa3d4f4462628da0daf97f2e6"
+  },
+  "admin.discounts.stats.lastChange": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8b0275e2260957c7f769c46ef563c14fea5460a398294042b2a5207877a6187c"
+  },
+  "admin.discounts.disabled.banner": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9c48c45e3876eee9f7112eb8921d2529e36e57789dcc35e9721aa7077388677"
+  },
+  "admin.discounts.disabled.enable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b8bc6769e17de84e30ee5f66912dd268eb0c4e928681418d0fa549707bbefddd"
+  },
+  "admin.discounts.dialog.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8f1da33e628ff761695309eb711fce3485ccdc66535a756fd46b672cadd64432"
+  },
+  "admin.discounts.dialog.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "75fdfd0cca0b0e655bf2633fb7776e64c08b34d12d7b8b51855b3526a64c3f84"
+  },
+  "admin.discounts.dialog.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "40cca57912bce539624568742db48a60de7defa09c624b6e25f061737e77c20c"
+  },
+  "admin.discounts.dialog.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.discounts.dialog.confirm": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8f1da33e628ff761695309eb711fce3485ccdc66535a756fd46b672cadd64432"
+  },
+  "admin.discounts.result.created": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2d7f157c0300cc27275eef5c991c15dd59e25302fe7e6ae318052c9ff421ecd6"
+  },
+  "admin.discounts.result.saved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "12b3f1a3e924fd1367a937621d709aaab9a4ca4ec65b17b7045dcc8f2150413e"
+  },
+  "admin.discounts.result.disabled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "597ac75a11d67039568d86290218516eb91cce5f8dc2981e46f831a6c124807e"
+  },
+  "admin.discounts.result.enabled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9b1ea065df789accc82b2c94332943f0c27020eb1d4b5811538b438ed107aa28"
+  },
+  "admin.discounts.result.not_found": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "90a1e25186a00ef0ee2d26fc5bdaa347f7d775cefa025d135c5ebd80ef2d72e1"
+  },
+  "admin.discounts.result.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e1133b81623617a25bafe29a2f710d45cd6d0fbfca9f8e009db125a32368b273"
+  },
+  "admin.discounts.error.required": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "13dcc0e02273ee1789b593514c3b164c97a2ab7ce5ac48437c41d11187a938c2"
+  },
+  "admin.discounts.error.codeShape": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bf748e360ebf1888bd39a73ad70998733d7f2da971e5c0a1b7ff43b07012c5e2"
+  },
+  "admin.discounts.error.codeTaken": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b0751a6d5215f4a6e2721a5c87a21205ad7d45011fba78a51d5cb94fe5ba8c55"
+  },
+  "admin.discounts.error.labelLength": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bfaca141b4fa15b25565fec8a93ae3ead0cd4204c85fff1006dd0c7bb58df06c"
+  },
+  "admin.discounts.error.percentRange": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3974f1c53a7f44dc352ddb1cbe409eba7a3b1c5400cbcd6ba4463f64204fcb12"
+  },
+  "admin.discounts.error.percentHasAmount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dab7e28ff35fa05800d30a1058287ba24b7448583e57d45a8b2974a23c18cec9"
+  },
+  "admin.discounts.error.fixedNeedsAmount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c41ba64043308119a73f9db05df5d37f68f186b41418d7780d59ab9455074aba"
+  },
+  "admin.discounts.error.amountAboveCeiling": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "366317131f1fcc147686b40217e87488cd3717a4d355e7c39157005a9cc0e2e2"
+  },
+  "admin.discounts.error.currencyUnknown": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "af4441f8dcf9ed153b6aefd4a2d7073efa49bbd9f4a9078a888188d5deacabc2"
+  },
+  "admin.discounts.error.currencyTwice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e62f8555274a00e69ebba1d873d48fb56d232314b5e98efd13b400a92c6d7110"
+  },
+  "admin.discounts.error.minorUnits": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e7a1411052f0f9300ce6d9db14858fa1b3b701e8ba48f9b2907240e267b4f58e"
+  },
+  "admin.discounts.error.endsBeforeStart": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bd36587e3752dbbfa9730a167f2df373b3251a5c27730be14c6ac4faf69996e1"
+  },
+  "admin.discounts.error.instant": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d9ea1b89000821d2817164b4858b2becf1a3ac210e475e5151bc4c28384fdd8"
+  },
+  "admin.discounts.error.capPositive": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2240bb850d81ed6c398b466e8b15979902799aa0d8160ca846427ea5248fe548"
+  },
+  "admin.discounts.error.noteLength": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5d55b6702933ea88af4bd697e57037c5eacd99b5656c64d92675d9fee719119c"
+  },
+  "admin.discounts.error.offerFrozen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "615d10fe97f5615834e7aaf991173b18c5876e9574cefc90f5e22f4101b01f6b"
   }
 }

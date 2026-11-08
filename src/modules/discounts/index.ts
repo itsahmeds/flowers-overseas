@@ -36,6 +36,8 @@ export {
 } from "./issue";
 export type { DiscountFieldIssue, IssueActor, IssueResult } from "./issue";
 export { emailKey, generateCode, normaliseCode } from "./normalise";
+export { costPreviewRow } from "./preview";
+export type { CostPreviewInput, CostPreviewRow } from "./preview";
 export {
   countUses,
   loadCode,

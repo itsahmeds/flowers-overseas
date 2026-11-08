@@ -31,6 +31,9 @@ export const adminPermissions = [
   // spec 012b §5.2 (TASK-293): the two rows the review ledger reads.
   "translation.attest",
   "media.review",
+  // spec 047 §5.2 (TASK-446): the discount codes pages and their three actions.
+  "discounts.read",
+  "discounts.write",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -56,6 +59,9 @@ export const ADMIN_PERMISSIONS: Readonly<
   // (`attest()` checks the grant); photos need `media.review`.
   "translation.attest": ["admin", "ops", "finance", "content"],
   "media.review": ["admin", "content"],
+  // spec 047 §13 Q12: `admin` creates and edits; `admin` and `finance` read.
+  "discounts.read": ["admin", "finance"],
+  "discounts.write": ["admin"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */
