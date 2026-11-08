@@ -26,7 +26,7 @@ task actually touches.
 | `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +29 |
-| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +16 |
+| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +18 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
@@ -63,6 +63,7 @@ task actually touches.
 | `currencies.ts` | Currency configuration | 003 |
 | `discounts.ts` | Discount code limits | 047 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
+| `finance.ts` | Admin finance settings (spec 030b §5.2… | 030 |
 | `florists.ts` | The florist surface's configuration (spec 011… | 011 |
 | `freshness-claim.ts` | Freshness scan | 009 |
 | `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
@@ -214,6 +215,12 @@ task actually touches.
 | `admin/(signed-in)/discounts/new/page.tsx` | GET /admin/discounts/new: create a code, with… | 047 |
 | `admin/(signed-in)/discounts/page.tsx` | GET /admin/discounts: the codes, their computed… | 047 |
 | `admin/(signed-in)/discounts/view.tsx` | The discount pages' shared server pieces:… | 047 |
+| `admin/(signed-in)/finance/export/route.ts` | GET /admin/finance/export: the… | 030 |
+| `admin/(signed-in)/finance/loading.tsx` | The finance overview's loading state: the… | 030 |
+| `admin/(signed-in)/finance/orders/loading.tsx` | The finance order list's loading state: the… | 030 |
+| `admin/(signed-in)/finance/orders/page.tsx` | GET /admin/finance/orders: one row per paid… | 030 |
+| `admin/(signed-in)/finance/page.tsx` | GET /admin/finance: totals, by country, by… | 030 |
+| `admin/(signed-in)/finance/view.tsx` | The finance pages' shared pieces: the range… | 030 |
 | `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first… | 012 |
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
@@ -221,6 +228,7 @@ task actually touches.
 | `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card and… | 020 |
 | `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute, cancel… | 020 |
 | `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute, cancel, refund and… | 020 |
+| `admin/(signed-in)/orders/[id]/money-panel.tsx` | The order's read-only Money panel: the 11-line… | 030 |
 | `admin/(signed-in)/orders/[id]/order-lists.tsx` | The order page's refunds list, emails list with… | 020 |
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
 | `admin/(signed-in)/orders/[id]/panel-reasons.ts` | The Actions card's "Not available" reason per… | 020 |
@@ -268,6 +276,7 @@ task actually touches.
 | `api/internal/db-health/route.ts` | GET: secret-gated database probe for cron | 002 |
 | `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts… | 002 |
 | `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e | 012 |
+| `api/internal/payments/backfill-balance/route.ts` | POST: secret-gated backfill of Stripe balance… | 030 |
 | `api/internal/payments/replay-webhooks/route.ts` | POST: secret-gated replay of missed Stripe… | 013 |
 | `api/prices/[locale]/[iso2]/route.ts` | The cached prices document the deferred island… | 004 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
@@ -354,6 +363,7 @@ task actually touches.
 | `orders-rotate-tracking.ts` | `orders:rotate-tracking` | Rotate an order's tracking link (§5.2) |
 | `pages-check.ts` | `pages:check` | `pnpm pages:check` — the info-page honesty gate… |
 | `pages-index.ts` | `pages:index` | `pnpm pages:index` — regenerate the typed… |
+| `payments-backfill-balance.ts` | `payments:backfill-balance` | Ask Stripe for the fees of every payment since… |
 | `pr-policy.ts` | `pr-policy` | PR policy |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the… |
 | `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote`… |
@@ -375,9 +385,9 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 515 |
-| `tests/integration/` | 103 |
-| `tests/contract/` | 42 |
+| `tests/unit/` | 518 |
+| `tests/integration/` | 104 |
+| `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |
 | `tests/visual/` | 23 |

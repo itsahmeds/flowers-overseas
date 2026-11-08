@@ -27,7 +27,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **Left open at the turn limit (2026-11-08, FN439), to finish in a follow-up:** integration tests for T-14 (F2 through `financeOrderFacts`), T-16/T-17 (one fixture per reason, demo absent), T-19 (8-order roll-up), T-20 (Europe/Tallinn DST boundary, delivery basis, refused ranges run no query), T-22 (statement counter at 10 and 500 orders; the reads issue 6 statements by construction), T-24 (live/test disjoint); unit tests for AC-15, AC-16, AC-18 (config evidence path), AC-20 (`parseFinanceRange`), AC-21 and AC-5 (source scans), the formatters; the AC-23 byte fixture `tests/fixtures/finance-orders-expected.csv` and the route tests (403 for ops, headers, one audit row). e2e T-02, T-18, T-21, T-31 are CI's.
+- **Design deviations to check against the artboards:** the overview's florist rows link to `/admin/finance/orders?partner=` (the Money tab is TASK-441's); "Paid in this range" reads "Paid, all time" (the position view has no range); balance transactions list their references without an "Open in Stripe" link; `loading.tsx` renders without the shell (the shell needs the session).
+- **Order money date rule:** the ECB rate's date for the sale is the UTC calendar day of capture; payout lines in several currencies show the first currency's native total.
 
 ## Escalations
 
@@ -41,11 +43,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 (FN439): permissions, nav, `formatRatePpm`/`formatPercentBp`/`formatRatingBp`/`formatMinorNumber`, `src/lib/csv.ts` (wiseCsv byte-identical, its contract test passes), `src/modules/admin/finance/` (pure margin, range, queries, CSV), `/admin/finance`, `/admin/finance/orders`, `finance/export/route.ts`, loading states, the order Money panel, 154 admin keys; unit `finance-margin.test.ts` (6: AC-11 incl. 10 000 cases, AC-12, AC-13, AC-14, AC-23 cells). Turn limit reached: see Carry-forwards.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+https://github.com/itsahmeds/flowers-overseas/pull/520 (with TASK-439). The four permissions, `src/config/finance.ts`, the pure order margin (`allocateByWeight`, `toReporting`, `rateOn`, `refundVatEstimate`, `orderMargin`, `marginBp`, `rollUp`), the finance reads (6 SQL statements per page whatever the order count), `/admin/finance`, `/admin/finance/orders`, the CSV route with one audit row, and the read-only Money panel for `finance.view`. 154 admin keys ship `reviewed: false`; `.claude/state/record-approval-439.py --check` passes. Unit `finance-margin.test.ts` (6). The clean-env `pnpm build` was not run (turn limit); CI's build is the gate. Remaining tests are listed under Carry-forwards.
