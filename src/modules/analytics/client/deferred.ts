@@ -190,7 +190,12 @@ function onSubmit(event: Event): void {
   ) {
     return;
   }
-  tierEvent("add_to_cart", new FormData(form).get("tier"));
+  // The checked size, the form's own radios or ones associated by `form=` (spec 009's sheet).
+  const tier = form.elements.namedItem("tier");
+  tierEvent(
+    "add_to_cart",
+    tier !== null && "value" in tier ? tier.value : null,
+  );
 }
 
 const LISTENERS: readonly [string, (event: Event) => void][] = [

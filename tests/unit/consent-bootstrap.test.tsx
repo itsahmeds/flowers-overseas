@@ -89,10 +89,12 @@ describe("the bootstrap script (AC-18)", () => {
     ).toBeGreaterThan(-1);
     expect(CONSENT_BOOTSTRAP_SCRIPT).toContain('"url_passthrough",false');
     expect(CONSENT_BOOTSTRAP_SCRIPT).toContain("wait_for_update");
-    // The consent default must precede the `config` call, or the first ping would be untamed.
-    expect(
-      CONSENT_BOOTSTRAP_SCRIPT.indexOf('"consent","default"'),
-    ).toBeLessThan(CONSENT_BOOTSTRAP_SCRIPT.indexOf('"config"'));
+  });
+
+  it("queues neither `js` nor `config`: nothing reaches Google before a grant (spec 023 AC-4)", () => {
+    expect(CONSENT_BOOTSTRAP_SCRIPT).not.toContain('"js"');
+    expect(CONSENT_BOOTSTRAP_SCRIPT).not.toContain('"config"');
+    expect(CONSENT_BOOTSTRAP_SCRIPT).not.toContain("googletagmanager");
   });
 
   it("publishes `window.gtag` so the banner island can send the update (TASK-051)", () => {
@@ -108,8 +110,7 @@ describe("the bootstrap script (AC-18)", () => {
     );
   });
 
-  it("takes the measurement id from an attribute, so the hashed bytes never vary", () => {
-    expect(CONSENT_BOOTSTRAP_SCRIPT).toContain(GA4_ID_ATTRIBUTE);
+  it("never carries a measurement id, so the hashed bytes never vary", () => {
     expect(CONSENT_BOOTSTRAP_SCRIPT).not.toContain(MEASUREMENT_ID);
     expect(CONSENT_BOOTSTRAP_SCRIPT).not.toContain("G-");
   });
@@ -154,14 +155,22 @@ describe("the hash and the policy (ADR-0016, AC-23)", () => {
     const lit = cspValue("production", { ga4: true });
     expect(dark).not.toContain(GOOGLE_TAG_MANAGER_ORIGIN);
     expect(dark).not.toContain(GOOGLE_ANALYTICS_ORIGIN);
-    expect(lit).toContain(`script-src 'self' ${GOOGLE_TAG_MANAGER_ORIGIN};`);
+    // Spec 023 AC-31: exactly Google's GA4 guidance, in the consent-active build only.
+    expect(lit).toContain("script-src 'self' https://*.googletagmanager.com;");
     expect(lit).toContain(
-      `connect-src 'self' ${GOOGLE_TAG_MANAGER_ORIGIN} ${GOOGLE_ANALYTICS_ORIGIN};`,
+      "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;",
     );
-    // The tag origin is never an image or a frame source: a container that wants either is a
-    // reviewed diff, not a silent allowance.
-    expect(lit).toContain(`img-src 'self' data: blob: ${MEDIA_ORIGIN};`);
+    expect(lit).toContain(
+      `img-src 'self' data: blob: ${MEDIA_ORIGIN} https://*.google-analytics.com https://*.googletagmanager.com;`,
+    );
     expect(lit).toContain("frame-src 'none';");
+    for (const google of [
+      "googletagmanager",
+      "google-analytics",
+      "analytics.google",
+    ]) {
+      expect(dark).not.toContain(google);
+    }
   });
 });
 
@@ -186,10 +195,17 @@ describe("the measurement id gate (AC-21)", () => {
     }
   });
 
-  it("builds the tag URL from the id and the allowlisted origin", () => {
+  it("builds the tag URL on a host the consent-active `script-src` allows", () => {
     expect(ga4TagUrl(MEASUREMENT_ID)).toBe(
-      `${GOOGLE_TAG_MANAGER_ORIGIN}/gtag/js?id=${MEASUREMENT_ID}`,
+      `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`,
     );
+    // `GOOGLE_TAG_MANAGER_ORIGIN` is `https://*.googletagmanager.com`: the host is inside it.
+    expect(GOOGLE_TAG_MANAGER_ORIGIN).toBe("https://*.googletagmanager.com");
+    expect(
+      new URL(ga4TagUrl(MEASUREMENT_ID)).hostname.endsWith(
+        ".googletagmanager.com",
+      ),
+    ).toBe(true);
   });
 });
 
@@ -208,23 +224,16 @@ describe("<AnalyticsScripts /> (AC-18, AC-21)", () => {
     expect(html.match(/<script/g)).toHaveLength(1);
   });
 
-  it("emits the tag after the bootstrap, with the id on both, when an id is configured", () => {
-    const html = render(MEASUREMENT_ID);
-    expect(html).toContain(`${GA4_ID_ATTRIBUTE}="${MEASUREMENT_ID}"`);
-    expect(html).toContain(ga4TagUrl(MEASUREMENT_ID));
-    expect(html.indexOf(GA4_ID_ATTRIBUTE)).toBeLessThan(
-      html.indexOf("googletagmanager.com/gtag/js"),
+  it("emits no `<script src>` in any build, the id only as an attribute (spec 023 AC-4)", () => {
+    for (const id of [undefined, MEASUREMENT_ID]) {
+      const html = render(id);
+      expect(html).not.toMatch(/<script[^>]*\ssrc=/u);
+      expect(html).not.toContain("googletagmanager");
+      expect(html.match(/<script/g)).toHaveLength(1);
+    }
+    expect(render(MEASUREMENT_ID)).toContain(
+      `${GA4_ID_ATTRIBUTE}="${MEASUREMENT_ID}"`,
     );
-    // Still one inline script: the tag is external, so the hash stays the only one in the policy.
-    expect(html.match(/<script[^>]*>[^<]/g)).toHaveLength(1);
-  });
-
-  it("loads the tag with `defer` rather than `async`, so the default block always runs first", () => {
-    // React hoists `<script async src>` into `<head>`, which would let the tag execute before an
-    // inline block that sits later in the document. `defer` keeps document order.
-    const html = render(MEASUREMENT_ID);
-    expect(html).toContain("defer");
-    expect(html).not.toContain("async");
   });
 
   it("escapes nothing into the inline script: the emitted text is the hashed text", () => {

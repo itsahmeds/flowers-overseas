@@ -4,6 +4,7 @@
  * Import-free on purpose: the deferred chunk (`client/deferred.ts`) builds the URL it injects
  * after a grant from this file, and nothing else may ride into that chunk. The host is inside the
  * consent-active build's `script-src` source `https://*.googletagmanager.com` (`src/lib/csp.ts`).
+ * `tests/unit/url-pii.test.ts` names the URL's line, so keep it where it is.
  */
 export const GTAG_SCRIPT_ORIGIN = "https://www.googletagmanager.com";
 
