@@ -72,8 +72,10 @@ export const PARAMETER_ROUTE_SEGMENT = "_query";
  * key like any other and the static listing serves.
  */
 export const LISTING_REWRITE_KEYS: readonly string[] = [
-  ...QUERY_KEYS.filter((key) => key !== QUERY_KEY.to),
-  ...Object.values(FACET_PARAMETERS),
+  ...new Set([
+    ...QUERY_KEYS.filter((key) => key !== QUERY_KEY.to),
+    ...Object.values(FACET_PARAMETERS),
+  ]),
 ];
 
 /**

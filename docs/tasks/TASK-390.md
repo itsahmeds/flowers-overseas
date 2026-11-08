@@ -37,7 +37,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 (builder L390): `priceBands()` (`src/modules/catalog/price-bands.ts`), "Our order" (`our-order.ts`, photo, band, curation, SKU, bands from `rankBandsFor()`), 24 per page, `?price=`/`?colour=` honoured on the shop root and country category (`ListingSearchParamsSchema`, `listingRequest().facets`, `listingView({ facets })`), facet line + clear link, sort form and pager keep the facet as GET-form fields, `shop.price.band.*` added unreviewed. Next: update the unit tests that pin 12 per page, new tests, then TASK-391.
 
 ## Result
 

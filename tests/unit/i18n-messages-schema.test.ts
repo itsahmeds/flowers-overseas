@@ -259,6 +259,11 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // A country page's band amounts (spec 004 §14 A-founder-2026-10-24a i18n table, spec 008's
+    // "Price bands"; TASK-390): the facet line of a `?price=` result.
+    "shop.price.band.between",
+    "shop.price.band.over",
+    "shop.price.band.under",
     // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
     "checkout.basket.addOns",
     "checkout.basket.added",

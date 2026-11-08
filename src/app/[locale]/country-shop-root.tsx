@@ -95,6 +95,7 @@ export async function countryShopRootMetadata(
       page: request.page,
       sort: request.sort,
       parameterised: request.parameterised,
+      facets: request.facets,
     },
   );
   if (view === undefined) notFound();
@@ -171,6 +172,7 @@ export async function CountryShopRoot({
       page: request.page,
       sort: request.sort,
       parameterised: request.parameterised,
+      facets: request.facets,
       // Spec 009 publishes the `product` link id, so each card becomes a link (AC-20).
       productLinks: isPublished("product"),
     },

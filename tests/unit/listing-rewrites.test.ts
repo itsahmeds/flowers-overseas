@@ -92,10 +92,16 @@ describe("the listing rewrite (TASK-170)", () => {
     );
     // From the registries, not retyped: a new honoured key or facet brings its rule with it.
     // `to` is the chooser's field (TASK-385), never a listing's.
+    // `price` is both a query key and the band facet's parameter (TASK-390): one rule, not two.
     expect(LISTING_REWRITE_KEYS).toStrictEqual([
-      ...QUERY_KEYS.filter((key) => key !== "to"),
-      ...Object.values(FACET_PARAMETERS),
+      ...new Set([
+        ...QUERY_KEYS.filter((key) => key !== "to"),
+        ...Object.values(FACET_PARAMETERS),
+      ]),
     ]);
+    expect(new Set(LISTING_REWRITE_KEYS).size).toBe(
+      LISTING_REWRITE_KEYS.length,
+    );
     // A campaign or click id is answered by the prebuilt page (canonical stripping, spec 007
     // §14 A5): rewriting it would render per request for a page that is byte-for-byte the bare one.
     for (const key of ["utm_source", "gclid", "fbclid", "q", "to"]) {

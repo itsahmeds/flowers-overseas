@@ -4199,6 +4199,21 @@
     "reviewed": false,
     "sourceHash": "dfb38a11fff7bc6264ec646a6dc5e2d0c6c52b5dd8e3e55584ab63f9c7ab8c92"
   },
+  "shop.price.band.under": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "34c702a6c5faac44226fc092eddcb308584f436465adb567cb623213b2b72dd9"
+  },
+  "shop.price.band.between": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ba318cc195ceff48d9bfce7c522735ca505029deb9c5ebc27de705dc12c20e4f"
+  },
+  "shop.price.band.over": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7974bac64cc056a666344aaa2e4ed54b743ae2529a49dc855e8849c3fb31d245"
+  },
   "shop.price.bandWord.low": {
     "source": "machine",
     "reviewed": false,

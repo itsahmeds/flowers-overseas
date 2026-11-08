@@ -214,13 +214,22 @@ export const facetValues: Readonly<Record<FacetName, readonly string[]>> = {
  * reads it too: the listing rewrite sends a request carrying any of these names to the parameter
  * route (`src/lib/listing-rewrites.ts`; TASK-170), and config cannot import a module.
  */
-export const FACET_PARAMETERS: Readonly<Record<FacetName, string>> = {
+export const FACET_PARAMETERS: Readonly<
+  Record<FacetName | "priceBand", string>
+> = {
   productType: "product-type",
   occasion: "occasion",
   flowerType: "flower-type",
   colour: "colour",
   priceTier: "price-tier",
   style: "style",
+  /**
+   * The price band of a country page (spec 008 §14 A-founder-2026-10-24a "Facets"; TASK-390): not
+   * a taxonomy facet (no product row carries it), because a band is computed per country from the
+   * displayed prices by `priceBands()`. It is `QUERY_KEY.price` (`src/config/url-keys.ts`), the
+   * chooser's `next=price/{band}` target; `tests/unit/listing-facets.test.ts` holds the two equal.
+   */
+  priceBand: "price",
 };
 
 /* -------------------------------------------------------------------------- */

@@ -1479,7 +1479,12 @@
         "low": "Lower prices",
         "mid": "Middle prices"
       },
-      "choose": "Choose a country to see the price"
+      "choose": "Choose a country to see the price",
+      "band": {
+        "under": "Unter {amount}",
+        "between": "{from} bis {to}",
+        "over": "{amount} und mehr"
+      }
     },
     "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
   },

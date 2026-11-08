@@ -808,6 +808,11 @@
         "low": "Lower prices",
         "mid": "Middle prices",
         "high": "Higher prices"
+      },
+      "band": {
+        "under": "Under {amount}",
+        "between": "{from} to {to}",
+        "over": "{amount} and over"
       }
     },
     "cta": {

@@ -17,17 +17,20 @@
 import { z } from "zod";
 
 import {
+  FACET_PARAMETERS,
   type FacetName,
   FxRateDataSchema,
   SkuSchema,
   SlugSchema,
   addonKeys,
   addonKinds,
+  colours,
   facetNames,
   facetValues,
   productStatuses,
   scopedFlagKey,
 } from "@/config/catalogue/schemas";
+import { PRICE_BAND_KEYS } from "@/config/commerce";
 import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { QUERY_KEY, type QueryKey } from "@/config/url-keys";
@@ -1057,7 +1060,9 @@ export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
 
     // The keys come from `QUERY_KEYS` (spec 001 §14 A20, AC-55 (d)), so the list is this
     // schema's own and `tests/unit/url-pii.test.ts` can hold the two to each other.
-    const honoured: Extract<QueryKey, "page" | "sort">[] = [];
+    const honoured: (
+      Extract<QueryKey, "page" | "sort" | "price"> | "colour"
+    )[] = [];
 
     const rawPage = first(raw[QUERY_KEY.page]);
     const pageValid =
@@ -1068,12 +1073,26 @@ export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
     const sort = ListingSortSchema.safeParse(rawSort);
     if (sort.success) honoured.push(QUERY_KEY.sort);
 
+    // The two facets of a country page (spec 008 §14 A-founder-2026-10-24a "Facets"; TASK-390):
+    // a band key and a catalogue colour, each by its registry's own list. Which page types act on
+    // them is `listingView()`'s answer; here they are only parsed.
+    const price = z
+      .enum(PRICE_BAND_KEYS)
+      .safeParse(first(raw[QUERY_KEY.price]));
+    if (price.success) honoured.push(QUERY_KEY.price);
+    const colour = z
+      .enum(colours)
+      .safeParse(first(raw[FACET_PARAMETERS.colour]));
+    if (colour.success) honoured.push("colour");
+
     const ignored = Object.entries(raw)
       .filter(
         ([name, value]) =>
           value !== undefined &&
           !(name === QUERY_KEY.page && pageValid) &&
-          !(name === QUERY_KEY.sort && sort.success),
+          !(name === QUERY_KEY.sort && sort.success) &&
+          !(name === QUERY_KEY.price && price.success) &&
+          !(name === FACET_PARAMETERS.colour && colour.success),
       )
       .map(([name]) => name)
       .sort();
@@ -1082,6 +1101,10 @@ export const ListingSearchParamsSchema = FacetSearchParamsSchema.transform(
       page: pageValid ? Number(rawPage) : 1,
       sort: sort.success ? sort.data : "default",
       honoured,
+      facets: {
+        ...(price.success ? { price: price.data } : {}),
+        ...(colour.success ? { colour: colour.data } : {}),
+      },
       ignored,
     };
   },

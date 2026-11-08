@@ -793,8 +793,21 @@ export interface ListingSearchParams {
   readonly page: number;
   /** The curation order unless a valid `sort` was asked for. */
   readonly sort: ListingSort;
-  /** Which of `page` and `sort` were present and valid, in that order. */
-  readonly honoured: readonly ("page" | "sort")[];
+  /** Which of `page`, `sort`, `price` and `colour` were present and valid, in that order. */
+  readonly honoured: readonly ("page" | "sort" | "price" | "colour")[];
+  /**
+   * The two facets a country shop root and a country category honour (spec 008 §14
+   * A-founder-2026-10-24a "Facets"; TASK-390): `?price=` one of the band keys, `?colour=` one of
+   * the catalogue's colours. Each present only when its value parsed; an unknown value is
+   * neutralised into `ignored` like any other stray parameter.
+   */
+  readonly facets: ListingFacets;
   /** Every other parameter name that was present, sorted — facet-shaped or not. */
   readonly ignored: readonly string[];
+}
+
+/** The honoured facets of one listing request (TASK-390). */
+export interface ListingFacets {
+  readonly price?: "low" | "mid" | "high";
+  readonly colour?: Colour;
 }
