@@ -965,6 +965,24 @@
     },
     "paused": {
       "notice": "Ihr Geschäft ist pausiert. Sie können die Aufträge abschließen, die Sie bereits angenommen haben. Neue Aufträge erhalten Sie wieder, sobald Ihr Geschäft aktiv ist."
+    },
+    "bouquets": {
+      "title": "Meine Sträuße",
+      "intro": "Das sind die Sträuße, die Sie für uns binden, und der Betrag, den Sie für jede Größe erhalten.",
+      "youReceive": "Sie erhalten {amount}",
+      "sku": "Code {sku}",
+      "stems": "{count, plural, one {# Stiel} other {# Stiele}}",
+      "state": {
+        "onSale": "Im Verkauf",
+        "notYet": "Noch nicht im Verkauf",
+        "paused": "Pausiert",
+        "withdrawn": "Nicht mehr im Verkauf"
+      },
+      "askChange": "Änderung anfragen",
+      "changeSubject": "Change request: {sku}, size {size}",
+      "supportLine": "Für eine Änderung kontaktieren Sie uns: {support}",
+      "empty": "Noch keine Sträuße. Wir fügen sie hier hinzu, sobald wir sie mit Ihnen vereinbart haben.",
+      "navLabel": "Bereiche"
     }
   },
   "footer": {

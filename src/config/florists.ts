@@ -277,6 +277,8 @@ export function floristPaths(base: string = FLORIST_BASE_PATH) {
     /** `POST` the photo; `GET` it back (the florist's own, through a signed URL). */
     photoFile: (assignmentId: string) =>
       `${base}/api/orders/${assignmentId}/photo`,
+    /** Spec 030b §14.2 C (TASK-444): the florist's own bouquets, read only. */
+    bouquets: `${base}/bouquets`,
   });
 }
 

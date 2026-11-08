@@ -279,6 +279,13 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     surface: "florist",
     paths: FLORIST_PATHS,
   },
+  // Spec 030b §14.6 (TASK-444): "My bouquets" and the florist sections' navigation, under
+  // `FLORIST_BASE_PATH` only; the cards are printed by the portal's view model.
+  {
+    match: "floristInbox.bouquets.*",
+    surface: "florist",
+    paths: [...FLORIST_PATHS, "src/modules/partners/portal/**"],
+  },
   // Spec 011 §5.2 (TASK-213): the founder's alert for each florist application, an email that
   // renders on no page at all.
   {

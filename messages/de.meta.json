@@ -5894,5 +5894,75 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "1d393b0081b632c54654eb08c345ff76b92ae4efe0768b4c0f64b9ebbe920492"
+  },
+  "floristInbox.bouquets.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "571fff47e3dc2077901ae1c310c93e052e54a77590c217b06d44c49c12ff2da1"
+  },
+  "floristInbox.bouquets.intro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4a00dca616d9f6396d1d8f7790ff35fd5aec55997e2dd2a75cc7bd961bfae4dc"
+  },
+  "floristInbox.bouquets.youReceive": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5ad18f1f5acba1427c662bed35b7e4f71e54ae4d1b04acda92a702005a62e6db"
+  },
+  "floristInbox.bouquets.sku": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "623e35400f6eb7825497c16949ceda857cb8012ac57d812eca60c2a9758c7e6a"
+  },
+  "floristInbox.bouquets.stems": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f647ed8788feac99d2b45ea110df02f10a6f52f54de9195ba370c0b2b70df9d4"
+  },
+  "floristInbox.bouquets.state.onSale": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9cb76f7e43e9ab03438f7d06c73bea75ad59c559cd72d8f54beb681e46ae7840"
+  },
+  "floristInbox.bouquets.state.notYet": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b2d293b81bb46c9268d1655c56663353b34d151790ccb2cb7516fa6e95027242"
+  },
+  "floristInbox.bouquets.state.paused": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e159b06187d369a0615f66ce577582b5c983d4ea59b3a62b702049f61753f0bf"
+  },
+  "floristInbox.bouquets.state.withdrawn": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8c55d54ea71b430b765e2a042a7976a7098e8e43350eb88ffd387cea4c8b50df"
+  },
+  "floristInbox.bouquets.askChange": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f445fc4ffc97bebfefcff8c21ab69e5b2ccd9089e0cbf8366d99de3caf3e02f0"
+  },
+  "floristInbox.bouquets.changeSubject": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1e542fcfb9e15cc1782fbd5e62794e4d1e0f82d3d649c97c00137ca6671d0a0b"
+  },
+  "floristInbox.bouquets.supportLine": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "28aec5b623184b42513955b088d771bb187c02378376d4573542dc8f4be73f03"
+  },
+  "floristInbox.bouquets.empty": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "51bc76e880d760783a62210be7a74747bf0c88cbca748c4abb6629610e5e3b9a"
+  },
+  "floristInbox.bouquets.navLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9bae918add9affa51189bde5fefc7390ee2866831e894bb5f72b472a79d4ade8"
   }
 }

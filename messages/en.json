@@ -1321,6 +1321,24 @@
     },
     "paused": {
       "notice": "Your shop is paused. You can finish the orders you have already accepted. New orders reach you again when your shop is active."
+    },
+    "bouquets": {
+      "title": "My bouquets",
+      "intro": "These are the bouquets you make for us and the amount you receive for each size.",
+      "youReceive": "You receive {amount}",
+      "sku": "Code {sku}",
+      "stems": "{count, plural, one {# stem} other {# stems}}",
+      "state": {
+        "onSale": "On sale",
+        "notYet": "Not on sale yet",
+        "paused": "Paused",
+        "withdrawn": "No longer sold"
+      },
+      "askChange": "Ask for a change",
+      "changeSubject": "Change request: {sku}, size {size}",
+      "supportLine": "To ask for a change, contact us: {support}",
+      "empty": "No bouquets yet. We add them here once we have agreed them with you.",
+      "navLabel": "Sections"
     }
   },
   "emails": {
