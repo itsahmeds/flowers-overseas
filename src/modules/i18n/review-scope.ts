@@ -114,6 +114,16 @@ const PAYMENTS_PATHS = [
  * calendar file; TASK-339 adds the lookup page, its form and its server action there).
  */
 const TRACK_PATHS = ["src/app/[locale]/(track)/**"];
+
+/**
+ * Spec 018 §14 A-founder-2026-10-22 C.13 (TASK-344): the buyer account, every page `no-store` and
+ * `noindex` under `(account)` with its header slot, and the buyer surface that renders T14.
+ */
+const ACCOUNT_PATHS = [
+  "src/app/[locale]/(account)/**",
+  "src/app/[locale]/@header/(account)/**",
+  "src/lib/auth/buyer.ts",
+];
 const CHECKOUT_SUBTREES = [
   "action",
   // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349): only
@@ -187,10 +197,11 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     surface: "checkout",
     paths: CHECKOUT_PATHS,
   })),
+  // The account's order detail (TASK-344) prints the confirmation's cancel line and dialog verbatim.
   {
     match: "confirmation",
     surface: "orderConfirmation",
-    paths: CHECKOUT_PATHS,
+    paths: [...CHECKOUT_PATHS, ...ACCOUNT_PATHS],
   },
   // Spec 016 §5.2 (TASK-333): the buyer emails print the page's status labels, refund line, photo
   // alt text and eyebrow verbatim ("the same map as spec 018's tracking page"). Spec 018's
@@ -199,8 +210,12 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   {
     match: "tracking",
     surface: "orderTracking",
-    paths: [...TRACK_PATHS, ...EMAIL_PATHS, ...CHECKOUT_PATHS],
+    paths: [...TRACK_PATHS, ...EMAIL_PATHS, ...CHECKOUT_PATHS, ...ACCOUNT_PATHS],
   },
+  // Spec 018 §14 C.13, C.15 (TASK-344): the account's sign-in page, order list and order detail.
+  // The account is the buyer's view of their orders: the tracking surface's other face.
+  { match: "auth", surface: "orderTracking", paths: ACCOUNT_PATHS },
+  { match: "account", surface: "orderTracking", paths: ACCOUNT_PATHS },
   { match: "trackLookup", surface: "orderTracking", paths: TRACK_PATHS },
   // Spec 013 §7 (TASK-255): the pay step's errors and labels render on step 3 only, and the
   // payment lines of the confirmation states on the confirmation page only; both are `no-store`,
@@ -239,7 +254,7 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   {
     match: "emails.account.*",
     surface: "email",
-    paths: [...EMAIL_PATHS, ...TRACK_PATHS],
+    paths: [...EMAIL_PATHS, ...TRACK_PATHS, ...ACCOUNT_PATHS],
   },
   { match: "whatsapp.florist.*", surface: "email", paths: EMAIL_PATHS },
   // Spec 011 §5.3 (TASK-214): the inbox pages' own lines (groups, empty state, stage leads, the

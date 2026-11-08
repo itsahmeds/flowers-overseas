@@ -7761,5 +7761,225 @@
     "reviewedBy": "founder (delegated), 2026-11-04: recorded by the orchestrator with record-approval-402.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A verbatim; the founder did not read this text",
     "reviewedAt": "2026-11-04T00:41:00Z",
     "sourceHash": "93825b1a7303843d56d880a037d35ba7986b269ec44138b1df03916bbbaa303b"
+  },
+  "auth.account.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dbb5f6371b6a2a677f09c24d17fdc581132a41881a818469a92b58588e8764bc"
+  },
+  "auth.account.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "481e0b9841867f6c5b53af1a2e2f993d46e3b7a39c2e155fc8b4c17f80041823"
+  },
+  "auth.account.email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "auth.account.emailInvalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "929c0095918df137f770326e69892bc8cc4ee165d2de46f083955ecd85cb213d"
+  },
+  "auth.account.submit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3759255024901bf37c81f6830b411b47e8502b633ff20afb63ba02ef33bb804c"
+  },
+  "auth.account.guestNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0a1ce032c59313085e429667be394564e13d2fd4e0ee4e09da370527fac455a0"
+  },
+  "auth.account.sent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "17e335b2e01702cce75305fcb292c7daa8b17f2fd8a20ae0fccb93c5af568b7c"
+  },
+  "auth.account.expired": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5139c507d3c9ba4ef6a228c7f360d5ec9612203de61f8ec83de7fc20121ff827"
+  },
+  "auth.account.signedOut": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc50b9a0fbc8f7c027d250d2dcc5bafee83ac185ef9f819b79c5a78ca5e8e412"
+  },
+  "auth.account.confirmSubmit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
+  },
+  "emails.account.signIn.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "212a97a2bcac6aca5d6bc88fee6604101a93871f64614d65d4c10f34e20d3722"
+  },
+  "emails.account.signIn.preheader": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "78d062be7f573d68c59163221993c5b53681e8bf141719f23a6e9440383931ca"
+  },
+  "emails.account.signIn.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36a8518e991b3e5aeca22f57d17fb2993336522a007019b0107c16d97d654ec0"
+  },
+  "emails.account.signIn.button": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bfd402b2f6f3812529b55596136d3a11c51616317e3b1cd999928e2d4eae7d3f"
+  },
+  "emails.account.signIn.paste": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aa65fc5c29a0c269aa44c5e31333103154a174e89a9f59c56bc9e8199f701eea"
+  },
+  "emails.account.signIn.ignore": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2dd45192b6fd9e5d0fe1b284c6413df0dbe1fd1ae4eb7679ec6b37cd36d4de35"
+  },
+  "emails.account.signIn.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eed870ffcf0316c5cb884fec78494a2c2c742540324552ac0c4c80b960c070bb"
+  },
+  "account.nav.orders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "account.nav.signOut": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48f0d3d397d49f135f116d947a805b49f084f637154a8e9913e7233a11dc16a0"
+  },
+  "account.orders.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9000c7d9c98befa4d29ab913d8701703c7ef441e383e58ab04865c2ec46449fc"
+  },
+  "account.orders.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "090ccf0137abcc0fd381c68db3403fa45ec5ddc145ee7d7f507a20f35f795bc1"
+  },
+  "account.orders.choose": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "67365fd526e0b1747973be9e31ecb6a622a97d5e0796e2340206b36dfc6d9274"
+  },
+  "account.orders.groupHeading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dfaff76b0ccbb162599e37dae291e16677b50a9d206d1af4c9ace408df7af3a1"
+  },
+  "account.orders.groupCount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "72c212ddf864fe392b5be2121ae9d9e89ae6a1f8e0348aa2c80a0210202a74aa"
+  },
+  "account.orders.line": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "86567f1bb0904bb09bab8aa2a1aadc4156f23b453f56e377e7cd1d8ad6487642"
+  },
+  "account.orders.lineNoCity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e40c4d6f51d1820f5b088aa167ea72bd09279253739cbfef99eb5027a8d484b"
+  },
+  "account.orders.stems": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f647ed8788feac99d2b45ea110df02f10a6f52f54de9195ba370c0b2b70df9d4"
+  },
+  "account.orders.details": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df"
+  },
+  "account.orders.track": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "051f01f095a28b04433fb7b6cc6785ef57533bfb7d5c784d33a472c56ea125dd"
+  },
+  "account.orders.invoice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b832002da297545ff2c6cc36303a5f9b9779a2d7e47ba81c07ef86aca92181c0"
+  },
+  "account.detail.back": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "account.detail.eyebrow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "342ca923aa50fec3a43e3b93b81d54a8cf33f2f0c43a48799c0e742242171d5f"
+  },
+  "account.detail.recipientTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bcdecc549d07363cc6d79a4351786f6c1ca8e9fa7a70e2cbd12758f6df1239aa"
+  },
+  "account.detail.recipient": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
+  },
+  "account.detail.date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "account.detail.card": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "be3702e3f1af559a8df03568294283934a2558521fd8895f68eda09e3ce4f8a3"
+  },
+  "account.detail.removed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6af0e5c9b65b1aa198a15220cc600acb6220f647089b0e8e0a2cccba56daa773"
+  },
+  "account.detail.orderTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f159e18f1328d9a0c8e0b461b00da7b511abc472acc4e8b9549ec975fb36cb4b"
+  },
+  "account.detail.placed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e20eba3c8f94e506ff3836cf0ddc760bcd3624895be4154f96b69950a587c2a"
+  },
+  "account.detail.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c0c9d25fb72a1937a91c797b45da8800837fa8ab1511761d81e7c20da4bda384"
+  },
+  "account.detail.documentsTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b4e929d8bcfe04189801a8ed61496d177d9e30d1b2826f4c9c4d00b3e705fa8b"
+  },
+  "account.detail.invoice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b832002da297545ff2c6cc36303a5f9b9779a2d7e47ba81c07ef86aca92181c0"
+  },
+  "account.detail.creditNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c204aa17e8f609334cca014ba68d7eacc1d6295b6dba0b47a002c89c9bb610ae"
+  },
+  "account.detail.pdf": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d393b0081b632c54654eb08c345ff76b92ae4efe0768b4c0f64b9ebbe920492"
   }
 }

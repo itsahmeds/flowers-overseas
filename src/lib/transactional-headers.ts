@@ -72,3 +72,23 @@ export function trackHeaderRules(): TransactionalHeaderRule[] {
     },
   ];
 }
+
+/**
+ * The headers of the buyer account (spec 018 §5.4, §14 A-founder-2026-10-22 C.13, C.14, AC-51;
+ * TASK-344): `X-Robots-Tag: noindex, nofollow`, `Cache-Control: private, no-store` and
+ * `Referrer-Policy: no-referrer` on `/{locale}/account` and every page below it. The bare
+ * `/{locale}/account` stays allowed in `robots.txt` so a crawler reads this `noindex` (C.5); the
+ * confirm page carries the emailed `t`, so no `Referer` leaves any account page. After
+ * `securityHeaderRules()` in `next.config.ts`, so this referrer policy wins.
+ */
+export function accountHeaderRules(): TransactionalHeaderRule[] {
+  const headers = [
+    { ...BASKET_ROBOTS_HEADER },
+    { ...TRACK_CACHE_HEADER },
+    { ...TRACK_REFERRER_HEADER },
+  ];
+  return [
+    { source: "/:locale/account", headers },
+    { source: "/:locale/account/:path*", headers },
+  ];
+}

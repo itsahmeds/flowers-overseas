@@ -6,6 +6,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 import { adminHeaderRules } from "./src/lib/admin-headers";
 import {
+  accountHeaderRules,
   basketHeaderRules,
   trackHeaderRules,
 } from "./src/lib/transactional-headers";
@@ -153,6 +154,9 @@ const headerRules = [
   // and `Referrer-Policy: no-referrer` on the token routes. **After** the security rules, because
   // the last rule to set a key wins and the site-wide referrer policy must lose on a token URL.
   ...trackHeaderRules(),
+  // The buyer account (spec 018 §14 C.13, AC-51; TASK-344): `noindex, nofollow`, `private,
+  // no-store`, `no-referrer` on `/{locale}/account` and below (`src/lib/transactional-headers.ts`).
+  ...accountHeaderRules(),
   // The search results page (spec 045 §5.4, AC-3; TASK-402): `noindex, follow`, `private,
   // no-store` and `Referrer-Policy: strict-origin`. After the security rules, whose site-wide
   // referrer policy must lose on a search address (`src/lib/search-routes.ts`).

@@ -12,8 +12,9 @@
  * failure is the same bare 404 with the same headers: no token, a malformed one, a tracking token
  * used as `t` (another MAC domain), an expired link, a link for another invoice, an invoice that
  * is not rendered yet or whose stored bytes no longer match their hash. Nothing here logs the
- * token. The owner's session (task 4, TASK-344) joins as a second way in; the `account` flag does
- * not gate this half, because the launch emails carry these links while the account is off.
+ * token. The owner's session (task 4, TASK-344) is the second way in (`deps.ownerAllows`, asked only
+ * without a valid link); the `account` flag gates that half only, because the launch emails carry
+ * these links while the account is off.
  */
 import { z } from "zod";
 
@@ -78,6 +79,11 @@ export function invoiceLinkOpens(
 export interface DownloadDeps extends ReadDeps {
   readonly link?: SignedLinkOptions;
   readonly log?: Logger;
+  /**
+   * The owner's session (task 4, TASK-344): whether the signed-in buyer owns this invoice's order,
+   * asked only when no valid link was given. Absent: the link is the only way in.
+   */
+  readonly ownerAllows?: (invoiceId: string) => Promise<boolean>;
 }
 
 /** The route's work: the PDF for a valid link, else the 404. */
@@ -88,7 +94,12 @@ export async function invoiceDownloadResponse(
 ): Promise<Response> {
   const id = z.uuid().safeParse(params.invoiceId);
   if (!isLocaleCode(params.locale) || !id.success) return invoiceNotFound();
-  if (!invoiceLinkOpens(id.data, token, deps.link)) return invoiceNotFound();
+  if (
+    !invoiceLinkOpens(id.data, token, deps.link) &&
+    !(deps.ownerAllows !== undefined && (await deps.ownerAllows(id.data)))
+  ) {
+    return invoiceNotFound();
+  }
   try {
     const pdf = await getPdfByInvoiceId(id.data, deps);
     return new Response(new Uint8Array(pdf.bytes), {
