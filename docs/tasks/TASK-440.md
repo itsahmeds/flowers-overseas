@@ -45,6 +45,10 @@ here.
 
 - 2026-11-08 (FN439): permissions, nav, `formatRatePpm`/`formatPercentBp`/`formatRatingBp`/`formatMinorNumber`, `src/lib/csv.ts` (wiseCsv byte-identical, its contract test passes), `src/modules/admin/finance/` (pure margin, range, queries, CSV), `/admin/finance`, `/admin/finance/orders`, `finance/export/route.ts`, loading states, the order Money panel, 154 admin keys; unit `finance-margin.test.ts` (6: AC-11 incl. 10 000 cases, AC-12, AC-13, AC-14, AC-23 cells). Turn limit reached: see Carry-forwards.
 
+## Copy approval
+
+- founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-439.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 030b (TASK-439, TASK-440); the founder did not read this text: the 154 admin texts of spec 030b (`admin.finance.*`, `admin.nav.finance`, `admin.flags.description.payments.balance_fetch`), exactly as printed.
+
 ## Result
 
 https://github.com/itsahmeds/flowers-overseas/pull/520 (with TASK-439). The four permissions, `src/config/finance.ts`, the pure order margin (`allocateByWeight`, `toReporting`, `rateOn`, `refundVatEstimate`, `orderMargin`, `marginBp`, `rollUp`), the finance reads (6 SQL statements per page whatever the order count), `/admin/finance`, `/admin/finance/orders`, the CSV route with one audit row, and the read-only Money panel for `finance.view`. 154 admin keys ship `reviewed: false`; `.claude/state/record-approval-439.py --check` passes. Unit `finance-margin.test.ts` (6). The clean-env `pnpm build` was not run (turn limit); CI's build is the gate. Remaining tests are listed under Carry-forwards.
