@@ -23,6 +23,7 @@ import type { ReactElement, ReactNode } from "react";
 import type { LocaleCode } from "@/config/locales";
 import { type Money, formatMoney } from "@/modules/i18n";
 
+import { discountAmountText } from "./DiscountCodeField.tsx";
 import { MONEY_FIGURE } from "./styles.ts";
 
 /** A line's amount: a figure, or "included" in the bouquet's price. */
@@ -81,6 +82,13 @@ export interface OrderSummaryPanelProps {
    * beside the VAT lines (`.s10-lines`). Default `plain`.
    */
   readonly lineLabels?: "caps" | "plain";
+  /**
+   * Spec 047 (TASK-447): the applied code's line, after the other lines: "Discount ({code})" (the
+   * code in `<bdi dir="ltr">`) and the amount taken off, drawn negative. Never struck through.
+   */
+  readonly discountLine?: { readonly label: ReactNode; readonly amount: Money };
+  /** Spec 047: step 4's code control, between the lines and "You pay" (the boards). */
+  readonly discountControl?: ReactNode;
   /** Extra classes on the panel (the page hides or flattens it on a phone, per the boards). */
   readonly className?: string;
   /** Extra classes on the title and the bouquet row (step 3 on a phone draws neither). */
@@ -112,6 +120,8 @@ export function OrderSummaryPanel({
   action,
   footer,
   lineLabels = "plain",
+  discountLine,
+  discountControl,
   className,
   headClassName,
 }: OrderSummaryPanelProps): ReactElement {
@@ -192,7 +202,19 @@ export function OrderSummaryPanel({
             </dd>
           </div>
         ))}
+        {discountLine === undefined ? null : (
+          <div
+            className="text-ui flex justify-between gap-[16px]"
+            data-fo-discount-line=""
+          >
+            <dt className="text-ink-2">{discountLine.label}</dt>
+            <dd className="text-included m-0 font-bold [font-variant-numeric:tabular-nums]">
+              {discountAmountText(discountLine.amount, locale)}
+            </dd>
+          </div>
+        )}
       </dl>
+      {discountControl}
       <div
         aria-atomic="true"
         aria-live="polite"

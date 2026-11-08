@@ -100,3 +100,12 @@ export {
 } from "./form-fields.ts";
 export { StepForm, type StepFormProps } from "./StepForm.tsx";
 export { buttonClass as checkoutButtonClass } from "./styles.ts";
+// Spec 047 (TASK-447): step 4's discount code control and the discount line's amount.
+export {
+  DiscountCodeField,
+  codeSlot,
+  discountAmountText,
+  withCodes,
+  type DiscountCodeFieldProps,
+  type DiscountFieldState,
+} from "./DiscountCodeField.tsx";

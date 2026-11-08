@@ -25,8 +25,10 @@ import {
 } from "@/modules/ui";
 import {
   checkoutButtonClass,
+  codeSlot,
   ConfirmationRecap,
   DemoBanner,
+  withCodes,
 } from "@/modules/ui/checkout";
 
 import type { CancelUiState } from "../checkout/done/buyer-cancel";
@@ -239,6 +241,17 @@ export async function DemoConfirmation({
             title={t("summary.title")}
             total={only.amount}
             totalLabel={t("summary.total")}
+            {...(only.discount === null
+              ? {}
+              : {
+                  discountLine: {
+                    label: withCodes(
+                      t("discount.line", { code: codeSlot("code") }),
+                      { code: only.discount.code },
+                    ),
+                    amount: only.discount.amount,
+                  },
+                })}
             {...(only.card === null
               ? {}
               : {

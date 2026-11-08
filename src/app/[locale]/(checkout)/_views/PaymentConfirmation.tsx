@@ -43,8 +43,10 @@ import {
 import { PAGE_FRAME } from "@/modules/ui";
 import {
   checkoutButtonClass,
+  codeSlot,
   ConfirmationRecap,
   DemoBanner,
+  withCodes,
 } from "@/modules/ui/checkout";
 
 import type { CancelUiState } from "../checkout/done/buyer-cancel";
@@ -296,6 +298,17 @@ async function SingleDelivery({
           title={t("summary.title")}
           total={delivery.amount}
           totalLabel={t("summary.total")}
+          {...(delivery.discount === null
+            ? {}
+            : {
+                discountLine: {
+                  label: withCodes(
+                    t("discount.line", { code: codeSlot("code") }),
+                    { code: delivery.discount.code },
+                  ),
+                  amount: delivery.discount.amount,
+                },
+              })}
           {...(delivery.card === null
             ? {}
             : {

@@ -84,6 +84,14 @@ export const REDACTED_KEYS: readonly string[] = [
   // covered, and `*name` covers `business_name` and `contact_name`.
   "contactemail",
   "contactphone",
+  // Spec 047 §8 (TASK-447): a discount code is treated as a secret in logs. Logs carry the code's
+  // id (`discount_code_id`, which stays readable) and its reason, never the text. The bare `code`
+  // is not listed: it is this codebase's error-code field in every log line.
+  "discountcode",
+  "promo",
+  "promocode",
+  "coupon",
+  "couponcode",
 ];
 
 /**

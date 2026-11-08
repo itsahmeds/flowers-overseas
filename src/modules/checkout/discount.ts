@@ -204,15 +204,15 @@ export interface AppliedDiscount {
 export interface DiscountRefusal {
   readonly reason: DiscountRefusalReason;
   /** `notStarted`: the start instant. */
-  readonly startsAt?: string;
+  readonly startsAt?: string | undefined;
   /** `wrongDestination`: the destination's ISO code. */
-  readonly countryIso?: string;
+  readonly countryIso?: string | undefined;
   /** `wrongCurrency`, `belowMinimum`: the purchase currency. */
-  readonly currency?: string;
+  readonly currency?: string | undefined;
   /** `belowMinimum`: the minimum in that currency. */
-  readonly minimumMinor?: number;
+  readonly minimumMinor?: number | undefined;
   /** `locked`: whole minutes left. */
-  readonly minutes?: number;
+  readonly minutes?: number | undefined;
 }
 
 export type DraftDiscount =

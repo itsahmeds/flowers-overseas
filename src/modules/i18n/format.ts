@@ -634,6 +634,27 @@ export function formatRegionName(
 }
 
 /**
+ * A currency's name in the locale's language, through `Intl.DisplayNames` (spec 047 §7: the
+ * `wrongCurrency` refusal names the currency, "Euro", "złoty"; TASK-447). An unknown code reads as
+ * itself.
+ */
+export function formatCurrencyName(
+  currencyCode: string,
+  locale: LocaleCode,
+): string {
+  const code = z
+    .string()
+    .regex(/^[A-Z]{3}$/u)
+    .parse(currencyCode);
+  return (
+    new Intl.DisplayNames([tagFor(locale)], {
+      type: "currency",
+      fallback: "code",
+    }).of(code) ?? code
+  );
+}
+
+/**
  * The day, month, weekday and year of **one** `calendarDate` value, as `Intl` spells each part in
  * that value (spec 004 §14 A23 clause 5; TASK-187). The country occasion page's date card sets them
  * apart ("26" · "May" · "Wednesday" · "2027"); they come from `formatToParts` of the same

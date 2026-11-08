@@ -53,7 +53,16 @@ export interface ConfirmedDelivery {
   } | null;
   /** The add-ons' name keys, in the catalogue's order. */
   readonly addonNameKeys: readonly string[];
+  /** What was charged for this delivery: the order's `buyer_total_minor`. */
   readonly amount: IntegerMoney;
+  /**
+   * Spec 047 (AC-26, TASK-447): this delivery's share of the purchase's discount, read from its
+   * `order_discount` row, with the code as it was snapshotted; `null` for none.
+   */
+  readonly discount: {
+    readonly code: string;
+    readonly amount: IntegerMoney;
+  } | null;
 }
 
 export type Confirmation =
@@ -84,6 +93,8 @@ const OrderRow = z.object({
   }),
   sku: z.string().nullable(),
   tier_key: z.string().nullable(),
+  code_snapshot: z.string().nullable(),
+  discount_minor: z.coerce.number().int().positive().nullable(),
 });
 
 /**
@@ -112,12 +123,14 @@ export async function confirmationFor(
     executor.execute(sql`
       SELECT o.id, o.mode, c.iso2, o.delivery_date::text AS delivery_date,
              o.buyer_total_minor::text AS buyer_total_minor, o.buyer_currency_code,
-             o.recipient_snapshot, p.sku, ol.tier_key
+             o.recipient_snapshot, p.sku, ol.tier_key,
+             od.code_snapshot, od.amount_minor::text AS discount_minor
         FROM "order" o
         JOIN country c ON c.id = o.destination_country_id
         JOIN checkout_draft_line l ON l.order_id = o.id
         LEFT JOIN order_line ol ON ol.order_id = o.id AND ol.kind = 'product'
         LEFT JOIN product p ON p.id = ol.product_id
+        LEFT JOIN order_discount od ON od.order_id = o.id
        WHERE o.purchase_id = ${purchaseId}
        ORDER BY l.position`),
   );
@@ -178,6 +191,16 @@ export async function confirmationFor(
         amountMinor: order.buyer_total_minor,
         currency: order.buyer_currency_code,
       }),
+      discount:
+        order.code_snapshot === null || order.discount_minor === null
+          ? null
+          : {
+              code: order.code_snapshot,
+              amount: IntegerMoneySchema.parse({
+                amountMinor: order.discount_minor,
+                currency: order.buyer_currency_code,
+              }),
+            },
     });
   }
   return {
