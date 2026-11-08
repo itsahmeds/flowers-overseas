@@ -42,6 +42,33 @@ import { CORE_RANGE_TODAY } from "../support/home-today.ts";
 const LAUNCH_LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 /**
+ * The legal row's accessible name per launch locale (`footer.group.legal`), restated from
+ * `messages/<locale>.json` rather than read from it: the row is an inline `<nav>` named by
+ * `aria-label`, so a de or pl page names it in its own language.
+ */
+const LEGAL_ROW_NAME: Readonly<
+  Record<(typeof LAUNCH_LOCALES)[number], string>
+> = {
+  en: "Legal",
+  "en-gb": "Legal",
+  de: "Rechtliches",
+  pl: "Informacje prawne",
+};
+
+/**
+ * The withdrawal and refunds page's leaf slug below the legal segment, per launch locale,
+ * restated from `src/config/info-pages.ts` (spec 041 §6): de and pl name it in their own language.
+ */
+const WITHDRAWAL_LEAF: Readonly<
+  Record<(typeof LAUNCH_LOCALES)[number], string>
+> = {
+  en: "cancellation",
+  "en-gb": "cancellation",
+  de: "widerruf",
+  pl: "odstapienie-od-umowy",
+};
+
+/**
  * The locales the chrome offers (spec 004 §14 A-founder-2026-10-14e: AC-14's crawl reads "the
  * shown locales plus `/`"), and the launch locales reached by URL only. Both are crawled: `/de`
  * and `/pl` keep AC-14's link rule on their own pages.
@@ -258,10 +285,9 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       ).toHaveAttribute("href", `/${locale}/basket`);
 
       // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
-      // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and
-      // the guarantee under Sending, and How it works and Help and contact under Company; `de`
-      // and `pl` have no content file, so those entries are not drawn.
-      const hasTrustPages = locale === "en" || locale === "en-gb";
+      // pages exist in English (TASK-182) and as the de/pl drafts (TASK-184), so every launch
+      // locale draws Delivery and payment and the guarantee under Sending, and How it works and
+      // Help and contact under Company, each at its own locale's path.
       const sending = await page
         .locator('footer nav[aria-labelledby$="-group-sending"] a')
         .evaluateAll((nodes) =>
@@ -270,9 +296,8 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       expect(sending).toEqual([
         localePath(locale, "destinations"),
         localePath(locale, "occasions"),
-        ...(hasTrustPages
-          ? [localePath(locale, "delivery"), localePath(locale, "guarantee")]
-          : []),
+        localePath(locale, "delivery"),
+        localePath(locale, "guarantee"),
       ]);
       const company = await page
         .locator('footer nav[aria-labelledby$="-group-company"] a')
@@ -281,30 +306,22 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         );
       // For florists (spec 011, TASK-210) has a landing in every locale, between How it works and
       // Help and contact in registry order.
-      expect(company).toEqual(
-        hasTrustPages
-          ? [
-              localePath(locale, "howItWorks"),
-              localePath(locale, "forFlorists"),
-              localePath(locale, "help"),
-            ]
-          : [localePath(locale, "forFlorists")],
-      );
-      // Spec 041's legal row (TASK-183): cookies and withdrawal and refunds exist in English;
-      // imprint, terms and privacy wait for the company, so no locale draws them.
+      expect(company).toEqual([
+        localePath(locale, "howItWorks"),
+        localePath(locale, "forFlorists"),
+        localePath(locale, "help"),
+      ]);
+      // Spec 041's legal row: cookies and withdrawal and refunds exist in every launch locale
+      // (TASK-183, TASK-184); imprint, terms and privacy wait for the company, so none draws them.
       const legal = await page
-        .locator('footer nav[aria-label="Legal"] a')
+        .locator(`footer nav[aria-label="${LEGAL_ROW_NAME[locale]}"] a`)
         .evaluateAll((nodes) =>
           nodes.map((node) => node.getAttribute("href") ?? ""),
         );
-      expect(legal).toEqual(
-        hasTrustPages
-          ? [
-              localePath(locale, "legal", "cookies"),
-              localePath(locale, "legal", "cancellation"),
-            ]
-          : [],
-      );
+      expect(legal).toEqual([
+        localePath(locale, "legal", "cookies"),
+        localePath(locale, "legal", WITHDRAWAL_LEAF[locale]),
+      ]);
 
       // Popular choices (v3, AC-95): the whole core range, each card a chooser link, then See all.
       await expect(
@@ -333,8 +350,8 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       // entries; TASK-383 replaced the eight-link category row), the header's Basket link (TASK-349),
       // the lockup's home, the switcher's
       // sibling shown homes (one on a shown locale, both English homes on a hidden one; spec 003
-      // §14 A-founder-2026-10-14c), the trending row's five products and shop link and, in
-      // English, the footer's four trust pages and two legal pages. A further control is a diff
+      // §14 A-founder-2026-10-14c), the trending row's five products and shop link and, in every
+      // launch locale, the footer's trust, florists' and legal pages (TASK-184). A further control is a diff
       // here.
       const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale);
       expect(siblings.length).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);

@@ -22,6 +22,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [seed-catalogue](seed-catalogue.md) | Editing a product, adding a destination's prices, running `seed:check`, reading a `seed:diff`, re-seeding a database safely, and what "never touch `source = 'real'`" means in practice |
 | [visual-baselines](visual-baselines.md) | Which platform's screenshots decide pass or fail, refreshing the Linux set from a Mac, the measured 0.1 % threshold, and how a reviewer judges a baseline commit |
 | [design-system](design-system.md) | Adding a token or a component, the contrast manifest, `<bdi>` and `mirror-in-rtl`, the gallery, updating a visual baseline, reading the bundle table and a red Lighthouse job |
+| [info-and-legal-pages](info-and-legal-pages.md) | Editing, approving and versioning the ten trust and legal pages, publishing a lawyer-reviewed version, the de/pl drafts, the trader-identity flip checklist (the gated pages' axe run and the imprint's baseline, the five legal risks), the go-live copy batch |
 | [i18n-translations](i18n-translations.md) | Adding a message key, drafting a locale, reading the reviewed share, handing a locale to a native reviewer, what makes a locale indexable |
 | [hreflang-regression](hreflang-regression.md) | Hreflang or canonical regression found in Search Console or the auditor |
 | [sitemap-or-robots-broken](sitemap-or-robots-broken.md) | Sitemap or `robots.txt` serving the wrong thing |

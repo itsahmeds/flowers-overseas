@@ -46,3 +46,10 @@ machine-drafted (`plan/03` §6.4).
 
 Founder. `en-gb` is 100% reviewed by definition of being hand-authored — its keys are only ever
 written deliberately.
+
+## 6. Trust and legal pages (spec 041)
+
+`glossary.en.md` §8 applies unchanged, with one UK delta: the statutory right is the **right to
+cancel** (CCRs 2013, reg. 28 for perishable goods), so the `en-gb` legal files say "cancel" where
+the `en` files say "withdraw"; the page title and the footer label stay "Withdrawal and refunds" in both. The
+complaint authority in the `en-gb` privacy notice is the ICO.

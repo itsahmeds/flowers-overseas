@@ -2,8 +2,10 @@
  * Spec 041's trust and legal pages, built and served (TASK-182, TASK-183): T-01 (AC-1), T-08
  * (AC-8), T-13 (AC-13, the page's own re-open button), T-24 (AC-24), T-26 (AC-26) and T-32's
  * rendered half (AC-30) over every (page, locale) that exists before registration in `en` and
- * `en-gb`, and the footer crawl of the legal links (AC-21). The `de` and `pl` drafts are
- * TASK-184's, so their URLs are asserted to be 404s here and join the scans when their files land.
+ * `en-gb`, and the footer crawl of the legal links (AC-21). The `de` and `pl` drafts (TASK-184)
+ * join the same scans in their own describe below (T-23, AC-23): the 14 draft documents that exist
+ * before registration, each `noindex`, in no hreflang cluster, with the untranslated line. Their
+ * crawl and in-body link sets are `tests/e2e/info-pages-crawl.spec.ts` (T-22).
  */
 import { type BrowserContext, expect, test } from "@playwright/test";
 
@@ -192,13 +194,119 @@ test.describe("AC-21: the footer and the home link to the pages", () => {
     ).toHaveCount(1);
   });
 
-  test("the de footer links none of them: no German file exists yet", async ({
+  for (const [locale, hrefs] of Object.entries({
+    de: [
+      "/de/so-funktioniert-es",
+      "/de/garantie",
+      "/de/hilfe",
+      "/de/lieferung-und-zahlung",
+      "/de/rechtliches/cookies",
+      "/de/rechtliches/widerruf",
+    ],
+    pl: [
+      "/pl/jak-to-dziala",
+      "/pl/gwarancja",
+      "/pl/pomoc",
+      "/pl/dostawa-i-platnosc",
+      "/pl/informacje-prawne/cookies",
+      "/pl/informacje-prawne/odstapienie-od-umowy",
+    ],
+  })) {
+    test(`the ${locale} footer links its own drafts and no imprint, terms or privacy`, async ({
+      page,
+    }) => {
+      await page.goto(`/${locale}`);
+      const footer = page.locator("footer");
+      for (const href of hrefs) {
+        await expect(footer.locator(`a[href="${href}"]`), href).toHaveCount(1);
+      }
+      await expect(
+        footer.locator(
+          `a[href="/${locale}/impressum"], a[href="/${locale}/dane-firmy"], a[href*="/agb"], a[href*="/regulamin"], a[href*="/datenschutz"], a[href*="/polityka-prywatnosci"]`,
+        ),
+      ).toHaveCount(0);
+    });
+  }
+});
+
+/** The 14 de/pl drafts that exist before registration (spec 041 §2's table). */
+const DRAFTS = [
+  { locale: "de", pageId: "how-it-works", path: "/de/so-funktioniert-es" },
+  { locale: "de", pageId: "guarantee", path: "/de/garantie" },
+  { locale: "de", pageId: "help", path: "/de/hilfe" },
+  { locale: "de", pageId: "about", path: "/de/ueber-uns" },
+  { locale: "de", pageId: "delivery", path: "/de/lieferung-und-zahlung" },
+  { locale: "de", pageId: "cookies", path: "/de/rechtliches/cookies" },
+  { locale: "de", pageId: "cancellation", path: "/de/rechtliches/widerruf" },
+  { locale: "pl", pageId: "how-it-works", path: "/pl/jak-to-dziala" },
+  { locale: "pl", pageId: "guarantee", path: "/pl/gwarancja" },
+  { locale: "pl", pageId: "help", path: "/pl/pomoc" },
+  { locale: "pl", pageId: "about", path: "/pl/o-nas" },
+  { locale: "pl", pageId: "delivery", path: "/pl/dostawa-i-platnosc" },
+  { locale: "pl", pageId: "cookies", path: "/pl/informacje-prawne/cookies" },
+  {
+    locale: "pl",
+    pageId: "cancellation",
+    path: "/pl/informacje-prawne/odstapienie-od-umowy",
+  },
+] as const;
+
+test.describe("T-23 / AC-23 (rendered), T-08, T-24, T-26, T-32: the de and pl drafts", () => {
+  for (const { locale, path } of DRAFTS) {
+    test(`${path} is 200, lang ${locale}, noindex, in no hreflang cluster, with the untranslated line`, async ({
+      page,
+    }) => {
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+      await expect(page.locator("h1")).toHaveCount(1);
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
+      await expect(page.locator("[data-fo-untranslated]")).toHaveCount(1);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+        "content",
+        /noindex/u,
+      );
+      await expect(
+        page.locator(
+          'link[rel="alternate"][hreflang="de"], link[rel="alternate"][hreflang="pl"]',
+        ),
+      ).toHaveCount(0);
+      for (const sentence of sentencesOf(
+        await page.locator("main").innerText(),
+      )) {
+        expect(PRICE_LITERAL_PATTERN.test(sentence), sentence).toBe(false);
+        expect(SCALE_CLAIM_PATTERN.test(sentence), sentence).toBe(false);
+      }
+      const body = await page.locator("body").innerText();
+      expect(relayMatches(body, locale)).toEqual([]);
+      expect(body).not.toMatch(/Hameed|Sheikh|Tahoor/u);
+      await expect(page.locator("main form, main input")).toHaveCount(0);
+    });
+
+    test(`${path}: no Vary, no Set-Cookie, byte-identical with cookies`, async ({
+      request,
+    }) => {
+      const plain = await request.get(path, { maxRedirects: 0 });
+      expect(plain.status()).toBe(200);
+      expect(plain.headers()["set-cookie"]).toBeUndefined();
+      expect(plain.headers()["vary"] ?? "").not.toMatch(/cookie/iu);
+      const withCookies = await request.get(path, {
+        maxRedirects: 0,
+        headers: {
+          cookie:
+            "fo_locale=en; fo_currency=GBP; fo_consent=%7B%22v%22%3A1%2C%22a%22%3Afalse%7D",
+        },
+      });
+      expect(await withCookies.text()).toBe(await plain.text());
+    });
+  }
+
+  test("the en help page's hreflang cluster names no draft", async ({
     page,
   }) => {
-    await page.goto("/de");
+    await page.goto("/en/help");
     await expect(
       page.locator(
-        'footer a[href^="/de/hilfe"], footer a[href^="/de/garantie"]',
+        'link[rel="alternate"][hreflang="de"], link[rel="alternate"][hreflang="pl"]',
       ),
     ).toHaveCount(0);
   });

@@ -16,7 +16,7 @@ import { COMPANY } from "@/config/company";
 import { type InfoPageId, infoPage } from "@/config/info-pages";
 
 import {
-  infoPageAlternatePaths,
+  infoPageHreflangPaths as draftFreeAlternatePaths,
   infoPageHeadView,
   infoPageView,
 } from "../content/index.ts";
@@ -38,12 +38,13 @@ import { webPage } from "./schema/webPage.ts";
  * The locales an info page's hreflang cluster and sitemap alternates may name. Spec 011 §6: the
  * florists' landing and walkthrough cluster only among locales whose file is **reviewed**, so a
  * `de`/`pl` draft is outside every cluster and every sitemap until its native review. The trust
- * and legal families keep spec 041's set (every locale where the page exists).
+ * and legal families keep spec 041's set: every locale where the page exists, less each `de`/`pl`
+ * draft nobody has checked yet (spec 041 §6, AC-18; TASK-184, the content module's own filter).
  */
 export function infoPageHreflangPaths(
   pageId: InfoPageId,
 ): Readonly<Record<string, string>> {
-  const paths = infoPageAlternatePaths(pageId);
+  const paths = draftFreeAlternatePaths(pageId);
   if (infoPage(pageId).family !== "florists") return paths;
   return Object.fromEntries(
     Object.entries(paths).filter(

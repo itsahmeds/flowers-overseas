@@ -38,7 +38,8 @@
  * hub of every locale that is not announced, and every spec 008 listing page whose own verdict is
  * `noindex` on this deployment (AC-19's "no `noindex` URL appears in either"; TASK-116): the
  * country-scoped pages, which wait for an operational destination, the hubs whose copy is
- * unreviewed, and every `de`/`pl` listing. `/` is in neither list: it is one 308 to `/en` with
+ * unreviewed, and every `de`/`pl` listing; and every spec 041 info page the engine serves
+ * `noindex` (TASK-184). `/` is in neither list: it is one 308 to `/en` with
  * no document (spec 003 §14 A16 clause 3). `validate-sitemap` intersects
  * it with every `<loc>` it reads, which is AC-14's first half as a CI gate rather than an
  * argument.
@@ -47,12 +48,15 @@ import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { INFO_PAGE_IDS } from "../../src/config/info-pages.ts";
+import { infoPageHeadView } from "../../src/modules/content/index.ts";
 import {
   listingLocales,
   listingPageIndexability,
   listingPages,
 } from "../../src/modules/catalog/index.ts";
 import {
+  launchLocaleCodes,
   localePath,
   routableLocaleCodes,
 } from "../../src/modules/i18n/index.ts";
@@ -61,6 +65,7 @@ import {
   CANONICAL_HOST,
   type DeploymentDescriptor,
 } from "../../src/modules/seo/environment.ts";
+import { pageIndexability } from "../../src/modules/seo/indexability.ts";
 import { corridorSitemapEntries } from "../../src/modules/seo/sitemap/corridors.ts";
 import type { SitemapAlternate } from "../../src/modules/seo/sitemap/xml.ts";
 import {
@@ -134,6 +139,31 @@ async function noindexListingUrls(
   return urls;
 }
 
+/**
+ * Every spec 041 info page that exists in a launch locale and that the engine serves
+ * `noindex` (spec 041 AC-17, AC-20, AC-23; TASK-184): the unreviewed `en`/`en-gb` pages, the
+ * whole legal set until a lawyer signs it, and every `de`/`pl` draft. Asked of the same
+ * `pageIndexability()` call the page's `<head>` and its sitemap row make, so `validate-sitemap`
+ * fails the day one of them reaches a `<loc>` while it is still `noindex`.
+ */
+export function noindexInfoPageUrls(
+  deployment: DeploymentDescriptor = FIXTURE_DEPLOYMENT,
+): readonly string[] {
+  return launchLocaleCodes().flatMap((locale) =>
+    INFO_PAGE_IDS.flatMap((pageId) => {
+      const head = infoPageHeadView(pageId, locale);
+      if (head === undefined) return [];
+      const verdict = pageIndexability(
+        { pageType: pageId, locale, exists: true, reviewed: head.reviewed },
+        deployment,
+      );
+      return verdict.indexable
+        ? []
+        : [absoluteUrl(head.path, { baseUrl: deployment.siteUrl })];
+    }),
+  );
+}
+
 /** Every URL the sitemap declined, as `validate-sitemap`'s `noindex.json` shape. */
 export async function noindexUrlSet(
   deployment: DeploymentDescriptor = FIXTURE_DEPLOYMENT,
@@ -148,6 +178,7 @@ export async function noindexUrlSet(
         }),
       ),
     ...(await noindexListingUrls(deployment)),
+    ...noindexInfoPageUrls(deployment),
   ];
   return [...urls].sort();
 }
