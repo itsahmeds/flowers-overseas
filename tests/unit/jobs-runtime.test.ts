@@ -138,6 +138,9 @@ describe("withBoss — one instance per call, always stopped", () => {
   });
 });
 
+/** The handle `getDb` returns; handlers receive it as `context.queue`. */
+const queueDb = { executeSql: async () => ({ rows: [] }) };
+
 /** A fake pg-boss with an in-memory queue per name, recording every settlement. */
 function fakeBoss(jobs: Record<string, { id: string; data: unknown }[]>) {
   const settled: string[] = [];
@@ -161,6 +164,8 @@ function fakeBoss(jobs: Record<string, { id: string; data: unknown }[]>) {
     cancel: vi.fn(async (name: string, id: string) => {
       settled.push(`cancel:${name}:${id}`);
     }),
+    // pg-boss's own handle, passed to handlers as `context.queue` (spec 025, TASK-489).
+    getDb: vi.fn(() => queueDb),
   };
   return { boss: boss as never, raw: boss, settled, fetched, queues };
 }
@@ -178,6 +183,10 @@ describe("ensureQueues", () => {
     const fake = fakeBoss({});
     await ensureQueues(fake.boss);
     expect(fake.queues.sort()).toEqual([
+      "alerts.daily_summary",
+      "alerts.dispatch",
+      "alerts.escalate",
+      "alerts.monitor",
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
@@ -214,6 +223,8 @@ describe("ensureQueues", () => {
       .map(([name]) => name)
       .sort();
     expect(shortQueues).toEqual([
+      "alerts.daily_summary",
+      "alerts.dispatch",
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
@@ -315,7 +326,7 @@ describe("runTick — each job settled exactly once", () => {
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler).toHaveBeenCalledWith(
       { dryRun: true },
-      { jobId: "j1", requestId: "system:test", retryCount: 0 },
+      { jobId: "j1", requestId: "system:test", retryCount: 0, queue: queueDb },
     );
     expect(fake.settled).toEqual(["complete:retention.sweep:j1"]);
     expect(counts).toEqual({
@@ -343,7 +354,12 @@ describe("runTick — each job settled exactly once", () => {
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler).toHaveBeenCalledWith(
       { objectKey: "k" },
-      { jobId: "good", requestId: "system:test", retryCount: 0 },
+      {
+        jobId: "good",
+        requestId: "system:test",
+        retryCount: 0,
+        queue: queueDb,
+      },
     );
     expect(fake.settled).toEqual([
       "cancel:db.backup_verify:bad",
@@ -407,9 +423,13 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), payments.monitor (TASK-264), order.close_sweep (TASK-369), spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready (TASK-363), payouts.close and payouts.watch (TASK-364), payouts.statement_email (TASK-365), spec 018's invoice.render and invoice.render_sweep (TASK-342), spec 016's webhook.resend.process (TASK-335) and invoice.email (TASK-334), spec 020a's notifications.resend (TASK-360), and spec 030b's payments.balance_fetch and payments.balance_sweep (TASK-439), nothing else yet", async () => {
+  it("the production map handles media.derive_variants (TASK-082), retention.sweep (TASK-025), outbox.dispatch (TASK-254), payments.production_start (TASK-258), payments.monitor (TASK-264), order.close_sweep (TASK-369), spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready (TASK-363), payouts.close and payouts.watch (TASK-364), payouts.statement_email (TASK-365), spec 018's invoice.render and invoice.render_sweep (TASK-342), spec 016's webhook.resend.process (TASK-335) and invoice.email (TASK-334), spec 020a's notifications.resend (TASK-360), and spec 030b's payments.balance_fetch and payments.balance_sweep (TASK-439), spec 025's four alerts.* jobs (TASK-488, TASK-489), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
+      "alerts.daily_summary",
+      "alerts.dispatch",
+      "alerts.escalate",
+      "alerts.monitor",
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
@@ -569,14 +589,19 @@ describe("enqueue — the minute tick's singletonKey (spec 022a §5.2, TASK-369)
   it("hands a job's retryCount to its handler (spec 018's fifth-attempt alert, TASK-342)", async () => {
     const fake = fakeBoss({
       "retention.sweep": [
-        { id: "r", data: envelope({ dryRun: true }), retryCount: 4 } as never,
+        {
+          id: "r",
+          data: envelope({ dryRun: true }),
+          retryCount: 4,
+          queue: queueDb,
+        } as never,
       ],
     });
     const handler = vi.fn(async () => undefined);
     await runTick(fake.boss, { "retention.sweep": handler }, { log: quiet() });
     expect(handler).toHaveBeenCalledWith(
       { dryRun: true },
-      { jobId: "r", requestId: "system:test", retryCount: 4 },
+      { jobId: "r", requestId: "system:test", retryCount: 4, queue: queueDb },
     );
   });
 });
