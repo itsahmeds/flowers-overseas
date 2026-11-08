@@ -47,4 +47,4 @@ _Not started._
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Dropped 2026-11-08, not built: folded into TASK-520 (spec 045 §14 A-founder-2026-11-08a). The founder asked for search with suggestions in the nav bar, so the island ships on by default, uses `POST`, and offers mixed kinds; AC-27 is re-owned there.
