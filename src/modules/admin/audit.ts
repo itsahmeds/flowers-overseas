@@ -53,6 +53,8 @@ export const VIEWED_ENTITIES = {
   payout_export: "payout_export",
   // Spec 030a §5.3 (TASK-367): each opening of a statement PDF through its signed link.
   payout: "payout",
+  // Spec 030b §5.2 "Audit" (TASK-441): each opening of a florist's Relationship tab.
+  partner_crm: "partner_crm",
 } as const;
 export type ViewedEntity = keyof typeof VIEWED_ENTITIES;
 
@@ -81,6 +83,7 @@ export const VIEW_ACTIONS = Object.freeze({
   application: "application.viewed",
   payout_export: "payout_export.viewed",
   payout: "payout.viewed",
+  partner_crm: "partner_crm.viewed",
 } as const satisfies Record<ViewedEntity, string>);
 
 /** The audit page reads with this action; no trigger records a read. */
@@ -171,7 +174,7 @@ export async function logAdminRead(
   run: AdminRunner = adminRunner,
 ): Promise<void> {
   const parsedEntity = z
-    .enum(["order", "application", "payout_export", "payout"])
+    .enum(["order", "application", "payout_export", "payout", "partner_crm"])
     .parse(entity);
   const entityId = z.uuid().parse(id);
   await run({ ...actor, action: VIEW_ACTIONS[parsedEntity] }, async (db) => {

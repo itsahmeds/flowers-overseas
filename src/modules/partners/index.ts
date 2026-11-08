@@ -156,9 +156,11 @@ export {
   partnerCodeById,
   partnerDetail,
   partnerFormOptions,
+  partnerHead,
 } from "./admin/queries.ts";
 export type {
   PartnerDetail,
+  PartnerHead,
   PartnerList,
   PartnerListFilter,
   PartnerListItem,

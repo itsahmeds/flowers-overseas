@@ -216,6 +216,7 @@ function profileColumns(
   contactPhone: string | null;
   payoutCurrencyCode: string;
   capacityPerDay: number;
+  contactName?: string | null;
 } {
   return {
     legalName: profile.legalName,
@@ -226,6 +227,9 @@ function profileColumns(
     contactPhone: profile.contactPhone,
     payoutCurrencyCode: profile.payoutCurrency,
     capacityPerDay: profile.capacityPerDay,
+    ...(profile.contactName === undefined
+      ? {}
+      : { contactName: profile.contactName }),
   };
 }
 
