@@ -853,3 +853,9 @@ No em dashes; present tense; first person ("we"); "printed", never "handwritten"
 | `payments.confirmation.notDeliveredRefunded` | We could not deliver this order. We have refunded {amount}. | proposed (the founder's own wording, 2026-10-14) |
 | ~~`payments.confirmation.held`~~ | *Retired by the ruling, never shipped.* | removed |
 | ~~`payments.confirmation.paidNow`~~ | *Retired; text moved to `payments.confirmation.paid`.* | removed |
+
+
+**A-orchestrator-2026-11-08 (pointer; spec 023 §12, approved 2026-10-24; no new AC or T id).** Written in spec 023's first task (TASK-491) as spec 023 §12 asks.
+1. The outbox route table gains `analytics.ga4` (audience `system`) for `order.captured` (the handler acts on row 2 only), `order.refunded_partial` and `order.refunded_full`, in `test` and `live`, none in `demo` (spec 023 AC-25). Built by TASK-491 (`src/modules/orders/outbox/routes.ts`; handler `src/modules/analytics/outbox/handler.ts`). `OutboxTargetSchema`'s name pattern admits digits after the first segment for `analytics.ga4`.
+2. The Payment Element island calls `window.__foAnalytics?.track('add_payment_info', { payment_type })` when Pay is pressed, before `confirmPayment` (spec 023 §5.2, §14 item 1; TASK-492).
+3. §11 "Analytics: none from here" points to spec 023: the server-side `purchase` and `refund` are spec 023's.

@@ -1263,6 +1263,7 @@ describe.skipIf(server.url === undefined)(
         invoices: noop,
         notifications: noop,
         payouts: noop,
+        "analytics.ga4": noop,
       };
       for (let round = 0; round < 2; round += 1) {
         await scratch.sql`

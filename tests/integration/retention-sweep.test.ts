@@ -996,6 +996,8 @@ describe.skipIf(server.url === undefined)(
             ["demo_order_personal", "applied"],
             ["fraud_signals", "applied"],
             ["invoice_archive", "kept"],
+            // spec 023 §5.1 (TASK-491): the GA ids of an order, cleared after 60 days.
+            ["order_analytics_ga_ids", "applied"],
             ["partner_application", "applied"],
             // spec 030b §13 Q11 (TASK-439): the CRM rows of an offboarded florist; balance facts
             // are kept with the payment records.

@@ -22,6 +22,7 @@
  */
 export * from "./admin.ts";
 export * from "./alerts.ts";
+export * from "./analytics.ts";
 export * from "./auth.ts";
 export * from "./blog.ts";
 export * from "./catalog.ts";

@@ -330,7 +330,7 @@ describe("the invoices outbox routes (§5.2 Outbox subscriptions, AC-15)", () =>
     // Spec 016 (TASK-331) adds `notifications` after them (B1).
     expect(
       outboxTargets("order.captured", "live").map((target) => target.name),
-    ).toEqual(["routing", "invoices", "notifications"]);
+    ).toEqual(["routing", "invoices", "notifications", "analytics.ga4"]);
     expect(outboxTargets("order.chargeback_lost", "live")).toEqual([]);
   });
 });

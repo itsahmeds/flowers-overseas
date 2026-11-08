@@ -1141,6 +1141,7 @@ describe.skipIf(server.url === undefined)(
           routing: noop,
           notifications: notificationsOutboxHandler(deps()),
           payouts: noop,
+          "analytics.ga4": noop,
         },
         transaction: savepoints,
         orderId: options.orderId,

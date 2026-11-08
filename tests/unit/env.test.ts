@@ -610,9 +610,11 @@ describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
     // `FLORIST_APPLICATIONS_NOTIFY_EMAIL`; spec 016 (TASK-335) `RESEND_WEBHOOK_SECRET`; spec 013
     // (TASK-262) the Payment Element's `STRIPE_PUBLISHABLE_KEY`; spec 025 (TASK-488) the alert
     // channel's five: `PUSHOVER_APP_TOKEN`, `PUSHOVER_USER_KEY`, `PUSHOVER_BACKUP_USER_KEY`,
-    // `ALERT_HEARTBEAT_URL`, `ALERT_SUMMARY_HEARTBEAT_URL`; spec 034 (TASK-449) the basket
+    // `ALERT_HEARTBEAT_URL`, `ALERT_SUMMARY_HEARTBEAT_URL`; spec 023 (TASK-491) `GA4_API_SECRET`
+    // and `GA4_MP_VALIDATE`;
+    // spec 034 (TASK-449) the basket
     // reminder's two: `CONTACT_HMAC_SECRET`, `MARKETING_MAIL_FROM`.
-    expect(ENV_KEYS).toHaveLength(49);
+    expect(ENV_KEYS).toHaveLength(51);
     expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
   });
 

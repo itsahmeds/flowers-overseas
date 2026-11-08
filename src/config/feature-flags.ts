@@ -50,6 +50,9 @@
  * standard risk, on by default: off holds the balance-fact fetch jobs (finance shows fees
  * pending; nothing is lost). It dirties no page.
  *
+ * Spec 023 (TASK-491, migration `0042_analytics_ga4`) adds `analytics.mp_send`, global, standard
+ * risk, off by default: the GA4 Measurement Protocol kill switch. It dirties no page.
+ *
  * Spec 034 (TASK-449, migration `0040_basket_reminder`) adds `marketing.basket_reminder`, global,
  * standard risk, off by default: the consented basket reminder. It dirties no page.
  *
@@ -260,6 +263,17 @@ const REGISTRY = [
     scopeKinds: ["global"],
     description:
       "Fetches each payment's fee, settled amount and FX from the provider's balance transactions (spec 030b). Off: the fetch jobs wait and finance shows fees pending; nothing is lost.",
+    risk: "standard",
+    dirties: [],
+  },
+  // Spec 023 §5.2, §12 (migration `0042_analytics_ga4`, TASK-491): the GA4 Measurement Protocol
+  // kill switch, global, off by default. Off: each `analytics.ga4` delivery is recorded as skipped
+  // `disabled`, never held and never silent. Server side only, so no page is dirtied.
+  {
+    key: "analytics.mp_send",
+    scopeKinds: ["global"],
+    description:
+      "Sends purchase and refund to GA4 by Measurement Protocol for buyers who accepted analytics (spec 023). Off: each delivery is recorded as skipped (disabled); nothing is sent.",
     risk: "standard",
     dirties: [],
   },

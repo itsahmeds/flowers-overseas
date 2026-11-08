@@ -29,6 +29,7 @@ import {
 // from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
 import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
+import { registerAnalyticsOutbox } from "../modules/analytics";
 import { alertDetailHref, alertsListHref } from "../modules/admin/alerts";
 import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
 import {
@@ -138,6 +139,11 @@ async function balanceFlagOn(): Promise<boolean> {
 
 /** One read of an original by the derive worker: a large original on a slow link, not a hang. */
 const DERIVE_READ_TIMEOUT_MS = 60_000;
+
+// Spec 023 §5.2 (TASK-491): the `analytics.ga4` target, GA4 `purchase` and `refund` by Measurement
+// Protocol. Every reason not to send (no id or secret, `analytics.mp_send` off, no consent) is a
+// recorded skip, so the target is never held.
+registerAnalyticsOutbox();
 
 // Spec 018 §5.2 (TASK-341): the `invoices` outbox target issues invoices and credit notes in the
 // delivery's transaction. Registered once, where the dispatcher's job is defined.

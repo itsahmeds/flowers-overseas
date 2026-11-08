@@ -359,6 +359,10 @@ export const SYSTEM_ONLY_TABLES = [
   // spec 002 §14 A7.7 (migration `0017_payments_a7`, TASK-254): one row per outbox target, read
   // and written only by the dispatcher's system transactions.
   "outbox_delivery",
+  // spec 023 §5.1 (migration `0042_analytics_ga4`, TASK-491): the GA4 consent snapshot and ids,
+  // and the dispatch outcomes, read and written only by placement and the outbox handler.
+  "order_analytics",
+  "analytics_dispatch",
   // spec 034 §5.1 C (migration `0040_basket_reminder`, TASK-449): an address that stopped basket
   // emails, as its keyed hash. Read and written only by the reminder's system transactions.
   "email_suppression",

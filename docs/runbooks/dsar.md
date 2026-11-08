@@ -76,6 +76,11 @@ WHERE o.customer_id = :'customer_id';
 
 SELECT choices, policy_version, occurred_at
 FROM consent_log WHERE subject_kind = 'customer' AND subject_ref = :'customer_id';
+
+-- Spec 023 §8 (TASK-491): the analytics consent snapshot and the GA client id we hold, if any.
+SELECT a.analytics_consent, a.marketing_consent, a.ga_client_id, a.created_at, a.ids_cleared_at
+FROM order_analytics a JOIN "order" o ON o.id = a.order_id
+WHERE o.customer_id = :'customer_id';
 ```
 
 ### Erasure
@@ -134,6 +139,23 @@ Spec 002 §8 and spec 018 §5.2: pseudonymise, keep the accounting record, flag 
    now pointing at a `redacted` customer; `consent_log` for 5 years.
 5. **Outside the database**: unsubscribe and delete the address in Resend (and any CRM), and
    withdraw any pending review invitation.
+6. **Google Analytics** (spec 023 §8 "Rights"; TASK-491). Note each order's GA client id, then
+   null the ids we hold:
+
+   ```sql
+   SELECT a.ga_client_id FROM order_analytics a JOIN "order" o ON o.id = a.order_id
+   WHERE o.customer_id = :'customer_id' AND a.ga_client_id IS NOT NULL;
+
+   UPDATE order_analytics a
+   SET ga_client_id = NULL, ga_session_id = NULL, ids_cleared_at = now()
+   FROM "order" o
+   WHERE o.id = a.order_id AND o.customer_id = :'customer_id';
+   ```
+
+   Then delete each noted client id in GA4 (Explore, User explorer, the client id, Delete user;
+   or the User Deletion API). Ids older than 60 days are already cleared by the retention sweep
+   and cannot be traced to the person any more. A later refund of these orders is not sent to
+   GA4 (skipped `ids_cleared`).
 
 ### Objection
 Stop the processing objected to (marketing: `marketing_consent = false`) and log it. Marketing is

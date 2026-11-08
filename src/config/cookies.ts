@@ -331,7 +331,8 @@ const REGISTER: readonly unknown[] = [
     party: "third",
     writer: "third-party-script",
     status: "declared",
-    lifetime: { kind: "maxAge", seconds: 730 * DAY },
+    // Spec 023 §8, §13 Q7 (TASK-491): 12 months, not renewed (`cookie_update: false`).
+    lifetime: { kind: "maxAge", seconds: 365 * DAY },
     purposeKey: "consent.cookies.ga.purpose",
     spec: "004",
     scope: "Path=/; SameSite=Lax; Secure",
@@ -344,7 +345,8 @@ const REGISTER: readonly unknown[] = [
     party: "third",
     writer: "third-party-script",
     status: "declared",
-    lifetime: { kind: "maxAge", seconds: 730 * DAY },
+    // Spec 023 §8, §13 Q7 (TASK-491): 12 months, not renewed (`cookie_update: false`).
+    lifetime: { kind: "maxAge", seconds: 365 * DAY },
     purposeKey: "consent.cookies.gaContainer.purpose",
     spec: "004",
     scope: "Path=/; SameSite=Lax; Secure",

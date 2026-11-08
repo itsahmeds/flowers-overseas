@@ -111,6 +111,9 @@ export async function runPay(
         ...(context.discountFlag === undefined
           ? {}
           : { discountFlag: context.discountFlag }),
+        ...(context.analytics === undefined
+          ? {}
+          : { analytics: context.analytics }),
       },
       parsed.success
         ? {

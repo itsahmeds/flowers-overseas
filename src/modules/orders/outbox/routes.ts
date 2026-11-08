@@ -41,6 +41,14 @@
  * |-----------------------|-----------|--------------------------------------------------------|
  * | `assignment.accepted` | `payouts` | `fixPayoutAtAcceptance`: the fixed amount, prepaid payout |
  * | `order.photo_uploaded` | `payouts` | `accrueOrder`: the order's payout line (TASK-364) |
+ *
+ * Spec 023 §5.2 "The outbox target" (TASK-491) adds `analytics.ga4` (audience `system`), for `test`
+ * and `live`, none in `demo` (010 AC-20 stays true):
+ *
+ * | Event                                           | `test`, `live`  | Step                         |
+ * |-------------------------------------------------|-----------------|------------------------------|
+ * | `order.captured`                                | `analytics.ga4` | `purchase`, row 2 only       |
+ * | `order.refunded_partial`, `order.refunded_full` | `analytics.ga4` | `refund`, one per refund     |
  */
 import type { OrderEventType, OrderMode } from "../service/events";
 import type { OutboxTarget } from "../service/outbox";
@@ -55,6 +63,7 @@ export const OUTBOX_TARGET_NAMES = [
   "routing",
   "notifications",
   "payouts",
+  "analytics.ga4",
 ] as const;
 
 export type OutboxTargetName = (typeof OUTBOX_TARGET_NAMES)[number];
@@ -217,6 +226,32 @@ export function notificationOutboxTargets(
   mode: OrderMode,
 ): readonly OutboxTarget[] {
   return NOTIFICATION_OUTBOX_ROUTES[event]?.[mode] ?? [];
+}
+
+/** The `analytics.ga4` target: spec 023's Measurement Protocol `purchase` and `refund`. */
+export const ANALYTICS_TARGET = {
+  name: "analytics.ga4",
+  audience: "system",
+} as const satisfies OutboxTarget & { name: OutboxTargetName };
+
+const PAID_MODES_ANALYTICS = {
+  test: [ANALYTICS_TARGET],
+  live: [ANALYTICS_TARGET],
+} as const;
+
+/** Spec 023 §5.2's rows, exactly: `test` and `live`, none in `demo`. */
+export const ANALYTICS_OUTBOX_ROUTES: ModeOutboxRoutes = {
+  "order.captured": PAID_MODES_ANALYTICS,
+  "order.refunded_partial": PAID_MODES_ANALYTICS,
+  "order.refunded_full": PAID_MODES_ANALYTICS,
+};
+
+/** The targets spec 023's rows give `event` for an order in `mode`. Pure. */
+export function analyticsOutboxTargets(
+  event: OrderEventType,
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  return ANALYTICS_OUTBOX_ROUTES[event]?.[mode] ?? [];
 }
 
 /** Spec 030a §5.2's subscriptions, exactly: `live` only. */

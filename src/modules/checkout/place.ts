@@ -44,6 +44,7 @@ import {
   VatLineSchema,
   vatBreakdown,
 } from "@/modules/catalog";
+import { type AnalyticsContext, recordOrderContext } from "@/modules/analytics";
 import { createRecipient, upsertGuestCustomer } from "@/modules/customers";
 import { emailKey, toBaseMinor } from "@/modules/discounts";
 import { MoneySchema } from "@/modules/i18n";
@@ -127,6 +128,12 @@ export interface PlaceContext {
   readonly dailyCap?: number;
   /** Replaces the `checkout.discount_codes` reader (spec 047; tests). */
   readonly discountFlag?: DiscountFlagReader;
+  /**
+   * Spec 023 §5.2 (TASK-491): the request's analytics context (consent snapshot, GA ids), read by
+   * the action from the request cookies. Given, each placed `test` or `live` order gets its
+   * `order_analytics` row after the placement commits; a failure there never fails the order.
+   */
+  readonly analytics?: AnalyticsContext;
 }
 
 /** The step 3 form: the total the review displayed. */
@@ -641,6 +648,23 @@ export async function placeBasket(
   const outcome = await withDraftConnection(context.connection, (executor) =>
     placeWith(executor, context, locale, seen, now),
   );
+  if (
+    outcome.kind === "placed" &&
+    !outcome.replay &&
+    context.analytics !== undefined
+  ) {
+    const analytics = context.analytics;
+    try {
+      await withDraftConnection(context.connection, (executor) =>
+        recordOrderContext(outcome.orderIds, analytics, { executor }),
+      );
+    } catch (error) {
+      logger.warn(
+        { error_class: error instanceof Error ? error.name : "unknown" },
+        "analytics.context_failed",
+      );
+    }
+  }
   if (outcome.kind === "placed" && !outcome.replay) {
     const durationMs = Date.now() - started;
     logger.info(

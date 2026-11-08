@@ -300,6 +300,7 @@ describe.skipIf(server.url === undefined)(
         routing: () => Promise.resolve(),
         invoices: () => Promise.resolve(),
         notifications: () => Promise.resolve(),
+        "analytics.ga4": () => Promise.resolve(),
         payouts: () => Promise.resolve(),
       };
       for (let run = 0; run < 10; run += 1) {

@@ -79,6 +79,8 @@
  *    TASK-449. `checkout_draft_personal` also clears the draft's reminder consent (AC-9).
  *  - `ops_alert` (12 months after the resolve, delete; spec 025 §5.1, AC-36; TASK-488): resolved
  *    alerts and their notifications. Open alerts are never swept.
+ *  - `order_analytics_ga_ids` (60 days after placement, pseudonymise; spec 023 §5.1, AC-30;
+ *    TASK-491): the GA client id and session id of an order become null, `ids_cleared_at` set.
  *  A key with no handler here is reported `no_handler` and nothing is written for it.
  *
  * `dryRun` writes nothing — no row, no object — and reports the same counts, because every count
@@ -973,6 +975,38 @@ function partnerCrmRows(
   };
 }
 
+/**
+ * `order_analytics_ga_ids` (60 days after the row was written, pseudonymise; spec 023 §5.1 item 3,
+ * §13 Q5, AC-30; TASK-491): `ga_client_id` and `ga_session_id` become null and `ids_cleared_at`
+ * is set, on rows whose `created_at` is at or before the cut-off and that still hold an id. A
+ * younger row is never touched; the consent snapshot and the transaction id stay.
+ */
+const orderAnalyticsGaIds: PolicyHandler = async ({
+  db,
+  now,
+  cutoff,
+  dryRun,
+}) => {
+  const due = sql`created_at <= ${ts(cutoff)}
+    AND (ga_client_id IS NOT NULL OR ga_session_id IS NOT NULL)`;
+  const counted = await rows<{ count: number }>(
+    db,
+    sql`SELECT count(*)::int AS count FROM public.order_analytics WHERE ${due}`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`UPDATE public.order_analytics
+          SET ga_client_id = NULL, ga_session_id = NULL, ids_cleared_at = ${ts(now)}
+          WHERE ${due}`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { order_analytics: counted[0]?.count ?? 0 },
+    skipped: {},
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -992,6 +1026,7 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   ops_alert: opsAlert,
   partner_note: partnerCrmRows("partner_note"),
   partner_contact_log: partnerCrmRows("partner_contact_log"),
+  order_analytics_ga_ids: orderAnalyticsGaIds,
   basket_reminder_tokens: basketReminderTokens,
   basket_reminder: basketReminderRows("basket_reminder"),
   email_suppression: basketReminderRows("email_suppression"),
