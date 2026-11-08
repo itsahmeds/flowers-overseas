@@ -75,26 +75,23 @@ export const CSP_REPORT_GROUP = "csp-endpoint";
 export const VERCEL_LIVE_ORIGIN = "https://vercel.live";
 
 /**
- * Where `gtag.js` comes from when `NEXT_PUBLIC_GA4_MEASUREMENT_ID` is set (spec 004 §5.2,
- * AC-21; TASK-050). Named in `script-src` and `connect-src`, and **only** when an id is
- * configured: with no id there is no tag, so an allowance for it would widen the policy of every
- * environment that does not use it — including production today.
+ * The Google sources of the **consent-active** build only (spec 023 §5.0 "CSP", AC-31; ADR-0016,
+ * ADR-0022; TASK-492), exactly Google's GA4 guidance [G8]: `script-src` names the tag manager,
+ * `connect-src` the tag manager and both measurement hosts, `img-src` the tag manager and the
+ * measurement host. With no measurement id none of them is in any policy, which is what keeps
+ * every build without an id free of a Google allowance (production today).
  *
- * The trade-off this origin carries is ADR-0016's accepted one, and it is the sharpest edge of
- * the allowlist approach: `googletagmanager.com` serves arbitrary container code, so an XSS that
- * can inject a `<script src>` to it is not blocked on a cached page. That is why the origin is
- * gated on configuration rather than allowed pre-emptively.
+ * The trade-off is ADR-0016's accepted one: `googletagmanager.com` serves arbitrary container
+ * code, so an XSS that can inject a `<script src>` to it is not blocked on a cached page. That is
+ * why the sources are gated on configuration rather than allowed pre-emptively.
  */
-export const GOOGLE_TAG_MANAGER_ORIGIN = "https://www.googletagmanager.com";
+export const GOOGLE_TAG_MANAGER_ORIGIN = "https://*.googletagmanager.com";
 
-/**
- * Where GA4 sends its measurement pings (`connect-src` only). Wildcarded because the endpoint is
- * regionalised (`region1.google-analytics.com` in the EU) and the region is chosen by the tag,
- * not by us. It is deliberately **not** in `img-src`: gtag prefers `fetch`/`sendBeacon`, and if
- * the Report-Only evidence ever shows an image ping being reported, adding `img-src` is a
- * reviewed diff rather than a pre-emptive allowance.
- */
+/** GA4's measurement host, regionalised (`region1.google-analytics.com` in the EU). */
 export const GOOGLE_ANALYTICS_ORIGIN = "https://*.google-analytics.com";
+
+/** GA4's second measurement host family (`*.analytics.google.com`), `connect-src` only. */
+export const GOOGLE_ANALYTICS_COLLECT_ORIGIN = "https://*.analytics.google.com";
 
 export const REPORTING_ENDPOINTS_HEADER = "Reporting-Endpoints";
 
@@ -189,12 +186,17 @@ function staticDirectives(
     options.platform ?? "local",
   );
   const live = previewFeedback ? [VERCEL_LIVE_ORIGIN] : [];
-  // Present only when an id is configured (TASK-050); the build reads that from the env.
-  const tagManager = (options.ga4 ?? false) ? [GOOGLE_TAG_MANAGER_ORIGIN] : [];
-  const analytics =
-    (options.ga4 ?? false)
-      ? [GOOGLE_TAG_MANAGER_ORIGIN, GOOGLE_ANALYTICS_ORIGIN]
-      : [];
+  // Present only when an id is configured (spec 023 AC-31); the build reads that from the env.
+  const ga4 = options.ga4 ?? false;
+  const tagManager = ga4 ? [GOOGLE_TAG_MANAGER_ORIGIN] : [];
+  const analytics = ga4
+    ? [
+        GOOGLE_ANALYTICS_ORIGIN,
+        GOOGLE_ANALYTICS_COLLECT_ORIGIN,
+        GOOGLE_TAG_MANAGER_ORIGIN,
+      ]
+    : [];
+  const pixels = ga4 ? [GOOGLE_ANALYTICS_ORIGIN, GOOGLE_TAG_MANAGER_ORIGIN] : [];
 
   return [
     ["default-src", ["'self'"]],
@@ -223,7 +225,7 @@ function staticDirectives(
     // (`src/lib/media-origin.ts`), because a policy and a `src` that disagree is a page of
     // blocked images — and it is named unconditionally, in every environment, since the bucket
     // is the same one everywhere (there is no preview bucket; see TASK-138's defect note).
-    ["img-src", ["'self'", "data:", "blob:", MEDIA_ORIGIN]],
+    ["img-src", ["'self'", "data:", "blob:", MEDIA_ORIGIN, ...pixels]],
     // Self-hosted Latin + Latin-Ext faces; no Google Fonts origin, ever (spec 004 §5.1).
     ["font-src", ["'self'"]],
     // No Sentry ingest: the browser SDK is off public routes in Phase 0 and returns scoped to

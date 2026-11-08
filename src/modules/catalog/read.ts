@@ -225,6 +225,49 @@ export async function getProduct(sku: string): Promise<Product | null> {
   return found === undefined ? null : toProduct(found);
 }
 
+/** What a GA4 item says about a product (spec 023 §5.2 "Items"; TASK-492). */
+export interface Ga4ProductFacts {
+  readonly sku: string;
+  /** The English catalogue name (`plan/10` §2.2: it travels across locales untranslated). */
+  readonly enName: string;
+  /** The primary category key: the first matching category by sort, then key; else `product`. */
+  readonly categoryKey: string;
+}
+
+/**
+ * The GA4 facts of many products at once (spec 023 §5.2 "Items"; TASK-492), keyed by SKU, for the
+ * page payloads. The primary category is the first authored category, in its listing order, whose
+ * facet the product carries; the same `product` fallback as the server's `purchase` builder when
+ * none does. Unknown SKUs are absent.
+ */
+export async function ga4ProductFacts(
+  skus: readonly string[],
+): Promise<ReadonlyMap<string, Ga4ProductFacts>> {
+  const [records, categories] = await Promise.all([
+    catalogProviders().catalogue.products(),
+    catalogProviders().catalogue.categories(),
+  ]);
+  const ordered = categories
+    .map(toCategory)
+    .sort((a, b) => a.sort - b.sort || a.key.localeCompare(b.key, "en"));
+  const wanted = new Set(skus);
+  const facts = new Map<string, Ga4ProductFacts>();
+  for (const record of records) {
+    if (!wanted.has(record.sku)) continue;
+    const product = toProduct(record);
+    const values = facetValuesOf(product);
+    const primary = ordered.find((category) =>
+      values[category.kind].includes(category.key),
+    );
+    facts.set(product.sku, {
+      sku: product.sku,
+      enName: product.name,
+      categoryKey: primary?.key ?? "product",
+    });
+  }
+  return facts;
+}
+
 /**
  * The catalogue, filtered and ordered deterministically.
  *

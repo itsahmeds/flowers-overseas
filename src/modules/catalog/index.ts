@@ -86,6 +86,8 @@ export {
   getCategory,
   getOccasion,
   getProduct,
+  ga4ProductFacts,
+  type Ga4ProductFacts,
   hasIndexableProducts,
   isAuthoredFacetPath,
   listProducts,

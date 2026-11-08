@@ -140,6 +140,9 @@ export function ListingGrid({
       {cards.map((card, index) => [
         <li
           key={card.productId}
+          // Spec 023 §5.2 (TASK-492): the card's position in the page's `view_item_list`, which
+          // the deferred GA4 chunk reads for `select_item`. The same bytes for every visitor.
+          data-fo-item={index}
           {...(lead && index === 0
             ? {
                 "data-fo-lead-item": true,
