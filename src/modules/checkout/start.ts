@@ -46,6 +46,7 @@ import { BASKET_MAX_LINES } from "@/config/checkout";
 import { isCountryIso2 } from "@/config/countries";
 import type { CurrencyCode } from "@/config/currencies";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
+import { EnvValidationError } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
 import {
   type Quote,
@@ -343,7 +344,12 @@ export async function startCheckout(
         connection,
       );
     }
-    refused("no_price");
+    if (error instanceof EnvValidationError) {
+      // A deployment without `QUOTE_SIGNING_SECRET` cannot sign a price, so every start is sent
+      // back to the product page: an operator's fault, not the buyer's, and loud (TASK-504). The
+      // code is the one field, so nothing of the secret can reach a log.
+      logger.error({ code: "quote_signing_unavailable" }, "checkout.refused");
+    } else refused("no_price");
     return seeOther(await backTo(fields));
   }
 
