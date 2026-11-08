@@ -87,7 +87,7 @@ export const SearchConfigSchema = z
       queryRetentionDays: PositiveInt,
       totalRetentionDays: PositiveInt,
     }),
-    /** The suggestions island (slice 2), off until the founder's budget run (§2.11, §13 Q9). */
+    /** The suggestions island: on by default (§14 A-founder-2026-11-08a item 3 supersedes §13 Q9). */
     suggestions: z.boolean(),
     suggestMax: PositiveInt,
   })
@@ -171,7 +171,7 @@ export const SEARCH_CONFIG: SearchConfig = SearchConfigSchema.parse({
     queryRetentionDays: 90,
     totalRetentionDays: 400,
   },
-  suggestions: false,
+  suggestions: true,
   suggestMax: 6,
 });
 

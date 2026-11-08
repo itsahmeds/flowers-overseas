@@ -307,27 +307,28 @@ describe("AC-9 (T-09): facets, the alt field and the SKU", () => {
 });
 
 describe("AC-11 (T-11): a country in the words is the destination", () => {
-  it("`flowers to poland` with no `to` searches `flowers` in Poland, shop root first in Pages", async () => {
+  it("`flowers to poland` with no `to` searches `flowers` in Poland, its shop root under Countries", async () => {
     const named = await engine.search({
       locale: "en",
       query: "flowers to poland",
     });
     expect(named.view.destination).toBe(DESTINATION);
-    expect(named.view.pages[0]).toEqual({
-      kind: "shop",
-      href: "/en/poland/flowers",
-    });
+    expect(named.view.groups.destinations).toEqual([
+      { label: "Poland", href: "/en/poland/flowers" },
+    ]);
     expect(await skus("en", "flowers to poland", undefined)).toEqual(
       await skus("en", "flowers", "pl"),
     );
     expect((await skus("en", "flowers", "pl")).length).toBe(named.view.count);
   });
 
-  it("`polska` on /pl/szukaj shows Poland's shop root in Pages and Poland's selection", async () => {
+  it("`polska` on /pl/szukaj lists Poland's shop root under Countries and Poland's selection", async () => {
     const { view } = await engine.search({ locale: "pl", query: "polska" });
     expect(view.state).toBe("empty");
     expect(view.destination).toBe(DESTINATION);
-    expect(view.pages).toEqual([{ kind: "shop", href: "/pl/polska/kwiaty" }]);
+    expect(view.groups.destinations).toEqual([
+      { label: "Polska", href: "/pl/polska/kwiaty" },
+    ]);
     const listing = await listingView({
       locale: "pl",
       pageType: "countryShopRoot",
@@ -346,7 +347,9 @@ describe("AC-11 (T-11): a country in the words is the destination", () => {
       to: "de",
     });
     expect(view.destination).toBe(DESTINATION);
-    expect(view.pages).toEqual([{ kind: "shop", href: "/en/poland/flowers" }]);
+    expect(view.groups.destinations).toEqual([
+      { label: "Poland", href: "/en/poland/flowers" },
+    ]);
   });
 
   it("with no country in the words and no `to`, there is no destination", async () => {

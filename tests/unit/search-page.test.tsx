@@ -20,7 +20,6 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { LocaleCode } from "../../src/config/locales.ts";
 import {
-  chooserChoiceResponse,
   coreRange,
   listingView,
   megaMenuModel,
@@ -121,27 +120,27 @@ beforeAll(async () => {
 }, 120_000);
 
 describe("the three no-results states on /en/search?to=pl (AC-5)", () => {
-  it("empty: the H1, the form first in <main>, the destination, the header's occasions, Poland's first 12", async () => {
+  it("empty: the H1, no search form in <main> (the header holds it), the chip, the header's occasions, Poland's first 12", async () => {
     const page = await view("en", { to: "pl" });
     const markup = html(page);
     expect(markup).toContain(
       `<h1 class="${markup.match(/<h1 class="([^"]*)"/u)?.[1] ?? ""}">${escaped(message("en", "search.heading"))}</h1>`,
     );
-    // The first control in <main> is the search field: no control precedes the form.
-    const main = markup.slice(markup.indexOf("<main"));
-    const firstControl = main.search(
-      /<(input|select|button|a |textarea|summary)/u,
-    );
-    expect(main.indexOf('data-fo-search-form="true"')).toBeLessThan(
-      firstControl,
-    );
-    expect(main.slice(firstControl, main.indexOf(">", firstControl))).toContain(
-      'name="q"',
-    );
+    // AC-43 / AC-5 as amended: the header field is the page's one search form.
+    expect(markup).not.toContain('role="search"');
+    expect(markup).not.toContain('name="q" type="search"');
     expect(markup).not.toContain("autofocus");
-    // The destination line names Poland.
+    // The chip names Poland (AC-40).
     expect(page.destination?.code).toBe("pl");
-    expect(markup).toContain(`data-fo-search-destination="pl"`);
+    expect(markup).toContain(`data-fo-search-chip="pl"`);
+    expect(markup).toContain(
+      escaped(
+        message("en", "shop.chosen.line").replace(
+          "{country}",
+          page.destination?.name ?? "",
+        ),
+      ),
+    );
     expect(markup).toMatch(
       /<option (value="pl" selected=""|selected="" value="pl")>[^<]+<\/option>/u,
     );
@@ -279,7 +278,10 @@ describe("results (AC-3's markup half, the H1, How we sort, the pager)", () => {
   });
 
   it("a page past the last answers notFound (spec 008's 404), and so does page=11 before the engine", async () => {
-    const engine = { search: vi.fn(searchEngine().search) };
+    const engine = {
+      search: vi.fn(searchEngine().search),
+      suggest: vi.fn(searchEngine().suggest),
+    };
     expect(
       await searchPage(
         "en",
@@ -313,10 +315,13 @@ describe("results (AC-3's markup half, the H1, How we sort, the pager)", () => {
 });
 
 describe("awkward queries (the breaker's cases)", () => {
-  it("a 200-character query is cut to 80 code points and still renders one form value", async () => {
+  it("a 200-character query is cut to 80 code points; the chip's forms carry the cut words", async () => {
     const page = await view("en", { q: "roses ".repeat(34), to: "pl" });
     expect([...page.result.query].length).toBeLessThanOrEqual(80);
-    expect(html(page)).toContain('maxLength="80"');
+    const change = forms(html(page)).find((form) =>
+      form.attrs.includes("data-fo-search-chip-change"),
+    );
+    expect(hidden(change?.body ?? "").q).toBe(page.result.query);
   });
 
   it("Polish with and without accents finds the same bouquets on /pl", async () => {
@@ -334,18 +339,17 @@ describe("awkward queries (the breaker's cases)", () => {
   });
 });
 
-describe("the Pages block (AC-10)", () => {
+describe("the Occasions and Flowers groups (AC-10, as §14 A-founder-2026-11-08a splits it)", () => {
   const birthday: [LocaleCode, string][] = [
     ["en", "birthday"],
     ["de", "Geburtstag"],
     ["pl", "urodziny"],
   ];
   it.each(birthday)(
-    "%s: %s leads with Poland's birthday page, else the hub",
+    "%s: %s leads Occasions with Poland's birthday page, else the hub",
     async (locale, q) => {
       const page = await view(locale, { q, to: "pl" });
-      const first = page.result.pages[0];
-      expect(first?.kind).toBe("occasion");
+      const first = page.result.groups.occasions[0];
       const country = await listingHref({
         pageType: "countryOccasion",
         locale,
@@ -359,12 +363,12 @@ describe("the Pages block (AC-10)", () => {
       });
       expect(hub ?? country).toBeDefined();
       expect(first?.href).toBe(country ?? hub);
-      expect(page.result.pages.length).toBeLessThanOrEqual(3);
+      expect(page.result.groups.occasions.length).toBeLessThanOrEqual(3);
       expect(html(page)).toContain(`href="${first?.href ?? ""}"`);
     },
   );
 
-  it("roses adds Poland's roses category page (the country page, since it exists)", async () => {
+  it("roses adds Poland's roses category page under Flowers (the country page, since it exists)", async () => {
     const page = await view("en", { q: "roses", to: "pl" });
     const country = await listingHref({
       pageType: "countryCategory",
@@ -373,30 +377,34 @@ describe("the Pages block (AC-10)", () => {
       entityKey: "roses",
     });
     expect(country).toBeDefined();
-    expect(page.result.pages.map((link) => [link.kind, link.href])).toEqual([
-      ["category", country],
+    expect(page.result.groups.categories.map((link) => link.href)).toEqual([
+      country,
     ]);
+    expect(page.result.groups.occasions).toEqual([]);
   });
 
-  it("sympathy: occasions before categories, at most three, each link a page that exists", async () => {
+  it("sympathy: one occasion and at most three flower links, each a page that exists, groups in order", async () => {
     const page = await view("en", { q: "sympathy", to: "pl" });
-    expect(page.result.pages.map((link) => link.kind)).toEqual([
-      "occasion",
-      "category",
-      "category",
-    ]);
-    for (const link of page.result.pages) {
-      const key = link.href.split("/").at(-1) ?? "";
-      expect(key).not.toBe("");
-    }
     const hub = await listingHref({
       pageType: "occasionHub",
       locale: "en",
       entityKey: "sympathy",
     });
-    expect(page.result.pages[0]?.href).toBe(hub);
+    expect(page.result.groups.occasions[0]?.href).toBe(hub);
+    expect(page.result.groups.categories.length).toBeGreaterThan(0);
+    expect(page.result.groups.categories.length).toBeLessThanOrEqual(3);
+    for (const link of [
+      ...page.result.groups.occasions,
+      ...page.result.groups.categories,
+    ]) {
+      expect(link.href.split("/").at(-1) ?? "").not.toBe("");
+    }
     const markup = html(page);
-    expect(markup).toContain('data-fo-search-pages="3"');
+    const order = ["occasions", "categories"].map((kind) =>
+      markup.indexOf(`data-fo-search-group="${kind}"`),
+    );
+    expect(order[0]).toBeGreaterThan(0);
+    expect(order[0]).toBeLessThan(order[1] ?? 0);
   });
 });
 
@@ -479,16 +487,16 @@ describe("scope by destination (AC-12)", () => {
           expect(card.price, `${locale} ${to} ${card.productId}`).toEqual(
             listed.price,
           );
-          expect(html(page)).toContain(`data-fo-search-destination="${to}"`);
+          expect(html(page)).toContain(`data-fo-search-chip="${to}"`);
         }
       }
     }
   }, 120_000);
 });
 
-describe("no destination (AC-13)", () => {
+describe("no destination (AC-13, AC-39) and the chip (AC-40)", () => {
   it.each([[{ q: "roses" }], [{}]])(
-    "%o: no amount, noMoney once, the chooser carrying q, country-less core cards",
+    "%o: no amount, noMoney once, the chip's change form carrying q, country-less core cards",
     async (raw: Record<string, string>) => {
       const page = await view("en", raw);
       const markup = html(page);
@@ -501,17 +509,20 @@ describe("no destination (AC-13)", () => {
       expect(
         markup.split(escaped(message("en", "shop.hub.noMoney"))),
       ).toHaveLength(2);
-      expect(markup).not.toContain("data-fo-search-destination");
-      // The chooser's form: next=search, the words as q, the choice route as its action.
-      const chooser = forms(markup).find((form) =>
-        form.attrs.includes("data-fo-hub-picker"),
+      // No chooser detour: the chip's change form goes straight to the search path (AC-38).
+      expect(markup).not.toContain("/choose-country/search");
+      expect(markup).not.toContain("data-fo-search-chip-remove");
+      const change = forms(markup).find((form) =>
+        form.attrs.includes("data-fo-search-chip-change"),
       );
-      expect(chooser?.attrs).toContain('action="/api/choose/en/search"');
-      if (raw.q === undefined) {
-        expect(hidden(chooser?.body ?? "")).toEqual({});
-      } else {
-        expect(hidden(chooser?.body ?? "")).toEqual({ q: "roses" });
-      }
+      expect(change?.attrs).toContain('action="/en/search"');
+      expect(change?.attrs).toContain('method="get"');
+      expect(hidden(change?.body ?? "")).toEqual(
+        raw.q === undefined ? {} : { q: "roses" },
+      );
+      expect(change?.body).toContain(
+        escaped(message("en", "home.picker.label")),
+      );
       // Every card a core product, drawn country-less through the chooser with rel="nofollow".
       const core = new Set((await coreRange("en")).map((entry) => entry.sku));
       const cards =
@@ -535,23 +546,97 @@ describe("no destination (AC-13)", () => {
     },
   );
 
-  it("choosing Germany in that form answers 303 to /en/search?to=de&q=roses", async () => {
-    const response = await chooserChoiceResponse({
+  it("roses with no country: the Flowers group links the roses hub, the bouquets are exactly coreRange's matches (AC-39)", async () => {
+    const page = await view("en", { q: "roses" });
+    const hub = await listingHref({
+      pageType: "categoryHub",
       locale: "en",
-      segments: ["search"],
-      to: ["de"],
-      q: "roses",
+      entityKey: "roses",
     });
-    expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("/en/search?to=de&q=roses");
-    // The words ride only on next=search.
-    const home = await chooserChoiceResponse({
-      locale: "en",
-      segments: [],
-      to: ["de"],
-      q: "roses",
-    });
-    expect(home.headers.get("location")).toBe("/en/germany/flowers");
+    expect(page.result.groups.categories.map((link) => link.href)).toContain(
+      hub,
+    );
+    const core = new Set((await coreRange("en")).map((entry) => entry.sku));
+    const cards = page.result.countryLess?.cards ?? [];
+    expect(cards.length).toBeGreaterThan(0);
+    for (const card of cards) expect(core.has(card.productId)).toBe(true);
+    const markup = html(page);
+    expect(markup).toContain(escaped(message("en", "search.groups.bouquets")));
+  });
+
+  it("birthday, delivery, pol and qqqqqq with no country (AC-39)", async () => {
+    const birthday = await view("en", { q: "birthday" });
+    expect(birthday.result.groups.occasions[0]?.href).toBe(
+      "/en/occasions/birthday",
+    );
+    const delivery = await view("en", { q: "delivery" });
+    expect(delivery.result.groups.help.map((link) => link.href)).toContain(
+      "/en/delivery",
+    );
+    const pol = await view("en", { q: "pol" });
+    expect(pol.destination).toBeNull();
+    expect(pol.result.groups.destinations.map((link) => link.href)).toContain(
+      "/en/poland/flowers",
+    );
+    const nothing = await view("en", { q: "qqqqqq" });
+    const markup = html(nothing);
+    expect(markup).toContain("data-fo-search-no-results");
+    expect(markup).not.toContain("data-fo-search-groups");
+    for (const page of [birthday, delivery, pol]) {
+      const groups = html(page);
+      const kinds = /data-fo-search-groups="([^"]*)"/u.exec(groups)?.[1] ?? "";
+      expect(kinds.split(" ")).toEqual(
+        ["destinations", "occasions", "categories", "help"].filter((kind) =>
+          kinds.split(" ").includes(kind),
+        ),
+      );
+      for (const kind of [
+        "destinations",
+        "occasions",
+        "categories",
+        "help",
+      ] as const) {
+        expect(page.result.groups[kind].length).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+
+  it("with Poland: the chip reads Sending to Poland, change keeps q and lists the shop countries in collation order, remove keeps q alone (AC-40)", async () => {
+    const page = await view("en", { q: "roses", to: "pl" });
+    const markup = html(page);
+    const change = forms(markup).find((form) =>
+      form.attrs.includes("data-fo-search-chip-change"),
+    );
+    expect(change?.attrs).toContain('action="/en/search"');
+    expect(hidden(change?.body ?? "")).toEqual({ q: "roses" });
+    const options = [
+      ...(change?.body ?? "").matchAll(
+        /<option[^>]*value="([a-z]{2})"[^>]*>([^<]+)</gu,
+      ),
+    ];
+    const names = options.map((match) => match[2] ?? "");
+    expect([...names].sort(new Intl.Collator("en").compare)).toEqual(names);
+    expect(options.map((match) => match[1])).toEqual(
+      page.destinations.map((option) => option.code),
+    );
+    const remove = forms(markup).find((form) =>
+      form.attrs.includes("data-fo-search-chip-remove"),
+    );
+    expect(remove?.attrs).toContain('action="/en/search"');
+    expect(hidden(remove?.body ?? "")).toEqual({ q: "roses" });
+    expect(remove?.body).toContain(
+      escaped(message("en", "search.chip.remove")),
+    );
+  });
+
+  it("roses poland: the words set Poland, and remove drops the country word (AC-40)", async () => {
+    const page = await view("en", { q: "roses poland" });
+    expect(page.destination?.code).toBe("pl");
+    expect(page.result.queryWithoutDestination).toBe("roses");
+    const remove = forms(html(page)).find((form) =>
+      form.attrs.includes("data-fo-search-chip-remove"),
+    );
+    expect(hidden(remove?.body ?? "")).toEqual({ q: "roses" });
   });
 
   it("that page shows Germany's cards at Germany's prices, and its select changes to Poland's", async () => {
@@ -559,7 +644,7 @@ describe("no destination (AC-13)", () => {
     expect(de.destination?.code).toBe("de");
     const markup = html(de);
     const select = forms(markup).find((form) =>
-      form.attrs.includes("data-fo-search-destination"),
+      form.attrs.includes("data-fo-search-chip-change"),
     );
     expect(select?.attrs).toContain('action="/en/search"');
     expect(hidden(select?.body ?? "")).toEqual({ q: "roses" });
@@ -630,14 +715,6 @@ describe("dates (AC-15)", () => {
       form.body.includes("data-fo-search-any-date"),
     );
     expect(hidden(anyDate?.body ?? "")).toEqual({ q: "roses", to: "de" });
-    // The search form keeps the date it searched.
-    const searchForm = forms(markup).find((form) =>
-      form.attrs.includes("data-fo-search-form"),
-    );
-    expect(hidden(searchForm?.body ?? "")).toEqual({
-      to: "de",
-      date: "2026-12-04",
-    });
 
     const undated = await view("en", { q: "roses", to: "de" }, deps);
     expect(new Set(undated.result.cards.map((card) => card.productId))).toEqual(

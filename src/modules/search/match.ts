@@ -25,9 +25,13 @@ import {
 } from "./text";
 import type {
   DestinationIndex,
+  IndexedDestination,
   IndexedDocument,
   IndexedField,
   IndexedHub,
+  IndexedInfoPage,
+  SearchDestination,
+  SearchInfoPage,
 } from "./types";
 
 export type MatchKind = "exact" | "stem" | "prefix" | "typo";
@@ -227,4 +231,75 @@ export function matchHubs(
       hub.fields.some((field) => firm(fieldMatch(field, plan))),
     ),
   );
+}
+
+/** A link group's match: the item and its tier (5 the whole query, 4 firm, 3 by prefix only). */
+export interface LinkMatch<T> {
+  readonly item: T;
+  readonly tier: 3 | 4 | 5;
+}
+
+/**
+ * The destinations a query names (§14 A-founder-2026-11-08a item 1, "Destinations"): a query token
+ * matches one of the destination's names, in any launch locale, exactly or by stem, or the last
+ * token begins one (from 3 letters). Never by typo: a country is a deliberate choice. `tokens` are
+ * the query's words before the destination words leave them, so a country named in full is
+ * listed too. Unordered; the engine orders and caps them.
+ */
+export function matchCountries(
+  countries: readonly IndexedDestination[],
+  tokens: readonly string[],
+  config: SearchConfig = SEARCH_CONFIG,
+): LinkMatch<SearchDestination>[] {
+  if (tokens.length === 0) return [];
+  const plans = planTokens(tokens, [], config);
+  const queryKey = tokens.join(" ");
+  const matches: LinkMatch<SearchDestination>[] = [];
+  for (const country of countries) {
+    let best: MatchKind | undefined;
+    for (const plan of plans) {
+      for (const field of country.fields) {
+        const kind = fieldMatch(field, plan);
+        if (kind === "exact" || kind === "stem") best = kind;
+        else if (kind === "prefix" && best === undefined) best = kind;
+      }
+    }
+    if (best === undefined) continue;
+    const tier = country.nameKeys.has(queryKey) ? 5 : best === "prefix" ? 3 : 4;
+    matches.push({ item: country.destination, tier });
+  }
+  return matches;
+}
+
+/**
+ * The info pages a query names (§14 A-founder-2026-11-08a item 1, "Help"): every token matches the
+ * page's title, meta description or headings in the request locale, exactly, by stem or, for the
+ * last token, by prefix; never by typo. Tier 4 when every token is in the title, else 3.
+ */
+export function matchInfoPages(
+  pages: readonly IndexedInfoPage[],
+  tokens: readonly string[],
+  config: SearchConfig = SEARCH_CONFIG,
+): LinkMatch<SearchInfoPage>[] {
+  if (tokens.length === 0) return [];
+  const plans = planTokens(tokens, [], config);
+  const matches: LinkMatch<SearchInfoPage>[] = [];
+  for (const page of pages) {
+    let inTitle = 0;
+    let found = 0;
+    for (const plan of plans) {
+      if (firm(fieldMatch(page.title, plan))) {
+        inTitle += 1;
+        found += 1;
+      } else if (firm(fieldMatch(page.body, plan))) {
+        found += 1;
+      }
+    }
+    if (found !== plans.length) continue;
+    matches.push({
+      item: page.page,
+      tier: inTitle === plans.length ? 4 : 3,
+    });
+  }
+  return matches;
 }

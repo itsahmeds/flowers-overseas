@@ -58,6 +58,28 @@ export interface SearchDestination {
   readonly shopHref: string | undefined;
   /** Its corridor page in the request locale, when that exists (the link without a shop). */
   readonly corridorHref: string | undefined;
+  /**
+   * Its name in the request locale (the registry's `country_translation`): what a Destinations
+   * link reads and what the collator sorts (§14 A-founder-2026-11-08a item 1). Absent: never listed.
+   */
+  readonly name?: string;
+  /** Its names in every launch locale: what the Destinations group matches. */
+  readonly names?: readonly SearchLabel[];
+}
+
+/**
+ * One spec 041 info page that exists in the request locale (§14 A-founder-2026-11-08a item 1,
+ * "Help"): matched on its title, meta description and headings in that locale only.
+ */
+export interface SearchInfoPage {
+  readonly id: string;
+  /** The page's title as its `<h1>` reads: the link's words. */
+  readonly title: string;
+  readonly href: string;
+  /** The meta description and the section headings. */
+  readonly texts: readonly string[];
+  /** Spec 041's registry order (0 first): the tiebreak after the tier. */
+  readonly order: number;
 }
 
 export interface SearchSource {
@@ -101,6 +123,11 @@ export interface SearchSource {
   dateOpen?(iso2: string, date: string): Promise<boolean>;
   /** Can this product arrive in the destination on that date (spec 009's cutoff evaluator)? */
   deliverableOn?(iso2: string, sku: string, date: string): Promise<boolean>;
+  /**
+   * Spec 041's info pages that exist in the locale (`infoPageExists`), in its page order: the
+   * Help group (§14 A-founder-2026-11-08a item 1). Absent: no Help group.
+   */
+  infoPages?(locale: LocaleCode): Promise<readonly SearchInfoPage[]>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -154,9 +181,30 @@ export interface DestinationIndex {
   readonly hubs: readonly IndexedHub[];
 }
 
+/** A destination's names, one field per launch locale: the Destinations group's documents. */
+export interface IndexedDestination {
+  readonly destination: SearchDestination;
+  readonly fields: readonly IndexedField[];
+  /** Each name's tokens joined: the whole-query comparison. */
+  readonly nameKeys: ReadonlySet<string>;
+}
+
+/** An info page's fields in the request locale: the title, and the description with the headings. */
+export interface IndexedInfoPage {
+  readonly page: SearchInfoPage;
+  readonly title: IndexedField;
+  readonly body: IndexedField;
+}
+
 export interface LocaleIndex {
   readonly locale: LocaleCode;
   readonly destinations: ReadonlyMap<string, SearchDestination>;
+  /** Every destination with a name in this locale, indexed by its names (the Destinations group). */
+  readonly countries: readonly IndexedDestination[];
+  /** The occasions and categories, the same for every destination (the two link groups). */
+  readonly hubs: readonly IndexedHub[];
+  /** The info pages that exist in this locale (the Help group). */
+  readonly info: readonly IndexedInfoPage[];
   /** Destinations with a shop in this locale, indexed. */
   readonly shops: ReadonlyMap<string, DestinationIndex>;
   /** The country-less set, `coreRange(locale)` (`iso2` empty), when the source has one. */
