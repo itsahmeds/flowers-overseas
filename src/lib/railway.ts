@@ -37,6 +37,12 @@ export const restartPolicyTypes = ["ON_FAILURE", "ALWAYS", "NEVER"] as const;
 
 /** `deploy` block of `config/railway.json`. */
 export const railwayDeploySchema = z.object({
+  /**
+   * Railway's pre-deploy step (spec 002 §14 A-orchestrator-2026-11-08c; TASK-505): the migration
+   * runner, run in the shipped image before the release takes traffic. Railway's schema takes an
+   * array of command strings; a non-zero exit fails the deploy and the old release keeps serving.
+   */
+  preDeployCommand: z.array(z.string().min(1)).min(1),
   startCommand: z.string().min(1),
   region: z.string().min(1),
   numReplicas: z.number().int().min(1),

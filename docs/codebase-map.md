@@ -326,7 +326,9 @@ task actually touches.
 | `coverage-thresholds.ts` | — | Coverage-threshold loader for… |
 | `db-check-live.ts` | — | `pnpm db:check`, connected half |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001… |
+| `db-migrate-bundle.ts` | — | Bundles the migration runner into one… |
 | `db-migrate.ts` | `db:migrate` | `pnpm db:migrate` / `pnpm db:rollback` — the… |
+| `db-migration-set.ts` | — | The migration set, as files on disk: the… |
 | `decisions-log.ts` | `decisions:log` | Decision files collected into… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11… |
 | `env-check.ts` | `env:check` | `pnpm env:check` |
@@ -369,7 +371,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 505 |
+| `tests/unit/` | 506 |
 | `tests/integration/` | 100 |
 | `tests/contract/` | 41 |
 | `tests/e2e/` | 80 |

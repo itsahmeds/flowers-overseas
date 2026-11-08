@@ -29,6 +29,14 @@
  * Usage:
  *   pnpm db:migrate [--dry-run]
  *   pnpm db:rollback --to 0000 [--dry-run]
+ *
+ * **The deploy step** (spec 002 §14 A-orchestrator-2026-11-08c; TASK-505). Railway runs this
+ * runner as `config/railway.json`'s `preDeployCommand`, in the shipped image, before a release
+ * takes traffic: the Dockerfile's `migrate` stage bundles it with its three dependencies into
+ * one file (`scripts/db-migrate-bundle.ts`), and the runtime stage carries that file and
+ * `db/migrations/` and nothing else of the repository. Env is read only inside `main()`, at run
+ * time; a failure exits 1, which fails the deploy and keeps the old release serving. Every run
+ * ends with one line naming the version the database is at, and no line carries a secret.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -36,11 +44,13 @@ import { fileURLToPath } from "node:url";
 
 import { z } from "zod";
 
+// `./db-migration-set.ts`, not `./db-check.ts`: this file is also the deploy step, bundled into
+// the runtime image, and must not pull in the Drizzle schema (TASK-505).
 import {
   MIGRATIONS_DIR,
   checkMigrations,
   readMigrationDir,
-} from "./db-check.ts";
+} from "./db-migration-set.ts";
 
 /** One forward migration and the rollback beside it. */
 export interface Migration {
@@ -165,6 +175,28 @@ export function formatPlan(
   ];
 }
 
+/**
+ * The closing line of every connected run: the version the database is at and how many
+ * migrations are recorded. It is what the deploy log is read for (runbook
+ * `railway-cloudflare-setup.md`), and it names versions only.
+ */
+export function formatApplied(
+  command: "migrate" | "rollback",
+  applied: readonly string[],
+): string {
+  const sorted = [...applied].sort((a, b) => a.localeCompare(b));
+  const latest = sorted.at(-1);
+  return latest === undefined
+    ? `db:${command}: no migration applied`
+    : `db:${command}: database at ${latest} (${String(sorted.length)} applied)`;
+}
+
+/** A failed file's error, prefixed with the file, so the deploy log says which one failed. */
+export function describeFailure(file: string, error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  return new Error(`${file} failed, rolled back: ${message}`);
+}
+
 const urlSchema = z
   .string()
   .min(1)
@@ -238,29 +270,46 @@ async function main(): Promise<void> {
         ? planUp(available, applied)
         : planDown(available, applied, options.to ?? DEFAULT_ROLLBACK_TARGET);
 
+    const command = options.direction === "up" ? "migrate" : "rollback";
     for (const line of formatPlan(options, plan)) console.log(line);
-    if (options.dryRun || plan.length === 0) return;
+    if (options.dryRun || plan.length === 0) {
+      console.log(formatApplied(command, applied));
+      return;
+    }
 
     for (const migration of plan) {
       const file =
         options.direction === "up" ? migration.file : migration.downFile;
       const body = readFileSync(resolve(dir, file), "utf8");
-      await sql.begin(async (tx) => {
-        await tx.unsafe(body);
-        if (options.direction === "up") {
-          await tx.unsafe(
-            `INSERT INTO ${BOOKKEEPING_TABLE} (version, name) VALUES ($1, $2)`,
-            [migration.version, migration.name],
-          );
-        } else {
-          await tx.unsafe(
-            `DELETE FROM ${BOOKKEEPING_TABLE} WHERE version = $1`,
-            [migration.version],
-          );
-        }
-      });
+      try {
+        await sql.begin(async (tx) => {
+          await tx.unsafe(body);
+          if (options.direction === "up") {
+            await tx.unsafe(
+              `INSERT INTO ${BOOKKEEPING_TABLE} (version, name) VALUES ($1, $2)`,
+              [migration.version, migration.name],
+            );
+          } else {
+            await tx.unsafe(
+              `DELETE FROM ${BOOKKEEPING_TABLE} WHERE version = $1`,
+              [migration.version],
+            );
+          }
+        });
+      } catch (error: unknown) {
+        throw describeFailure(file, error);
+      }
       console.log(`  ok ${file}`);
     }
+    const after = await sql.unsafe<{ version: string }[]>(
+      `SELECT version FROM ${BOOKKEEPING_TABLE} ORDER BY version`,
+    );
+    console.log(
+      formatApplied(
+        command,
+        after.map((row) => row.version),
+      ),
+    );
   } finally {
     await sql.end({ timeout: 5 });
   }

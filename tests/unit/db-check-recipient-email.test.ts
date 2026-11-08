@@ -444,7 +444,7 @@ function mirrorScratch(): string {
 }
 
 /**
- * A copy of `scripts/db-check.ts`, `db/migrations/` and `db/schema/` in a scratch tree, with
+ * A copy of `scripts/db-check.ts` (with `db-migration-set.ts`), `db/migrations/` and `db/schema/` in a scratch tree, with
  * `recipient` spreading in an `e_mail` column when `spread` is set. The copied script imports
  * `../db/schema/index.ts` statically, so running it reads the copied mirror: that is how the CLI
  * entry point itself is tested (breaker r2 hole C) without a computed `import()` in `scripts/`.
@@ -455,6 +455,11 @@ function mirrorTree(spread: boolean): { root: string; schemaDir: string } {
   cpSync(
     join(repoRoot, "scripts/db-check.ts"),
     join(root, "scripts/db-check.ts"),
+  );
+  // `db-check.ts` imports the migration-set rules from here since TASK-505.
+  cpSync(
+    join(repoRoot, "scripts/db-migration-set.ts"),
+    join(root, "scripts/db-migration-set.ts"),
   );
   cpSync(join(repoRoot, MIGRATIONS_DIR), join(root, MIGRATIONS_DIR), {
     recursive: true,

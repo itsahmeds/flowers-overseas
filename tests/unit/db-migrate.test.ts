@@ -20,6 +20,8 @@ import { describe, expect, it } from "vitest";
 import {
   BOOKKEEPING_TABLE,
   DEFAULT_ROLLBACK_TARGET,
+  describeFailure,
+  formatApplied,
   formatPlan,
   type Migration,
   parseArgs,
@@ -289,6 +291,33 @@ describe('migration 0001 (spec 002 §2 "RLS and roles", §5.1)', () => {
   it("drops each role only if it exists, so the rollback is re-runnable", () => {
     expect(rollback.match(/IF EXISTS \(SELECT 1 FROM pg_roles/g)).toHaveLength(
       4,
+    );
+  });
+});
+
+describe("the deploy log lines (spec 002 §14 A-orchestrator-2026-11-08c; TASK-505)", () => {
+  it("closes a run with the version the database is at and the count, sorted by version", () => {
+    expect(formatApplied("migrate", ["0002", "0036", "0001"])).toBe(
+      "db:migrate: database at 0036 (3 applied)",
+    );
+    expect(formatApplied("rollback", ["0001"])).toBe(
+      "db:rollback: database at 0001 (1 applied)",
+    );
+  });
+
+  it("says so when nothing is recorded, rather than naming a version", () => {
+    expect(formatApplied("migrate", [])).toBe(
+      "db:migrate: no migration applied",
+    );
+  });
+
+  it("names the failed file and that its transaction was rolled back", () => {
+    expect(
+      describeFailure("0037_x.sql", new Error('relation "t" does not exist'))
+        .message,
+    ).toBe('0037_x.sql failed, rolled back: relation "t" does not exist');
+    expect(describeFailure("0037_x.sql", "boom").message).toBe(
+      "0037_x.sql failed, rolled back: boom",
     );
   });
 });
