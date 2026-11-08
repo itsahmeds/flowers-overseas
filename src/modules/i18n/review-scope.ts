@@ -122,6 +122,8 @@ const TRACK_PATHS = ["src/app/[locale]/(track)/**"];
 const ACCOUNT_PATHS = [
   "src/app/[locale]/(account)/**",
   "src/app/[locale]/@header/(account)/**",
+  // The buyer surface's route handlers answer 303s and 404s and render nothing.
+  "src/app/api/auth/buyer/**",
   "src/lib/auth/buyer.ts",
 ];
 const CHECKOUT_SUBTREES = [
@@ -210,7 +212,12 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   {
     match: "tracking",
     surface: "orderTracking",
-    paths: [...TRACK_PATHS, ...EMAIL_PATHS, ...CHECKOUT_PATHS, ...ACCOUNT_PATHS],
+    paths: [
+      ...TRACK_PATHS,
+      ...EMAIL_PATHS,
+      ...CHECKOUT_PATHS,
+      ...ACCOUNT_PATHS,
+    ],
   },
   // Spec 018 §14 C.13, C.15 (TASK-344): the account's sign-in page, order list and order detail.
   // The account is the buyer's view of their orders: the tracking surface's other face.

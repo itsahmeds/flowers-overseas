@@ -161,7 +161,10 @@ export async function OrdersView({
         {t("orders.title")}
       </h1>
       {groups.length === 0 ? (
-        <div className="grid justify-items-start gap-[16px]" data-fo-account-empty="">
+        <div
+          className="grid justify-items-start gap-[16px]"
+          data-fo-account-empty=""
+        >
           <p className="text-ink-2 m-0">{t("orders.empty")}</p>
           <a
             className={buttonClass("ghost", "sm", "no-underline")}

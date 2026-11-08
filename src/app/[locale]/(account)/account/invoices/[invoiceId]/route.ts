@@ -25,7 +25,10 @@ import {
 export const dynamic = "force-dynamic";
 
 /** Whether the signed-in buyer owns `invoiceId` (AC-23 owner half). */
-async function ownerAllows(locale: string, invoiceId: string): Promise<boolean> {
+async function ownerAllows(
+  locale: string,
+  invoiceId: string,
+): Promise<boolean> {
   const code = accountLocale(locale);
   if (code === null || !(await accountOpen(code))) return false;
   const context = await getBuyerContext();

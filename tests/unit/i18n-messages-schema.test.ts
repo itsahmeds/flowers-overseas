@@ -685,6 +685,10 @@ describe("the shipped catalogues and manifests", () => {
       // Spec 016 §7's namespace (TASK-332): the florist's WhatsApp message, pasted by the founder;
       // read only by the email templates, so in no `ROUTE_NAMESPACES` entry.
       "whatsapp",
+      // Spec 018 §14 C.15's account namespaces (TASK-344): the sign-in page, the order list and
+      // the order detail, under `(account)` only.
+      "auth",
+      "account",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

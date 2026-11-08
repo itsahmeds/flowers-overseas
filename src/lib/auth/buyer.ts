@@ -122,7 +122,9 @@ export const REFUSED_ADDRESS = "nobody@refused.invalid";
 export function isBuyerAllowedAddress(email: string): boolean {
   const parsed = SignInRequestSchema.safeParse({ email });
   if (!parsed.success) return false;
-  const domain = parsed.data.email.slice(parsed.data.email.lastIndexOf("@") + 1);
+  const domain = parsed.data.email.slice(
+    parsed.data.email.lastIndexOf("@") + 1,
+  );
   return !(domain === "invalid" || domain.endsWith(".invalid"));
 }
 
@@ -208,7 +210,8 @@ export const BUYER_SURFACE: AuthSurfaceConfig = {
   sessionMaxAgeSeconds: BUYER_SESSION_MAX_AGE_SECONDS,
   rolling: true,
   pages: buyerPages(DEFAULT_LOCALE),
-  pagesFor: (locale) => buyerPages(isLocaleCode(locale) ? locale : DEFAULT_LOCALE),
+  pagesFor: (locale) =>
+    buyerPages(isLocaleCode(locale) ? locale : DEFAULT_LOCALE),
   mailTag: "buyer_sign_in",
   allow: (email) => Promise.resolve(isBuyerAllowedAddress(email)),
   returnTo: (path) => isBuyerReturnPath(path),
@@ -306,7 +309,9 @@ export function buyerSessionToken(
 /** The buyer context of the current request, or `null` (server components, route handlers). */
 export async function getBuyerContext(): Promise<BuyerContext | null> {
   const { headers } = await import("next/headers");
-  return resolveBuyerContext(buyerSessionToken((await headers()).get("cookie")));
+  return resolveBuyerContext(
+    buyerSessionToken((await headers()).get("cookie")),
+  );
 }
 
 /**
@@ -330,7 +335,10 @@ export function signInHref(locale: string, returnTo?: string): string {
 }
 
 /** The `customer` database context of a buyer: row-level security scopes it (AC-25). */
-export function toDbContext(context: BuyerContext, requestId: string): DbContext {
+export function toDbContext(
+  context: BuyerContext,
+  requestId: string,
+): DbContext {
   return {
     role: "customer",
     userId: context.userId,
@@ -442,9 +450,12 @@ export async function requestBuyerSignIn(
       )
     : null;
   if (address === null) {
-    const response = await auth.requestSignIn(withBody(request, { email: "" }), {
-      locale,
-    });
+    const response = await auth.requestSignIn(
+      withBody(request, { email: "" }),
+      {
+        locale,
+      },
+    );
     return relocated(
       response,
       `${auth.signInLocation(undefined, locale)}?state=${BUYER_INVALID_STATE}`,
@@ -465,9 +476,12 @@ export async function confirmBuyerSignIn(
 ): Promise<Response> {
   const parsed = await readForm(request, BuyerConfirmFormSchema);
   const locale = parsed.success ? parsed.data.locale : DEFAULT_LOCALE;
-  return auth.confirm(withBody(request, { t: parsed.success ? parsed.data.t : "" }), {
-    locale,
-  });
+  return auth.confirm(
+    withBody(request, { t: parsed.success ? parsed.data.t : "" }),
+    {
+      locale,
+    },
+  );
 }
 
 /** `POST /api/auth/buyer/sign-out`: the session row goes, so a replayed cookie is nothing. */

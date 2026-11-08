@@ -36,10 +36,7 @@ import {
   textArray,
   withExecutor,
 } from "./service/executor";
-import {
-  ORDER_REFERENCE_PATTERN,
-  orderReference,
-} from "./service/reference";
+import { ORDER_REFERENCE_PATTERN, orderReference } from "./service/reference";
 import { tracking } from "./tracking";
 import {
   type BuyerStep,

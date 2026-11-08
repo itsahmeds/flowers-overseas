@@ -24,10 +24,7 @@ import { refundLineValues } from "@/modules/orders";
 import type { AccountOrderDetail } from "@/modules/orders/account-orders";
 import { buttonClass } from "@/modules/ui/checkout/styles";
 
-import {
-  invoicePath,
-  orderDetailPath,
-} from "../../_parts/account-request";
+import { invoicePath, orderDetailPath } from "../../_parts/account-request";
 import { AccountShell } from "../../_parts/AccountShell";
 import {
   HEADLINE_KEY,
@@ -112,7 +109,9 @@ export async function OrderDetailView({
         <div className="grid items-start gap-[24px] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-[40px]">
           <div className="grid min-w-0 gap-[20px]">
             <div className="grid gap-[8px]">
-              <p className="eyebrow m-0">{t("detail.eyebrow", { reference })}</p>
+              <p className="eyebrow m-0">
+                {t("detail.eyebrow", { reference })}
+              </p>
               <h1
                 className="display text-3xl-fluid m-0 leading-[1.05]"
                 data-fo-account-headline={row.projection}
@@ -178,8 +177,13 @@ export async function OrderDetailView({
                 </li>
               ) : null}
             </ol>
-            <section className={CARD} data-fo-account-recipient={recipient.kind}>
-              <h2 className="display text-h3 m-0">{t("detail.recipientTitle")}</h2>
+            <section
+              className={CARD}
+              data-fo-account-recipient={recipient.kind}
+            >
+              <h2 className="display text-h3 m-0">
+                {t("detail.recipientTitle")}
+              </h2>
               {recipient.kind === "shown" ? (
                 <dl className="m-0 grid gap-[10px]">
                   <div>
@@ -199,7 +203,9 @@ export async function OrderDetailView({
                   </div>
                   <div>
                     <dt className={LABEL}>{t("detail.date")}</dt>
-                    <dd className="m-0">{deliveryDay(row.deliveryDate, locale)}</dd>
+                    <dd className="m-0">
+                      {deliveryDay(row.deliveryDate, locale)}
+                    </dd>
                   </div>
                   {recipient.cardMessage === null ? null : (
                     <div>
@@ -217,7 +223,10 @@ export async function OrderDetailView({
                   )}
                 </dl>
               ) : (
-                <p className="text-ink-2 m-0" data-fo-account-recipient-removed="">
+                <p
+                  className="text-ink-2 m-0"
+                  data-fo-account-recipient-removed=""
+                >
                   {recipient.city === null ? null : (
                     <>
                       <b className="text-ink">{recipient.city}</b>
@@ -253,7 +262,12 @@ export async function OrderDetailView({
               <p className="text-ink-2 m-0 text-sm">
                 {t("detail.placed", {
                   reference,
-                  date: formatDate(row.placedAt, locale, "weekdayDayMonth", zone),
+                  date: formatDate(
+                    row.placedAt,
+                    locale,
+                    "weekdayDayMonth",
+                    zone,
+                  ),
                 })}
               </p>
               <p className="m-0 flex items-baseline justify-between gap-[12px]">
