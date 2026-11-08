@@ -384,6 +384,18 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
           enMeta[key]?.reviewedBy ?? "",
         ),
     );
+    // TASK-418's four-step keys, once recorded with `record-approval-418.py`.
+    const recorded418 = [
+      "checkout.action.toYourCard",
+      "checkout.progress.card",
+      "checkout.progress.details",
+      "checkout.step.card",
+      "checkout.step.details",
+    ].filter((key) =>
+      /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-418\.py /u.test(
+        enMeta[key]?.reviewedBy ?? "",
+      ),
+    );
     expect(reviewed.toSorted()).toEqual(
       [
         "checkout.address.city",
@@ -396,6 +408,7 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         ...recordedBatch5,
         ...recorded204,
         ...recorded340,
+        ...recorded418,
       ].toSorted(),
     );
     for (const key of reviewed) {

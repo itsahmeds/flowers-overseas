@@ -13,7 +13,7 @@ The demo opens per destination country with data, never with a deploy.
    demo phase.
 2. The country's picker state must be `preview` (spec 009): the product page then shows
    "Try a demo order" and "Add to basket". In `unavailable` there is no control.
-3. Check: open a product page for that country, press "Try a demo order", walk the three steps
+3. Check: open a product page for that country, press "Try a demo order", walk the four steps (recipient, your card, your details, check)
    with "Use sample details", place, and see the `FO-XXXX-XXXX` reference on the confirmation.
    The order appears in the admin order list as `demo`.
 
