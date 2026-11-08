@@ -59,6 +59,7 @@ import {
   type AppliedDiscount,
   type DiscountFlagReader,
   discountCodesOn,
+  discountFlagOf,
   draftDiscountOf,
   pricedDeliveries,
 } from "./discount";
@@ -465,7 +466,7 @@ async function placeWith(
     const deliveries = await pricedDeliveries(assessed.lines, locale, now);
     const on = await discountCodesOn(
       draft.lines.map((line) => line.countryIso),
-      context.discountFlag,
+      discountFlagOf(context),
     );
     const result = await draftDiscountOf(executor, draft, deliveries, now, on);
     if (on && result?.kind === "applied") {

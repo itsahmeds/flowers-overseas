@@ -37,6 +37,8 @@ import {
   paymentReturnLocation,
   runBuyerStep,
   runCardStep,
+  runApplyDiscount,
+  checkoutScreen as screenFor,
   runPay,
   runPaymentDeclined,
   runRecipientStep,
@@ -369,6 +371,71 @@ describeDb(`the pay step (${server.reason})`, () => {
       seenCurrency: total.currency,
     });
   }
+
+  it("spec 047 AC-18, T-18: a discounted test basket's intent is buyer_total_minor, the discounted total, with the same metadata keys", async () => {
+    await rolledBack(sql(), async (tx) => {
+      const { connection, token, fake } = await basket(tx, 2);
+      await tx.unsafe("RESET ROLE");
+      await tx`
+        INSERT INTO discount_code (code, code_normalised, campaign_label, kind, percent_bp, starts_at)
+        VALUES ('POLONIA10', 'POLONIA10', 'Fixture campaign', 'percent', 1000,
+                ${at(-1440).toISOString()}::timestamptz)`;
+      await asApp(tx, { role: "system" });
+      const before = await reviewTotal(connection, token);
+      const applied = await runApplyDiscount(
+        ctx(connection, token, 2),
+        form({ code: "POLONIA10" }),
+      );
+      expect(applied.kind === "notice" && applied.notice.kind).toBe("applied");
+      const screen = await screenFor({
+        locale: "pl",
+        token,
+        step: "review",
+        connection,
+        flags: OPEN,
+        now: () => at(2),
+      });
+      if (screen.kind !== "step" || screen.total === null) {
+        throw new Error("no review");
+      }
+      const charged = screen.total;
+      expect(charged.amountMinor).toBeLessThan(before.amountMinor);
+
+      const outcome = await runPay(
+        ctx(connection, token, 2),
+        form({
+          seenTotalMinor: String(charged.amountMinor),
+          seenCurrency: charged.currency,
+        }),
+      );
+      expect(outcome.kind).toBe("confirm");
+      const [totals] = await tx<{ purchase: string; orders: string }[]>`
+        SELECT p.total_minor::text AS purchase,
+               (SELECT sum(buyer_total_minor) FROM "order" WHERE purchase_id = p.id)::text AS orders
+          FROM purchase p`;
+      expect(Number(totals?.purchase)).toBe(charged.amountMinor);
+      expect(Number(totals?.orders)).toBe(charged.amountMinor);
+      const [input] = fake.inputs;
+      if (input === undefined) throw new Error("no intent");
+      expect(input.amount).toEqual({
+        amountMinor: charged.amountMinor,
+        currency: charged.currency,
+      });
+      expect(
+        Object.keys(stripeCreateIntentParams(input).metadata).sort(),
+      ).toEqual(
+        [
+          "buyer_country_declared",
+          "destination_countries",
+          "is_first_order",
+          "order_count",
+          "order_mode",
+          "payment_id",
+          "purchase_id",
+        ].sort(),
+      );
+    });
+  });
 
   for (const lines of [1, 2, 5]) {
     it(`AC-1 (${String(lines)} deliveries): one intent for purchase.total_minor, seven keys, the references, no receipt or shipping`, async () => {

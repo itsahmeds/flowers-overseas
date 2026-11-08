@@ -108,6 +108,9 @@ export async function runPay(
           ? {}
           : { connection: context.connection }),
         ...(context.flags === undefined ? {} : { flags: context.flags }),
+        ...(context.discountFlag === undefined
+          ? {}
+          : { discountFlag: context.discountFlag }),
       },
       parsed.success
         ? {

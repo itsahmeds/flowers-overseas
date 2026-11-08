@@ -131,6 +131,11 @@ export interface StepContext {
   readonly now?: () => Date;
   readonly connection?: DraftConnection;
   readonly flags?: CheckoutFlagReader;
+  /** Spec 047 (TASK-447): replaces the `checkout.discount_codes` reader (tests). */
+  readonly discountFlag?: (scope: {
+    readonly kind: "country";
+    readonly ref: string;
+  }) => Promise<boolean>;
 }
 
 /** The posted form as plain values: repeated keys become arrays, Next's own keys are dropped. */

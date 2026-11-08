@@ -53,6 +53,7 @@ import {
   type DiscountFlagReader,
   type DiscountRefusal,
   discountCodesOn,
+  discountFlagOf,
   discountLockMinutes,
   draftDiscountOf,
 } from "./discount";
@@ -481,7 +482,7 @@ export async function checkoutScreen(
   );
   const codesOn = await discountCodesOn(
     draft.lines.map((entry) => entry.countryIso),
-    request.discountFlag,
+    discountFlagOf(request),
   );
   const { applied, lockedMinutes } = await withDraftConnection(
     request.connection,

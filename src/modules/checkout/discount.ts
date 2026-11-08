@@ -92,6 +92,24 @@ const databaseDiscountFlag: DiscountFlagReader = async (scope) => {
   }
 };
 
+/**
+ * The reader a caller's context implies: its own `discountFlag`, else the checkout flag reader it
+ * injected (a test's fake answers every flag key, this one included), else the database.
+ */
+export function discountFlagOf(context: {
+  readonly discountFlag?: DiscountFlagReader | undefined;
+  readonly flags?: CheckoutFlagReader | undefined;
+}): DiscountFlagReader {
+  if (context.discountFlag !== undefined) return context.discountFlag;
+  const injected = context.flags;
+  if (injected === undefined) return databaseDiscountFlag;
+  const read = injected as unknown as (
+    key: string,
+    scope: { readonly kind: "country"; readonly ref: string },
+  ) => Promise<boolean>;
+  return (scope) => read(DISCOUNT_FLAG_KEY, scope);
+}
+
 /** True when the flag is on for every destination of the basket (the file header). */
 export async function discountCodesOn(
   countries: readonly string[],
@@ -141,7 +159,7 @@ async function lineKeys(
   >
 > {
   const rows = await executor.execute(sql`
-    SELECT position, country_id, product_id FROM checkout_draft_line
+    SELECT position, destination_country_id AS country_id, product_id FROM checkout_draft_line
      WHERE draft_id = ${z.uuid().parse(draftId)}`);
   const keys = new Map<number, { countryId: string; productId: string }>();
   for (const raw of rows) {
@@ -468,7 +486,7 @@ async function step4(
   const draft = lookup.draft;
   const on = await discountCodesOn(
     draft.lines.map((line) => line.countryIso),
-    context.discountFlag,
+    discountFlagOf(context),
   );
   if (!on) return { kind: "closed" };
   const assessed = await assessBasket(draft, {
