@@ -383,20 +383,6 @@ describe("the shipped catalogues and manifests", () => {
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     // TASK-329's withdrawn inbox stage and spec 041's chrome left this queue under the delegation (TASK-436).
     // Spec 030b §14.10 Appendix A (TASK-444): My bouquets, awaiting the delegated copy record.
-    "floristInbox.bouquets.askChange",
-    "floristInbox.bouquets.changeSubject",
-    "floristInbox.bouquets.empty",
-    "floristInbox.bouquets.intro",
-    "floristInbox.bouquets.navLabel",
-    "floristInbox.bouquets.sku",
-    "floristInbox.bouquets.state.notYet",
-    "floristInbox.bouquets.state.onSale",
-    "floristInbox.bouquets.state.paused",
-    "floristInbox.bouquets.state.withdrawn",
-    "floristInbox.bouquets.stems",
-    "floristInbox.bouquets.supportLine",
-    "floristInbox.bouquets.title",
-    "floristInbox.bouquets.youReceive",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
     "forFlorists.apply.error.capacity",
