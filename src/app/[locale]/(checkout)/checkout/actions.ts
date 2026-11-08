@@ -20,6 +20,7 @@ import { z } from "zod";
 
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import {
+  applyDiscountAction,
   CHECKOUT_COOKIE_NAME,
   CHECKOUT_ECHO_COOKIE_NAME,
   type CheckoutEchoInput,
@@ -28,6 +29,7 @@ import {
   encodeCheckoutEcho,
   isDraftToken,
   placeOrderAction,
+  removeDiscountAction,
   saveBuyerStep,
   saveCardStep,
   saveRecipientStep,
@@ -207,6 +209,23 @@ export async function checkoutAction(form: FormData): Promise<void> {
     });
   }
 
+  // Spec 047 (TASK-447): step 4's discount control. The code comes from the form body only.
+  if (intent === "discount" || intent === "discountRemove") {
+    const outcome =
+      intent === "discount"
+        ? await applyDiscountAction(locale, posted)
+        : await removeDiscountAction(locale);
+    if (outcome.kind !== "notice") redirect(`/${locale}/checkout`);
+    await echoTo(locale, {
+      step: "review",
+      line: 1,
+      values: {},
+      errors: {},
+      attempt: Date.now(),
+      discount: outcome.notice,
+    });
+  }
+
   if (
     intent === "card" &&
     [...posted.keys()].some((key) => ADDON_PRESSES.has(key))
@@ -252,6 +271,23 @@ export async function checkoutAction(form: FormData): Promise<void> {
         errors: {},
         attempt: Date.now(),
         refused: state.reason,
+      });
+      return;
+    }
+    case "discount_changed": {
+      // Spec 047 (AC-14): nothing placed; step 4 names the old and new totals.
+      await echoTo(locale, {
+        step: "review",
+        line: 1,
+        values: {},
+        errors: {},
+        attempt: Date.now(),
+        discount: {
+          kind: "changed",
+          code: state.code,
+          old: state.old,
+          new: state.new,
+        },
       });
       return;
     }

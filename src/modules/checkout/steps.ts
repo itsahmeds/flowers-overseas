@@ -94,6 +94,13 @@ export type StepState =
   | { readonly status: "closed" }
   /** Placement refused where the buyer stands (TASK-205): the daily cap, or unable to place. */
   | { readonly status: "refused"; readonly reason: "cap" | "unable" }
+  /** Spec 047 (AC-14, TASK-447): the applied code stopped applying at placement. */
+  | {
+      readonly status: "discount_changed";
+      readonly code: string;
+      readonly old: { readonly amountMinor: number; readonly currency: string };
+      readonly new: { readonly amountMinor: number; readonly currency: string };
+    }
   | {
       readonly status: "invalid";
       readonly step: CheckoutStep;
@@ -124,6 +131,11 @@ export interface StepContext {
   readonly now?: () => Date;
   readonly connection?: DraftConnection;
   readonly flags?: CheckoutFlagReader;
+  /** Spec 047 (TASK-447): replaces the `checkout.discount_codes` reader (tests). */
+  readonly discountFlag?: (scope: {
+    readonly kind: "country";
+    readonly ref: string;
+  }) => Promise<boolean>;
 }
 
 /** The posted form as plain values: repeated keys become arrays, Next's own keys are dropped. */

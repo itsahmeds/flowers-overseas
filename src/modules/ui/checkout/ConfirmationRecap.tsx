@@ -13,6 +13,7 @@ import type { ReactElement, ReactNode } from "react";
 import type { LocaleCode } from "@/config/locales";
 import { type Money, formatMoney } from "@/modules/i18n";
 
+import { discountAmountText } from "./DiscountCodeField.tsx";
 import { MONEY_FIGURE } from "./styles.ts";
 
 export interface ConfirmationRecapProps {
@@ -34,6 +35,11 @@ export interface ConfirmationRecapProps {
   /** "Thursday 8 October", through `formatDate`. */
   readonly date: string;
   readonly card?: { readonly message: string; readonly signature?: string };
+  /**
+   * Spec 047 (AC-26, TASK-447): "Discount ({code})" (the code in `<bdi dir="ltr">`) and the amount
+   * taken off, drawn negative above the total; no editing control (spec 010 A-founder-2026-10-14b).
+   */
+  readonly discountLine?: { readonly label: ReactNode; readonly amount: Money };
   readonly total: Money;
   /** "Nothing was charged." in demo. */
   readonly note?: string;
@@ -49,6 +55,7 @@ export function ConfirmationRecap({
   recipient,
   date,
   card,
+  discountLine,
   total,
   note,
 }: ConfirmationRecapProps): ReactElement {
@@ -109,6 +116,17 @@ export function ConfirmationRecap({
           </div>
         )}
       </dl>
+      {discountLine === undefined ? null : (
+        <p
+          className="text-ui mt-[12px] mb-0 flex justify-between gap-[16px]"
+          data-fo-discount-line=""
+        >
+          <span className="text-ink-2">{discountLine.label}</span>
+          <span className="text-included font-bold [font-variant-numeric:tabular-nums]">
+            {discountAmountText(discountLine.amount, locale)}
+          </span>
+        </p>
+      )}
       <div className="border-rule mt-[16px] flex items-baseline justify-between gap-[16px] border-t border-solid pt-[14px]">
         <span className="font-bold">{totalLabel}</span>
         <strong className={`${MONEY_FIGURE} text-[32px]`}>

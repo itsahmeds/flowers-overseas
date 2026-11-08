@@ -241,6 +241,7 @@ function delivery(
     card: null,
     addonNameKeys: [],
     amount: IntegerMoneySchema.parse(GBP(4590)),
+    discount: null,
     ...overrides,
   };
 }

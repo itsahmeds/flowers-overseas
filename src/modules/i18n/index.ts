@@ -166,6 +166,7 @@ export {
   formatMinorNumber,
   formatRatePpm,
   formatRatingBp,
+  formatCurrencyName,
   formatRegionName,
   formatRange,
   formatRangeEnds,

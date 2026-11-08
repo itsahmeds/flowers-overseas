@@ -48,6 +48,15 @@ import {
   loadDraft,
   withDraftConnection,
 } from "./draft";
+import {
+  type AppliedDiscount,
+  type DiscountFlagReader,
+  type DiscountRefusal,
+  discountCodesOn,
+  discountFlagOf,
+  discountLockMinutes,
+  draftDiscountOf,
+} from "./discount";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
 import {
   type DraftTotals,
@@ -120,6 +129,21 @@ export interface StepScreen {
   readonly addons: readonly OfferedAddon[];
   /** Where "Back to {product}" goes for the current line, when a product page exists. */
   readonly productPath: string | null;
+  /**
+   * Spec 047 (TASK-447): the code applied to the basket. When set, `total` is the discounted
+   * total (what is charged) and `discount.subtotal` the sum of the lines.
+   */
+  readonly discount: AppliedDiscount | null;
+  /** The applied code stopped applying since it was applied (ended, used up): why. */
+  readonly discountLost: {
+    readonly code: string | null;
+    readonly refusal: DiscountRefusal;
+  } | null;
+  /**
+   * Step 4's code control: `null` when `checkout.discount_codes` is off for the basket (or on any
+   * other step); else whether the field is locked and for how many minutes.
+   */
+  readonly discountControl: { readonly lockedMinutes: number | null } | null;
 }
 
 export type CheckoutScreen =
@@ -147,6 +171,7 @@ export interface ScreenRequest {
   readonly now?: () => Date;
   readonly connection?: DraftConnection;
   readonly flags?: CheckoutFlagReader;
+  readonly discountFlag?: DiscountFlagReader;
 }
 
 const LINE_PARAM = /^[1-9][0-9]?$/u;
@@ -447,6 +472,32 @@ export async function checkoutScreen(
     null) as CurrencyCode | null;
   const address =
     selected.step === "recipient" ? addressFormModel(current.countryIso) : null;
+
+  // Spec 047 (TASK-447): the applied code on the basket as it stands (an advisory count; the
+  // binding one is at placement), and step 4's control.
+  const deliveries = lines.flatMap((entry) =>
+    entry.totals === null
+      ? []
+      : [{ position: entry.position, totals: entry.totals }],
+  );
+  const codesOn = await discountCodesOn(
+    draft.lines.map((entry) => entry.countryIso),
+    discountFlagOf(request),
+  );
+  const { applied, lockedMinutes } = await withDraftConnection(
+    request.connection,
+    async (executor) => ({
+      applied:
+        codesOn && assessed.total !== null
+          ? await draftDiscountOf(executor, draft, deliveries, now)
+          : null,
+      lockedMinutes:
+        codesOn && selected.step === "review"
+          ? await discountLockMinutes(executor, draft.id, now)
+          : null,
+    }),
+  );
+  const discount = applied?.kind === "applied" ? applied.discount : null;
   return {
     kind: "step",
     step: selected.step,
@@ -454,7 +505,7 @@ export async function checkoutScreen(
     mode: draft.mode,
     locale,
     lines,
-    total: assessed.total,
+    total: discount?.total ?? assessed.total,
     notice: assessed.notice,
     buyer: draft.buyer,
     reachable: furthestScreen(draft, assessed.reviewReachable),
@@ -469,5 +520,12 @@ export async function checkoutScreen(
         ? await offeredAddons(current, currency, locale, now)
         : [],
     productPath: await productPathOf(locale, current.sku, current.countryIso),
+    discount,
+    discountLost:
+      applied?.kind === "refused"
+        ? { code: applied.code, refusal: applied.refusal }
+        : null,
+    discountControl:
+      codesOn && selected.step === "review" ? { lockedMinutes } : null,
   };
 }

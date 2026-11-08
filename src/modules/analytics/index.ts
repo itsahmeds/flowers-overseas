@@ -18,3 +18,18 @@ export {
   searchEvent,
   sendPageAnalytics,
 } from "./search-event";
+// Spec 047 (TASK-447): the discount code payloads; never the code, nothing for demo or test.
+export {
+  DISCOUNT_CODE_APPLIED_EVENT,
+  DISCOUNT_CODE_REJECTED_EVENT,
+  DiscountAppliedEventSchema,
+  DiscountRejectedEventSchema,
+  PurchaseCouponParamsSchema,
+  discountAppliedEvent,
+  discountRejectedEvent,
+  purchaseCouponParams,
+  type DiscountAppliedEvent,
+  type DiscountCodeRef,
+  type DiscountRejectedEvent,
+  type PurchaseCouponParams,
+} from "./discount-events";

@@ -343,6 +343,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
+    // TASK-447 (spec 047 §7): the discount control's 18 `checkout.discount.*` texts, until record-approval-447.py.
     "checkout.legal.cancellation",
     "checkout.legal.payButton",
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet

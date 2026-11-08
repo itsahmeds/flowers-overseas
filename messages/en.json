@@ -1153,6 +1153,28 @@
     "legal": {
       "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that.",
       "payButton": "Pay {amount} and place order"
+    },
+    "discount": {
+      "open": "Add a discount code",
+      "label": "Discount code",
+      "apply": "Apply",
+      "remove": "Remove",
+      "applied": "Code {code} applied. You save {amount}.",
+      "line": "Discount ({code})",
+      "replaced": "One code per order. We replaced {old} with {new}.",
+      "error": {
+        "unknown": "This code does not work. Please check it and try again.",
+        "notStarted": "This code starts on {date}.",
+        "ended": "This code has ended.",
+        "wrongDestination": "This code does not work for deliveries to {country}.",
+        "wrongProduct": "This code does not work for this bouquet.",
+        "wrongCurrency": "This code does not work for payments in {currency}.",
+        "belowMinimum": "This code needs an order of at least {amount}.",
+        "usedUp": "This code has been used as many times as it can be.",
+        "alreadyUsed": "You have already used this code.",
+        "locked": "Too many tries. Please wait {minutes, plural, one {# minute} other {# minutes}} and try again."
+      },
+      "changedAtPlacement": "Your code {code} can no longer be used, so your total is now {new} instead of {old}. Please check it before you continue."
     }
   },
   "confirmation": {

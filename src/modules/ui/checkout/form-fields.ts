@@ -19,6 +19,9 @@ export const CHECKOUT_FORM_INTENTS = [
   "selection",
   "useNextDate",
   "place",
+  // Spec 047 (TASK-447): step 4's discount control, apply and remove.
+  "discount",
+  "discountRemove",
 ] as const;
 export type CheckoutFormIntent = (typeof CHECKOUT_FORM_INTENTS)[number];
 
@@ -29,6 +32,7 @@ export const CHECKOUT_FORM_IDS = {
   price: "co-price",
   nextDate: "co-next-date",
   place: "co-place",
+  discount: "co-discount",
 } as const;
 
 /** The page's one action: it answers every post with a 303, so it returns nothing. */

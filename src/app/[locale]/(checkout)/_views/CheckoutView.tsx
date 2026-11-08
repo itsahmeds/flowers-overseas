@@ -34,6 +34,8 @@ import { localeConfig, type LocaleCode } from "@/config/locales";
 import { COMPANY, controllerName } from "@/config/company";
 import {
   type CheckoutScreen,
+  type DiscountEcho,
+  type DiscountRefusal,
   type ScreenLine,
   type StepScreen,
   callingCodeOf,
@@ -49,6 +51,7 @@ import {
   formatNumber,
   formatPercentFromBasisPoints,
   formatRegionName,
+  type Money,
   MoneySchema,
   sortBy,
 } from "@/modules/i18n";
@@ -61,7 +64,12 @@ import {
 } from "@/modules/ui";
 import {
   checkoutButtonClass,
+  codeSlot,
   DemoBanner,
+  DiscountCodeField,
+  type DiscountFieldState,
+  NOTICE_BLOCKING,
+  withCodes,
   ErrorSummary,
   type ErrorSummaryItem,
   InlinePrivacyNotice,
@@ -86,6 +94,7 @@ import {
   type CheckoutAction,
   type CheckoutFormIntent,
 } from "@/modules/ui/checkout";
+import { discountRefusalMessage } from "./discount-messages";
 import { PayArea } from "./PayStep";
 
 /** What a refused post is drawn again with. */
@@ -104,6 +113,8 @@ export interface CheckoutEcho {
   readonly attempt: number;
   /** Step 3's refusal where the buyer stands. */
   readonly refused?: "cap" | "unable" | undefined;
+  /** Spec 047 (TASK-447): step 4's discount control after an apply, a remove or a placement. */
+  readonly discount?: DiscountEcho | undefined;
 }
 
 type Translate = (key: string, values?: Record<string, unknown>) => string;
@@ -1193,7 +1204,16 @@ function summaryFor(
 /** The VAT inside the total, by rate, summed over every delivery (§14 A-founder-2026-10-22 item 5). */
 function vatLines(screen: StepScreen, t: Translate): VatLine[] {
   const byRate = new Map<number, { vatMinor: number; currency: string }>();
-  for (const line of screen.lines) {
+  // Spec 047 (AC-8): with a code applied, the VAT of what is paid, rate by rate.
+  if (screen.discount !== null) {
+    for (const split of screen.discount.vat) {
+      byRate.set(split.rateBp, {
+        vatMinor: split.vatMinor,
+        currency: screen.discount.total.currency,
+      });
+    }
+  }
+  for (const line of screen.discount === null ? screen.lines : []) {
     for (const split of line.totals?.vat ?? []) {
       const entry = byRate.get(split.rateBp);
       byRate.set(split.rateBp, {
@@ -1214,6 +1234,133 @@ function vatLines(screen: StepScreen, t: Translate): VatLine[] {
         currency: entry.currency,
       }),
     }));
+}
+
+/* -------------------------------------------------------------------------- */
+/* The discount code (spec 047, TASK-447)                                       */
+/* -------------------------------------------------------------------------- */
+
+/** A refusal's message in the page's locale (§7; `discountRefusalMessage`). */
+function refusalMessage(
+  refusal: DiscountRefusal,
+  locale: LocaleCode,
+  t: Translate,
+  all: Translate,
+): string {
+  const message = discountRefusalMessage(refusal, locale, (iso) =>
+    countryName(all, iso),
+  );
+  return all(message.key, message.values);
+}
+
+/** Step 4's code control, its line and its notice, or nothing when the flag is off. */
+function discountPieces(
+  screen: StepScreen,
+  echo: CheckoutEcho | undefined,
+  action: CheckoutAction,
+  t: Translate,
+  all: Translate,
+): {
+  readonly line?: { readonly label: ReactNode; readonly amount: Money };
+  readonly control?: ReactNode;
+} {
+  const locale = screen.locale;
+  const applied = screen.discount;
+  const line =
+    applied === null
+      ? undefined
+      : {
+          label: withCodes(t("discount.line", { code: codeSlot("code") }), {
+            code: applied.code,
+          }),
+          amount: applied.amount,
+        };
+  if (screen.step !== "review" || screen.discountControl === null) {
+    return line === undefined ? {} : { line };
+  }
+  const notice = echo?.discount;
+  let state: DiscountFieldState;
+  if (applied !== null) {
+    state = {
+      kind: "applied",
+      message:
+        notice?.kind === "replaced" && notice.code === applied.code
+          ? withCodes(
+              t("discount.replaced", {
+                old: codeSlot("old"),
+                new: codeSlot("new"),
+              }),
+              { old: notice.previous, new: notice.code },
+            )
+          : withCodes(
+              t("discount.applied", {
+                code: codeSlot("code"),
+                amount: formatMoney(applied.amount, locale),
+              }),
+              { code: applied.code },
+            ),
+    };
+  } else if (screen.discountControl.lockedMinutes !== null) {
+    state = {
+      kind: "locked",
+      value: notice?.kind === "refused" ? notice.value : "",
+      message: refusalMessage(
+        { reason: "locked", minutes: screen.discountControl.lockedMinutes },
+        locale,
+        t,
+        all,
+      ),
+    };
+  } else if (notice?.kind === "refused") {
+    state = {
+      kind: "refused",
+      value: notice.value,
+      message: refusalMessage(notice.refusal, locale, t, all),
+    };
+  } else if (screen.discountLost !== null && notice?.kind !== "changed") {
+    state = {
+      kind: "refused",
+      value: screen.discountLost.code ?? "",
+      message: refusalMessage(screen.discountLost.refusal, locale, t, all),
+    };
+  } else {
+    state = { kind: "closed" };
+  }
+  const control = (
+    <>
+      {notice?.kind === "changed" ? (
+        <div
+          className={`${NOTICE_BLOCKING} mt-[12px]`}
+          data-fo-discount-changed=""
+          role="alert"
+        >
+          <p className="m-0">
+            {withCodes(
+              t("discount.changedAtPlacement", {
+                code: codeSlot("code"),
+                old: formatMoney(MoneySchema.parse(notice.old), locale),
+                new: formatMoney(MoneySchema.parse(notice.new), locale),
+              }),
+              { code: notice.code },
+            )}
+          </p>
+        </div>
+      ) : null}
+      <DiscountCodeField
+        action={action}
+        applyFields={routing("discount", screen)}
+        labels={{
+          open: t("discount.open"),
+          label: t("discount.label"),
+          apply: t("discount.apply"),
+          remove: t("discount.remove"),
+        }}
+        removeFields={routing("discountRemove", screen)}
+        state={state}
+      />
+    </>
+  );
+  return line === undefined ? { control } : { line, control };
 }
 
 /** A step of the checkout: banner, progress, the step's form, the summary, the phone's bar. */
@@ -1241,6 +1388,7 @@ export async function CheckoutStepPage({
   }));
   const summary = summaryFor(screen, all, t);
   const total = screen.total;
+  const discount = discountPieces(screen, echo, action, t, all);
   // Spec 013 (TASK-262): step 3 pays through the registered Stripe step in `test` and `live`.
   const paying = screen.mode === "test" || screen.mode === "live";
   const gone =
@@ -1479,6 +1627,12 @@ export async function CheckoutStepPage({
               // Step 3's panel ends with the place control (the board draws no promise line).
               {...(screen.step === "review" ? {} : { footer: promise })}
               lines={summary.lines}
+              {...(discount.line === undefined
+                ? {}
+                : { discountLine: discount.line })}
+              {...(discount.control === undefined
+                ? {}
+                : { discountControl: discount.control })}
               locale={locale}
               title={t("summary.title")}
               total={total}
