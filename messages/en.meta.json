@@ -5337,6 +5337,11 @@
     "reviewed": false,
     "sourceHash": "7974bac64cc056a666344aaa2e4ed54b743ae2529a49dc855e8849c3fb31d245"
   },
+  "shop.chosen.line": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f"
+  },
   "shop.toolbar.howWeSort": {
     "source": "human",
     "reviewed": true,

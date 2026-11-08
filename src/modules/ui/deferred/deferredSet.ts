@@ -105,7 +105,7 @@ export const DEFERRED_ISLANDS: readonly DeferredIsland[] = [
     status: "deferred",
     trigger: "paint",
     control: null,
-    what: "the motions (spec 004 §14 A23 clause 11, AC-44) and, inside the same module, the header and phone Menu enhancement: Esc closes the Menu (§14 A24 clause 3, AC-47), the header basket count (spec 010 §14 A-founder-2026-10-22 D10, AC-71), and the country chooser's history replace (§14 A-founder-2026-10-24a item 3, AC-79)",
+    what: "the motions (spec 004 §14 A23 clause 11, AC-44) and, inside the same module, the header and phone Menu enhancement: Esc closes the Menu (§14 A24 clause 3, AC-47), the header basket count (spec 010 §14 A-founder-2026-10-22 D10, AC-71), the country chooser's history replace (§14 A-founder-2026-10-24a item 3, AC-79), and the remembered country's price and link fill and URL rule (item 3, AC-80, AC-81; TASK-391)",
     task: "TASK-194",
     module: "src/modules/ui/motion/MotionIsland.tsx",
     chunk: "src/modules/ui/motion/MotionIsland.tsx",

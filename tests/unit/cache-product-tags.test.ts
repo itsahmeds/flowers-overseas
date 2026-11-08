@@ -23,7 +23,11 @@ import {
   productCachePolicy,
   urlsForTag,
 } from "../../src/lib/cache";
-import { listProductPages, listingPages } from "../../src/modules/catalog";
+import {
+  listProductPages,
+  listingPages,
+  pricesDocuments,
+} from "../../src/modules/catalog";
 import { pickerState } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 
@@ -149,8 +153,13 @@ describe("`urlsForTag()` learns the product page's tags (A10)", () => {
     const products = (await listProductPages())
       .filter((page) => page.countryIso === "PL")
       .map((page) => page.path);
+    // And the remembered country's prices documents (TASK-391).
+    const prices = (await pricesDocuments())
+      .filter((document) => document.iso2 === "PL")
+      .map((document) => document.path);
+    expect(prices.length).toBeGreaterThan(0);
     expect(await urlsForTag("catalog:PL", { baseUrl: BASE })).toStrictEqual(
-      absolute([...listings, ...products]),
+      absolute([...listings, ...products, ...prices]),
     );
     expect(await urlsForTag("sitemap", { baseUrl: BASE })).toStrictEqual([]);
   });

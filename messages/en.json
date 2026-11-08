@@ -818,7 +818,10 @@
     "cta": {
       "chooseCountry": "Choose where to send"
     },
-    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}",
+    "chosen": {
+      "line": "Sending to {country}"
+    }
   },
   "search": {
     "meta": {

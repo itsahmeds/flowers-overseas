@@ -385,6 +385,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "countryVersionOf",
         "parseChooserNext",
         "parseChooserPath",
+        // the remembered country's prices document (spec 004 item 3, AC-80; TASK-391).
+        "pricesDocuments",
+        "rememberedPricesView",
         // site search's catalogue reads (spec 045 §5.2; TASK-401): an entity's copy in a locale,
         // the card's photograph test, and the margin band per product (all 0 until TASK-405).
         "entityCopy",
@@ -394,6 +397,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // spec 004 §14 A-founder-2026-10-24a item 3 (TASK-385): the chooser's one decision, its
         // `303` with the `fo_dest` cookie, its boundary schemas and its page.
         "ChooserPage",
+        "ChooserQuerySchema",
         "ChooserSearchParamsSchema",
         "ChooserToSchema",
         "choiceRoutePath",
@@ -452,7 +456,11 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       // The mega menu's model (spec 004 §14 A-founder-2026-10-24a item 5; TASK-383).
       `${moduleDir}/mega-menu.ts`,
       `${moduleDir}/observability.ts`,
+      // "Our order" (spec 008 AC-9 as amended; TASK-390).
+      `${moduleDir}/our-order.ts`,
       `${moduleDir}/params.ts`,
+      // One country's price bands (spec 008 AC-90; TASK-390).
+      `${moduleDir}/price-bands.ts`,
       `${moduleDir}/pricing/equivalents.ts`,
       `${moduleDir}/pricing/fx.ts`,
       `${moduleDir}/pricing/history.ts`,
@@ -467,6 +475,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/productSchema.ts`,
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
+      // The remembered country's prices document (spec 004 item 3, AC-80; TASK-391).
+      `${moduleDir}/remembered-prices.ts`,
       `${moduleDir}/routes.ts`,
       `${moduleDir}/schemas.ts`,
       // Site search's catalogue reads (spec 045 §5.2; TASK-401).
@@ -491,6 +501,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/HubProductsFirst.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
       `${moduleDir}/ui/ListingChrome.tsx`,
+      // The facet line of a `?price=` or `?colour=` result (spec 008 AC-90; TASK-390).
+      `${moduleDir}/ui/ListingFacetLine.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,
       `${moduleDir}/ui/OccasionsIndexPage.tsx`,
       `${moduleDir}/ui/PageLocaleSwitcher.tsx`,

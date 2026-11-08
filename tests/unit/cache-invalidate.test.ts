@@ -53,6 +53,7 @@ import {
   cacheTagsFor,
   listProductPages,
   listingPages,
+  pricesDocuments,
 } from "../../src/modules/catalog";
 import { localePath } from "../../src/modules/i18n";
 import { absoluteUrl } from "../../src/modules/seo";
@@ -75,7 +76,11 @@ async function destinationPaths(iso2: string): Promise<string[]> {
   const products = (await listProductPages()).filter(
     (page) => page.countryIso === iso2,
   );
-  return [...listings, ...products].map((page) => page.path);
+  // The remembered country's prices documents carry the tag too (TASK-391).
+  const prices = (await pricesDocuments()).filter(
+    (document) => document.iso2 === iso2,
+  );
+  return [...listings, ...products, ...prices].map((page) => page.path);
 }
 
 describe("urlsForTag — catalog:{iso2} (spec 012 §2.4)", () => {

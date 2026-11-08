@@ -1486,7 +1486,10 @@
         "over": "{amount} i więcej"
       }
     },
-    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}"
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}",
+    "chosen": {
+      "line": "Wysyłka do: {country}"
+    }
   },
   "search": {
     "meta": {

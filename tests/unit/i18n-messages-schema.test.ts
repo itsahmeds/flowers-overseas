@@ -495,7 +495,9 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.submitting",
     "payments.step.testLabel",
     // A country page's band amounts (spec 004 §14 A-founder-2026-10-24a i18n table, spec 008's
-    // "Price bands"; TASK-390): the facet line of a `?price=` result.
+    // "Price bands"; TASK-390): the facet line of a `?price=` result. And the remembered
+    // country's "Sending to {country}" line, which the island shows after the fill (TASK-391).
+    "shop.chosen.line",
     "shop.price.band.between",
     "shop.price.band.over",
     "shop.price.band.under",
