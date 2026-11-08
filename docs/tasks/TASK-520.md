@@ -56,7 +56,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 S520: started in `../fo-wt-520`; row `in_progress`, draft PR opened. Next: engine groups, header field, chip, suggest route and island.
 
 ## Result
 
