@@ -344,24 +344,6 @@ describe("the shipped catalogues and manifests", () => {
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
     // TASK-447 (spec 047 §7): the discount control's 18 `checkout.discount.*` texts, until record-approval-447.py.
-    "checkout.discount.applied",
-    "checkout.discount.apply",
-    "checkout.discount.changedAtPlacement",
-    "checkout.discount.error.alreadyUsed",
-    "checkout.discount.error.belowMinimum",
-    "checkout.discount.error.ended",
-    "checkout.discount.error.locked",
-    "checkout.discount.error.notStarted",
-    "checkout.discount.error.unknown",
-    "checkout.discount.error.usedUp",
-    "checkout.discount.error.wrongCurrency",
-    "checkout.discount.error.wrongDestination",
-    "checkout.discount.error.wrongProduct",
-    "checkout.discount.label",
-    "checkout.discount.line",
-    "checkout.discount.open",
-    "checkout.discount.remove",
-    "checkout.discount.replaced",
     "checkout.legal.cancellation",
     "checkout.legal.payButton",
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet
