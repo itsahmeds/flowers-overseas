@@ -1,4 +1,4 @@
-# TASK-504 — <task title>
+# TASK-504 — The buying flow works end to end
 
 Row: `TASKS.md` → TASK-504. This brief is the task's long form: the row keeps a link and one
 sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with
@@ -48,7 +48,10 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 B504: reproduced on a local PG16 (migrated to 0036, seeded, `checkout.open` PL on). On current main `POST /api/checkout/start` answers 303 in dev; on a production build it answered 303 back to the product page with `checkout.refused {code: no_price}` until `QUOTE_SIGNING_SECRET` was set: a production Node process refuses the committed development key, so without the env var every start silently returns to the product page. The staging 500 could not be reproduced locally on main's code; staging serves 4c61712bd (same `start.ts`, `draft.ts`, `pricing.ts`), so its 500 is environmental (the database or the env), see Escalations.
+- 2026-11-08 B504: start route refuses a posted live date the destination cannot deliver (`dateRefusalReason`, logs `checkout.date_refused {reason_key}`); unit test `tests/unit/checkout-date-refusal.test.ts` (6). The product page date row is already all-disabled in `preview` (Phase 0) on a fresh render; the past dates staging shows come from a cached page that has not regenerated since 6 Nov (ISR `revalidate = 3600` plus edge `stale-while-revalidate`), which again points at runtime failures on staging.
+- 2026-11-08 B504: copy: `product.demo.heading`, `delivery.picker.preview`, `destinationsHub.intro` read in line with "Ordering opens soon" (en unreviewed and queued; de/pl machine drafts); `.claude/state/record-approval-504.py --check` exit 0.
+- 2026-11-08 B504: walk on a production build (main + TASK-503) in en and en-gb/pl: the existing `checkout-journey` e2e passed 12/12 (desktop and mobile, JS on and off). Found: an add-on press on step 2 lost the typed card message and buyer fields (the button sat in a separate form); fixed by submitting the step form and echoing the typed values back. A missing quote key is now logged at error level (`quote_signing_unavailable`).
 
 ## Result
 
