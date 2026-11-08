@@ -243,6 +243,12 @@ export const PaymentsBalanceFetchPayload = z
  * Take nothing; the minute tick enqueues one of each under a `singletonKey`.
  */
 export const AlertsMonitorPayload = z.object({}).strict();
+/**
+ * `risk.monitor` (spec 021 §5.2 "Jobs", AC-6; TASK-493): one minute's card-testing check. Takes
+ * nothing; the minute tick enqueues one under a `singletonKey`. The deadline defaults, due-soon
+ * alerts and the site velocity alert join it in TASK-494.
+ */
+export const RiskMonitorPayload = z.object({}).strict();
 export const AlertsEscalatePayload = z.object({}).strict();
 
 /**
@@ -377,6 +383,7 @@ export const REGISTERED_JOBS = {
     retryLimit: 3,
   },
   "alerts.monitor": { version: 1, payload: AlertsMonitorPayload },
+  "risk.monitor": { version: 1, payload: RiskMonitorPayload },
   "alerts.escalate": { version: 1, payload: AlertsEscalatePayload },
   "alerts.daily_summary": {
     version: 1,

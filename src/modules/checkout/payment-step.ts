@@ -60,12 +60,16 @@ export type PrepareOutcome =
 export type ConfirmOutcome =
   | { readonly kind: "confirm"; readonly clientSecret: string }
   | { readonly kind: "payments_unavailable" }
-  | { readonly kind: "not_payable" };
+  | { readonly kind: "not_payable" }
+  /** Spec 021 (AC-3, AC-5, AC-6): the pay-step pre-check refused; no intent was created. */
+  | { readonly kind: "refused"; readonly messageKey: string };
 
 /** `sync`'s answer: whether the purchase is now paid, still unpaid, or what the decline was. */
 export type SyncOutcome =
   | { readonly kind: "paid" }
-  | { readonly kind: "unpaid"; readonly messageKey: string | null };
+  | { readonly kind: "unpaid"; readonly messageKey: string | null }
+  /** Spec 021 (AC-4): every order was closed unpaid (the attempts are used up); no retry. */
+  | { readonly kind: "ended" };
 
 /**
  * One mode's payment step (spec 013 adds `test` and `live`). `prepare`, `confirm` and `sync` are

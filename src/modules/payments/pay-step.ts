@@ -43,11 +43,14 @@ import {
   type SyncOutcome,
 } from "@/modules/checkout";
 import { isOutboxHandlerRegistered, withExecutor } from "@/modules/orders";
+import { type PrePayVerdict, prePayCheck } from "@/modules/risk";
 
 import type { PaymentTransaction } from "./context.ts";
 import { declineMessageKey } from "./decline.ts";
 import {
+  endPaymentAttempts,
   type LifecycleDeps,
+  RISK_ACTOR,
   startPayment,
   syncFromProvider,
 } from "./lifecycle.ts";
@@ -71,10 +74,29 @@ export interface StripeStepDeps {
   readonly methodSources: () => Promise<MethodSources>;
   /** Spec 013's lifecycle seams (tests: a transaction, a clock, an alert). */
   readonly lifecycle?: Omit<LifecycleDeps, "provider" | "methodSources">;
+  /**
+   * Spec 021's pay-step pre-check. By default `prePayCheck` on the lifecycle's transaction and
+   * clock, reading `risk.pay_pause` through `riskFlag` (off when none is given).
+   */
+  readonly prePay?: (purchaseId: string) => Promise<PrePayVerdict>;
+  /** The flag reader for `risk.pay_pause` (`isEnabled` in production). */
+  readonly riskFlag?: (key: string) => Promise<boolean>;
 }
+
+/** The message each pre-check refusal shows (spec 021 §5.2 "Pay-step pre-check"). */
+const REFUSAL_MESSAGE = {
+  paused: "payments.error.unavailable",
+  blocked_email: "payments.error.generic",
+  failed_orders: "payments.error.generic",
+} as const;
 
 /** `PLACED`: the only status a payable order is in. */
 const PLACED = "placed";
+/** The two closed-unpaid statuses (A6 rows 3 and 4). */
+const CLOSED_UNPAID: ReadonlySet<string> = new Set([
+  "payment_failed",
+  "abandoned",
+]);
 
 const StatusRow = z.object({
   status: z.string(),
@@ -129,6 +151,27 @@ export function stripePaymentStep(
       };
     },
     async confirm(purchaseId: string): Promise<ConfirmOutcome> {
+      // Spec 021 (AC-3, AC-5, AC-6): the pre-check runs before any intent exists. A refused
+      // email ends the purchase unpaid; a pause leaves it placed ("try again in a few minutes").
+      const verdict = await (
+        deps.prePay ??
+        ((id: string) =>
+          prePayCheck(id, {
+            ...(deps.lifecycle?.transaction === undefined
+              ? {}
+              : { transaction: deps.lifecycle.transaction }),
+            ...(deps.lifecycle?.now === undefined
+              ? {}
+              : { now: deps.lifecycle.now }),
+            flag: deps.riskFlag ?? (() => Promise.resolve(false)),
+          }))
+      )(purchaseId);
+      if (!verdict.ok) {
+        if (verdict.reason !== "paused") {
+          await endPaymentAttempts(purchaseId, RISK_ACTOR, lifecycle());
+        }
+        return { kind: "refused", messageKey: REFUSAL_MESSAGE[verdict.reason] };
+      }
       const started = await startPayment(purchaseId, lifecycle());
       switch (started.kind) {
         case "started":
@@ -155,6 +198,13 @@ export function stripePaymentStep(
            WHERE o.purchase_id = ${id}`),
       );
       const parsed = rows.map((raw) => StatusRow.parse(raw));
+      // Spec 021 (AC-4): the purchase was closed unpaid (the 5th decline): no retry.
+      if (
+        parsed.length > 0 &&
+        parsed.every((row) => CLOSED_UNPAID.has(row.status))
+      ) {
+        return { kind: "ended" };
+      }
       if (parsed.length > 0 && parsed.every((row) => row.status !== PLACED)) {
         return { kind: "paid" };
       }

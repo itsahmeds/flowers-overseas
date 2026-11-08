@@ -56,6 +56,10 @@
  * Spec 034 (TASK-449, migration `0040_basket_reminder`) adds `marketing.basket_reminder`, global,
  * standard risk, off by default: the consented basket reminder. It dirties no page.
  *
+ * Spec 021 (TASK-493, migration `0043_risk_021`) adds `risk.gate` (global, high risk, on),
+ * `risk.strict` (global, standard, off) and `risk.pay_pause` (global, high risk, off). None dirties
+ * a page.
+ *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
 import { z } from "zod";
@@ -287,6 +291,33 @@ const REGISTRY = [
     description:
       "One basket reminder email, only to buyers who ticked the box on checkout step 3 (spec 034). Off: the box is hidden and nothing is scheduled or sent; restore and unsubscribe links keep working.",
     risk: "standard",
+    dirties: [],
+  },
+  // Spec 021 §5.2 "Flags", §12 (migration `0043_risk_021`, TASK-493): the fraud gate (on; off is
+  // shadow mode), the stricter thresholds (off) and the payment pause (off). All three act on the
+  // worker and the pay step, so none dirties a page.
+  {
+    key: "risk.gate",
+    scopeKinds: ["global"],
+    description:
+      "The fraud gate before routing acts on its decision (spec 021). Off is shadow mode: every order is assessed and recorded, never held or cancelled.",
+    risk: "high",
+    dirties: [],
+  },
+  {
+    key: "risk.strict",
+    scopeKinds: ["global"],
+    description:
+      "Stricter fraud thresholds (spec 021): hold at a score of 20 and every first order at or above the strict band.",
+    risk: "standard",
+    dirties: [],
+  },
+  {
+    key: "risk.pay_pause",
+    scopeKinds: ["global"],
+    description:
+      'Refuse every new payment while on (spec 021). Nothing is charged; buyers read "Payments are not available right now".',
+    risk: "high",
     dirties: [],
   },
 ] as const satisfies readonly FeatureFlagDefinition[];

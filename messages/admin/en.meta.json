@@ -8123,5 +8123,20 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "7f685de5c6cfd0410c20c3b2ed8e4e1bd1b1974841c472a0cbfa25f6355b261f"
+  },
+  "admin.flags.description.risk.gate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "687a3951cca7aa4d807b936c3b5f2e136a3b242809ad096e6fe2450714ed6cb2"
+  },
+  "admin.flags.description.risk.strict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7646087abf3fb902c81e3cd4549ce51341fa4d3c87e7eb4668dafc18bf54a00d"
+  },
+  "admin.flags.description.risk.pay_pause": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3cd2ef5ba42d075910fec390c90cc14964479483be7680c06a8b137082c5c58"
   }
 }

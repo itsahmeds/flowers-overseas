@@ -28,7 +28,7 @@ import {
 } from "@/modules/checkout";
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 import { CheckoutStatePage, CheckoutStepPage } from "../_views/CheckoutView";
-import { UnpaidPayPage } from "../_views/PayStep";
+import { AttemptsEndedPage, UnpaidPayPage } from "../_views/PayStep";
 import { CheckoutAnalytics } from "../../page-analytics";
 import { checkoutAction } from "./actions";
 // Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
@@ -94,6 +94,18 @@ export default async function CheckoutPage({
           mode: screen.mode,
           confirmation,
           unpaid,
+        })}
+      </main>
+    );
+  }
+  if (screen.kind === "ended") {
+    // Spec 021 (TASK-493, AC-4): the 5th decline closed the purchase unpaid; no retry.
+    return (
+      <main id="main">
+        {await AttemptsEndedPage({
+          locale,
+          mode: screen.mode,
+          productPath: screen.productPath,
         })}
       </main>
     );

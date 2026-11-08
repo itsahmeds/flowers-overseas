@@ -384,6 +384,12 @@ describe("the route files, as Next loads them", () => {
         {},
         { requestId: "system:jobs.tick", singletonKey: "alerts.escalate" },
       ],
+      // Spec 021 §5.2 (TASK-493): the card-testing check, once a minute.
+      [
+        "risk.monitor",
+        {},
+        { requestId: "system:jobs.tick", singletonKey: "risk.monitor" },
+      ],
       // Spec 034 §5.2 (TASK-450): the basket reminder scan, every 10 minutes.
       [
         "basket-reminders.scan",

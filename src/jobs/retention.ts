@@ -89,6 +89,10 @@
  *    failure is one `audit_log` row (`partner_contract.purge_failed`, the attempt number), and the
  *    third raises `alert=partners.contract_purge_failed` once. With no contract store supplied the
  *    policy deletes nothing (`storage_unavailable`).
+ *  - `risk_identity_email_card` (12 months), `risk_identity_recipient_address` (90 days),
+ *    `risk_assessment` and `risk_review` (12 months; an open review and its assessment are never
+ *    swept), `risk_blocklist` (12 months after the last match) and `risk_pause` (30 days after
+ *    its end): spec 021 §5.1 A11 (c), AC-33; TASK-493.
  *  A key with no handler here is reported `no_handler` and nothing is written for it.
  *
  * `dryRun` writes nothing — no row, no object — and reports the same counts, because every count
@@ -1128,6 +1132,55 @@ const partnerContract: PolicyHandler = async ({
     skipped: { object_delete_failed: due.length - deletable.length },
   };
 };
+/**
+ * Spec 021 §5.1 A11 (c) (TASK-493): the risk tables. Identity rows by kind (email and card 12
+ * months, recipient address 90 days, after `created_at`), assessments (their reviews cascade)
+ * and decided reviews 12 months after `created_at` (an open review is never swept), blocklist
+ * entries 12 months after `last_matched_at` (or `created_at` when never matched), pauses 30 days
+ * after `ends_at`. Nothing in them is personal data; they hold keyed hashes and ids.
+ */
+function riskRows(
+  table:
+    | "risk_identity_email_card"
+    | "risk_identity_recipient_address"
+    | "risk_assessment"
+    | "risk_review"
+    | "risk_blocklist"
+    | "risk_pause",
+): PolicyHandler {
+  const target = table.startsWith("risk_identity") ? "risk_identity" : table;
+  const name = sql.raw(target);
+  return async ({ db, cutoff, dryRun }) => {
+    const at = ts(cutoff);
+    const due =
+      table === "risk_identity_email_card"
+        ? sql`kind IN ('email', 'card') AND created_at <= ${at}`
+        : table === "risk_identity_recipient_address"
+          ? sql`kind = 'recipient_address' AND created_at <= ${at}`
+          : table === "risk_review"
+            ? sql`status <> 'open' AND created_at <= ${at}`
+            : table === "risk_blocklist"
+              ? sql`coalesce(last_matched_at, created_at) <= ${at}`
+              : table === "risk_pause"
+                ? sql`ends_at <= ${at}`
+                : sql`created_at <= ${at}
+                      AND NOT EXISTS (SELECT 1 FROM public.risk_review r
+                                       WHERE r.assessment_id = risk_assessment.id
+                                         AND r.status = 'open')`;
+    const counted = await rows<{ count: number }>(
+      db,
+      sql`SELECT count(*)::int AS count FROM public.${name} WHERE ${due}`,
+    );
+    if (!dryRun) {
+      await db.execute(sql`DELETE FROM public.${name} WHERE ${due}`);
+    }
+    return {
+      status: dryRun ? "dry_run" : "applied",
+      counts: { [target]: counted[0]?.count ?? 0 },
+      skipped: {},
+    };
+  };
+}
 
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
@@ -1153,6 +1206,12 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   basket_reminder: basketReminderRows("basket_reminder"),
   email_suppression: basketReminderRows("email_suppression"),
   partner_contract: partnerContract,
+  risk_identity_email_card: riskRows("risk_identity_email_card"),
+  risk_identity_recipient_address: riskRows("risk_identity_recipient_address"),
+  risk_assessment: riskRows("risk_assessment"),
+  risk_review: riskRows("risk_review"),
+  risk_blocklist: riskRows("risk_blocklist"),
+  risk_pause: riskRows("risk_pause"),
 };
 
 /**

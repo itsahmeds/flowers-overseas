@@ -198,3 +198,11 @@ export type {
   BalanceSweepDeps,
 } from "./balance.ts";
 export { stripeProviderFromEnv as balanceProviderFromEnv } from "./provider-env.ts";
+// Spec 021 §12 requirements (b) and (f) on spec 013 (TASK-493): the one-purchase close the risk
+// checks call, and the site-wide attempt counts the card-testing detector reads.
+export {
+  type EndAttemptsResult,
+  RISK_ACTOR,
+  endPaymentAttempts,
+} from "./lifecycle.ts";
+export { type AttemptStatsResult, attemptStats } from "./attempt-stats.ts";

@@ -6,15 +6,21 @@
  * message arrives, so screen readers hear it; the notice inside takes focus when it appears.
  * The text is always one of our `payments.error.*` messages, never the provider's.
  */
-import { type ReactElement, useEffect, useRef } from "react";
+import { type ReactElement, type ReactNode, useEffect, useRef } from "react";
 
 export interface PaymentErrorNoticeProps {
   /** Our message in the page locale, or `null` while there is nothing to say. */
   readonly message: string | null;
+  /**
+   * Spec 021 (AC-4; TASK-493): what follows the sentence when the attempts are used up, "Start
+   * again" and the contact line, server-rendered.
+   */
+  readonly children?: ReactNode;
 }
 
 export function PaymentErrorNotice({
   message,
+  children,
 }: PaymentErrorNoticeProps): ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -31,6 +37,7 @@ export function PaymentErrorNotice({
           tabIndex={-1}
         >
           <p className="m-0">{message}</p>
+          {children}
         </div>
       )}
     </div>

@@ -6259,5 +6259,20 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "54a57c3147c49f33de5898b87084ad2b14c4ab308f762454bf92aca907478ad5"
+  },
+  "checkout.risk.attemptsExhausted": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "752f7305d7b1935ccf6f601154516fde4a8a98edec4b98509c642ba5a5b451a9"
+  },
+  "checkout.risk.emailLasting": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "31a1af72849587d98d36b5a34f891c92c8aca3c099b50be761875f5eb71ff2f5"
+  },
+  "checkout.risk.startAgain": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "962e64b761961fe056e96cdc9641daaf786022d8c32cec531c6da20c71218c24"
   }
 }

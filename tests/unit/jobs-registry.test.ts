@@ -67,6 +67,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "payouts.statement_email",
       "payouts.watch",
       "retention.sweep",
+      "risk.monitor",
       "routing.sla_watch",
       "webhook.process",
       // spec 016 (TASK-335): one stored Resend webhook.
