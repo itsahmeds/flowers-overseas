@@ -5,13 +5,14 @@
  */
 import { checkoutMethodNotAllowed, startCheckout } from "@/modules/checkout";
 // Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
-import "@/modules/payments/wiring";
+import { ensureStripePaymentSteps } from "@/modules/payments/wiring";
 
 /** Never cached, never prerendered: it writes a draft and sets a cookie. */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export function POST(request: Request): Promise<Response> {
+  ensureStripePaymentSteps();
   return startCheckout(request);
 }
 

@@ -609,7 +609,9 @@ describe("the return route (AC-4)", () => {
           get: () => ({ value: "a".repeat(43) }),
         }),
     }));
-    vi.doMock("@/modules/payments/wiring", () => ({}));
+    vi.doMock("@/modules/payments/wiring", () => ({
+      ensureStripePaymentSteps: () => undefined,
+    }));
     vi.doMock("@/modules/checkout", async () => ({
       ...(await vi.importActual<object>("@/modules/checkout")),
       paymentReturnLocation: located,

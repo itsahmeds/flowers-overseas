@@ -12,13 +12,14 @@ import {
   paymentDeclinedAction,
 } from "@/modules/checkout";
 // Spec 013 (TASK-262): the Stripe steps, registered when the keys exist.
-import "@/modules/payments/wiring";
+import { ensureStripePaymentSteps } from "@/modules/payments/wiring";
 
 /** "Pay": place (or resume) the purchase, then its one intent's client secret. */
 export async function payStepAction(
   locale: string,
   form: FormData,
 ): Promise<PayOutcome> {
+  ensureStripePaymentSteps();
   return payAction(locale, form);
 }
 
@@ -26,5 +27,6 @@ export async function payStepAction(
 export async function payDeclinedAction(
   locale: string,
 ): Promise<DeclineOutcome> {
+  ensureStripePaymentSteps();
   return paymentDeclinedAction(locale);
 }

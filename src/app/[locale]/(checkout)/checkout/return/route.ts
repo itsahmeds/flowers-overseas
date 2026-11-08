@@ -17,7 +17,7 @@ import {
   paymentReturnLocation,
 } from "@/modules/checkout";
 // Spec 013 (TASK-262): registers the Stripe steps in this process when the keys exist.
-import "@/modules/payments/wiring";
+import { ensureStripePaymentSteps } from "@/modules/payments/wiring";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +27,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ locale: string }> },
 ): Promise<Response> {
+  ensureStripePaymentSteps();
   const { locale } = await params;
   const value = (await cookies()).get(CHECKOUT_COOKIE_NAME)?.value ?? null;
   const location = await paymentReturnLocation({
