@@ -1613,7 +1613,10 @@
         "test": "Last test alert acknowledged: {time}",
         "pagesCapped": "Paged 3 times in 24 hours, now email only: {count}",
         "never": "never",
-        "unknown": "unknown"
+        "unknown": "unknown",
+        "ageMinutes": "{count} min",
+        "ageHours": "{count} h",
+        "ageDays": "{count} d"
       }
     }
   },

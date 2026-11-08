@@ -65,15 +65,25 @@ const OpenRow = z.object({
   pages_24h: z.number().int(),
 });
 
-function age(from: Date, now: Date): string {
+function age(from: Date, now: Date, t: ResolvedDispatch["t"]): string {
   const minutes = Math.max(
     0,
     Math.round((now.getTime() - from.getTime()) / 60_000),
   );
-  if (minutes < 60) return `${formatNumber(minutes, LOCALE)} min`;
+  if (minutes < 60) {
+    return t("admin.alerts.summary.ageMinutes", {
+      count: formatNumber(minutes, LOCALE),
+    });
+  }
   const hours = Math.round(minutes / 60);
-  if (hours < 48) return `${formatNumber(hours, LOCALE)} h`;
-  return `${formatNumber(Math.round(hours / 24), LOCALE)} d`;
+  if (hours < 48) {
+    return t("admin.alerts.summary.ageHours", {
+      count: formatNumber(hours, LOCALE),
+    });
+  }
+  return t("admin.alerts.summary.ageDays", {
+    count: formatNumber(Math.round(hours / 24), LOCALE),
+  });
 }
 
 function when(at: Date | null, zone: string, d: ResolvedDispatch): string {
@@ -173,7 +183,7 @@ export async function runDailySummary(
           row.order_id !== null
             ? d.reference(row.order_id)
             : t(`admin.alerts.component.${row.component ?? "alerts"}`),
-        age: age(row.first_seen_at, now),
+        age: age(row.first_seen_at, now, t),
       }),
     );
   }
