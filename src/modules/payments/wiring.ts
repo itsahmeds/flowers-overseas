@@ -18,8 +18,9 @@
 import "server-only";
 
 import { isRegisteredFlagKey } from "@/config/feature-flags";
-import { env } from "@/lib/env";
+import { EnvValidationError, env } from "@/lib/env";
 import { isEnabled } from "@/lib/flags";
+import { logger } from "@/lib/logger";
 
 import {
   methodSourcesFromFlags,
@@ -33,8 +34,26 @@ let registered = false;
 export function ensureStripePaymentSteps(): void {
   if (registered) return;
   registered = true;
-  const secretKey = env.STRIPE_SECRET_KEY ?? "";
-  const publishableKey = env.STRIPE_PUBLISHABLE_KEY ?? "";
+  let secretKey: string;
+  let publishableKey: string;
+  try {
+    secretKey = env.STRIPE_SECRET_KEY ?? "";
+    publishableKey = env.STRIPE_PUBLISHABLE_KEY ?? "";
+  } catch (error) {
+    // An environment that fails validation (`EnvValidationError`) registers nothing: the checkout
+    // stays `demo` or `closed`, and the caller (the start route, the basket and checkout pages)
+    // answers instead of a bare 500 (TASK-504). The error names keys only, never a value; this
+    // line carries its name and the key names.
+    logger.error(
+      {
+        code: "payments_env_invalid",
+        error_name: error instanceof Error ? error.name : "unknown",
+        keys: error instanceof EnvValidationError ? error.keys : [],
+      },
+      "payments.wiring",
+    );
+    return;
+  }
   if (secretKey === "" || publishableKey === "") return;
   registerStripePaymentSteps({
     routingReady: () => true,

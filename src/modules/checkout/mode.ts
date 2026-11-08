@@ -43,6 +43,7 @@ import { isCompanyRegistered } from "@/config/company";
 import { isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { appEnvironment, deploymentEnvironments } from "@/lib/env.schema";
+import { logger } from "@/lib/logger";
 import { pickerState, pickerStates } from "@/modules/geo";
 
 import { addressFormModel } from "./address";
@@ -299,11 +300,48 @@ export type CheckoutFlagReader = (
   scope?: { readonly kind: "country"; readonly ref: string },
 ) => Promise<boolean>;
 
+/**
+ * What a checkout flag reads as when its `feature_flag` row is missing (a database migrated but
+ * not seeded for it). Each is the flag's safe value: checkout closed, the demo guard on (no card
+ * charged), Stripe off. `src/lib/flags.ts` refuses to guess (`FlagNotSeededError`); checkout
+ * must not answer 500 for it either (TASK-504), so the guess is made here, per flag.
+ */
+export const CHECKOUT_FLAG_MISSING_VALUE: Readonly<
+  Record<(typeof CHECKOUT_FLAG_KEYS)["open" | "demoGuard" | "stripe"], boolean>
+> = Object.freeze({
+  [CHECKOUT_FLAG_KEYS.open]: false,
+  [CHECKOUT_FLAG_KEYS.demoGuard]: true,
+  [CHECKOUT_FLAG_KEYS.stripe]: false,
+});
+
+/**
+ * `read`, with a missing flag row answered by `CHECKOUT_FLAG_MISSING_VALUE` and logged at error
+ * level with the key and a code (a flag key is configuration, never personal data). Any other
+ * failure (the database down, a scope error) still throws: the caller decides.
+ */
+export function withMissingFlagDefaults(
+  read: CheckoutFlagReader,
+): CheckoutFlagReader {
+  return async (key, scope) => {
+    try {
+      return await read(key, scope);
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== "FlagNotSeededError") {
+        throw error;
+      }
+      logger.error({ code: "flag_not_seeded", flag: key }, "checkout.flag");
+      return CHECKOUT_FLAG_MISSING_VALUE[key];
+    }
+  };
+}
+
 /** The production reader: `isEnabled` of `src/lib/flags.ts`, loaded on first use. */
-const databaseFlags: CheckoutFlagReader = async (key, scope) => {
-  const { isEnabled } = await import("@/lib/flags");
-  return scope === undefined ? isEnabled(key) : isEnabled(key, scope);
-};
+const databaseFlags: CheckoutFlagReader = withMissingFlagDefaults(
+  async (key, scope) => {
+    const { isEnabled } = await import("@/lib/flags");
+    return scope === undefined ? isEnabled(key) : isEnabled(key, scope);
+  },
+);
 
 /** What a request knows when it asks for the mode. */
 export interface CheckoutModeRequest {

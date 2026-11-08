@@ -15,7 +15,7 @@ task actually touches.
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +21 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +2 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +126 |
-| `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +13 |
+| `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +14 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/discounts-admin.test.ts` +1 |
@@ -25,7 +25,7 @@ task actually touches.
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +18 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +29 |
-| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +15 |
+| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +16 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
@@ -373,7 +373,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 508 |
+| `tests/unit/` | 509 |
 | `tests/integration/` | 102 |
 | `tests/contract/` | 41 |
 | `tests/e2e/` | 81 |
