@@ -426,17 +426,13 @@ export interface InfoPageView {
   readonly reviewed: boolean;
   /**
    * A machine draft nobody has checked yet (`source: machine`, `reviewed: false`): the page says
-   * so under its `<h1>` with `infoPages.status.untranslated` (spec 041 §2, spec 011 AC-5).
+   * so under its `<h1>`, after the not-open line, with `infoPages.status.untranslated` (spec 041
+   * §2, AC-23; spec 011 AC-5). Every `de`/`pl` draft is authored `source: machine`.
    */
   readonly untranslated: boolean;
   readonly updatedAt: string;
   /** `infoPages.status.notYetOpen` renders under the `<h1>` while this is true (AC-6). */
   readonly notYetOpen: boolean;
-  /**
-   * `infoPages.status.untranslated` renders under the `<h1>`, after the not-open line, while
-   * this is true: an unchecked `de`/`pl` draft (AC-23).
-   */
-  readonly untranslated: boolean;
   readonly sections: readonly InfoSectionView[];
   readonly faq: readonly { readonly q: string; readonly a: string }[];
   /** In-body links whose target exists in this locale, in authored order (§6). */
@@ -603,10 +599,6 @@ export function infoPageView(
     untranslated: content.source === "machine" && !content.reviewed,
     updatedAt: content.updatedAt,
     notYetOpen: !(options.datesOpen ?? anyDeliveryDatesOpen()),
-    untranslated: isUntranslatedDraft(
-      infoContentLocale(locale) ?? locale,
-      content.reviewed,
-    ),
     sections: content.sections.flatMap(
       (section) => sectionView(section, company, registered) ?? [],
     ),
