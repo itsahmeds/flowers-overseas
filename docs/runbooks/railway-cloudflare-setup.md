@@ -125,7 +125,8 @@ unexpected on a PR environment, which the job never rebuilds.
 
 Deployments → **Deploy**. The build runs the committed `Dockerfile`: `pnpm install
 --frozen-lockfile`, `pnpm build` (standalone), then a runtime stage that copies `.next/standalone`,
-`.next/static` and `public/` only and runs as the unprivileged `node` user.
+`.next/static` and `public/`, plus the one-file migration runner and `db/migrations/` (below), and
+runs as the unprivileged `node` user.
 
 **The build sees no credential, by design** (spec 001 §14 A17, spec 040 §14 A1; TASK-135). Railway
 passes a service variable to a build only when the `Dockerfile` declares an `ARG` for it, and the
@@ -144,6 +145,61 @@ What that changes for you when something is wrong:
 
 The deploy is healthy when Railway's healthcheck gets a 200 from `/api/health` inside the grace
 window.
+
+### Migrations apply on every deploy (spec 002 §14 A-orchestrator-2026-11-08c; TASK-505)
+
+Every deploy of `web`, on staging and on production, migrates the database before the new release
+takes traffic. Nothing in a dashboard sets this up: `config/railway.json` declares
+`deploy.preDeployCommand` as `["node scripts/db-migrate.mjs"]`, and Railway runs that command in
+the image it just built, in a separate container with the service's variables. The image carries
+the runner as one bundled file (the Dockerfile's `migrate` stage builds it from
+`scripts/db-migrate.ts`) and `db/migrations/`. The runner connects with `DATABASE_URL_UNPOOLED`
+(the owner role), applies every file not yet recorded in `public.schema_migrations`, one
+transaction per file, in version order, and stops at the first failure.
+
+- **Exit 0**: the deploy goes on to start `node server.js` and the healthcheck.
+- **Non-zero exit**: Railway fails the deploy and does not retry it. The previous release keeps
+  serving, against a database still at the last version that applied cleanly (the failing file's
+  transaction is rolled back; earlier files in the same run stay applied).
+
+**Reading the pre-deploy log.** Deployments → the deploy → **Deploy Logs**; the pre-deploy lines come
+before the server's first line. A healthy deploy with new files reads:
+
+```
+db:migrate: apply 2 migration(s)
+  0037_example.sql
+  0038_example.sql
+  ok 0037_example.sql
+  ok 0038_example.sql
+db:migrate: database at 0038 (38 applied)
+```
+
+and a deploy with nothing new reads `db:migrate: nothing to apply` then the same closing
+`database at <version>` line. No line ever prints a URL or a password.
+
+| the log says | meaning, and what to do |
+|---|---|
+| `DATABASE_URL_UNPOOLED is missing or is not a postgres:// connection string` | the variable is absent or malformed on this service; paste the Neon direct (unpooled) URL, then redeploy |
+| `connect ECONNREFUSED …`, `getaddrinfo ENOTFOUND …`, `password authentication failed …` | the URL points at the wrong host or holds a stale password; fix the variable, then redeploy |
+| `<file> failed, rolled back: <Postgres message>` | that migration does not apply to this database; fix it in a PR (a new file, never an edit of an applied one), merge, and the next deploy applies it |
+| `the migration set is inconsistent; run pnpm db:check` | the image's `db/migrations/` breaks the pairing or numbering rules; `pnpm db:check` on the commit names the file |
+
+To confirm afterwards from outside: `GET /api/internal/db-health` with the
+`x-internal-cron-secret` header reports `latest_migration`, which must equal the version on the
+log's closing line.
+
+**Rolling a migration back (by hand, never by the deploy).** Each `NNNN_name.sql` has a checked-in
+`NNNN_name.down.sql`. From a laptop with the repository at the deployed commit:
+
+1. Put the environment's `DATABASE_URL_UNPOOLED` in your shell for this one command only (never in a
+   committed file, never echoed): `export DATABASE_URL_UNPOOLED='…'`.
+2. Dry run first: `pnpm db:rollback --to <version to keep> --dry-run` lists the `.down.sql` files
+   it would run, newest first.
+3. `pnpm db:rollback --to <version to keep>`; it closes with `db:rollback: database at <version>`.
+4. Redeploy the release that matches that version (Deployments → that deploy → **Redeploy**). Do
+   not redeploy a release whose `db/migrations/` holds the rolled-back files, or its pre-deploy step
+   applies them again; revert the migration's PR on `main` first.
+5. `unset DATABASE_URL_UNPOOLED`.
 
 ## 5. Verify by hand (5 minutes)
 
