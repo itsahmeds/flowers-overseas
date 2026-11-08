@@ -29,6 +29,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { product } from "./catalog.ts";
+import { discountCode } from "./discounts.ts";
 import { country, currency } from "./geo.ts";
 import { locale, timestamps } from "./i18n.ts";
 import { order, purchase } from "./orders.ts";
@@ -68,6 +69,18 @@ export const checkoutDraft = pgTable(
       enum: checkoutDraftPendingNotices,
     }),
     purchaseId: uuid("purchase_id"),
+    /** Spec 047 §5.1 (`0037_discount_codes`): the applied code before placement. */
+    discountCodeId: uuid("discount_code_id"),
+    /** Spec 047 §2 "Abuse limits": the per-checkout guessing lock (no IP is read). */
+    discountFailedAttempts: smallint("discount_failed_attempts")
+      .notNull()
+      .default(0),
+    discountWindowStartedAt: timestamp("discount_window_started_at", {
+      withTimezone: true,
+    }),
+    discountLockedUntil: timestamp("discount_locked_until", {
+      withTimezone: true,
+    }),
   },
   (table) => [
     unique("checkout_draft_token_sha256_key").on(table.tokenSha256),
@@ -97,6 +110,11 @@ export const checkoutDraft = pgTable(
       columns: [table.purchaseId],
       foreignColumns: [purchase.id],
     }),
+    foreignKey({
+      name: "checkout_draft_discount_code_id_discount_code_id_fk",
+      columns: [table.discountCodeId],
+      foreignColumns: [discountCode.id],
+    }).onDelete("set null"),
     check(
       "checkout_draft_token_sha256_check",
       sql`${table.tokenSha256} ~ '^[0-9a-f]{64}$'`,
