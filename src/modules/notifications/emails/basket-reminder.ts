@@ -83,7 +83,7 @@ export function reminderDate(isoDate: string, locale: LocaleCode): string {
   return formatDate(
     new Date(`${isoDate}T12:00:00Z`),
     locale,
-    "weekdayDayMonth",
+    "deliveryDate",
     "UTC",
   );
 }
