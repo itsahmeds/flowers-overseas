@@ -38,7 +38,7 @@ import { QUOTE_TTL_MINUTES } from "../../src/modules/catalog/schemas.ts";
 import { quote, verifyQuote } from "../../src/modules/catalog/index.ts";
 import {
   CHECKOUT_ERROR_KEYS,
-  CardAndBuyerStepSchema,
+  BuyerStepSchema,
   PHONE_NON_LOCAL_KEY,
   RecipientStepSchema,
 } from "../../src/modules/checkout/index.ts";
@@ -76,8 +76,13 @@ const checkoutKeys = Object.keys(en).filter((key) =>
 );
 
 describe("src/config/checkout.ts states spec 010's numbers once", () => {
-  it("has the three steps, in order", () => {
-    expect([...CHECKOUT_STEPS]).toEqual(["recipient", "card", "review"]);
+  it("has the four steps, in order (§14 A-founder-2026-10-25a item 1)", () => {
+    expect([...CHECKOUT_STEPS]).toEqual([
+      "recipient",
+      "card",
+      "details",
+      "review",
+    ]);
   });
 
   it("limits the card to 200, 'sign as' to 40 and the note and names to 120 graphemes (§13 Q9)", () => {
@@ -174,10 +179,7 @@ describe("the demo's sample details (§13 Q12, AC-33's data)", () => {
         true,
       );
       expect(recipient.data?.phone.nonLocal).toBe(false);
-      const buyer = CardAndBuyerStepSchema({
-        locale: "en",
-        offeredAddonKeys: [],
-      }).safeParse(sample.buyer);
+      const buyer = BuyerStepSchema({ locale: "en" }).safeParse(sample.buyer);
       expect(buyer.success, JSON.stringify(buyer.error?.issues)).toBe(true);
     },
   );
@@ -230,8 +232,11 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
   it("ships the checkout and confirmation strings unreviewed, but the five approved address labels", () => {
     // 66, plus the basket page's 19 `checkout.basket.*` and `checkout.date.gone` (TASK-349), plus
     // TASK-204's 43 for the page, its states and the confirmation (`checkout.date.gone` shared),
-    // plus spec 010's lawyer-gated `checkout.legal.cancellation`, which B1 prints (TASK-333).
-    expect(checkoutKeys).toHaveLength(129);
+    // plus spec 010's lawyer-gated `checkout.legal.cancellation`, which B1 prints (TASK-333),
+    // plus the 18 later checkout tasks added before TASK-418 (147 on main when it started), plus
+    // TASK-418's three for the four steps (`checkout.step.details`, `checkout.progress.details`,
+    // `checkout.action.toYourCard`).
+    expect(checkoutKeys).toHaveLength(150);
     const metaKeys = Object.keys(enMeta).filter((key) => KEY.test(key));
     expect(metaKeys.toSorted()).toEqual(checkoutKeys.toSorted());
     const reviewed = metaKeys.filter((key) => enMeta[key]?.reviewed === true);
@@ -371,6 +376,26 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         enMeta[key]?.reviewedBy ?? "",
       ),
     );
+    // TASK-340's post-purchase block on the confirmation, recorded with `record-approval-340.py`.
+    const recorded340 = metaKeys.filter(
+      (key) =>
+        key.startsWith("confirmation.postPurchase.") &&
+        /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-340\.py /u.test(
+          enMeta[key]?.reviewedBy ?? "",
+        ),
+    );
+    // TASK-418's four-step keys, once recorded with `record-approval-418.py`.
+    const recorded418 = [
+      "checkout.action.toYourCard",
+      "checkout.progress.card",
+      "checkout.progress.details",
+      "checkout.step.card",
+      "checkout.step.details",
+    ].filter((key) =>
+      /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-418\.py /u.test(
+        enMeta[key]?.reviewedBy ?? "",
+      ),
+    );
     expect(reviewed.toSorted()).toEqual(
       [
         "checkout.address.city",
@@ -382,6 +407,8 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         ...recordedBatch4,
         ...recordedBatch5,
         ...recorded204,
+        ...recorded340,
+        ...recorded418,
       ].toSorted(),
     );
     for (const key of reviewed) {

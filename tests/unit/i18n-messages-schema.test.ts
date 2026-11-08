@@ -500,6 +500,8 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
     // TASK-520 (spec 045 §14 A-founder-2026-11-08a, Appendix A; the board slots): the 14 `search.*`
     // texts and the changed `nav.search.label`, sorted in above, until record-approval-520.py.
+    // TASK-418 (spec 010 §14 A-founder-2026-10-25a, AC-108): the four steps' keys; `checkout.progress.card`
+    // and `checkout.action.toYourCard` are design gaps G6 and G7 (PR 417), queued for the copy batch.
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

@@ -24,7 +24,8 @@ import {
 } from "../../src/config/checkout.ts";
 import {
   CHECKOUT_ERROR_KEYS,
-  CardAndBuyerStepSchema,
+  BuyerStepSchema,
+  CardStepSchema,
   RecipientStepSchema,
   addressFormModel,
 } from "../../src/modules/checkout/index.ts";
@@ -51,8 +52,49 @@ const BUYER = {
 } as const;
 
 const recipient = () => RecipientStepSchema("DE", "de");
-const buyer = () =>
-  CardAndBuyerStepSchema({ locale: "pl", offeredAddonKeys: [] });
+const buyer = () => BuyerStepSchema({ locale: "pl" });
+const card = () => CardStepSchema({ locale: "pl", offeredAddonKeys: [] });
+
+/** Step 2's fields since the split (§14 A-founder-2026-10-25a item 1); the rest are step 3's. */
+const CARD_FIELDS: readonly string[] = ["cardMessage", "signAs", "addonKeys"];
+
+interface StepResult {
+  readonly success: boolean;
+  readonly data?: Readonly<Record<string, unknown>>;
+  readonly error?: {
+    readonly issues: readonly {
+      path: readonly PropertyKey[];
+      message: string;
+    }[];
+  };
+}
+
+/**
+ * The step that owns a field: a post naming a card field is parsed by step 2's schema with only
+ * its card fields (the buyer's are not on that screen), any other by step 3's.
+ */
+function stepOf(input: Readonly<Record<string, unknown>>): StepResult {
+  const cardOnly = Object.fromEntries(
+    Object.entries(input).filter(([key]) => CARD_FIELDS.includes(key)),
+  );
+  const result =
+    Object.keys(cardOnly).length > 0
+      ? card().safeParse(cardOnly)
+      : buyer().safeParse(input);
+  return result.success
+    ? { success: true, data: { ...result.data } }
+    : { success: false, error: result.error };
+}
+const either = () => ({
+  safeParse: stepOf,
+  parse: (input: Readonly<Record<string, unknown>>) => {
+    const result = stepOf(input);
+    if (!result.success || result.data === undefined) {
+      throw new Error(JSON.stringify(result.error?.issues));
+    }
+    return result.data;
+  },
+});
 
 /** The first issue's path and message, for one-line assertions. */
 function firstIssue(result: {
@@ -164,7 +206,7 @@ describe("each 120-grapheme limit holds through the schema (hole 2)", () => {
     },
   );
 
-  it("step 2 buyerName: 120 accepted, 121 refused with {max: 120}", () => {
+  it("step 3 buyerName: 120 accepted, 121 refused with {max: 120}", () => {
     expect(
       buyer().safeParse({ ...BUYER, buyerName: letters(120) }).success,
     ).toBe(true);
@@ -197,18 +239,19 @@ describe("a raw code-unit ceiling stops what a grapheme count cannot (hole 3)", 
   });
 
   it("refuses a 200-grapheme card of combining-mark stacks", () => {
-    const card = Array.from({ length: 200 }, () => zalgo(4)).join("");
-    expect(card.length).toBe(1000);
-    expect(
-      firstIssue(buyer().safeParse({ ...BUYER, cardMessage: card })),
-    ).toEqual({ path: ["cardMessage"], message: CHECKOUT_ERROR_KEYS.tooLong });
+    const stack = Array.from({ length: 200 }, () => zalgo(4)).join("");
+    expect(stack.length).toBe(1000);
+    expect(firstIssue(card().safeParse({ cardMessage: stack }))).toEqual({
+      path: ["cardMessage"],
+      message: CHECKOUT_ERROR_KEYS.tooLong,
+    });
   });
 
   it("refuses a 60 000-unit joiner chain that counts as one grapheme", () => {
     const chain = zwjChain(20_001);
     expect(chain.length).toBe(60_002);
     for (const [schema, field, step] of [
-      [buyer(), "cardMessage", BUYER],
+      [card(), "cardMessage", {}],
       [buyer(), "buyerName", BUYER],
       [recipient(), "deliveryNote", DE_STEP],
       [recipient(), "street", DE_STEP],
@@ -224,12 +267,10 @@ describe("a raw code-unit ceiling stops what a grapheme count cannot (hole 3)", 
     // 200 graphemes of `e` plus three marks: 800 units, at the ceiling.
     const atCeiling = Array.from({ length: 200 }, () => zalgo(3)).join("");
     expect(atCeiling.length).toBe(800);
-    expect(
-      buyer().safeParse({ ...BUYER, cardMessage: atCeiling }).success,
-    ).toBe(true);
-    expect(
-      buyer().safeParse({ ...BUYER, cardMessage: `${atCeiling}b` }).success,
-    ).toBe(false);
+    expect(card().safeParse({ cardMessage: atCeiling }).success).toBe(true);
+    expect(card().safeParse({ cardMessage: `${atCeiling}b` }).success).toBe(
+      false,
+    );
   });
 
   it("refuses one code unit over the ceiling that stays within 200 graphemes (round 2 hole 1)", () => {
@@ -239,9 +280,10 @@ describe("a raw code-unit ceiling stops what a grapheme count cannot (hole 3)", 
       zalgo(4),
     ].join("");
     expect(overByOne.length).toBe(801);
-    expect(
-      firstIssue(buyer().safeParse({ ...BUYER, cardMessage: overByOne })),
-    ).toEqual({ path: ["cardMessage"], message: CHECKOUT_ERROR_KEYS.tooLong });
+    expect(firstIssue(card().safeParse({ cardMessage: overByOne }))).toEqual({
+      path: ["cardMessage"],
+      message: CHECKOUT_ERROR_KEYS.tooLong,
+    });
     // The same field at 120 graphemes for the note: 480 units pass, 481 do not.
     const note = Array.from({ length: 120 }, () => zalgo(3)).join("");
     expect(
@@ -347,7 +389,7 @@ describe("control characters are refused (hole 4)", () => {
         });
       }
       expect(
-        firstIssue(buyer().safeParse({ ...BUYER, buyerName: `Sa${c}m` })),
+        firstIssue(either().safeParse({ ...BUYER, buyerName: `Sa${c}m` })),
       ).toEqual({
         path: ["buyerName"],
         message: CHECKOUT_ERROR_KEYS.invalidCharacters,
@@ -363,7 +405,7 @@ describe("control characters are refused (hole 4)", () => {
       : (["cardMessage", "signAs"] as const);
     for (const field of fields) {
       expect(
-        firstIssue(buyer().safeParse({ ...BUYER, [field]: `Love${c}you` })),
+        firstIssue(either().safeParse({ ...BUYER, [field]: `Love${c}you` })),
         field,
       ).toEqual({
         path: [field],
@@ -374,7 +416,7 @@ describe("control characters are refused (hole 4)", () => {
 
   it("allows a line break in the card and the note, and nowhere else", () => {
     expect(
-      buyer().parse({ ...BUYER, cardMessage: "Happy birthday\nMum" })
+      either().parse({ ...BUYER, cardMessage: "Happy birthday\nMum" })
         .cardMessage,
     ).toBe("Happy birthday\nMum");
     expect(
@@ -382,7 +424,7 @@ describe("control characters are refused (hole 4)", () => {
         .deliveryNote,
     ).toBe("Ring twice\r\n3rd floor");
     expect(
-      firstIssue(buyer().safeParse({ ...BUYER, signAs: "Mum\nDad" }))?.message,
+      firstIssue(either().safeParse({ ...BUYER, signAs: "Mum\nDad" }))?.message,
     ).toBe(CHECKOUT_ERROR_KEYS.invalidCharacters);
     expect(
       firstIssue(recipient().safeParse({ ...DE_STEP, fullName: "Erika\nM" }))
@@ -392,8 +434,10 @@ describe("control characters are refused (hole 4)", () => {
 
   it("turns U+2028 and U+2029 into a line break in the card and the note (round 2 hole 3)", () => {
     expect(
-      buyer().parse({ ...BUYER, cardMessage: "Happy birthday\u2028Mum\u2029x" })
-        .cardMessage,
+      either().parse({
+        ...BUYER,
+        cardMessage: "Happy birthday\u2028Mum\u2029x",
+      }).cardMessage,
     ).toBe("Happy birthday\nMum\nx");
     expect(
       recipient().parse({
@@ -406,7 +450,7 @@ describe("control characters are refused (hole 4)", () => {
   it("refuses the bidi overrides in the card and the note too, and keeps the RTL marks (round 2 hole 4)", () => {
     expect(
       firstIssue(
-        buyer().safeParse({ ...BUYER, cardMessage: "Love \u202emum" }),
+        either().safeParse({ ...BUYER, cardMessage: "Love \u202emum" }),
       ),
     ).toEqual({
       path: ["cardMessage"],
@@ -421,7 +465,7 @@ describe("control characters are refused (hole 4)", () => {
       message: CHECKOUT_ERROR_KEYS.invalidCharacters,
     });
     const arabic = "\u0645\u0631\u064a\u0645 \u200fSam\u200e";
-    expect(buyer().parse({ ...BUYER, buyerName: arabic }).buyerName).toBe(
+    expect(either().parse({ ...BUYER, buyerName: arabic }).buyerName).toBe(
       arabic,
     );
   });
@@ -437,7 +481,7 @@ describe("control characters are refused (hole 4)", () => {
     (_label, c) => {
       for (const field of ["cardMessage", "signAs", "buyerName"] as const) {
         expect(
-          firstIssue(buyer().safeParse({ ...BUYER, [field]: `Lo${c}ve` })),
+          firstIssue(either().safeParse({ ...BUYER, [field]: `Lo${c}ve` })),
           field,
         ).toEqual({
           path: [field],
@@ -466,7 +510,7 @@ describe("control characters are refused (hole 4)", () => {
     "refuses an invisible %s among visible text (/break 275 hole 4)",
     (_label, c) => {
       expect(
-        firstIssue(buyer().safeParse({ ...BUYER, cardMessage: `Lo${c}ve` }))
+        firstIssue(either().safeParse({ ...BUYER, cardMessage: `Lo${c}ve` }))
           ?.message,
       ).toBe(CHECKOUT_ERROR_KEYS.invalidCharacters);
     },
@@ -478,7 +522,7 @@ describe("control characters are refused (hole 4)", () => {
       .join("");
     expect(
       firstIssue(
-        buyer().safeParse({
+        either().safeParse({
           ...BUYER,
           cardMessage: `Hi \u{1F3F4}${hidden}\u{E007F}`,
         }),
@@ -489,7 +533,7 @@ describe("control characters are refused (hole 4)", () => {
     const wales =
       "\u{1F3F4}\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}";
     expect(
-      buyer().parse({ ...BUYER, cardMessage: `Hi ${scotland}${wales}` })
+      either().parse({ ...BUYER, cardMessage: `Hi ${scotland}${wales}` })
         .cardMessage,
     ).toBe(`Hi ${scotland}${wales}`);
   });
@@ -498,12 +542,12 @@ describe("control characters are refused (hole 4)", () => {
     const england =
       "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}";
     expect(
-      buyer().parse({ ...BUYER, cardMessage: `Go team ${england}` })
+      either().parse({ ...BUYER, cardMessage: `Go team ${england}` })
         .cardMessage,
     ).toBe(`Go team ${england}`);
     expect(
       firstIssue(
-        buyer().safeParse({
+        either().safeParse({
           ...BUYER,
           cardMessage: `Go \u{E0067}\u{E0062} team ${england}`,
         }),
@@ -514,7 +558,7 @@ describe("control characters are refused (hole 4)", () => {
   it("treats a card of only invisible characters as no card", () => {
     for (const card of ["​", "​‍⁠", "﻿  ", "‎"]) {
       expect(
-        buyer().parse({ ...BUYER, cardMessage: card }).cardMessage,
+        either().parse({ ...BUYER, cardMessage: card }).cardMessage,
         JSON.stringify(card),
       ).toBe("");
     }
@@ -524,14 +568,14 @@ describe("control characters are refused (hole 4)", () => {
     expect(
       firstIssue(recipient().safeParse({ ...DE_STEP, fullName: "​​" })),
     ).toEqual({ path: ["fullName"], message: CHECKOUT_ERROR_KEYS.required });
-    expect(firstIssue(buyer().safeParse({ ...BUYER, buyerName: "⁠" }))).toEqual(
-      { path: ["buyerName"], message: CHECKOUT_ERROR_KEYS.required },
-    );
+    expect(
+      firstIssue(either().safeParse({ ...BUYER, buyerName: "⁠" })),
+    ).toEqual({ path: ["buyerName"], message: CHECKOUT_ERROR_KEYS.required });
   });
 
   it("keeps the joiners inside a visible emoji", () => {
     const family = "\u{1F468}‍\u{1F469}‍\u{1F467}";
-    expect(buyer().parse({ ...BUYER, cardMessage: family }).cardMessage).toBe(
+    expect(either().parse({ ...BUYER, cardMessage: family }).cardMessage).toBe(
       family,
     );
   });

@@ -1,8 +1,9 @@
 /**
- * `/{locale}/checkout`, drawn (spec 010 §2 "The checkout: three steps on one URL", §5.3, §7, §8;
- * AC-7, AC-8 render half, AC-10 render half, AC-12, AC-14 page half, AC-19 render half, AC-32,
- * AC-33; §14 A-founder-2026-10-22 item 5, AC-58, AC-59 and AC-60 render halves, AC-73; TASK-204,
- * TASK-206; artboards `docs/design/wireframes/checkout-{desktop,mobile}.dc.html`).
+ * `/{locale}/checkout`, drawn (spec 010 §2 "The checkout", §5.3, §7, §8; AC-7, AC-8 render half,
+ * AC-10 render half, AC-12, AC-14 page half, AC-19 render half, AC-32, AC-33; §14
+ * A-founder-2026-10-22 item 5, AC-58, AC-59 and AC-60 render halves, AC-73; §14
+ * A-founder-2026-10-25a item 1, the four steps, AC-105; TASK-204, TASK-206, TASK-418; artboards
+ * `docs/design/wireframes/checkout-{desktop,mobile}.dc.html`, the four-step pass at their foot).
  *
  * Server components only. The page hands in the screen `checkoutScreen()` decided and the page's
  * one server action; every form is a `StepForm` posting to it, so every step works with
@@ -21,6 +22,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import {
   CHECKOUT_LIMITS,
+  CHECKOUT_STEPS,
   PLACE_KIND_LABEL_KEYS,
   PLACE_KINDS,
 } from "@/config/checkout";
@@ -130,16 +132,24 @@ function day(date: string): Date {
   return new Date(`${date}T12:00:00Z`);
 }
 
-const STEP_INDEX = { recipient: 0, card: 1, review: 2 } as const;
+const STEP_INDEX = { recipient: 0, card: 1, details: 2, review: 3 } as const;
 const STEP_NAMES = {
   recipient: "progress.recipient",
   card: "progress.card",
+  details: "progress.details",
   review: "progress.review",
 } as const;
 const STEP_TITLES = {
   recipient: "step.recipient",
   card: "step.card",
+  details: "step.details",
   review: "step.review",
+} as const;
+/** Each step's continue label: step 1 to "Your card", step 2 to "Your details", step 3 to check. */
+const CONTINUE_LABELS = {
+  recipient: "action.toYourCard",
+  card: "action.toCard",
+  details: "action.toReview",
 } as const;
 
 /** The form card's heading: Fraunces with its one italic phrase (`.form-letter h1`). */
@@ -229,7 +239,7 @@ function countryName(all: Translate, iso: string): string {
   return all(`destinations.${iso.toLowerCase()}.name`);
 }
 
-/** The buyer's country of residence the locale suggests (§2 step 2): its region, if it has one. */
+/** The buyer's country of residence the locale suggests (§2 step 3): its region, if it has one. */
 function residenceDefault(locale: LocaleCode): string {
   const region = /-([A-Z]{2})$/u.exec(localeConfig(locale).bcp47)?.[1];
   return region ?? "";
@@ -519,7 +529,8 @@ async function RecipientFields({
 /* Step 2                                                                       */
 /* -------------------------------------------------------------------------- */
 
-async function CardAndBuyerFields({
+/** Step 2, "Your card", for one line: the card, the sign-off and the add-ons; no buyer field. */
+async function CardFields({
   screen,
   line,
   echo,
@@ -534,17 +545,6 @@ async function CardAndBuyerFields({
   const card = valueOf(echo, "cardMessage", line.card?.cardMessage);
   const signAs = valueOf(echo, "signAs", line.card?.signAs);
   const count = countGraphemes(card, locale);
-  const buyer = screen.buyer;
-  const residence = valueOf(
-    echo,
-    "residenceCountry",
-    buyer?.residenceCountry ?? residenceDefault(locale),
-  );
-  const countries = residenceCountryCodes().map((code) => ({
-    value: code,
-    label: formatRegionName(code, locale),
-  }));
-  const sorted = sortBy(countries, locale, (entry) => entry.label);
   const error = (name: string): { error?: string } => {
     const message = errorOf(echo, all, name);
     return message === undefined ? {} : { error: message };
@@ -644,79 +644,109 @@ async function CardAndBuyerFields({
           </ul>
         </fieldset>
       )}
-      {screen.isLastLine ? (
-        <fieldset
-          className="m-0 grid gap-[14px] border-0 p-0"
-          data-fo-checkout-buyer=""
-        >
-          <legend className="text-ink mb-[4px] p-0 text-sm font-bold">
-            {t("buyer.legend")}
-          </legend>
-          <TextField
-            autoComplete="email"
-            clientMessages={{
-              required: t("error.required"),
-              format: t("error.emailInvalid"),
-            }}
-            defaultValue={valueOf(echo, "email", buyer?.email)}
-            id={fieldId("email")}
-            inputMode="email"
-            label={t("buyer.email")}
-            name="email"
-            required
-            type="email"
-            {...error("email")}
-          />
-          <div className="grid items-start gap-[12px] md:grid-cols-2 md:gap-x-[16px] md:gap-y-[14px]">
-            <TextField
-              autoComplete="name"
-              bidiIsolate
-              clientMessages={{ required: t("error.required") }}
-              defaultValue={valueOf(echo, "buyerName", buyer?.buyerName)}
-              id={fieldId("buyerName")}
-              label={t("buyer.fullName")}
-              name="buyerName"
-              required
-              {...error("buyerName")}
-            />
-            <TextField
-              autoComplete="tel"
-              defaultValue={valueOf(
-                echo,
-                "buyerPhone",
-                buyer?.buyerPhone ?? "",
-              )}
-              id={fieldId("buyerPhone")}
-              inputMode="tel"
-              label={t("buyer.phone")}
-              name="buyerPhone"
-              optionalLabel={optional}
-              type="tel"
-              {...error("buyerPhone")}
-            />
-          </div>
-          <SelectField
-            autoComplete="country"
-            id={fieldId("residenceCountry")}
-            label={t("buyer.country")}
-            name="residenceCountry"
-            options={
-              residence === ""
-                ? [{ value: "", label: t("buyer.country") }, ...sorted]
-                : sorted
-            }
-            required
-            defaultValue={residence}
-            {...error("residenceCountry")}
-          />
-        </fieldset>
-      ) : null}
     </>
   );
 }
 
 /* -------------------------------------------------------------------------- */
 /* Step 3                                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Step 3, "Your details", once per order: email, name and phone, country of residence (AC-12,
+ * AC-105). The board's `.co-you.co-flat`: the legend is for assistive technology only, since the
+ * step's heading already says it; email full width, name and phone side by side from `md`.
+ */
+async function BuyerFields({
+  screen,
+  echo,
+}: {
+  readonly screen: StepScreen;
+  readonly echo: CheckoutEcho | undefined;
+}): Promise<ReactElement> {
+  const { t, all } = await translators(screen.locale);
+  const locale = screen.locale;
+  const optional = t("field.optional");
+  const buyer = screen.buyer;
+  const residence = valueOf(
+    echo,
+    "residenceCountry",
+    buyer?.residenceCountry ?? residenceDefault(locale),
+  );
+  const countries = residenceCountryCodes().map((code) => ({
+    value: code,
+    label: formatRegionName(code, locale),
+  }));
+  const sorted = sortBy(countries, locale, (entry) => entry.label);
+  const error = (name: string): { error?: string } => {
+    const message = errorOf(echo, all, name);
+    return message === undefined ? {} : { error: message };
+  };
+  return (
+    <fieldset
+      className="m-0 grid min-w-0 gap-[14px] border-0 p-0"
+      data-fo-checkout-buyer=""
+    >
+      <legend className="sr-only">{t("buyer.legend")}</legend>
+      <TextField
+        autoComplete="email"
+        clientMessages={{
+          required: t("error.required"),
+          format: t("error.emailInvalid"),
+        }}
+        defaultValue={valueOf(echo, "email", buyer?.email)}
+        id={fieldId("email")}
+        inputMode="email"
+        label={t("buyer.email")}
+        name="email"
+        required
+        type="email"
+        {...error("email")}
+      />
+      <div className="grid items-start gap-[12px] md:grid-cols-2 md:gap-x-[16px] md:gap-y-[14px]">
+        <TextField
+          autoComplete="name"
+          bidiIsolate
+          clientMessages={{ required: t("error.required") }}
+          defaultValue={valueOf(echo, "buyerName", buyer?.buyerName)}
+          id={fieldId("buyerName")}
+          label={t("buyer.fullName")}
+          name="buyerName"
+          required
+          {...error("buyerName")}
+        />
+        <TextField
+          autoComplete="tel"
+          defaultValue={valueOf(echo, "buyerPhone", buyer?.buyerPhone ?? "")}
+          id={fieldId("buyerPhone")}
+          inputMode="tel"
+          label={t("buyer.phone")}
+          name="buyerPhone"
+          optionalLabel={optional}
+          type="tel"
+          {...error("buyerPhone")}
+        />
+      </div>
+      <SelectField
+        autoComplete="country"
+        id={fieldId("residenceCountry")}
+        label={t("buyer.country")}
+        name="residenceCountry"
+        options={
+          residence === ""
+            ? [{ value: "", label: t("buyer.country") }, ...sorted]
+            : sorted
+        }
+        required
+        defaultValue={residence}
+        {...error("residenceCountry")}
+      />
+    </fieldset>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Step 4                                                                       */
 /* -------------------------------------------------------------------------- */
 
 async function ReviewList({
@@ -938,10 +968,10 @@ export async function CheckoutStepBody({
         }),
       };
     });
-  const intent: CheckoutFormIntent =
-    screen.step === "recipient" ? "recipient" : "card";
-  const continueLabel =
-    screen.step === "recipient" ? t("action.toCard") : t("action.toReview");
+  if (screen.step === "review") return <></>;
+  const intent: CheckoutFormIntent = screen.step;
+  const continueLabel = t(CONTINUE_LABELS[screen.step]);
+  const perLine = screen.step !== "details";
   const privacy = rich("privacy.demoNotice", {
     period: process.env["APP_ENV"] === "production" ? "hours24" : "days7",
     controllerLine: all("company.controller", {
@@ -957,7 +987,7 @@ export async function CheckoutStepBody({
         {rich(STEP_TITLES[screen.step], { em: emphasis })}
       </h1>
       {routing(intent, screen)}
-      {hidden("line", String(line.position))}
+      {perLine ? hidden("line", String(line.position)) : null}
       {/* The form's default button, first in tree order, so Enter in a field continues rather
           than pressing "Use sample details" (HTML implicit submission). */}
       <button
@@ -976,7 +1006,7 @@ export async function CheckoutStepBody({
           title={t("error.summaryTitle")}
         />
       )}
-      {many ? (
+      {many && perLine ? (
         <p className="text-ink-muted m-0 text-sm" data-fo-delivery-of="">
           {t("step.deliveryOf", {
             n: formatNumber(line.position, locale),
@@ -994,11 +1024,16 @@ export async function CheckoutStepBody({
       ) : null}
       {screen.step === "recipient" ? (
         <RecipientFields echo={echo} line={line} screen={screen} />
+      ) : screen.step === "card" ? (
+        <CardFields echo={echo} line={line} screen={screen} />
       ) : (
-        <CardAndBuyerFields echo={echo} line={line} screen={screen} />
+        <BuyerFields echo={echo} screen={screen} />
       )}
-      {/* On a phone the sticky bar carries Continue (the mobile boards draw none in the form). */}
-      <SubmitButton className="justify-self-start after:content-['_→'] max-lg:hidden">
+      {/* On a phone the sticky bar carries Continue on steps 1 and 2; step 3's mobile board draws
+          it in the form as well. */}
+      <SubmitButton
+        className={`justify-self-start after:content-['_→'] ${perLine ? "max-lg:hidden" : "max-lg:w-full max-lg:justify-self-stretch"}`}
+      >
         {continueLabel}
       </SubmitButton>
     </div>
@@ -1020,6 +1055,7 @@ export function sampleValues(screen: StepScreen): Record<string, string> {
         )[line.countryIso];
   if (sample === undefined) return {};
   const firstDate = screen.calendar.find((entry) => entry.selectable)?.date;
+  if (screen.step === "card" || screen.step === "review") return {};
   return screen.step === "recipient"
     ? {
         ...Object.fromEntries(
@@ -1198,12 +1234,10 @@ export async function CheckoutStepPage({
   const line =
     screen.lines.find((candidate) => candidate.position === screen.line) ??
     screen.lines[0];
-  const steps = (["recipient", "card", "review"] as const).map((id, index) => ({
+  const steps = CHECKOUT_STEPS.map((id, index) => ({
     id,
     name: t(STEP_NAMES[id]),
-    ...(index < current && index <= reachable
-      ? { href: index === 0 ? "?step=recipient" : `?step=${id}` }
-      : {}),
+    ...(index < current && index <= reachable ? { href: `?step=${id}` } : {}),
   }));
   const summary = summaryFor(screen, all, t);
   const total = screen.total;
@@ -1271,7 +1305,7 @@ export async function CheckoutStepPage({
             <StepProgress
               compactLabel={t("progress.compact", {
                 current: formatNumber(current + 1, locale),
-                total: formatNumber(3, locale),
+                total: formatNumber(CHECKOUT_STEPS.length, locale),
                 name: t(STEP_NAMES[screen.step]),
               })}
               current={current}
@@ -1449,8 +1483,10 @@ export async function CheckoutStepPage({
               title={t("summary.title")}
               total={total}
               totalLabel={t("summary.total")}
-              // Step 2 echoes the card; step 3's review list already shows it (the boards).
-              {...(screen.step === "card" &&
+              // Steps 2 and 3 echo the card (one delivery's, on step 3); step 4's review list
+              // already shows it (the boards).
+              {...((screen.step === "card" ||
+                (screen.step === "details" && screen.lines.length === 1)) &&
               line.card !== null &&
               line.card.cardMessage !== ""
                 ? {
@@ -1511,11 +1547,9 @@ export async function CheckoutStepPage({
                     }
                     size="bar"
                   >
-                    {screen.step === "recipient"
-                      ? t("action.toCard")
-                      : screen.step === "card"
-                        ? t("action.toReview")
-                        : t("demo.place")}
+                    {screen.step === "review"
+                      ? t("demo.place")
+                      : t(CONTINUE_LABELS[screen.step])}
                   </SubmitButton>
                 ),
               })}

@@ -5,7 +5,7 @@
  * none reaches a URL.
  */
 export const CHECKOUT_FORM_FIELDS = {
-  /** What the form does: `recipient`, `card`, `selection`, `useNextDate` or `place`. */
+  /** What the form does: `recipient`, `card`, `details`, `selection`, `useNextDate` or `place`. */
   intent: "_do",
   locale: "_locale",
   step: "_step",
@@ -15,6 +15,7 @@ export const CHECKOUT_FORM_FIELDS = {
 export const CHECKOUT_FORM_INTENTS = [
   "recipient",
   "card",
+  "details",
   "selection",
   "useNextDate",
   "place",

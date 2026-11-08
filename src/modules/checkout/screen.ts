@@ -1,7 +1,7 @@
 /**
- * What `/{locale}/checkout` shows for a request (spec 010 §2 "The checkout: three steps on one
- * URL", §5.3, AC-7, AC-8, AC-13, AC-19 render half, AC-30; §14 A-founder-2026-10-22 items 5 and
- * 6, AC-58, AC-59 and AC-60 render halves; TASK-204).
+ * What `/{locale}/checkout` shows for a request (spec 010 §2 "The checkout", §5.3, AC-7, AC-8,
+ * AC-13, AC-19 render half, AC-30; §14 A-founder-2026-10-22 items 5 and 6, AC-58, AC-59 and AC-60
+ * render halves; §14 A-founder-2026-10-25a item 1, the four steps, AC-105; TASK-204, TASK-418).
  *
  * `checkoutScreen()` reads the basket by its cookie, re-derives every line at `now`
  * (`assessBasket`) and decides the one screen to draw: the "not started or expired" state, the
@@ -101,7 +101,7 @@ export interface OfferedAddon {
 export interface StepScreen {
   readonly kind: "step";
   readonly step: CheckoutStep;
-  /** The line this screen is for (its position). Step 3 is for the whole basket (`1`). */
+  /** The line this screen is for (its position). Steps 3 and 4 are for the whole basket (`1`). */
   readonly line: number;
   readonly mode: DraftMode;
   readonly locale: LocaleCode;
@@ -116,9 +116,8 @@ export interface StepScreen {
   /** Step 1: the line's address form and its calendar. */
   readonly address: AddressFormModel | null;
   readonly calendar: readonly CalendarDay[];
-  /** Step 2: the add-ons on offer; the buyer's fields render on the last line's screen only. */
+  /** Step 2: the add-ons on offer for the line. The buyer's fields are step 3's alone. */
   readonly addons: readonly OfferedAddon[];
-  readonly isLastLine: boolean;
   /** Where "Back to {product}" goes for the current line, when a product page exists. */
   readonly productPath: string | null;
 }
@@ -156,18 +155,33 @@ function order(screen: { step: CheckoutStep; line: number }): number {
   return CHECKOUT_STEPS.indexOf(screen.step) * 100 + screen.line;
 }
 
-/** The screen the URL asks for, if it is reachable; else the first incomplete one (AC-7). */
+/**
+ * The furthest screen a buyer may stand on: the first incomplete one, except that step 4 is not
+ * reachable while a line is unavailable or unpriced, so step 3 "Your details" is then the
+ * furthest (§14 A-founder-2026-10-25a item 1).
+ */
+function furthestScreen(
+  draft: Pick<Draft, "lines" | "buyerSaved">,
+  reviewReachable: boolean,
+): { readonly step: CheckoutStep; readonly line: number } {
+  const first = firstIncompleteScreen(draft);
+  return first.step === "review" && !reviewReachable
+    ? { step: "details", line: 1 }
+    : first;
+}
+
+/**
+ * The screen the URL asks for, if it is reachable; else the first incomplete one (AC-7, AC-105):
+ * `?step=review` with a line's step 1 incomplete draws that step 1, and `?step=details` with a
+ * line's step 2 incomplete draws that step 2.
+ */
 export function selectScreen(
   draft: Pick<Draft, "lines" | "buyerSaved">,
   reviewReachable: boolean,
   step: string | undefined,
   line: string | undefined,
 ): { readonly step: CheckoutStep; readonly line: number } {
-  const first = firstIncompleteScreen(draft);
-  const furthest =
-    first.step === "review" && !reviewReachable
-      ? { step: "card" as const, line: draft.lines.at(-1)?.position ?? 1 }
-      : first;
+  const furthest = furthestScreen(draft, reviewReachable);
   const wanted = (CHECKOUT_STEPS as readonly string[]).includes(step ?? "")
     ? (step as CheckoutStep)
     : step === undefined
@@ -186,7 +200,9 @@ export function selectScreen(
     // `/checkout` with no step: the first incomplete screen, so a returning buyer resumes.
     return furthest;
   }
-  const target = { step: wanted, line: wanted === "review" ? 1 : wantedLine };
+  // Steps 3 and 4 are once per order: they have no line of their own.
+  const perOrder = wanted === "details" || wanted === "review";
+  const target = { step: wanted, line: perOrder ? 1 : wantedLine };
   return order(target) <= order(furthest) ? target : furthest;
 }
 
@@ -441,12 +457,7 @@ export async function checkoutScreen(
     total: assessed.total,
     notice: assessed.notice,
     buyer: draft.buyer,
-    reachable: (() => {
-      const first = firstIncompleteScreen(draft);
-      return first.step === "review" && !assessed.reviewReachable
-        ? { step: "card" as const, line: draft.lines.at(-1)?.position ?? 1 }
-        : first;
-    })(),
+    reachable: furthestScreen(draft, assessed.reviewReachable),
     reviewReachable: assessed.reviewReachable,
     address: address?.status === "open" ? address : null,
     calendar:
@@ -457,7 +468,6 @@ export async function checkoutScreen(
       selected.step === "card"
         ? await offeredAddons(current, currency, locale, now)
         : [],
-    isLastLine: current.position === draft.lines.length,
     productPath: await productPathOf(locale, current.sku, current.countryIso),
   };
 }

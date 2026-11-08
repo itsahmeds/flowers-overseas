@@ -71,7 +71,7 @@ import {
   verifyLineQuote,
 } from "./pricing";
 import {
-  CardAndBuyerStepSchema,
+  BuyerStepSchema,
   CardStepSchema,
   LinePositionSchema,
   RecipientStepSchema,
@@ -165,7 +165,10 @@ export function basketPath(locale: LocaleCode): string {
   return `/${locale}/basket`;
 }
 
-/** The first screen not yet saved: step 1 of every line, then step 2 of every line, then 3. */
+/**
+ * The first screen not yet saved (§14 A-founder-2026-10-25a item 1): step 1 of every line, then
+ * step 2 of every line, then step 3 "Your details" once (line 1), then step 4.
+ */
 export function firstIncompleteScreen(draft: {
   readonly lines: readonly Pick<BasketLine, "position" | "stepsCompleted">[];
   readonly buyerSaved: boolean;
@@ -176,10 +179,7 @@ export function firstIncompleteScreen(draft: {
   }
   const card = draft.lines.find((line) => line.stepsCompleted < 2);
   if (card !== undefined) return { step: "card", line: card.position };
-  const last = draft.lines.at(-1);
-  if (!draft.buyerSaved && last !== undefined) {
-    return { step: "card", line: last.position };
-  }
+  if (!draft.buyerSaved) return { step: "details", line: 1 };
   return { step: "review", line: 1 };
 }
 
@@ -511,7 +511,7 @@ export async function runRecipientStep(
 }
 
 /* -------------------------------------------------------------------------- */
-/* Step 2: saveCardAndBuyerStep                                                */
+/* Step 2: saveCardStep                                                        */
 /* -------------------------------------------------------------------------- */
 
 /** The add-ons on offer for the line's destination (AC-11): only those with an active price. */
@@ -527,10 +527,11 @@ function sameKeys(left: readonly string[], right: readonly string[]): boolean {
 }
 
 /**
- * Step 2 of one line, "Your card and your details" (§2, AC-10, AC-11, AC-12; item 5): the card
- * and the line's add-ons, and on the **last** line's screen the buyer's fields too.
+ * Step 2 of one line, "Your card" (§2, AC-10, AC-11; §14 A-founder-2026-10-25a item 1): the card
+ * and the line's add-ons, on every line alike. The buyer's fields are step 3's; a saved buyer is
+ * never touched here, so a card changed after step 3 keeps them (AC-105).
  */
-export async function runCardAndBuyerStep(
+export async function runCardStep(
   context: StepContext,
   form: FormData,
 ): Promise<StepOutcome> {
@@ -547,52 +548,20 @@ export async function runCardAndBuyerStep(
       draft.lines.length,
     );
   }
-  const isLast = line.position === draft.lines.length;
-  const schemaContext = {
+  const parsed = CardStepSchema({
     locale,
     offeredAddonKeys: await offeredAddonKeys(line),
-  };
-  const posted = withoutKeys(values, ["line"]);
-  let step: {
-    readonly cardMessage: string;
-    readonly signAs: string;
-    readonly addonKeys: readonly string[];
-  };
-  let draftPatch: DraftPatch = {};
-  if (isLast) {
-    const parsed = CardAndBuyerStepSchema(schemaContext).safeParse(posted);
-    if (!parsed.success) {
-      return render({
-        status: "invalid",
-        step: "card",
-        line: line.position,
-        errors: issuesOf(parsed.error),
-        values,
-      });
-    }
-    step = parsed.data;
-    draftPatch = {
-      buyer: {
-        email: parsed.data.email,
-        buyerName: parsed.data.buyerName,
-        buyerPhone: parsed.data.buyerPhone,
-        residenceCountry: parsed.data.residenceCountry,
-      },
-      buyerSaved: true,
-    };
-  } else {
-    const parsed = CardStepSchema(schemaContext).safeParse(posted);
-    if (!parsed.success) {
-      return render({
-        status: "invalid",
-        step: "card",
-        line: line.position,
-        errors: issuesOf(parsed.error),
-        values,
-      });
-    }
-    step = parsed.data;
+  }).safeParse(withoutKeys(values, ["line"]));
+  if (!parsed.success) {
+    return render({
+      status: "invalid",
+      step: "card",
+      line: line.position,
+      errors: issuesOf(parsed.error),
+      values,
+    });
   }
+  const step = parsed.data;
   const addonKeys = [...step.addonKeys];
   const next: BasketLine = { ...line, addonKeys };
   const priced = await pricedPatch(
@@ -620,8 +589,72 @@ export async function runCardAndBuyerStep(
     },
     priced,
     2,
-    draftPatch,
   );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Step 3: saveBuyerStep                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Step 3, "Your details", once per order (§2, AC-12; §14 A-founder-2026-10-25a item 1): the
+ * buyer's email, name, optional phone and country of residence, saved on the basket.
+ *
+ * Not reachable before every line's steps 1 and 2: a post that arrives earlier (a crafted one, or
+ * a stale tab) writes nothing and goes to the first incomplete screen. Every line's destination
+ * is re-checked for its mode first, as a line runner checks its own. A refused post re-renders
+ * step 3 with its values and messages, writing nothing.
+ */
+export async function runBuyerStep(
+  context: StepContext,
+  form: FormData,
+): Promise<StepOutcome> {
+  const start = await prelude(context);
+  if ("done" in start) return start.done;
+  const { draft, locale, now } = start;
+  const count = draft.lines.length;
+  if (count === 0) return redirect(basketPath(locale), 0);
+  const first = firstIncompleteScreen({ lines: draft.lines, buyerSaved: true });
+  if (first.step !== "review") {
+    return redirect(stepPath(locale, first.step, first.line), count);
+  }
+  for (const line of draft.lines) {
+    const found = await linePrelude(context, draft, locale, line.position);
+    if ("done" in found) return found.done;
+  }
+  const values = formValues(form);
+  const parsed = BuyerStepSchema({ locale }).safeParse(
+    withoutKeys(values, ["line"]),
+  );
+  if (!parsed.success) {
+    return render({
+      status: "invalid",
+      step: "details",
+      line: 1,
+      errors: issuesOf(parsed.error),
+      values,
+    });
+  }
+  const saved = await saveDraft(
+    draft.id,
+    { buyer: parsed.data, buyerSaved: true, locale },
+    now,
+    context.connection,
+  );
+  if (!saved) return redirect(stepPath(locale, "details"), count);
+  logger.info(
+    { draft_id: draft.id, step: "details", mode: draft.mode },
+    "checkout.step_saved",
+  );
+  // A line whose price notice is open is where the buyer confirms first (§2 "Money").
+  const noticeLine = draft.lines.find(
+    (line) =>
+      linePriceChange({ quote: line.quote, lastSeen: line.lastSeen }) !== null,
+  );
+  if (noticeLine !== undefined) {
+    return redirect(stepPath(locale, "recipient", noticeLine.position), count);
+  }
+  return redirect(stepPath(locale, "review"), count);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -704,6 +704,11 @@
     "reviewed": false,
     "sourceHash": "57bd393cda25c690215eef29e66a6e45b1767903f55cf54ec0ff653293cd4c9e"
   },
+  "checkout.action.toYourCard": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a909101447a6b4419331e0f5908c26fd75785e64c18449990a07ec03ac77997f"
+  },
   "checkout.addons.add": {
     "source": "machine",
     "reviewed": false,
@@ -1137,7 +1142,12 @@
   "checkout.progress.card": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "a77512bc628f553885d7db4e3564ae76ebdd024bcd55b20c269bf652fca1bc40"
+    "sourceHash": "8c37d9247abf8188081769bca5292a2edec9485b0c29d28a6f40660ca2ef7afd"
+  },
+  "checkout.progress.details": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c0bcd4c0f8e707844c003e6e8720cc209aff9410eb44daa252875e31c5468199"
   },
   "checkout.progress.compact": {
     "source": "machine",
@@ -1227,7 +1237,12 @@
   "checkout.step.card": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "d092064f060f6202af25aa313c1e301c8aad4ca06217bcbcba8ccbcef936e6f1"
+    "sourceHash": "e9e21dfd95aa236db47aa084fc9f492e8f87cfe45c1f1ee330ae2d5d6d0cb4f1"
+  },
+  "checkout.step.details": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4ab13eeb6f6364ef69772f9cbe44fe6d9b066e567899fda3784c071c9a6d2e54"
   },
   "checkout.step.deliveryOf": {
     "source": "machine",

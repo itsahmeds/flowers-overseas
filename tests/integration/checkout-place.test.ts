@@ -28,7 +28,8 @@ import {
   loadDraft,
   nextDeliveryDate,
   placeBasket,
-  runCardAndBuyerStep,
+  runBuyerStep,
+  runCardStep,
   runPlaceOrder,
   runRecipientStep,
   saveLine,
@@ -211,25 +212,28 @@ async function fill(
     location(outcome);
   }
   for (let line = 1; line <= lines; line += 1) {
-    const last = line === lines;
-    const outcome = await runCardAndBuyerStep(
+    const outcome = await runCardStep(
       ctx(connection, token),
       form({
         line: String(line),
         cardMessage: `Wszystkiego najlepszego ${String(line)}`,
         signAs: "Sam",
-        ...(last
-          ? {
-              email: SAMPLE.buyer.email,
-              buyerName: SAMPLE.buyer.buyerName,
-              buyerPhone: "",
-              residenceCountry: SAMPLE.buyer.residenceCountry,
-            }
-          : {}),
       }),
     );
     location(outcome);
   }
+  // Step 3, "Your details", once per order (spec 010 §14 A-founder-2026-10-25a item 1).
+  location(
+    await runBuyerStep(
+      ctx(connection, token),
+      form({
+        email: SAMPLE.buyer.email,
+        buyerName: SAMPLE.buyer.buyerName,
+        buyerPhone: "",
+        residenceCountry: SAMPLE.buyer.residenceCountry,
+      }),
+    ),
+  );
 }
 
 async function draftOf(

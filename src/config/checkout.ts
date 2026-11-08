@@ -25,8 +25,17 @@
 
 import { CARD_MESSAGE_MAX } from "./card-message.ts";
 
-/** The three steps of `/{locale}/checkout`, in the order a buyer meets them (§2). */
-export const CHECKOUT_STEPS = ["recipient", "card", "review"] as const;
+/**
+ * The four steps of `/{locale}/checkout`, in the order a buyer meets them (§2; §14
+ * A-founder-2026-10-25a item 1): "Who are the flowers for?" and "Your card" once per line,
+ * "Your details" once per order, then "Check and pay".
+ */
+export const CHECKOUT_STEPS = [
+  "recipient",
+  "card",
+  "details",
+  "review",
+] as const;
 export type CheckoutStep = (typeof CHECKOUT_STEPS)[number];
 
 /**

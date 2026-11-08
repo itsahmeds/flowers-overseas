@@ -1061,6 +1061,13 @@
     "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "57bd393cda25c690215eef29e66a6e45b1767903f55cf54ec0ff653293cd4c9e"
   },
+  "checkout.action.toYourCard": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-418.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 010 AC-108 and design PR 417 gaps G6 and G7 (TASK-418); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:31:04Z",
+    "sourceHash": "a909101447a6b4419331e0f5908c26fd75785e64c18449990a07ec03ac77997f"
+  },
   "checkout.address.city": {
     "source": "human",
     "reviewed": true,
@@ -1391,9 +1398,16 @@
   "checkout.progress.card": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
-    "reviewedAt": "2026-10-19T04:22:38Z",
-    "sourceHash": "a77512bc628f553885d7db4e3564ae76ebdd024bcd55b20c269bf652fca1bc40"
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-418.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 010 AC-108 and design PR 417 gaps G6 and G7 (TASK-418); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:31:04Z",
+    "sourceHash": "8c37d9247abf8188081769bca5292a2edec9485b0c29d28a6f40660ca2ef7afd"
+  },
+  "checkout.progress.details": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-418.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 010 AC-108 and design PR 417 gaps G6 and G7 (TASK-418); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:31:04Z",
+    "sourceHash": "c0bcd4c0f8e707844c003e6e8720cc209aff9410eb44daa252875e31c5468199"
   },
   "checkout.progress.compact": {
     "source": "human",
@@ -5381,9 +5395,16 @@
   "checkout.step.card": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (delegated), 2026-10-31: recorded by the orchestrator with record-approval-204.py (PR 400 checkout copy, spec 010) under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a); the founder did not read this text",
-    "reviewedAt": "2026-10-31T21:01:22Z",
-    "sourceHash": "d092064f060f6202af25aa313c1e301c8aad4ca06217bcbcba8ccbcef936e6f1"
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-418.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 010 AC-108 and design PR 417 gaps G6 and G7 (TASK-418); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:31:04Z",
+    "sourceHash": "e9e21dfd95aa236db47aa084fc9f492e8f87cfe45c1f1ee330ae2d5d6d0cb4f1"
+  },
+  "checkout.step.details": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-418.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 010 AC-108 and design PR 417 gaps G6 and G7 (TASK-418); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:31:04Z",
+    "sourceHash": "4ab13eeb6f6364ef69772f9cbe44fe6d9b066e567899fda3784c071c9a6d2e54"
   },
   "checkout.step.review": {
     "source": "human",

@@ -493,7 +493,7 @@ describe("no edits after placement (AC-47)", () => {
       "utf8",
     );
     expect(source).not.toMatch(
-      /checkout\/actions|checkoutAction|placeOrderAction|saveRecipientStep|saveCardAndBuyerStep|updateSelection|removeLineAction|updateLineAction/u,
+      /checkout\/actions|checkoutAction|placeOrderAction|saveRecipientStep|saveCardStep|saveBuyerStep|updateSelection|removeLineAction|updateLineAction/u,
     );
     expect(source).not.toMatch(/stepPath\(|"\/checkout\?|\/checkout\?step/u);
   });

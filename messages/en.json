@@ -1005,7 +1005,8 @@
     "progress": {
       "label": "Checkout steps",
       "recipient": "Recipient",
-      "card": "Card and you",
+      "card": "Your card",
+      "details": "Your details",
       "review": "Check",
       "compact": "Step {current} of {total} · {name}"
     },
@@ -1069,7 +1070,8 @@
     },
     "action": {
       "toCard": "Continue to your details",
-      "toReview": "Continue to check"
+      "toReview": "Continue to check",
+      "toYourCard": "Continue to your card"
     },
     "error": {
       "summaryTitle": "Please check these details",
@@ -1116,7 +1118,8 @@
     },
     "step": {
       "recipient": "Who are the flowers <em>for?</em>",
-      "card": "Your card and <em>your details</em>",
+      "card": "Your <em>card</em>",
+      "details": "Your <em>details</em>",
       "review": "Check and place <em>your order</em>",
       "deliveryOf": "Delivery {n} of {total}"
     },
