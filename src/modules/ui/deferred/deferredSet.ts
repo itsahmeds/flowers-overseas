@@ -51,7 +51,11 @@
 
 /** Every island id the set declares. */
 export type DeferredIslandId =
-  "motions" | "language-popup" | "home-sentence" | "listing-sort";
+  | "motions"
+  | "language-popup"
+  | "home-sentence"
+  | "listing-sort"
+  | "search-suggest";
 
 /** When an island may load (`./paintSignal.ts`). */
 export type DeferredTrigger = "paint" | "interaction";
@@ -155,6 +159,20 @@ export const DEFERRED_ISLANDS: readonly DeferredIsland[] = [
     mountedBy: "src/modules/ui/shop/ListingToolbar.tsx",
     mounts: "SortLoader",
     marker: "fo:deferred:listing-sort",
+  },
+  {
+    id: "search-suggest",
+    status: "deferred",
+    trigger: "paint",
+    control: null,
+    what: "the header field's suggestions (spec 045 §14 A-founder-2026-11-08a item 3, AC-44): the APG combobox over the server's GET form, loaded after the LCP paint (on idle, first focus or first input), at most 4,096 B Brotli",
+    task: "TASK-520",
+    module: "src/modules/ui/search/SearchSuggest.tsx",
+    chunk: "src/modules/ui/search/SearchSuggest.tsx",
+    loader: "src/modules/ui/search/SearchSuggestLoader.tsx",
+    mountedBy: "src/modules/ui/layout/HeaderSearch.tsx",
+    mounts: "SearchSuggestLoader",
+    marker: "fo:deferred:search-suggest",
   },
 ];
 

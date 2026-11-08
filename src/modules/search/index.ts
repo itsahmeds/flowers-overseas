@@ -102,6 +102,7 @@ export {
   SLOW_SEARCH_COUNT,
   SLOW_SEARCH_MS,
   SLOW_SEARCH_WINDOW_MS,
+  headerSearchValue,
   rateLimitedSearchPage,
   searchPage,
   searchPath,

@@ -187,3 +187,10 @@ export const SEARCH_PARAM = {
   date: "date",
   page: "page",
 } as const;
+
+/**
+ * The suggestions island's endpoint (spec 045 §14 A-founder-2026-11-08a item 3): `POST` with a
+ * JSON body, never a query string. Under `SEARCH_API_PREFIX` (`src/lib/search-routes.ts`), so the
+ * proxy rate-limits it as `suggest`.
+ */
+export const SEARCH_SUGGEST_PATH = "/api/search/suggest";

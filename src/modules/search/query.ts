@@ -93,7 +93,7 @@ export function parseQuery(
 
 /**
  * The words as typed, minus every word that names a destination (§14 A-founder-2026-11-08a item
- * 1, the chip's "Show all countries"): "roses poland" becomes "roses". The same phrases and the
+ * 1, the chip's "Show all countries"): "roses {a country}" becomes "roses". The same phrases and the
  * same exact, whole-word rule as `parseQuery`, applied to the typed words so the rest keep their
  * letters and case. A typed word is dropped only when every normalised word it yields is part of
  * a destination's name.

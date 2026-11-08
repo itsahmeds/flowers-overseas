@@ -23,9 +23,12 @@
  * **Every entry with no page is absent** (AC-14 as §14 A20 amends it; TASK-173). An entry is drawn
  * exactly when `./header-model.ts` resolves it to a URL; this file has no `published` branch, so a
  * go-live is a data flip in `src/config/site-links.ts`. No account cluster: it would be a control
- * that does nothing. **Search** (spec 045 §2.1, TASK-404): from `md` an icon summary in the mega
- * menu's `<details>` group whose panel holds the header's one GET search form, below `md` an icon
- * link in the row and the same form in the Menu (`./HeaderSearch.tsx`). The phone's Menu opens something real (A24 clause 3 lifts
+ * that does nothing. **Search** (spec 045 §14 A-founder-2026-11-08a item 2, TASK-520): a visible
+ * field on every page, one GET form (`./HeaderSearch.tsx`). From `md` it sits in the 64 px row
+ * between the logo and the row's end, 240 to 480 px wide, and the six items keep their 48 px
+ * second row at every width (the item-row fallback: the sticky header is 114 px from `md`); below
+ * `md` the same form is a full-width 56 px row under the 64 px row, inside the sticky header
+ * (122 px). The Menu keeps its own form. The phone's Menu opens something real (A24 clause 3 lifts
  * A20 clause 2's omission of it), and so does the Basket link since `/{locale}/basket` answers 200
  * (spec 010 §14 A-founder-2026-10-22 D10, item 13 "Spec 004"; TASK-349): an icon link at the end
  * of the row, beside the Menu on a phone, with a count slot the motion module fills after the LCP
@@ -72,11 +75,7 @@ import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
-import {
-  HeaderSearchDisclosure,
-  HeaderSearchForm,
-  HeaderSearchLink,
-} from "./HeaderSearch.tsx";
+import { HeaderSearchField, HeaderSearchForm } from "./HeaderSearch.tsx";
 import { MegaMenuAccordions, MegaMenuNav } from "./MegaMenu.tsx";
 import { MenuSheet } from "./MenuSheet.tsx";
 import {
@@ -85,34 +84,24 @@ import {
   headerCurrencyCode,
   headerEndClusterItems,
   headerSearchForm,
-  headerSearchHref,
 } from "./header-model.ts";
+import { SUGGEST_QUERY_MARK } from "../search/suggest-mark.ts";
 import type { MegaMenuModel } from "./mega-model.ts";
 
 /** No menu: a header with no route behind it draws none rather than a wrong one. */
 const EMPTY_MEGA_MENU: MegaMenuModel = { context: null, panels: [] };
 
 /**
- * The masthead's columns by how many controls end the row (1 + the search icon + the Basket):
- * below `xl` the logo's flexible column and one `auto` column per control (the Menu, or from `md`
- * the end cluster); from `xl` the logo, the six items and the same controls. Literal class names,
- * so Tailwind compiles each; the item row under `xl` spans all of them.
+ * The masthead's columns (spec 045 §14 A-founder-2026-11-08a item 2, `chrome-*.dc.html` 2026-11-08
+ * sections). Below `md`: the logo's flexible column, then the Basket where drawn and the Menu; the
+ * search field spans the second row. From `md`, at every width: the logo, the field (240 to
+ * 480 px), the free space, the row's end and the Basket; the six items span the second row.
+ * Literal class names, so Tailwind compiles each.
  */
 const MASTHEAD_COLUMNS = {
-  1: "grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto]",
-  2: "grid-cols-[minmax(0,1fr)_auto_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto_auto]",
-  3: "grid-cols-[minmax(0,1fr)_auto_auto_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto]",
-} as const;
-const ITEM_ROW_SPAN = {
-  1: "col-span-2",
-  2: "col-span-3",
-  3: "col-span-4",
-} as const;
-/** The phone Menu's column: after the logo, the search link and the Basket where drawn. */
-const MENU_COLUMN = {
-  1: "col-start-2",
-  2: "col-start-3",
-  3: "col-start-4",
+  basket:
+    "grid-cols-[minmax(0,1fr)_auto_auto] md:grid-cols-[auto_minmax(240px,480px)_minmax(0,1fr)_auto_auto]",
+  none: "grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[auto_minmax(240px,480px)_minmax(0,1fr)_auto_auto]",
 } as const;
 
 /**
@@ -193,6 +182,15 @@ export interface SiteHeaderProps {
    * `chrome-*` "Basket current" state). Decided by the route, like the price claim.
    */
   readonly basketCurrent?: boolean;
+  /**
+   * The results page's words and destination (spec 045 AC-43): its header field holds the query
+   * as `value` and the resolved `to`. Decided by the route; absent on every prebuilt page, whose
+   * field has no `value` and whose `to` is the URL's destination.
+   */
+  readonly searchValue?: {
+    readonly q: string;
+    readonly to: string | undefined;
+  };
 }
 
 /**
@@ -244,6 +242,7 @@ export function SiteHeader({
   priceClaim = <NoticePriceClaim />,
   switcher = <LocaleSwitcher locale={locale} />,
   basketCurrent = false,
+  searchValue,
 }: SiteHeaderProps): ReactElement {
   const t = useTranslations();
   // Namespace-bound for the one key with an ICU argument (`{currency}`).
@@ -261,17 +260,32 @@ export function SiteHeader({
   // between the logo and the Menu; from `md` after "Send flowers".
   const basketHref = headerBasketHref(locale);
   const basket = basketHref !== undefined;
-  // The search (spec 045 §2.1, AC-1; TASK-404): the destination is the mega menu's context, the
-  // URL's country with a shop (spec 043 §2 A's rule), never a cookie or a header.
-  const destination = megaMenu.context;
+  // The search (spec 045 §14 A-founder-2026-11-08a items 1 and 2; TASK-520): always the search
+  // path; the destination is the mega menu's context, the URL's country with a shop (spec 043 §2
+  // A's rule), or on the results page the `to` it searched. Never a cookie or a header.
+  const destination =
+    searchValue === undefined ? megaMenu.context : (searchValue.to ?? null);
   const searchForm = headerSearchForm(locale, destination);
-  const searchHref = headerSearchHref(locale, destination);
-  const search = searchForm !== undefined && searchHref !== undefined;
   const searchLabels = {
     label: t("nav.search.label"),
     submit: t("nav.search.submit"),
   };
-  const controls = (1 + (basket ? 1 : 0) + (search ? 1 : 0)) as 1 | 2 | 3;
+  const searchKind = (key: string): string =>
+    registryLabel(t, `search.suggest.kind.${key}`);
+  const suggestLabels = {
+    kinds: {
+      product: searchKind("product"),
+      occasion: searchKind("occasion"),
+      category: searchKind("category"),
+      destination: searchKind("destination"),
+      page: searchKind("page"),
+    },
+    counts: Array.from({ length: 7 }, (_, count) =>
+      t("search.suggest.count", { count }),
+    ),
+    all: t("search.suggest.all", { query: SUGGEST_QUERY_MARK }),
+    list: searchLabels.label,
+  };
   const { contact, tradingName } = COMPANY;
   /** A19's single chrome predicate: may this document assert a delivery date at all? */
   const datesOpen = anyDeliveryDatesOpen();
@@ -382,42 +396,58 @@ export function SiteHeader({
           <MotionLoader />
         </AfterPaint>
         <div
-          className={`grid ${MASTHEAD_COLUMNS[controls]} grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-rows-[76px] xl:gap-x-[18px] ${CHROME_WRAP}`}
+          className={`grid ${MASTHEAD_COLUMNS[basket ? "basket" : "none"]} grid-rows-[64px_auto] items-center gap-x-(--space-sm2) md:gap-x-[16px] ${CHROME_WRAP}`}
           data-fo-header-band="masthead"
         >
           {/* The logo: the mark and the outlined wordmark; the wordmark's name (the trading name)
-              names the link. The mega menu board draws them at 34 and 22 px from `xl` (the row is
-              76 px), 28 and 19 below it. */}
+              names the link. The 2026-11-08 boards: 28 and 19 px on a phone; from 768 to 1023 the
+              34 px mark alone (the wordmark stays the link's name, visually hidden), so the field
+              keeps its 240 px; 28 and 19 px from 1024; 34 and 22 px from 1280. */}
           <a
-            className="text-logo-ink inline-flex min-h-(--target-min) max-w-full min-w-0 items-center gap-[10px] justify-self-start"
+            className="text-logo-ink col-start-1 row-start-1 inline-flex min-h-(--target-min) max-w-full min-w-0 items-center gap-[10px] justify-self-start"
             data-fo-header-logo
             href={home}
           >
-            <Mark className="h-[28px] w-[28px] flex-none xl:h-[34px] xl:w-[34px]" />
+            <Mark className="h-[28px] w-[28px] flex-none md:h-[34px] md:w-[34px] lg:h-[28px] lg:w-[28px] xl:h-[34px] xl:w-[34px]" />
             {/* `min-w-0`: on a phone narrower than the artboard the wordmark scales down inside
                 its column rather than running under the Menu (it keeps its aspect ratio). */}
             <Wordmark
-              className="h-[19px] min-w-0 shrink xl:h-[22px]"
+              className="h-[19px] min-w-0 shrink md:max-lg:sr-only xl:h-[22px]"
               label={tradingName}
             />
           </a>
 
-          {/* The six mega menu items (spec 004 §14 A-founder-2026-10-24a item 5): from `xl` in the
-              row, 24 px after the logo; from `md` to `xl` on a second 48 px row under a rule,
-              which does not scroll; below `md` in the Menu. The panels hang from the header, the
-              sticky frame, so opening one moves nothing below it (AC-102). */}
+          {/* The search field (spec 045 §14 A-founder-2026-11-08a item 2; TASK-520): one form.
+              Below `md` a full-width 56 px row under the 64 px row, its 1 px rule above, inside the
+              sticky header; from `md` in the 64 px row after the logo, 240 to 480 px. */}
+          {searchForm === undefined ? null : (
+            <HeaderSearchField
+              className="border-rule col-span-full row-start-2 -mx-(--gutter-s) flex min-h-[57px] items-center border-t px-(--gutter-s) py-[6px] md:col-span-1 md:col-start-2 md:row-start-1 md:mx-0 md:block md:min-h-0 md:border-t-0 md:p-0"
+              form={searchForm}
+              label={searchLabels.label}
+              locale={locale}
+              submit={searchLabels.submit}
+              suggest={suggestLabels}
+              {...(searchValue === undefined ? {} : { value: searchValue.q })}
+            />
+          )}
+
+          {/* The six mega menu items (spec 004 §14 A-founder-2026-10-24a item 5): from `md`, at
+              every width, on a second 48 px row under a rule, which does not scroll (spec 045 §14
+              A-founder-2026-11-08a item 2's fallback); below `md` in the Menu. The panels hang
+              from the header, the sticky frame, so opening one moves nothing below it (AC-102). */}
           <MegaMenuNav
-            className={`border-rule ${ITEM_ROW_SPAN[controls]} row-start-2 -mx-(--gutter-s) flex min-h-[48px] items-center border-t px-[calc(var(--gutter)-11px)] max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0 xl:ms-[6px] xl:min-h-0 xl:border-t-0 xl:px-0`}
+            className="border-rule col-span-full row-start-2 -mx-(--gutter-s) flex min-h-[48px] items-center border-t px-[calc(var(--gutter)-11px)] max-md:hidden md:-mx-(--gutter)"
             locale={locale}
             model={megaMenu}
             navLabel={registryLabel(t, MEGA_MENU_NAV_LABEL_KEY)}
           />
 
-          {/* The row's end: the selector (TASK-384), then search, account and basket once their
-              pages are published (A20: an entry with no page is absent). */}
+          {/* The row's end: account and the rest once their pages are published (A20: an entry
+              with no page is absent). */}
           {endItems.length === 0 ? null : (
             <ul
-              className="col-start-2 row-start-1 m-0 flex list-none items-center gap-[18px] p-0 max-md:hidden xl:col-start-3"
+              className="row-start-1 m-0 flex list-none items-center gap-[18px] p-0 max-md:hidden md:col-start-4"
               data-fo-header-end=""
             >
               {endItems.map((item) => (
@@ -434,26 +464,6 @@ export function SiteHeader({
             </ul>
           )}
 
-          {/* The search (spec 045 §2.1 as amended by §14 A-orchestrator-2026-10-24 item 4; TASK-404):
-              below `md` the 64 px row's icon link to the search page; from `md` the icon as the
-              summary of a `<details>` in the mega menu's group, its panel under the row holding
-              the header's one search form. Before the Basket, as PR 372's rows draw it. */}
-          {search ? (
-            <>
-              <HeaderSearchLink
-                className="col-start-2 row-start-1 justify-self-end md:hidden"
-                href={searchHref}
-                name={searchLabels.submit}
-              />
-              <HeaderSearchDisclosure
-                className="row-start-1 justify-self-end max-md:hidden md:col-start-3 xl:col-start-4"
-                form={searchForm}
-                label={searchLabels.label}
-                submit={searchLabels.submit}
-              />
-            </>
-          ) : null}
-
           {/* The Basket link (spec 010 §14 A-founder-2026-10-22 D10, AC-70): the same static
               HTML for every visitor, `rel="nofollow"` (the page is `noindex` and disallowed in
               robots), its name `nav.basket` and an empty badge slot of a fixed 20 x 20 px. The
@@ -464,7 +474,7 @@ export function SiteHeader({
           {basketHref === undefined ? null : (
             <a
               aria-current={basketCurrent ? "page" : undefined}
-              className={`${BASKET_LINK} ${search ? "col-start-3 md:col-start-4 xl:col-start-5" : "col-start-2 md:col-start-3 xl:col-start-4"} row-start-1 justify-self-end`}
+              className={`${BASKET_LINK} col-start-2 row-start-1 justify-self-end md:col-start-5`}
               data-fo-basket={JSON.stringify(
                 basketCountStates(locale, t("nav.basket"), (count) =>
                   nav("basketCount", { count }),
@@ -483,7 +493,7 @@ export function SiteHeader({
               selector (TASK-384), the six items as accordions with the desktop panels' entries,
               the switcher, the currency and the help line; from `md` up it is `display: none`. */}
           <MenuSheet
-            className={`${MENU_COLUMN[controls]} row-start-1 justify-self-end md:hidden ${basket || search ? "[&>summary]:gap-[8px] [&>summary]:px-[12px]" : ""}`}
+            className={`${basket ? "col-start-3" : "col-start-2"} row-start-1 justify-self-end md:hidden ${basket ? "[&>summary]:gap-[8px] [&>summary]:px-[12px]" : ""}`}
             currency={{
               code: currency,
               label: nav("currency.label", { currency }),

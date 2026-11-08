@@ -145,7 +145,7 @@ export const SearchResultViewSchema = z.strictObject({
   hiddenByDate: z.number().int().nonnegative(),
   /**
    * The words minus the destination words they named (the chip's remove form, §14
-   * A-founder-2026-11-08a item 1): "roses poland" is "roses"; the words themselves otherwise.
+   * A-founder-2026-11-08a item 1): "roses {a country}" is "roses"; the words themselves otherwise.
    */
   queryWithoutDestination: z.string(),
   /** The four link groups (§14 A-founder-2026-11-08a item 1); empty where nothing was searched. */

@@ -370,3 +370,24 @@ export async function searchRoutePage(
     gate.leave();
   }
 }
+
+/**
+ * What the results page's header field holds (spec 045 §14 A-founder-2026-11-08a item 2, AC-43):
+ * the words as the page searched them (`value`) and the destination parameter, checked against
+ * the locale's shop countries exactly as the page checks it. Read by the `@header` slot of the
+ * results route, which is dynamic; prebuilt pages never call it, so their field has no `value`.
+ */
+export async function headerSearchValue(
+  locale: LocaleCode,
+  raw: Readonly<Record<string, string | string[] | undefined>>,
+  deps: Pick<SearchPageDeps, "shops" | "takesDates"> = {},
+): Promise<{ readonly q: string; readonly to: string | undefined }> {
+  const shopCodes = (await (deps.shops ?? shopCountries)(locale)).filter(
+    isCountryIso2,
+  );
+  const params = searchParamsSchema({
+    shops: new Set(shopCodes.map((iso2) => iso2.toLowerCase())),
+    takesDates: deps.takesDates ?? takesDatesFromRegistry,
+  }).parse(raw);
+  return { q: params.q, to: params.to };
+}

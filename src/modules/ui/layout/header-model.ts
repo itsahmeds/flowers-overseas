@@ -27,7 +27,6 @@ import {
   linkLabelKey,
   siteLink,
 } from "../../../config/site-links.ts";
-import { CHOOSER_NEXT_WORDS } from "../../../config/commerce.ts";
 import { SEARCH_PARAM } from "../../../config/search.ts";
 import {
   documentFallbackLocale,
@@ -46,45 +45,56 @@ import {
  * header against them at both artboard widths, which is why they are data and not a comment.
  */
 export const HEADER_BAND_HEIGHTS = {
-  /** The logo and the row's end (and the Menu below `md`): the 64 px row. */
+  /** The logo and the row's end (and the Menu below `md`): the 64 px row, at every width. */
   mastheadMobile: 64,
   /**
-   * The logo, the six mega menu items and the row's end: the mega menu board's 76 px row (spec 004
-   * §14 A-founder-2026-10-24a item 5, `chrome-desktop.dc.html` `.cm-row`; TASK-383).
+   * From `md`, the logo, the search field and the row's end share the same 64 px row (spec 045
+   * §14 A-founder-2026-11-08a item 2's fallback, `chrome-desktop.dc.html` 2026-11-08 section,
+   * "Why two rows at xl"): the one 76 px row of the mega menu board no longer applies.
    */
-  mastheadDesktop: 76,
+  mastheadDesktop: 64,
   /**
-   * From `md` to `xl`, the six items' second row under a 1 px rule (`.cm-row2`, 48 px; it does
-   * not scroll). On the desktop board the items sit in the masthead row.
+   * From `md`, at every width, the six items' second row under a 1 px rule (`.cm-row2`, 48 px;
+   * it does not scroll). The item-row breakpoint has no value: the items never join row 1.
    */
   categoryMobile: 48,
+  /**
+   * Below `md`, the search row under the 64 px row (spec 045 §14 A-founder-2026-11-08a item 2,
+   * `chrome-mobile.dc.html` 2026-11-08 section): the 44 px field with 6 px block padding.
+   */
+  searchPhone: 56,
 } as const;
 
 /**
  * The height of the **sticky** part of the chrome — `<header role="banner" data-fo-header>` (§14
- * A4's addendum, mechanism iii) — measured on the served document at the two artboard widths and
- * identical in the four launch locales:
+ * A4's addendum, mechanism iii) — measured on the served document and identical in the four
+ * launch locales:
  *
- *  - **mobile 114** = 64 masthead + 1 rule + 48 item row + 1 rule;
- *  - **desktop 77** = 76 masthead (the logo, the six items and the row's end) + 1 rule.
+ *  - **phone 122** = 64 row + 1 rule + 56 search row + 1 rule (spec 045 §13 Q19's default);
+ *  - **mobile 114** = 64 masthead + 1 rule + 48 item row + 1 rule, from `md`;
+ *  - **desktop 114**, the same two rows from `xl`: one row of logo, six items, a 176 px field
+ *    and the end cluster needs about 1,320 of the frame's 1,328 px, so spec 045 §14
+ *    A-founder-2026-11-08a item 2's fallback keeps the items on row 2 at every width (the
+ *    designer's measure; spec 004 §14 A-orchestrator-2026-11-08b).
  *
- * TASK-176 (v2) changed both, deliberately: v1 was 96 / 138 with the search band gone (TASK-173).
  * The notice bar above it is a sibling that scrolls away; its height is content-driven and asserted
- * per breakpoint in the e2e suite: 80 px on a phone (the sentence plus the 44 px row of languages
- * and currency that spec 004 §14 A4 keeps reachable at 390 px), 62 px from `lg`. It is server-
- * rendered with no island, so nothing below it moves after the first paint.
+ * per breakpoint in the e2e suite. It is server-rendered with no island, so nothing below it moves
+ * after the first paint.
  */
 export const HEADER_STICKY_HEIGHTS = {
-  /**
-   * Below `md` (spec 004 §14 A24 clause 3, AC-47; TASK-195): the logo and the Menu in the 64 px
-   * row plus the 1 px rule. The chip row is not drawn there, and neither is the strip.
-   */
-  phone: 65,
+  /** Below `md`: the 64 px row, the rule, the 56 px search row and the rule. */
+  phone: 122,
   /** From `md` to `xl`: the 64 px row, the rule and the 48 px item row, and the rule. */
   mobile: 114,
-  /** From `xl`: the one 76 px row and the rule. */
-  desktop: 77,
+  /** From `xl`: the same two rows (the fallback above). */
+  desktop: 114,
 } as const;
+
+/**
+ * The search field's inline size (spec 045 §14 A-founder-2026-11-08a item 2): from `md` it fills
+ * the masthead row between the logo and the end cluster, from 240 px to 480 px.
+ */
+export const HEADER_SEARCH_FIELD_WIDTH = { min: 240, max: 480 } as const;
 
 /**
  * The currency code the chip prints for a locale (AC-8): `en`→EUR, `en-gb`→GBP, `de`→EUR,
@@ -188,12 +198,10 @@ export function headerEndClusterItems(locale: string): readonly HeaderItem[] {
 }
 
 /**
- * The phone row's search link (spec 045 §2.1, AC-1, AC-34; TASK-404): the locale's search page,
- * with `?to={iso2}` when the page's URL names a destination with a shop (`iso2`, the mega menu's
- * context: spec 043 §2 A's rule, the one the header's shop links use), or `undefined` while search
- * has no page (not drawn, spec 004 A20). The country comes from the page's own URL only, never a
- * cookie or a header, so the cached HTML is the same for every visitor (`/de/suche`,
- * `/en/search?to=pl`).
+ * The locale's search page as a link (spec 045 AC-34): with `?to={iso2}` when the page's URL names
+ * a destination with a shop, else the bare path (`/de/suche`, `/en/search?to=pl`); `undefined`
+ * while search has no page. The header no longer draws it (the phone row holds the field since
+ * §14 A-founder-2026-11-08a item 2); it stays the one place that composes the address.
  */
 export function headerSearchHref(
   locale: string,
@@ -207,32 +215,28 @@ export function headerSearchHref(
 
 /** The header's one search form: where it goes and the destination it carries. */
 export interface HeaderSearchForm {
-  /** The locale's search path on a page with a destination, else the chooser's search path. */
+  /** The locale's search path, on every page (no detour through the chooser). */
   readonly action: string;
   /** The hidden `to` (lowercase ISO 3166-1), only on a page with a destination. */
   readonly to: string | undefined;
 }
 
 /**
- * The header's search form (spec 045 §2.1 as amended by §14 A-orchestrator-2026-10-24 items 1 and
- * 4, AC-1, AC-34; TASK-404): on a page whose URL names a destination with a shop, the search path
- * with a hidden `to`; on every other page the chooser path `/{locale}/{chooseSegment}/search`
- * (spec 004 §14 A-founder-2026-10-24a item 3), which asks for the country and carries the words on
- * (`/de/land-waehlen/search`). There is no default country: no code names one (spec 004 AC-73).
+ * The header's search form (spec 045 §2.1 as amended by §14 A-founder-2026-11-08a item 1, AC-34,
+ * AC-38): on every page the locale's search path (`/de/suche`), with a hidden `to` on a page whose
+ * URL names a destination with a shop (the mega menu's context: spec 043 §2 A's rule). The country
+ * comes from the page's own URL only, never a cookie or a header, so the cached HTML is the same
+ * for every visitor. There is no default country: no code names one (spec 004 AC-73).
  * `undefined` while search has no page.
  */
 export function headerSearchForm(
   locale: string,
   iso2?: string | null,
 ): HeaderSearchForm | undefined {
-  const path = siteLinkHref(locale, SEARCH_LINK_ID);
-  if (path === undefined) return undefined;
-  if (iso2 !== undefined && iso2 !== null) {
-    return { action: path, to: iso2.toLowerCase() };
-  }
-  const config = getLocaleRegistry().get(locale) ?? documentFallbackLocale();
+  const action = siteLinkHref(locale, SEARCH_LINK_ID);
+  if (action === undefined) return undefined;
   return {
-    action: `/${config.code}/${config.chooseSegment}/${CHOOSER_NEXT_WORDS.search}`,
-    to: undefined,
+    action,
+    to: iso2 === undefined || iso2 === null ? undefined : iso2.toLowerCase(),
   };
 }

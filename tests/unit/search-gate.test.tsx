@@ -339,7 +339,7 @@ describe("the page the proxy hands a refused request to (§2.7, AC-26)", () => {
     );
   }
 
-  it("renders the resolved search.rateLimited as a status, the form with the words and the destination, and nothing searched", async () => {
+  it("renders the resolved search.rateLimited as a status, the chip with the words and the destination, and nothing searched", async () => {
     const engine = { search: vi.fn(), suggest: vi.fn() };
     const outcome = await searchRoutePage(
       "en",
@@ -355,10 +355,10 @@ describe("the page the proxy hands a refused request to (§2.7, AC-26)", () => {
       `role="status"><p class="text-ink m-0 text-[17px] leading-[1.45] md:text-[19px]">${messages.search.rateLimited}</p>`,
     );
     expect(markup).toContain(`>${messages.search.heading}</h1>`);
-    expect(markup).toMatch(
-      /<form [^>]*role="search" action="\/en\/search" method="get">/u,
-    );
-    expect(markup).toContain('type="search" name="q" value="roses"');
+    // The header's field holds the words (AC-43); the page keeps the chip's GET forms.
+    expect(markup).not.toContain('role="search"');
+    expect(markup).toContain('data-fo-search-chip="pl"');
+    expect(markup).toContain('<input type="hidden" name="q" value="roses"/>');
     expect(markup).toContain('<option value="pl" selected="">');
     expect(markup).not.toContain("data-fo-search-results");
     expect(markup).not.toContain("data-fo-analytics");
