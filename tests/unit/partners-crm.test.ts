@@ -203,6 +203,8 @@ describe("the florist tab bar (AC-1, AC-2)", () => {
       "payoutTerms",
       "money",
       "relationship",
+      // TASK-442 (AC-36): Contracts is admin only.
+      "contracts",
     ]);
     expect(keys(["ops"])).toEqual(["profile", "payoutTerms", "relationship"]);
     expect(keys(["finance"])).toEqual(["profile", "payoutTerms"]);
@@ -216,6 +218,7 @@ describe("the florist tab bar (AC-1, AC-2)", () => {
       "/admin/partners/pl-krk-pod-lipa#terms",
       "/admin/partners/pl-krk-pod-lipa/money",
       "/admin/partners/pl-krk-pod-lipa/relationship",
+      "/admin/partners/pl-krk-pod-lipa/contracts",
     ]);
     expect(tabs.filter((tab) => tab.current).map((tab) => tab.key)).toEqual([
       "money",

@@ -74,3 +74,15 @@ accounting export.
   recipients, health or family.
 - "Follow-ups due" on `/admin/partners` lists open follow-ups dated today or earlier in your zone.
 - Notes and the contact log are deleted 24 months after the florist is offboarded.
+
+## Store a florist's contract
+
+1. Open the florist, then the **Contracts** tab (admin only).
+2. **Upload a document**: choose the signed PDF (up to 10 MB, no password, no scripts, forms or attached files), its kind, template version, language, signed and effective dates, and an optional review date with its reminder days. Tick "contains the data-processing clauses" when the agreement carries them.
+3. A new agreement replaces the current one; the earlier version stays, marked superseded. Its signed date and template version are copied to the profile terms.
+4. A florist can be made active only with a current signed agreement on file. Florists already active before this shipped show "No signed agreement on file" on the list until theirs is uploaded.
+5. Downloads open as an attachment through a 60-second link; each one is logged. If a download answers "conflict", the stored file no longer matches its checksum: do not re-upload over it, raise it as an incident.
+
+## Withdraw a wrong upload
+
+Use **Withdraw** only for a wrong upload, within 7 days of it, with a reason of at least 10 characters (kept in the audit log). The file is deleted and the previous version, if any, becomes current again with its terms copied back to the profile. Withdrawing the only agreement of an active florist pauses that florist. After 7 days withdraw is closed: upload a new version instead; both are kept.
