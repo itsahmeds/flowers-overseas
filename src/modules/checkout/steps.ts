@@ -66,10 +66,7 @@ import {
   withDraftConnection,
 } from "./draft";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
-import {
-  type ReminderFlagReader,
-  basketReminderOffered,
-} from "./reminders/offer";
+import { type ReminderGate, basketReminderOffered } from "./reminders/offer";
 import {
   type QuoteCheck,
   deriveLineQuote,
@@ -143,8 +140,8 @@ export interface StepContext {
     readonly kind: "country";
     readonly ref: string;
   }) => Promise<boolean>;
-  /** Spec 034: reads `marketing.basket_reminder` (injected by the suites). */
-  readonly reminderFlag?: ReminderFlagReader;
+  /** Spec 034: the box's flag and review gate (injected by the suites). */
+  readonly reminderGate?: ReminderGate;
 }
 
 /** The posted form as plain values: repeated keys become arrays, Next's own keys are dropped. */
@@ -658,11 +655,7 @@ export async function runBuyerStep(
   }
   // Spec 034 (AC-8): the box's state is recorded only where the box was offered, before the buyer
   // is saved (so a changed email still finds the old one), in the same transaction.
-  const offered = await basketReminderOffered(locale, {
-    ...(context.reminderFlag === undefined
-      ? {}
-      : { readFlag: context.reminderFlag }),
-  });
+  const offered = await basketReminderOffered(locale, context.reminderGate);
   const given = values["basketReminder"] === "on";
   const saved = await withDraftConnection(
     context.connection,

@@ -58,10 +58,7 @@ import {
   draftDiscountOf,
 } from "./discount";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
-import {
-  type ReminderFlagReader,
-  basketReminderOffered,
-} from "./reminders/offer";
+import { type ReminderGate, basketReminderOffered } from "./reminders/offer";
 import {
   type DraftTotals,
   deriveLineQuote,
@@ -182,8 +179,8 @@ export interface ScreenRequest {
   readonly connection?: DraftConnection;
   readonly flags?: CheckoutFlagReader;
   readonly discountFlag?: DiscountFlagReader;
-  /** Spec 034: reads `marketing.basket_reminder` (injected by the suites). */
-  readonly reminderFlag?: ReminderFlagReader;
+  /** Spec 034: the box's flag and review gate (injected by the suites). */
+  readonly reminderGate?: ReminderGate;
 }
 
 const LINE_PARAM = /^[1-9][0-9]?$/u;
@@ -541,11 +538,7 @@ export async function checkoutScreen(
       codesOn && selected.step === "review" ? { lockedMinutes } : null,
     basketReminder:
       selected.step === "details" &&
-      (await basketReminderOffered(locale, {
-        ...(request.reminderFlag === undefined
-          ? {}
-          : { readFlag: request.reminderFlag }),
-      }))
+      (await basketReminderOffered(locale, request.reminderGate))
         ? { checked: (draft.reminderConsentAt ?? null) !== null }
         : null,
   };

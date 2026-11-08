@@ -20,18 +20,25 @@ export const defaultReminderFlag: ReminderFlagReader = async () => {
   return isEnabled(BASKET_REMINDER_FLAG);
 };
 
+/** What the suites inject: the flag, and the review gate of the box's copy. */
+export interface ReminderGate {
+  readonly readFlag?: ReminderFlagReader;
+  readonly reviewed?: (locale: string) => boolean;
+  readonly env?: EnvSource;
+}
+
 /** The message prefix the box's review gate reads. */
 export const BASKET_REMINDER_COPY_PREFIX = "checkout.basketReminder";
 
 export async function basketReminderOffered(
   locale: string,
-  options: {
-    readonly readFlag?: ReminderFlagReader;
-    readonly env?: EnvSource;
-  } = {},
+  options: ReminderGate = {},
 ): Promise<boolean> {
   if (!basketReminderEnv(options.env ?? process.env).configured) return false;
-  if (!messagesReviewedFor(locale, BASKET_REMINDER_COPY_PREFIX)) return false;
+  const reviewed =
+    options.reviewed ??
+    ((code: string) => messagesReviewedFor(code, BASKET_REMINDER_COPY_PREFIX));
+  if (!reviewed(locale)) return false;
   try {
     return await (options.readFlag ?? defaultReminderFlag)();
   } catch {
