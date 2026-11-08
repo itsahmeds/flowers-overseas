@@ -26,6 +26,7 @@ export * from "./blog.ts";
 export * from "./catalog.ts";
 export * from "./checkout.ts";
 export * from "./customers.ts";
+export * from "./discounts.ts";
 export * from "./geo.ts";
 export * from "./i18n.ts";
 export * from "./invoices.ts";

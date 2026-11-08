@@ -25,7 +25,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From self-review (2026-11-08, DC445), for TASK-447:** the placement half of AC-15 (the two refused buyers re-render step 4 with `changedAtPlacement`), AC-17's placed-order half and AC-19's "same draft placed with and without a code" go through `placeOrderAction`, which is TASK-447's. Here they are proven at the data level: five concurrent `lockAndCount` + `evaluateCode` + `order_discount` writes against a cap of 3 give exactly three rows; payout columns from `fixPayoutAtAcceptance` are equal with and without `discount_minor`.
+- **From self-review (2026-11-08), for TASK-447:** `attempts.ts` (`recordFailure`, `isLocked`) is not built; AC-13 is TASK-447's. `evaluateCode` takes `locked` and checks it **first** (a reading of §2 "a locked field does not look anything up"; §5.2 lists `locked` last), so a locked checkout learns nothing about a code.
+- **From self-review (2026-11-08):** AC-20's refund ceiling is proven against the database's `refund_order_ceiling` trigger at the discounted `buyer_total_minor` (the chocolates' paid amount refunds, one unit past the balance is refused), not through spec 013's `refund` service call.
+- **From self-review (2026-11-08):** currency columns are `text` with `^[A-Z]{3}$` and a foreign key to `currency`, the house money-pair form, not `char(3)` as §5.1 writes; `toBaseMinor` rounds half up with a floor of one minor unit (the `base_amount_minor > 0` check); `discountFinanceRows` gives a null payout and margin when the florist's payout currency is neither the order's nor the base currency (no rate on the order for it).
 
 ## Escalations
 
@@ -39,11 +42,10 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 DC445: migration `0037_discount_codes` + guarded down, Drizzle mirror (`db/schema/discounts.ts`, `order_line.discount_minor`, four draft columns), `db:check` snapshot regenerated; round trip run on a scratch PG16.
+- 2026-11-08 DC445: `src/config/discounts.ts`, `src/modules/discounts` (schemas, normalise, allocate, evaluate, issue, redeem, finance), flag `checkout.discount_codes` registered, `linePaidAmounts` in `modules/orders`; unit tests `discounts-core` (45) and `discounts-source-scan` (4) green.
+- 2026-11-08 DC445: integration `tests/integration/discounts.test.ts` (22) green on a scratch PG16: DB refusals, issueCode audit, RLS, cap of 3 under five concurrent placements, per-email fold, per-mode and per-status counting, a basket is one use, payout invariance, refund ceiling at the discounted total, rollback guard. Next: TASK-446 admin pages in the same PR.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/513 (one feature PR with TASK-446). Migration `0037_discount_codes` + guarded down (`DISCOUNT_ROLLBACK_LIVE_ORDERS`), `db/schema/discounts.ts`, `src/config/discounts.ts`, `src/modules/discounts` (normalise, allocate, evaluate, issue, redeem, finance, preview), `linePaidAmounts` in `modules/orders`, flag `checkout.discount_codes` registered and seeded off, the five tables staff-only in `db/rls.ts`, `db:check` snapshot regenerated. Tests: unit `discounts-core` (45, incl. 1 000 seeded random purchases), `discounts-source-scan` (4); integration `discounts.test.ts` data block (22) plus rollback, on a scratch PG16. Pinned lists extended: `db-migrate` (0036, 0037), `schema-orders-payments` (0037 in the later set). No build run (battery; CI's).

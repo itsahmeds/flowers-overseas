@@ -17,6 +17,7 @@ export interface AdminNavItem {
     | "applications"
     | "partners"
     | "payouts"
+    | "discounts"
     | "flags"
     | "audit"
     | "users";
@@ -51,6 +52,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "payouts",
     href: "/admin/payouts",
     permissions: ["payouts.manage"],
+    built: true,
+  },
+  {
+    // Spec 047 §5.3 (TASK-446): the discount codes, for `discounts.read` (admin, finance).
+    key: "discounts",
+    href: "/admin/discounts",
+    permissions: ["discounts.read"],
     built: true,
   },
   {

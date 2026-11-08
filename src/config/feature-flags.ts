@@ -43,6 +43,9 @@
  * Spec 030a (TASK-363, migration `0035_payouts_030a`) adds `payouts.accrue`, global and high-risk,
  * on by default: off holds the `payouts` outbox rows (nothing is lost) and dirties no page.
  *
+ * Spec 047 (TASK-445, migration `0037_discount_codes`) adds `checkout.discount_codes`, country
+ * scope, off by default: the discount code control at checkout. It dirties no page.
+ *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
 import { z } from "zod";
@@ -220,6 +223,16 @@ const REGISTRY = [
     description:
       "Florist payouts are written (spec 030a): the amount fixed at acceptance, prepaid payouts and payout lines. Off: the payouts outbox rows wait, held and never dropped, until it is on again. Admin only; type the key to confirm.",
     risk: "high",
+    dirties: [],
+  },
+  // Spec 047 §12 (migration `0037_discount_codes`, TASK-445): the discount code control at
+  // checkout, per destination, off by default. Checkout is `no-store`, so it dirties no page.
+  {
+    key: "checkout.discount_codes",
+    scopeKinds: ["country"],
+    description:
+      'The "Add a discount code" control at checkout for a destination (spec 047). Off until the founder turns it on per destination; codes themselves are made and disabled in Discounts.',
+    risk: "standard",
     dirties: [],
   },
 ] as const satisfies readonly FeatureFlagDefinition[];

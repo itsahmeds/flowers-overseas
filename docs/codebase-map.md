@@ -12,18 +12,19 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +19 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +21 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +2 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +123 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +125 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +13 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
+| `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/discounts-admin.test.ts` +1 |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +44 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +138 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +139 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/email-buyer.test.ts`, `integration/florist-actions.test.ts` +17 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +26 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +18 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +27 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +15 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +10 |
@@ -58,6 +59,7 @@ task actually touches.
 | `cookies.ts` | The cookie register | 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
+| `discounts.ts` | Discount code limits | 047 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
 | `florists.ts` | The florist surface's configuration (spec 011… | 011 |
 | `freshness-claim.ts` | Freshness scan | 009 |
@@ -202,6 +204,13 @@ task actually touches.
 | `admin/(signed-in)/applications/page.tsx` | GET /admin/applications: florist applications,… | 012 |
 | `admin/(signed-in)/applications/view.tsx` | The application pages' shared pieces: status… | 012 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
+| `admin/(signed-in)/discounts/[id]/page.tsx` | GET /admin/discounts/[id]: one code, edit,… | 047 |
+| `admin/(signed-in)/discounts/actions.ts` | /admin/discounts actions, each guarded first | 047 |
+| `admin/(signed-in)/discounts/discount-form.tsx` | The discount code form island: fields,… | 047 |
+| `admin/(signed-in)/discounts/form-types.ts` | The discount form island's prop and state… | 047 |
+| `admin/(signed-in)/discounts/new/page.tsx` | GET /admin/discounts/new: create a code, with… | 047 |
+| `admin/(signed-in)/discounts/page.tsx` | GET /admin/discounts: the codes, their computed… | 047 |
+| `admin/(signed-in)/discounts/view.tsx` | The discount pages' shared server pieces:… | 047 |
 | `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first… | 012 |
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
@@ -359,8 +368,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 496 |
-| `tests/integration/` | 99 |
+| `tests/unit/` | 499 |
+| `tests/integration/` | 100 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
