@@ -29,7 +29,7 @@ import {
 const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
-  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start, payments.monitor and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready, payouts.close, payouts.watch and payouts.statement_email, spec 018's three invoice jobs (TASK-342), spec 020a's notifications.resend (TASK-360) and spec 030b's payments.balance_fetch and payments.balance_sweep (TASK-439)", () => {
+  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start, payments.monitor and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready, payouts.close, payouts.watch and payouts.statement_email, spec 018's three invoice jobs (TASK-342), spec 020a's notifications.resend (TASK-360) spec 030b's payments.balance_fetch and payments.balance_sweep (TASK-439) and partners.contract_reminders (TASK-442)", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
       // spec 025 (TASK-488, TASK-489): founder alerts.
       "alerts.daily_summary",
@@ -54,6 +54,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "order.no_partner_expire",
       "order.route",
       "outbox.dispatch",
+      // spec 030b §14.5 (TASK-442): the hourly contract review reminders.
+      "partners.contract_reminders",
       // spec 013 §11 (TASK-264): the paid-not-routed and webhook-silence monitors.
       // spec 030b (TASK-439): the balance facts and their hourly sweep.
       "payments.balance_fetch",

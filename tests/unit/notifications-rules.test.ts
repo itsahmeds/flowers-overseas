@@ -52,6 +52,9 @@ const LIVE_ONLY_OPS = new Set([
   "payout-prepaid-ready",
   "payouts-ready",
   "payout-line-missing",
+  // spec 030b C1 and C2 (TASK-442): the contract review emails.
+  "contract-review-due",
+  "contract-review-passed",
 ]);
 
 /** The §5.2 table for a `live` order, by hand: template keys, sorted. */
@@ -201,6 +204,15 @@ describe("notificationsFor (T-18, AC-18)", () => {
     expect(notificationsFor("payouts.statement_email", null, "test")).toEqual(
       [],
     );
+    // Spec 030b §14.5 (TASK-442): the two contract review emails, to the founder, about no order.
+    expect(
+      notificationsFor("partners.contract_reminders", null, "live").map(
+        (rule) => [rule.code, rule.template, rule.audience] as const,
+      ),
+    ).toEqual([
+      ["C1", "contract-review-due", "ops"],
+      ["C2", "contract-review-passed", "ops"],
+    ]);
     expect(NOTIFICATION_RULES.some((rule) => rule.code === "B7")).toBe(false);
   });
 });

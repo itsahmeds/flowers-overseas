@@ -11,7 +11,8 @@
  * (TASK-258), one `payments.monitor` (TASK-264, under a `singletonKey`), one `order.close_sweep` (spec 022a §5.2, TASK-369, under a `singletonKey`) and one
  * `routing.sla_watch` (spec 016 §5.2, TASK-328, likewise), which the same tick consumes; and,
  * once an hour (a `singletonKey` unique for 3600 seconds), `payouts.close` and `payouts.watch`
- * (spec 030a §5.2, TASK-364); `payments.balance_sweep` (spec 030b §5.2, TASK-439); and one
+ * (spec 030a §5.2, TASK-364); `payments.balance_sweep` (spec 030b §5.2, TASK-439) and
+ * `partners.contract_reminders` (spec 030b §14.5, TASK-442); and one
  * `alerts.monitor` and one `alerts.escalate` (spec 025 §5.2, TASK-489), after which a tick that
  * reached the database pings the heartbeat (AC-27).
  */
@@ -98,6 +99,8 @@ export function POST(request: Request): Promise<Response> {
           "payouts.watch",
           // Spec 030b §5.2 (TASK-439): the balance-fact sweep, hourly.
           "payments.balance_sweep",
+          // Spec 030b §14.5 (TASK-442): the contract review reminders, hourly.
+          "partners.contract_reminders",
         ] as const) {
           await enqueue(
             boss,

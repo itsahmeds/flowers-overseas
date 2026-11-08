@@ -93,6 +93,8 @@ export interface OpsCopy {
   readonly payoutHref?: (payoutId: string) => string;
   /** `/admin/payouts` (spec 030a §2.7); F2 only. */
   readonly payoutsHref?: () => string;
+  /** `/admin/partners/{code}/contracts` (spec 030b §14.4); C1 and C2 only. */
+  readonly contractsHref?: (partnerCode: string) => string;
 }
 
 /** The variable the alert address is read from (`src/lib/env.notifications.ts`), never the address. */
@@ -900,6 +902,217 @@ export async function loadLineMissingFacts(
 }
 
 /* -------------------------------------------------------------------------- */
+/* C1 and C2: contract review (spec 030b §14.5, AC-42; TASK-442)                */
+/* -------------------------------------------------------------------------- */
+
+/** The documents with a review date (spec 030b §14.3: an annex has none). */
+const REVIEWED_KINDS = ["agreement", "dpa_addendum"] as const;
+
+/** Which of the two emails; the last segment of the job's key. */
+export const CONTRACT_REVIEW_STATES = ["due", "passed"] as const;
+export type ContractReviewState = (typeof CONTRACT_REVIEW_STATES)[number];
+
+const IsoDay = z.iso.date();
+
+/**
+ * What C1 and C2 print (artboard `email-founder-*`, `contract-review-due` and
+ * `contract-review-passed`): the florist's code, the document kind and version, the review date in
+ * the florist's country zone, the Contracts tab link, and for C1 the days left. No legal name, no
+ * note, no file name.
+ */
+export const ContractReviewFactsSchema = z
+  .object({
+    partnerCode: z.string().min(1),
+    docKind: z.enum(REVIEWED_KINDS),
+    versionNo: z.number().int().positive(),
+    reviewOn: IsoDay,
+    timeZone: z.string().min(3),
+    /** Calendar days from today in `timeZone` to `reviewOn` (0 on the day itself). */
+    daysLeft: z.number().int(),
+  })
+  .strict();
+export type ContractReviewFacts = z.infer<typeof ContractReviewFactsSchema>;
+
+/** A calendar day (`YYYY-MM-DD`) as "15 Nov 2026": the day itself, no zone shift. */
+function calendarDay(day: string): string {
+  return formatDate(new Date(`${day}T12:00:00Z`), "en", "dayMonthYear", "UTC");
+}
+
+/** C1 (`due`) or C2 (`passed`) from its facts (spec 030b §14.5, AC-42). */
+export function renderContractReview(
+  state: ContractReviewState,
+  input: ContractReviewFacts,
+  copy: OpsCopy,
+  siteOrigin: string,
+): RenderedNotification {
+  const { t } = copy;
+  const review = ContractReviewFactsSchema.parse(input);
+  if (copy.contractsHref === undefined) {
+    throw new Error("EMAIL_FACTS_MISSING: C1 and C2 have no Contracts link");
+  }
+  const link = new URL(
+    copy.contractsHref(review.partnerCode),
+    siteOrigin,
+  ).toString();
+  const date = calendarDay(review.reviewOn);
+  const version = String(review.versionNo);
+  const prefix = `emails.ops.contracts.${state}`;
+  const values = {
+    code: review.partnerCode,
+    kind: t(`emails.ops.contracts.subjectKind.${review.docKind}`),
+    version,
+    date,
+  };
+  const subject = t(`${prefix}.subject`, values);
+  const band = t(`${prefix}.band.${review.docKind}`, { date });
+  const title = t(`${prefix}.heading`, { code: review.partnerCode });
+  const open = t("emails.ops.contracts.open");
+  const what = t(`${prefix}.note.${review.docKind}`);
+  const preheader =
+    state === "due"
+      ? t("emails.ops.contracts.due.preheader", {
+          days: String(Math.max(0, review.daysLeft)),
+        })
+      : t("emails.ops.contracts.passed.preheader", { date });
+  const documentValue = t("emails.ops.contracts.documentValue", {
+    kind: t(`admin.partners.contracts.kind.${review.docKind}`),
+    version,
+  });
+  const dateValue = t("emails.ops.contracts.reviewDateValue", {
+    date,
+    zone: review.timeZone,
+  });
+  const rows = [
+    {
+      label: t("emails.ops.contracts.florist"),
+      value: code(review.partnerCode),
+      text: review.partnerCode,
+    },
+    {
+      label: t("emails.ops.contracts.document"),
+      value: documentValue,
+      text: documentValue,
+    },
+    {
+      label: t("emails.ops.contracts.reviewDate"),
+      value: numeric(dateValue),
+      text: dateValue,
+    },
+  ];
+  const html = emailDocument({
+    locale: "en",
+    subject,
+    preheader,
+    frame: opsFrame(copy),
+    band: text(band),
+    blocks: [
+      heading(title),
+      facts(rows.map(({ label, value }) => ({ label, value }))),
+      button(open, link),
+      note(what),
+    ],
+  });
+  const textPart = [
+    title,
+    band,
+    rows.map((row) => `${row.label}: ${row.text}`).join("\n"),
+    `${open}:\n${link}`,
+    what,
+    opsFooterText(copy),
+  ].join("\n\n");
+  return { subject, html, text: `${textPart}\n` };
+}
+
+/**
+ * The job key's three parts, `{contractId}:{reviewOn}:{due|passed}` (spec 030b §14.5: the source
+ * key is `job:partners.contract_reminders:{contractId}:{reviewOn}:{due|passed}`).
+ */
+export function parseContractReviewJobId(jobId: string): {
+  readonly contractId: string;
+  readonly reviewOn: string;
+  readonly state: ContractReviewState;
+} {
+  const [contractId, reviewOn, state, ...rest] = jobId.split(":");
+  return z
+    .object({
+      contractId: z.uuid(),
+      reviewOn: IsoDay,
+      state: z.enum(CONTRACT_REVIEW_STATES),
+    })
+    .parse({
+      contractId,
+      reviewOn,
+      state: rest.length === 0 ? state : undefined,
+    });
+}
+
+const ContractReviewRow = z.object({
+  partner_code: z.string(),
+  doc_kind: z.enum(REVIEWED_KINDS),
+  version_no: z.coerce.number().int(),
+  time_zone: z.string(),
+  today: IsoDay,
+});
+
+/**
+ * C1 and C2's facts at send time: the contract's florist code, kind and version and the florist's
+ * country zone. The review date is the key's, the one the job decided on.
+ */
+export async function loadContractReviewFacts(
+  executor: OrderExecutor,
+  jobId: string,
+  now: Date,
+): Promise<ContractReviewFacts> {
+  const key = parseContractReviewJobId(jobId);
+  const [found] = await executor.execute(sql`
+    SELECT p.code AS partner_code, k.doc_kind, k.version_no, c.iana_zone AS time_zone,
+           (${now.toISOString()}::timestamptz AT TIME ZONE c.iana_zone)::date::text AS today
+    FROM public.partner_contract k
+    JOIN public.fulfillment_partner p ON p.id = k.partner_id
+    JOIN public.country c ON c.id = p.country_id
+    WHERE k.id = ${key.contractId}::uuid`);
+  if (found === undefined) {
+    throw new Error("EMAIL_FACTS_MISSING: the contract does not exist");
+  }
+  const row = ContractReviewRow.parse(found);
+  const daysLeft = Math.round(
+    (Date.parse(`${key.reviewOn}T00:00:00Z`) -
+      Date.parse(`${row.today}T00:00:00Z`)) /
+      86_400_000,
+  );
+  return ContractReviewFactsSchema.parse({
+    partnerCode: row.partner_code,
+    docKind: row.doc_kind,
+    versionNo: row.version_no,
+    reviewOn: key.reviewOn,
+    timeZone: row.time_zone,
+    daysLeft,
+  });
+}
+
+/** The registered renderer of C1 and C2. */
+export async function renderContractReviewNotification(
+  state: ContractReviewState,
+  input: NotificationRenderInput,
+  copy: OpsCopy,
+  siteOrigin: string,
+): Promise<RenderedNotification> {
+  if (input.jobId === undefined || input.jobId === null) {
+    throw new Error("EMAIL_FACTS_MISSING: C1 and C2 have no contract");
+  }
+  return renderContractReview(
+    state,
+    await loadContractReviewFacts(
+      input.executor,
+      input.jobId,
+      input.now ?? new Date(),
+    ),
+    copy,
+    siteOrigin,
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* Registration                                                                */
 /* -------------------------------------------------------------------------- */
 
@@ -1017,6 +1230,14 @@ export function registerOpsEmailTemplates(
     registerNotificationTemplate("payouts-ready", (input) =>
       renderPayoutsReadyNotification(input, copy, siteOrigin()),
     );
+  }
+  for (const state of CONTRACT_REVIEW_STATES) {
+    const key = `contract-review-${state}` as const;
+    if (notificationTemplate(key) === undefined) {
+      registerNotificationTemplate(key, (input) =>
+        renderContractReviewNotification(state, input, copy, siteOrigin()),
+      );
+    }
   }
   if (notificationTemplate("payout-line-missing") === undefined) {
     registerNotificationTemplate("payout-line-missing", (input) =>

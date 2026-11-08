@@ -192,12 +192,26 @@ registerOpsEmailTemplates({
   payoutHref: payoutDetailHref,
   // Spec 030a §2.7: F2's link to the payouts list (TASK-364; TASK-367 builds the page).
   payoutsHref: payoutsListHref,
+  // Spec 030b §14.4: C1 and C2's link to the florist's Contracts tab (TASK-442).
+  contractsHref: (partnerCode) =>
+    `/admin/partners/${encodeURIComponent(partnerCode)}/contracts`,
 });
 
 // Spec 016 §5.2 (TASK-333): the buyer emails B1 to B6 and B8. The refunds come through spec 013's
 // `succeededRefunds`, and B4's photo is read from the private bucket through a short signed URL and
 // attached as bytes (§13 16-8: attached, never linked). Loaded at the first B4, so loading the job
 // table loads no storage client.
+/** Spec 030b's private contract store, or `undefined` when no private bucket is configured. */
+async function optionalContractStorage() {
+  try {
+    const { privateContractStore } =
+      await import("../modules/partners/contracts");
+    return (await privateContractStore()).storage;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The stored delivery photo (a 1,200 px JPEG, spec 011): some bytes, and well under Resend's 40 MB. */
 const DeliveryPhotoBytesSchema = z
   .instanceof(ArrayBuffer)
@@ -433,6 +447,13 @@ export const JOB_HANDLERS: JobHandlers = {
   "payments.balance_sweep": async () => {
     await runBalanceSweep({ enqueue: (job) => enqueueBalanceFetch(job) });
   },
+  // Spec 030b §14.5 (TASK-442): hourly. Idempotent: each email is keyed by contract, review date
+  // and state in `notification_delivery`, so a retry or the next hour sends nothing twice.
+  "partners.contract_reminders": async () => {
+    const { runContractReminders } =
+      await import("../modules/partners/contracts/reminders");
+    await runContractReminders();
+  },
   // Spec 034 §5.2 (TASK-450): the basket reminder's scan and one reminder's send.
   "basket-reminders.scan": async () => {
     const { runBasketReminderScan } = await import("./basket-reminders");
@@ -443,13 +464,21 @@ export const JOB_HANDLERS: JobHandlers = {
     await runBasketReminderSend(payload.reminderId, context.retryCount ?? 0);
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
-  // `storage_unavailable` and kept rather than losing their rows while the objects stay.
+  // `storage_unavailable` and kept rather than losing their rows while the objects stay. Spec
+  // 030b's contracts (TASK-442) use the private contract store when it is configured, read here at
+  // run time; without it they are reported `storage_unavailable` likewise.
   "retention.sweep": async (payload) => {
+    const contractStorage = await optionalContractStorage();
+    const { captureAlert } = await import("../lib/sentry");
     await withSystemContext("retention.sweep", (db) =>
       runRetentionSweep(db, {
         now: new Date(),
         dryRun: payload.dryRun,
         log: logger,
+        ...(contractStorage === undefined ? {} : { contractStorage }),
+        alert: (alert, fields) => {
+          captureAlert(alert, fields);
+        },
       }),
     );
   },

@@ -47,6 +47,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-08: migration 0041, storage `contract` kind and `downloadName`, `checkPdf` (@cantoo/pdf-lib), upload and download routes, edit and withdraw, flags and terms sync, the activation gate (trigger and preflight), Contracts tab, Agreement column, Contracts due, runbook sections, RoPA row 22 (renumbered at merge); unit and integration tests green on scratch PG16 with a local-only 0040 placeholder.
+- 2026-11-08 (finisher, branch `task/TASK-442-contract-reminders`): `partners.contract_reminders` registered (registry, tick hourly, handler), C1 `contract-review-due` and C2 `contract-review-passed` in the founder frame through `sendOpsJobNotification` (new `template` filter), the `partner_contract` retention handler (object then row per florist, audit row per failed delete, alert on the third); tests next.
 
 ## Result
 

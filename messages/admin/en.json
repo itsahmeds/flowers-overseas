@@ -2288,6 +2288,44 @@
           "open": "Open the order in admin",
           "note": "The usual cause: the florist has no price for this bouquet and size. Add it on the florist page; the line is written on the next retry."
         }
+      },
+      "contracts": {
+        "subjectKind": {
+          "agreement": "agreement",
+          "dpa_addendum": "data-processing addendum"
+        },
+        "florist": "Florist",
+        "document": "Document",
+        "documentValue": "{kind} v{version}",
+        "reviewDate": "Review date",
+        "reviewDateValue": "{date}, {zone}",
+        "open": "Open the Contracts tab",
+        "due": {
+          "subject": "Contract review due: {code} · {kind} v{version} · {date}",
+          "preheader": "{days, plural, =0 {The review date is today.} one {The review date is in # day.} other {The review date is in # days.}}",
+          "band": {
+            "agreement": "Review the florist agreement by {date}.",
+            "dpa_addendum": "Review the data-processing addendum by {date}."
+          },
+          "heading": "Contract review due for {code}",
+          "note": {
+            "agreement": "Renew or replace it before the review date: upload the new version on the Contracts tab. Earlier versions are kept.",
+            "dpa_addendum": "Renew or replace it before the review date: upload the new version on the Contracts tab. Earlier versions are kept."
+          }
+        },
+        "passed": {
+          "subject": "Contract review date passed: {code} · {kind} v{version}",
+          "preheader": "The review date was {date}.",
+          "band": {
+            "agreement": "The review date of this florist agreement has passed.",
+            "dpa_addendum": "The review date of this data-processing addendum has passed."
+          },
+          "heading": "Contract review date passed for {code}",
+          "note": {
+            "agreement": "The agreement is still the current one on file. Upload the renewed version, or edit its review date if the agreement runs on.",
+            "dpa_addendum": "The addendum is still the current one on file. Upload the renewed version, or edit its review date if the addendum runs on."
+          }
+        }
       }
     }
   }

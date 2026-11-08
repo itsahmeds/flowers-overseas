@@ -363,6 +363,16 @@ describe("the route files, as Next loads them", () => {
           singletonSeconds: 3600,
         },
       ],
+      // Spec 030b §14.5 (TASK-442): the contract review reminders, hourly.
+      [
+        "partners.contract_reminders",
+        {},
+        {
+          requestId: "system:jobs.tick",
+          singletonKey: "partners.contract_reminders",
+          singletonSeconds: 3600,
+        },
+      ],
       // Spec 025 §5.2 (TASK-489): the alert monitors and the escalation pass.
       [
         "alerts.monitor",
