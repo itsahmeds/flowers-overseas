@@ -335,7 +335,8 @@ describe("AC-11 (T-11): a country in the words is the destination", () => {
       country: "polska",
     });
     expect(view.selection.map((card) => card.productId)).toEqual(
-      listing?.items.map((card) => card.productId),
+      // The first 12 of the listing's order (the listing pages 24 since TASK-390).
+      listing?.items.slice(0, 12).map((card) => card.productId),
     );
     expect(view.selection).toHaveLength(12);
   });

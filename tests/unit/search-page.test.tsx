@@ -164,7 +164,8 @@ describe("the three no-results states on /en/search?to=pl (AC-5)", () => {
       country: "poland",
     });
     expect(page.result.selection.map((card) => card.productId)).toEqual(
-      listing?.items.map((card) => card.productId),
+      // The first 12 of the listing's order (the listing pages 24 since TASK-390).
+      listing?.items.slice(0, 12).map((card) => card.productId),
     );
     expect(page.result.selection).toHaveLength(12);
     expect(markup).toContain(
