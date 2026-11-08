@@ -29,7 +29,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From the build (2026-11-08), carried forward, nothing silent:**
-  - **Migration number.** `0040_ops_alerts` as assigned; main ends at 0037, so the offline `pnpm db:check` reports "0040 does not continue the sequence (expected 0038)" until TASK-418's 0038 and TASK-439's 0039 merge. Run locally with the file renamed to 0038: `db:check` (offline and connected) exit 0, and the migrate, rollback, migrate round trip passes. `scripts/db-check.snapshot.json` carries the new objects; regenerate it after 0038 and 0039 land (`pnpm db:check --write-snapshot`).
+  - **Migration number.** Renumbered `0038_ops_alerts` (orchestrator, 2026-11-08: TASK-418 used no migration); `pnpm db:check` exit 0 and `scripts/db-check.snapshot.json` regenerated on it. TASK-439 takes 0039.
   - **Schema beyond §5.1, each for a rule §5.5 states:** `ops_alert.clear_runs` (the 2-clear-runs flap guard), `ops_alert_notification.receipt_checked_at` (receipts polled at most every 2 minutes), `ops_alert_setting.summary_sent_for` (a second summary run for the same date sends nothing). The storm notice is recorded as kind `held_digest` (§5.1's kind list has no `storm`).
   - **Severities for names the spec's table does not list** (raised before the registry existed): `invoice.refused` P2, `invoice.nbp_failed` P2, `invoice.render_overdue` P3, `invoice.render_dead` P2, `payouts.line_missing` P2, `payment.refund_exceeds_captured` P2, `orders.close_backlog` P3, `auth.buyer.link_cap` P2, `search.slow` P3. Their runbook anchors are TASK-490's to write.
   - **`APP_BASE_URL`** in the spec is `NEXT_PUBLIC_SITE_URL` here (the only site-origin key). **`config/railway.json`** lists no variables; `railway:check` reads the schema's `ENV_KEYS`, which now carry the five keys.
@@ -49,7 +49,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-- 2026-11-08: migration 0040 + Drizzle mirror; `src/modules/ops` (registry, schemas, raise with dedup and reopen, Pushover adapter, messages, dispatch with quiet hours, storm, test cap, channel failure); every `captureAlert` call site moved to `raiseLegacyAlert`; env keys, flag, jobs, retention; unit, contract and integration suites green; build green. TASK-489 built in the same PR.
+- 2026-11-08: migration 0038 (first written as 0040) + Drizzle mirror; `src/modules/ops` (registry, schemas, raise with dedup and reopen, Pushover adapter, messages, dispatch with quiet hours, storm, test cap, channel failure); every `captureAlert` call site moved to `raiseLegacyAlert`; env keys, flag, jobs, retention; unit, contract and integration suites green; build green. TASK-489 built in the same PR.
 
 ## Result
 

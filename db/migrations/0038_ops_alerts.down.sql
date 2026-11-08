@@ -1,4 +1,4 @@
--- Rollback of 0040_ops_alerts (spec 025 §5.1 "Rollback", AC-36; TASK-488).
+-- Rollback of 0038_ops_alerts (spec 025 §5.1 "Rollback", AC-36; TASK-488).
 --
 -- The alert history is lost: every row of `ops_alert` and `ops_alert_notification` and the quiet
 -- hours setting go with their tables. No order or money data lives here, so there is no guard.

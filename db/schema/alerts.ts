@@ -1,6 +1,6 @@
 /**
  * Drizzle definitions for the founder's alert log: `ops_alert`, `ops_alert_notification` and
- * `ops_alert_setting` (spec 025 §5.1; migration `0040_ops_alerts.sql`; TASK-488).
+ * `ops_alert_setting` (spec 025 §5.1; migration `0038_ops_alerts.sql`; TASK-488).
  *
  * The typed mirror of the hand-written SQL, never its source. `name` is validated against the
  * code's `ALERT_REGISTRY` by zod at the boundary (`src/modules/ops`), not by an enum here, so a

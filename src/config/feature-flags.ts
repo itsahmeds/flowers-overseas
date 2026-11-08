@@ -235,7 +235,7 @@ const REGISTRY = [
     risk: "standard",
     dirties: [],
   },
-  // Spec 025 §5.5, §12 (migration `0040_ops_alerts`, TASK-488): founder alert push, global. Push
+  // Spec 025 §5.5, §12 (migration `0038_ops_alerts`, TASK-488): founder alert push, global. Push
   // is sent in production unless a global row turns it off, elsewhere only while one turns it on;
   // email is always sent. Alerts run on the worker, so it dirties no page.
   {

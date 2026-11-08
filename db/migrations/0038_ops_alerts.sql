@@ -1,7 +1,7 @@
--- 0040_ops_alerts — the founder's alert log: one row per open problem, its notifications, and the
+-- 0038_ops_alerts — the founder's alert log: one row per open problem, its notifications, and the
 -- quiet-hours setting (spec 025 §5.1; AC-2, AC-36; TASK-488).
 --
--- Numbered 0040 (orchestrator, 2026-11-08): 0038 is TASK-418's and 0039 TASK-439's.
+-- Numbered 0038 (orchestrator, 2026-11-08): main ends at 0037 (TASK-445); TASK-418 used no migration.
 --
 --   1. `ops_alert`: one row per open fingerprint (`name:subject`). The partial unique index
 --      `ops_alert_open_fingerprint_key` is the deduplication: two concurrent raises meet in
@@ -21,7 +21,7 @@
 --   6. Flag `alerts.push`, global, `enabled_default = false`. Push is sent in production unless a
 --      global row turns it off, and elsewhere only while a global row turns it on (§5.5, §12).
 --
--- Rollback: `0040_ops_alerts.down.sql` (the alert history is lost; no order or money data lives
+-- Rollback: `0038_ops_alerts.down.sql` (the alert history is lost; no order or money data lives
 -- here, so no guard).
 
 SET LOCAL ROLE app_owner;
