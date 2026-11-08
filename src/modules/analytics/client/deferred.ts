@@ -241,6 +241,9 @@ function stop(): void {
 /** Start (or restart after a withdrawal) for `id`. A second start while running is a no-op. */
 export function startDeferred(id: string): void {
   if (running) return;
+  // The chunk's name in the build output: `pnpm budget:client-js` finds and measures this chunk
+  // by the literal (spec 023 AC-5), and keeps it out of every page load's bill.
+  performance.mark("fo:analytics:deferred");
   measurementId = id;
   running = true;
   lastRoute = "";

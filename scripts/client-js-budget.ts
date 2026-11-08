@@ -512,7 +512,91 @@ export const ON_INPUT_CHUNK_MARKERS: readonly string[] = [
     (island) => island.marker,
   ),
   "data-fo-consent-panel",
+  // Spec 023 (TASK-492): the GA4 chunk loads only after an analytics grant, never on a page load
+  // and never in a Lighthouse run; it is measured on its own by `analyticsChunk()`.
+  "fo:analytics:deferred",
 ];
+
+/** The deferred GA4 chunk's `performance.mark` literal (`src/modules/analytics/client/deferred.ts`). */
+export const ANALYTICS_CHUNK_MARKER = "fo:analytics:deferred";
+
+/** The attribute the first-load GA4 loader reads; its presence means the loader was built. */
+export const ANALYTICS_LOADER_MARKER = "data-fo-ga4";
+
+/** Spec 023 AC-5: the deferred analytics chunk, at most this many Brotli bytes. */
+export const ANALYTICS_CHUNK_BUDGET_BYTES = 4096;
+
+export interface AnalyticsChunk {
+  /** The chunk files one `import()` of the deferred module requests, in the loader's order. */
+  readonly assets: readonly string[];
+  readonly brotliBytes: number;
+  /** Measured URLs whose document or hydration set names one of `assets` (must be empty). */
+  readonly initialOn: readonly string[];
+}
+
+/**
+ * The deferred GA4 chunk (spec 023 AC-5, T-05), named by its build output: the loader stub whose
+ * chunk list holds a file carrying `ANALYTICS_CHUNK_MARKER`. Throws when no such file exists
+ * (spec 004 clause 9: an existence check before any size is believed) in a build whose first-load
+ * loader names `data-fo-ga4`; `null` for a build with no loader at all. Its Brotli size is the sum
+ * of the list's files; `initialOn` lists the measured URLs that would fetch any of them on load.
+ */
+export function analyticsChunk(
+  dist: string,
+  pages: readonly PageMeasurement[],
+): AnalyticsChunk | null {
+  const chunks = join(dist, "static/chunks");
+  const files = readdirSync(chunks, { recursive: true, encoding: "utf8" });
+  // The first-load loader (`client/loader.ts`) names `data-fo-ga4`; a build without it (a test
+  // fixture) has no GA4 client to measure. A build with it must have the chunk it imports.
+  const hasLoader = files.some(
+    (file) =>
+      file.endsWith(".js") &&
+      readFileSync(join(chunks, file), "utf8").includes(
+        ANALYTICS_LOADER_MARKER,
+      ),
+  );
+  if (!hasLoader) return null;
+  let assets: string[] | undefined;
+  for (const file of files) {
+    if (!file.endsWith(".js") || assets !== undefined) continue;
+    const source = readFileSync(join(chunks, file), "utf8");
+    for (const [, list] of source.matchAll(LAZY_LOADER)) {
+      const named = [...(list ?? "").matchAll(LAZY_LOADER_CHUNK)].flatMap(
+        ([, asset]) => (asset === undefined ? [] : [asset]),
+      );
+      const marked = named.some((asset) => {
+        try {
+          return readFileSync(join(dist, asset), "utf8").includes(
+            ANALYTICS_CHUNK_MARKER,
+          );
+        } catch {
+          return false;
+        }
+      });
+      if (marked) {
+        assets = named;
+        break;
+      }
+    }
+  }
+  if (assets === undefined) {
+    throw new Error(
+      `no chunk in ${chunks} carries \`${ANALYTICS_CHUNK_MARKER}\`: the deferred GA4 chunk was not built, or its marker moved (spec 023 AC-5)`,
+    );
+  }
+  const found = assets;
+  const brotliBytes = found.reduce(
+    (total, asset) =>
+      total +
+      measureAsset(dist, { asset, noModule: false, kind: "lazy" }).brotliBytes,
+    0,
+  );
+  const initialOn = pages
+    .filter((page) => page.assets.some((asset) => found.includes(asset.asset)))
+    .map((page) => page.url);
+  return { assets: found, brotliBytes, initialOn };
+}
 
 /**
  * The consent island's chunk, by the `performance.mark` literal it alone carries (TASK-279).
@@ -1558,6 +1642,7 @@ export function main(
     const messages = messagesPayloadSizes();
     const forbidden = forbiddenModuleHits(dist, pages);
     const leaks = catalogueLeaks(dist, pages);
+    const analytics = analyticsChunk(dist, pages);
     const segments = segmentLeaks(dist, pages);
     const islandHits = productIslandHits(dist, pages);
     const fonts = fontTransfer(root);
@@ -1604,6 +1689,16 @@ export function main(
           : `${hit.url} fetches the product island (${hit.asset} holds \`${hit.marker}\`), which spec 009 AC-37 keeps off every page but the product page`,
       ),
       ...fontBreaches(fonts),
+      ...(analytics !== null &&
+      analytics.brotliBytes > ANALYTICS_CHUNK_BUDGET_BYTES
+        ? [
+            `the deferred GA4 chunk (${analytics.assets.join(", ")}) is ${String(analytics.brotliBytes)} B Brotli, over spec 023 AC-5's ${String(ANALYTICS_CHUNK_BUDGET_BYTES)} B`,
+          ]
+        : []),
+      ...(analytics?.initialOn ?? []).map(
+        (url) =>
+          `${url} fetches the deferred GA4 chunk on load, which spec 023 AC-5 keeps out of every initial chunk set`,
+      ),
       ...grown.map(
         (regression) =>
           `${regression.url} grew ${kb(regression.deltaBytes)} against \`${BASELINE_FILE}\` (${kb(
@@ -1623,6 +1718,10 @@ export function main(
         formatMessagesTable(messages),
         "",
         formatChunkList(pages),
+        "",
+        analytics === null
+          ? "client-js-budget: no GA4 loader in this build, so no deferred GA4 chunk to measure"
+          : `client-js-budget: deferred GA4 chunk ${analytics.assets.join(", ")}: ${String(analytics.brotliBytes)} B Brotli (budget ${String(ANALYTICS_CHUNK_BUDGET_BYTES)} B), in no measured URL's initial set: ${analytics.initialOn.length === 0 ? "yes" : "no"}`,
         "",
         forbidden.length === 0
           ? `client-js-budget: no measured URL ships ${FORBIDDEN_CLIENT_MODULES.map((module) => module.label).join(" or ")}`
