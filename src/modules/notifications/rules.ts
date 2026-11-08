@@ -51,6 +51,9 @@ export const NOTIFICATION_TEMPLATE_KEYS = [
   "payout-line-missing",
   // spec 030a §5.2 (TASK-365): the florist's payout statement, its PDF attached.
   "florist-payout-statement",
+  // spec 030b §14.5 (TASK-442): the founder's two contract review emails.
+  "contract-review-due",
+  "contract-review-passed",
 ] as const;
 export type NotificationTemplateKey =
   (typeof NOTIFICATION_TEMPLATE_KEYS)[number];
@@ -63,8 +66,9 @@ export type NotificationAudience = (typeof NOTIFICATION_AUDIENCES)[number];
  * The jobs that trigger a message without an event of their own: V2 and V5 (spec 016's routing
  * jobs, TASK-328), B8 (`invoice.email`, TASK-334) and spec 030a's F1 (`payouts.prepaid_ready`,
  * TASK-363), F2 (`payouts.close`, about no order) and F3 (`payouts.watch`, TASK-364), and the
- * florist's payout statement (`payouts.statement_email`, about one payout, TASK-365). None of them
- * is an event name.
+ * florist's payout statement (`payouts.statement_email`, about one payout, TASK-365), and spec
+ * 030b's contract reviews (`partners.contract_reminders`, about one contract, TASK-442). None of
+ * them is an event name.
  */
 export const NOTIFICATION_JOBS = [
   "assignment.remind",
@@ -74,6 +78,7 @@ export const NOTIFICATION_JOBS = [
   "payouts.close",
   "payouts.watch",
   "payouts.statement_email",
+  "partners.contract_reminders",
 ] as const;
 export type NotificationJob = (typeof NOTIFICATION_JOBS)[number];
 
@@ -246,6 +251,24 @@ export const NOTIFICATION_RULES: readonly NotificationRule[] = Object.freeze([
     template: "florist-payout-statement",
     audience: "florist",
     trigger: "payouts.statement_email",
+    from: ANY,
+    modes: LIVE,
+  },
+  // Spec 030b §14.5, AC-42 (TASK-442): a current agreement or addendum's review date, about no
+  // order (`sendOpsJobNotification` with the one template the job chose); `live`, as F2.
+  {
+    code: "C1",
+    template: "contract-review-due",
+    audience: "ops",
+    trigger: "partners.contract_reminders",
+    from: ANY,
+    modes: LIVE,
+  },
+  {
+    code: "C2",
+    template: "contract-review-passed",
+    audience: "ops",
+    trigger: "partners.contract_reminders",
     from: ANY,
     modes: LIVE,
   },

@@ -70,6 +70,7 @@ import {
   type NotificationRule,
   type NotificationTemplateKey,
   type NotificationTrigger,
+  NOTIFICATION_TEMPLATE_KEYS,
   notificationsFor,
 } from "./rules";
 import {
@@ -725,8 +726,13 @@ export async function sendJobNotifications(
  */
 export const OpsJobNotificationInputSchema = z
   .object({
-    job: z.enum(["payouts.close"]),
+    job: z.enum(["payouts.close", "partners.contract_reminders"]),
     jobId: z.string().min(1).max(128),
+    /**
+     * The one ops template to send when the job has several (spec 030b's `partners.contract_reminders`
+     * chooses `contract-review-due` or `contract-review-passed`); every ops row of the job when absent.
+     */
+    template: z.enum(NOTIFICATION_TEMPLATE_KEYS).optional(),
   })
   .strict();
 export type OpsJobNotificationInput = z.input<
@@ -743,7 +749,9 @@ export async function sendOpsJobNotification(
   if (!(await resolved.emailEnabled())) throw new NotificationsHeld();
   const job: NotificationJob = parsed.job;
   const rules = notificationsFor(job, null, "live").filter(
-    (rule) => rule.audience === "ops",
+    (rule) =>
+      rule.audience === "ops" &&
+      (parsed.template === undefined || rule.template === parsed.template),
   );
   const sourceKey = `job:${parsed.job}:${parsed.jobId}`;
   let sent = 0;

@@ -21,13 +21,14 @@ import {
 } from "../admin/commands";
 import { FloristSignInEmailSchema } from "./language";
 
+export type FloristSignInStatus = z.infer<typeof FloristSignInStatusSchema>;
+
 export const FloristSignInStatusSchema = z
   .object({
     email: z.string(),
     firstSignedInAt: z.iso.datetime().nullable(),
   })
   .strict();
-export type FloristSignInStatus = z.infer<typeof FloristSignInStatusSchema>;
 
 /** The admin block's facts for one partner; `undefined` for an unknown id (AC-10). */
 export async function floristSignInStatus(

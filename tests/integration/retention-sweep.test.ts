@@ -987,6 +987,9 @@ describe.skipIf(server.url === undefined)(
             ["auth_email_send", "applied"],
             ["auth_session", "applied"],
             ["auth_verification_token", "applied"],
+            // spec 034 §5.1 E (`0040`, TASK-449).
+            ["basket_reminder", "applied"],
+            ["basket_reminder_tokens", "applied"],
             ["buyer_personal", "applied"],
             ["checkout_draft", "applied"],
             // spec 010 §14 A-founder-2026-10-22 item 2 C (`0020`); TASK-207's handler.
@@ -994,14 +997,19 @@ describe.skipIf(server.url === undefined)(
             ["consent_records", "applied"],
             ["delivery_photo", "storage_unavailable"],
             ["demo_order_personal", "applied"],
+            ["email_suppression", "applied"],
             ["fraud_signals", "applied"],
             ["invoice_archive", "kept"],
+            // spec 025 §5.1 (TASK-488).
+            ["ops_alert", "applied"],
             // spec 023 §5.1 (TASK-491): the GA ids of an order, cleared after 60 days.
             ["order_analytics_ga_ids", "applied"],
             ["partner_application", "applied"],
             // spec 030b §13 Q11 (TASK-439): the CRM rows of an offboarded florist; balance facts
             // are kept with the payment records.
             ["partner_contact_log", "applied"],
+            // spec 030b §14.3 (TASK-442): no contract store is passed here, so nothing is deleted.
+            ["partner_contract", "storage_unavailable"],
             ["partner_note", "applied"],
             ["payment_balance_txn", "kept"],
             ["recipient_contact", "applied"],

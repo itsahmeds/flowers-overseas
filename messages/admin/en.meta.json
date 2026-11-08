@@ -8008,5 +8008,115 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "9288e1ebd20202adf94e10d1baecc923893402f10f38529860d3cedf6e368718"
+  },
+  "emails.ops.contracts.subjectKind.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "46a81739c6ee7c1d5ed084e7de843a7ed79435cd445513e4dd5c4e5ac395fb4b"
+  },
+  "emails.ops.contracts.subjectKind.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d60871f27123f90aca1899db4fc3b3eb0e5ecb442a18b42b5dd950d9d151f3e1"
+  },
+  "emails.ops.contracts.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "emails.ops.contracts.document": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d6bd8c0aeee80fedb2dbf05c973100c3db04be90c072a88572533f2684131a36"
+  },
+  "emails.ops.contracts.documentValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9ee0960adaf2b799be51c2e338b058d46a333db62080666fc579fc632c4c3acd"
+  },
+  "emails.ops.contracts.reviewDate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c205cbb90e19abd59b99d91ffa5147c84cc2e0dacafd19bf007463104ed87f7"
+  },
+  "emails.ops.contracts.reviewDateValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e032c688fd7b41e63a30d61319908ed1e4f38c04943c47372c3e508a3dcc1b7"
+  },
+  "emails.ops.contracts.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9a5bd373c40e0dce199803e52d6874e9689406a5cc8f3094c43364436cc03836"
+  },
+  "emails.ops.contracts.due.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b3daf2151e78abdfe99cb4223ad5b04ae1f0c99223255ddfba46f1dbb53bd99e"
+  },
+  "emails.ops.contracts.due.preheader": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5a862b14c443cd99f3769b60dd730856a4365ede3bb1320a6a9c8e6b2c7f692"
+  },
+  "emails.ops.contracts.due.band.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1a43bf5ff0789c0afa5524232a47c2d47d51c153d7bb191b9d0ca24927c8deeb"
+  },
+  "emails.ops.contracts.due.band.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "87ba497078d13203935c8fb46fd68e00cf610ddff96fc6248503ca75f96f5ccc"
+  },
+  "emails.ops.contracts.due.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "12e1a30dc5a241d2383320340e0b95f9bf78f8b1a7c52352f681f72d7bc5405c"
+  },
+  "emails.ops.contracts.due.note.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "978f9378fa6709f39c24f3f81af5c302505959b1678ead72ccb09fa818bd4c2f"
+  },
+  "emails.ops.contracts.due.note.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "978f9378fa6709f39c24f3f81af5c302505959b1678ead72ccb09fa818bd4c2f"
+  },
+  "emails.ops.contracts.passed.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7c34083fee27723ed68ba58834d09c6961bac5c06e011e4e2ca7bbb43808e6a3"
+  },
+  "emails.ops.contracts.passed.preheader": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d803b5606446cd165fcef67f25ded276d03bcb2f92811df121992976f336378"
+  },
+  "emails.ops.contracts.passed.band.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cadc9547503ff27976719e06f217906c3e4f7f7fc7c966e9d3a56275633fc3bd"
+  },
+  "emails.ops.contracts.passed.band.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db34654312b362888e1aebfe75acc7d36dfd438e42e99cbfca903a669d48cd25"
+  },
+  "emails.ops.contracts.passed.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d510b686c5badada78d637ef138467ea84b60198917baf743ca847c555e2dda4"
+  },
+  "emails.ops.contracts.passed.note.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "be91a061eec7adc87359f6fbe13c789b9232176f07e50316020dede5a3793d46"
+  },
+  "emails.ops.contracts.passed.note.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f685de5c6cfd0410c20c3b2ed8e4e1bd1b1974841c472a0cbfa25f6355b261f"
   }
 }

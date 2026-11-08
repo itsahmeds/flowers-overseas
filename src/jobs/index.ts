@@ -29,7 +29,8 @@
  *    `invoice.render_sweep` (enqueued by every minute tick) and `invoice.email` (keyed by invoice,
  *    `short`; its handler is spec 016's B8, TASK-334, so until then its jobs wait); spec 030b's
  *    `payments.balance_fetch` (§5.2, TASK-439: keyed `{kind}:{ref}`, `short`) and
- *    `payments.balance_sweep` (enqueued by the minute tick once an hour);
+ *    `payments.balance_sweep` (enqueued by the minute tick once an hour), and
+ *    `partners.contract_reminders` (§14.5, TASK-442: hourly, from the minute tick);
  *  - **declared only** — the name is reserved for the spec that implements it
  *    (`notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -273,6 +274,12 @@ export const BasketRemindersSendPayload = z
   .strict();
 
 /**
+ * `partners.contract_reminders` (spec 030b §14.5, AC-42; TASK-442): one hourly look at the current
+ * agreements' and addenda's review dates. Takes nothing; the minute tick enqueues one an hour.
+ */
+export const PartnersContractRemindersPayload = z.object({}).strict();
+
+/**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
  * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
  * already running may enqueue its own successor (a deferred offer, the next offer). `exclusive`:
@@ -384,6 +391,10 @@ export const REGISTERED_JOBS = {
   "payments.balance_sweep": {
     version: 1,
     payload: PaymentsBalanceSweepPayload,
+  },
+  "partners.contract_reminders": {
+    version: 1,
+    payload: PartnersContractRemindersPayload,
   },
   "basket-reminders.scan": { version: 1, payload: BasketRemindersScanPayload },
   "basket-reminders.send": {

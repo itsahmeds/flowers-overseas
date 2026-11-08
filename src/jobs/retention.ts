@@ -81,6 +81,14 @@
  *    alerts and their notifications. Open alerts are never swept.
  *  - `order_analytics_ga_ids` (60 days after placement, pseudonymise; spec 023 §5.1, AC-30;
  *    TASK-491): the GA client id and session id of an order become null, `ids_cleared_at` set.
+ *  - `partner_contract` (3650 days, read as 10 calendar years, after the florist's `offboarded_at`,
+ *    delete; spec 030b §14.3, AC-44; TASK-442): every contract of a florist offboarded at or before
+ *    `now - 10 years`, the object first (the contract store, `contractStorage`), then the row. A
+ *    florist that is not offboarded keeps every version. When an object delete fails, that
+ *    florist's rows all stay (the versions link to each other) and the next sweep retries; each
+ *    failure is one `audit_log` row (`partner_contract.purge_failed`, the attempt number), and the
+ *    third raises `alert=partners.contract_purge_failed` once. With no contract store supplied the
+ *    policy deletes nothing (`storage_unavailable`).
  *  A key with no handler here is reported `no_handler` and nothing is written for it.
  *
  * `dryRun` writes nothing — no row, no object — and reports the same counts, because every count
@@ -225,6 +233,13 @@ export interface RetentionSweepOptions {
   readonly dryRun: boolean;
   /** The R2 seam; absent until spec 006's adapter exists, and then photos are not deleted. */
   readonly storage?: Storage;
+  /** Spec 030b's contract store (the private bucket); absent, contracts are not deleted. */
+  readonly contractStorage?: Storage;
+  /** Raises a founder alert by name with ids only (`alert=partners.contract_purge_failed`). */
+  readonly alert?: (
+    alert: string,
+    fields: Readonly<Record<string, string>>,
+  ) => void;
   readonly log?: Logger;
 }
 
@@ -241,8 +256,12 @@ interface PolicyContext {
   readonly db: RetentionDb;
   readonly now: Date;
   readonly cutoff: Date;
+  /** The policy's `retention_days`, for a rule that reads it as calendar years. */
+  readonly retentionDays?: number;
   readonly dryRun: boolean;
   readonly storage: Storage | undefined;
+  readonly contractStorage?: Storage | undefined;
+  readonly alert?: RetentionSweepOptions["alert"];
 }
 
 type PolicyHandler = (
@@ -1007,6 +1026,109 @@ const orderAnalyticsGaIds: PolicyHandler = async ({
   };
 };
 
+/** Spec 030b §11: the alert of a contract object that could not be deleted three times. */
+export const CONTRACT_PURGE_FAILED_ALERT = "partners.contract_purge_failed";
+/** The `audit_log` action of one failed contract object delete. */
+export const CONTRACT_PURGE_FAILED_ACTION = "partner_contract.purge_failed";
+/** The failed attempt that raises the alert (once: the count passes it only one time). */
+export const CONTRACT_PURGE_ALERT_ATTEMPT = 3;
+
+/** `retention_days` as calendar years when it is a whole number of 365-day years. */
+function retentionInterval(days: number): SQL {
+  return days % 365 === 0
+    ? sql`make_interval(years => ${days / 365})`
+    : sql`make_interval(days => ${days})`;
+}
+
+/**
+ * Spec 030b §14.3, AC-44 (TASK-442): a florist's contracts, 10 years after it was offboarded.
+ * Objects first, per florist; a florist with a failed object delete keeps every row this sweep.
+ */
+const partnerContract: PolicyHandler = async ({
+  db,
+  now,
+  cutoff,
+  retentionDays,
+  dryRun,
+  contractStorage,
+  alert,
+}) => {
+  const due = await rows<{
+    id: string;
+    partner_id: string;
+    bucket: string;
+    object_key: string;
+  }>(
+    db,
+    sql`SELECT k.id, k.partner_id, k.bucket, k.object_key
+        FROM public.partner_contract k
+        JOIN public.fulfillment_partner p ON p.id = k.partner_id
+        WHERE p.offboarded_at IS NOT NULL
+          AND ${
+            retentionDays === undefined
+              ? ts(cutoff)
+              : sql`${ts(now)} - ${retentionInterval(retentionDays)}`
+          } >= p.offboarded_at
+        ORDER BY k.partner_id, k.id`,
+  );
+  if (contractStorage === undefined) {
+    return {
+      status: "storage_unavailable",
+      counts: { partner_contract: 0, objects: 0 },
+      skipped: { storage_unavailable: due.length },
+    };
+  }
+  if (dryRun) {
+    return {
+      status: "dry_run",
+      counts: { partner_contract: due.length, objects: due.length },
+      skipped: {},
+    };
+  }
+  const failedPartners = new Set<string>();
+  let objects = 0;
+  for (const contract of due) {
+    try {
+      await contractStorage.delete({
+        bucket: contract.bucket,
+        objectKey: contract.object_key,
+      });
+      objects += 1;
+    } catch {
+      failedPartners.add(contract.partner_id);
+      const [previous] = await rows<{ count: number }>(
+        db,
+        sql`SELECT count(*)::int AS count FROM public.audit_log
+            WHERE action = ${CONTRACT_PURGE_FAILED_ACTION}
+              AND entity_table = 'partner_contract' AND entity_id = ${contract.id}`,
+      );
+      const attempt = (previous?.count ?? 0) + 1;
+      await db.execute(sql`
+        INSERT INTO public.audit_log (actor_user_id, actor_label, action, entity_table, entity_id,
+                                      before, after, request_id, channel)
+        VALUES (NULL, 'system:retention.sweep', ${CONTRACT_PURGE_FAILED_ACTION},
+                'partner_contract', ${contract.id}, NULL,
+                jsonb_build_object('attempt', ${attempt}::int),
+                'system:retention.sweep', 'system')`);
+      if (attempt === CONTRACT_PURGE_ALERT_ATTEMPT) {
+        alert?.(CONTRACT_PURGE_FAILED_ALERT, { contract_id: contract.id });
+      }
+    }
+  }
+  const deletable = due.filter((row) => !failedPartners.has(row.partner_id));
+  if (deletable.length > 0) {
+    await db.execute(
+      sql`DELETE FROM public.partner_contract
+          WHERE id = ANY(${uuidArray(deletable.map((row) => row.id))})`,
+    );
+  }
+  return {
+    status: "applied",
+    counts: { partner_contract: deletable.length, objects },
+    skipped: { object_delete_failed: due.length - deletable.length },
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -1030,6 +1152,7 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   basket_reminder_tokens: basketReminderTokens,
   basket_reminder: basketReminderRows("basket_reminder"),
   email_suppression: basketReminderRows("email_suppression"),
+  partner_contract: partnerContract,
 };
 
 /**
@@ -1071,8 +1194,11 @@ export async function runRetentionSweep(
           db,
           now: options.now,
           cutoff,
+          retentionDays: policy.retention_days,
           dryRun: options.dryRun,
           storage: options.storage,
+          contractStorage: options.contractStorage,
+          alert: options.alert,
         })),
       };
     }
