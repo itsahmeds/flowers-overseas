@@ -58,6 +58,7 @@ task actually touches.
 | `company.data.ts` | The trading name as a plain constant, with no… | 004 |
 | `company.ts` | Company identity (spec 004 §2 "Everything… | 004 |
 | `competitors.ts` | Competitor and third-party marks, every one of… | 006 |
+| `contracts.ts` | Florist contracts settings | 030 |
 | `cookies.ts` | The cookie register | 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
@@ -237,6 +238,12 @@ task actually touches.
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
+| `admin/(signed-in)/partners/[code]/contracts/[id]/download/route.ts` | GET /admin/partners/[code]/contracts/[id]/downlo… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/actions.ts` | The Contracts tab's edit and withdraw actions,… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/loading.tsx` | The florist Contracts tab's loading state: a… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/page.tsx` | GET /admin/partners/[code]/contracts: the… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/upload/route.ts` | POST /admin/partners/[code]/contracts/upload:… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/view.ts` | The Contracts tab's outcome codes: forms,… | 030 |
 | `admin/(signed-in)/partners/[code]/money/loading.tsx` | The florist Money tab's loading state: a line,… | 030 |
 | `admin/(signed-in)/partners/[code]/money/page.tsx` | GET /admin/partners/[code]/money: one florist's… | 030 |
 | `admin/(signed-in)/partners/[code]/page.tsx` | GET /admin/partners/[code]: one florist, its… | 012 |

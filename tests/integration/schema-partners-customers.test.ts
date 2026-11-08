@@ -24,7 +24,7 @@ import { recipientEmailViolations } from "../../scripts/db-check.ts";
 import { FOREIGN_KEYS } from "../fixtures/schema-foreign-keys.ts";
 import { insertPlacedOrder } from "../fixtures/order-state.ts";
 
-import { orderParents } from "./support/rows.ts";
+import { agreement, orderParents } from "./support/rows.ts";
 import { probeLocalServer, scratchDatabase } from "./support/scratch-db.ts";
 
 // TASK-027 (spec 002 AC-28): a migrated scratch database of a disposable local Postgres 16 —
@@ -633,6 +633,8 @@ describe.skipIf(sql === undefined)(
               (sp) =>
                 sp`UPDATE fulfillment_partner SET status = 'live' WHERE id = ${partner}`,
             );
+            // Spec 030b AC-40 (TASK-442): only with a signed agreement on file.
+            await agreement(tx, partner);
             await accept(
               "fulfillment_partner flipped to active",
               () =>
