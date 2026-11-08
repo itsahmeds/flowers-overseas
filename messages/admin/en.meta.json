@@ -2202,7 +2202,7 @@
   "admin.partners.state.appears": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "b3a7a5b628f8c80adbb7b6f427711c97562376b4995172ed84c180d5d0f3612c"
+    "sourceHash": "87cf6689294b24c5d4fd6516fb8213e02baf794efd1c83cd948652df768f182c"
   },
   "admin.partners.state.before": {
     "source": "human",
@@ -6553,6 +6553,1276 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "b72200854e9c579d89c23505e06f3eb3cd84169e1b2d7fa3324af2e2904001a9"
+  },
+  "admin.partners.tab.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7350dda3f5b6c73d670b6bbe7dfdee805dd4ad1622a348648f1c03fb7f8834dd"
+  },
+  "admin.partners.tab.profile": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d696a35bdd1883da07a8d6c41bb7a3153381b23aa197629ee273479a6eaa5a9c"
+  },
+  "admin.partners.tab.payoutTerms": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3da8178843d7976cdc1f31d493b05a4d4f3241c9d26c4c8a6d4b4bfcf65c0b88"
+  },
+  "admin.partners.tab.money": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5ccc2e8715d7a17c3110afe37b8561b84b450db8efcf187d90649f212201050f"
+  },
+  "admin.partners.tab.relationship": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "25490a10d071aef70f7a5d4fba0b8f17c9629da0453f89aab0f9dcd5fd0e0a21"
+  },
+  "admin.partners.column.lastAccepted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "020db5063868fac8ca21906928369a1f30a589b94ec82291bbd5f244679ec3d7"
+  },
+  "admin.partners.column.rating": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9f29530464f730bd28f137cfc9ea941af137187b57c21e8ff5fefed520764d99"
+  },
+  "admin.partners.column.followUps": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d09baf6b57739ea1f3f9af648deafe4db86940f187e1fc3bb690dd7234161bcf"
+  },
+  "admin.partners.column.owedNow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5d97f99f6b9a9887cfc27a832d2c48d9cdb3703ccb7ea3f278ca269b00beb329"
+  },
+  "admin.partners.list.followUpsDue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "afd59b95153b48eeb721a00cddd9f19e1bb96cff233bdfc0963dee4bfc49c49b"
+  },
+  "admin.partners.list.noneDue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5c210bf5446df60fc204869da10a9d8607ec1f0d6d2a7f85ffa194d0674e72d"
+  },
+  "admin.partners.list.dueWhen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d9a592f903d4b04a8e0bfa51b4feb2bfa2e5c13a2cda68a190a2e0f15a08dd8a"
+  },
+  "admin.partners.list.lastAccepted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f3f759666cf385e4a4b083cbcd555f41995c89d27ac576f25075e10efbffd2b"
+  },
+  "admin.partners.list.followUpCount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5e2b5c435132df1dc8074fcd6a206135f9b207d9d060e06fffccdb61d754f4c"
+  },
+  "admin.partners.list.owed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec1c89606b11a544ce81e9f9fdc23cefdfc987cb32ce30b02034eb77c4f3ecc8"
+  },
+  "admin.partners.list.noMoney": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5911f65880822c202d99d5caba28a494da1236df242a35ad7153f8fa340cc1aa"
+  },
+  "admin.partners.money.loading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e05f56a9ade9c0114c0d47a78a1ffdf1c55700d385aa896bd9c1f32c488eb6fb"
+  },
+  "admin.partners.money.nothing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.partners.money.demo.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eb4580ed4ce3c922c192a3d25244e012d8de7f939526c221f357ad408eee0b99"
+  },
+  "admin.partners.money.demo.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52ab45ff79d5203c63ec9b65cbd0b75564879a7c53334a3f4333dc899d5feda5"
+  },
+  "admin.partners.money.sales.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "da800fe53aa6c78f0d26d51307bf238a71f0387ad57da2a675fcb9b028323b28"
+  },
+  "admin.partners.money.sales.settled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "03a6b38d6c28d2bb8818f7a7d099a4159ad0d9f40ba94b57d97869102343ba8d"
+  },
+  "admin.partners.money.sales.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "26dc09d14a4bbffd66edf72fbbe45cb717004a42a7c43d7ead91d42f83bee2c8"
+  },
+  "admin.partners.money.sales.rates": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a5235deea02c20e63719a7d2ef3450d2e6941ae3b295778efb7dcb60e9446368"
+  },
+  "admin.partners.money.sales.provisional": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "74a983d4e308a600fba6677c0f976898bd9c8cef444cf4d343484b24a175aa1b"
+  },
+  "admin.partners.money.paid.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fb81b961af456e5e748db7e1b1bff9a5e621b62718234c1937738d1adc317a17"
+  },
+  "admin.partners.money.paid.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f31ea690d62be2c61605f1c3621f30fe843ccd643a55b9dd12873d337b1941c4"
+  },
+  "admin.partners.money.paid.statement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6171b2a461207d19928471284b296dd163f75b99d814fb458b7ed7f2b1c9c8eb"
+  },
+  "admin.partners.money.paid.paidOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "45613881f8cd58f6cb20883571d035d02a3ef5d68199dc7490bffc140df858b5"
+  },
+  "admin.partners.money.paid.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "admin.partners.money.paid.noneInRange": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c95e3fcebc5a1f1cf5506b71e68e173996d1e4e0ea11c2b0f51e683a7a703eef"
+  },
+  "admin.partners.money.paid.inRange": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d4dea9fa056f18f754ffc60fc2400d854728c337082b25961692a3ba4707f37e"
+  },
+  "admin.partners.money.paid.allTime": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9755c8d7d44a62589c873ca19a4119a594b98fbf3744cda4eb14b87a199765cb"
+  },
+  "admin.partners.money.paid.since": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "425c2d269f1c40d979ee8b386a2ca0765b8ab13c8b6d0ac78c00e30e32fcb08d"
+  },
+  "admin.partners.money.owe.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ed15c8d11f4795252fd8b7e2ad6c0b1c4bb71e010dc949d225adcdd63e756bf1"
+  },
+  "admin.partners.money.owe.nothingOwed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b886c0375d953526aaed181c4ea45e355c04372fa5083d38afae2b3487688c92"
+  },
+  "admin.partners.money.owe.statement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b806288e290c4b79a90af285313692f370150f7c9aa880be8df42d93aa873dd8"
+  },
+  "admin.partners.money.owe.undecided": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4a0fdcd095e3e7501e22fae461af0ab64796f9fd350e6282e318c5b96f119046"
+  },
+  "admin.partners.money.owe.settle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8c2d68eace45695a1be536dc2ff102d534b6a29bf81f6891d0df579875a5eb32"
+  },
+  "admin.partners.money.outcomes.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7909dc4d2e1e140a9b92c979d025b3d2fac5b6624c39c3381c9edd1c0f4e8a73"
+  },
+  "admin.partners.money.outcomes.accepted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a00fb0c50741f81bb51d35b4475a4357f8039aabd896a21036bc516839401595"
+  },
+  "admin.partners.money.outcomes.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "906115657390f3675639f46a572eee069155214169a45be4046933527a95c67b"
+  },
+  "admin.partners.money.outcomes.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e678f0612bd9de946148136a6f65145572dfce9aa00a0bfc7c0351eb18afd18e"
+  },
+  "admin.partners.money.outcomes.declined": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b957130ab42a604dcd96f05c2f2587d23d493b150d081998e79cd24eebac41c7"
+  },
+  "admin.partners.money.outcomes.timedOut": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d46cf5c35957dd959d6091c1c9cac5016545f695e0c4963243fcff1aee6e0656"
+  },
+  "admin.partners.money.outcomes.see": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4af7b58d2d4b928f5c7110a33a0989563f5e8bcf46819873ebf8f1c6dcfea375"
+  },
+  "admin.partners.relationship.loading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3297e071e7639648a3d552cc06cde2c78888b75c483b99694afd11ddad8a7eb2"
+  },
+  "admin.partners.crm.hint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5d54a13a8c636eb70cf969b454cecc33993ec4526637763ffa65a4788d13e6f2"
+  },
+  "admin.partners.crm.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.partners.crm.close": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed"
+  },
+  "admin.partners.crm.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5f14829918ae77baa9081f480570ac9d24763857324c6e5bfe6eab81f761f32"
+  },
+  "admin.partners.crm.banner.today": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "43c108eb67badada9fdab332a0d323bf0dee2aac392336dbf1ea16fb8ba1d153"
+  },
+  "admin.partners.crm.banner.overdue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "527daab25e9ddffce3615948a0264b0f20a8e5531df2d51dc118e1b1786ef121"
+  },
+  "admin.partners.crm.banner.from": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c151a179a3298b46e8ac91103082482cd53467a025d6eefccbb5e47215261d15"
+  },
+  "admin.partners.crm.note.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085"
+  },
+  "admin.partners.crm.note.add": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "322c0e13ef4fa4850206a0cf5d65ab05d5ad02395c8ad79dfc639cbe2cb41289"
+  },
+  "admin.partners.crm.note.field": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d8da2c49df39d91df7ecd199b92da7bf264f026242ccc69b08daeadfe587c45b"
+  },
+  "admin.partners.crm.note.pin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cb3110f669011cbc407fbe6614b9a477bad5e1644d50e0c392d8cb044f8a67ca"
+  },
+  "admin.partners.crm.note.limit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3f776901a64221bd3445d2ecf9094f1185b9a0d89556d28dc123d14afb2d8246"
+  },
+  "admin.partners.crm.note.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6501e1ced8da0bffc5e2c7e20a42162e80176b31980e7b073fbf9955854fda4a"
+  },
+  "admin.partners.crm.note.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "57bde4deb215bfafd265380441109093117699d85e5c895f591ffcf6eb10c47e"
+  },
+  "admin.partners.crm.note.pinned": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f20c879465551f0d1457a13d4390d0f1ece456b115d75463169c5d55341b9b1e"
+  },
+  "admin.partners.crm.note.edit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "admin.partners.crm.note.editTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1fc85d67d65aea6c2f29fbdb20d7f3127bd278f20b2b37b7c6f7bb5f14e44431"
+  },
+  "admin.partners.crm.note.pinAction": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ff1cee74414621d812efa8f77a6024850158c209fba6158772088703c2a02ff9"
+  },
+  "admin.partners.crm.note.unpin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ee3c716130546a45492c899f7486b67f880e5631a2b8b8065bb16be9956d0b43"
+  },
+  "admin.partners.crm.note.delete": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e2d0a54968ead24efc0dffa6ac78fc606dceec34a0f586177a74a54cc2272cf8"
+  },
+  "admin.partners.crm.note.deleteTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f8069d7e032f9f2966393c39b964ecbd673b287c92c68d9f5595df0a5589a348"
+  },
+  "admin.partners.crm.note.deleteBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec01798cb2407fb7e3eabd32863d40c81b6bef2ec510604caadfc9edf34250b0"
+  },
+  "admin.partners.crm.note.deleteConfirm": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b80e4f44233ee2d05c2a6afad61cce95219af6aeaa40e3e7d49f5ee69ca1d37e"
+  },
+  "admin.partners.crm.contact.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2a0fae014111d34f9098eba1bc1a8938be803949ed23afe13e87802f76dff371"
+  },
+  "admin.partners.crm.contact.add": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d6d89e0d274c7fd3e0697d56f8cbcbd7be4d78f6f84c1c413328a43ac28a070"
+  },
+  "admin.partners.crm.contact.edit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "admin.partners.crm.contact.editTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "46a6a65d24f221cb58ff7f3354e9dc4bfa2887054765733194011bc73f12afa1"
+  },
+  "admin.partners.crm.contact.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "39adc20ca32713b7e87c39ba4096c45617634b81a67f790640ed3bd22aaeae82"
+  },
+  "admin.partners.crm.contact.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cf9c7aa24a26aac4f0ec4b6395cbfdcc055677c3dac87bd6af898bccd66d4e17"
+  },
+  "admin.partners.crm.contact.whenHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "44396f2664c67cd1cc2e10da40abe7a2cc7dc377151673a989838efa71f0432d"
+  },
+  "admin.partners.crm.contact.channel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ce4683e7013a18cdf3d224bfcb4e9594ea8f559e946a837c633defe7d3c32172"
+  },
+  "admin.partners.crm.contact.direction": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9c8a9579abe55bdc8a7b97031705e2738d912de38a35262863d8f47e05d3d641"
+  },
+  "admin.partners.crm.contact.topic": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7e61847d61d65d9e3ac15c6281f7bfe0d80b8d79d3b53125e9fc2bfc25bb81e8"
+  },
+  "admin.partners.crm.contact.summary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e76a94ac8320d515375e625bef1829238b097ecbd33611b59eeefd4ffefebfb"
+  },
+  "admin.partners.crm.contact.followUp": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0a7b69fd25101fa6adde575cd029e2b42f85ecc1fa9d0d2cfd26aa75501298a3"
+  },
+  "admin.partners.crm.contact.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "admin.partners.crm.channel.phone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "63dceb8800b2dd4af9567a1f54f03b7c3dbdc27fac4799091ebfcc4928899ee5"
+  },
+  "admin.partners.crm.channel.email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "admin.partners.crm.channel.whatsapp": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3"
+  },
+  "admin.partners.crm.channel.video": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d534be829e32196b4d1e53b67103cf1e376b1d60071857572598c196abfefbc6"
+  },
+  "admin.partners.crm.channel.in_person": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5cf02dbb1e63f85734ca16e1fd27da4ea4c86b465927e46a527d3e4101554ea7"
+  },
+  "admin.partners.crm.channel.other": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
+  },
+  "admin.partners.crm.direction.inbound": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d17a5bdde70e7dba4a6b3cde3e7838c04a70b4d2ec8ce14cbb3d1949a99c2d63"
+  },
+  "admin.partners.crm.direction.outbound": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "02773216e21602cc33803b59eb1c69d064f29a89f2e5f34c33a6b7362c48eb67"
+  },
+  "admin.partners.crm.topic.onboarding": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a2198f472ce2fbee82a5546090a5dd896b1da3bb678e8963d19eaa03e08ca092"
+  },
+  "admin.partners.crm.topic.order_issue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1a9bd2cdfebd81a07e69aa026b0d621e945d857459c168ea15741c170b9b299a"
+  },
+  "admin.partners.crm.topic.payout": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "08be085af32a9da9661147d3eeafa76a1777d674b28878164b4f897b9dae0015"
+  },
+  "admin.partners.crm.topic.pricing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dfe95783edfef7918760312f94edd764f4ce3ffd38b90c2c955a0cc3b250f040"
+  },
+  "admin.partners.crm.topic.quality": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1b2c08a8733d7ff1d06e726107a977124929c975066a3a606d19055dfd4e3dbd"
+  },
+  "admin.partners.crm.topic.other": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
+  },
+  "admin.partners.crm.followUp.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9371f3eb9bc6f00a14191687b0e81b6d397e0db276ae9a964ace396dfb666716"
+  },
+  "admin.partners.crm.followUp.done": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e94c8d0696ac90fad9c86a5c8bcb588f2252bb3aacc4d719042aace2168bdcaf"
+  },
+  "admin.partners.crm.followUp.today": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19e82138c35ffb6f063b94a6ed3585f40ec7bb1add2c71e07b8d6eabab0ff077"
+  },
+  "admin.partners.crm.followUp.overdue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1b4d0812d6d9c9f09544e474bb40647456e232999c76b2440d3dbfffb9db0d80"
+  },
+  "admin.partners.crm.followUp.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5bb9ff6ad32802e9f04ea5cc559a73960c9158f832412456bf05782ae28c7058"
+  },
+  "admin.partners.crm.followUp.mark": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4d27b55385389250951449ace6ed471af3218ee1a7f4ff622ef1899e49571f7c"
+  },
+  "admin.partners.crm.standing.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e4b35726fbafe7f9a40f8966136371dbb039c3ba9683ca90b7a8d1d094bcff6b"
+  },
+  "admin.partners.crm.standing.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.partners.crm.standing.termsLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ede5489964834a514b61c7a4a8370be2452dd4a7d807180f14991ccc11ad2430"
+  },
+  "admin.partners.crm.standing.terms": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "acf371e516d6151eabf2814c6ab86b6db268f701184aabc1a5c5d49bdb7020e9"
+  },
+  "admin.partners.crm.standing.rating": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9f29530464f730bd28f137cfc9ea941af137187b57c21e8ff5fefed520764d99"
+  },
+  "admin.partners.crm.standing.ratingValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8dbd54e8a115be191f4594c9ef3c46bcbe42ee498f926f49aa4b396969016c48"
+  },
+  "admin.partners.crm.standing.ratingShort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "931d7c768ca231e7289a6dd0cc11373013cd6168a14b7c341886e0fffc970cfb"
+  },
+  "admin.partners.crm.standing.fewRatings": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7e107c850bd8f97be6e3f67003dfe2f5b76cd448d66bcfeeb86d89aa8c8aa9ed"
+  },
+  "admin.partners.crm.standing.acceptance": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f190a5cb3aff17b0ee84f6ee258333d63a9cc71aa66c2e1788ebc3ae24a89b10"
+  },
+  "admin.partners.crm.standing.noOffers": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "30242c77cab091d1154c466b210a721785513a5bd954eb86f53b9a49e7840415"
+  },
+  "admin.partners.crm.standing.lastAccepted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "18d8c2d45a9c0b8fc8cbc71166484de251ab1614a15adec33101e16388863395"
+  },
+  "admin.partners.crm.standing.noOrders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "104b6eb41be38459892a2c6580c52ebeeaad9fd15e3d392c55a7d2dfc8a61936"
+  },
+  "admin.partners.crm.standing.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7a54a43c8dbc008d51a2a7f53ba81f545cf47c40b2c46fc934ddd1f62b6331dd"
+  },
+  "admin.partners.crm.contactBlock.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2b5c3d26721ae9c350cf3009318b626f0fc8a90b4a2ac0ca8099c05aa849282e"
+  },
+  "admin.partners.crm.contactBlock.person": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "744c01def42281bd28491bc831a123ae55c852ffd48106e2cf536d69f5fb7ae0"
+  },
+  "admin.partners.crm.contactBlock.personHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "976ffbbacd9e183fb4863d118ab9032b3fa313438c3a42b28597f0dada451bff"
+  },
+  "admin.partners.crm.contactBlock.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "admin.partners.crm.contactBlock.noPerson": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b37c7879f6c359f633ed1c478dc9ffac47ad7aac648653bb4a4d509a25fdb3b0"
+  },
+  "admin.partners.crm.contactBlock.noPhone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.partners.crm.contactBlock.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "admin.partners.crm.contactBlock.noLanguage": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "488c9a6a017d6ea2f145c838bee156e762ffcebdaddc173135f4d0590f0b6271"
+  },
+  "admin.partners.crm.contactBlock.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc988c0f8c79d5a44549f211955aa84d684b3b635416e0fa0639cfb41133af60"
+  },
+  "admin.partners.crm.error.required": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1582db22cf0e47c769b87ad87032239c192fe2da4f03c1061b534a87c8743134"
+  },
+  "admin.partners.crm.error.tooShort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2700f603980805f3e7748e1a938ca0b8aa1473e1c81d5531478b1deffed03aa6"
+  },
+  "admin.partners.crm.error.tooLong": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51ccdf73164ee49bcd13080eb33687db795e5012498c8bcfe678ffb82db1fad1"
+  },
+  "admin.partners.crm.error.contactDetails": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a3fe8d5e1186f0c051d80961552a6cb76a66a1978755001a5637b678a0078767"
+  },
+  "admin.partners.crm.error.contactNameDetails": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "493519bb2fe441ff3ee71818684bd4f4a1d3a947f05f7d5b89c9ed815d7c4e19"
+  },
+  "admin.partners.crm.error.choice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f32a76dec0983be8a9713c0019e063191a40e8b07c04f3a2d1992cd45c5ef76c"
+  },
+  "admin.partners.crm.error.date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ca2dd53d714296214d80d68c8162f7b203d4f0549c12e587f754542fbb01fc86"
+  },
+  "admin.partners.crm.error.future": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e3d1bd772a5e9e040f2a3eb86119572ff178620d15064aeab64de8d94b5c97dd"
+  },
+  "admin.partners.crm.error.target": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f42b0357cd3860b4238b940bc1aae62b038d8b8ba2a4595d2835c8407901db6d"
+  },
+  "admin.partners.crm.result.saved.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2a4a9548cd5f90909a3ced784c9388d1a2b88effb1a8cc68fca0a3e3968e584e"
+  },
+  "admin.partners.crm.result.saved.noteEdit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2a4a9548cd5f90909a3ced784c9388d1a2b88effb1a8cc68fca0a3e3968e584e"
+  },
+  "admin.partners.crm.result.saved.noteDelete": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cca933093012a09e3f54f948118c14f481ce1deb8a694e18d4388607218f58a7"
+  },
+  "admin.partners.crm.result.saved.contact": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e604689e85478617181c4fe597c87e25427d05a3d56cfbf3259165913a54131"
+  },
+  "admin.partners.crm.result.saved.contactEdit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "193d51c302d33dab241ec64faeedcd3178e77a8427145bb690a440ae66f948f3"
+  },
+  "admin.partners.crm.result.saved.followUp": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b02037c3fb534f004609ef282ddccb0d25f4f1aa4bf81ffd69e9377a06acb60a"
+  },
+  "admin.partners.crm.result.saved.contactName": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3c1785cbc31e7d9cd37913d048d3989bfd6ad2be3ebf511b07a00795674c2c31"
+  },
+  "admin.partners.crm.result.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1243a47cc1d5c01554434d267959c8245095b7288eb59ac3db7b645076ff2563"
+  },
+  "admin.partners.crm.result.conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d56b1e2bbbe3e938b32e74809599db5bc500503ae18d4aeea691a2624cc41618"
+  },
+  "admin.partners.crm.result.not_found": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc819a4344eb560475a09565ef9f110894fee94f6c41fd8ce29e0af176cbe058"
+  },
+  "admin.partners.crm.result.no_follow_up": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0745fdbb96d319d491531584ecb884542b7eac6872dbf87acdb3beb8be7d82c3"
+  },
+  "admin.partners.error.tooShort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2700f603980805f3e7748e1a938ca0b8aa1473e1c81d5531478b1deffed03aa6"
+  },
+  "admin.partners.error.contactDetails": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d29947e3da26c085a51205c63aa44d3e764828abb3a9b9c337f86a54daade367"
+  },
+  "admin.partners.tab.contracts": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0488acc63d8b513587cc45e2d7dd7c17cb873266452b23273c6dedb651764243"
+  },
+  "admin.partners.state.condition.agreement.met": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bd76f2f04276b75fa50722a1b9b81a5282266dbc5bb556e4e7d972e223f12fdb"
+  },
+  "admin.partners.state.condition.agreement.missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48d308f2e001768e8627ae7b379f103ac7af6309df5c24784705b72838e8c1fd"
+  },
+  "admin.partners.state.agreementLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5a9e727aa46f273a946a713e86f04d60b11410b00403b62e225e488f1cdcf11d"
+  },
+  "admin.partners.contracts.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f6379c9d1601fafb750460108e8304fe6e12ddf96c406544c2c4a46cc8bf4fda"
+  },
+  "admin.partners.contracts.upload": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01e738db94517ce6b88dabbb248ab6e72b57f19bfa9c670f4d693e8059557ec0"
+  },
+  "admin.partners.contracts.uploadSubmit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "865e89de78d94c747184d6a7e6f5244b453d8062343c07e014ae698cfb0260e8"
+  },
+  "admin.partners.contracts.section.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aa526fa0f60736ba07cc800da6521f39c22b160ae894a61d578d8dd0c86def71"
+  },
+  "admin.partners.contracts.section.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "17960e3e740f9623ba58cfd4dc10da046ec27446e386ce139821d8b674f3fcd6"
+  },
+  "admin.partners.contracts.section.annex": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9b4d4adc28fefeca616dc6b8bafb4a9458f875fd2a6bb8c8066970014726ff32"
+  },
+  "admin.partners.contracts.kind.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aa526fa0f60736ba07cc800da6521f39c22b160ae894a61d578d8dd0c86def71"
+  },
+  "admin.partners.contracts.kind.dpa_addendum": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "17960e3e740f9623ba58cfd4dc10da046ec27446e386ce139821d8b674f3fcd6"
+  },
+  "admin.partners.contracts.kind.annex": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4d61017c9cda0cdfeae20174c328786efa217b62f2444a8d50daa34b6747b5ef"
+  },
+  "admin.partners.contracts.version": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9ee0960adaf2b799be51c2e338b058d46a333db62080666fc579fc632c4c3acd"
+  },
+  "admin.partners.contracts.current": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e0d1b68224bf0b31ef16b206c65b5f8f6b89d18161f4a7cdcb8d0ac8d952549a"
+  },
+  "admin.partners.contracts.superseded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e5830d265452f1ed47a8fb8891fdc488ab355a71ff18cebee2fe3dd1df2f295b"
+  },
+  "admin.partners.contracts.containsDpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "053730ae06955b96d0fa8381ba1be3d499163269d1e32d161dc41eb577f4e2ab"
+  },
+  "admin.partners.contracts.coveredBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4204805c30a3c384499175a64d92099a23e13029d61718357209614bfd3df98c"
+  },
+  "admin.partners.contracts.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c4450bf419a128081523442f308a51a179f07b418929527fca8bbf48753c973d"
+  },
+  "admin.partners.contracts.review": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "admin.partners.contracts.reviewLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "932a89b355799657c53cfd10d94e4edcc1772c8e27a24f20289e7af2f0857c17"
+  },
+  "admin.partners.contracts.uploaded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3cc3767e7032c703d4db6ca48d483d08a88f54d126630fdec044436ad29fa1df"
+  },
+  "admin.partners.contracts.uploadedLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "187c5382fee66b085c71bdfcdaaa17f5927d9016c4b2be48aca77807618dbbbc"
+  },
+  "admin.partners.contracts.file": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "50009ce1da4d15e1c4a04024df691eed5f0d598e2c4c67092f205366d0adf99e"
+  },
+  "admin.partners.contracts.fileLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6575ff93935c9767534e79bb0fc08aa4837b8c0be716380ef8e1957feb58c50c"
+  },
+  "admin.partners.contracts.size": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a83ef288d840286291aa3b79df6f8005b0e36205ae66cff64947e1ac2826246b"
+  },
+  "admin.partners.contracts.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5f14829918ae77baa9081f480570ac9d24763857324c6e5bfe6eab81f761f32"
+  },
+  "admin.partners.contracts.download": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d6eafe82359100423c93c5ce53c352c1b51ca1e699215fcec3f5c5dd9bf12d24"
+  },
+  "admin.partners.contracts.downloadLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1b2f113d9b18fc4a50a85cb11b7702fae6d5e0436a05902bae44478aacc6697a"
+  },
+  "admin.partners.contracts.edit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fd9c61ac500e51185a5844b7f373df989d56c8e19246f3a34700aadc853e93b2"
+  },
+  "admin.partners.contracts.editTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6780093d8b7157c318520ef0df1ee2096ffad0c910458bfbac9620a265670e50"
+  },
+  "admin.partners.contracts.editNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0667e32687b50a868b417d7b32886c968184a1a380b5bd4a66be3201a98b3018"
+  },
+  "admin.partners.contracts.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "admin.partners.contracts.field.file": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1b6da3c107e01c58b3ee0ff51c72dd624dc1e80c8079d79f8957c5aab106cb8"
+  },
+  "admin.partners.contracts.field.fileHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "73b14933ab714f84c3ec9c182d3e4ab9773af77320e68ef176d8e7c54818b4bd"
+  },
+  "admin.partners.contracts.field.kind": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
+  },
+  "admin.partners.contracts.field.template": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c5f9189de3a2e439b251063ef8641f6875970878a6c8e4eedc52b1273fd2a9e"
+  },
+  "admin.partners.contracts.field.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "admin.partners.contracts.field.signedOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8f280aa2d34f361ac705b9af6421ea22d78019aa306e605ba67c9520ef0deaa8"
+  },
+  "admin.partners.contracts.field.effectiveOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4f86b19b388a6998e282b4993cfcd272c9ce164040266db8995d62868e59ac91"
+  },
+  "admin.partners.contracts.field.reviewOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3409139dd5714497ec858453aef035afa27ce0ed141f7b5ad50f1dd958371689"
+  },
+  "admin.partners.contracts.field.notice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "633d41ca042d96375a48d6c5be3830af32f2b909cc4b9be71ce5630fffaf57f0"
+  },
+  "admin.partners.contracts.field.includesDpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4f879f18b420571b2d334d5130c9ead1111a5911997c82fb066b88012a9bab95"
+  },
+  "admin.partners.contracts.field.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d8da2c49df39d91df7ecd199b92da7bf264f026242ccc69b08daeadfe587c45b"
+  },
+  "admin.partners.contracts.field.noteHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ac6a610686dbd51c32e68124cdc673ff61e3223957c087dfd4878d744d217191"
+  },
+  "admin.partners.contracts.withdraw.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "164546a9c54814805d81b2474160728961ec0230d8efe0c5eb1626c7a2b55fe7"
+  },
+  "admin.partners.contracts.withdraw.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "555d6e8f09a717c436301a9b1e9ab14f25106a953dcea7283e5c416df6c9ae0c"
+  },
+  "admin.partners.contracts.withdraw.previous": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "422f6477d6c300ed4b434aa014ca78712065611d5be79e2ef37cd0f87b448270"
+  },
+  "admin.partners.contracts.withdraw.only": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f18e304c4a693775302cfa3a6a84feeea746816a284e0fc9ec1a95a8213cc20b"
+  },
+  "admin.partners.contracts.withdraw.other": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0653a8f4dcd209c0bc2e35264467ba891ceba78ef7440509c4cc62ba3052d9ec"
+  },
+  "admin.partners.contracts.withdraw.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.partners.contracts.withdraw.reasonHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ac927ad5d8c236799918532d1abff68a3748f8ed15ddf3fd81cfbf58c5408f6"
+  },
+  "admin.partners.contracts.withdraw.confirm": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "164546a9c54814805d81b2474160728961ec0230d8efe0c5eb1626c7a2b55fe7"
+  },
+  "admin.partners.contracts.withdraw.until": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eef4d070e89545f18cbb23f5daac580395171289d0c412fd8a297ea47a3cca56"
+  },
+  "admin.partners.contracts.withdraw.closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c39a5e9676f4b391ce7aac0d37d04c6bd1a60b06255e1de3d968541d2af586d4"
+  },
+  "admin.partners.contracts.flag.no_agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48d308f2e001768e8627ae7b379f103ac7af6309df5c24784705b72838e8c1fd"
+  },
+  "admin.partners.contracts.flag.no_dpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c2fca980fb95a3b48ed3d19d47dd986eabc88199e8e6c54461b34a77c9cd8808"
+  },
+  "admin.partners.contracts.flag.terms_mismatch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6c92dab359890528bb509e4953eda8f25d29a8b063b640d7caf370b203f5fc08"
+  },
+  "admin.partners.contracts.flag.review_due": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "382406a506011f6aa4958087b8008c3e10a41971219a91aa69c7934366f4fe0d"
+  },
+  "admin.partners.contracts.flag.review_passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "32f3dc563a4882cb8e5fe13c96d5077eb308016d0276d513fc5596c92726e9fa"
+  },
+  "admin.partners.contracts.flag.cannotGoLive": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4dafb6d242aa8d85f20c4e93dc66a1d36ce5efddb7543d9d212f9051f57c452f"
+  },
+  "admin.partners.contracts.flagHint.no_agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8ced4f37d7ebfd435b9720044b5fc3ad179573790d0036506f76e6ffd87d4670"
+  },
+  "admin.partners.contracts.flagHint.no_dpa": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b17eeb909bca846cfb60a59b9024b09f9068431d0adbefc5f1ffc57cf057c9d2"
+  },
+  "admin.partners.contracts.flagHint.terms_mismatch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f1ed358ac97909ec8800e8248c08ddc8f1eef9f308d9f5a56de5c4b69dbc04f3"
+  },
+  "admin.partners.contracts.flagHint.review_due": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "57b53b6952332621cacc36b3841edf9942a5d3a7f91aa06e903e12b6af89a99a"
+  },
+  "admin.partners.contracts.flagHint.review_passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "563374dd5f061fa0b01d6112a18383c0445a6e36c5101bb248740f6d596026ea"
+  },
+  "admin.partners.contracts.onFile.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9cf0a262638bd3b0f716ce38e90848fc50768c74a33379d376484e4b6cf237e0"
+  },
+  "admin.partners.contracts.onFile.signed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "944a735a294867e6afaecbde2d170e9efdb1b814bbe941acf88e9920161dd1aa"
+  },
+  "admin.partners.contracts.onFile.terms": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0438f6c59b81e7e4d0ae8926dbf69ddc9e6f4bef67dec83770540484a315ac6a"
+  },
+  "admin.partners.contracts.onFile.review": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31151e9f9bd4e781799039ef08b316adea0188818b0da525b2965217a20c9dfc"
+  },
+  "admin.partners.contracts.onFile.noReview": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "40b28de678ac65455788b10d1b6db4aa39b321ca921c43c7a538a78db482745b"
+  },
+  "admin.partners.contracts.onFile.private": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1448e3fdd8dd8b574f53b6db9db9496a96c40a7418bb75a4b16c768a99a46cbe"
+  },
+  "admin.partners.contracts.rule.too_large": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01b8d188e3399215c9d617778591b5ab08a83070a269f1264597bb29b29db7b3"
+  },
+  "admin.partners.contracts.rule.not_pdf": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b30a33d2955bbf9e23fc45ef0c64a0d6ee09a63be724ef98d4a31fe5935aa21"
+  },
+  "admin.partners.contracts.rule.unreadable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ca4c5c6b1cbfc09bf76d433695479aba389cb610286da603cbae0a54895d0876"
+  },
+  "admin.partners.contracts.rule.no_pages": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81914eeeca60ca77ab1cf9950aba8fb6d681d596276f588e4684469b4166f1b"
+  },
+  "admin.partners.contracts.rule.encrypted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "30e557d3ec7b84f29b790c3d9fb5d4b26df090af17f88b47a5144238092395a4"
+  },
+  "admin.partners.contracts.rule.active_content": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec1c70be6cbb06e894d487a951f4885cf7372e79cd0e6ecf239fa425a80819d0"
+  },
+  "admin.partners.contracts.result.uploaded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "71dbb1331399dbe3c87a78ec73849b85d7679c451deba457f767c0daccd73ed0"
+  },
+  "admin.partners.contracts.result.saved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9673bcab6e04cc278e34fde52bc0c7666b5315c213b2544fdca1242463acf288"
+  },
+  "admin.partners.contracts.result.withdrawn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3e019159aa04d3046288d1fdd7e17f1af6d204b717c9467076b1b063b606a645"
+  },
+  "admin.partners.contracts.result.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "37d3ea699fcc0a35114c7047a49e4e9aa5c61d69bc896b72dd02ae1cf3476c3d"
+  },
+  "admin.partners.contracts.result.rule": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "32c791f563bc54667e9789ec9fbbcdfc01819e7d7079d9635b4d25c23fe8abff"
+  },
+  "admin.partners.contracts.result.conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "af02e91a9ba980b96e79573b647d3ac04f31c986e6d66c08695a27761b5da3b2"
+  },
+  "admin.partners.contracts.result.version_conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b3b371a9099d91ef16eb6141c4867e1fdc8efbb0c079afa3a25352f1ed50b3d3"
+  },
+  "admin.partners.contracts.result.window_closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "60249938ce6b55ffd23fcfbdbe9a5e20687d160a1b78b8dd50cd34fe7139a8b0"
+  },
+  "admin.partners.contracts.result.not_found": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d65e7e75ffb6acb6d9aae9337923e8b54016e8430cda3ea0af60e5e9c321c294"
+  },
+  "admin.partners.contracts.error.required": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1582db22cf0e47c769b87ad87032239c192fe2da4f03c1061b534a87c8743134"
+  },
+  "admin.partners.contracts.error.choice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f031e7ea7dc5926041a7f22636542e09b5ad26a777752c5a51c18d5a2f5935cb"
+  },
+  "admin.partners.contracts.error.template": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d4e7a59977e1b6577bf633ac6fa517166e42549a28feea660426032467eacc7d"
+  },
+  "admin.partners.contracts.error.language": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e35697809859e187661e74bb5f47628d32b66b447fb2bb3a69fd226e8369c55"
+  },
+  "admin.partners.contracts.error.date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ca2dd53d714296214d80d68c8162f7b203d4f0549c12e587f754542fbb01fc86"
+  },
+  "admin.partners.contracts.error.dateFuture": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4bcfb4d0895a9cf1204f996587bfebecac4a249c7e5eb58fa096a498b3882af9"
+  },
+  "admin.partners.contracts.error.reviewOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2672cfcc083e8304d54522f5c96eb31f254b34cdd45c625d818f6bf2539e384c"
+  },
+  "admin.partners.contracts.error.notice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "570f7564fdf93584b85b713e83d5bf17cb4acab4a8b6a1f683cfbf603dcd4ce1"
+  },
+  "admin.partners.contracts.error.tooLong": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51ccdf73164ee49bcd13080eb33687db795e5012498c8bcfe678ffb82db1fad1"
+  },
+  "admin.partners.contracts.error.contactDetails": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f0beef41f312711159188e64dc9dc0830184408443fc6a47d2f0ec1f0743a384"
+  },
+  "admin.partners.contracts.error.reasonLength": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2caa89fe29f304acfb5d3b54cebcb8554c8823f4599cc4644485bfd3236d0a57"
+  },
+  "admin.partners.contracts.error.target": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d65e7e75ffb6acb6d9aae9337923e8b54016e8430cda3ea0af60e5e9c321c294"
+  },
+  "admin.partners.contracts.loading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c104bbb3ee46ce106df03b2c0cd16822846c5f7fd1809e173f159710d3c94aa"
+  },
+  "admin.partners.list.agreement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2dff10f6a8b7e6985b6ad779a205a3cf95f95d5966402e50d288696519bbe2ac"
+  },
+  "admin.partners.list.agreementNone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48d308f2e001768e8627ae7b379f103ac7af6309df5c24784705b72838e8c1fd"
+  },
+  "admin.partners.list.agreementOk": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0955fff443f20e3d861d9f09d0fc7ff438cfc5ea4584b3cbde84ac24187d3483"
+  },
+  "admin.partners.list.contractsDue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36cd81ce10b8d3dd6870442893dc48e9958b25e4e7a0b6142dbcdee50379e69b"
+  },
+  "admin.partners.list.contractsDueLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "00825f03545c7e397cf0bd437d3f17a34862411cf2a8f2faa12bd71bbd1023bf"
+  },
+  "admin.partners.list.contractsDueState.due": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9071738f145962a67ca1f1db834560031606ced93aa9161f48c493afe31d0a7c"
+  },
+  "admin.partners.list.contractsDueState.passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "436fe71bb9561f0596161c4d50c7b23327b4189acaf63dc89f4f9205b67a7528"
   },
   "admin.flags.description.marketing.basket_reminder": {
     "source": "human",

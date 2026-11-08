@@ -31,7 +31,12 @@ import {
   logAdminRead,
 } from "../../src/modules/admin/audit.ts";
 import { BLOG_TABLES } from "../../src/modules/content/blog/schemas.ts";
-import { country as insertCountry, partner, unique } from "./support/rows.ts";
+import {
+  agreement,
+  country as insertCountry,
+  partner,
+  unique,
+} from "./support/rows.ts";
 import {
   asApp,
   pgFailure,
@@ -375,6 +380,8 @@ describe.skipIf(server.url === undefined)(
           // Spec 030b's `0039_finance_crm_030b` (TASK-439): the florist notes and contact log.
           "partner_note",
           "partner_contact_log",
+          // Spec 030b's `0041_partner_contracts` (TASK-442): the florist contract register.
+          "partner_contract",
         ].sort(),
       );
     });
@@ -686,6 +693,8 @@ describe.skipIf(server.url === undefined)(
       async function ids(tx: Tx) {
         const countryId = await insertCountry(tx);
         const partnerId = await partner(tx, countryId, "onboarding");
+        // Spec 030b AC-40 (TASK-442): a florist goes active only with a signed agreement on file.
+        await agreement(tx, partnerId);
         return { country: countryId, fulfillment_partner: partnerId };
       }
 

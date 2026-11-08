@@ -145,6 +145,9 @@ describe.skipIf(server.url === undefined)(
           run,
         ),
       ).toEqual({ ok: true, code });
+      // Spec 030b AC-40 (TASK-442): no florist goes active without a signed agreement on file.
+      const { id } = await partnerRow(code);
+      await scratch.sql.begin((tx) => make.agreement(tx, id));
       return code;
     }
 
@@ -464,6 +467,10 @@ describe.skipIf(server.url === undefined)(
         "refuses → active while %s is missing, and changes nothing",
         async (missing, prepare) => {
           const code = await onboarding();
+          // Spec 030b AC-40: every other condition met, the agreement included.
+          await scratch.sql.begin(async (tx) =>
+            make.agreement(tx, (await partnerRow(code)).id),
+          );
           await prepare(code);
           const before = await partnerRow(code);
           expect(await status(code, "active")).toEqual({
@@ -476,6 +483,22 @@ describe.skipIf(server.url === undefined)(
           expect(preflight?.[missing]).toBe(false);
         },
       );
+
+      it("refuses → active while no signed agreement is on file (030b AC-40), and changes nothing", async () => {
+        const code = await ready();
+        const { id } = await partnerRow(code);
+        await scratch.sql`DELETE FROM partner_contract WHERE partner_id = ${id}`;
+        const before = await partnerRow(code);
+        expect(await status(code, "active")).toEqual({
+          ok: false,
+          reason: "preflight",
+          unmet: ["agreement"],
+        });
+        expect(await partnerRow(code)).toEqual(before);
+        expect((await partnerStatusPreflight(actor, id, run))?.agreement).toBe(
+          false,
+        );
+      });
 
       it("refuses → active while the contact for the chosen channel is not usable", async () => {
         const code = await ready();

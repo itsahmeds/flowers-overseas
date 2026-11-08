@@ -212,14 +212,20 @@ export function AdminTable({
   columns,
   children,
   foot,
+  caption,
 }: {
   readonly columns: readonly AdminColumn[];
   readonly children: ReactNode;
   readonly foot?: ReactNode;
+  /** The table's `<caption>`, read by assistive technology (spec 030b AC-34: money tables). */
+  readonly caption?: string;
 }): ReactElement {
   return (
     <div className="bg-card overflow-hidden rounded-[12px] shadow-[inset_0_0_0_1px_var(--color-rule)]">
       <table className="w-full border-collapse text-[14px]">
+        {caption === undefined ? null : (
+          <caption className="sr-only">{caption}</caption>
+        )}
         <thead>
           <tr>
             {columns.map((column) => (
@@ -568,7 +574,8 @@ export function AdminEmpty({
 export interface AdminTab {
   readonly key: string;
   readonly label: string;
-  readonly count: string;
+  /** The count beside the label; a tab bar of pages (spec 030b's florist tabs) has none. */
+  readonly count?: string;
   readonly href: string;
   readonly current: boolean;
 }
@@ -602,9 +609,11 @@ export function AdminTabs({
           }`}
         >
           {tab.label}
-          <span className="text-ink-3 text-[12px] font-normal tabular-nums">
-            {tab.count}
-          </span>
+          {tab.count === undefined ? null : (
+            <span className="text-ink-3 text-[12px] font-normal tabular-nums">
+              {tab.count}
+            </span>
+          )}
         </a>
       ))}
     </nav>

@@ -25,7 +25,7 @@ task actually touches.
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +24 |
 | `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +29 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +31 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +18 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
@@ -59,6 +59,7 @@ task actually touches.
 | `company.data.ts` | The trading name as a plain constant, with no… | 004 |
 | `company.ts` | Company identity (spec 004 §2 "Everything… | 004 |
 | `competitors.ts` | Competitor and third-party marks, every one of… | 006 |
+| `contracts.ts` | Florist contracts settings | 030 |
 | `cookies.ts` | The cookie register | 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
@@ -245,7 +246,20 @@ task actually touches.
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
+| `admin/(signed-in)/partners/[code]/contracts/[id]/download/route.ts` | GET /admin/partners/[code]/contracts/[id]/downlo… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/actions.ts` | The Contracts tab's edit and withdraw actions,… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/loading.tsx` | The florist Contracts tab's loading state: a… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/page.tsx` | GET /admin/partners/[code]/contracts: the… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/upload/route.ts` | POST /admin/partners/[code]/contracts/upload:… | 030 |
+| `admin/(signed-in)/partners/[code]/contracts/view.ts` | The Contracts tab's outcome codes: forms,… | 030 |
+| `admin/(signed-in)/partners/[code]/money/loading.tsx` | The florist Money tab's loading state: a line,… | 030 |
+| `admin/(signed-in)/partners/[code]/money/page.tsx` | GET /admin/partners/[code]/money: one florist's… | 030 |
 | `admin/(signed-in)/partners/[code]/page.tsx` | GET /admin/partners/[code]: one florist, its… | 012 |
+| `admin/(signed-in)/partners/[code]/relationship/actions.ts` | The Relationship tab's CRM actions, each… | 030 |
+| `admin/(signed-in)/partners/[code]/relationship/loading.tsx` | The florist Relationship tab's loading state: a… | 030 |
+| `admin/(signed-in)/partners/[code]/relationship/page.tsx` | GET /admin/partners/[code]/relationship:… | 030 |
+| `admin/(signed-in)/partners/[code]/relationship/view.ts` | The Relationship tab's outcome codes: forms,… | 030 |
+| `admin/(signed-in)/partners/[code]/tabs.tsx` | The florist page's tab bar and the head every… | 030 |
 | `admin/(signed-in)/partners/actions.ts` | /admin/partners actions, each guarded first… | 012 |
 | `admin/(signed-in)/partners/new/page.tsx` | GET /admin/partners/new: add a florist in… | 012 |
 | `admin/(signed-in)/partners/page.tsx` | GET /admin/partners: the florists, by status… | 012 |
@@ -395,8 +409,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 522 |
-| `tests/integration/` | 111 |
+| `tests/unit/` | 524 |
+| `tests/integration/` | 113 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

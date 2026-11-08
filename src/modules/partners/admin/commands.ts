@@ -216,6 +216,7 @@ function profileColumns(
   contactPhone: string | null;
   payoutCurrencyCode: string;
   capacityPerDay: number;
+  contactName?: string | null;
 } {
   return {
     legalName: profile.legalName,
@@ -226,6 +227,9 @@ function profileColumns(
     contactPhone: profile.contactPhone,
     payoutCurrencyCode: profile.payoutCurrency,
     capacityPerDay: profile.capacityPerDay,
+    ...(profile.contactName === undefined
+      ? {}
+      : { contactName: profile.contactName }),
   };
 }
 
@@ -597,6 +601,7 @@ async function preflightIn(
       contactPhone: fulfillmentPartner.contactPhone,
       coverageRows: sql<number>`(SELECT count(*)::int FROM public.partner_coverage c WHERE c.partner_id = ${partnerId}::uuid)`,
       fulfillableMappings: sql<number>`(SELECT count(*)::int FROM public.partner_catalog_mapping m WHERE m.partner_id = ${partnerId}::uuid AND m.can_fulfil AND m.partner_payout_minor > 0)`,
+      currentAgreement: sql<boolean>`EXISTS (SELECT 1 FROM public.partner_contract c WHERE c.partner_id = ${partnerId}::uuid AND c.doc_kind = 'agreement' AND c.superseded_at IS NULL)`,
     })
     .from(fulfillmentPartner)
     .where(eq(fulfillmentPartner.id, partnerId));
@@ -605,6 +610,7 @@ async function preflightIn(
     ...row,
     coverageRows: Number(row.coverageRows),
     fulfillableMappings: Number(row.fulfillableMappings),
+    currentAgreement: row.currentAgreement === true,
   });
 }
 

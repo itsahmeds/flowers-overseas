@@ -71,3 +71,13 @@ export {
   type FinanceCsvFile,
   financeCsvFilename,
 } from "./csv";
+export {
+  type CurrencyAmount,
+  type OwedNow,
+  type PaidAllTime,
+  type PaidStatement,
+  type PartnerMoney,
+  partnerMoney,
+  type PartnerOutcomes,
+  partnersOwedNow,
+} from "./partner";
