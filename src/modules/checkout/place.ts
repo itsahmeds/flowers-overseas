@@ -38,7 +38,14 @@ import type { CurrencyCode } from "@/config/currencies";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { logger } from "@/lib/logger";
 import { captureWarning } from "@/lib/sentry";
+import {
+  type IntegerMoney,
+  IntegerMoneySchema,
+  VatLineSchema,
+  vatBreakdown,
+} from "@/modules/catalog";
 import { createRecipient, upsertGuestCustomer } from "@/modules/customers";
+import { emailKey, toBaseMinor } from "@/modules/discounts";
 import { MoneySchema } from "@/modules/i18n";
 import {
   type OrderExecutor,
@@ -49,11 +56,19 @@ import {
 
 import { assessBasket } from "./basket";
 import {
+  type AppliedDiscount,
+  type DiscountFlagReader,
+  discountCodesOn,
+  draftDiscountOf,
+  pricedDeliveries,
+} from "./discount";
+import {
   type BasketLine,
   type Draft,
   type DraftConnection,
   loadDraftForUpdate,
   markDraftPlaced,
+  saveDraftDiscount,
   withDraftConnection,
 } from "./draft";
 import type { CheckoutFlagReader } from "./mode";
@@ -83,7 +98,18 @@ export type PlaceOutcome =
   | { readonly kind: "redirect"; readonly location: string }
   | { readonly kind: "expired" }
   | { readonly kind: "closed" }
-  | { readonly kind: "refused"; readonly reason: PlacementRefusal };
+  | { readonly kind: "refused"; readonly reason: PlacementRefusal }
+  /**
+   * Spec 047 §5.2 (AC-14, TASK-447): the applied code no longer applies (ended, disabled, used up,
+   * the flag off). Nothing was written but the code's removal from the draft; step 4 shows the old
+   * and new totals and the buyer presses again.
+   */
+  | {
+      readonly kind: "discount_changed";
+      readonly code: string;
+      readonly old: IntegerMoney;
+      readonly new: IntegerMoney;
+    };
 
 /** What a placement is handed; production passes the locale, the token and nothing else. */
 export interface PlaceContext {
@@ -94,6 +120,8 @@ export interface PlaceContext {
   readonly flags?: CheckoutFlagReader;
   /** Replaces `DEMO_DAILY_ORDER_CAP` (tests: T-27, T-67). */
   readonly dailyCap?: number;
+  /** Replaces the `checkout.discount_codes` reader (spec 047; tests). */
+  readonly discountFlag?: DiscountFlagReader;
 }
 
 /** The step 3 form: the total the review displayed. */
@@ -191,6 +219,7 @@ async function orderInput(
   line: BasketLine,
   totals: DraftTotals,
   customerId: string,
+  discount: AppliedDiscount | null,
 ): Promise<Omit<PlaceOrderInput, "purchaseId">> {
   const recipient = line.recipient;
   const card = line.card;
@@ -234,8 +263,19 @@ async function orderInput(
       placeKind: recipient.placeKind,
     },
   });
+  // Spec 047 (TASK-447): this delivery's share of the purchase's discount, line by line, in the
+  // order `totals.lines` lists them (the allocation's `index`).
+  const shares = totals.lines.map(
+    (_entry, index) =>
+      discount?.allocation.find(
+        (share) => share.position === line.position && share.index === index,
+      )?.shareMinor ?? 0,
+  );
+  const shareMinor = shares.reduce((sum, share) => sum + share, 0);
+  const share = (index: number) =>
+    (shares[index] ?? 0) > 0 ? { discountMinor: shares[index] ?? 0 } : {};
   const orderLines: PlaceOrderInput["lines"] = [];
-  for (const entry of totals.lines) {
+  for (const [index, entry] of totals.lines.entries()) {
     if (entry.kind === "product") {
       orderLines.push({
         kind: "product",
@@ -244,6 +284,7 @@ async function orderInput(
         qty: 1,
         unitRetailMinor: entry.amount.amountMinor,
         vatRateBp: entry.vatRateBp,
+        ...share(index),
       });
     } else {
       const addonId = await idOf(
@@ -257,12 +298,30 @@ async function orderInput(
         qty: 1,
         unitRetailMinor: entry.amount.amountMinor,
         vatRateBp: entry.vatRateBp,
+        ...share(index),
       });
     }
   }
   const cardMessage = optional(card.cardMessage);
   const signAs = optional(card.signAs);
   const converted = totals.base.currency !== totals.total.currency;
+  const baseShareMinor =
+    shareMinor === 0
+      ? 0
+      : toBaseMinor(shareMinor, converted ? totals.ratePpm : null);
+  // VAT on what is paid, rate by rate (spec 047 §2 "Money"); unchanged when no share.
+  const vat =
+    shareMinor === 0
+      ? totals.vat
+      : vatBreakdown(
+          totals.lines.map((entry, index) =>
+            VatLineSchema.parse({
+              rateBp: entry.vatRateBp,
+              grossMinor: entry.amount.amountMinor - (shares[index] ?? 0),
+              currency: entry.amount.currency,
+            }),
+          ),
+        );
   return {
     mode: draft.mode,
     localeCode: draft.locale,
@@ -272,13 +331,26 @@ async function orderInput(
     ...(postcode === undefined ? {} : { destinationPostcode: postcode }),
     deliveryDate: line.deliveryDate,
     buyerCurrency: totals.total.currency,
-    buyerTotalMinor: totals.total.amountMinor,
+    buyerTotalMinor: totals.total.amountMinor - shareMinor,
     ...(converted && totals.ratePpm !== null
       ? { fxRatePpm: totals.ratePpm }
       : {}),
     baseCurrency: totals.base.currency,
-    baseTotalMinor: totals.base.amountMinor,
-    vatBreakdown: totals.vat.map((split) => ({
+    baseTotalMinor: totals.base.amountMinor - baseShareMinor,
+    ...(discount === null || shareMinor === 0
+      ? {}
+      : {
+          discount: {
+            discountCodeId: discount.codeId,
+            codeSnapshot: discount.code,
+            kind: discount.kind,
+            percentBp: discount.percentBp,
+            amountMinor: shareMinor,
+            baseAmountMinor: baseShareMinor,
+            emailKeySha256: emailKey(buyer.email),
+          },
+        }),
+    vatBreakdown: vat.map((split) => ({
       rateBp: split.rateBp,
       netMinor: split.netMinor,
       vatMinor: split.vatMinor,
@@ -383,10 +455,59 @@ async function placeWith(
   if (total === null || !assessed.placeable) {
     return { kind: "refused", reason: "unable" };
   }
+
+  // Spec 047 §5.2 (AC-14, AC-15; TASK-447): the applied code again, under its row lock, in this
+  // transaction. A refusal writes nothing but the code's removal from the draft; the buyer sees
+  // the new total and presses again. Only when the review already showed the undiscounted total
+  // (the page was drawn after the code stopped applying) does the placement go on without it.
+  let discount: AppliedDiscount | null = null;
+  if (draft.discountCodeId !== null) {
+    const deliveries = await pricedDeliveries(assessed.lines, locale, now);
+    const on = await discountCodesOn(
+      draft.lines.map((line) => line.countryIso),
+      context.discountFlag,
+    );
+    const result = await draftDiscountOf(executor, draft, deliveries, now, on);
+    if (on && result?.kind === "applied") {
+      discount = result.discount;
+    } else {
+      await saveDraftDiscount(draft.id, null, now, { executor });
+      logger.info(
+        {
+          draft_id: draft.id,
+          discount_code_id: draft.discountCodeId,
+          reason:
+            on && result?.kind === "refused" ? result.refusal.reason : "closed",
+        },
+        "checkout.discount_changed_at_placement",
+      );
+      const sawUndiscounted =
+        seen !== null &&
+        seen.amountMinor === total.amountMinor &&
+        seen.currency === total.currency;
+      if (!sawUndiscounted) {
+        const code =
+          result?.kind === "applied" ? result.discount.code : result?.code;
+        return {
+          kind: "discount_changed",
+          code: code ?? "",
+          old:
+            seen === null || seen.currency !== total.currency
+              ? total
+              : IntegerMoneySchema.parse({
+                  amountMinor: seen.amountMinor,
+                  currency: total.currency,
+                }),
+          new: total,
+        };
+      }
+    }
+  }
+  const payable = discount?.total ?? total;
   if (
     seen === null ||
-    seen.amountMinor !== total.amountMinor ||
-    seen.currency !== total.currency
+    seen.amountMinor !== payable.amountMinor ||
+    seen.currency !== payable.currency
   ) {
     // The review showed another total (a line changed in another tab): show it again.
     return { kind: "redirect", location: stepPath(locale, "review") };
@@ -439,13 +560,15 @@ async function placeWith(
     for (const line of draft.lines) {
       const totals = await lineTotals(line, locale, now);
       if (totals === null) throw new PlacementRefused("no_price");
-      orders.push(await orderInput(executor, draft, line, totals, customerId));
+      orders.push(
+        await orderInput(executor, draft, line, totals, customerId, discount),
+      );
     }
     const { purchaseId, orderIds } = await orderService.placePurchase(
       {
         mode: draft.mode,
-        buyerCurrency: total.currency as CurrencyCode,
-        totalMinor: total.amountMinor,
+        buyerCurrency: payable.currency as CurrencyCode,
+        totalMinor: payable.amountMinor,
         localeCode: draft.locale,
         customerId,
         orders,
@@ -564,6 +687,16 @@ export async function runPlaceOrder(
       return {
         kind: "render",
         state: { status: "refused", reason: outcome.reason },
+      };
+    case "discount_changed":
+      return {
+        kind: "render",
+        state: {
+          status: "discount_changed",
+          code: outcome.code,
+          old: outcome.old,
+          new: outcome.new,
+        },
       };
   }
 }

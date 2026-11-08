@@ -104,6 +104,9 @@ export const OrderPlacedV1 = z
     buyerTotalMinor: MinorSchema,
     deliveryDate: IsoDateSchema,
     lineCount: z.number().int().positive(),
+    /** Spec 047 §5.2 (TASK-447): additive (`plan/11` §2). The code string is never here. */
+    discount_code_id: z.uuid().optional(),
+    discount_minor: z.number().int().positive().optional(),
   })
   .strict();
 

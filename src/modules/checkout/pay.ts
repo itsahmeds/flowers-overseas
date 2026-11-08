@@ -34,7 +34,26 @@ import { formValues, stepPath, type StepContext } from "./steps";
 export type PayOutcome =
   | { readonly kind: "confirm"; readonly clientSecret: string }
   | { readonly kind: "error"; readonly messageKey: string }
-  | { readonly kind: "redirect"; readonly location: string };
+  | {
+      readonly kind: "redirect";
+      readonly location: string;
+      /**
+       * Spec 047 (AC-14, TASK-447): the applied code stopped applying at placement; the action
+       * writes it into the one-hop echo so step 4 names the old and new totals. Never sent to
+       * the island.
+       */
+      readonly discountChanged?: {
+        readonly code: string;
+        readonly old: {
+          readonly amountMinor: number;
+          readonly currency: string;
+        };
+        readonly new: {
+          readonly amountMinor: number;
+          readonly currency: string;
+        };
+      };
+    };
 
 /** What the island is told after a decline. */
 export type DeclineOutcome =
@@ -108,6 +127,16 @@ export async function runPay(
         return { kind: "redirect", location: stepPath(locale, "review") };
       case "refused":
         return { kind: "error", messageKey: "checkout.error.unable" };
+      case "discount_changed":
+        return {
+          kind: "redirect",
+          location: stepPath(locale, "review"),
+          discountChanged: {
+            code: placed.code,
+            old: placed.old,
+            new: placed.new,
+          },
+        };
     }
   }
   const confirmed = await step.confirm(purchaseId);

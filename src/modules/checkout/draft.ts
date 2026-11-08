@@ -157,6 +157,8 @@ export interface Draft {
   readonly confirmed: IntegerMoney | null;
   readonly pendingNotice: PendingNotice | null;
   readonly purchaseId: string | null;
+  /** Spec 047 (TASK-447): the discount code applied on step 4, before placement; `null` for none. */
+  readonly discountCodeId: string | null;
   readonly lastActivityAt: Date;
   readonly expiresAt: Date;
   /** In position order. */
@@ -226,6 +228,7 @@ const DraftRowSchema = z.object({
   confirmed_currency_code: CurrencyColumn,
   pending_notice: z.enum(pendingNotices).nullable(),
   purchase_id: z.uuid().nullable(),
+  discount_code_id: z.uuid().nullable(),
   last_activity_ms: EpochMsColumn,
   expires_ms: EpochMsColumn,
 });
@@ -298,6 +301,7 @@ function toDraft(
     confirmed: money(row.confirmed_total_minor, row.confirmed_currency_code),
     pendingNotice: row.pending_notice,
     purchaseId: row.purchase_id,
+    discountCodeId: row.discount_code_id,
     lastActivityAt: row.last_activity_ms,
     expiresAt: row.expires_ms,
     lines,
@@ -309,7 +313,7 @@ const DRAFT_COLUMNS = sql`
   d.id, d.locale_code, d.mode, d.currency_code, d.buyer, d.buyer_saved,
   d.expected_total_minor::text AS expected_total_minor, d.expected_currency_code,
   d.confirmed_total_minor::text AS confirmed_total_minor, d.confirmed_currency_code,
-  d.pending_notice, d.purchase_id,
+  d.pending_notice, d.purchase_id, d.discount_code_id,
   (extract(epoch FROM d.last_activity_at) * 1000)::bigint::text AS last_activity_ms,
   (extract(epoch FROM d.expires_at) * 1000)::bigint::text AS expires_ms`;
 
@@ -679,6 +683,30 @@ export async function saveDraft(
   return withDraftConnection(connection, async (executor) => {
     const rows = await executor.execute(sql`
       UPDATE checkout_draft SET ${sql.join([...draftSets(value), ...touch(now)], sql`, `)}
+       WHERE id = ${id} AND purchase_id IS NULL
+      RETURNING id`);
+    return rows.length === 1;
+  });
+}
+
+/**
+ * Sets or clears the draft's applied discount code (spec 047 §5.2 `applyDiscountAction`,
+ * `removeDiscountAction`, the placement re-check; TASK-447). One code per purchase: a new code
+ * replaces the old in the one column, so the draft never holds two (AC-12). Moves the 30-day
+ * window like any change. `false`, nothing written, when the draft is gone or placed.
+ */
+export async function saveDraftDiscount(
+  draftId: string,
+  discountCodeId: string | null,
+  now: Date,
+  connection?: DraftConnection,
+): Promise<boolean> {
+  const id = z.uuid().parse(draftId);
+  const code = discountCodeId === null ? null : z.uuid().parse(discountCodeId);
+  return withDraftConnection(connection, async (executor) => {
+    const rows = await executor.execute(sql`
+      UPDATE checkout_draft
+         SET ${sql.join([sql`discount_code_id = ${code}::uuid`, ...touch(now)], sql`, `)}
        WHERE id = ${id} AND purchase_id IS NULL
       RETURNING id`);
     return rows.length === 1;

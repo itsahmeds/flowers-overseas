@@ -193,8 +193,10 @@ export {
   type StepState,
 } from "./steps";
 export {
+  applyDiscountAction,
   payAction,
   paymentDeclinedAction,
+  removeDiscountAction,
   placeOrderAction,
   removeLineAction,
   saveBuyerStep,
@@ -274,9 +276,26 @@ export {
   CHECKOUT_ECHO_COOKIE_NAME,
   CHECKOUT_ECHO_MAX_AGE_SECONDS,
   CheckoutEchoSchema,
+  DiscountEchoSchema,
+  type DiscountEcho,
   type CheckoutEchoInput,
   type CheckoutEchoState,
   checkoutEchoCookieAttributes,
   decodeCheckoutEcho,
   encodeCheckoutEcho,
 } from "./echo";
+// Spec 047 (TASK-447): discount codes at checkout.
+export {
+  DISCOUNT_FLAG_KEY,
+  discountCodesOn,
+  runApplyDiscount,
+  runRemoveDiscount,
+  type AppliedDiscount,
+  type DiscountContext,
+  type DiscountFlagReader,
+  type DiscountNotice,
+  type DiscountOutcome,
+  type DiscountRefusal,
+  type DraftDiscount,
+} from "./discount";
+export { saveDraftDiscount } from "./draft";

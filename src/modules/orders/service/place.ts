@@ -130,8 +130,18 @@ export const OrderLineInputSchema = z
     vatRateBp: z.number().int().min(0).max(10_000),
     partnerPayoutMinor: Minor.optional(),
     payoutCurrency: CurrencyCode.optional(),
+    /**
+     * Spec 047 §5.1 (TASK-447): this line's share of the order's discount; the paid amount is
+     * `unitRetailMinor * qty - discountMinor`. Absent means 0, so every order without a code is
+     * unchanged.
+     */
+    discountMinor: Minor.optional(),
   })
   .strict()
+  .refine(
+    (line) => (line.discountMinor ?? 0) <= line.unitRetailMinor * line.qty,
+    { error: "a line's discount share never exceeds its price" },
+  )
   .refine(
     (line) =>
       line.kind === "product"
@@ -184,6 +194,19 @@ export const RecipientSnapshotSchema = z
   })
   .strict();
 
+/** The order's `order_discount` row (spec 047 §5.1; TASK-447). The code string is a snapshot. */
+export const DiscountInputSchema = z
+  .object({
+    discountCodeId: z.uuid(),
+    codeSnapshot: z.string().regex(/^[A-Z0-9]{6,32}$/u),
+    kind: z.enum(["percent", "fixed"]),
+    percentBp: z.number().int().min(100).max(5_000).nullable(),
+    amountMinor: Positive,
+    baseAmountMinor: Positive,
+    emailKeySha256: z.string().regex(/^[0-9a-f]{64}$/u),
+  })
+  .strict();
+
 export const PlaceOrderInputSchema = z
   .object({
     mode: OrderModeSchema,
@@ -219,6 +242,12 @@ export const PlaceOrderInputSchema = z
      * 011's demo control) is still a purchase of one and a refusal still writes nothing.
      */
     purchaseId: z.uuid().optional(),
+    /**
+     * Spec 047 §5.1, §14 A-orchestrator-2026-10-25 item 2 (TASK-447): this order's share of the
+     * purchase's discount, written as its `order_discount` row. The lines' `discountMinor` add up to
+     * `amountMinor`; the buyer total is the lines' prices minus it.
+     */
+    discount: DiscountInputSchema.optional(),
   })
   .strict()
   .refine(
@@ -260,11 +289,22 @@ export const PlaceOrderInputSchema = z
       input.lines.reduce(
         (sum, line) => sum + line.unitRetailMinor * line.qty,
         0,
-      ) === input.buyerTotalMinor,
+      ) -
+        (input.discount?.amountMinor ?? 0) ===
+      input.buyerTotalMinor,
     {
       error:
-        "the lines add up to the buyer total (price shown = price charged)",
+        "the lines, less the discount, add up to the buyer total (price shown = price charged)",
       path: ["buyerTotalMinor"],
+    },
+  )
+  .refine(
+    (input) =>
+      input.lines.reduce((sum, line) => sum + (line.discountMinor ?? 0), 0) ===
+      (input.discount?.amountMinor ?? 0),
+    {
+      error: "the lines' discount shares add up to the order's discount",
+      path: ["discount"],
     },
   );
 
@@ -316,6 +356,12 @@ export async function placeWith(
     buyerTotalMinor: input.buyerTotalMinor,
     deliveryDate: input.deliveryDate,
     lineCount: input.lines.length,
+    ...(input.discount === undefined
+      ? {}
+      : {
+          discount_code_id: input.discount.discountCodeId,
+          discount_minor: input.discount.amountMinor,
+        }),
   });
 
   const [country] = await executor.execute(sql`
@@ -376,11 +422,23 @@ export async function placeWith(
     await executor.execute(sql`
       INSERT INTO order_line (order_id, kind, product_id, addon_id, tier_key, qty,
                               unit_retail_minor, currency_code, partner_payout_minor,
-                              payout_currency_code, vat_rate_bp)
+                              payout_currency_code, vat_rate_bp, discount_minor)
       VALUES (${orderId}, ${line.kind}, ${line.productId ?? null}, ${line.addonId ?? null},
               ${line.tierKey ?? null}, ${line.qty}, ${line.unitRetailMinor},
               ${input.buyerCurrency}, ${line.partnerPayoutMinor ?? null},
-              ${line.payoutCurrency ?? null}, ${line.vatRateBp})`);
+              ${line.payoutCurrency ?? null}, ${line.vatRateBp}, ${line.discountMinor ?? 0})`);
+  }
+  if (input.discount !== undefined) {
+    // Spec 047 §5.1 (TASK-447): one row per order holding its share; same transaction.
+    await executor.execute(sql`
+      INSERT INTO order_discount (order_id, discount_code_id, code_snapshot, kind, percent_bp,
+                                  amount_minor, currency_code, base_amount_minor,
+                                  base_currency_code, email_key_sha256, mode)
+      VALUES (${orderId}, ${input.discount.discountCodeId}, ${input.discount.codeSnapshot},
+              ${input.discount.kind}, ${input.discount.percentBp},
+              ${input.discount.amountMinor}, ${input.buyerCurrency},
+              ${input.discount.baseAmountMinor}, ${input.baseCurrency},
+              ${input.discount.emailKeySha256}, ${input.mode})`);
   }
 
   await writeEvent(

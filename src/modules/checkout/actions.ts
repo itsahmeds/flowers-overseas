@@ -35,11 +35,21 @@ import {
   isDraftToken,
 } from "./cookie";
 import {
+  type DiscountOutcome,
+  runApplyDiscount,
+  runRemoveDiscount,
+} from "./discount";
+import {
   type DeclineOutcome,
   type PayOutcome,
   runPay,
   runPaymentDeclined,
 } from "./pay";
+import {
+  CHECKOUT_ECHO_COOKIE_NAME,
+  checkoutEchoCookieAttributes,
+  encodeCheckoutEcho,
+} from "./echo";
 import { runPlaceOrder } from "./place";
 import {
   type StepContext,
@@ -181,6 +191,28 @@ export async function placeOrderAction(
 }
 
 /**
+ * Step 4's "Apply" in the discount control (spec 047 §5.2 `applyDiscountAction`; TASK-447). The
+ * code is read from the posted form body only; Next's own `Origin` check runs first.
+ */
+export async function applyDiscountAction(
+  locale: unknown,
+  form: FormData,
+): Promise<DiscountOutcome> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { kind: "expired" };
+  return runApplyDiscount(await context(bound.data), form);
+}
+
+/** Step 4's "Remove" (spec 047 §5.2 `removeDiscountAction`; TASK-447). */
+export async function removeDiscountAction(
+  locale: unknown,
+): Promise<DiscountOutcome> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { kind: "expired" };
+  return runRemoveDiscount(await context(bound.data));
+}
+
+/**
  * Step 4's "Pay" in `test` and `live` (spec 013 §5.2 flow 2 to 3; TASK-262): the island calls it
  * after `elements.submit()` and gets the client secret, a message key or a place to go. The
  * basket is placed by now (or was already), so its header count is cleared, as on placement.
@@ -193,6 +225,25 @@ export async function payAction(
   if (!bound.success) return { kind: "redirect", location: "/" };
   const ctx = await context(bound.data);
   const outcome = await runPay(ctx, form);
+  if (outcome.kind === "redirect" && outcome.discountChanged !== undefined) {
+    // Spec 047 (AC-14): nothing placed; step 4 names the old and new totals from the echo.
+    const encoded = encodeCheckoutEcho({
+      step: "review",
+      line: 1,
+      values: {},
+      errors: {},
+      attempt: Date.now(),
+      discount: { kind: "changed", ...outcome.discountChanged },
+    });
+    if (encoded !== null) {
+      (await cookies()).set(
+        CHECKOUT_ECHO_COOKIE_NAME,
+        encoded,
+        checkoutEchoCookieAttributes(bound.data),
+      );
+    }
+    return { kind: "redirect", location: outcome.location };
+  }
   if (outcome.kind !== "error") (await cookies()).delete(BASKET_COOKIE_NAME);
   return outcome;
 }

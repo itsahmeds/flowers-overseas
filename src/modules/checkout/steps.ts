@@ -94,6 +94,13 @@ export type StepState =
   | { readonly status: "closed" }
   /** Placement refused where the buyer stands (TASK-205): the daily cap, or unable to place. */
   | { readonly status: "refused"; readonly reason: "cap" | "unable" }
+  /** Spec 047 (AC-14, TASK-447): the applied code stopped applying at placement. */
+  | {
+      readonly status: "discount_changed";
+      readonly code: string;
+      readonly old: { readonly amountMinor: number; readonly currency: string };
+      readonly new: { readonly amountMinor: number; readonly currency: string };
+    }
   | {
       readonly status: "invalid";
       readonly step: CheckoutStep;

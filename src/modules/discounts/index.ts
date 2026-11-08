@@ -15,6 +15,16 @@ export type {
   Money,
   PricedLine,
 } from "./allocate";
+export {
+  afterFailure,
+  COUNTED_FAILURES,
+  isLocked,
+  lockState,
+  noteSiteFailure,
+  recordFailure,
+  resetSiteFailures,
+} from "./attempts";
+export type { AttemptState } from "./attempts";
 export type { DiscountConnection, DiscountDb } from "./db";
 export { evaluateCode } from "./evaluate";
 export type {

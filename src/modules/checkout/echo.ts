@@ -46,6 +46,81 @@ const IssueSchema = z
   })
   .strict();
 
+const EchoMoneySchema = z
+  .object({
+    amountMinor: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+    currency: z.string().regex(/^[A-Z]{3}$/u),
+  })
+  .strict();
+
+/** A normalised code (spec 047 §2: A to Z and 0 to 9, 6 to 32 characters). */
+const EchoCodeSchema = z.string().regex(/^[A-Z0-9]{6,32}$/u);
+
+/**
+ * Spec 047 (TASK-447): what step 4's discount control draws after an apply, a remove or a placement
+ * that found the code no longer usable. The typed value is what the buyer just typed, on their own
+ * device, like every other echoed value; it is never logged and never in a URL.
+ */
+export const DiscountEchoSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("applied"),
+      code: EchoCodeSchema,
+      amount: EchoMoneySchema,
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("replaced"),
+      previous: EchoCodeSchema,
+      code: EchoCodeSchema,
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("refused"),
+      value: z.string().max(64),
+      refusal: z
+        .object({
+          reason: z.enum([
+            "unknown",
+            "not_started",
+            "ended",
+            "wrong_destination",
+            "wrong_product",
+            "wrong_currency",
+            "below_minimum",
+            "used_up",
+            "already_used_by_you",
+            "locked",
+          ]),
+          startsAt: z.iso.datetime({ offset: true }).optional(),
+          countryIso: z
+            .string()
+            .regex(/^[A-Z]{2}$/u)
+            .optional(),
+          currency: z
+            .string()
+            .regex(/^[A-Z]{3}$/u)
+            .optional(),
+          minimumMinor: z.number().int().nonnegative().optional(),
+          minutes: z.number().int().min(1).max(60).optional(),
+        })
+        .strict(),
+    })
+    .strict(),
+  z.object({ kind: z.literal("removed") }).strict(),
+  z
+    .object({
+      kind: z.literal("changed"),
+      code: z.union([EchoCodeSchema, z.literal("")]),
+      old: EchoMoneySchema,
+      new: EchoMoneySchema,
+    })
+    .strict(),
+]);
+export type DiscountEcho = z.infer<typeof DiscountEchoSchema>;
+
 const ValueSchema = z.union([
   z.string().max(MAX_VALUE_LENGTH),
   z.array(z.string().max(120)).max(MAX_FIELDS),
@@ -63,6 +138,7 @@ export const CheckoutEchoSchema = z
       .refine((record) => Object.keys(record).length <= MAX_FIELDS),
     attempt: z.number().int().nonnegative(),
     refused: z.enum(["cap", "unable"]).optional(),
+    discount: DiscountEchoSchema.optional(),
   })
   .strict();
 
@@ -82,6 +158,7 @@ export interface CheckoutEchoState {
   >;
   readonly attempt: number;
   readonly refused?: "cap" | "unable" | undefined;
+  readonly discount?: DiscountEcho | undefined;
 }
 
 /** What `encodeCheckoutEcho` takes: a step state's messages carry params of any type. */
@@ -100,6 +177,7 @@ export interface CheckoutEchoInput {
   >;
   readonly attempt: number;
   readonly refused?: "cap" | "unable" | undefined;
+  readonly discount?: DiscountEcho | undefined;
 }
 
 /** Only the params a message can format: strings and numbers. */
@@ -144,6 +222,7 @@ export function encodeCheckoutEcho(echo: CheckoutEchoInput): string | null {
     errors,
     attempt: echo.attempt,
     ...(echo.refused === undefined ? {} : { refused: echo.refused }),
+    ...(echo.discount === undefined ? {} : { discount: echo.discount }),
   };
   for (const candidate of [full, { ...full, values: {} }]) {
     const parsed = CheckoutEchoSchema.safeParse(candidate);
