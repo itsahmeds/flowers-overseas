@@ -57,6 +57,10 @@ here.
 - 2026-11-08 (finisher, branch `task/TASK-442-contract-reminders`): `partners.contract_reminders` registered (registry, tick hourly, handler), C1 `contract-review-due` and C2 `contract-review-passed` in the founder frame through `sendOpsJobNotification` (new `template` filter), the `partner_contract` retention handler (object then row per florist, audit row per failed delete, alert on the third); tests next.
 - 2026-11-08: tests green on scratch PG16: unit (emails as drawn, route guards, job lists), integration `partners-contract-reminders-030b` (AC-42 job, AC-43 roles, AC-44, AC-57). Reworded partners strings the voice scan flagged (orchestrator request). PR #528 ready.
 
+## Copy approval
+
+- founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-442.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 030b (TASK-442); the founder did not read this text: the 22 admin texts of spec 030b (`emails.ops.contracts.*`), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
