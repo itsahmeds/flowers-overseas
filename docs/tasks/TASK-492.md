@@ -27,7 +27,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **2026-11-08, from TASK-491 (PR 527):** the server half is built: `toGa4Value`, `ga4ItemFromProjection` / `ga4ItemsFromOrderLines`, `Ga4ItemSchema`, `CHECKOUT_CHANNELS` (all from `@/modules/analytics`). Nothing of this task was started in PR 527: the bootstrap still queues `js`/`config` and `AnalyticsScripts` still renders the tag when an id is set, so **the id must not be set before this task merges** (runbook §2 says so). Spec 004, 013, 018 pointer amendments for this task's items are already written in PR 527 (004 A-orchestrator-2026-11-08c items 1 to 3). `src/config/cookies.ts` `_ga` lifetimes are already 365 days.
 
 ## Escalations
 
@@ -41,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: not started; TASK-491's builder ran out of room after the server side (PR 527). Start from main once PR 527 merges.
 
 ## Result
 
