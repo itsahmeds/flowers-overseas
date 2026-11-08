@@ -33,8 +33,8 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- **G6 (design PR 417, 2026-10-25).** `checkout.progress.card` still reads "Card and you". Default as drawn: "Your card"; change the key's English `reviewed: false` and list it in the PR for the founder's copy batch. Open.
-- **G7 (design PR 417, 2026-10-25).** Step 1's button has no label now that `checkout.action.toCard` "Continue to your details" belongs on step 2. Default as drawn: a `[slot]`; add a key `reviewed: false` with a proposed English line listed in the PR for the copy batch. Open.
+- **G6 (design PR 417, 2026-10-25).** `checkout.progress.card` still reads "Card and you". Default as drawn: "Your card"; change the key's English `reviewed: false` and list it in the PR for the founder's copy batch. Taken (2026-11-08, PR 518): "Your card", `reviewed: false`, in `record-approval-418.py`.
+- **G7 (design PR 417, 2026-10-25).** Step 1's button has no label now that `checkout.action.toCard` "Continue to your details" belongs on step 2. Default as drawn: a `[slot]`; add a key `reviewed: false` with a proposed English line listed in the PR for the copy batch. Taken (2026-11-08, PR 518): new key `checkout.action.toYourCard` "Continue to your card", `reviewed: false`, in `record-approval-418.py`.
 
 ## Progress
 
@@ -43,10 +43,30 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-08 (builder C418): started on `task/TASK-418-checkout-steps`; next: four steps in config, schemas, runners, view.
+- 2026-11-08: four steps built (config, `CardStepSchema`/`BuyerStepSchema`, `runCardStep`/`runBuyerStep`, screen guard, view, phone bar, keys); unit and integration green on a scratch PG16.
+- 2026-11-08: e2e journey moved to four steps plus a three-line JS-off basket; clean-env staging build exit 0; checkout-journey 20/20 on that build in the slot. Ready.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR 518 splits checkout step 2 into step 2 "Your card" (per line: card, sign as, preview, add-ons,
+no buyer field) and step 3 "Your details" (once: email, name, phone, country of residence), with
+step 4 "Check and pay" unchanged; `?step=details` is unreachable before every line's steps 1 and 2;
+the progress `<ol>` has four items and the phone line a four-segment bar; no migration. Tests:
+integration `tests/integration/checkout-steps-split.test.ts` (7, new), `checkout-draft`,
+`checkout-place`, `pay-step`, `checkout-basket` updated (76 green on PG16); unit
+`checkout-graphemes`, `checkout-boundary`, `checkout-config`, `zod-boundaries` lists,
+`i18n-messages-schema` queue updated; e2e `checkout-journey` walks four steps and a three-line
+basket with JavaScript off (T-105), 20/20 on a clean-env staging build in the build slot (taken
+because the step flow changed and CI is not waited on). Five keys `reviewed: false` (AC-108's three
+plus G6 and G7), recorded by `.claude/state/record-approval-418.py` (`--check` exit 0).
 
-_Pending._
+**Carry-forwards.**
+- `tests/e2e/checkout-ui.spec.ts` (10) cannot run on a staging build: `/dev/components` is refused
+  there; it needs a non-staging build (CI's preview).
+- Pre-existing reds on main, not touched here: `tests/unit/zod-boundaries.test.ts` "every raw
+  input" (pay actions, payouts, vendor), `tests/unit/url-pii.test.ts` (query keys), `pnpm
+  i18n:check` (6: `nav.send` unused, five payment-panel scope paths). `checkout-config`'s two
+  stale assertions (key count 129 and TASK-340's recorded keys) were fixed here.
+- Axe matrix in four locales and the visual baselines for steps 2 and 3 are TASK-424's (the e2e
+  journey runs axe on steps 1 to 4 in `en-gb` and `pl`, desktop, JS on: clean).
+- de and pl carry the new English as machine echoes; translation pending.
