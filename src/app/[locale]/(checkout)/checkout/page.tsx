@@ -31,7 +31,7 @@ import { CheckoutStatePage, CheckoutStepPage } from "../_views/CheckoutView";
 import { UnpaidPayPage } from "../_views/PayStep";
 import { checkoutAction } from "./actions";
 // Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
-import "@/modules/payments/wiring";
+import { ensureStripePaymentSteps } from "@/modules/payments/wiring";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -62,6 +62,7 @@ export default async function CheckoutPage({
   params,
   searchParams,
 }: CheckoutParams): Promise<ReactElement> {
+  ensureStripePaymentSteps();
   const { locale } = await params;
   if (!isLocaleCode(locale)) notFound();
   setRequestLocale(locale);

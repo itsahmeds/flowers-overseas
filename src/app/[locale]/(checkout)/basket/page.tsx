@@ -22,7 +22,7 @@ import { transactionalMetadata } from "@/modules/seo";
 
 import { BasketView } from "./BasketView";
 // Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
-import "@/modules/payments/wiring";
+import { ensureStripePaymentSteps } from "@/modules/payments/wiring";
 
 /**
  * `/{locale}/basket` (spec 010 §14 A-founder-2026-10-22 item 6, D5, D8, items 8 and 12; AC-57,
@@ -76,6 +76,7 @@ export async function generateMetadata({
 export default async function BasketRoute({
   params,
 }: BasketParams): Promise<ReactElement> {
+  ensureStripePaymentSteps();
   const { locale: requested } = await params;
   const locale = routableLocale(requested)?.code;
   if (locale === undefined || !isLocaleCode(locale)) notFound();

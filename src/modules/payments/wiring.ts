@@ -1,7 +1,11 @@
 /**
- * Registers spec 013's Stripe payment steps in the web process, once (TASK-262). Imported for its
- * side effect by every server entry that asks spec 010 for the checkout mode or pays: the start
- * route, the checkout page and its actions, and the return route.
+ * Registers spec 013's Stripe payment steps in the web process, once (TASK-262). Every server entry
+ * that asks spec 010 for the checkout mode or pays (the start route, the basket and checkout pages,
+ * their actions, and the return route) calls `ensureStripePaymentSteps()` at the top of its handler.
+ *
+ * **Never at import time (TASK-503).** `next build` imports every route module to collect page
+ * data, and the container build holds no server secrets, so reading `env` at module load throws
+ * `EnvValidationError` and fails the build. The first request registers the steps instead.
  *
  * **Why `routingReady` is true here.** The steps register only when spec 016's `routing` handler
  * exists (§5.2). The handler runs where the outbox is dispatched, the worker's job table
@@ -47,5 +51,3 @@ export function ensureStripePaymentSteps(): void {
     },
   });
 }
-
-ensureStripePaymentSteps();

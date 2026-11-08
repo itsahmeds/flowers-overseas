@@ -41,7 +41,7 @@ import {
 
 import { sampleValues } from "../_views/CheckoutView";
 // Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
-import "@/modules/payments/wiring";
+import { ensureStripePaymentSteps } from "@/modules/payments/wiring";
 
 const ROUTING = new Set<string>(Object.values(CHECKOUT_FORM_FIELDS));
 const IDLE = { status: "idle" } as const;
@@ -169,6 +169,7 @@ async function pressAddon(
 }
 
 export async function checkoutAction(form: FormData): Promise<void> {
+  ensureStripePaymentSteps();
   const routing = RoutingSchema.safeParse(Object.fromEntries(form.entries()));
   if (!routing.success) return;
   const locale = routing.data[CHECKOUT_FORM_FIELDS.locale] as LocaleCode;

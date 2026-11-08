@@ -37,7 +37,10 @@ _None recorded._
 ## Progress
 
 - 2026-11-08: `src/modules/i18n/client.ts` added, both client files moved to it, boundary zones allow `client.ts`, graph test added; typecheck 0, `pnpm build` 0 in the build slot; PR #510.
+- 2026-11-08 (B503b): `payments/wiring.ts` no longer calls `ensureStripePaymentSteps()` at import; the six entries call it in their handlers. `tests/unit/no-import-time-env.test.ts` added. Clean-env `pnpm build` (no `.env.local`, build keys only) exit 0 in the build slot; typecheck 0.
 
 ## Result
 
 PR #510. A module may publish a client-safe `client.ts` beside `index.ts` (`eslint/modules.js`); i18n's re-exports only `format.ts` and `collate.ts`, and `AdminSelectionSummary.tsx` and the refund form import `formatMoney` from it. `tests/unit/client-server-graph.test.ts` (4 unit tests, about 3 s) walks every `"use client"` file and every `modules/*/client.ts` through static, re-export and dynamic imports and fails on server packages, Node built-ins, `src/lib/db.ts` and `src/lib/env.server.ts`; `module-boundaries.test.ts` updated. `pnpm build` was run locally inside the build slot (load average about 7) because the task is a build failure: exit 0. Carry-forward: the graph test parses imports with regexes, not a TS parser; a file that builds an import specifier at runtime is not followed.
+
+Follow-up PR (B503b): the clean-env build failed at "Collecting page data" for `/[locale]/checkout/return` because `src/modules/payments/wiring.ts` registered the Stripe steps at module load and read `env.STRIPE_SECRET_KEY`. Registration now runs on the first request in the start route, basket and checkout pages, both action files and the return route. The clean-env build passing shows no other import-time server-env read on any route's graph. Carry-forward: the new unit test covers the wiring and two routes only; the clean-env build is the full check.
