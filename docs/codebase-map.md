@@ -15,14 +15,14 @@ task actually touches.
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +24 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/checkout-discounts.test.tsx` +3 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +126 |
-| `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +14 |
+| `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +18 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/checkout-discounts.test.tsx` +2 |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +47 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +48 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +147 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
-| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
+| `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +24 |
 | `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +31 |
@@ -30,7 +30,7 @@ task actually touches.
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
-| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +76 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +77 |
 
 ## Config (`src/config/`)
 
@@ -39,6 +39,7 @@ task actually touches.
 | `address-formats.ts` | Address formats per destination country | 003 |
 | `alerts.ts` | The founder alerts' numbers: quiet hours, storm… | 025 |
 | `auth.ts` | The buyer sign-in's limits and session length | 018 |
+| `basket-reminders.ts` | The basket reminder's timings, limits and… | 034 |
 | `basket.ts` | The basket's two numbers | 010 |
 | `card-message.ts` | The printed card's one limit (spec 004 §14… | 004 |
 | `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6… | 005 |
@@ -126,7 +127,11 @@ task actually touches.
 | `[locale]/(checkout)/_views/PostPurchaseBlock.tsx` | Spec 018's post-purchase block, its quiet… | 018 |
 | `[locale]/(checkout)/_views/discount-messages.ts` | The discount control's refusal messages: each… | 047 |
 | `[locale]/(checkout)/basket/BasketView.tsx` | The basket page's body (spec 010 §14… | 010 |
+| `[locale]/(checkout)/basket/link-ended/page.tsx` | `/{locale}/basket/link-ended`: where | 034 |
 | `[locale]/(checkout)/basket/page.tsx` | `/{locale}/basket` (spec 010 §14… | 010 |
+| `[locale]/(checkout)/basket/restore/[token]/route.ts` | `GET /{locale}/basket/restore/{token}`: the | 034 |
+| `[locale]/(checkout)/basket/unsubscribe/[token]/actions.ts` | The unsubscribe page's one server action: the | 034 |
+| `[locale]/(checkout)/basket/unsubscribe/[token]/page.tsx` | `/{locale}/basket/unsubscribe/{token}` (spec… | 034 |
 | `[locale]/(checkout)/checkout/actions.ts` | The checkout page's one server action. Thin glue | 010 |
 | `[locale]/(checkout)/checkout/done/actions.ts` | The confirmation's one server action: the… | 018 |
 | `[locale]/(checkout)/checkout/done/buyer-cancel.ts` | The confirmation's buyer cancel, the part that… | 018 |
@@ -156,7 +161,9 @@ task actually touches.
 | `[locale]/@header/(account)/account/orders/[reference]/page.tsx` | Account order detail header | 018 |
 | `[locale]/@header/(account)/account/page.tsx` | Account header | 018 |
 | `[locale]/@header/(account)/account/sign-in/confirm/page.tsx` | Account sign-in confirm header | 018 |
+| `[locale]/@header/(checkout)/basket/link-ended/page.tsx` | The header of spec 034's basket reminder page… | 034 |
 | `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
+| `[locale]/@header/(checkout)/basket/unsubscribe/[token]/page.tsx` | The header of spec 034's basket reminder page… | 034 |
 | `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header | 010 |
 | `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header | 010 |
 | `[locale]/@header/(track)/track/[token]/page.tsx` | Tracking page header | 018 |
@@ -210,6 +217,7 @@ task actually touches.
 | `admin/(signed-in)/applications/page.tsx` | GET /admin/applications: florist applications,… | 012 |
 | `admin/(signed-in)/applications/view.tsx` | The application pages' shared pieces: status… | 012 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
+| `admin/(signed-in)/basket-reminders/page.tsx` | GET /admin/basket-reminders: basket email… | 034 |
 | `admin/(signed-in)/discounts/[id]/page.tsx` | GET /admin/discounts/[id]: one code, edit,… | 047 |
 | `admin/(signed-in)/discounts/actions.ts` | /admin/discounts actions, each guarded first | 047 |
 | `admin/(signed-in)/discounts/discount-form.tsx` | The discount code form island: fields,… | 047 |
@@ -283,6 +291,7 @@ task actually touches.
 | `api/auth/buyer/confirm/route.ts` | POST: confirm the buyer sign-in, use the token… | 018 |
 | `api/auth/buyer/request/route.ts` | POST: ask for a buyer sign-in link, one 303 for… | 018 |
 | `api/auth/buyer/sign-out/route.ts` | POST: buyer sign-out, the session row deleted… | 018 |
+| `api/basket-reminders/unsubscribe/[token]/route.ts` | `POST /api/basket-reminders/unsubscribe/{token}`… | 034 |
 | `api/checkout/start/route.ts` | `POST /api/checkout/start`: the product page's… | 010 |
 | `api/choose/[locale]/[[...rest]]/route.ts` | The chooser's 303 and its one fo_dest cookie | 004 |
 | `api/consent/route.ts` | `POST /api/consent` | 004 |
@@ -400,8 +409,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 521 |
-| `tests/integration/` | 107 |
+| `tests/unit/` | 524 |
+| `tests/integration/` | 113 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

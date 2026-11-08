@@ -15,6 +15,7 @@
  * `alerts.monitor` and one `alerts.escalate` (spec 025 §5.2, TASK-489), after which a tick that
  * reached the database pings the heartbeat (AC-27).
  */
+import { SCAN_EVERY_MINUTES } from "@/config/basket-reminders";
 import { JOB_HANDLERS } from "@/jobs/handlers";
 import { tickResponse } from "@/jobs/internal";
 import { enqueue, ensureQueues, runTick, withBoss } from "@/jobs/runtime";
@@ -27,6 +28,8 @@ export const revalidate = 0;
 
 /** spec 030a's hourly jobs: one run per clock hour. */
 const HOURLY_SECONDS = 3600;
+/** Spec 034 §5.2: the basket reminder scan's period, `SCAN_EVERY_MINUTES` in seconds. */
+const BASKET_REMINDER_SCAN_SECONDS = SCAN_EVERY_MINUTES * 60;
 
 export function POST(request: Request): Promise<Response> {
   return tickResponse(request, {
@@ -116,6 +119,17 @@ export function POST(request: Request): Promise<Response> {
             { requestId: "system:jobs.tick", singletonKey: name },
           );
         }
+        // Spec 034 §5.2 (TASK-450): the basket reminder scan, every 10 minutes.
+        await enqueue(
+          boss,
+          "basket-reminders.scan",
+          {},
+          {
+            requestId: "system:jobs.tick",
+            singletonKey: "basket-reminders.scan",
+            singletonSeconds: BASKET_REMINDER_SCAN_SECONDS,
+          },
+        );
         const counts = await runTick(boss, JOB_HANDLERS);
         // Spec 025 AC-27: the dead man's switch, only after a tick that reached the database.
         await tickHeartbeat(boss.getDb() as QueueReader);

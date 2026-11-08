@@ -54,4 +54,4 @@ What shipped, in one paragraph: the PR, the tests added per layer, the numbers a
 
 _Pending._
 
-PR #525 (with TASK-442). CRM module, `partnerMoney`, the tab bar, Money and Relationship tabs, list columns and Follow-ups due, runbook `finance.md`, RoPA row 20. Tests: unit `tests/unit/partners-crm.test.ts` (39), integration `tests/integration/partners-crm-030b.test.ts` (10). Texts: 255 admin keys across both tasks, listed in `.claude/state/record-approval-441.py`.
+PR #525 (with TASK-442). CRM module, `partnerMoney`, the tab bar, Money and Relationship tabs, list columns and Follow-ups due, runbook `finance.md`, RoPA row 21 (renumbered from 20 at merge; basket reminders took 20). Tests: unit `tests/unit/partners-crm.test.ts` (39), integration `tests/integration/partners-crm-030b.test.ts` (10). Texts: 255 admin keys across both tasks, listed in `.claude/state/record-approval-441.py`.

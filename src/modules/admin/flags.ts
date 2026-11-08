@@ -348,3 +348,41 @@ export async function toggleFlag(
     changed: outcome.changed,
   };
 }
+
+/**
+ * A system pause of a global flag (spec 034 §5.2 `autoPauseCheck`, AC-25; TASK-450): the flag's
+ * global row is set off in an admin-context transaction with no signed-in person, so the audit
+ * trail records it with `actorLabel` as the actor (`system:basket_reminders.auto_pause`) and the
+ * flags page's history shows who turned it off. It only ever turns a flag **off**. `false` when it
+ * was already off.
+ */
+export async function systemTurnFlagOff(
+  key: FlagKey,
+  actorLabel: string,
+  run: AdminRunner = adminRunner,
+): Promise<boolean> {
+  const outcome = await run(
+    { requestId: actorLabel, action: FLAG_ACTIONS.toggle },
+    async (db) => {
+      const [row] = await db
+        .select({ updatedAt: featureFlagScope.updatedAt })
+        .from(featureFlagScope)
+        .where(
+          and(
+            eq(featureFlagScope.flagKey, key),
+            eq(featureFlagScope.scope, "global"),
+            eq(featureFlagScope.scopeRef, "*"),
+          ),
+        )
+        .for("update");
+      return writeToggle(
+        db,
+        key,
+        { kind: "global", ref: "*" },
+        false,
+        row?.updatedAt.toISOString() ?? NO_SCOPE_ROW,
+      );
+    },
+  );
+  return outcome.kind === "saved" && outcome.changed;
+}

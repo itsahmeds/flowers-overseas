@@ -72,6 +72,10 @@ import {
   saveDraftDiscount,
   withDraftConnection,
 } from "./draft";
+import {
+  attributeRecovery,
+  cancelPendingForDraft,
+} from "./reminders/attribution";
 import type { CheckoutFlagReader } from "./mode";
 import { paymentStepFor } from "./payment-step";
 import { type DraftTotals, lineTotals } from "./pricing";
@@ -597,6 +601,15 @@ async function placeWith(
       now,
     );
     if (!marked) throw new PlacementRefused("draft_already_placed");
+    // Spec 034 §5.2 "Placement" (AC-22, AC-23): a pending reminder stops; a live purchase from a
+    // reminded or restored basket is recorded as recovered. Reminder rows only, never an order.
+    await cancelPendingForDraft(executor, draft.id);
+    await attributeRecovery(executor, {
+      draftId: draft.id,
+      purchaseId,
+      mode: draft.mode,
+      now,
+    });
     await executor.execute(sql.raw(`RELEASE SAVEPOINT ${SAVEPOINT}`));
     return { kind: "placed", purchaseId, orderIds, replay: false };
   } catch (error) {

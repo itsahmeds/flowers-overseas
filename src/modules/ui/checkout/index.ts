@@ -27,6 +27,8 @@ export { COUNT_SLOT } from "./counter-slot.ts";
 export { DemoBanner } from "./DemoBanner.tsx";
 export type { DemoBannerProps } from "./DemoBanner.tsx";
 export { ErrorSummary } from "./ErrorSummary.tsx";
+export { ReminderConsentCheckbox } from "./ReminderConsentCheckbox.tsx";
+export type { ReminderConsentCheckboxProps } from "./ReminderConsentCheckbox.tsx";
 export type { ErrorSummaryItem, ErrorSummaryProps } from "./ErrorSummary.tsx";
 // Spec 018 (TASK-340): the confirmation's refused-cancel sentence takes focus the same way.
 export { FocusOnMount } from "./FocusOnMount.tsx";

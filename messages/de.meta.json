@@ -6129,5 +6129,135 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "9bae918add9affa51189bde5fefc7390ee2866831e894bb5f72b472a79d4ade8"
+  },
+  "checkout.basketReminder.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e24eed4c854c8b1e8debb2b4de0c783321ac9a00f8cf990585a73a1b4c238618"
+  },
+  "checkout.basketReminder.hint": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6efdf4d787bf88d37c3af08dc3f37ff602c8c87b157d01f5d8611193619930b5"
+  },
+  "checkout.basket.restored": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0d11d9dd92951f2f39a7dc44fe45f0072b4da2ce3a7db6dbf0863c7d910bab4c"
+  },
+  "checkout.basket.restoredDetails": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "93a6f4cda3df939b5653f904d5a8757a53f52e12b065e31f7b7102075cf83e4c"
+  },
+  "checkout.basketReminder.linkEnded.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8cfba9f7d1405212a92fdbf77a1d2f978d5b28d589f17e64e999f4b211818065"
+  },
+  "checkout.basketReminder.linkEnded.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "efbf0031d6772d05844a26bd9422ce6648be1924dbba0ec448fc96f39e18be7a"
+  },
+  "checkout.basketReminder.linkEnded.cta": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "67365fd526e0b1747973be9e31ecb6a622a97d5e0796e2340206b36dfc6d9274"
+  },
+  "checkout.basketReminder.unsubscribe.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "92aac74bee795c2ec85a180e5bf21b871ae2331acb30a6108bc6057c8044c185"
+  },
+  "checkout.basketReminder.unsubscribe.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9ec82bc8a3f463cb973a94f7ee4cb161eade5c14b3f7c419691826da3e02af49"
+  },
+  "checkout.basketReminder.unsubscribe.button": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "295dc0a97fb5360e6179062b4ac62f12577dff768f7711466df35a0a98a1f358"
+  },
+  "checkout.basketReminder.unsubscribe.done": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4a17de72d5e2eced6fe87217d1224cb58288ae4a92148622be7c41f82a3ef81f"
+  },
+  "emails.basketReminder.subject": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7a6cb2ad711e6cf5cd3f3b666da5fc73ea629002c45c6cfa406573cf6f674c93"
+  },
+  "emails.basketReminder.preheader": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f345a7396fcc965f841271d6fa914b3e3b505e4e2b753c2b42bb29f00ee40efa"
+  },
+  "emails.basketReminder.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7a6cb2ad711e6cf5cd3f3b666da5fc73ea629002c45c6cfa406573cf6f674c93"
+  },
+  "emails.basketReminder.intro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "dbe71373e5af98020679ff9fed28c00b791e33c43b1890b58648492923293e69"
+  },
+  "emails.basketReminder.to": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "df1288b9efa5ac6bf50475c2fd5b7c6c6388f96e2edf8dc549bd5e771c820269"
+  },
+  "emails.basketReminder.dateKept": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f844ac4cfa04a458d31d588d2f3f3d8a1726e2207019700ed4be7ae55ee08cee"
+  },
+  "emails.basketReminder.dateMoved": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "94a5337764d2970eafb07e2f53a231c76fedce5626d429bf647e09957f9f7e6a"
+  },
+  "emails.basketReminder.dateOpen": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f0845953ca1f92beaff55c14d8e0a46454e4a4a3c0a50ea6f32685ffccfc756e"
+  },
+  "emails.basketReminder.button": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f0f589db495dfe02c6d3106f2348adea1404a2604f0f451f66d2e0601ccf568b"
+  },
+  "emails.basketReminder.total": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "088e0f5913cb5a3c7e5f31eccbdb9a7e8c9c5e56bc309ab3c1dac960981b1379"
+  },
+  "emails.basketReminder.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "139413aaa42b1f276f03ad79cca56bc7c13f31d417cbd2285236bb5d48e0b48a"
+  },
+  "emails.basketReminder.why": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ed1e3abc8f79946b1c4c984d8034eb5982a1199ff453d198ed3ae2af0a464b3f"
+  },
+  "emails.basketReminder.stop": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "295dc0a97fb5360e6179062b4ac62f12577dff768f7711466df35a0a98a1f358"
+  },
+  "emails.basketReminder.helpLink": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "34b92f180169cf2f4745f53fb1eb533e492178501362a1196832b3b7bcf4fa3c"
+  },
+  "emails.basketReminder.privacy": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "54a57c3147c49f33de5898b87084ad2b14c4ab308f762454bf92aca907478ad5"
   }
 }

@@ -259,6 +259,20 @@ export const AlertsDailySummaryPayload = z
 export const PaymentsBalanceSweepPayload = z.object({}).strict();
 
 /**
+ * `basket-reminders.scan` (spec 034 §5.2 "Jobs", AC-2; TASK-450): one scan for abandoned baskets.
+ * Takes nothing; the minute tick enqueues one every 10 minutes under a `singletonKey`.
+ */
+export const BasketRemindersScanPayload = z.object({}).strict();
+
+/**
+ * `basket-reminders.send` (spec 034 §5.2, AC-3, AC-4; TASK-450): one reminder's checks and send,
+ * keyed by the reminder. After its last retry the reminder ends `failed`.
+ */
+export const BasketRemindersSendPayload = z
+  .object({ reminderId: z.uuid() })
+  .strict();
+
+/**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
  * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
  * already running may enqueue its own successor (a deferred offer, the next offer). `exclusive`:
@@ -370,6 +384,13 @@ export const REGISTERED_JOBS = {
   "payments.balance_sweep": {
     version: 1,
     payload: PaymentsBalanceSweepPayload,
+  },
+  "basket-reminders.scan": { version: 1, payload: BasketRemindersScanPayload },
+  "basket-reminders.send": {
+    version: 1,
+    payload: BasketRemindersSendPayload,
+    policy: "short",
+    retryLimit: 3,
   },
 } as const satisfies Record<string, RegisteredJob>;
 

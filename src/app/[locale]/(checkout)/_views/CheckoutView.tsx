@@ -93,6 +93,7 @@ import {
   CHECKOUT_FORM_IDS,
   type CheckoutAction,
   type CheckoutFormIntent,
+  ReminderConsentCheckbox,
 } from "@/modules/ui/checkout";
 import { discountRefusalMessage } from "./discount-messages";
 import { PayArea } from "./PayStep";
@@ -714,6 +715,19 @@ async function BuyerFields({
         type="email"
         {...error("email")}
       />
+      {screen.basketReminder === undefined ||
+      screen.basketReminder === null ? null : (
+        <ReminderConsentCheckbox
+          checked={
+            echo === undefined
+              ? screen.basketReminder.checked
+              : echo.values["basketReminder"] === "on"
+          }
+          hint={t("basketReminder.hint")}
+          id={fieldId("basketReminder")}
+          label={t("basketReminder.label")}
+        />
+      )}
       <div className="grid items-start gap-[12px] md:grid-cols-2 md:gap-x-[16px] md:gap-y-[14px]">
         <TextField
           autoComplete="name"
