@@ -41,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: worktree `../fo-wt-447` on `task/TASK-447-discounts-at-checkout` from main 07ab67781; row `in_progress`. No migration needed (0037 already holds the draft columns, `order_line.discount_minor`, `order_discount` and the flag).
 
 ## Result
 
