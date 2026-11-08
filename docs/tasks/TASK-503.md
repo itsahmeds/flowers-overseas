@@ -1,0 +1,50 @@
+# TASK-503 — <task title>
+
+Row: `TASKS.md` → TASK-503. This brief is the task's long form: the row keeps a link and one
+sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with
+`pnpm tasks:brief TASK-503`; keep it current by editing this file, not the row.
+
+## Context
+
+Staging (Railway) has failed every deploy since PR 476 (685f9c3ba, 2026-11-04). Local `pnpm build` on main ec41cb020+ fails with 10 Turbopack errors. Import traces end at `src/modules/ui/admin/AdminSelectionSummary.tsx` (`"use client"`, imports `formatMoney` from `@/modules/i18n`, whose barrel reaches `src/modules/i18n/review-ledger.ts` -> `db/ledger.ts` -> `src/lib/db.ts` -> `env.ts`, plus `src/lib/auth/surface.ts` (`after`), `src/lib/cache.ts` (`revalidatePath`), `src/lib/env.server.ts` (`server-only`), and `fs`/`net`/`tls`/`perf_hooks`). `src/app/admin/(signed-in)/orders/[id]/refund-form.tsx` (`"use client"`) imports `formatMoney` from the same barrel. Module boundary lint (`eslint/modules.js`) lets modules import other modules only via `index.ts`.
+
+Done when: `pnpm build` exits 0 on the branch (inside the build slot), typecheck and lint pass, and a cheap check (lint rule or unit test) fails if a `"use client"` file imports a barrel that reaches `server-only` code. Founder rule: no review steps; PR description is a short AC list.
+
+## Binding
+
+What the spec binds this task to, in the spec's own words: the resolution notes that override
+defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
+be green. One paragraph or a short list — no restatement of the spec.
+
+## Read
+
+- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
+- `docs/codebase-map.md` — where everything lives
+- (the two or three files the deliverable actually touches)
+
+## Carry-forwards
+
+One dated bullet per `/review`, newest last.
+
+- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+
+## Escalations
+
+One dated bullet per escalation: the question, who it went to, the answer or `open`.
+
+_None recorded._
+
+## Progress
+
+One line per coherent step, newest last, written by the agent doing the work and pushed with
+the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
+here.
+
+_Not started._
+
+## Result
+
+What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
+(budgets, counts), and anything handed to a later task.
+
+_Pending._
