@@ -955,3 +955,6 @@ T19 reuses `emails.account.signIn.ignore`.
 **Open question Q19** is answered by this entry: Google and Apple at launch, behind their flags, with the email link kept. `## 0. Index` is regenerated (`pnpm specs:index`).
 
 Raised by: the founder's words of 2026-10-25 above; written by the spec writer on the orchestrator's work order of 2026-10-25. Cites C.2 to C.6, C.8, C.9, C.13, C.16, C.17, C.19, AC-47, AC-49, AC-50; spec 012 §2.2; spec 010 §14 A-founder-2026-10-22b; `plan/07` §1.2, §1.5; ADR-0006, ADR-0015, ADR-0016.
+
+
+**A-orchestrator-2026-11-08 (pointer; spec 023 §12, approved 2026-10-24; no new AC or T id here).** Written in spec 023's first task (TASK-491) as spec 023 §12 asks. §8's `page_location` rewrite is implemented by spec 023's `sanitisePageLocation` (TASK-492); `view_tracking` stays declared, not emitted.

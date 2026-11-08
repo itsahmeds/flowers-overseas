@@ -43,8 +43,8 @@ Generated — do not edit between the markers.
 | `fo_basket` | cookie | essential | not required (Art. 5(3) exemption) | first | browser | declared, not set | 30 days (2592000 s) | `consent.cookies.basket.purpose` | `Path=/; SameSite=Lax; Secure outside development` | 010 |
 | `__stripe_mid` | cookie | essential | not required (Art. 5(3) exemption) | third | third-party-script | declared, not set | 395 days (34128000 s) | `consent.cookies.stripeMid.purpose` | `Path=/; SameSite=Strict; Secure` | 013 |
 | `__stripe_sid` | cookie | essential | not required (Art. 5(3) exemption) | third | third-party-script | declared, not set | 1800 s (1800 s) | `consent.cookies.stripeSid.purpose` | `Path=/; SameSite=Strict; Secure` | 013 |
-| `_ga` | cookie | analytics | **required** | third | third-party-script | declared, not set | 730 days (63072000 s) | `consent.cookies.ga.purpose` | `Path=/; SameSite=Lax; Secure` | 004 |
-| `_ga_*` | cookie | analytics | **required** | third | third-party-script | declared, not set | 730 days (63072000 s) | `consent.cookies.gaContainer.purpose` | `Path=/; SameSite=Lax; Secure` | 004 |
+| `_ga` | cookie | analytics | **required** | third | third-party-script | declared, not set | 365 days (31536000 s) | `consent.cookies.ga.purpose` | `Path=/; SameSite=Lax; Secure` | 004 |
+| `_ga_*` | cookie | analytics | **required** | third | third-party-script | declared, not set | 365 days (31536000 s) | `consent.cookies.gaContainer.purpose` | `Path=/; SameSite=Lax; Secure` | 004 |
 
 <!-- /generated: cookie register -->
 

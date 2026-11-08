@@ -386,8 +386,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 519 |
-| `tests/integration/` | 105 |
+| `tests/unit/` | 520 |
+| `tests/integration/` | 106 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

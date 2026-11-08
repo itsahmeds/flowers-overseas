@@ -1194,3 +1194,8 @@ The `live` button ("Pay {amount} and place order"), the pre-contract sentences a
 | Key | English | Status |
 |---|---|---|
 | `checkout.legal.cancellation` | You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that. | proposed, lawyer-gated (legal set) |
+
+
+**A-orchestrator-2026-11-08 (pointer; spec 023 §12, approved 2026-10-24; no new AC or T id).** Written in spec 023's first task (TASK-491) as spec 023 §12 asks.
+1. §3's "never for a demo or test order" (analytics) reads "never for a demo order; test orders only to the staging property" (spec 023 §13 Q6).
+2. `placeOrderAction` (and `payAction`, which places the basket for `test` and `live`) reads the request's analytics context (`fo_consent`, `_ga`, `_ga_<id>`) and, after the placement commits, calls `recordOrderContext` for each placed `test` or `live` order (spec 023 §5.2 "Context capture at placement", AC-19). A failure is logged `analytics.context_failed` and never fails or delays the order. Built by TASK-491 (`src/modules/checkout/place.ts`, `src/modules/checkout/actions.ts`).

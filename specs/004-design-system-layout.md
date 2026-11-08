@@ -4457,3 +4457,17 @@ The known Lighthouse LCP flake on `/en` and `/en-gb` cannot be pleaded by this a
 ### A-orchestrator-2026-11-08b: the header grows to two rows from 768 px to hold the search field (orchestrator default under the founder's delegation; no new AC or T id here)
 
 - **2026-11-08, A-orchestrator-2026-11-08b:** the header grows to two rows from 768 px (77 to 114 px) to hold the search field; AC-93 reads accordingly; recorded as delegated. The designer measured the one-row `xl` layout with the narrowest field at about 1,320 of the frame's 1,328 px (PR 512, `chrome-desktop.dc.html` "Why two rows at xl"), so spec 045 §14 A-founder-2026-11-08a item 2's fallback applies at every width from `md`: the logo, the field and the row's end on the 64 px row, the six items on the 48 px row, `HEADER_STICKY_HEIGHTS.desktop` 114 (was 77). Item 5's one-row `xl` header is superseded. **AC-93** now reads: "At 1440 the header holds the selector in the first row, after the field; …" (the rest unchanged). Recorded as delegated (the orchestrator under the founder's delegation of 2026-11-08), not the founder's words. Built by TASK-520.
+
+
+### A-orchestrator-2026-11-08c: the GA4 tag loads only after an analytics grant (pointer; spec 023 §12, approved 2026-10-24; no new AC or T id here)
+
+Written in spec 023's first task (TASK-491) as spec 023 §12 "Requirements on other specs" asks.
+
+1. §2 L94 and AC-21 read: "the tag loads only after an analytics grant (Consent Mode basic, spec 023)". The default-denied bootstrap stays inline (AC-18) and no longer queues `js` or `config` (spec 023 AC-4).
+2. Clause 8's consent-active fixture asserts the `data-fo-ga4` attribute on the bootstrap element instead of a tag element.
+3. AC-19 (b) adds "and the analytics loader starts".
+4. Clause 3 (e)'s advanced-versus-basic ruling is answered by spec 023's ADR ("Consent Mode basic"); only its layering question remains a runbook step (`docs/runbooks/analytics-consent.md` §1).
+5. A15's budget question is answered by spec 023 AC-5: first load at most 256 B Brotli more, the deferred analytics chunk at most 4 096 B and in no initial chunk set.
+6. The `_ga` and `_ga_*` register rows change from 730 to 365 days (spec 023 §8, §13 Q7; `src/config/cookies.ts`, TASK-491).
+
+Items 1 to 3 are built by TASK-492; item 6 by TASK-491.
