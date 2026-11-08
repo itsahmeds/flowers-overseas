@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: started (builder F444); no migration needed (partner RLS on `partner_catalog_mapping`, `partner_coverage`, `fulfillment_partner` and the public catalogue reads already cover the query).
 
 ## Result
 
