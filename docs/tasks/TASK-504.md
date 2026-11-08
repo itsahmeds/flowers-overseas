@@ -34,13 +34,20 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From B504's walk (2026-11-08), left open:**
+  - **Staging itself is not walked.** It sits behind basic auth and serves 4c61712bd until TASK-503's build fix deploys; after the deploy, click Add to basket and Try a demo order on staging once (founder steps in Escalations first).
+  - **Admin order page not walked locally:** on a plain-http production build Auth.js issues no session cookie, so the admin magic link lands on `?state=expired` (environmental, staging is https). The demo orders are in the database as `routed`; check `/admin/orders` on staging after the deploy.
+  - **Buyer emails and tracking by email lookup cannot be walked with a demo order, by design:** `demo` writes no buyer outbox row (spec 010 §5 outbox targets, `notifications/rules.ts`: "demo has no row at all"), so the lookup answers "If that order exists, we have emailed its link" and nothing is captured. They need a `test` order, which needs Stripe test keys on the environment (spec 013).
+  - **The live-mode date refusal is unit-tested only** (`dateRefusalReason`); no environment reaches `live` (no live payment step, legal not ready).
+  - **pl checkout copy is English:** basket and checkout strings in `pl` are machine drafts that copy the English text ("Your basket", "Remove", "To Polska"), awaiting the native review queue.
+  - **Em dashes in 13 reviewed `en` keys** (founder: no em dash anywhere), the one on every page being `company.support.hours` in the footer ("Message us any time, 24/7 — we reply within a few hours."); also `consent.*`, `corridor.*`, `occasionsIndex.undatedNote`. A copy task, not changed here.
+  - **Listing "Our order" alphabetical, "+ Chocolates" sets beside their bouquet (brief item 4):** owned by TASK-390 (listings, open) and TASK-406 (margin preference); not touched here, as the brief asked.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-11-08 B504 to the orchestrator/founder (open): **the staging 500 is environmental.** Main's code answers 303 on a production build against a migrated database, and the staging commit has the same `start.ts`/`draft.ts`/`pricing.ts`. The start route reads `feature_flag` and writes `checkout_draft`/`checkout_draft_line` at runtime as `app_web` through `DATABASE_URL`; the product page's buttons come from the build (`DATABASE_BUILD_URL`), so a broken runtime database shows the buttons and then 500s, and it also stops ISR regeneration, which is why staging still shows 6 and 7 Nov. Founder steps: (1) Railway, staging service, Logs: filter `checkout/start` and read the error under the 500 (a `relation ... does not exist` means migrations, `permission denied` means the role). (2) Check the database the runtime uses: `curl -u <staging basic auth> -H "x-internal-cron-secret: <INTERNAL_CRON_SECRET>" https://staging.flowersoverseas.com/api/internal/db-health`; `latest_migration` must be `0036_buyer_sign_in`. If it is lower, run `DATABASE_URL_UNPOOLED=<staging DATABASE_URL, direct host> pnpm db:migrate` then `pnpm db:seed --insert-only` against the same URL. Note: the Neon `production` branch that `.env.local` names holds only migrations 0001 and 0002 (read-only check by B504), so if staging's `DATABASE_URL` points there, that is the cause. (3) Railway staging variables: `QUOTE_SIGNING_SECRET` must be set (`openssl rand -hex 32`); without it every Add to basket returns to the product page (now logged as `checkout.refused {code: quote_signing_unavailable}` at error level). (4) In admin, Flags: `checkout.open` on for Poland.
 
 ## Progress
 
@@ -58,4 +65,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 511. Fixed: (1) an add-on press on checkout step 2 discarded the typed card message, signature and buyer details (the button now submits the step form and the action echoes the typed values back); (2) the start route stores no live date the destination cannot deliver (past, closed weekday, holiday, past cutoff) and logs `checkout.date_refused {reason_key}`; (3) a missing `QUOTE_SIGNING_SECRET` is logged at error level instead of a quiet `no_price`; (4) three lines now read in line with "Ordering opens soon" (`product.demo.heading`, `delivery.picker.preview`, `destinationsHub.intro`; record with `.claude/state/record-approval-504.py`, `--check` exit 0). Tests: unit `checkout-date-refusal` (6); e2e `checkout-journey` add-on case (2 modes x 2 viewports). Walked on a local production build (main + TASK-503, build slot taken for `next build`, `next start` and Playwright because the bug report is about the deployed path): `checkout-journey` + `checkout-ui` 26/26 green; en, pl and en with JavaScript off: product, basket (two lines, remove, header count 2), step 1 (past days absent, Sundays and 11 Nov disabled), step 2 with an add-on, step 3, demo place, confirmation with reference. Integration `checkout-basket` + `checkout-draft` 57/57 on a local PG16. The staging 500 is environmental: founder steps in Escalations.
