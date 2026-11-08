@@ -299,3 +299,7 @@ export {
   type DraftDiscount,
 } from "./discount";
 export { saveDraftDiscount } from "./draft";
+
+// Spec 034's basket reminder (TASK-449..452): eligibility, the step 3 box's gate, the scan, the
+// send and the link tokens.
+export * from "./reminders";

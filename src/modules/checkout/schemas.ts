@@ -549,9 +549,19 @@ export function BuyerStepSchema(context: { readonly locale: LocaleCode }) {
         (value) => /^[A-Z]{2}$/u.test(value) && hasNumberingPlan(value),
         CHECKOUT_ERROR_KEYS.countryInvalid,
       ),
+      // Spec 034 §14 A-orchestrator-2026-10-25 item 1 (AC-7, AC-8): the basket-reminder box's form
+      // value; absent means not ticked. Read by `runBuyerStep` from the posted form, never stored
+      // in the buyer.
+      basketReminder: z.literal("on").optional(),
     })
     .strict()
-    .transform((values, ctx): BuyerStep => {
+    .transform((posted, ctx): BuyerStep => {
+      const values = {
+        email: posted.email,
+        buyerName: posted.buyerName,
+        buyerPhone: posted.buyerPhone,
+        residenceCountry: posted.residenceCountry,
+      };
       if (values.buyerPhone === "") {
         return { ...values, buyerPhone: null };
       }

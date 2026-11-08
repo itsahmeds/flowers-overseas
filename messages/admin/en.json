@@ -29,7 +29,8 @@
       "users": "Users",
       "payouts": "Payouts",
       "discounts": "Discounts",
-      "finance": "Finance"
+      "finance": "Finance",
+      "basketReminders": "Basket emails"
     },
     "roles": {
       "admin": "admin",
@@ -343,6 +344,9 @@
         },
         "alerts": {
           "push": "Push founder alerts to the phone. Production pushes unless this is off; staging pushes only while it is on. Email is always sent."
+        },
+        "marketing": {
+          "basket_reminder": "Sends one basket reminder email, only to buyers who ticked the box at checkout. Off: the box is hidden and nothing is sent; links in emails already sent keep working."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -1816,6 +1820,46 @@
         "notPaid": "No captured payment yet, so this order has no money figures.",
         "noFigures": "No rate"
       }
+    },
+    "basketReminders": {
+      "title": "Basket emails",
+      "intro": "Live baskets only. Counts are this period's sends; revenue per currency.",
+      "range": {
+        "label": "Period",
+        "7d": "7 days",
+        "30d": "30 days",
+        "90d": "90 days"
+      },
+      "sent": "Sent",
+      "recovered": "Baskets bought after the email",
+      "rate": "Recovery rate",
+      "revenue": "Revenue from recovered baskets, before refunds",
+      "revenueNone": "None in this period",
+      "linksOpened": "Links opened (includes automatic link checks by some email providers)",
+      "failed": "Failed to send",
+      "stopped": "Stopped",
+      "bounced": "Bounced",
+      "complained": "Marked as spam",
+      "skipped": "Not sent, by reason",
+      "column": {
+        "reason": "Reason",
+        "count": "Count"
+      },
+      "reason": {
+        "purchased": "Bought before the email",
+        "purchased_elsewhere": "Bought in another basket",
+        "consent_withdrawn": "Box unticked",
+        "suppressed": "Address stopped, bounced or marked as spam",
+        "recent_reminder": "Already emailed in the last 7 days",
+        "no_available_line": "Nothing left that we can deliver",
+        "no_email": "No email saved",
+        "too_late": "Too late to send",
+        "flag_off": "Basket emails were off"
+      },
+      "empty": "No basket emails sent in this period.",
+      "off": "Basket emails are off.",
+      "paused": "Basket emails were paused automatically on {date} because too many were marked as spam or bounced.",
+      "pausedHint": "Turn them back on in Flags once the cause is fixed."
     }
   },
   "emails": {

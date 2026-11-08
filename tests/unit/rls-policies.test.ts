@@ -245,7 +245,10 @@ describe("migration 0011 — each class gets exactly its policies", () => {
   });
 
   it("system-write, admin-read tables have exactly those two policies (spec 010 §14 A-founder-2026-10-22)", () => {
-    expect(SYSTEM_WRITE_ADMIN_READ_TABLES).toEqual(["purchase"]);
+    expect(SYSTEM_WRITE_ADMIN_READ_TABLES).toEqual([
+      "purchase",
+      "basket_reminder",
+    ]);
     for (const table of SYSTEM_WRITE_ADMIN_READ_TABLES) {
       expect(policiesOf(table), table).toEqual([
         {

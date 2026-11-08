@@ -238,7 +238,9 @@
       "total": "Total",
       "unavailable": "This bouquet is no longer available. Please remove it to continue.",
       "unavailableSummary": "{count, plural, one {Jeden bukiet w koszyku jest już niedostępny. Usuń go, aby kontynuować.} few {# bukiety w koszyku są już niedostępne. Usuń je, aby kontynuować.} many {# bukietów w koszyku jest już niedostępnych. Usuń je, aby kontynuować.} other {# bukietu w koszyku jest już niedostępne. Usuń je, aby kontynuować.}}",
-      "useNext": "Use {next}"
+      "useNext": "Use {next}",
+      "restored": "Witamy ponownie. Twój koszyk jest taki, jak go zostawiłeś.",
+      "restoredDetails": "Witamy ponownie. Twoje kwiaty są w koszyku. Ze względu na prywatność prosimy ponownie o dane dostawy."
     },
     "buyer": {
       "country": "Country you live in",
@@ -384,6 +386,21 @@
         "locked": "Too many tries. Please wait {minutes, plural, one {# minute} other {# minutes}} and try again."
       },
       "changedAtPlacement": "Your code {code} can no longer be used, so your total is now {new} instead of {old}. Please check it before you continue."
+    },
+    "basketReminder": {
+      "label": "Jeśli nie dokończę zamówienia, wyślijcie mi jeden e-mail z linkiem do mojego koszyka.",
+      "hint": "Jeden e-mail, około 2 godziny później. Bez ofert. Można go wyłączyć jednym kliknięciem.",
+      "linkEnded": {
+        "title": "Ten link jest już nieaktywny",
+        "body": "Link do koszyka wygasł, ale nasze kwiaty wciąż tu są. Wybierz bukiet, aby zacząć od nowa.",
+        "cta": "Wybierz kwiaty"
+      },
+      "unsubscribe": {
+        "title": "Wyłączyć e-maile o koszyku?",
+        "body": "Nie będziemy pisać do Ciebie o niedokończonych koszykach.",
+        "button": "Wyłącz e-maile o koszyku",
+        "done": "Gotowe. Nie wyślemy Ci e-maili o koszyku, chyba że znów o to poprosisz."
+      }
     }
   },
   "common": {
@@ -881,6 +898,23 @@
         "bodyCreditNote": "Your credit note for this order is attached as a PDF.",
         "preheader": "Order {reference}. The PDF is attached."
       }
+    },
+    "basketReminder": {
+      "subject": "Twój koszyk jest zapisany",
+      "preheader": "Wróć do zamówienia, kiedy Ci wygodnie.",
+      "heading": "Twój koszyk jest zapisany",
+      "intro": "Rozpocząłeś u nas zamówienie. Wszystko, co wybrałeś, nadal jest w koszyku.",
+      "to": "Do: {country}",
+      "dateKept": "Dostawa: {date}",
+      "dateMoved": "Najbliższy termin dostawy to teraz {date}.",
+      "dateOpen": "Wybierz termin dostawy, gdy wrócisz.",
+      "button": "Otwórz mój koszyk",
+      "total": "Koszyk pokazuje łączną kwotę z VAT i dostawą, zanim zapłacisz.",
+      "help": "Pytania? Chętnie pomożemy: {helpLink}",
+      "why": "Otrzymujesz ten e-mail, bo poprosiłeś o niego, rozpoczynając zamówienie. To jedyny e-mail, jaki wyślemy w sprawie tego koszyka.",
+      "stop": "Wyłącz e-maile o koszyku",
+      "helpLink": "Pomoc i kontakt",
+      "privacy": "Prywatność"
     }
   },
   "errors": {
