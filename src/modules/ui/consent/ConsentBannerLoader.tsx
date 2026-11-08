@@ -32,7 +32,7 @@
  */
 import { lazy, Suspense, useEffect, useState } from "react";
 
-import { startAnalyticsIfGranted } from "@/modules/analytics/client/loader";
+import { startAnalyticsIfGranted } from "@/modules/analytics/client";
 
 import { useHydrated } from "../deferred/useHydrated";
 

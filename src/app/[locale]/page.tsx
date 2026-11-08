@@ -30,6 +30,8 @@ import {
   homeItemListEntries,
 } from "@/modules/ui";
 
+import { SimplePageAnalytics } from "./page-analytics";
+
 /**
  * `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by TASK-035 with the
  * per-route metadata and the locale switcher).
@@ -166,6 +168,7 @@ export default async function LocaleHomePage({
           }
         />
       </main>
+      <SimplePageAnalytics locale={locale.code} pageType="home" />
       <JsonLd
         nodes={
           options === undefined

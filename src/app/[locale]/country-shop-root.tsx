@@ -19,6 +19,7 @@ import {
 } from "@/modules/seo";
 
 import { ListingJsonLd } from "./listing-json-ld";
+import { ListingAnalytics } from "./page-analytics";
 
 /**
  * The country shop root's head and body, **once**, for the two route files that render it (spec
@@ -186,6 +187,7 @@ export async function CountryShopRoot({
     <>
       <CountryShopRootPage view={view} />
       <ListingJsonLd view={view} />
+      <ListingAnalytics view={view} />
       <LanguageAlternates
         paths={await listingAlternatePaths({
           pageType: "countryShopRoot",

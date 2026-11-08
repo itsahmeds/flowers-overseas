@@ -4,10 +4,18 @@
  * facts (`ga4ProductFacts`), so every `price` and `value` is an amount the page shows, through
  * TASK-491's item builder and `toGa4Value`.
  */
-import type { Ga4ProductFacts, ListingView, ProductView } from "@/modules/catalog";
+import type {
+  Ga4ProductFacts,
+  ListingView,
+  ProductView,
+} from "@/modules/catalog";
 import type { StepScreen } from "@/modules/checkout";
 
-import { type Ga4Item, ga4ItemFromProjection, ga4ItemsFromOrderLines } from "./items";
+import {
+  type Ga4Item,
+  ga4ItemFromProjection,
+  ga4ItemsFromOrderLines,
+} from "./items";
 import {
   type AnalyticsPageType,
   checkoutAnalytics,
@@ -18,7 +26,9 @@ import {
   productAnalytics,
 } from "./page";
 
-const LISTING_PAGE_TYPES: Readonly<Record<ListingView["pageType"], AnalyticsPageType>> = {
+const LISTING_PAGE_TYPES: Readonly<
+  Record<ListingView["pageType"], AnalyticsPageType>
+> = {
   countryShopRoot: "shop_root",
   countryCategory: "country_category",
   countryOccasion: "country_occasion",
@@ -71,10 +81,16 @@ export function listingPagePayload(
 export function productPagePayload(
   view: ProductView,
   fact: Ga4ProductFacts | undefined,
+  /** The destination's local date at render (`YYYY-MM-DD`), for `days_ahead`. */
+  today?: string,
 ): PageAnalytics {
-  const selected = view.tiers.find((tier) => tier.tierKey === view.selectedTierKey);
+  const selected = view.tiers.find(
+    (tier) => tier.tierKey === view.selectedTierKey,
+  );
   if (selected === undefined) {
-    return pageAnalytics(pageCommon({ locale: view.locale, pageType: "product" }));
+    return pageAnalytics(
+      pageCommon({ locale: view.locale, pageType: "product" }),
+    );
   }
   const common = pageCommon({
     locale: view.locale,
@@ -102,7 +118,7 @@ export function productPagePayload(
     tiers,
     selectedTierKey: selected.tierKey,
     price: selected.price,
-    timeZone: view.delivery.timeZone,
+    today,
   });
 }
 
@@ -133,7 +149,11 @@ export function checkoutPagePayload(
     destination:
       first === undefined || total === null
         ? undefined
-        : { iso2: first.countryIso, live: context.live, currency: total.currency },
+        : {
+            iso2: first.countryIso,
+            live: context.live,
+            currency: total.currency,
+          },
   });
   if (screen.mode === "demo" || first === undefined || total === null) {
     return pageAnalytics(common);
@@ -180,14 +200,17 @@ export function checkoutPagePayload(
           ? 0
           : Math.max(
               0,
-              Math.round((Date.parse(date) - Date.parse(context.today)) / 86_400_000),
+              Math.round(
+                (Date.parse(date) - Date.parse(context.today)) / 86_400_000,
+              ),
             );
       return checkoutAnalytics({
         common,
         quote,
         step: {
           step: "card",
-          shippingTier: (day?.surcharge ?? null) === null ? "standard" : "surcharge",
+          shippingTier:
+            (day?.surcharge ?? null) === null ? "standard" : "surcharge",
           daysAhead: days,
         },
       });

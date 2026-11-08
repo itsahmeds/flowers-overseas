@@ -28,7 +28,8 @@ export type AnalyticsPageType = z.infer<typeof PageTypeSchema>;
 const Country = z.string().regex(/^[A-Z]{2}$/u);
 const Currency = z.string().regex(/^[A-Z]{3}$/u);
 const Value = z.number().nonnegative().finite();
-const PaymentType = z.enum(["card", "apple_pay", "google_pay", "link"]);
+/** `card`, `apple_pay`, `google_pay`, `link` or another Payment Element type, as Stripe names it. */
+const PaymentType = z.string().regex(/^[a-z][a-z0-9_]{0,39}$/u);
 
 export const CommonParamsSchema = z.strictObject({
   locale: z.string().regex(/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/u),
@@ -63,7 +64,9 @@ export const PageEventSchema = z.discriminatedUnion("name", [
   }),
   z.strictObject({
     name: z.literal("begin_checkout"),
-    params: CheckoutParams.extend({ checkout_channel: z.enum(CHECKOUT_CHANNELS) }),
+    params: CheckoutParams.extend({
+      checkout_channel: z.enum(CHECKOUT_CHANNELS),
+    }),
   }),
   z.strictObject({
     name: z.literal("add_shipping_info"),
@@ -80,8 +83,8 @@ export const PageAnalyticsSchema = z.strictObject({
   events: z.array(PageEventSchema).max(2).optional(),
   /** The product page's item per tier, for `select_item_variant` and `add_to_cart`. */
   tiers: z.record(z.string(), Ga4ItemSchema).optional(),
-  /** The destination's IANA zone, so `days_ahead` counts from its local today. */
-  tz: z.string().min(3).max(64).optional(),
+  /** The destination's local date at render, `YYYY-MM-DD`; `days_ahead` counts from it. */
+  today: z.iso.date().optional(),
   /** The checkout's quote, the base `add_payment_info` extends at Pay. */
   checkout: CheckoutParams.optional(),
 });
@@ -101,7 +104,9 @@ export const ClientEventSchema = z.discriminatedUnion("name", [
     }),
   }),
   ...PageEventSchema.options.map((option) =>
-    option.extend({ params: option.shape.params.extend(CommonParamsSchema.shape) }),
+    option.extend({
+      params: option.shape.params.extend(CommonParamsSchema.shape),
+    }),
   ),
   z.strictObject({
     name: z.literal("select_item"),
@@ -113,7 +118,10 @@ export const ClientEventSchema = z.discriminatedUnion("name", [
   }),
   z.strictObject({
     name: z.literal("select_item_variant"),
-    params: CommonParamsSchema.extend({ ...Priced, items: z.tuple([Ga4ItemSchema]) }),
+    params: CommonParamsSchema.extend({
+      ...Priced,
+      items: z.tuple([Ga4ItemSchema]),
+    }),
   }),
   z.strictObject({
     name: z.literal("select_delivery_date"),
@@ -125,7 +133,10 @@ export const ClientEventSchema = z.discriminatedUnion("name", [
   }),
   z.strictObject({
     name: z.literal("add_to_cart"),
-    params: CommonParamsSchema.extend({ ...Priced, items: z.tuple([Ga4ItemSchema]) }),
+    params: CommonParamsSchema.extend({
+      ...Priced,
+      items: z.tuple([Ga4ItemSchema]),
+    }),
   }),
   z.strictObject({
     name: z.literal("add_payment_info"),
@@ -231,7 +242,7 @@ export function productAnalytics(input: {
   readonly tiers: Readonly<Record<string, Ga4Item>>;
   readonly selectedTierKey: string;
   readonly price: Money;
-  readonly timeZone?: string | undefined;
+  readonly today?: string | undefined;
 }): PageAnalytics {
   const selected = input.tiers[input.selectedTierKey];
   return PageAnalyticsSchema.parse({
@@ -251,7 +262,7 @@ export function productAnalytics(input: {
           ],
         }),
     tiers: input.tiers,
-    ...(input.timeZone === undefined ? {} : { tz: input.timeZone }),
+    ...(input.today === undefined ? {} : { today: input.today }),
   });
 }
 
@@ -273,7 +284,10 @@ export type CheckoutStepAnalytics =
  */
 export function checkoutAnalytics(input: {
   readonly common: CommonParams;
-  readonly quote: { readonly total: Money; readonly items: readonly Ga4Item[] } | null;
+  readonly quote: {
+    readonly total: Money;
+    readonly items: readonly Ga4Item[];
+  } | null;
   readonly step: CheckoutStepAnalytics;
 }): PageAnalytics {
   if (input.quote === null || input.quote.items.length === 0) {
@@ -313,6 +327,9 @@ export function checkoutAnalytics(input: {
     case "details":
       return pageAnalytics(input.common);
     case "review":
-      return PageAnalyticsSchema.parse({ common: input.common, checkout: base });
+      return PageAnalyticsSchema.parse({
+        common: input.common,
+        checkout: base,
+      });
   }
 }

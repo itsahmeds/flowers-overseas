@@ -47,8 +47,10 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import type { ClientApi } from "@/modules/analytics/client/deferred";
-import { startAnalyticsIfGranted } from "@/modules/analytics/client/loader";
+import {
+  type ClientApi,
+  startAnalyticsIfGranted,
+} from "@/modules/analytics/client";
 
 import { ConsentBannerView, ConsentSavedView } from "./ConsentBannerView";
 import { type ConsentPhase, consentEscapeStep } from "./consentEscape";

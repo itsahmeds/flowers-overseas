@@ -29,6 +29,7 @@ import {
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 import { CheckoutStatePage, CheckoutStepPage } from "../_views/CheckoutView";
 import { UnpaidPayPage } from "../_views/PayStep";
+import { CheckoutAnalytics } from "../../page-analytics";
 import { checkoutAction } from "./actions";
 // Spec 013 (TASK-262): the Stripe steps, registered when the keys exist (the mode reads them).
 import { ensureStripePaymentSteps } from "@/modules/payments/wiring";
@@ -108,11 +109,14 @@ export default async function CheckoutPage({
   return (
     <main id="main">
       {screen.kind === "step" ? (
-        <CheckoutStepPage
-          action={checkoutAction}
-          screen={screen}
-          {...(matched === undefined ? {} : { echo: matched })}
-        />
+        <>
+          <CheckoutStepPage
+            action={checkoutAction}
+            screen={screen}
+            {...(matched === undefined ? {} : { echo: matched })}
+          />
+          <CheckoutAnalytics screen={screen} />
+        </>
       ) : (
         <CheckoutStatePage locale={locale} screen={screen} />
       )}

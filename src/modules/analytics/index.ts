@@ -45,6 +45,33 @@ export {
   consentSources,
 } from "./consent-sources";
 export { AnalyticsScripts } from "./ui/AnalyticsScripts";
+// Spec 023 (TASK-492): the GA4 client's page payloads and their schemas.
+export { PageAnalytics } from "./ui/PageAnalytics";
+export {
+  type AnalyticsPageType,
+  type ClientEvent,
+  ClientEventSchema,
+  type CommonParams,
+  type PageAnalytics as PageAnalyticsPayload,
+  PageAnalyticsSchema,
+  type PageEvent,
+  checkoutAnalytics,
+  listingAnalytics,
+  pageAnalytics,
+  pageCommon,
+  productAnalytics,
+} from "./page";
+export {
+  type CheckoutPayloadContext,
+  checkoutPagePayload,
+  listingPagePayload,
+  productPagePayload,
+} from "./views";
+export {
+  isPrivateLocation,
+  sanitisePageLocation,
+  sanitiseReferrer,
+} from "./location";
 export {
   type Gtag,
   RESULTS_BUCKETS,

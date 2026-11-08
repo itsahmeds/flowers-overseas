@@ -27,9 +27,12 @@ type Params = Record<string, unknown>;
 
 interface PagePayload {
   readonly common: Params;
-  readonly events?: readonly { readonly name: string; readonly params: Params }[];
+  readonly events?: readonly {
+    readonly name: string;
+    readonly params: Params;
+  }[];
   readonly tiers?: Readonly<Record<string, Params>>;
-  readonly tz?: string;
+  readonly today?: string;
   readonly checkout?: Params;
 }
 
@@ -132,16 +135,16 @@ function listItem(index: number): Params | undefined {
       };
 }
 
-/** Whole days from the destination's local today to `date` (`YYYY-MM-DD`). */
+/** Whole days from the destination's local date at render to `date` (both `YYYY-MM-DD`). */
 function daysAhead(date: string): number {
-  const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: payload.tz,
-  }).format(new Date());
-  return Math.round((Date.parse(date) - Date.parse(today)) / 86_400_000);
+  return Math.round(
+    (Date.parse(date) - Date.parse(payload.today ?? date)) / 86_400_000,
+  );
 }
 
 function tierEvent(name: string, tierKey: unknown): void {
-  const item = typeof tierKey === "string" ? payload.tiers?.[tierKey] : undefined;
+  const item =
+    typeof tierKey === "string" ? payload.tiers?.[tierKey] : undefined;
   if (item === undefined) return;
   send(name, {
     currency: payload.common.display_currency,
@@ -181,7 +184,10 @@ function onChange(event: Event): void {
 
 function onSubmit(event: Event): void {
   const form = event.target;
-  if (!(form instanceof HTMLFormElement) || !form.hasAttribute("data-fo-pdp-form")) {
+  if (
+    !(form instanceof HTMLFormElement) ||
+    !form.hasAttribute("data-fo-pdp-form")
+  ) {
     return;
   }
   tierEvent("add_to_cart", new FormData(form).get("tier"));
@@ -203,7 +209,10 @@ function reportVital(metric: Metric): void {
 }
 
 function track(name: string, params: Params = {}): void {
-  send(name, name === "add_payment_info" ? { ...payload.checkout, ...params } : params);
+  send(
+    name,
+    name === "add_payment_info" ? { ...payload.checkout, ...params } : params,
+  );
 }
 
 /** A withdrawal: stop at once, switch the tag off and delete `_ga` and `_ga_*`. */
