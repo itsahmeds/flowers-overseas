@@ -439,7 +439,11 @@ describe("the slot stays static (AC-4, T-04)", () => {
       const source = readFileSync(file, "utf8");
       expect(source).not.toMatch(/\bheaders\s*\(/);
       expect(source).not.toMatch(/\bcookies\s*\(/);
-      expect(source).not.toMatch(/\bsearchParams\b/);
+      // The results route's slot is the one exception (spec 045 §14 A-founder-2026-11-08a item 2,
+      // AC-43): its header field holds the searched words, and that route is dynamic anyway.
+      if (!file.includes(`${sep}-search${sep}`)) {
+        expect(source).not.toMatch(/\bsearchParams\b/);
+      }
       expect(source).not.toMatch(/\busePathname\b|\buseSearchParams\b/);
       expect(source).not.toMatch(/^\s*["']use client["']/m);
       expect(source).not.toMatch(/next\/headers/);

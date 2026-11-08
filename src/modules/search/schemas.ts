@@ -55,12 +55,87 @@ export const searchStates = [
 ] as const;
 export type SearchState = (typeof searchStates)[number];
 
+/**
+ * One link of a result group (§14 A-founder-2026-11-08a item 1): its words and a page that answers
+ * 200. Never a query string (AC-3).
+ */
 export const PageLinkSchema = z.strictObject({
-  kind: z.enum(["shop", "corridor", "occasion", "category"]),
-  label: z.string().min(1).optional(),
-  href: z.string().startsWith("/"),
+  label: z.string().min(1),
+  href: z
+    .string()
+    .startsWith("/")
+    .refine((href) => !href.includes("?"), { error: "no query string" }),
 });
 export type PageLink = z.infer<typeof PageLinkSchema>;
+
+/** The four link groups, in their order on the page; each at most `pagesBlockMax` links. */
+export const searchGroupKinds = [
+  "destinations",
+  "occasions",
+  "categories",
+  "help",
+] as const;
+export type SearchGroupKind = (typeof searchGroupKinds)[number];
+
+const GroupSchema = z.array(PageLinkSchema).max(SEARCH_CONFIG.pagesBlockMax);
+export const SearchGroupsSchema = z.strictObject({
+  destinations: GroupSchema.readonly(),
+  occasions: GroupSchema.readonly(),
+  categories: GroupSchema.readonly(),
+  help: GroupSchema.readonly(),
+});
+export type SearchGroups = z.infer<typeof SearchGroupsSchema>;
+
+/** No groups: the empty, too-short and rate-limited states. */
+export const NO_GROUPS: SearchGroups = {
+  destinations: [],
+  occasions: [],
+  categories: [],
+  help: [],
+};
+
+/**
+ * The suggestions island's request (§14 A-founder-2026-11-08a item 3): a strict JSON body, so the
+ * words never travel in a URL. `to` is the header form's hidden destination, when it has one.
+ */
+export const SuggestRequestSchema = z.strictObject({
+  locale: z
+    .string()
+    .refine(
+      (code): code is LocaleCode =>
+        isLocaleCode(code) && launchLocales.includes(code),
+      { error: "not a launch locale" },
+    ),
+  q: z.string().max(SEARCH_CONFIG.maxQueryChars * 4),
+  to: z
+    .string()
+    .regex(/^[a-z]{2}$/u)
+    .optional(),
+});
+export type SuggestRequest = z.infer<typeof SuggestRequestSchema>;
+
+export const suggestKinds = [
+  "product",
+  "occasion",
+  "category",
+  "destination",
+  "page",
+] as const;
+export type SuggestKind = (typeof suggestKinds)[number];
+
+/** One suggestion: a kind word, the name, the page it names. No field for a price. */
+export const SuggestItemSchema = z.strictObject({
+  kind: z.enum(suggestKinds),
+  label: z.string().min(1),
+  href: z
+    .string()
+    .startsWith("/")
+    .refine((href) => !href.includes("?"), { error: "no query string" }),
+});
+export type SuggestItem = z.infer<typeof SuggestItemSchema>;
+export const SuggestResponseSchema = z
+  .array(SuggestItemSchema)
+  .max(SEARCH_CONFIG.suggestMax);
 
 export const SearchResultViewSchema = z.strictObject({
   /** The words as searched (NFC, truncated): rendered escaped, inside `<bdi>`, never in a link. */
@@ -68,7 +143,13 @@ export const SearchResultViewSchema = z.strictObject({
   destination: z.string().length(2).nullable(),
   dateApplied: z.string().nullable(),
   hiddenByDate: z.number().int().nonnegative(),
-  pages: z.array(PageLinkSchema).readonly(),
+  /**
+   * The words minus the destination words they named (the chip's remove form, §14
+   * A-founder-2026-11-08a item 1): "roses {a country}" is "roses"; the words themselves otherwise.
+   */
+  queryWithoutDestination: z.string(),
+  /** The four link groups (§14 A-founder-2026-11-08a item 1); empty where nothing was searched. */
+  groups: SearchGroupsSchema,
   /** The results on this page, in §2.5's order. */
   cards: z.array(ProductCardViewSchema).readonly(),
   /** "Our selection" (the empty, too-short and no-results states, §2.7). */

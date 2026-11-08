@@ -3057,7 +3057,7 @@
   "nav.search.label": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "1ca48d287283f07846eee61f327b69e7878e0f16362d6f8f4ca3db44a6963f43"
+    "sourceHash": "3bb724bf57df52fe89a4379a0335f5dfff5d5aa791be97c099f65bc0c2504d0c"
   },
   "nav.search.submit": {
     "source": "machine",
@@ -5619,11 +5619,6 @@
     "reviewed": false,
     "sourceHash": "9691a6ea65c71032c35c3f8b1477d6f2064d9c1407d72f5d686382fe0d8239ec"
   },
-  "search.pagesHeading": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
-  },
   "search.browseOccasions": {
     "source": "machine",
     "reviewed": false,
@@ -5894,5 +5889,80 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "1d393b0081b632c54654eb08c345ff76b92ae4efe0768b4c0f64b9ebbe920492"
+  },
+  "search.groups.destinations": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8faf7ec7ab20ca1cb49b159bf28c95e43895aad06e2727e3227524e82a9cc6e1"
+  },
+  "search.groups.occasions": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "search.groups.categories": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a3b6cb52ce986ff4ca5baa8a1051a42b2748d06b0f33b93a75a87add2a7d74d2"
+  },
+  "search.groups.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "25a21aad8689b4ee1d046ee12803de90ec59542dbe757f3ac4c73ae82a984a6a"
+  },
+  "search.groups.bouquets": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c03f1370d259142adc1545af7da216e51468270dfacf8e60179f90b27e9ab275"
+  },
+  "search.chip.remove": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0b089e3119b656e9de4449a619985547cd0ef39d13c85fe10c3c90f6c3d94ef3"
+  },
+  "search.chip.choose": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "19323e2d92e71dc6c99394bc714a9912d38af964218be630e3bac64f0ca99e3d"
+  },
+  "search.suggest.kind.product": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
+  },
+  "search.suggest.kind.occasion": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f68e0b1ef1269baeea223f00199f2e45e5f8d4a4bddd585d7074efce4c33c435"
+  },
+  "search.suggest.kind.category": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a3b6cb52ce986ff4ca5baa8a1051a42b2748d06b0f33b93a75a87add2a7d74d2"
+  },
+  "search.suggest.kind.destination": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "search.suggest.kind.page": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b79cac926e0b2e347e72cc91d5174037c9e17ae7733fd7bdb570f71b10cd7bfc"
+  },
+  "search.suggest.count": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "cd5cbbc16bc1ea1030ec773d264030cb8484c4e752a6b09cc050aa3d8af6a196"
+  },
+  "search.suggest.all": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ce32cc7a7e98e9058057fd83f1ff0a506bc2174482b386e63f49b36d7ffef476"
+  },
+  "shop.chosen.line": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f"
   }
 }

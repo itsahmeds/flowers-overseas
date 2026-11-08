@@ -31,7 +31,7 @@
  * the home's `#send`). The scrim is `display: none` until the module has loaded, so with JavaScript off,
  * or before the deferred module arrives, the native `<details>` is all there is.
  *
- * The panel scrolls inside itself (`max-block-size` of the viewport under the 65 px header,
+ * The panel scrolls inside itself (`max-block-size` of the viewport under the 122 px header with its search row,
  * `overscroll-contain`): the header is sticky, so a panel taller than the screen would otherwise
  * leave its foot where no scroll can reach it (WCAG 1.4.10, 360 × 640).
  *
@@ -118,16 +118,16 @@ export function MenuSheet({
           {closeLabel}
         </span>
       </summary>
-      {/* The scrim under the open panel, over the page below the header (65 px on the phone).
+      {/* The scrim under the open panel, over the page below the header (122 px on the phone, its search row included).
           `display: none` until the motion module marks the page (`globals.css`): a tap on it
           closes the Menu only where that module runs. */}
       <div
         aria-hidden="true"
-        className="bg-scrim fixed start-0 end-0 top-[65px] bottom-0 hidden"
+        className="bg-scrim fixed start-0 end-0 top-[122px] bottom-0 hidden"
         data-fo-menu-scrim=""
       />
       <div
-        className="bg-surface border-rule absolute start-0 end-0 top-full grid max-h-[calc(100dvh-65px)] gap-[16px] overflow-y-auto overscroll-contain border-b px-(--gutter-s) pt-[8px] pb-[24px] shadow-md"
+        className="bg-surface border-rule absolute start-0 end-0 top-full grid max-h-[calc(100dvh-122px)] gap-[16px] overflow-y-auto overscroll-contain border-b px-(--gutter-s) pt-[8px] pb-[24px] shadow-md"
         data-fo-menu-panel
       >
         {search === undefined ? null : (

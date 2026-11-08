@@ -90,3 +90,56 @@ export function parseQuery(
     destination,
   };
 }
+
+/**
+ * The words as typed, minus every word that names a destination (§14 A-founder-2026-11-08a item
+ * 1, the chip's "Show all countries"): "roses {a country}" becomes "roses". The same phrases and the
+ * same exact, whole-word rule as `parseQuery`, applied to the typed words so the rest keep their
+ * letters and case. A typed word is dropped only when every normalised word it yields is part of
+ * a destination's name.
+ */
+export function withoutDestinationWords(
+  raw: string,
+  destinations: readonly DestinationWords[],
+): string {
+  const typed = raw.split(/\s+/u).filter((word) => word !== "");
+  // Each normalised word, with the typed word it came from.
+  const words: string[] = [];
+  const owner: number[] = [];
+  typed.forEach((word, index) => {
+    const normalised = normaliseForSearch(word);
+    if (normalised === "") return;
+    for (const part of normalised.split(" ")) {
+      words.push(part);
+      owner.push(index);
+    }
+  });
+  const consumed = new Set<number>();
+  for (let index = 0; index < words.length;) {
+    let length = 0;
+    for (const candidate of destinations) {
+      for (const phrase of candidate.phrases) {
+        if (phrase.length > length && phraseAt(words, index, phrase)) {
+          length = phrase.length;
+        }
+      }
+    }
+    if (length === 0) {
+      index += 1;
+      continue;
+    }
+    for (let offset = 0; offset < length; offset += 1)
+      consumed.add(index + offset);
+    index += length;
+  }
+  if (consumed.size === 0) return typed.join(" ");
+  return typed
+    .filter((_, typedIndex) =>
+      owner.some(
+        (who, wordIndex) => who === typedIndex && !consumed.has(wordIndex),
+      )
+        ? true
+        : !owner.includes(typedIndex),
+    )
+    .join(" ");
+}

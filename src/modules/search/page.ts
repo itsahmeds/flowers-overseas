@@ -8,18 +8,16 @@
  *
  *  - the destination with a shop, its name and whether ordering is open there (the quiet line's
  *    "Ordering opens soon" while it is not: a `demo` destination's state line, as its listing);
- *  - the destination select's options: the shop countries in the one country order;
+ *  - the chip's select options: the shop countries in the locale's collation (§14
+ *    A-founder-2026-11-08a item 1, AC-40);
  *  - "Browse by occasion": exactly the occasion links the page's header draws (the header of a
  *    search page is out of context, so the hubs);
- *  - with no destination, the chooser's form (`next=search`), whose choice comes back here with
- *    the words (`countryVersionOf`'s `search` case);
  *  - the `search.request` log line, and `alert=search.slow` (§11). Never the query: the line holds
  *    the locale, the destination, the state, the tier counts, the result count, the page, the
  *    duration and the index generation.
  *
  * No header, cookie or IP is read (ADR-0006, AC-14), and no country is named.
  */
-import { PICKER_CHIPS } from "@/config/commerce";
 import {
   type CountryIso2,
   countryConfig,
@@ -31,17 +29,17 @@ import { logger } from "@/lib/logger";
 import { captureAlert } from "@/lib/sentry";
 import { type SearchEvent, searchEvent } from "@/modules/analytics";
 import {
-  chooserPageView,
   countryDisplayName,
   megaMenuModel,
   shopCountries,
 } from "@/modules/catalog";
+import { collator } from "@/modules/i18n";
 
 import { searchEngine } from "./default-engine";
 import type { SearchEngine } from "./engine";
 import { type RateLimiter, searchGate } from "./gate";
 import { type SearchParams, searchParamsSchema } from "./params";
-import type { SearchResultView } from "./schemas";
+import { NO_GROUPS, type SearchResultView } from "./schemas";
 import { normaliseForSearch, tokenise } from "./text";
 
 /** `/{locale}/{searchSegment}`: the bare search path, the page's canonical (§6). */
@@ -49,7 +47,7 @@ export function searchPath(locale: LocaleCode): string {
   return `/${locale}/${localeConfig(locale).pathSegments.search}`;
 }
 
-/** One option of the destination select, and one chip of the inline chooser. */
+/** One option of the chip's destination select. */
 export interface SearchCountryOption {
   /** Lowercase, the form's `to`. */
   readonly code: string;
@@ -77,14 +75,9 @@ export interface SearchPageView {
     /** `deliveryDatesOpen`: false for a `demo` destination, whose quiet line says so. */
     readonly orderingOpen: boolean;
   } | null;
+  /** The chip's select: `shopCountries(locale)` in `Intl.Collator(locale)` order (AC-40). */
   readonly destinations: readonly SearchCountryOption[];
   readonly occasions: readonly SearchOccasionLink[];
-  /** The inline chooser (country-less state only). */
-  readonly picker: {
-    readonly action: string;
-    readonly chips: readonly SearchCountryOption[];
-    readonly datalist: readonly string[];
-  } | null;
   /**
    * The GA4 `search` event (§8, AC-23; TASK-403): counts only, never the words; `null` with no
    * words and in the "rate limited" state.
@@ -165,6 +158,17 @@ function countryOption(
   };
 }
 
+/** The chip's options: every shop country, by name in the locale's collation. */
+function countryOptions(
+  codes: readonly CountryIso2[],
+  locale: LocaleCode,
+): SearchCountryOption[] {
+  const compare = collator(locale);
+  return codes
+    .map((iso2) => countryOption(iso2, locale))
+    .sort((left, right) => compare.compare(left.name, right.name));
+}
+
 /** The header's occasion links, out of context: the occasions panel's entries that are links. */
 async function occasionLinks(
   locale: LocaleCode,
@@ -241,15 +245,6 @@ export async function searchPage(
     view.destination !== null && isCountryIso2(view.destination)
       ? view.destination
       : undefined;
-  const picker =
-    destination === undefined
-      ? await chooserPageView(
-          locale,
-          { locale, kind: "search" },
-          { kind: "ask" },
-          { remembered: undefined, chips: PICKER_CHIPS },
-        )
-      : undefined;
 
   return {
     kind: "page",
@@ -264,16 +259,8 @@ export async function searchPage(
               ...countryOption(destination, locale),
               orderingOpen: deliveryDatesOpen(destination),
             },
-      destinations: shopCodes.map((iso2) => countryOption(iso2, locale)),
+      destinations: countryOptions(shopCodes, locale),
       occasions: await occasionLinks(locale),
-      picker:
-        picker === undefined
-          ? null
-          : {
-              action: picker.action,
-              chips: picker.chips.map(({ code, name }) => ({ code, name })),
-              datalist: picker.datalist,
-            },
       analytics: searchEvent({
         locale,
         destination: view.destination,
@@ -291,10 +278,11 @@ function unsearched(
 ): SearchResultView {
   return {
     query,
+    queryWithoutDestination: query,
     destination,
     dateApplied: null,
     hiddenByDate: 0,
-    pages: [],
+    groups: NO_GROUPS,
     cards: [],
     selection: [],
     count: 0,
@@ -338,9 +326,8 @@ export async function rateLimitedSearchPage(
             ...countryOption(to, locale),
             orderingOpen: deliveryDatesOpen(to),
           },
-    destinations: shopCodes.map((iso2) => countryOption(iso2, locale)),
+    destinations: countryOptions(shopCodes, locale),
     occasions: [],
-    picker: null,
     analytics: null,
   };
 }
@@ -382,4 +369,25 @@ export async function searchRoutePage(
   } finally {
     gate.leave();
   }
+}
+
+/**
+ * What the results page's header field holds (spec 045 §14 A-founder-2026-11-08a item 2, AC-43):
+ * the words as the page searched them (`value`) and the destination parameter, checked against
+ * the locale's shop countries exactly as the page checks it. Read by the `@header` slot of the
+ * results route, which is dynamic; prebuilt pages never call it, so their field has no `value`.
+ */
+export async function headerSearchValue(
+  locale: LocaleCode,
+  raw: Readonly<Record<string, string | string[] | undefined>>,
+  deps: Pick<SearchPageDeps, "shops" | "takesDates"> = {},
+): Promise<{ readonly q: string; readonly to: string | undefined }> {
+  const shopCodes = (await (deps.shops ?? shopCountries)(locale)).filter(
+    isCountryIso2,
+  );
+  const params = searchParamsSchema({
+    shops: new Set(shopCodes.map((iso2) => iso2.toLowerCase())),
+    takesDates: deps.takesDates ?? takesDatesFromRegistry,
+  }).parse(raw);
+  return { q: params.q, to: params.to };
 }

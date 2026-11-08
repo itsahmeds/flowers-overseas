@@ -16,13 +16,16 @@ import type { LocaleCode } from "@/config/locales";
 import { normaliseForSearch, searchLanguage, stem, tokenise } from "./text";
 import type {
   DestinationIndex,
+  IndexedDestination,
   IndexedDocument,
   IndexedField,
   IndexedHub,
+  IndexedInfoPage,
   LocaleIndex,
   SearchDestination,
   SearchHub,
   SearchIndex,
+  SearchInfoPage,
   SearchLabel,
   SearchProduct,
   SearchSource,
@@ -180,14 +183,63 @@ function destinationIndex(
     });
   }
 
-  const indexedHubs: IndexedHub[] = hubs.map((hub) => ({
+  return {
+    iso2,
+    documents,
+    vocabulary,
+    suggestions,
+    hubs: indexHubs(hubs, cache),
+  };
+}
+
+function indexHubs(
+  hubs: readonly SearchHub[],
+  cache: FieldCache,
+): IndexedHub[] {
+  return hubs.map((hub) => ({
     hub,
     fields: hub.labels.map((label) =>
       indexField([label.text], label.locale, cache),
     ),
   }));
+}
 
-  return { iso2, documents, vocabulary, suggestions, hubs: indexedHubs };
+/**
+ * The Destinations group's documents (§14 A-founder-2026-11-08a item 1): each destination with a
+ * name in the request locale, by its names in every launch locale (endonyms and exonyms are the
+ * registry's data). A destination with no name is not listed.
+ */
+function indexCountries(
+  destinations: Iterable<SearchDestination>,
+  cache: FieldCache,
+): IndexedDestination[] {
+  const indexed: IndexedDestination[] = [];
+  for (const destination of destinations) {
+    if (destination.name === undefined) continue;
+    const names = destination.names ?? [];
+    const fields = names.map((label) =>
+      indexField([label.text], label.locale, cache),
+    );
+    indexed.push({
+      destination,
+      fields,
+      nameKeys: new Set(fields.map((field) => field.tokens.join(" "))),
+    });
+  }
+  return indexed;
+}
+
+/** The Help group's documents: the title, and the description with the headings, in one locale. */
+function indexInfoPages(
+  pages: readonly SearchInfoPage[],
+  locale: LocaleCode,
+  cache: FieldCache,
+): IndexedInfoPage[] {
+  return pages.map((page) => ({
+    page,
+    title: indexField([page.title], locale, cache),
+    body: indexField(page.texts, locale, cache),
+  }));
 }
 
 /**
@@ -241,7 +293,19 @@ export async function buildIndex(source: SearchSource): Promise<SearchIndex> {
       );
       documents += core.documents.length;
     }
-    locales.set(locale, { locale, destinations, shops, core });
+    locales.set(locale, {
+      locale,
+      destinations,
+      shops,
+      core,
+      countries: indexCountries(destinations.values(), fieldCache),
+      hubs: indexHubs(await source.hubs(locale, ""), fieldCache),
+      info: indexInfoPages(
+        (await source.infoPages?.(locale)) ?? [],
+        locale,
+        fieldCache,
+      ),
+    });
   }
 
   return { locales, documents };

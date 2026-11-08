@@ -1,20 +1,22 @@
 /**
- * The search results page (spec 045 §2.2, §2.6, §2.7, §5.3, §6; TASK-402;
- * `docs/design/wireframes/search-results-desktop.dc.html` and `-mobile`).
+ * The search results page (spec 045 §2.2, §2.6, §2.7, §5.3, §6, §14 A-founder-2026-11-08a items 1
+ * and 4; TASK-402, TASK-520; `docs/design/wireframes/search-results-desktop.dc.html` and `-mobile`,
+ * the 2026-11-08 section).
  *
  * The board's order, top to bottom: the H1 (`search.resultsHeading` with the query in the poppy
- * italic inside `<bdi>` when there are results, `search.heading` otherwise, so the query is never
- * said twice); the quiet line (the count, then while ordering is not open "Ordering opens soon",
- * then the prices line: the listing head's own parts, so a `demo` destination reads as its
- * listing); one toolbar row (the search form at the start; "How we sort" and the destination
- * pill at the end; on a phone the count and "How we sort" share a row, then the form and the pill
- * full width); the Pages chips; the grid; the GET-form pager. With no destination, the board's
- * frame 3: `shop.hub.noMoney` once, the chooser inline carrying the words, country-less cards.
+ * italic inside `<bdi>` when anything matched, `search.heading` otherwise); the quiet line (priced
+ * results only: the count, "Ordering opens soon" while ordering is not open, the prices line);
+ * the "Sending to" chip (a change form and, with a country, a remove form, both GET forms that
+ * keep the words); the link groups (Countries, Occasions, Flowers, Help and information) in one
+ * band, each only when it has a match; then "Bouquets" with the count and "How we sort", the
+ * grid and the GET-form pager. With no destination the cards are country-less and
+ * `shop.hub.noMoney` shows once: no amount anywhere. **The page has no search form of its own**:
+ * the header's field holds the words, so the page has one search landmark (AC-43).
  *
- * **No `href` here carries the query** (§6, AC-3): "Did you mean", "Show every date", Previous
- * and Next are submit buttons of small GET forms whose hidden inputs carry `q`, `to`, `date` and
- * `page`. Every other link is a hub, a product or the chooser, none with a query string. The query
- * is printed only as text inside `<bdi>`.
+ * **No `href` here carries the query** (§6, AC-3): the chip, "Did you mean", "Show every date",
+ * Previous and Next are submit buttons of small GET forms whose hidden inputs carry `q`, `to`,
+ * `date` and `page`. Every other link is a hub, a country page, an info page, a product or the
+ * chooser, none with a query string. The query is printed only as text inside `<bdi>`.
  *
  * Server Components, no client JavaScript: every control is a link, a GET form or a native
  * `<details>`, so the page is identical with JavaScript off. Every string is a message key; the
@@ -23,21 +25,19 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
-import { SEARCH_CONFIG, SEARCH_PARAM } from "@/config/search";
+import { SEARCH_PARAM } from "@/config/search";
 import { formatDate, formatNumber } from "@/modules/i18n";
 import {
   ChevronDown,
   Container,
-  CountryPicker,
   Display,
   GridProvenance,
-  Icon,
   ListingGrid,
-  VisuallyHidden,
   assertSinglePriority,
 } from "@/modules/ui";
 
 import type { SearchPageView } from "../page";
+import { type SearchGroupKind, searchGroupKinds } from "../schemas";
 
 /** A private-use marker a message is formatted around, so one argument can become an element. */
 const MARK = "";
@@ -73,119 +73,165 @@ const PILL =
 const LINK_BUTTON =
   "text-link hover:text-link-strong inline-flex min-h-(--target-min) cursor-pointer items-center font-bold underline underline-offset-4";
 
-/** The search form (§2.2): the first control in `<main>`, no `autofocus`, `q` filled in. */
-function SearchForm({
-  view,
-  label,
-  submit,
-}: {
-  readonly view: SearchPageView;
-  readonly label: string;
-  readonly submit: string;
-}): ReactElement {
-  const id = "search-q";
-  return (
-    <form
-      action={view.path}
-      aria-label={label}
-      className="bg-card relative flex min-h-[54px] w-full items-center rounded-full shadow-[inset_0_0_0_1.5px_var(--color-ink)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--color-focus) md:max-w-[640px]"
-      data-fo-search-form
-      method="get"
-      role="search"
-    >
-      <span aria-hidden="true" className="text-ink-muted ps-[18px]">
-        <Icon name="search" size={18} />
-      </span>
-      <span className="relative flex min-w-0 flex-1 items-center">
-        <input
-          className="peer text-ui text-ink min-h-[50px] w-full min-w-0 border-0 bg-transparent ps-[10px] pe-[8px] outline-none [&::-webkit-search-cancel-button]:hidden"
-          defaultValue={view.result.query}
-          id={id}
-          maxLength={SEARCH_CONFIG.maxQueryChars}
-          name={SEARCH_PARAM.q}
-          placeholder=" "
-          type="search"
-        />
-        {/* The visible hint is the label itself, which is also the field's accessible name
-            (`<label for>`); typed, it steps out of sight and stays the name (the board's
-            "Field focused, typed"). */}
-        <label
-          className="text-ink-subtle md:text-ui pointer-events-none absolute inset-y-0 start-[10px] end-[8px] flex items-center truncate text-sm peer-[:not(:placeholder-shown)]:sr-only"
-          htmlFor={id}
-        >
-          {label}
-        </label>
-      </span>
-      <HiddenInputs
-        fields={[
-          [SEARCH_PARAM.to, view.destination?.code],
-          [SEARCH_PARAM.date, view.result.dateApplied ?? undefined],
-        ]}
-      />
-      <button
-        className="bg-ink text-paper me-[5px] inline-grid min-h-[44px] shrink-0 cursor-pointer place-items-center rounded-full px-[20px] text-sm font-bold"
-        type="submit"
-      >
-        {submit}
-      </button>
-    </form>
-  );
-}
-
-/** The destination pill (§2.2): a GET form with the words and the select; no island. */
-function DestinationForm({
+/**
+ * The "Sending to" chip (§14 A-founder-2026-11-08a item 1, AC-40): directly under the H1, server
+ * HTML, two GET forms that keep the words. With a destination: `shop.chosen.line`, the change
+ * form (a native `<select name="to">` of the shop countries and `product.destination.change`) and
+ * the remove form (`search.chip.remove`, `q` alone minus the country words). With none: the change
+ * form under `home.picker.label`. A choice loads the results directly and sets no cookie.
+ */
+function DestinationChip({
   view,
 }: {
   readonly view: SearchPageView;
 }): ReactElement | null {
+  const shop = useTranslations("shop");
+  const search = useTranslations("search");
+  const home = useTranslations("home");
   const product = useTranslations("product");
+  if (view.destinations.length === 0) return null;
   const destination = view.destination;
-  if (destination === null) return null;
   const id = "search-to";
   return (
-    <form
-      action={view.path}
-      className="border-border-strong bg-card inline-flex min-h-(--target-min) w-full max-w-full items-center gap-[6px] rounded-full border ps-[14px] pe-[6px] md:w-auto md:gap-[8px] md:ps-[16px]"
-      data-fo-search-destination={destination.code}
-      method="get"
+    <div
+      className="mt-[12px] flex flex-wrap items-center gap-x-[12px] gap-y-[8px] max-md:grid max-md:justify-items-start"
+      data-fo-search-chip={destination?.code ?? ""}
     >
-      <HiddenInputs fields={[[SEARCH_PARAM.q, view.result.query]]} />
-      <label
-        className="text-ink-subtle text-fine whitespace-nowrap md:text-sm"
-        htmlFor={id}
-      >
-        {product("destination.label")}
-      </label>
-      <span className="relative inline-flex min-w-0 flex-1 items-center md:flex-none">
-        <select
-          className="text-ink text-ui min-h-[40px] w-full min-w-0 cursor-pointer appearance-none border-0 bg-transparent py-0 ps-0 pe-[18px] font-bold"
-          defaultValue={destination.code}
-          id={id}
-          name={SEARCH_PARAM.to}
+      {destination === null ? null : (
+        <p
+          className="bg-card text-ink m-0 inline-flex min-h-(--target-min) items-center rounded-full ps-[14px] pe-[16px] text-sm whitespace-nowrap shadow-[inset_0_0_0_1.5px_var(--color-sky)]"
+          data-fo-search-chip-line
         >
-          {view.destinations.map((option) => (
-            <option key={option.code} value={option.code}>
-              {option.name}
-            </option>
-          ))}
-        </select>
-        <ChevronDown className="text-ink-muted pointer-events-none absolute end-[2px]" />
-      </span>
-      <button
-        className="text-ink bg-card inline-grid min-h-[36px] shrink-0 cursor-pointer place-items-center rounded-full px-[12px] text-sm font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
-        type="submit"
+          {shop("chosen.line", { country: destination.name })}
+        </p>
+      )}
+      <form
+        action={view.path}
+        className="m-0 inline-flex flex-wrap items-center gap-[8px]"
+        data-fo-search-chip-change
+        method="get"
       >
-        {product("destination.change")}
-      </button>
-    </form>
+        <HiddenInputs fields={[[SEARCH_PARAM.q, view.result.query]]} />
+        <label
+          className={
+            destination === null ? "text-ink-muted text-sm" : "sr-only"
+          }
+          htmlFor={id}
+        >
+          {home("picker.label")}
+        </label>
+        <span className="relative inline-flex items-center">
+          <select
+            className="bg-card text-ink min-h-(--target-min) min-w-[150px] cursor-pointer appearance-none rounded-full border-0 ps-[16px] pe-[34px] text-sm font-bold shadow-[inset_0_0_0_1px_var(--color-border-strong)]"
+            defaultValue={destination?.code ?? ""}
+            id={id}
+            name={SEARCH_PARAM.to}
+            required
+          >
+            {destination === null ? (
+              <option disabled value="">
+                {search("chip.choose")}
+              </option>
+            ) : null}
+            {view.destinations.map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="text-ink-muted pointer-events-none absolute end-[14px]" />
+        </span>
+        <button
+          className="bg-card text-ink inline-flex min-h-(--target-min) cursor-pointer items-center rounded-full border-0 px-[16px] text-sm font-bold whitespace-nowrap shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
+          type="submit"
+        >
+          {product("destination.change")}
+        </button>
+      </form>
+      {destination === null ? null : (
+        <form
+          action={view.path}
+          className="m-0"
+          data-fo-search-chip-remove
+          method="get"
+        >
+          <HiddenInputs
+            fields={[[SEARCH_PARAM.q, view.result.queryWithoutDestination]]}
+          />
+          <button className={LINK_BUTTON} type="submit">
+            {search("chip.remove")}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/** Each link group's heading key (§14 A-founder-2026-11-08a item 1). */
+const GROUP_HEADING = {
+  destinations: "groups.destinations",
+  occasions: "groups.occasions",
+  categories: "groups.categories",
+  help: "groups.help",
+} as const satisfies Record<SearchGroupKind, string>;
+
+/**
+ * The link groups (§14 A-founder-2026-11-08a item 1): one band between two hairlines, each group
+ * its eyebrow heading then its chips, in item 1's order, each drawn only when it has a match.
+ */
+function LinkGroups({
+  view,
+}: {
+  readonly view: SearchPageView;
+}): ReactElement | null {
+  const search = useTranslations("search");
+  const groups = searchGroupKinds.filter(
+    (kind) => view.result.groups[kind].length > 0,
+  );
+  if (groups.length === 0) return null;
+  return (
+    <div
+      className="border-rule mt-[16px] flex flex-wrap items-center gap-x-[40px] border-y py-[4px] max-md:block max-md:border-b-0 max-md:py-0"
+      data-fo-search-groups={groups.join(" ")}
+    >
+      {groups.map((kind) => (
+        <section
+          aria-labelledby={`search-group-${kind}`}
+          className="max-md:border-rule flex min-h-[52px] flex-wrap items-center gap-x-[14px] gap-y-[8px] py-[4px] max-md:gap-[8px] max-md:border-b max-md:py-[12px]"
+          data-fo-search-group={kind}
+          key={kind}
+        >
+          <h2
+            className="label text-ink-subtle m-0 flex-none max-md:w-full"
+            id={`search-group-${kind}`}
+          >
+            {search(GROUP_HEADING[kind])}
+          </h2>
+          <ul className="m-0 flex list-none flex-wrap gap-[8px] p-0">
+            {view.result.groups[kind].map((link) => (
+              <li key={link.href}>
+                <a
+                  className={`${PILL} bg-card text-ink gap-[9px] shadow-[inset_0_0_0_1px_var(--color-rule)] hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`}
+                  href={link.href}
+                >
+                  <bdi>{link.label}</bdi>
+                  <ChevronDown className="-rotate-90 rtl:rotate-90" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
   );
 }
 
 /**
  * "How we sort" (§2.6): spec 043's native `<details data-fo-ranking-disclosure>`, closed in the
- * server HTML, the sentence in the HTML open or closed, its panel in normal flow under the toolbar
- * row. `search.ranking.disclosure` (the sentence without the margin clause) until TASK-406 adds
- * the `ranking.margin_preference` flag: every band is 0 today, so it is the true sentence.
+ * server HTML, the sentence in the HTML open or closed. On the "Bouquets" line, at its end; open,
+ * it takes the line's full width and its sentence sits under it in normal flow.
+ * `search.ranking.disclosure` (the sentence without the margin clause) until TASK-406 adds the
+ * `ranking.margin_preference` flag: every band is 0 today, so it is the true sentence.
  */
 function HowWeSort({
   label,
@@ -194,21 +240,17 @@ function HowWeSort({
   readonly label: string;
   readonly sentence: string;
 }): ReactElement {
-  const place =
-    "col-start-2 row-start-2 self-center justify-self-end md:col-start-2 md:row-start-2";
   return (
     <details
-      className={`group ${place} open:col-span-full open:row-start-5 open:justify-self-stretch supports-[selector(::details-content)]:contents [&::details-content]:col-span-full [&::details-content]:row-start-5 [&:not([open])::details-content]:hidden`}
+      className="group open:basis-full open:text-end"
       data-fo-ranking-disclosure
     >
-      <summary
-        className={`${place} text-ink-muted group-open:text-ink inline-flex min-h-(--target-min) cursor-pointer list-none items-center gap-[7px] text-sm whitespace-nowrap underline decoration-(--color-border-strong) underline-offset-4 md:px-[4px] md:no-underline [&::-webkit-details-marker]:hidden`}
-      >
+      <summary className="text-ink-muted group-open:text-ink inline-flex min-h-(--target-min) cursor-pointer list-none items-center gap-[7px] text-sm whitespace-nowrap underline decoration-(--color-border-strong) underline-offset-4 md:px-[4px] md:no-underline [&::-webkit-details-marker]:hidden">
         {label}
         <ChevronDown className="group-open:-scale-y-100" />
       </summary>
       <p
-        className="rounded-field bg-paper-2 text-ink-muted mt-[8px] px-[18px] py-[14px] text-sm leading-[1.5]"
+        className="rounded-field bg-paper-2 text-ink-muted mt-[8px] px-[18px] py-[14px] text-start text-sm leading-[1.5]"
         data-fo-ranking-sentence
       >
         {sentence}
@@ -227,7 +269,7 @@ function QuietLine({
 }): ReactElement {
   return (
     <p
-      className="text-ink-muted text-fine col-span-full row-start-1 mt-[6px] leading-[21px] md:text-sm md:leading-[22px]"
+      className="text-ink-muted text-fine m-0 mt-[6px] leading-[21px] md:text-sm md:leading-[22px]"
       data-fo-search-status
     >
       <span className="text-ink font-bold" data-fo-search-count>
@@ -242,38 +284,6 @@ function QuietLine({
         </span>
       ))}
     </p>
-  );
-}
-
-/** The Pages block (§2.3): at most three chips, each a page that answers 200. */
-function PagesBlock({
-  view,
-}: {
-  readonly view: SearchPageView;
-}): ReactElement | null {
-  const search = useTranslations("search");
-  const pages = view.result.pages;
-  if (pages.length === 0) return null;
-  return (
-    <nav
-      aria-labelledby="search-pages"
-      className="flex flex-wrap items-center gap-[8px] pb-[20px]"
-      data-fo-search-pages={pages.length}
-    >
-      <span className="label text-ink-subtle me-[4px]" id="search-pages">
-        {search("pagesHeading")}
-      </span>
-      {pages.map((page) => (
-        <a
-          className={`${PILL} bg-card text-ink shadow-[inset_0_0_0_1px_var(--color-rule)] hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`}
-          data-fo-search-page={page.kind}
-          href={page.href}
-          key={page.href}
-        >
-          {page.label ?? view.destination?.name ?? ""}
-        </a>
-      ))}
-    </nav>
   );
 }
 
@@ -471,7 +481,7 @@ export interface SearchResultsPageProps {
   readonly view: SearchPageView;
   /**
    * The "rate limited" state (§2.7, AC-26; TASK-403): the H1, `search.rateLimited` as a status
-   * message, the form with the words and the destination pill, and nothing searched. The status
+   * message, the chip (the header's field keeps the words), and nothing searched. The status
    * (429 or 503) and `Retry-After` are the proxy's.
    */
   readonly rateLimited?: boolean;
@@ -484,7 +494,6 @@ function RateLimited({
   readonly view: SearchPageView;
 }): ReactElement {
   const search = useTranslations("search");
-  const nav = useTranslations("nav");
   return (
     <Container as="main" data-fo-search-state="rateLimited" id="main">
       <div className="pt-[18px] pb-(--section-fluid)" data-fo-search>
@@ -504,14 +513,7 @@ function RateLimited({
             {search("rateLimited")}
           </p>
         </div>
-        <div className="grid items-center gap-[12px] md:grid-cols-[minmax(0,1fr)_auto]">
-          <SearchForm
-            label={nav("search.label")}
-            submit={nav("search.submit")}
-            view={view}
-          />
-          <DestinationForm view={view} />
-        </div>
+        <DestinationChip view={view} />
       </div>
     </Container>
   );
@@ -547,8 +549,6 @@ function SearchResultsBody({
   const t = useTranslations();
   const search = useTranslations("search");
   const shop = useTranslations("shop");
-  const home = useTranslations("home");
-  const nav = useTranslations("nav");
   const { result } = view;
   const countryLess = view.destination === null;
   const state = countryLess
@@ -560,6 +560,12 @@ function SearchResultsBody({
       : "empty";
   const results = state === "results";
   const cards = countryLess ? (result.countryLess?.cards ?? []) : result.cards;
+  const linked = searchGroupKinds.some(
+    (kind) => result.groups[kind].length > 0,
+  );
+  // "No results" means every group is empty (§14 A-founder-2026-11-08a item 1); when only link
+  // groups match, they show, then "Our selection" as in the empty state.
+  const nothing = state === "noResults" && !linked;
 
   // The page's one LCP candidate: the first card of the first grid on the page.
   const first = results ? cards[0] : undefined;
@@ -588,6 +594,15 @@ function SearchResultsBody({
     parts.push({ key: "prices", text: t("nav.utility.pricesInclude") });
   }
 
+  const noMoney = countryLess ? (
+    <p
+      className="text-ink-2 m-0 mt-[4px] mb-[18px] max-w-[64ch] text-xs leading-[1.4] md:text-sm md:leading-[1.45]"
+      data-fo-hub-no-money=""
+    >
+      {shop("hub.noMoney")}
+    </p>
+  ) : null;
+
   return (
     <Container
       as="main"
@@ -601,50 +616,22 @@ function SearchResultsBody({
           className="leading-[1.06] tracking-[-0.02em] [font-variation-settings:var(--font-variation-display-hero)]"
           size="display-s"
         >
-          {results
+          {results || (linked && result.query !== "")
             ? around(
                 search("resultsHeading", { query: MARK }),
                 <Query text={result.query} />,
               )
             : search("heading")}
         </Display>
+        {results && !countryLess ? (
+          <QuietLine count={count} parts={parts} />
+        ) : null}
 
-        <div
-          className="mb-[16px] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-[8px] gap-y-[12px] md:mb-[20px] md:grid-cols-[minmax(0,1fr)_auto_auto] md:gap-x-[12px]"
-          data-fo-search-head
-        >
-          {results ? <QuietLine count={count} parts={parts} /> : null}
-          <div
-            className={`col-span-full ${results ? "row-start-3" : "row-start-2"} md:col-span-1 md:col-start-1 md:row-start-2`}
-          >
-            <SearchForm
-              label={nav("search.label")}
-              submit={nav("search.submit")}
-              view={view}
-            />
-          </div>
-          {results ? (
-            <HowWeSort
-              label={shop("toolbar.howWeSort")}
-              sentence={search("ranking.disclosure")}
-            />
-          ) : null}
-          {countryLess ? null : (
-            <div
-              className={`col-span-full ${results ? "row-start-4" : "row-start-3"} md:col-span-1 md:col-start-3 md:row-start-2`}
-            >
-              <DestinationForm view={view} />
-            </div>
-          )}
-          <div
-            className="border-rule col-span-full row-start-6 border-b max-md:hidden"
-            data-fo-search-rule
-          />
-        </div>
+        <DestinationChip view={view} />
 
         {state === "tooShort" ? (
           <p
-            className="text-ink m-0 pb-[8px] text-[17px]"
+            className="text-ink m-0 pt-[16px] pb-[8px] text-[17px]"
             data-fo-search-too-short
             role="status"
           >
@@ -652,39 +639,7 @@ function SearchResultsBody({
           </p>
         ) : null}
 
-        {countryLess && view.picker !== null ? (
-          <div
-            className="grid max-w-[820px] gap-[12px] pb-[28px]"
-            data-fo-search-chooser
-          >
-            <p
-              className="text-ink-2 m-0 max-w-[64ch] text-xs leading-[1.4] md:text-sm md:leading-[1.45]"
-              data-fo-hub-no-money=""
-            >
-              {shop("hub.noMoney")}
-            </p>
-            <div className="max-w-[640px]">
-              <CountryPicker
-                action={view.picker.action}
-                chips={view.picker.chips}
-                datalist={view.picker.datalist}
-                hidden={
-                  result.query === ""
-                    ? []
-                    : [{ name: SEARCH_PARAM.q, value: result.query }]
-                }
-                idPrefix="search-picker"
-                label={home("picker.label")}
-                rememberLine={shop("choose.remember")}
-                searchLabel={home("picker.search")}
-                submitLabel={home("picker.submit")}
-                variant="flat"
-              />
-            </div>
-          </div>
-        ) : null}
-
-        <PagesBlock view={view} />
+        <LinkGroups view={view} />
         {countryLess ? null : <HiddenByDate view={view} />}
 
         {results ? (
@@ -692,9 +647,24 @@ function SearchResultsBody({
             aria-labelledby="search-results-heading"
             data-fo-search-results
           >
-            <VisuallyHidden as="h2" id="search-results-heading">
-              {count}
-            </VisuallyHidden>
+            <div
+              className="mt-[22px] flex flex-wrap items-baseline justify-between gap-x-[16px] gap-y-[6px] max-md:mt-[24px]"
+              data-fo-search-head
+            >
+              <Display as="h2" id="search-results-heading" size="lg">
+                {search("groups.bouquets")}
+              </Display>
+              <div className="ms-auto flex flex-wrap items-center justify-end gap-x-[18px]">
+                <span className="text-ink-muted text-sm" data-fo-search-count>
+                  {count}
+                </span>
+                <HowWeSort
+                  label={shop("toolbar.howWeSort")}
+                  sentence={search("ranking.disclosure")}
+                />
+              </div>
+            </div>
+            {noMoney}
             <GridProvenance
               cards={cards}
               className="text-xs"
@@ -712,8 +682,9 @@ function SearchResultsBody({
           </section>
         ) : (
           <>
-            {state === "noResults" ? <NoResults view={view} /> : null}
-            <BrowseOccasions view={view} />
+            {nothing ? <NoResults view={view} /> : null}
+            {countryLess ? <div className="pt-[24px]">{noMoney}</div> : null}
+            {linked ? null : <BrowseOccasions view={view} />}
             <OurSelection priority view={view} />
           </>
         )}

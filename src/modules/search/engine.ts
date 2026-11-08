@@ -24,24 +24,47 @@ import { collator } from "@/modules/i18n";
 
 import { buildIndex } from "./build";
 import { didYouMean } from "./did-you-mean";
-import { type Match, matchDocuments, matchHubs } from "./match";
-import { type DestinationWords, destinationPhrase, parseQuery } from "./query";
+import {
+  type Match,
+  matchCountries,
+  matchDocuments,
+  matchHubs,
+  matchInfoPages,
+} from "./match";
+import {
+  type DestinationWords,
+  type ParsedQuery,
+  destinationPhrase,
+  parseQuery,
+  withoutDestinationWords,
+} from "./query";
 import { rankSearchResults } from "./rank";
 import {
+  NO_GROUPS,
   type PageLink,
+  type SearchGroups,
   type SearchRequest,
   SearchRequestSchema,
   type SearchResultView,
   SearchResultViewSchema,
   type SearchState,
+  type SuggestItem,
+  type SuggestRequest,
+  SuggestRequestSchema,
+  SuggestResponseSchema,
 } from "./schemas";
+import { tokenise } from "./text";
 import type {
   DestinationIndex,
   IndexedDocument,
   LocaleIndex,
+  SearchHub,
   SearchIndex,
   SearchSource,
 } from "./types";
+
+/** At most this many bouquets among the suggestions (§14 A-founder-2026-11-08a item 3). */
+export const SUGGEST_PRODUCTS_MAX = 3;
 
 /** The tag prefixes whose invalidation makes the index stale (spec 012b §5.4). */
 export const SEARCH_STALE_TAG_PREFIXES = [
@@ -63,6 +86,8 @@ export interface SearchOutcome {
 
 export interface SearchEngine {
   search(request: SearchRequest): Promise<SearchOutcome>;
+  /** The suggestions island's answer (§14 A-founder-2026-11-08a item 3). */
+  suggest(request: SuggestRequest): Promise<SuggestItem[]>;
 }
 
 export interface SearchIndexStats {
@@ -246,75 +271,149 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
   }
 
   /**
-   * The Pages block's hub links (§2.3): matched hubs, occasions before categories, then by label in
-   * the locale's collation, each resolved to a page that exists, until the block is full.
+   * The four link groups (§14 A-founder-2026-11-08a item 1): Destinations (registry countries a
+   * query word names, before the destination words leave the query), Occasions and Flowers (§2.3's
+   * Pages rule split in two, each link the destination's country page where one exists, else the
+   * hub, and only a page that answers 200), and Help (spec 041's info pages in the locale). Each
+   * at most `pagesBlockMax`, by tier, then the locale's collation (Help: spec 041's page order).
+   * The same for every visitor: nothing about the visitor is an input (ADR-0006).
    */
-  async function addHubLinks(
-    pages: PageLink[],
+  async function linkGroups(
     locale: LocaleCode,
-    iso2: string | undefined,
-    shop: DestinationIndex,
-    tokens: readonly string[],
-  ): Promise<void> {
+    localeIndex: LocaleIndex | undefined,
+    parsed: ParsedQuery,
+    destination: string | undefined,
+  ): Promise<SearchGroups> {
+    if (localeIndex === undefined) return NO_GROUPS;
+    const max = config.pagesBlockMax;
     const compare = collator(locale);
-    const ordered = matchHubs(shop.hubs, tokens, config)
-      .map(({ hub }) => hub)
+
+    const destinations: PageLink[] = [];
+    const countryWords = tokenise(
+      parsed.normalised,
+      locale,
+      config.maxTokens,
+      config,
+    );
+    const countries = matchCountries(
+      localeIndex.countries,
+      countryWords,
+      config,
+    )
+      .flatMap((match) => {
+        const href = match.item.shopHref ?? match.item.corridorHref;
+        const label = match.item.name;
+        return href === undefined || label === undefined
+          ? []
+          : [{ tier: match.tier, label, href }];
+      })
       .sort(
         (left, right) =>
-          (left.kind === right.kind ? 0 : left.kind === "occasion" ? -1 : 1) ||
-          compare.compare(left.label, right.label),
+          right.tier - left.tier || compare.compare(left.label, right.label),
       );
-    const source = sourceNow();
-    for (const hub of ordered) {
-      if (pages.length >= config.pagesBlockMax) return;
-      const href = await source.hubHref(locale, iso2, hub);
-      if (href === undefined) continue;
-      if (pages.some((existing) => existing.href === href)) continue;
-      pages.push({ kind: hub.kind, label: hub.label, href });
+    for (const country of countries) {
+      if (destinations.length >= max) break;
+      if (destinations.some((link) => link.href === country.href)) continue;
+      destinations.push({ label: country.label, href: country.href });
     }
+
+    const source = sourceNow();
+    const hubLinks = async (kind: SearchHub["kind"]): Promise<PageLink[]> => {
+      const ordered = matchHubs(localeIndex.hubs, parsed.tokens, config)
+        .map(({ hub }) => hub)
+        .filter((hub) => hub.kind === kind)
+        .sort((left, right) => compare.compare(left.label, right.label));
+      const links: PageLink[] = [];
+      for (const hub of ordered) {
+        if (links.length >= max) break;
+        const href = await source.hubHref(locale, destination, hub);
+        if (href === undefined) continue;
+        if (links.some((link) => link.href === href)) continue;
+        links.push({ label: hub.label, href });
+      }
+      return links;
+    };
+
+    const help = matchInfoPages(localeIndex.info, parsed.tokens, config)
+      .sort(
+        (left, right) =>
+          right.tier - left.tier || left.item.order - right.item.order,
+      )
+      .slice(0, max)
+      .map(({ item }) => ({ label: item.title, href: item.href }));
+
+    return {
+      destinations,
+      occasions: await hubLinks("occasion"),
+      categories: await hubLinks("category"),
+      help,
+    };
+  }
+
+  /** The words, the destination and the groups one request resolves to (search and suggest). */
+  async function resolve(
+    locale: LocaleCode,
+    raw: string,
+    to: string | undefined,
+  ): Promise<{
+    readonly built: BuiltIndex;
+    readonly localeIndex: LocaleIndex | undefined;
+    readonly query: string;
+    readonly parsed: ParsedQuery;
+    readonly destination: string | undefined;
+    readonly searchable: boolean;
+    readonly groups: SearchGroups;
+    readonly queryWithoutDestination: string;
+  }> {
+    const built = await freshIndex();
+    const localeIndex = built.index.locales.get(locale);
+    const query = cleanQuery(raw, config.maxQueryChars);
+    const words = built.words.get(locale) ?? [];
+    const parsed = parseQuery(query, locale, words, config);
+    // Words, then `to`, then none (§2.4). `to` counts only when it is a destination we know.
+    const fromTo =
+      to !== undefined && localeIndex?.destinations.has(to) === true
+        ? to
+        : undefined;
+    const destination = parsed.destination ?? fromTo;
+    const searchable = query !== "" && parsed.letters >= config.minQueryLetters;
+    return {
+      built,
+      localeIndex,
+      query,
+      parsed,
+      destination,
+      searchable,
+      groups: searchable
+        ? await linkGroups(locale, localeIndex, parsed, destination)
+        : NO_GROUPS,
+      queryWithoutDestination:
+        parsed.destination === undefined
+          ? query
+          : withoutDestinationWords(query, words),
+    };
   }
 
   async function search(request: SearchRequest): Promise<SearchOutcome> {
     const parsedRequest = SearchRequestSchema.parse(request);
     const locale = parsedRequest.locale as LocaleCode;
     const { page } = parsedRequest;
-    const built = await freshIndex();
-    const localeIndex = built.index.locales.get(locale);
-    const query = cleanQuery(parsedRequest.query, config.maxQueryChars);
-    const parsed = parseQuery(
-      query,
+    const resolved = await resolve(
       locale,
-      built.words.get(locale) ?? [],
-      config,
+      parsedRequest.query,
+      parsedRequest.to,
     );
-
-    // Words, then `to`, then none (§2.4). `to` counts only when it is a destination we know.
-    const fromTo =
-      parsedRequest.to !== undefined &&
-      localeIndex?.destinations.has(parsedRequest.to) === true
-        ? parsedRequest.to
-        : undefined;
-    const destination = parsed.destination ?? fromTo;
+    const { built, localeIndex, query, parsed, destination, groups } = resolved;
     const shop =
       destination === undefined
         ? undefined
         : localeIndex?.shops.get(destination);
 
-    const pages: PageLink[] = [];
-    if (parsed.destination !== undefined) {
-      const named = localeIndex?.destinations.get(parsed.destination);
-      if (named?.shopHref !== undefined) {
-        pages.push({ kind: "shop", href: named.shopHref });
-      } else if (named?.corridorHref !== undefined) {
-        pages.push({ kind: "corridor", href: named.corridorHref });
-      }
-    }
-
     const tierCounts = emptyTierCounts();
     const outcome = (
       fields: Pick<
         SearchResultView,
-        "pages" | "cards" | "selection" | "count" | "pageCount" | "state"
+        "cards" | "selection" | "count" | "pageCount" | "state"
       > &
         Partial<
           Pick<
@@ -325,9 +424,11 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
     ): SearchOutcome => ({
       view: SearchResultViewSchema.parse({
         query,
+        queryWithoutDestination: resolved.queryWithoutDestination,
         destination: destination ?? null,
         dateApplied: null,
         hiddenByDate: 0,
+        groups,
         page,
         didYouMean: null,
         countryLess: null,
@@ -345,9 +446,9 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
             selectionOrder(shop).slice(0, config.pageSize),
           );
 
-    // No destination: the country-less state (§2.7, frame 3; §14 A-orchestrator-2026-10-24 item
-    // 1). The words are matched among `coreRange(locale)` only, by the same tiers and §2.5's key
-    // with every band 0, and drawn as country-less cards: no price anywhere (TASK-402).
+    // No destination: the country-less bouquets (§14 A-founder-2026-11-08a item 1, group 5). The
+    // words are matched among `coreRange(locale)` only, by the same tiers and §2.5's key with
+    // every band 0, and drawn as country-less cards: no price anywhere.
     if (destination === undefined) {
       return countryLessOutcome(
         locale,
@@ -355,7 +456,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
         query,
         parsed,
         page,
-        pages,
         outcome,
       );
     }
@@ -367,7 +467,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
     else if (shop === undefined) early = "noResults";
     if (early !== undefined || shop === undefined) {
       return outcome({
-        pages,
         cards: [],
         selection: await selection(),
         count: 0,
@@ -375,9 +474,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
         state: early ?? "noResults",
       });
     }
-
-    await addHubLinks(pages, locale, destination, shop, parsed.tokens);
-    const linked = pages.slice(0, config.pagesBlockMax);
 
     const matched = rankMatches(matchDocuments(shop, parsed.tokens, config));
     // The date (§2.4 "Deliverability"; AC-15): honoured only when the destination takes delivery
@@ -412,7 +508,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
 
     if (ranked.length === 0) {
       return outcome({
-        pages: linked,
         cards: [],
         selection: await selection(),
         count: 0,
@@ -433,7 +528,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
     );
     if (page > pageCount) {
       return outcome({
-        pages: linked,
         cards: [],
         selection: [],
         count: ranked.length,
@@ -446,7 +540,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
       .slice((page - 1) * config.pageSize, page * config.pageSize)
       .map((match) => match.document);
     return outcome({
-      pages: linked,
       cards: await cards(locale, destination, slice),
       selection: [],
       count: ranked.length,
@@ -454,6 +547,51 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
       state: "results",
       ...dated,
     });
+  }
+
+  /**
+   * Suggestions as the buyer types (§14 A-founder-2026-11-08a item 3): at most `suggestMax`, at
+   * most 3 bouquets first (the destination's listing set, else `coreRange(locale)`), then
+   * occasions, flowers, countries and help pages, from the same groups the results page draws.
+   * Never a price: a suggestion has a kind, a name and a link.
+   */
+  async function suggest(request: SuggestRequest): Promise<SuggestItem[]> {
+    const parsedRequest = SuggestRequestSchema.parse(request);
+    const locale = parsedRequest.locale as LocaleCode;
+    const to = parsedRequest.to?.toUpperCase();
+    const resolved = await resolve(locale, parsedRequest.q, to);
+    if (!resolved.searchable) return [];
+    const { localeIndex, parsed, destination, groups } = resolved;
+    const items: SuggestItem[] = [];
+    if (parsed.tokens.length > 0) {
+      const index =
+        destination === undefined
+          ? localeIndex?.core
+          : localeIndex?.shops.get(destination);
+      if (index !== undefined) {
+        const top = rankMatches(matchDocuments(index, parsed.tokens, config))
+          .slice(0, SUGGEST_PRODUCTS_MAX)
+          .map((match) => match.document);
+        const productCards =
+          destination === undefined || index === localeIndex?.core
+            ? await countryLessCards(locale, top)
+            : await cards(locale, destination, top);
+        for (const card of productCards) {
+          if (card.href === undefined) continue;
+          items.push({ kind: "product", label: card.name, href: card.href });
+        }
+      }
+    }
+    const rest: [SuggestItem["kind"], readonly PageLink[]][] = [
+      ["occasion", groups.occasions],
+      ["category", groups.categories],
+      ["destination", groups.destinations],
+      ["page", groups.help],
+    ];
+    for (const [kind, links] of rest) {
+      for (const link of links) items.push({ kind, ...link });
+    }
+    return SuggestResponseSchema.parse(items.slice(0, config.suggestMax));
   }
 
   async function countryLessCards(
@@ -470,27 +608,24 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
   }
 
   /**
-   * The country-less state's content (§2.7 "No destination"): the same steps as a destination's
-   * search over `core`, its cards country-less. The Pages block links hubs (no country page:
-   * there is no country), occasions before categories.
+   * The country-less bouquets (§14 A-founder-2026-11-08a item 1, group 5): the same steps as a
+   * destination's search over `core`, its cards country-less. The link groups are the caller's.
    */
   async function countryLessOutcome(
     locale: LocaleCode,
     core: DestinationIndex | undefined,
     query: string,
-    parsed: ReturnType<typeof parseQuery>,
+    parsed: ParsedQuery,
     page: number,
-    pages: PageLink[],
     outcome: (
       fields: Pick<
         SearchResultView,
-        "pages" | "cards" | "selection" | "count" | "pageCount" | "state"
+        "cards" | "selection" | "count" | "pageCount" | "state"
       > &
         Partial<Pick<SearchResultView, "didYouMean" | "countryLess">>,
     ) => SearchOutcome,
   ): Promise<SearchOutcome> {
     const empty = {
-      pages,
       cards: [],
       selection: [],
       count: 0,
@@ -521,13 +656,10 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
         },
       });
     }
-    await addHubLinks(pages, locale, undefined, core, parsed.tokens);
-    const linked = pages.slice(0, config.pagesBlockMax);
     const ranked = rankMatches(matchDocuments(core, parsed.tokens, config));
     if (ranked.length === 0) {
       return outcome({
         ...empty,
-        pages: linked,
         didYouMean: didYouMean(core, parsed.tokens, locale, config),
         countryLess: {
           state: "noResults",
@@ -543,7 +675,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
     if (page > pageCount) {
       return outcome({
         ...empty,
-        pages: linked,
         count: ranked.length,
         pageCount,
         state: "outOfRange",
@@ -551,7 +682,6 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
     }
     return outcome({
       ...empty,
-      pages: linked,
       count: ranked.length,
       pageCount,
       countryLess: {
@@ -569,6 +699,7 @@ export function memoryEngine(deps: MemoryEngineDeps): MemoryEngine {
 
   return {
     search,
+    suggest,
     stats(): SearchIndexStats {
       if (current === undefined) {
         return { ageSeconds: null, documents: 0, generation };
