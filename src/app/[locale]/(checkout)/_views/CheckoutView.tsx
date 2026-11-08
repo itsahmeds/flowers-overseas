@@ -32,7 +32,6 @@ import {
 } from "@/config/checkout-samples";
 import { localeConfig, type LocaleCode } from "@/config/locales";
 import { COMPANY, controllerName } from "@/config/company";
-import { DISCOUNT_DEFAULT_TIME_ZONE } from "@/config/discounts";
 import {
   type CheckoutScreen,
   type DiscountEcho,
@@ -47,7 +46,6 @@ import { infoPageExists, infoPagePath } from "@/modules/content";
 import {
   countGraphemes,
   formatDate,
-  formatCurrencyName,
   formatDateParts,
   formatMoney,
   formatNumber,
@@ -96,6 +94,7 @@ import {
   type CheckoutAction,
   type CheckoutFormIntent,
 } from "@/modules/ui/checkout";
+import { discountRefusalMessage } from "./discount-messages";
 import { PayArea } from "./PayStep";
 
 /** What a refused post is drawn again with. */
@@ -1241,57 +1240,17 @@ function vatLines(screen: StepScreen, t: Translate): VatLine[] {
 /* The discount code (spec 047, TASK-447)                                       */
 /* -------------------------------------------------------------------------- */
 
-/** Each refusal reason's message key (§7 `checkout.discount.error.*`). */
-const REFUSAL_KEYS: Readonly<Record<DiscountRefusal["reason"], string>> = {
-  unknown: "discount.error.unknown",
-  not_started: "discount.error.notStarted",
-  ended: "discount.error.ended",
-  wrong_destination: "discount.error.wrongDestination",
-  wrong_product: "discount.error.wrongProduct",
-  wrong_currency: "discount.error.wrongCurrency",
-  below_minimum: "discount.error.belowMinimum",
-  used_up: "discount.error.usedUp",
-  already_used_by_you: "discount.error.alreadyUsed",
-  locked: "discount.error.locked",
-};
-
-/** A refusal's message, every argument formatted in the page's locale (§7). */
-export function refusalMessage(
+/** A refusal's message in the page's locale (§7; `discountRefusalMessage`). */
+function refusalMessage(
   refusal: DiscountRefusal,
   locale: LocaleCode,
   t: Translate,
   all: Translate,
 ): string {
-  return t(REFUSAL_KEYS[refusal.reason], {
-    date:
-      refusal.startsAt === undefined
-        ? ""
-        : formatDate(
-            new Date(refusal.startsAt),
-            locale,
-            "weekdayDayMonth",
-            DISCOUNT_DEFAULT_TIME_ZONE,
-          ),
-    country:
-      refusal.countryIso === undefined
-        ? ""
-        : countryName(all, refusal.countryIso),
-    currency:
-      refusal.currency === undefined
-        ? ""
-        : formatCurrencyName(refusal.currency, locale),
-    amount:
-      refusal.currency === undefined || refusal.minimumMinor === undefined
-        ? ""
-        : formatMoney(
-            MoneySchema.parse({
-              amountMinor: refusal.minimumMinor,
-              currency: refusal.currency,
-            }),
-            locale,
-          ),
-    minutes: refusal.minutes ?? 0,
-  });
+  const message = discountRefusalMessage(refusal, locale, (iso) =>
+    countryName(all, iso),
+  );
+  return all(message.key, message.values);
 }
 
 /** Step 4's code control, its line and its notice, or nothing when the flag is off. */

@@ -235,8 +235,8 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
     // plus spec 010's lawyer-gated `checkout.legal.cancellation`, which B1 prints (TASK-333),
     // plus the 18 later checkout tasks added before TASK-418 (147 on main when it started), plus
     // TASK-418's three for the four steps (`checkout.step.details`, `checkout.progress.details`,
-    // `checkout.action.toYourCard`).
-    expect(checkoutKeys).toHaveLength(150);
+    // `checkout.action.toYourCard`), plus TASK-447's 18 `checkout.discount.*` (spec 047 §7).
+    expect(checkoutKeys).toHaveLength(168);
     const metaKeys = Object.keys(enMeta).filter((key) => KEY.test(key));
     expect(metaKeys.toSorted()).toEqual(checkoutKeys.toSorted());
     const reviewed = metaKeys.filter((key) => enMeta[key]?.reviewed === true);
