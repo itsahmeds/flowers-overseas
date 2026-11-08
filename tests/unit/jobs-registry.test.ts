@@ -31,6 +31,11 @@ const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
   it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start, payments.monitor and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready, payouts.close, payouts.watch and payouts.statement_email, spec 018's three invoice jobs (TASK-342) and spec 020a's notifications.resend (TASK-360)", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
+      // spec 025 (TASK-488, TASK-489): founder alerts.
+      "alerts.daily_summary",
+      "alerts.dispatch",
+      "alerts.escalate",
+      "alerts.monitor",
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
@@ -77,6 +82,9 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       (name) => jobQueuePolicy(name) === "short",
     ).sort();
     expect(short).toEqual([
+      // spec 025: keyed by alert and kind, and by date.
+      "alerts.daily_summary",
+      "alerts.dispatch",
       "assignment.photo_remind",
       "assignment.remind",
       "assignment.timeout",
@@ -128,7 +136,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(30);
+    expect(new Set(JOB_NAMES).size).toBe(34);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

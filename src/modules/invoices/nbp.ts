@@ -21,7 +21,7 @@
  */
 import { z } from "zod";
 
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import type { AlertRaiser } from "@/modules/orders";
 
 import type { VatRateSnapshot } from "./snapshot";
@@ -107,7 +107,7 @@ export function createNbpRateProvider(
   options: NbpOptions = {},
 ): VatRateProvider {
   const fetchFn = options.fetch ?? ((url, init) => fetch(url, init));
-  const alert = options.alert ?? captureAlert;
+  const alert = options.alert ?? raiseLegacyAlert;
   const base = options.baseUrl ?? NBP_API_BASE;
   const timeoutMs = options.timeoutMs ?? NBP_TIMEOUT_MS;
 

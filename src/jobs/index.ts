@@ -197,6 +197,40 @@ export const PayoutsClosePayload = z.object({}).strict();
 export const PayoutsWatchPayload = z.object({}).strict();
 
 /**
+ * `alerts.dispatch` (spec 025 §5.2 "Jobs", AC-5 to AC-12; TASK-488): decide and send one alert's
+ * push and email. Keyed `alertId:kind`; enqueued by `raiseAlert` and `clearCondition`.
+ */
+export const AlertsDispatchPayload = z
+  .object({
+    alertId: z.uuid(),
+    kind: z.enum([
+      "raise",
+      "bump",
+      "resolve",
+      "reminder",
+      "escalation",
+      "test",
+    ]),
+  })
+  .strict();
+
+/**
+ * `alerts.monitor` and `alerts.escalate` (spec 025 §5.2 "Jobs", AC-13 to AC-27; TASK-489): one
+ * minute's checks, and one minute's receipts, escalations, bumps, reminders and held digests.
+ * Take nothing; the minute tick enqueues one of each under a `singletonKey`.
+ */
+export const AlertsMonitorPayload = z.object({}).strict();
+export const AlertsEscalatePayload = z.object({}).strict();
+
+/**
+ * `alerts.daily_summary` (spec 025 §5.2, AC-28; TASK-489): the summary of one local date in the
+ * configured zone, enqueued by the minute tick from 08:00 there, keyed by the date.
+ */
+export const AlertsDailySummaryPayload = z
+  .object({ date: z.iso.date() })
+  .strict();
+
+/**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
  * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
  * already running may enqueue its own successor (a deferred offer, the next offer). `exclusive`:
@@ -287,6 +321,19 @@ export const REGISTERED_JOBS = {
   },
   "payouts.close": { version: 1, payload: PayoutsClosePayload },
   "payouts.watch": { version: 1, payload: PayoutsWatchPayload },
+  "alerts.dispatch": {
+    version: 1,
+    payload: AlertsDispatchPayload,
+    policy: "short",
+    retryLimit: 3,
+  },
+  "alerts.monitor": { version: 1, payload: AlertsMonitorPayload },
+  "alerts.escalate": { version: 1, payload: AlertsEscalatePayload },
+  "alerts.daily_summary": {
+    version: 1,
+    payload: AlertsDailySummaryPayload,
+    policy: "short",
+  },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */

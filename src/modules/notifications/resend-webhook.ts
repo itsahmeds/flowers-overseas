@@ -44,7 +44,8 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
-import { captureAlert, captureWebhookSignatureRejected } from "@/lib/sentry";
+import { captureWebhookSignatureRejected } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import {
   withExecutor,
   type AlertRaiser,
@@ -507,7 +508,7 @@ export async function processResendWebhook(
 ): Promise<ResendProcessOutcome> {
   const id = z.uuid().parse(inboxId);
   const transaction = deps.transaction ?? systemTransaction;
-  const alert: AlertRaiser = deps.alert ?? captureAlert;
+  const alert: AlertRaiser = deps.alert ?? raiseLegacyAlert;
   const now = deps.now ?? (() => new Date());
   const log = deps.log ?? defaultLogger;
   const alerts: PendingAlert[] = [];

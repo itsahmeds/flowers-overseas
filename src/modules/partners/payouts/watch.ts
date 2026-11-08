@@ -16,7 +16,7 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { PAYOUTS_CONFIG } from "@/config/payouts";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
 import { type OrderExecutor, withExecutor } from "@/modules/orders";
 
@@ -71,7 +71,7 @@ export async function watchMissingLines(
   const transaction: WatchTransaction =
     deps.transaction ?? ((fn) => withExecutor(undefined, "payouts.watch", fn));
   const send = deps.send ?? defaultSend;
-  const alert = deps.alert ?? captureAlert;
+  const alert = deps.alert ?? raiseLegacyAlert;
   const log = deps.log ?? defaultLogger;
 
   const due = await transaction(async (executor) =>

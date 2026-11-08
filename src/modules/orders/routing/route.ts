@@ -40,7 +40,7 @@ import { signInPolicy } from "@/config/florists";
 import { ROUTING_WINDOWS } from "@/config/routing";
 import { appEnvironment } from "@/lib/env.schema";
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 
 import { appendEvent } from "../service/append-event";
 import { OrderModeSchema } from "../service/events";
@@ -121,7 +121,7 @@ export function resolveRoutingDeps(
     now: deps.now ?? (() => new Date()),
     schedule: deps.schedule ?? pgBossRoutingScheduler,
     signIn: { signInStatuses: statuses },
-    alert: deps.alert ?? captureAlert,
+    alert: deps.alert ?? raiseLegacyAlert,
     log: deps.log ?? defaultLogger,
   };
 }

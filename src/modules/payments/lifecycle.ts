@@ -41,7 +41,7 @@ import {
   REQUESTED_REFUND_RETRY_MINUTES,
   UNPAID_PURCHASE_TIMEOUT_MINUTES,
 } from "@/config/payments";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import { logger } from "@/lib/logger";
 import {
   appendEvent,
@@ -99,7 +99,7 @@ function resolve(deps: LifecycleDeps): Resolved {
     provider: deps.provider,
     transaction: deps.transaction ?? systemTransaction,
     now: deps.now ?? (() => new Date()),
-    alert: deps.alert ?? captureAlert,
+    alert: deps.alert ?? raiseLegacyAlert,
     methodSources:
       deps.methodSources ??
       (() => Promise.resolve({ enabledFlags: new Set<string>() })),

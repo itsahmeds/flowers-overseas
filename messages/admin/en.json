@@ -338,6 +338,9 @@
         },
         "payouts": {
           "accrue": "Writes what each florist is owed: the price fixed when they accept, their prepaid orders and their payout lines. Off: payout work waits and is done once this is on again. Nothing is dropped."
+        },
+        "alerts": {
+          "push": "Push founder alerts to the phone. Production pushes unless this is off; staging pushes only while it is on. Email is always sent."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -1474,6 +1477,146 @@
         "capPositive": "A whole number, 1 or more.",
         "noteLength": "At most 2000 characters.",
         "offerFrozen": "Fixed after the first live use. Make a new code to change it."
+      }
+    },
+    "alerts": {
+      "name": {
+        "webhook": {
+          "dead": "Payment or email webhook stopped processing",
+          "error_rate": "Webhook errors above 2 % in 10 minutes",
+          "silent_24h": "No Stripe webhook for 24 hours"
+        },
+        "outbox": {
+          "dead": "An order step failed for good"
+        },
+        "payment": {
+          "amount_mismatch": "Payment amount does not match the order",
+          "paid_not_routed": "Paid order not sent to a florist",
+          "refund_failed": "Refund failed",
+          "dispute_opened": "Card dispute opened",
+          "unexpected_hold": "Payment held unexpectedly",
+          "unexpected_cancel": "Payment cancelled unexpectedly",
+          "captured_after_close": "Payment captured after the order closed",
+          "dispute_outside_machine": "Dispute on an order in an unexpected state",
+          "refund_state_mismatch": "Refund state does not match Stripe",
+          "refund_exceeds_captured": "Refund asked for more than was captured"
+        },
+        "routing": {
+          "no_partner": "No florist left for an order",
+          "sla_overdue": "Florist offer overdue"
+        },
+        "notifications": {
+          "florist_bounce": "Email to a florist bounced"
+        },
+        "order": {
+          "not_accepted": "Order not accepted by a florist yet",
+          "dispatch_at_risk": "Delivery today not out yet",
+          "not_delivered": "Delivery today not done by evening",
+          "photo_missing": "Delivered order has no photo"
+        },
+        "jobs": {
+          "backlog": "Background jobs are stuck",
+          "failed_spike": "Many background jobs failed"
+        },
+        "site": {
+          "down": "Site is down",
+          "page_failing": "A key page is failing"
+        },
+        "fx": {
+          "stale": "Exchange rates are stale",
+          "aging": "Exchange rates will go stale soon"
+        },
+        "email": {
+          "bounce_rate": "Email hard bounces above 4 %",
+          "complaint": "Email marked as spam"
+        },
+        "db": {
+          "usage_high": "Database usage is high",
+          "backup_failed": "Database backup not verified"
+        },
+        "alerts": {
+          "channel_failed": "An alert channel failed",
+          "test": "Test alert"
+        },
+        "invoice": {
+          "refused": "Invoice could not be issued",
+          "nbp_failed": "NBP exchange rate unavailable for an invoice",
+          "render_overdue": "Invoice PDF overdue",
+          "render_dead": "Invoice PDF failed for good"
+        },
+        "payouts": {
+          "line_missing": "Florist payout line missing"
+        },
+        "orders": {
+          "close_backlog": "Orders waiting to close"
+        },
+        "auth": {
+          "buyer": {
+            "link_cap": "Sign-in emails near the hourly cap"
+          }
+        },
+        "search": {
+          "slow": "Site search is slow"
+        }
+      },
+      "component": {
+        "stripe": "Stripe",
+        "mollie": "Mollie",
+        "resend": "Resend",
+        "worker": "Worker",
+        "queue": "Job queue",
+        "site": "Website",
+        "fx": "Exchange rates",
+        "neon": "Database",
+        "backup": "Database backup",
+        "push": "Pushover",
+        "email": "Email",
+        "alerts": "Alerts"
+      },
+      "message": {
+        "actBy": "Act by {time}",
+        "actByTwoZones": "Act by {time} ({local})",
+        "occurrences": "Seen {count} times",
+        "resolved": "Resolved: {title}",
+        "stormTitle": "More alerts held: {count}",
+        "heldTitle": "Alerts held overnight: {count}",
+        "openLog": "Open the alert log to see them."
+      },
+      "email": {
+        "lead": "An alert needs your attention.",
+        "bumpLead": "This alert became more urgent.",
+        "escalationLead": "This alert is still unacknowledged.",
+        "runbook": "Runbook: {url}",
+        "admin": "Alert page: {url}",
+        "runbookLink": "Open the runbook",
+        "adminLink": "Open the alert",
+        "footer": "Internal: sent to OPS_ALERT_EMAIL, never forwarded to a buyer or a florist.",
+        "stormSubject": "Many alerts at once: open the alert log"
+      },
+      "summary": {
+        "subject": "Daily alert summary for {date}",
+        "allClear": "No open alerts.",
+        "open": "Open alerts",
+        "openLine": "[{severity}] {title}, {subject}, open {age}",
+        "last24h": "Last 24 hours",
+        "raised": "Raised: P1 {p1}, P2 {p2}, P3 {p3}",
+        "resolvedCount": "Resolved: P1 {p1}, P2 {p2}, P3 {p3}",
+        "orders": "Orders due today: {today} ({todayAtRisk} at risk). Tomorrow: {tomorrow} ({tomorrowAtRisk} at risk).",
+        "monitorRun": "Monitor last run: {time}",
+        "pushConfigured": "Push: configured",
+        "pushMissing": "Push: not configured (missing {keys})",
+        "lastPush": "Last push sent: {time}",
+        "pushRemaining": "Pushover messages left this month: {count}",
+        "neon": "Database usage: {percent}",
+        "fx": "Exchange rates as of: {date}",
+        "backup": "Last backup verified: {time}",
+        "test": "Last test alert acknowledged: {time}",
+        "pagesCapped": "Paged 3 times in 24 hours, now email only: {count}",
+        "never": "never",
+        "unknown": "unknown",
+        "ageMinutes": "{count} min",
+        "ageHours": "{count} h",
+        "ageDays": "{count} d"
       }
     }
   },

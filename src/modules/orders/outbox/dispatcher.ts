@@ -53,7 +53,7 @@ import { sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 
 import {
   ORDER_EVENT_TYPES,
@@ -472,7 +472,7 @@ export async function dispatchOutbox(
   const batchSize = options.batchSize ?? OUTBOX_BATCH_SIZE;
   const retryBaseSeconds =
     options.retryBaseSeconds ?? OUTBOX_RETRY_BASE_SECONDS;
-  const alert = options.alert ?? captureAlert;
+  const alert = options.alert ?? raiseLegacyAlert;
   const log = options.log ?? defaultLogger;
   const targets = claimableTargets(
     handlers,

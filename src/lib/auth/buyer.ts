@@ -50,7 +50,7 @@ import { renderAccountSignInEmail } from "@/modules/notifications/emails/account
 import type { DbContext } from "../db";
 import { authSecret } from "../env.auth";
 import { logger } from "../logger";
-import { captureAlert } from "../sentry";
+import { raiseLegacyAlert } from "../../modules/ops";
 
 import { type AuthRunner, systemAuthRunner } from "./adapter";
 import {
@@ -151,7 +151,7 @@ export async function buyerCapReached(
   if (sent >= BUYER_LINK_ALERT_AT) {
     const reached = sent >= BUYER_LINK_HOURLY_CAP;
     logger.warn({ sent, reached }, "auth.buyer.link_cap_alert");
-    captureAlert(
+    raiseLegacyAlert(
       BUYER_CAP_ALERT,
       { sent, reached },
       { fingerprint: [BUYER_CAP_ALERT] },

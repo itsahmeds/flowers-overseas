@@ -29,6 +29,7 @@ import {
 // from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
 import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
+import { alertDetailHref, alertsListHref } from "../modules/admin/alerts";
 import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
 import {
   registerNotificationsOutbox,
@@ -46,7 +47,19 @@ import {
 } from "../modules/notifications/emails";
 // Spec 018 §5.2 (TASK-339): the succeeded refunds, outside the `orders` barrel (it reads `payments`).
 import { buyerRefundLines } from "../modules/orders/buyer-refund-lines";
-import { dispatchOutbox, registerOutboxHandler } from "../modules/orders";
+import {
+  dispatchOutbox,
+  orderReference,
+  registerOutboxHandler,
+  routingDeadline,
+} from "../modules/orders";
+import { fxSnapshotStatus } from "../modules/catalog";
+import {
+  dispatchAlert,
+  runDailySummary,
+  runEscalation,
+  runMonitor,
+} from "../modules/ops";
 import {
   registerPaymentsOutbox,
   runPaymentsMonitor,
@@ -76,6 +89,22 @@ import {
 
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
+
+/**
+ * Spec 025 (TASK-488, TASK-489): what every alert job needs from outside the ops module. The admin
+ * catalogue's English copy (only admin code reads it), the order reference rule and spec 016's
+ * routing deadline are handed in here, so the ops module imports neither the admin module nor
+ * the orders barrel.
+ */
+const opsAlertDeps = {
+  t: adminT as unknown as (
+    key: string,
+    values?: Readonly<Record<string, string>>,
+  ) => string,
+  reference: orderReference,
+  alertPath: (alertId?: string) =>
+    alertId === undefined ? alertsListHref() : alertDetailHref(alertId),
+};
 
 /** One read of an original by the derive worker: a large original on a slow link, not a hang. */
 const DERIVE_READ_TIMEOUT_MS = 60_000;
@@ -307,6 +336,50 @@ export const JOB_HANDLERS: JobHandlers = {
   // the delivery is keyed `job:invoice.email:{invoiceId}`, so a re-run finds it `sent`.
   "invoice.email": async (payload) => {
     await runInvoiceEmailJob(payload.invoiceId);
+  },
+  // Spec 025 §5.2 (TASK-488): one alert's push and email. Keyed `alertId:kind`; a re-run may
+  // repeat a push (at least once), and the email carries a Resend idempotency key.
+  "alerts.dispatch": async (payload) => {
+    await dispatchAlert(payload, opsAlertDeps);
+  },
+  // Spec 025 §5.2 (TASK-489): the minute's checks. Writes only `ops_alert`; a re-run raises the
+  // same fingerprints, which deduplicate into the rows already open.
+  "alerts.monitor": async (_payload, context) => {
+    await runMonitor({
+      ...(context.queue === undefined ? {} : { queue: context.queue }),
+      routingDeadline: (deliveryDate, destination) =>
+        routingDeadline(
+          deliveryDate as Parameters<typeof routingDeadline>[0],
+          destination,
+        ),
+    });
+  },
+  // Spec 025 §5.5 (TASK-489): receipts, escalation, bumps, reminders, the morning digest and the
+  // daily summary's enqueue. Each step selects only what it has not done yet, so a re-run is a
+  // no-op.
+  "alerts.escalate": async () => {
+    await runEscalation({
+      ...opsAlertDeps,
+      enqueueSummary: async (date) => {
+        const { enqueue, withBoss } = await import("./runtime");
+        await withBoss(async (boss) => {
+          await enqueue(
+            boss,
+            "alerts.daily_summary",
+            { date },
+            { requestId: "system:alerts.escalate", singletonKey: date },
+          );
+        });
+      },
+    });
+  },
+  // Spec 025 §5.2 (TASK-489): one date's summary, once (`summary_sent_for`).
+  "alerts.daily_summary": async (payload, context) => {
+    await runDailySummary(payload.date, {
+      ...opsAlertDeps,
+      ...(context.queue === undefined ? {} : { queue: context.queue }),
+      fxAsOf: () => fxSnapshotStatus().fxAsOf,
+    });
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.

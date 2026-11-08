@@ -26,7 +26,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the build (2026-11-08), carried forward, nothing silent:**
+  - **Backups (AC-26, second half):** spec 002's `db.backup_verify` has no handler and writes no record, so the backup check reports `skipped: source_missing`; the summary prints "Last backup verified: unknown". When TASK-028 lands, it calls `raiseAlert("db.backup_failed", ...)` and records its last success.
+  - **Neon (AC-26):** read from the latest `db_usage_sample` (70 % P3, 90 % P2); `neon.usage_probe` itself (TASK-029) has no handler yet.
+  - **Site probes (AC-23):** production probes `/api/health`, `/en` and `/sitemap.xml`; the "one live corridor and one live product page" probes need a data choice of which page (countries are data) and are not wired.
+  - **Pushover messages remaining** is read on each send but not stored, so the summary prints "unknown".
+  - **`jobs.backlog` and `jobs.failed_spike` (AC-22):** the SQL runs over pg-boss's own connection (the tick's `queue`); no integration test inserts pg-boss rows by hand (the partitioned job table), so T-22's database half is owed.
+  - **`order.not_accepted`, `order.not_delivered`, `order.photo_missing` (AC-18, AC-20, AC-21):** the decisions are unit-tested at their boundaries; the database half is tested for `order.dispatch_at_risk` (T-19) and `webhook.error_rate` (T-17) only.
+  - **Email complaints (AC-25):** one row per UTC day; it re-raises only when the 24-hour complaint count grows.
 
 ## Escalations
 
@@ -40,11 +47,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: `escalate.ts` (receipts, escalation, expiry repage with the 3-page cap, bump, digest, reminder, safety net, summary enqueue), `monitor.ts` (all checks of §5.2, cadences, source_missing), `summary.ts`, `heartbeat.ts`; tick enqueues `alerts.monitor` and `alerts.escalate` and pings the heartbeat after `runTick`. Same PR as TASK-488.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/521 (feature PR with TASK-488). Tests: unit `ops-monitor-decisions` (AC-17 to AC-27 decisions, probe UA and timeout, heartbeat), `jobs-internal` (tick enqueues and heartbeat order); integration `ops-alerts` T-13 to T-17, T-19, T-28. Carry-forwards above.

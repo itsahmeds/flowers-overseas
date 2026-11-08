@@ -1,8 +1,8 @@
 /**
  * The two payment monitors (spec 013 §11, §5.2 "Jobs" `payments.monitor`, §13 Q8 and Q10;
  * AC-39, AC-40; TASK-264). One job, every minute, read-only: it writes no table, calls no
- * provider and raises Sentry alerts through `captureAlert` (the alert rule forwards them to the
- * founder's email and WhatsApp, `plan/08`).
+ * provider and raises alerts through `raiseLegacyAlert` (spec 025: the Sentry event, the alert row
+ * and the page by severity). Its own reads write nothing; the alert row is the ops module's.
  *
  *  - **`payment.paid_not_routed`** (AC-39): every `test` or `live` order still `authorised` or
  *    `paid_unrouted` more than `PAID_NOT_ROUTED_AFTER_MINUTES` after `expectedFirstOfferAt(order)`
@@ -34,7 +34,7 @@ import {
 } from "@/config/payments";
 import { appEnvironment } from "@/lib/env.schema";
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import {
   expectedFirstOfferAt,
   type FirstOfferInput,
@@ -136,7 +136,7 @@ export function webhookSilent(facts: WebhookSilenceFacts, now: Date): boolean {
 // The job
 // ---------------------------------------------------------------------------------------------
 
-/** An alert raised by the monitor, with its fingerprint (`captureAlert`'s shape). */
+/** An alert raised by the monitor, with its fingerprint (`raiseLegacyAlert`'s shape). */
 export type MonitorAlert = (
   alert: string,
   fields: Readonly<Record<string, unknown>> & { readonly order_id?: string },
@@ -148,7 +148,7 @@ export interface PaymentsMonitorDeps {
   /** Default: a fresh `system` transaction. */
   readonly transaction?: PaymentTransaction;
   readonly now?: () => Date;
-  /** Default: Sentry (`captureAlert`). */
+  /** Default: `raiseLegacyAlert` (spec 025: Sentry, the alert row and the page). */
   readonly alert?: MonitorAlert;
   readonly log?: Logger;
   /** The environment's Stripe mode. Default: `APP_ENV` is `production`. */
@@ -190,7 +190,7 @@ export async function runPaymentsMonitor(
 ): Promise<PaymentsMonitorCounts> {
   const transaction = deps.transaction ?? systemTransaction;
   const now = (deps.now ?? (() => new Date()))();
-  const alert: MonitorAlert = deps.alert ?? captureAlert;
+  const alert: MonitorAlert = deps.alert ?? raiseLegacyAlert;
   const log = deps.log ?? defaultLogger;
   const livemode =
     deps.livemode ?? appEnvironment(process.env) === "production";

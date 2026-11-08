@@ -26,7 +26,7 @@ import {
 } from "@/config/countries";
 import { type LocaleCode, localeConfig } from "@/config/locales";
 import { logger } from "@/lib/logger";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import { type SearchEvent, searchEvent } from "@/modules/analytics";
 import {
   countryDisplayName,
@@ -126,7 +126,7 @@ export function slowSearchMonitor(raise: (alert: string) => void): {
 
 const slowSearches = slowSearchMonitor((alert) => {
   logger.error({ alert }, "search slow");
-  captureAlert(alert);
+  raiseLegacyAlert(alert);
 });
 
 interface RequestLog {

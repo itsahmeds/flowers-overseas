@@ -224,17 +224,26 @@ describe("robots (spec 001 §6, spec 002 §6 'Crawl efficiency')", () => {
   });
 });
 
-const { probe, tick, ensure, enqueue } = vi.hoisted(() => ({
-  probe: vi.fn(),
-  tick: vi.fn(),
-  ensure: vi.fn(),
-  enqueue: vi.fn(),
-}));
+const { probe, tick, ensure, enqueue, heartbeat, QUEUE_DB } = vi.hoisted(
+  () => ({
+    probe: vi.fn(),
+    tick: vi.fn(),
+    ensure: vi.fn(),
+    enqueue: vi.fn(),
+    heartbeat: vi.fn(),
+    // Spec 025 AC-27 (TASK-489): the tick pings the heartbeat after `runTick`, over pg-boss's db.
+    QUEUE_DB: { executeSql: () => Promise.resolve({ rows: [] }) },
+  }),
+);
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/modules/ops", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/ops")>()),
+  tickHeartbeat: (...args: unknown[]) => heartbeat(...args),
+}));
 vi.mock("@/jobs/runtime", () => ({
   withBoss: async (fn: (boss: unknown) => Promise<unknown>) =>
-    fn({ boss: true }),
+    fn({ boss: true, getDb: () => QUEUE_DB }),
   probeDbHealth: (...args: unknown[]) => probe(...args),
   ensureQueues: (...args: unknown[]) => ensure(...args),
   enqueue: (...args: unknown[]) => enqueue(...args),
@@ -299,7 +308,7 @@ describe("the route files, as Next loads them", () => {
     // §11 (TASK-342) one invoice.render_sweep under its own, before it ticks, so the same tick
     // consumes them; spec 030a §5.2 (TASK-364) adds payouts.close and payouts.watch, each under a
     // key unique for an hour; spec 013 §11 (TASK-264) one payments.monitor under its own key.
-    expect(enqueue).toHaveBeenCalledTimes(8);
+    expect(enqueue).toHaveBeenCalledTimes(10);
     expect(enqueue.mock.calls.map((call) => call.slice(1))).toEqual([
       ["outbox.dispatch", {}, { requestId: "system:jobs.tick" }],
       ["payments.production_start", {}, { requestId: "system:jobs.tick" }],
@@ -344,6 +353,17 @@ describe("the route files, as Next loads them", () => {
           singletonSeconds: 3600,
         },
       ],
+      // Spec 025 §5.2 (TASK-489): the alert monitors and the escalation pass.
+      [
+        "alerts.monitor",
+        {},
+        { requestId: "system:jobs.tick", singletonKey: "alerts.monitor" },
+      ],
+      [
+        "alerts.escalate",
+        {},
+        { requestId: "system:jobs.tick", singletonKey: "alerts.escalate" },
+      ],
     ]);
     for (const order of enqueue.mock.invocationCallOrder) {
       expect(order).toBeLessThan(tick.mock.invocationCallOrder[0] ?? 0);
@@ -352,7 +372,13 @@ describe("the route files, as Next loads them", () => {
     // Identity, not deep equality: `JOB_HANDLERS` is `{}` today, so `toHaveBeenCalledWith` would
     // also pass for a route that ticked with a fresh `{}` (breaker hole 7, U39).
     const [boss, handlers] = tick.mock.calls[0] as [unknown, unknown];
-    expect(boss).toEqual({ boss: true });
+    expect(boss).toMatchObject({ boss: true });
+    // AC-27: one heartbeat after the tick, over the tick's own queue connection.
+    expect(heartbeat).toHaveBeenCalledTimes(1);
+    expect(heartbeat.mock.calls[0]?.[0]).toBe(QUEUE_DB);
+    expect(heartbeat.mock.invocationCallOrder[0] ?? 0).toBeGreaterThan(
+      tick.mock.invocationCallOrder[0] ?? 0,
+    );
     expect(handlers).toBe(JOB_HANDLERS);
   });
 });

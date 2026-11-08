@@ -21,6 +21,7 @@
  * spec 012b) and the blog (`0024`, spec 044).
  */
 export * from "./admin.ts";
+export * from "./alerts.ts";
 export * from "./auth.ts";
 export * from "./blog.ts";
 export * from "./catalog.ts";

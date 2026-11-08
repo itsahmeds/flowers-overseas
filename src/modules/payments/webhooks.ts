@@ -39,7 +39,7 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import { logger } from "@/lib/logger";
 import {
   withExecutor,
@@ -299,7 +299,7 @@ async function routeRefund(
   lifecycle: LifecycleDeps,
 ): Promise<Routed> {
   const now = lifecycle.now?.() ?? new Date();
-  const alert = lifecycle.alert ?? captureAlert;
+  const alert = lifecycle.alert ?? raiseLegacyAlert;
   const transaction = lifecycle.transaction ?? systemTransaction;
   const remotes =
     type === CHARGE_REFUNDED
@@ -338,7 +338,7 @@ async function routeDispute(
     throw new WebhookRetry(`retrieve_${remote.failure}`);
   }
   const now = lifecycle.now?.() ?? new Date();
-  const alert = lifecycle.alert ?? captureAlert;
+  const alert = lifecycle.alert ?? raiseLegacyAlert;
   const transaction = lifecycle.transaction ?? systemTransaction;
   return routedOf(
     await transaction((executor) =>
@@ -357,7 +357,7 @@ export async function processWebhook(
 ): Promise<ProcessOutcome> {
   const id = z.uuid().parse(inboxId);
   const transaction = deps.transaction ?? systemTransaction;
-  const alert: AlertRaiser = deps.alert ?? captureAlert;
+  const alert: AlertRaiser = deps.alert ?? raiseLegacyAlert;
   const now = deps.now ?? (() => new Date());
   const lifecycle: LifecycleDeps = {
     provider: deps.provider,

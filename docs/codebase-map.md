@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +21 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +24 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +2 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +126 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +14 |
@@ -23,7 +23,8 @@ task actually touches.
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +146 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
-| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +18 |
+| `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
+| `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +29 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +16 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
@@ -36,6 +37,7 @@ task actually touches.
 | File | Purpose | Spec |
 |---|---|---|
 | `address-formats.ts` | Address formats per destination country | 003 |
+| `alerts.ts` | The founder alerts' numbers: quiet hours, storm… | 025 |
 | `auth.ts` | The buyer sign-in's limits and session length | 018 |
 | `basket.ts` | The basket's two numbers | 010 |
 | `card-message.ts` | The printed card's one limit (spec 004 §14… | 004 |
@@ -373,9 +375,9 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 509 |
-| `tests/integration/` | 102 |
-| `tests/contract/` | 41 |
+| `tests/unit/` | 515 |
+| `tests/integration/` | 103 |
+| `tests/contract/` | 42 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |
 | `tests/visual/` | 23 |
