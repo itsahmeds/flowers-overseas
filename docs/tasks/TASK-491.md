@@ -52,6 +52,10 @@ here.
 - 2026-11-08: `toGa4Value`, item builders, context parse, `recordOrderContext` (wired into `placeBasket`), MP client and bodies, the `analytics.ga4` handler and route, env keys and checks, retention handler, redaction, alerts registered; unit and integration suites green locally (0042 renamed to 0040 only for the local run, `db:migrate` refuses the gap until 0040 and 0041 merge).
 - 2026-11-08: RoPA row 4, runbook (Railway, founder steps, alerts, reconciliation, notice drafts), DSAR access and erasure steps, `_ga` lifetimes 365 days, spec 004, 010, 013, 018 pointer amendments. TASK-492 not started (see its brief).
 
+## Copy approval
+
+- founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-491.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 023 (TASK-491); the founder did not read this text: the 3 admin texts of spec 023 (`admin.flags.description.analytics.mp_send`, `admin.alerts.name.analytics.*`), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
