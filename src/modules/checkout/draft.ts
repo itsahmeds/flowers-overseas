@@ -110,6 +110,10 @@ export const pendingNotices = [
   "full",
   "other_mode",
   "other_currency",
+  // Spec 034 §5.3 (`0040_basket_reminder`, TASK-451): the basket came back from a reminder's link,
+  // in the same browser (`restored`) or rebuilt with the bouquets only (`restored_details`).
+  "restored",
+  "restored_details",
 ] as const;
 export type PendingNotice = (typeof pendingNotices)[number];
 
@@ -163,6 +167,13 @@ export interface Draft {
   readonly expiresAt: Date;
   /** In position order. */
   readonly lines: readonly BasketLine[];
+  /**
+   * Spec 034 §5.1 A: when the buyer ticked the basket-reminder box, or `null` (optional so the
+   * many fixtures that predate it stay valid; every read from the database sets it).
+   */
+  readonly reminderConsentAt?: Date | null;
+  /** Spec 034 §5.1 A: the reminder whose link rebuilt this basket, or `null`. */
+  readonly restoredFromReminderId?: string | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -231,6 +242,8 @@ const DraftRowSchema = z.object({
   discount_code_id: z.uuid().nullable(),
   last_activity_ms: EpochMsColumn,
   expires_ms: EpochMsColumn,
+  reminder_consent_ms: EpochMsColumn.nullable(),
+  restored_from_reminder_id: z.uuid().nullable(),
 });
 
 const LineRowSchema = z.object({
@@ -305,6 +318,8 @@ function toDraft(
     lastActivityAt: row.last_activity_ms,
     expiresAt: row.expires_ms,
     lines,
+    reminderConsentAt: row.reminder_consent_ms,
+    restoredFromReminderId: row.restored_from_reminder_id,
   };
 }
 
@@ -315,7 +330,9 @@ const DRAFT_COLUMNS = sql`
   d.confirmed_total_minor::text AS confirmed_total_minor, d.confirmed_currency_code,
   d.pending_notice, d.purchase_id, d.discount_code_id,
   (extract(epoch FROM d.last_activity_at) * 1000)::bigint::text AS last_activity_ms,
-  (extract(epoch FROM d.expires_at) * 1000)::bigint::text AS expires_ms`;
+  (extract(epoch FROM d.expires_at) * 1000)::bigint::text AS expires_ms,
+  (extract(epoch FROM d.reminder_consent_at) * 1000)::bigint::text AS reminder_consent_ms,
+  d.restored_from_reminder_id`;
 
 const LINE_COLUMNS = sql`
   l.id, l.position, c.iso2, p.sku, l.tier_key, l.delivery_date::text AS delivery_date,
