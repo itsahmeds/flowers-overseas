@@ -44,7 +44,8 @@ describe("SEARCH_CONFIG (spec 045 §5.1)", () => {
       queryRetentionDays: 90,
       totalRetentionDays: 400,
     });
-    expect(SEARCH_CONFIG.suggestions).toBe(false);
+    // On by default: spec 045 §14 A-founder-2026-11-08a item 3 supersedes §13 Q9.
+    expect(SEARCH_CONFIG.suggestions).toBe(true);
     expect(SEARCH_CONFIG.suggestMax).toBe(6);
   });
 

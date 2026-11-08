@@ -65,6 +65,7 @@ export async function RouteHeader({
   home = false,
   basketCurrent = false,
   search = false,
+  searchValue,
 }: {
   readonly locale: string;
   readonly segments: readonly string[];
@@ -75,6 +76,11 @@ export async function RouteHeader({
   readonly basketCurrent?: boolean;
   /** The search results page: its language links go to each locale's bare search page. */
   readonly search?: boolean;
+  /** The results page's words and destination, for its header field (spec 045 AC-43). */
+  readonly searchValue?: {
+    readonly q: string;
+    readonly to: string | undefined;
+  };
 }): Promise<ReactElement> {
   const locale = (routableLocale(requested) ?? documentFallbackLocale()).code;
   setRequestLocale(locale);
@@ -89,6 +95,7 @@ export async function RouteHeader({
       megaMenu={megaMenu}
       priceClaim={home ? null : <NoticePriceClaim />}
       basketCurrent={basketCurrent}
+      {...(searchValue === undefined ? {} : { searchValue })}
       switcher={
         search ? (
           <SearchLocaleSwitcher locale={locale} />

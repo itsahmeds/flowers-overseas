@@ -289,15 +289,13 @@ describe("the rendered header (AC-7, AC-14)", () => {
       // Internal: the lockup, the switcher's sibling shown locales (`en`, `en-gb`; spec 003 §14
       // A-founder-2026-10-14c), every link entry of the six panels and each featured card, the
       // Basket (spec 010 D10, TASK-349), `For florists` at the row's end (spec 011 AC-9, TASK-210),
-      // the phone row's search link (spec 045, TASK-404), and nothing else: no Send pill (Q-24d),
-      // no account item (A20).
+      // and nothing else: no Send pill (Q-24d), no account item (A20), and since spec 045 §14
+      // A-founder-2026-11-08a no search link (the field is a form; TASK-520).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
           `/${locale}/basket`,
           localePath(locale, "forFlorists"),
-          // The phone row's search link (spec 045 AC-1; TASK-404), out of context: no `to`.
-          localePath(locale, "search"),
           ...SHOWN.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
@@ -320,7 +318,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(
         items.map(({ id }) => id),
         locale,
-      ).toEqual(["for-florists", "search", "basket"]);
+      ).toEqual(["for-florists", "basket"]);
       for (const { id, tag } of items) {
         expect(tag, `${locale}/${id}`).toMatch(/^<a\s/);
       }
@@ -366,9 +364,12 @@ describe("the rendered header (AC-7, AC-14)", () => {
 
   it("draws the search controls and no glyph that opens nothing: every control is real (§14 A20, spec 045 AC-1)", () => {
     const html = render("en");
-    // Search has a page (spec 045, TASK-404): the `md`-up disclosure, the phone link and the two
-    // GET forms (the panel's and the Menu's), each with exactly its field and its button.
-    expect([...html.matchAll(/data-fo-header-search=""/gu)]).toHaveLength(1);
+    // Search has a page (spec 045 §14 A-founder-2026-11-08a; TASK-520): the visible field and the
+    // Menu's form, two GET forms, each with exactly its field and its button. No disclosure.
+    expect([...html.matchAll(/data-fo-header-search=""/gu)]).toHaveLength(0);
+    expect([...html.matchAll(/data-fo-header-search-field=""/gu)]).toHaveLength(
+      1,
+    );
     expect([...html.matchAll(/<form\b/gu)]).toHaveLength(2);
     expect([...html.matchAll(/<input\b/gu)]).toHaveLength(2);
     expect([...html.matchAll(/<button\b/gu)]).toHaveLength(2);
@@ -380,10 +381,10 @@ describe("the rendered header (AC-7, AC-14)", () => {
     // opens a real panel (A24 clause 3 lifts A20's omission), never a `<button>` or a labelled icon.
     expect(html).not.toContain("data-fo-header-menu");
     expect(html).not.toContain('aria-label="Menu"');
-    // The Menu, the search disclosure, then the six mega menu items and their six accordions
-    // inside the Menu: every `<details>` opens a real panel.
+    // The Menu, then the six mega menu items and their six accordions inside the Menu: every
+    // `<details>` opens a real panel.
     expect([...html.matchAll(/<details\b/g)]).toHaveLength(
-      2 + 2 * (MENUS.en?.panels.length ?? 0),
+      1 + 2 * (MENUS.en?.panels.length ?? 0),
     );
   });
 
@@ -458,9 +459,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
   it("draws one menu in one order for both rows, and no Send flowers pill (Q-24d)", () => {
     const html = render("en");
     expect(html).not.toMatch(/\border-\d+\b/u);
-    // The Basket icon link (spec 010 D10; TASK-349), since spec 011 (TASK-210) `For florists`,
-    // and since spec 045 (TASK-404) the phone row's search link.
-    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(3);
+    // The Basket icon link (spec 010 D10; TASK-349) and since spec 011 (TASK-210) `For florists`;
+    // the phone row's search link left with spec 045 §14 A-founder-2026-11-08a (TASK-520).
+    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(2);
     expect([...html.matchAll(/data-fo-header-item="basket"/g)]).toHaveLength(1);
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.
@@ -697,28 +698,33 @@ describe("the rendered header (AC-7, AC-14)", () => {
 
   it("reserves the mega menu board's band heights as fixed rows (AC-7)", () => {
     const html = render("en");
-    const { mastheadMobile, mastheadDesktop, categoryMobile } =
-      HEADER_BAND_HEIGHTS;
+    const { mastheadMobile, categoryMobile, searchPhone } = HEADER_BAND_HEIGHTS;
     // The drift guard, on the masthead band's **own** element: the numbers in its class list are
     // the numbers in the model, which is what `tests/e2e/header.spec.ts` measures.
     const band = tagAt(html, html.indexOf('data-fo-header-band="masthead"'));
     expect(band).toContain(`grid-rows-[${String(mastheadMobile)}px_auto]`);
-    expect(band).toContain(`xl:grid-rows-[${String(mastheadDesktop)}px]`);
-    // From `md` to `xl` the six items sit on a 48 px row under a 1 px rule (`.cm-row2`).
+    // One 64 px row at every width (spec 045 §14 A-founder-2026-11-08a item 2's fallback).
+    expect(band).not.toContain("xl:grid-rows-");
+    // From `md`, at every width, the six items sit on a 48 px row under a 1 px rule (`.cm-row2`).
     const row = tagAt(html, html.indexOf('data-fo-header-band="categories"'));
     expect(row).toContain(`min-h-[${String(categoryMobile)}px]`);
     expect(row).toContain("border-t");
-    expect(row).toContain("xl:border-t-0");
+    expect(row).not.toContain("xl:border-t-0");
+    // Below `md` the search row: 56 px under its 1 px rule (57 with the rule, border-box).
+    const search = tagAt(html, html.indexOf("data-fo-header-search-field"));
+    expect(search).toContain(`min-h-[${String(searchPhone + 1)}px]`);
+    expect(search).toContain("border-t");
     expect(HEADER_BAND_HEIGHTS).toEqual({
       mastheadMobile: 64,
-      mastheadDesktop: 76,
+      mastheadDesktop: 64,
       categoryMobile: 48,
+      searchPhone: 56,
     });
-    // The sticky part: 64 + 1 + 48 + 1 from `md` to `xl`, 76 + 1 from `xl`, 64 + 1 on a phone.
+    // The sticky part: 64 + 1 + 56 + 1 on a phone, 64 + 1 + 48 + 1 from `md` at every width.
     expect(HEADER_STICKY_HEIGHTS).toEqual({
-      phone: 65,
+      phone: 122,
       mobile: 114,
-      desktop: 77,
+      desktop: 114,
     });
   });
 

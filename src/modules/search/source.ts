@@ -26,6 +26,7 @@ import {
   deliveryDatesOpen,
   isCountryIso2,
 } from "@/config/countries";
+import { INFO_PAGE_IDS, infoPage } from "@/config/info-pages";
 import type { LocaleCode } from "@/config/locales";
 import { isPublished } from "@/config/site-links";
 import {
@@ -45,6 +46,12 @@ import {
   rankBandsFor,
   topProductsForPrebuild,
 } from "@/modules/catalog";
+import {
+  infoPageExists,
+  infoPageHeadView,
+  legalDocumentView,
+  trustContent,
+} from "@/modules/content";
 import { corridorLinkHref, deliveryCalendar } from "@/modules/geo";
 import { launchLocaleCodes, loadMessages } from "@/modules/i18n";
 import {
@@ -57,6 +64,7 @@ import { searchLanguage } from "./text";
 import type {
   SearchDestination,
   SearchHub,
+  SearchInfoPage,
   SearchLabel,
   SearchProduct,
   SearchSource,
@@ -222,6 +230,41 @@ async function hubsFor(locale: LocaleCode): Promise<SearchHub[]> {
   return hubs;
 }
 
+/** Spec 041's buyer-facing pages (the trust and legal families) that exist in `locale`. */
+function infoPagesFor(locale: LocaleCode): SearchInfoPage[] {
+  const pages: SearchInfoPage[] = [];
+  INFO_PAGE_IDS.forEach((id, order) => {
+    const family = infoPage(id).family;
+    if (family === "florists") return;
+    if (!infoPageExists(id, locale)) return;
+    const head = infoPageHeadView(id, locale);
+    if (head === undefined) return;
+    let title: string | undefined;
+    const headings: string[] = [];
+    if (family === "legal") {
+      const legal = legalDocumentView(id, locale);
+      title = legal?.h1;
+      for (const section of legal?.sections ?? [])
+        headings.push(section.heading);
+    } else {
+      const content = trustContent(id, locale);
+      title = content?.h1;
+      for (const section of content?.sections ?? []) {
+        headings.push(section.heading);
+      }
+    }
+    if (title === undefined) return;
+    pages.push({
+      id,
+      title,
+      href: head.path,
+      texts: [head.seoDescription, ...headings],
+      order,
+    });
+  });
+  return pages;
+}
+
 /**
  * The catalogue-backed source. Each call returns a fresh source with an empty memo; the engine
  * takes the factory and asks for one per build, so a rebuild after `invalidate()` reads the
@@ -246,14 +289,21 @@ export function catalogSearchSource(): SearchSource {
         COUNTRIES.map(async (country): Promise<SearchDestination> => {
           const iso2 = country.iso2;
           const words = new Set<string>();
+          const names: SearchLabel[] = [];
           for (const other of launchCodes()) {
             const name = messageAt(memo, other, country.nameKey);
-            if (name !== undefined) words.add(name);
+            if (name !== undefined) {
+              words.add(name);
+              names.push({ locale: other, text: name });
+            }
             words.add(countrySlug(iso2, other));
           }
+          const name = messageAt(memo, locale, country.nameKey);
           return {
             iso2,
             words: [...words],
+            ...(name === undefined ? {} : { name }),
+            names,
             shopHref: await listingHref({
               pageType: "countryShopRoot",
               locale,
@@ -370,6 +420,12 @@ export function catalogSearchSource(): SearchSource {
         date,
       });
       return verdict.saleable;
+    },
+
+    // The Help group (§14 A-founder-2026-11-08a item 1): spec 041's ten pages where they exist in
+    // the locale, in its registry order, by their `<h1>`, meta description and headings there.
+    async infoPages(locale) {
+      return infoPagesFor(locale);
     },
 
     async cards(locale, iso2, skus) {

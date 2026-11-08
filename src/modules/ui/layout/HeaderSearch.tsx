@@ -1,171 +1,156 @@
 /**
- * The header's search (spec 045 §2.1 as amended by §14 A-orchestrator-2026-10-24 items 1 and 4,
- * §5.3, AC-1, AC-2, AC-34; TASK-404; `docs/design/wireframes/search-results-desktop.dc.html`
- * "Header search opened", PR 372's `chrome-desktop.dc.html` and `chrome-mobile.dc.html` icons).
+ * The header's search field (spec 045 §2.1 as amended by §14 A-founder-2026-11-08a items 2 and 3,
+ * §5.3, AC-34, AC-38, AC-41 to AC-44; TASK-404, TASK-520; `docs/design/wireframes/
+ * chrome-desktop.dc.html` and `chrome-mobile.dc.html`, the 2026-11-08 sections, and
+ * `search-suggest-*.dc.html`).
  *
- *  - **`HeaderSearchDisclosure`**, from `md`: PR 372's 44 px search icon as the `<summary>` of a
- *    native `<details name="fo-mega">`, named by `nav.search.submit`. It shares the mega menu's
- *    group, so opening it closes any open mega panel and opening a panel closes it, natively. Its
- *    panel hangs under the header row like the mega panels (absolutely placed inside the sticky
- *    header), so the row does not grow and `HEADER_STICKY_HEIGHTS` is unchanged; closed in the
- *    server HTML, so its form is out of the tab order until it is opened.
- *  - **`HeaderSearchForm`**: the one `<form role="search" method="get">` of a panel: the hidden
- *    `to` only on a page with a destination, the field (`q`, `maxlength="80"`,
- *    `autocomplete="off"`, `enterkeyhint="search"`) named by `nav.search.label`, which is also its
- *    visible hint (spec 045 §8: "a label that equals the visible placeholder words"), and the
- *    submit button `nav.search.submit`. The Menu holds the same form (`MenuSheet`'s `search`).
- *  - **`HeaderSearchLink`**, below `md`: the phone row's icon link to the search page, with
- *    `?to=` on a page with a destination.
+ *  - **`HeaderSearchForm`**: one plain GET form, `<form role="search" method="get"
+ *    action="/{locale}/{searchSegment}">`, on every page: the field (`q`, `maxlength="80"`,
+ *    `autocomplete="off"`, `enterkeyhint="search"`) named by a visually hidden `<label>` with the
+ *    same words as its visible placeholder (`nav.search.label`, cut with an ellipsis where the field
+ *    is narrow), the hidden `to` only on a page with a destination, and a 44 × 44 ink circle named
+ *    by `nav.search.submit`. A 44 px pill with a 1 px field-edge ring; focused, the ring goes round
+ *    the whole pill. The Menu holds the same form (`MenuSheet`'s `search`).
+ *  - **`HeaderSearchField`**: the header's form with the suggestions island beside it, mounted by
+ *    `AfterPaint` after the LCP paint (spec 004's deferred set, `search-suggest`). Until it loads,
+ *    and whenever it fails, the field is a plain GET form.
  *
- * Server Components, no island, no `<button>` outside a form: with JavaScript off the summary opens
- * the panel and Enter submits the GET form. The design's "the field takes focus on open", Esc and
- * the close mark need script; they belong to spec 004's deferred island and its byte budget, not
- * to a new island (A-orchestrator item 4), so nothing here draws a mark that would do nothing.
- * Logical properties only, so `/ar-XB` mirrors; every string arrives as a prop from the header.
+ * Server Components: no client JavaScript is needed to search. The field is in the server HTML at
+ * its final size at every width, so the header adds 0 to CLS. Logical properties only, so
+ * `/ar-XB` mirrors; every string arrives as a prop from the header.
  */
 import type { ReactElement } from "react";
 
-import { MEGA_MENU_GROUP } from "../../../config/mega-menu.ts";
-import { SEARCH_CONFIG, SEARCH_PARAM } from "../../../config/search.ts";
+import {
+  SEARCH_CONFIG,
+  SEARCH_PARAM,
+  SEARCH_SUGGEST_PATH,
+} from "../../../config/search.ts";
+import { AfterPaint } from "../deferred/AfterPaint.tsx";
 import { Icon } from "../icons/Icon.tsx";
 import { VisuallyHidden } from "../primitives/a11y.tsx";
-import { PAGE_FRAME } from "../primitives/layout.tsx";
+import { SearchSuggestLoader } from "../search/SearchSuggestLoader.tsx";
+import type { SearchSuggestLabels } from "../search/SearchSuggest.tsx";
 import type { HeaderSearchForm as HeaderSearchFormModel } from "./header-model.ts";
 
 /** The words a search control prints: the reviewed `nav.search.*` keys, resolved by the header. */
 export interface HeaderSearchLabels {
   /** `nav.search.label`: the field's name and visible hint. */
   readonly label: string;
-  /** `nav.search.submit`: the button, the summary's name and the phone link's name. */
+  /** `nav.search.submit`: the submit button's name. */
   readonly submit: string;
 }
-
-/**
- * PR 372's `.cm-ico`: a 44 px round icon target, ink on paper, a paper-3 wash on hover, the focus
- * ring; open, the board's `.sr-ico.on` sage wash.
- */
-const ICON_TARGET =
-  "text-ink hover:bg-paper-3 inline-grid size-(--target-min) place-items-center rounded-full no-underline focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-focus";
 
 export interface HeaderSearchFormProps extends HeaderSearchLabels {
   readonly form: HeaderSearchFormModel;
   /** Unique per form in the document (`header-search`, `menu-search`). */
   readonly idPrefix: string;
+  /**
+   * The words the results page searched (its header only, a dynamic route): the field's `value`.
+   * Absent on every prebuilt page, so no prebuilt field carries a `value` (AC-43).
+   */
+  readonly value?: string;
 }
 
-/** The board's `.sr-form` with `.sr-go`: the field and its button in one pill. */
+/** The input's id for a form's prefix: the suggestions island finds the field by it. */
+export function headerSearchInputId(idPrefix: string): string {
+  return `${idPrefix}-q`;
+}
+
+/** The board's `.sx-f` with `.sx-go`: the field and its ink circle in one 44 px pill. */
 export function HeaderSearchForm({
   form,
   label,
   submit,
   idPrefix,
+  value,
 }: HeaderSearchFormProps): ReactElement {
-  const id = `${idPrefix}-q`;
+  const id = headerSearchInputId(idPrefix);
   return (
     <form
       action={form.action}
-      className="bg-card focus-within:outline-focus flex min-h-[54px] w-full items-center gap-[10px] rounded-full ps-[18px] pe-[5px] shadow-[inset_0_0_0_1.5px_var(--color-ink)] focus-within:outline-[2.5px] focus-within:outline-offset-2 focus-within:outline-solid max-md:gap-[8px] max-md:ps-[14px]"
+      className="bg-card focus-within:outline-focus flex h-[44px] w-full min-w-0 items-center gap-[8px] rounded-full ps-[18px] shadow-[inset_0_0_0_1px_var(--color-field-edge)] focus-within:shadow-[inset_0_0_0_1.5px_var(--color-ink)] focus-within:outline-[2.5px] focus-within:outline-offset-2 focus-within:outline-solid"
       data-fo-header-search-form={idPrefix}
       method="get"
       role="search"
     >
-      <span aria-hidden="true" className="text-ink-2 flex flex-none">
-        <Icon name="search" size={20} strokeWidth={1.8} />
-      </span>
       <label className="sr-only" htmlFor={id}>
         {label}
       </label>
       <input
         autoComplete="off"
-        className="text-ui text-ink placeholder:text-ink-3 min-h-[44px] w-full min-w-0 flex-1 border-0 bg-transparent p-0 outline-none max-md:text-sm [&::-webkit-search-cancel-button]:hidden"
+        className="text-ui text-ink placeholder:text-ink-3 h-full w-full min-w-0 flex-1 truncate border-0 bg-transparent p-0 outline-none [&::-webkit-search-cancel-button]:hidden"
         enterKeyHint="search"
         id={id}
         maxLength={SEARCH_CONFIG.maxQueryChars}
         name={SEARCH_PARAM.q}
         placeholder={label}
         type="search"
+        {...(value === undefined || value === ""
+          ? {}
+          : { defaultValue: value })}
       />
       {/* After the field, so the submitted address reads `?q=…&to=…` (spec 045 AC-2). */}
       {form.to === undefined ? null : (
         <input name={SEARCH_PARAM.to} type="hidden" value={form.to} />
       )}
       <button
-        className="bg-accent text-accent-ink text-ui inline-flex min-h-(--target-min) flex-none cursor-pointer items-center justify-center rounded-full border-0 px-[20px] font-bold max-md:px-[16px] max-md:text-sm"
+        className="bg-ink text-paper focus-visible:outline-focus inline-grid size-(--target-min) flex-none cursor-pointer place-items-center rounded-full border-0 p-0 focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-solid"
         type="submit"
       >
-        {submit}
+        <Icon name="search" size={20} strokeWidth={1.8} />
+        <VisuallyHidden>{submit}</VisuallyHidden>
       </button>
     </form>
   );
 }
 
-export interface HeaderSearchDisclosureProps extends HeaderSearchLabels {
+export interface HeaderSearchFieldProps extends HeaderSearchLabels {
   readonly form: HeaderSearchFormModel;
+  readonly locale: string;
+  readonly value?: string;
+  /** The suggestions island's words (`search.suggest.*`), resolved by the header. */
+  readonly suggest: SearchSuggestLabels;
   readonly className?: string;
 }
 
-/** From `md`: the icon as a `<details>` summary in the `fo-mega` group, the form in its panel. */
-export function HeaderSearchDisclosure({
+/**
+ * The header's field: the form, and the suggestions listbox hanging 6 px under it once the island
+ * has loaded (it overlays the page and moves nothing).
+ */
+export function HeaderSearchField({
   form,
   label,
   submit,
+  locale,
+  value,
+  suggest,
   className,
-}: HeaderSearchDisclosureProps): ReactElement {
+}: HeaderSearchFieldProps): ReactElement {
+  const idPrefix = "header-search";
   return (
-    <details
-      className={["group/search static", className].filter(Boolean).join(" ")}
-      data-fo-header-search=""
-      name={MEGA_MENU_GROUP}
+    <div
+      className={["relative min-w-0", className].filter(Boolean).join(" ")}
+      data-fo-header-search-field=""
     >
-      <summary
-        className={`${ICON_TARGET} group-open/search:bg-sage-wash cursor-pointer list-none select-none [&::-webkit-details-marker]:hidden`}
-        data-fo-header-search-summary=""
-      >
-        <Icon name="search" size={22} strokeWidth={1.8} />
-        <VisuallyHidden>{submit}</VisuallyHidden>
-      </summary>
-      {/* The board's `.sr-hdpanel`: a paper band under the header row, its rule below, the form
-          centred up to 760 px. */}
-      <div
-        className="bg-surface border-rule absolute start-0 end-0 top-full border-b pt-[14px] pb-[16px]"
-        data-fo-header-search-panel=""
-      >
-        <div className={`flex items-center ${PAGE_FRAME}`}>
-          <div className="mx-auto w-full max-w-[760px]">
-            <HeaderSearchForm
-              form={form}
-              idPrefix="header-search"
-              label={label}
-              submit={submit}
-            />
-          </div>
-        </div>
-      </div>
-    </details>
-  );
-}
-
-export interface HeaderSearchLinkProps {
-  readonly href: string;
-  /** `nav.search.submit`: the link's name. */
-  readonly name: string;
-  readonly className?: string;
-}
-
-/** Below `md`: the 64 px row's search icon, a link to the search page (PR 372's phone row). */
-export function HeaderSearchLink({
-  href,
-  name,
-  className,
-}: HeaderSearchLinkProps): ReactElement {
-  return (
-    <a
-      className={[ICON_TARGET, className].filter(Boolean).join(" ")}
-      data-fo-header-item="search"
-      href={href}
-    >
-      <Icon name="search" size={22} strokeWidth={1.8} />
-      <VisuallyHidden>{name}</VisuallyHidden>
-    </a>
+      <HeaderSearchForm
+        form={form}
+        idPrefix={idPrefix}
+        label={label}
+        submit={submit}
+        {...(value === undefined ? {} : { value })}
+      />
+      {SEARCH_CONFIG.suggestions ? (
+        <AfterPaint island="search-suggest" on="paint">
+          <SearchSuggestLoader
+            endpoint={SEARCH_SUGGEST_PATH}
+            inputId={headerSearchInputId(idPrefix)}
+            labels={suggest}
+            locale={locale}
+            {...(form.to === undefined ? {} : { to: form.to })}
+          />
+        </AfterPaint>
+      ) : null}
+    </div>
   );
 }

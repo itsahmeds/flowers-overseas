@@ -3628,9 +3628,9 @@
   "nav.search.label": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "1ca48d287283f07846eee61f327b69e7878e0f16362d6f8f4ca3db44a6963f43"
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "3bb724bf57df52fe89a4379a0335f5dfff5d5aa791be97c099f65bc0c2504d0c"
   },
   "nav.search.submit": {
     "source": "human",
@@ -7712,13 +7712,6 @@
     "reviewedAt": "2026-11-04T00:41:00Z",
     "sourceHash": "9691a6ea65c71032c35c3f8b1477d6f2064d9c1407d72f5d686382fe0d8239ec"
   },
-  "search.pagesHeading": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (delegated), 2026-11-04: recorded by the orchestrator with record-approval-402.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A verbatim; the founder did not read this text",
-    "reviewedAt": "2026-11-04T00:41:00Z",
-    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
-  },
   "search.browseOccasions": {
     "source": "human",
     "reviewed": true,
@@ -8097,6 +8090,111 @@
     "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-344.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-344); the founder did not read this text",
     "reviewedAt": "2026-11-08T13:02:40Z",
     "sourceHash": "1d393b0081b632c54654eb08c345ff76b92ae4efe0768b4c0f64b9ebbe920492"
+  },
+  "search.chip.choose": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "19323e2d92e71dc6c99394bc714a9912d38af964218be630e3bac64f0ca99e3d"
+  },
+  "search.chip.remove": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "0b089e3119b656e9de4449a619985547cd0ef39d13c85fe10c3c90f6c3d94ef3"
+  },
+  "search.groups.bouquets": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "c03f1370d259142adc1545af7da216e51468270dfacf8e60179f90b27e9ab275"
+  },
+  "search.groups.categories": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "a3b6cb52ce986ff4ca5baa8a1051a42b2748d06b0f33b93a75a87add2a7d74d2"
+  },
+  "search.groups.destinations": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "8faf7ec7ab20ca1cb49b159bf28c95e43895aad06e2727e3227524e82a9cc6e1"
+  },
+  "search.groups.help": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "25a21aad8689b4ee1d046ee12803de90ec59542dbe757f3ac4c73ae82a984a6a"
+  },
+  "search.groups.occasions": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "e5b8470758e19d1615b82228a3ab96d0fce4c772d8a45bb3fbd4c968ab88eb39"
+  },
+  "search.suggest.all": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "ce32cc7a7e98e9058057fd83f1ff0a506bc2174482b386e63f49b36d7ffef476"
+  },
+  "search.suggest.count": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "cd5cbbc16bc1ea1030ec773d264030cb8484c4e752a6b09cc050aa3d8af6a196"
+  },
+  "search.suggest.kind.category": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "a3b6cb52ce986ff4ca5baa8a1051a42b2748d06b0f33b93a75a87add2a7d74d2"
+  },
+  "search.suggest.kind.destination": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "search.suggest.kind.occasion": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "f68e0b1ef1269baeea223f00199f2e45e5f8d4a4bddd585d7074efce4c33c435"
+  },
+  "search.suggest.kind.page": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "b79cac926e0b2e347e72cc91d5174037c9e17ae7733fd7bdb570f71b10cd7bfc"
+  },
+  "search.suggest.kind.product": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-520.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A (A-founder-2026-11-08a) and the PR 512 board slots (TASK-520); the founder did not read this text",
+    "reviewedAt": "2026-11-08T14:08:41Z",
+    "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
+  },
+  "search.pagesHeading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-04: recorded by the orchestrator with record-approval-402.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 045 Appendix A verbatim; the founder did not read this text",
+    "reviewedAt": "2026-11-04T00:41:00Z",
+    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
   },
   "floristInbox.bouquets.title": {
     "source": "human",

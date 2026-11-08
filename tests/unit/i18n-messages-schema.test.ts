@@ -498,6 +498,8 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-390's three `shop.price.band.*` texts and TASK-391's `shop.chosen.line` left this queue under the delegation.
     // TASK-402's 14 `search.*` keys (spec 045 Appendix A) left this queue under the delegation.
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
+    // TASK-520 (spec 045 §14 A-founder-2026-11-08a, Appendix A; the board slots): the 14 `search.*`
+    // texts and the changed `nav.search.label`, sorted in above, until record-approval-520.py.
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

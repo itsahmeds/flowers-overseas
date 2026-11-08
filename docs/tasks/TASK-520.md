@@ -42,7 +42,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **2026-11-08 S520 (self):** suggestion rows show the kind word but no thumbnail or icon circle (the board drew 32 × 40 photographs and 32 px icons; spec 045 does not mention them and the 4,096 B chunk budget is tight). A later task may add them.
+- **2026-11-08 S520 (self):** `tests/e2e/search-everywhere.spec.ts` and the height constants in `tests/e2e/header.spec.ts` were written, not run locally (no Playwright on battery); CI `ci:full` is their first run. `header.spec.ts` still holds TASK-173 era assertions ("no form control in the chrome") that predate TASK-404 and fail on `main` too.
+- **2026-11-08 S520 (self):** AC-41's 1280 px longest-locale, AC-42's CLS, AC-44's resource timing against LCP and `budget:client-js`, AC-45's network-log scan, AC-46's Lighthouse, axe and `/ar-XB` baselines are CI's (TASK-410 runs the search gates).
+- **2026-11-08 S520 (self):** `tests/unit/deferred-set.test.tsx` "every other client module is accounted for" and `pnpm i18n:check` fail on `main` already (five payments, partners and admin client modules not in `NOT_DEFERRED`; `nav.send` unused and four checkout scope entries). Not this task's files.
+- **2026-11-08 S520 (self):** the header has no selector yet (TASK-384); the field fills to 480 px where the board drew the selector after it.
 
 ## Escalations
 
@@ -56,11 +60,15 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 S520: started in `../fo-wt-520`; row `in_progress`, draft PR 514 opened.
+- 2026-11-08 S520: engine groups (Countries, Occasions, Flowers, Help) and country-less bouquets, `SearchSource.infoPages`, the chip (change and remove GET forms, `queryWithoutDestination`), `POST /api/search/suggest` (GET 405), copy keys; unit tests green.
+- 2026-11-08 S520: header field (one form: 56 px phone row, 64 px row from md, items on row 2, 122/114 px), results page field holds `q` and `to` (`@header/-search` reads the query), `SearchSuggest` island in the deferred set; spec 004 A-orchestrator-2026-11-08b; tests updated and added; e2e spec written (CI). Next: build check, ready.
+- 2026-11-08 S520: build checked in the slot (load 15.7 at start, 5.7 after): Railway-style env-less `pnpm build` stops only at the known payments `wiring.ts` env read on `/[locale]/checkout/return` (TASK-503-build-env owns it); with placeholder non-secret values for those ten variables it exits 0, `budget:client-js` exits 0 (first-load unchanged, the suggestions chunk 1,714 B Brotli). `.next` deleted, slot released.
+- 2026-11-08 S520: rebased on main 5dfe1acad (TASK-503 #516, TASK-390's `shop.chosen.line` now recorded on main, so 15 keys to record); the env-less Railway-style `pnpm build` exited 0 (load 2.7). PR marked ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 514. Search answers with no country in five groups (Countries, Occasions, Flowers, Help, Bouquets; country-less bouquets from the core range, no money), the "Sending to" chip replaces the inline chooser (change and remove GET forms, remove drops the country words), every header form posts to the search path, the header holds a visible field (64 px row from md, 240 to 480 px; a 56 px phone row; sticky 122 / 114 / 114 px), the results page's field holds `q` and `to` and the page has no form of its own, and `SearchSuggest` (APG combobox, `POST /api/search/suggest`, GET 405, at most 6 mixed rows, no price) is on and deferred. Tests: unit `search-suggest.test.ts` new (19), `search-page`, `search-engine`, `header-search`, `ui-site-header`, `deferred-set`, `search-gate`, `search-config`, `header-slot`, `i18n-messages-schema` updated; e2e `search-everywhere.spec.ts` new (CI). Numbers: suggestions chunk 1,714 B Brotli (budget 4,096), first-load JS unchanged against the baseline; `en` / `en-gb` unreviewed share 0.15 / 0.30 % before (main at 09ffeacc9), 2.33 / 2.47 % after (15 keys queued for `record-approval-520.py`, whose `--check` passes). The `build` slot was taken because the work order asks for a build check before ready. TASK-410 runs the search gates (Lighthouse, axe, timing).

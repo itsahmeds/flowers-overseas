@@ -25,9 +25,17 @@ export {
   type ParsedQuery,
   destinationPhrase,
   parseQuery,
+  withoutDestinationWords,
 } from "./query";
 export { buildIndex } from "./build";
-export { type Match, matchDocuments, matchHubs } from "./match";
+export {
+  type LinkMatch,
+  type Match,
+  matchCountries,
+  matchDocuments,
+  matchHubs,
+  matchInfoPages,
+} from "./match";
 export { type RankInput, compareRankInputs, rankSearchResults } from "./rank";
 export { didYouMean } from "./did-you-mean";
 export {
@@ -38,14 +46,27 @@ export {
   type SearchIndexStats,
   type SearchOutcome,
   SEARCH_STALE_TAG_PREFIXES,
+  SUGGEST_PRODUCTS_MAX,
   cleanQuery,
   memoryEngine,
 } from "./engine";
 export { searchEngine, searchIndexStats } from "./default-engine";
 export { catalogSearchSource } from "./source";
 export {
+  NO_GROUPS,
   type PageLink,
   PageLinkSchema,
+  type SearchGroupKind,
+  type SearchGroups,
+  SearchGroupsSchema,
+  type SuggestItem,
+  SuggestItemSchema,
+  type SuggestKind,
+  type SuggestRequest,
+  SuggestRequestSchema,
+  SuggestResponseSchema,
+  searchGroupKinds,
+  suggestKinds,
   type SearchRequest,
   SearchRequestSchema,
   type SearchResultView,
@@ -58,6 +79,7 @@ export type {
   SearchDestination,
   SearchHub,
   SearchIndex,
+  SearchInfoPage,
   SearchLabel,
   SearchProduct,
   SearchSource,
@@ -80,6 +102,7 @@ export {
   SLOW_SEARCH_COUNT,
   SLOW_SEARCH_MS,
   SLOW_SEARCH_WINDOW_MS,
+  headerSearchValue,
   rateLimitedSearchPage,
   searchPage,
   searchPath,
@@ -101,6 +124,12 @@ export {
   rateLimiter,
   searchGate,
 } from "./gate";
+export {
+  SUGGEST_HEADERS,
+  type SuggestRouteDeps,
+  suggestMethodNotAllowed,
+  suggestRoute,
+} from "./suggest";
 export {
   SearchResultsPage,
   type SearchResultsPageProps,

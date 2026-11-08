@@ -149,13 +149,28 @@ const deferred = DEFERRED_ISLANDS.filter(
 );
 
 describe("the deferred set names its islands (T-60 unit, clause 2)", () => {
-  it("is exactly the motions (with the Menu's Esc), the language popup, the home sentence and the listing sort", () => {
+  it("is exactly the motions (with the Menu's Esc), the language popup, the home sentence, the listing sort and the search suggestions", () => {
     expect(DEFERRED_ISLANDS.map((island) => island.id)).toEqual([
       "motions",
       "language-popup",
       "home-sentence",
       "listing-sort",
+      "search-suggest",
     ]);
+  });
+
+  it("defers the search suggestions after the paint, mounted by the header field (spec 045 AC-44)", () => {
+    const island = DEFERRED_ISLANDS.find(
+      (entry) => entry.id === "search-suggest",
+    );
+    expect(island).toMatchObject({
+      status: "deferred",
+      trigger: "paint",
+      module: "src/modules/ui/search/SearchSuggest.tsx",
+      loader: "src/modules/ui/search/SearchSuggestLoader.tsx",
+      mountedBy: "src/modules/ui/layout/HeaderSearch.tsx",
+      mounts: "SearchSuggestLoader",
+    });
   });
 
   it("resolves the motions' entry to TASK-194's module, after the paint, mounted by the header (A-founder-2026-10-19a)", () => {

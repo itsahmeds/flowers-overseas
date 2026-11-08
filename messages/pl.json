@@ -1191,7 +1191,7 @@
       "label": "Menu"
     },
     "search": {
-      "label": "Search flowers, occasions, a city or a country",
+      "label": "Search bouquets, occasions, countries and help",
       "submit": "Search"
     },
     "send": "Wyślij kwiaty",
@@ -1515,7 +1515,6 @@
     },
     "heading": "Search",
     "resultsHeading": "Results for “{query}”",
-    "pagesHeading": "Pages",
     "browseOccasions": "Browse by occasion",
     "tooShort": "Type at least two letters.",
     "noResults": "We found nothing for “{query}”. Try a flower, a colour or an occasion.",
@@ -1527,6 +1526,28 @@
     "rateLimited": "Too many searches in a short time. Please wait a moment and try again.",
     "ranking": {
       "disclosure": "Bouquets that match your words most closely come first. Among equally close matches, those we can send to the destination you chose come first, then those with a photograph, then our own order. Nobody pays us to place a bouquet higher, and the order does not depend on who you are or where you are."
+    },
+    "groups": {
+      "destinations": "Countries",
+      "occasions": "Occasions",
+      "categories": "Flowers",
+      "help": "Help and information",
+      "bouquets": "Bouquets"
+    },
+    "chip": {
+      "remove": "Show all countries",
+      "choose": "Choose a country"
+    },
+    "suggest": {
+      "kind": {
+        "product": "Bouquet",
+        "occasion": "Occasion",
+        "category": "Flowers",
+        "destination": "Country",
+        "page": "Help"
+      },
+      "count": "{count, plural, one {# suggestion} other {# suggestions}}",
+      "all": "See all results for “{query}”"
     }
   },
   "trackLookup": {
