@@ -249,3 +249,34 @@ describe("AC-5: modules/partners/crm is imported only by admin and its own modul
     expect(importers).toEqual([]);
   });
 });
+
+describe("AC-35: the finance runbook, the RoPA rows and the architecture note", () => {
+  const ROOT = join(import.meta.dirname, "../..");
+  const read = (path: string) => readFileSync(join(ROOT, path), "utf8");
+
+  it("has docs/runbooks/finance.md, indexed, with each section the spec names", () => {
+    const runbook = read("docs/runbooks/finance.md");
+    for (const heading of [
+      "## Reading the overview",
+      "## What each reason means",
+      "## Backfilling fees",
+      "## Confirming a tax question",
+      "## What the CSV is, and is not",
+    ]) {
+      expect(runbook).toContain(heading);
+    }
+    expect(read("docs/runbooks/README.md")).toContain("[finance](finance.md)");
+  });
+
+  it("carries the florist relationship row and the extended payments row in the RoPA", () => {
+    const ropa = read("docs/compliance/ropa.md");
+    expect(ropa).toContain("**Florist relationship record**");
+    expect(ropa).toContain("**payment balance facts**");
+  });
+
+  it("names the finance read model and the balance-fact flow in docs/architecture.md", () => {
+    const architecture = read("docs/architecture.md");
+    expect(architecture).toContain("finance read model");
+    expect(architecture).toContain("balance-fact flow");
+  });
+});

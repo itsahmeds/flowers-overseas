@@ -41,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: CRM module (`src/modules/partners/crm/`), `partnerMoney`, tab bar, Money and Relationship tabs, list columns and Follow-ups due, 147 admin texts; unit `tests/unit/partners-crm.test.ts` (39) and integration `tests/integration/partners-crm-030b.test.ts` (10) green on a scratch PG16. Runbook `finance.md`, RoPA row 20 and row 11 extension, `docs/architecture.md`. Q14 is already in `docs/decisions-log.md` (2026-10-22). Next: TASK-442 in the same PR.
 
 ## Result
 
