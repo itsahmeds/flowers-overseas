@@ -4,6 +4,9 @@
 export * from "./service";
 // Spec 013 §5.2 (TASK-254): this module's outbox routes and the dispatcher that delivers them.
 export {
+  ANALYTICS_OUTBOX_ROUTES,
+  ANALYTICS_TARGET,
+  analyticsOutboxTargets,
   INVOICE_OUTBOX_ROUTES,
   INVOICES_TARGET,
   invoiceOutboxTargets,

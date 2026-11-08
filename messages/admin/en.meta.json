@@ -6553,5 +6553,20 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "b72200854e9c579d89c23505e06f3eb3cd84169e1b2d7fa3324af2e2904001a9"
+  },
+  "admin.flags.description.analytics.mp_send": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "094917c5101be93be40f1e9f37b3c782849be670a6c4c6e94f8cdaa3550e34f3"
+  },
+  "admin.alerts.name.analytics.value_mismatch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "021e95dee4305501de73b51c3b5291c0811469bcc7927467de5782669b5183f9"
+  },
+  "admin.alerts.name.analytics.rejected": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9288e1ebd20202adf94e10d1baecc923893402f10f38529860d3cedf6e368718"
   }
 }

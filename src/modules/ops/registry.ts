@@ -307,6 +307,24 @@ export const ALERT_REGISTRY = {
     runbook: rb("alerts-setup", "alerts-test"),
   },
   // Raised at the point of failure by specs written after 013 and 016 (severities in the brief).
+  // Spec 023 §11 (TASK-491): the GA4 Measurement Protocol path. Neither touches money or an
+  // order's progress; both point at a defect to fix (an upstream money mismatch, a body schema).
+  "analytics.value_mismatch": {
+    severity: "P2",
+    scope: "order",
+    component: "worker",
+    resolve: "manual",
+    actBy: "none",
+    runbook: rb("analytics-consent", "analytics-value-mismatch"),
+  },
+  "analytics.rejected": {
+    severity: "P3",
+    scope: "order",
+    component: "worker",
+    resolve: "manual",
+    actBy: "none",
+    runbook: rb("analytics-consent", "analytics-rejected"),
+  },
   "invoice.refused": {
     severity: "P2",
     scope: "order",

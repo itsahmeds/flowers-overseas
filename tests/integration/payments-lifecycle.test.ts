@@ -307,6 +307,7 @@ describe.skipIf(server.url === undefined)(
           payments: notConfiguredHandler("payments"),
           invoices: notConfiguredHandler("invoices"),
           notifications: () => Promise.resolve(),
+          "analytics.ga4": () => Promise.resolve(),
           payouts: () => Promise.resolve(),
         };
         await dispatchOutbox({
@@ -688,6 +689,7 @@ describe.skipIf(server.url === undefined)(
             payments: notConfiguredHandler("payments"),
             invoices: notConfiguredHandler("invoices"),
             notifications: () => Promise.resolve(),
+            "analytics.ga4": () => Promise.resolve(),
             payouts: () => Promise.resolve(),
           },
           transaction: transactionOf(),
@@ -702,6 +704,7 @@ describe.skipIf(server.url === undefined)(
               payments: notConfiguredHandler("payments"),
               invoices: notConfiguredHandler("invoices"),
               notifications: () => Promise.resolve(),
+              "analytics.ga4": () => Promise.resolve(),
               payouts: () => Promise.resolve(),
             },
             transaction: transactionOf(),

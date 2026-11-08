@@ -353,6 +353,10 @@ export const SYSTEM_ONLY_TABLES = [
   // spec 002 §14 A7.7 (migration `0017_payments_a7`, TASK-254): one row per outbox target, read
   // and written only by the dispatcher's system transactions.
   "outbox_delivery",
+  // spec 023 §5.1 (migration `0042_analytics_ga4`, TASK-491): the GA4 consent snapshot and ids,
+  // and the dispatch outcomes, read and written only by placement and the outbox handler.
+  "order_analytics",
+  "analytics_dispatch",
 ] as const;
 
 /**

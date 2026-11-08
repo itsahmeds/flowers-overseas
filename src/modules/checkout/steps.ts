@@ -40,6 +40,7 @@ import { CHECKOUT_STEPS, type CheckoutStep } from "@/config/checkout";
 import type { CurrencyCode } from "@/config/currencies";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { logger } from "@/lib/logger";
+import type { AnalyticsContext } from "@/modules/analytics";
 import {
   IntegerMoneySchema,
   type Quote,
@@ -136,6 +137,8 @@ export interface StepContext {
     readonly kind: "country";
     readonly ref: string;
   }) => Promise<boolean>;
+  /** Spec 023 (TASK-491): the request's analytics context, for placement only. */
+  readonly analytics?: AnalyticsContext;
 }
 
 /** The posted form as plain values: repeated keys become arrays, Next's own keys are dropped. */

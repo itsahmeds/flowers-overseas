@@ -47,6 +47,7 @@ describe("T-16 — the registry", () => {
       "checkout.discount_codes",
       "alerts.push",
       "payments.balance_fetch",
+      "analytics.mp_send",
     ]);
   });
 
@@ -54,6 +55,16 @@ describe("T-16 — the registry", () => {
     expect(flagDefinition("checkout.discount_codes")).toEqual({
       key: "checkout.discount_codes",
       scopeKinds: ["country"],
+      risk: "standard",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
+  });
+
+  it("registers spec 023's analytics.mp_send as global, standard risk, dirtying nothing (§12)", () => {
+    expect(flagDefinition("analytics.mp_send")).toEqual({
+      key: "analytics.mp_send",
+      scopeKinds: ["global"],
       risk: "standard",
       dirties: [],
       description: expect.stringMatching(/\S/u) as unknown as string,

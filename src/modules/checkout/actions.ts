@@ -26,6 +26,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
+import { ga4MeasurementId } from "@/lib/env.schema";
+import { readAnalyticsContext } from "@/modules/analytics";
 
 import {
   BASKET_COOKIE_ATTRIBUTES,
@@ -70,6 +72,19 @@ const BoundLocaleSchema = z.string().refine(isLocaleCode);
 async function context(locale: string): Promise<StepContext> {
   const value = (await cookies()).get(CHECKOUT_COOKIE_NAME)?.value ?? null;
   return { locale, token: isDraftToken(value) ? value : null };
+}
+
+/**
+ * The placing actions' context: the step context plus the request's analytics context (spec 023
+ * §5.2 "Context capture at placement"; TASK-491). The checkout routes are `no-store`, so reading
+ * `fo_consent`, `_ga` and `_ga_<id>` here changes no cache rule; the measurement id is read at use.
+ */
+async function placingContext(locale: string): Promise<StepContext> {
+  const jar = await cookies();
+  return {
+    ...(await context(locale)),
+    analytics: readAnalyticsContext(jar, ga4MeasurementId(process.env)),
+  };
 }
 
 async function answer(
@@ -186,7 +201,7 @@ export async function placeOrderAction(
 ): Promise<StepState> {
   const bound = BoundLocaleSchema.safeParse(locale);
   if (!bound.success) return { status: "expired" };
-  const ctx = await context(bound.data);
+  const ctx = await placingContext(bound.data);
   return answer(await runPlaceOrder(ctx, form), ctx.token);
 }
 
@@ -223,7 +238,7 @@ export async function payAction(
 ): Promise<PayOutcome> {
   const bound = BoundLocaleSchema.safeParse(locale);
   if (!bound.success) return { kind: "redirect", location: "/" };
-  const ctx = await context(bound.data);
+  const ctx = await placingContext(bound.data);
   const outcome = await runPay(ctx, form);
   if (outcome.kind === "redirect" && outcome.discountChanged !== undefined) {
     // Spec 047 (AC-14): nothing placed; step 4 names the old and new totals from the echo.

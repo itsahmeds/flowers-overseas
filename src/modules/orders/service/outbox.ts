@@ -18,6 +18,7 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import {
+  analyticsOutboxTargets,
   invoiceOutboxTargets,
   notificationOutboxTargets,
   paymentOutboxTargets,
@@ -40,7 +41,8 @@ export const OUTBOX_AUDIENCES = [
 export const OutboxTargetSchema = z
   .object({
     /** The consumer's name, stored in `outbox.targets` (`notify.buyer_email`, `crm.sync`, …). */
-    name: z.string().regex(/^[a-z][a-z_]*(\.[a-z][a-z_]*)*$/),
+    // Segments after the first may hold digits (spec 023's `analytics.ga4`).
+    name: z.string().regex(/^[a-z][a-z_]*(\.[a-z][a-z0-9_]*)*$/),
     audience: z.enum(OUTBOX_AUDIENCES),
   })
   .strict();
@@ -96,6 +98,7 @@ export function outboxTargets(
     ...withoutPeopleUnlessLive(notificationOutboxTargets(event, mode), mode),
     ...withoutPeopleUnlessLive(routingOutboxTargets(event, mode), mode),
     ...withoutPeopleUnlessLive(payoutOutboxTargets(event, mode), mode),
+    ...withoutPeopleUnlessLive(analyticsOutboxTargets(event, mode), mode),
   ]) {
     if (seen.has(target.name)) continue;
     seen.add(target.name);

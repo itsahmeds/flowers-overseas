@@ -25,11 +25,24 @@ export const QUERY_TOKEN = /([?&]t=)[^&#]*/g;
 /** What a token is replaced with. */
 export const TOKEN_PLACEHOLDER = ":token";
 
-/** `text` with every tracking-path token and every `t` query value replaced by `:token`. */
+/**
+ * `api_secret={secret}`: the GA4 Measurement Protocol secret in the collection URL (spec 023 §8
+ * "Logs and PII", AC-28; TASK-491). Not used by the consent bootstrap.
+ */
+export const API_SECRET_PARAM = /((?:^|[?&])api_secret=)[^&#\s]*/g;
+
+/** What the Measurement Protocol secret is replaced with. */
+export const API_SECRET_PLACEHOLDER = "[redacted]";
+
+/**
+ * `text` with every tracking-path token and every `t` query value replaced by `:token`, and every
+ * `api_secret` query value by `[redacted]`.
+ */
 export function scrubUrlTokens(text: string): string {
   return text
     .replace(TRACK_PATH_TOKEN, `$1${TOKEN_PLACEHOLDER}`)
-    .replace(QUERY_TOKEN, `$1${TOKEN_PLACEHOLDER}`);
+    .replace(QUERY_TOKEN, `$1${TOKEN_PLACEHOLDER}`)
+    .replace(API_SECRET_PARAM, `$1${API_SECRET_PLACEHOLDER}`);
 }
 
 /**

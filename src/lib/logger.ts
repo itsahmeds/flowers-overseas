@@ -115,6 +115,8 @@ export const REDACTED_CREDENTIAL_KEYS: readonly string[] = [
   // Spec 016 §8 (TASK-331): the Resend webhook's `svix-signature` header (and `svix_signature`,
   // `svixSignature`), a credential over the body. Compared after `_`, `-` and spaces are dropped.
   "svixsignature",
+  // Spec 023 §8 (TASK-491): the GA4 Measurement Protocol secret (`api_secret`, `apiSecret`).
+  "apisecret",
 ];
 
 /** What `redact()` and Sentry's scrub treat as a key whose value never leaves the process. */

@@ -61,6 +61,7 @@ const complete: HandlerRegistry = {
   payments: noop,
   routing: noop,
   notifications: noop,
+  "analytics.ga4": noop,
   payouts: noop,
 };
 
@@ -77,6 +78,7 @@ const EVENT: OutboxDeliveryEvent = {
 describe("HandlerRegistry (AC-20, type half)", () => {
   it("names exactly the targets of OUTBOX_TARGET_NAMES", () => {
     expect([...OUTBOX_TARGET_NAMES].sort()).toEqual([
+      "analytics.ga4",
       "invoices",
       "notifications",
       "payments",
@@ -147,15 +149,18 @@ describe("spec 013's outbox routes (§5.2)", () => {
       }
     }
     // Spec 018 (TASK-341) adds `invoices` to a live order's captures, spec 016 (TASK-331)
-    // `notifications` to both modes' (B1 live, V3 test and live).
+    // `notifications` to both modes' (B1 live, V3 test and live), spec 023 (TASK-491)
+    // `analytics.ga4` to both.
     expect(outboxTargets("order.captured", "live").map((t) => t.name)).toEqual([
       "routing",
       "invoices",
       "notifications",
+      "analytics.ga4",
     ]);
     expect(outboxTargets("order.captured", "test").map((t) => t.name)).toEqual([
       "routing",
       "notifications",
+      "analytics.ga4",
     ]);
     expect(
       outboxTargets("assignment.accepted", "test").map((t) => t.name),

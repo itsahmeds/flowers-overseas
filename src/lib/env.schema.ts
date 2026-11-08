@@ -417,6 +417,30 @@ export const serverEnvSchema = z.object({
     emptyToUndefined,
     z.email().max(254).optional(),
   ),
+  /**
+   * GA4 Measurement Protocol API secret (spec 023 §5.2 "Environment", AC-27; TASK-491). SECRET:
+   * server only, never logged, never in a URL that leaves the process unscrubbed (the logger and
+   * Sentry redact `api_secret`). **Optional**, and accepted only beside
+   * `NEXT_PUBLIC_GA4_MEASUREMENT_ID` (`validateRuntimeEnv` below); unset, the `analytics.ga4`
+   * handler records every delivery as skipped `not_configured`. Created and pasted into Railway
+   * by the founder (§12 step 9); no agent handles it. Read at use by `src/lib/env.analytics.ts`.
+   */
+  GA4_API_SECRET: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{8,128}$/u, "must be a GA4 API secret")
+      .optional(),
+  ),
+  /**
+   * Validate each Measurement Protocol body at `/debug/mp/collect` before sending it (spec 023
+   * §5.2 "Validation on staging", AC-26; TASK-491). Optional; only `"true"` turns it on, and
+   * `validateRuntimeEnv` refuses `"true"` in production.
+   */
+  GA4_MP_VALIDATE: z.preprocess(
+    emptyToUndefined,
+    z.enum(["true", "false"]).optional(),
+  ),
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
   /**
@@ -937,6 +961,7 @@ export function validateRuntimeEnv(source: EnvSource): {
   }
 
   issues.push(...liveStripeKeyIssues(source, environment));
+  issues.push(...ga4ServerKeyIssues(source, environment));
 
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
     // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
@@ -958,6 +983,57 @@ export function validateRuntimeEnv(source: EnvSource): {
     issues,
     server: serverResult.success ? serverResult.data : undefined,
   };
+}
+
+/** The GA4 Measurement Protocol secret (spec 023 AC-27). Server only. */
+export const GA4_API_SECRET_KEY = "GA4_API_SECRET" as const;
+
+/** The staging validation switch (spec 023 AC-26). */
+export const GA4_MP_VALIDATE_KEY = "GA4_MP_VALIDATE" as const;
+
+/** A browser-inlined copy of the secret: refused whatever its value (spec 023 AC-27). */
+export const GA4_PUBLIC_SECRET_KEY = "NEXT_PUBLIC_GA4_API_SECRET" as const;
+
+/**
+ * Spec 023 §5.2 "Environment", AC-26, AC-27 (TASK-491): the secret only with a measurement id; no
+ * `NEXT_PUBLIC_` copy of it (Next would inline it into the browser bundle); no validation calls
+ * in production. Every issue names the key, never the value.
+ */
+function ga4ServerKeyIssues(
+  source: EnvSource,
+  environment: DeploymentEnvironment,
+): EnvIssue[] {
+  const issues: EnvIssue[] = [];
+  const present = (key: string): boolean => {
+    const value = source[key];
+    return typeof value === "string" && value.trim() !== "";
+  };
+  if (present(GA4_API_SECRET_KEY) && ga4MeasurementId(source) === undefined) {
+    issues.push({
+      key: GA4_API_SECRET_KEY,
+      message: `is accepted only with ${GA4_MEASUREMENT_ID_KEY} set (spec 023 §5.2); set the measurement id beside it or unset the secret`,
+    });
+  }
+  if (
+    GA4_PUBLIC_SECRET_KEY in source &&
+    source[GA4_PUBLIC_SECRET_KEY] !== undefined
+  ) {
+    issues.push({
+      key: GA4_PUBLIC_SECRET_KEY,
+      message: `must not exist: a NEXT_PUBLIC_ variable is inlined into the browser bundle; the secret is ${GA4_API_SECRET_KEY}, server only (spec 023 AC-27)`,
+    });
+  }
+  if (
+    environment === "production" &&
+    source[GA4_MP_VALIDATE_KEY]?.trim() === "true"
+  ) {
+    issues.push({
+      key: GA4_MP_VALIDATE_KEY,
+      message:
+        "must not be `true` in production: validation calls are for staging (spec 023 AC-26). Unset it.",
+    });
+  }
+  return issues;
 }
 
 /**

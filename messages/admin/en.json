@@ -343,6 +343,9 @@
         },
         "alerts": {
           "push": "Push founder alerts to the phone. Production pushes unless this is off; staging pushes only while it is on. Email is always sent."
+        },
+        "analytics": {
+          "mp_send": "Sends each purchase and refund to Google Analytics from our server, only for buyers who accepted analytics. Off: nothing is sent and each one is recorded as skipped."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -1559,6 +1562,10 @@
         },
         "search": {
           "slow": "Site search is slow"
+        },
+        "analytics": {
+          "value_mismatch": "Order lines do not add up to the amount charged",
+          "rejected": "Google Analytics refused a purchase or refund"
         }
       },
       "component": {
