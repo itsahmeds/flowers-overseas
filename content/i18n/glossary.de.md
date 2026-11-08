@@ -41,3 +41,18 @@ unchanged.
   buyer must understand that a local florist in the destination country makes and delivers.
 - Never a literal translation of an occasion that does not exist in the German calendar.
 - Never `Sie`/`du` mixed within one surface.
+
+## 4. Trust and legal pages (spec 041): the four terms of the drafts
+
+The machine drafts of the ten pages (TASK-184; `source: machine`, `reviewed: false`) use these
+words. They are the drafts' choices for the native reviewer to confirm, not decisions.
+
+| `en`        | `de` in the drafts                                                                                                                                                      | Never                                                                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| guarantee   | **Garantie** ("Unsere Garantie"), the promise itself **Frische-Versprechen**. ⚖️ A voluntary guarantee is a _Garantie_ under BGB §443; the lawyer confirms the wording. | "Frischegarantie" with a number of days, "7-Tage-Garantie", "garantierte Lieferung"                                |
+| withdrawal  | **Widerruf**, **Widerrufsrecht** (BGB §355, §312g Abs. 2 Nr. 2 for perishable goods); our own free cancellation is **stornieren**, never "widerrufen"                   | "Rückgabe" of fresh flowers, a 14-day right for fresh flowers                                                      |
+| imprint     | **Impressum** (`/de/impressum`), with the facts and German labels only                                                                                                  | "Angaben gemäß § 5 DDG", "Impressum gemäß", any completeness claim before the lawyer rules (spec 041 AC-39 (a))    |
+| our florist | **unser Florist**, in the present tense ("bindet", "übergibt")                                                                                                          | "Partnerflorist", "Partner", "ein anderer Florist", "kein Florist", "Florist finden", "akzeptiert Ihre Bestellung" |
+
+The drafts use `Sie` throughout (spec 003 §14 A15, "all defaults"). The help page's funeral
+answer stays in English in the draft: Trauerfloristik vocabulary is not machine-drafted (§2).

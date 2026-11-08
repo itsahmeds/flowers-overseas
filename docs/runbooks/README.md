@@ -12,6 +12,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [branch-protection](branch-protection.md) | Required checks, merge method and review policy on `main`, and the verifier |
 | [payment-webhook-down](payment-webhook-down.md) | Stripe/Mollie webhooks failing or delayed |
 | [alerts](alerts.md) | What each routing and notification alert means and what to do: `routing.no_partner`, `routing.sla_overdue`, `notifications.florist_bounce`, `webhook.dead` (Resend), the `webhook-signature:resend` rule |
+| [discount-codes](discount-codes.md) | Creating a code, the below-cost and reduction-claim warnings, announcing it, disabling it, reading its cost, what the lawyer and the accountant confirm |
 | [invoices](invoices.md) | An invoice refused, a stuck render, a hash mismatch, re-issuing, the year's series, the backfill |
 | [florist-declines-peak](florist-declines-peak.md) | A partner declines during a peak day |
 | [whatsapp-phase1](whatsapp-phase1.md) | Pasting the offer and stop messages of a WhatsApp florist from the founder email (spec 016 W) |
@@ -21,6 +22,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [seed-catalogue](seed-catalogue.md) | Editing a product, adding a destination's prices, running `seed:check`, reading a `seed:diff`, re-seeding a database safely, and what "never touch `source = 'real'`" means in practice |
 | [visual-baselines](visual-baselines.md) | Which platform's screenshots decide pass or fail, refreshing the Linux set from a Mac, the measured 0.1 % threshold, and how a reviewer judges a baseline commit |
 | [design-system](design-system.md) | Adding a token or a component, the contrast manifest, `<bdi>` and `mirror-in-rtl`, the gallery, updating a visual baseline, reading the bundle table and a red Lighthouse job |
+| [info-and-legal-pages](info-and-legal-pages.md) | Editing, approving and versioning the ten trust and legal pages, publishing a lawyer-reviewed version, the de/pl drafts, the trader-identity flip checklist (the gated pages' axe run and the imprint's baseline, the five legal risks), the go-live copy batch |
 | [i18n-translations](i18n-translations.md) | Adding a message key, drafting a locale, reading the reviewed share, handing a locale to a native reviewer, what makes a locale indexable |
 | [hreflang-regression](hreflang-regression.md) | Hreflang or canonical regression found in Search Console or the auditor |
 | [sitemap-or-robots-broken](sitemap-or-robots-broken.md) | Sitemap or `robots.txt` serving the wrong thing |

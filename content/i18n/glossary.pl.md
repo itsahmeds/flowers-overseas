@@ -52,3 +52,19 @@ resolved 2026-09-08 from `plan/13` A5).
   delivers.
 - Never leave `zł` or `%` typed into a message value — the formatter renders them.
 - Never use a country flag to mean the language (`plan/03` §2).
+
+## 5. Trust and legal pages (spec 041): the four terms of the drafts
+
+The machine drafts of the ten pages (TASK-184; `source: machine`, `reviewed: false`) use these
+words. They are the drafts' choices for the native reviewer to confirm, not decisions. The trust
+pages use `Ty`; the five legal documents use `Państwo` from first line to last (§1).
+
+| `en`        | `pl` in the drafts                                                                                                                                                                   | Never                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| guarantee   | **gwarancja** ("Nasza gwarancja"), the promise itself **obietnica świeżych kwiatów**. ⚖️ _Gwarancja_ is a statutory term (Kodeks cywilny art. 577); the lawyer confirms the wording. | "gwarancja świeżości przez 7 dni", any number of days of freshness                                        |
+| withdrawal  | **odstąpienie od umowy**, **prawo odstąpienia od umowy** (ustawa o prawach konsumenta, art. 38 for perishable goods); our own free cancellation is **anulowanie**                    | "zwrot kwiatów", a 14-day right for fresh flowers                                                         |
+| imprint     | **Dane firmy** (`/pl/dane-firmy`): Poland has no _Impressum_ law, so the page is named for what it holds                                                                             | "Impressum", any completeness claim before the lawyer rules                                               |
+| our florist | **nasz florysta**, in the present tense ("układa", "wręcza")                                                                                                                         | "partner", "florysta partnerski", "inny florysta", "brak florysty", "pośrednik", "zaakceptuje zamówienie" |
+
+The help page's funeral answer stays in English in the draft: sympathy and funeral vocabulary is
+decided by the first review pass (§3) and is not machine-drafted (spec 003 §14 A15 clause 4).

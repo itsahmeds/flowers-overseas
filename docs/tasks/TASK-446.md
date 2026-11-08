@@ -25,7 +25,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From self-review (2026-11-08, DC445):** the reduction-claim warning names the bouquet, the destination, the 30-day lowest and today's price, but not the **date** of the lower price the artboard draws ("on 12 Oct"): `lowestPriceInLast30Days` returns the amount only. The preview's "18 stems" second line and the "Orders and margin in Finance" link (spec 030b, not on main) are not drawn; the Referrals nav item is spec 050's.
+- **From self-review (2026-11-08):** spec 012b's `marginView` (TASK-298) is not on main, so the margin is `costPreviewRow` (the order's own VAT rule); compose `marginView` when it lands.
+- **From self-review (2026-11-08):** the pages were not opened in a browser and have no visual baselines (no `next build` or Playwright on battery); a pixel check against `admin-discounts-*` and T-03's e2e role run are owed. The guards are `requireAdminPage`/`requirePermission` and are unit-scanned.
+- **From self-review (2026-11-08), pre-existing on main, not this PR's:** `admin-scans` "ships every key unreviewed" (main's admin meta has 939 keys for 1 105 catalogue keys), `rls-policies` review policy, `checkout-config` string count, `codebase-map` size cap, and `pnpm i18n:check`'s 6 problems in the payment components.
 
 ## Escalations
 
@@ -39,11 +42,16 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 DC445: `modules/admin/discounts.ts` (list, detail, create, update with the frozen offer, status, cost preview, form parsing), permissions `discounts.read`/`discounts.write`, nav entry, pages `/admin/discounts`, `/new`, `/[id]` with the client form island (copy and figures as props, imports nothing server side), wall-clock helpers in `i18n/format.ts`, 125 admin keys.
+- 2026-11-08 DC445: unit `discounts-admin` (25) and integration admin block (4: audit actions, frozen offer, six-code list, preview integers and the reduction claim) green; runbook, RoPA rows 9 and 11, architecture row; `record-approval-445.py --check` passes.
+
+## Copy approval
+
+- founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-445.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 047 (TASK-445, TASK-446); the founder did not read this text: the 125 admin texts of spec 047 (`admin.discounts.*`, `admin.nav.discounts`, `admin.flags.description.checkout.discount_codes`), exactly as printed.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/513 (with TASK-445). Pages `/admin/discounts`, `/admin/discounts/new`, `/admin/discounts/[id]`; actions in `src/app/admin/(signed-in)/discounts/actions.ts` (each `requirePermission` first) calling `createDiscountCode`, `updateDiscountCode`, `setDiscountCodeStatus`/`disableDiscountCode`, `discountCostPreview` in `modules/admin`. Tests: unit `discounts-admin` (25), integration admin block (4). Docs: `docs/runbooks/discount-codes.md`, RoPA, architecture. 125 new admin `en` keys, recorded by `.claude/state/record-approval-445.py` (admin keys stay `reviewed: false` by spec 012 AC-7). No build run (battery; CI's).

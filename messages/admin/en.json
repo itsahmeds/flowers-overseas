@@ -27,7 +27,8 @@
       "flags": "Flags",
       "audit": "Audit log",
       "users": "Users",
-      "payouts": "Payouts"
+      "payouts": "Payouts",
+      "discounts": "Discounts"
     },
     "roles": {
       "admin": "admin",
@@ -313,7 +314,8 @@
       "description": {
         "checkout": {
           "open": "Lets the product page's demo button lead to the checkout, per country.",
-          "demo_guard": "Keeps every checkout in demo mode: nothing is charged."
+          "demo_guard": "Keeps every checkout in demo mode: nothing is charged.",
+          "discount_codes": "Shows the \"Add a discount code\" link at checkout, per country. Codes themselves are made and disabled under Discounts."
         },
         "account": {
           "open": "Opens the customer account and its privacy requests, everywhere or per language."
@@ -1313,6 +1315,165 @@
         "PAYOUT_NOT_EXPORTED": "Nothing changed: the payout is in no active export.",
         "invalid": "Nothing changed: check the form.",
         "other": "Nothing changed. Reload the page and try again."
+      }
+    },
+    "discounts": {
+      "list": {
+        "title": "Discount codes",
+        "lead": "{count, plural, one {# code} other {# codes}} · {active} active · uses and amounts are live orders only",
+        "new": "New code",
+        "statusFilter": "Status",
+        "anyStatus": "Any status",
+        "apply": "Apply",
+        "footnote": "Status is worked out from the dates, the uses and the switch. Uses count live orders that were paid and not cancelled before we started preparing them; demo and test orders never count.",
+        "noMatch": "No codes with this status."
+      },
+      "column": {
+        "code": "Code",
+        "campaign": "Campaign",
+        "offer": "Offer",
+        "valid": "Valid ({zone})",
+        "uses": "Uses",
+        "given": "Discount given",
+        "status": "Status"
+      },
+      "valid": {
+        "range": "{from} to {to}",
+        "from": "from {from}"
+      },
+      "uses": {
+        "capped": "{uses} of {cap}"
+      },
+      "separator": {
+        "offer": " / ",
+        "given": " · "
+      },
+      "status": {
+        "scheduled": "Scheduled",
+        "active": "Active",
+        "ended": "Ended",
+        "used_up": "Used up",
+        "disabled": "Disabled"
+      },
+      "empty": {
+        "title": "No discount codes yet",
+        "body": "Make one for a community group, then turn on Discount codes for its destination in Flags."
+      },
+      "back": "Discount codes",
+      "new": {
+        "title": "New discount code",
+        "lead": "We pay for the discount out of our margin; the florist's pay never changes."
+      },
+      "form": {
+        "section": "The code",
+        "code": "Code",
+        "generate": "Generate",
+        "codeHint": "6 to 32 letters and digits. Case, spaces and hyphens are ignored.",
+        "campaign": "Campaign",
+        "campaignHint": "Who it is for. Never shown to buyers; reports and analytics use it.",
+        "offer": "Offer",
+        "kind": {
+          "percent": "Percent off",
+          "fixed": "Amount off"
+        },
+        "percent": "Percent",
+        "percentHint": "1 % to 50 %. Buyers see only the amount it takes off.",
+        "perCurrency": "Per currency",
+        "currency": "Currency",
+        "amountOff": "Amount off",
+        "minOrder": "Minimum order",
+        "amountLabel": "Amount off in {currency}",
+        "minLabel": "Minimum order in {currency}",
+        "fixedOnly": "fixed codes only",
+        "starts": "Starts",
+        "startsHint": "Entered in UK time; change the zone per code.",
+        "ends": "Ends",
+        "optional": "Optional.",
+        "zone": "Time zone",
+        "maxRedemptions": "Total uses",
+        "maxRedemptionsHint": "Optional. Live orders only.",
+        "maxPerEmail": "Uses per buyer email",
+        "maxPerEmailHint": "anna+1@ and Anna@ count as one buyer. Empty means no limit.",
+        "destinations": "Destinations",
+        "destinationsHint": "Empty means every destination. Never limited by where the buyer lives.",
+        "allDestinations": "All destinations",
+        "bouquets": "Bouquets",
+        "bouquetsHint": "Empty means every bouquet.",
+        "allBouquets": "All bouquets",
+        "chosen": "{count, plural, one {# chosen} other {# chosen}}",
+        "note": "Note",
+        "create": "Create code",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "frozen": "Used on {count, plural, one {# live order} other {# live orders}}, so the offer is fixed. To change it, make a new code. Dates, uses, status, campaign and note stay editable."
+      },
+      "preview": {
+        "title": "Cost preview",
+        "lead": "Every bouquet and destination in scope, at the default size, in the destination's currency. Updates as you type; nothing is saved.",
+        "belowTitle": "{count, plural, one {# bouquet would sell} other {# bouquets would sell}} at or below what we pay the florist.",
+        "belowItem": "{product} in {country}: {margin} after the discount. You can still save: we pay for the discount, never the florist.",
+        "claimTitle": "A lower price in the last 30 days.",
+        "claimItem": "{product} in {country} was {lowest} in the last 30 days and is {today} today. A public percentage off is measured against that lower price. Narrow the bouquets, or announce the amount without a percentage.",
+        "column": {
+          "bouquet": "Bouquet",
+          "destination": "Destination",
+          "price": "Price",
+          "discount": "Discount",
+          "vat": "VAT",
+          "payout": "Highest florist pay",
+          "margin": "Margin after discount"
+        },
+        "vatRate": "VAT {rate}",
+        "notMapped": "Not mapped",
+        "empty": "Nothing in scope has a price yet.",
+        "truncated": "Showing the first {count} bouquet and destination pairs.",
+        "updating": "Updating the preview."
+      },
+      "stats": {
+        "title": "So far",
+        "liveUses": "Live uses",
+        "given": "Discount given",
+        "none": "None yet",
+        "created": "Created",
+        "createdLine": "{date} by {name}",
+        "lastChange": "Last change"
+      },
+      "disabled": {
+        "banner": "Disabled. A buyer who types it sees the same message as for a code that does not exist.",
+        "enable": "Turn back on"
+      },
+      "dialog": {
+        "open": "Disable code",
+        "title": "Disable {code}?",
+        "body": "It stops working at once, also for buyers who applied it and have not paid yet: their last checkout step shows the new total before they pay.",
+        "cancel": "Cancel",
+        "confirm": "Disable code"
+      },
+      "result": {
+        "created": "Code created.",
+        "saved": "Changes saved.",
+        "disabled": "Code disabled.",
+        "enabled": "Code turned back on.",
+        "not_found": "That code no longer exists.",
+        "invalid": "Check the fields marked below."
+      },
+      "error": {
+        "required": "Required.",
+        "codeShape": "Use 6 to 32 letters and digits.",
+        "codeTaken": "Another code already reads {code}.",
+        "labelLength": "1 to 80 characters.",
+        "percentRange": "Between 1 % and 50 %.",
+        "percentHasAmount": "A percent code has no amount off.",
+        "fixedNeedsAmount": "Give an amount off in at least one currency.",
+        "amountAboveCeiling": "At most half the minimum order.",
+        "currencyUnknown": "Not one of our currencies.",
+        "currencyTwice": "This currency is listed twice.",
+        "minorUnits": "Enter an amount such as 5 or 5.00.",
+        "endsBeforeStart": "The end must be after the start.",
+        "instant": "Enter a date and a time.",
+        "capPositive": "A whole number, 1 or more.",
+        "noteLength": "At most 2000 characters.",
+        "offerFrozen": "Fixed after the first live use. Make a new code to change it."
       }
     }
   },

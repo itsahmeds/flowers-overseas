@@ -54,11 +54,11 @@ for (const path of AUDITED) {
 
     const navs = page.getByRole("contentinfo").locator("nav");
     const count = await navs.count();
-    // Since TASK-173 (spec 004 §14 A20): the `Sending` column and the language list, plus
-    // `Company` where it has an entry with a page: on `/pl` the florists' landing draft
-    // (spec 011, TASK-210); the pseudo-locale has none. The legal row has no page, so it is not
-    // drawn, and an empty, named `navigation` landmark is exactly what this test forbids.
-    expect(count).toBe(path === "/pl" ? 3 : 2);
+    // Four since spec 041's pages exist in every launch locale and their pseudo-locales (TASK-184):
+    // `Sending`, `Company`, the legal row and the language list. A group with no entry with a page
+    // is not drawn (spec 004 §14 A20), since an empty, named `navigation` landmark is exactly what
+    // this test forbids.
+    expect(count).toBe(4);
     for (let index = 0; index < count; index += 1) {
       const nav = navs.nth(index);
       const named =

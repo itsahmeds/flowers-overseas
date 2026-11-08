@@ -449,6 +449,81 @@ export function formatDate(
   }).format(instant);
 }
 
+/** `YYYY-MM-DDTHH:mm`, the value of an `<input type="datetime-local">`. */
+const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/u;
+
+/** The numeric wall-clock parts of `instant` in `timeZone`, through the one `Intl` door. */
+function wallClockParts(instant: Date, timeZone: string): number[] {
+  const parts = dateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(instant);
+  const value = (type: Intl.DateTimeFormatPartTypes): number =>
+    Number(parts.find((part) => part.type === type)?.value ?? "0");
+  return [
+    value("year"),
+    value("month"),
+    value("day"),
+    value("hour"),
+    value("minute"),
+  ];
+}
+
+/**
+ * The instant a wall-clock time names in `timeZone` (spec 047 §13 Q13, TASK-446: codes are entered
+ * in Europe/London and stored in UTC). `local` is `YYYY-MM-DDTHH:mm`; null when it is not one. A
+ * time the clocks skip (the spring-forward hour) moves forward by the gap; a time they repeat
+ * (the autumn hour) is the first of the two.
+ */
+export function wallClockToInstant(
+  local: string,
+  timeZone: string,
+): Date | null {
+  const match = WALL_CLOCK.exec(local);
+  if (match === null) return null;
+  const zone = TimeZoneSchema.parse(timeZone);
+  const [year, month, day, hour, minute] = match.slice(1).map(Number) as [
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+  const asUtc = Date.UTC(year, month - 1, day, hour, minute);
+  if (Number.isNaN(asUtc)) return null;
+  const offsetAt = (instant: number): number => {
+    const [y, mo, d, h, mi] = wallClockParts(new Date(instant), zone) as [
+      number,
+      number,
+      number,
+      number,
+      number,
+    ];
+    return Date.UTC(y, mo - 1, d, h, mi) - instant;
+  };
+  const halfDay = 43_200_000;
+  const before = asUtc - offsetAt(asUtc - halfDay);
+  const after = asUtc - offsetAt(asUtc + halfDay);
+  const valid = [before, after].filter((c) => offsetAt(c) === asUtc - c);
+  // Both valid: the repeated autumn hour, take the first. None: the skipped spring hour, which
+  // moves forward by the gap.
+  return new Date(valid.length > 0 ? Math.min(...valid) : before);
+}
+
+/** `instant` as `YYYY-MM-DDTHH:mm` in `timeZone`, for an `<input type="datetime-local">`. */
+export function instantToWallClock(instant: Date, timeZone: string): string {
+  const [year, month, day, hour, minute] = wallClockParts(
+    InstantSchema.parse(instant),
+    TimeZoneSchema.parse(timeZone),
+  ).map((n) => String(n).padStart(2, "0"));
+  return `${year ?? ""}-${month ?? ""}-${day ?? ""}T${hour ?? ""}:${minute ?? ""}`;
+}
+
 /** The four parts of one `calendarDate` value, each the locale's own spelling of it. */
 export interface DateParts {
   readonly day: string;

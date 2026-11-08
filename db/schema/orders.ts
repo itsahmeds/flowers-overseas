@@ -414,6 +414,13 @@ export const orderLine = pgTable(
     ),
     vatRateBp: integer("vat_rate_bp").notNull(),
     ...timestamps,
+    /**
+     * Spec 047 §5.1 (`0037_discount_codes`, TASK-445): this line's share of the order's discount;
+     * paid amount = `unit_retail_minor * qty - discount_minor`. Payouts never read it (AC-19).
+     */
+    discountMinor: bigint("discount_minor", { mode: "bigint" })
+      .notNull()
+      .default(sql`0`),
   },
   (table) => [
     /** A line is in its order's currency. */
@@ -446,6 +453,10 @@ export const orderLine = pgTable(
     check(
       "order_line_payout_currency_code_check",
       sql.raw(`payout_currency_code ~ '${CURRENCY_PATTERN}'`),
+    ),
+    check(
+      "order_line_discount_minor_check",
+      sql`${table.discountMinor} >= 0 and ${table.discountMinor} <= ${table.unitRetailMinor} * ${table.qty}`,
     ),
     check(
       "order_line_vat_rate_bp_check",

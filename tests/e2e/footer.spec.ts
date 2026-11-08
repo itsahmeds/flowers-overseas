@@ -40,9 +40,9 @@ for (const locale of LOCALES) {
         await expect(footer).toContainText(text);
       }
       // The link columns with a page behind them and the language list are named navigation
-      // landmarks. `Company` has an entry with a page in every locale since spec 011 published
-      // the florists' landing (TASK-210; `de`/`pl` drafts exist, `noindex`); a group with no page
-      // is not drawn at all (spec 004 §14 A20; TASK-173).
+      // landmarks. `Company` has entries with a page in every locale: spec 011's florists' landing
+      // (TASK-210) and spec 041's How it works and Help and contact, in English (TASK-182) and as
+      // the de/pl drafts (TASK-184); a group with no page is not drawn at all (spec 004 §14 A20).
       await expect(
         footer.locator('nav[aria-labelledby$="-group-sending"]'),
       ).toHaveCount(1);

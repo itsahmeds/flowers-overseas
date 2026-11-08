@@ -9,7 +9,8 @@
 # Four facts this file is asserted on by `tests/unit/container.test.ts` (the half of AC-8 that
 # does not need a Docker daemon): Node 24, a non-root runtime user, a runtime stage that copies the
 # standalone output only — no `.env*` file (also excluded by `.dockerignore`) and no development
-# `node_modules` tree — and, since TASK-135, a build-argument set that is exactly the build half of
+# `node_modules` tree; since TASK-505 plus the one-file migration runner and `db/migrations/` —
+# and, since TASK-135, a build-argument set that is exactly the build half of
 # the env contract, so the image builds with no credential in the environment.
 
 # --- deps: production-complete install, cached on the lockfile -------------------------------
@@ -19,6 +20,20 @@ WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 RUN corepack install && pnpm install --frozen-lockfile
+
+# --- migrate: the migration runner as one file, for Railway's pre-deploy step -----------------
+# `config/railway.json`'s `preDeployCommand` runs `node scripts/db-migrate.mjs` in the image that
+# ships, before the release takes traffic (spec 002 §14 A-orchestrator-2026-11-08c; TASK-505). The
+# standalone server's `node_modules` keeps only what its trace needs, and the server bundles
+# `zod`, `postgres` and `@next/env` instead of keeping them as packages, so this stage bundles the
+# runner with those three into one ESM file that imports Node built-ins only. It reads no env and
+# declares no ARG: the bundle reads `DATABASE_URL_UNPOOLED` when it runs, never when it is built.
+FROM node:24-slim AS migrate
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json ./
+COPY scripts/db-migrate.ts scripts/db-migration-set.ts scripts/db-migrate-bundle.ts ./scripts/
+RUN node scripts/db-migrate-bundle.ts dist/db-migrate.mjs
 
 # --- build: `next build` with `output: "standalone"` ------------------------------------------
 FROM node:24-slim AS build
@@ -86,6 +101,12 @@ ENV NODE_ENV=production \
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
+# The pre-deploy migration step (TASK-505): the one-file runner and the SQL it applies, and
+# nothing else of the repository. Owned by root and only readable by `node`, so the release
+# cannot rewrite the migrations it runs. `db/migrations/README.md` is not copied (`.dockerignore`
+# drops `*.md`), and the runner ignores it and Drizzle Kit's `meta/` by name.
+COPY --from=migrate /app/dist/db-migrate.mjs ./scripts/db-migrate.mjs
+COPY db/migrations ./db/migrations
 USER node
 EXPOSE 3000
 CMD ["node", "server.js"]

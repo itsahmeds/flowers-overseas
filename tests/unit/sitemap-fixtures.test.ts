@@ -25,11 +25,14 @@ import {
   FIXTURE_DIR,
   fixturePath,
   generateSitemapFixtures,
+  noindexInfoPageUrls,
   noindexUrlSet,
   writeSitemapFixtures,
 } from "../../scripts/seo/generate-sitemap-fixtures.ts";
 
 const fixtures = await generateSitemapFixtures();
+/** The declined set once, at load: each call walks every listing page (seconds, not ms). */
+const declinedUrls = await noindexUrlSet();
 
 beforeAll(async () => {
   if (process.env["UPDATE_SEO_FIXTURES"] === "1") await writeSitemapFixtures();
@@ -77,7 +80,7 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
   });
 
   it("lists the unannounced hubs as noindex, and none of them as a <loc>", async () => {
-    const noindex = await noindexUrlSet();
+    const noindex = declinedUrls;
     expect(noindex).toContain(
       "https://flowersoverseas.com/de/blumen-verschicken",
     );
@@ -93,10 +96,29 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
     for (const url of noindex) expect(locs).not.toContain(url);
   });
 
+  it("lists every info page the engine serves noindex: the 18 de/pl drafts among them (spec 041 AC-23; TASK-184)", async () => {
+    const info = noindexInfoPageUrls();
+    const declined = declinedUrls;
+    // Seven spec 041 pages exist per locale before registration, none reviewed yet, plus spec 011's
+    // florists' pages (TASK-210): the landing in every locale and the `de`/`pl` walkthrough drafts.
+    expect(info).toHaveLength(34);
+    for (const url of [
+      "https://flowersoverseas.com/de/hilfe",
+      "https://flowersoverseas.com/de/rechtliches/widerruf",
+      "https://flowersoverseas.com/pl/pomoc",
+      "https://flowersoverseas.com/pl/informacje-prawne/cookies",
+      "https://flowersoverseas.com/en/help",
+    ]) {
+      expect(info, url).toContain(url);
+      // The committed file `validate-sitemap` reads carries it too.
+      expect(declined, url).toContain(url);
+    }
+  });
+
   it("lists the bare origin in no sitemap and as no noindex page (spec 003 §14 A16 clause 3)", async () => {
     // `/` is a 308 to `/en`: neither a `<loc>` nor a document with a robots answer.
     const origin = "https://flowersoverseas.com/";
-    expect(await noindexUrlSet()).not.toContain(origin);
+    expect(declinedUrls).not.toContain(origin);
     for (const fixture of fixtures) {
       expect(fixture.contents, fixture.file).not.toContain(
         `<loc>${origin}</loc>`,

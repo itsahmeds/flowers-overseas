@@ -167,6 +167,8 @@ export {
   formatRangeEnds,
   formatRelativeTime,
   formatTimeInZone,
+  instantToWallClock,
+  wallClockToInstant,
   moneyDecimalString,
   zonedClock,
 } from "./format.ts";

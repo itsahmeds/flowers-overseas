@@ -19,13 +19,26 @@
 
 export interface Interactions {
   /**
+   * Idea 1 (motion 14, §5.3.1, AC-7 to AC-9; TASK-307): the product card's photograph carries the
+   * buyer into the product page from `lg` up. Off, the product page emits no opt-in and the motion
+   * module arms nothing, so every card link navigates as it did before.
+   */
+  readonly morph: boolean;
+  /**
    * Idea 2 (§5.3.2, AC-10; TASK-308): the card preview's 200 ms crossfade from the sample to the
    * buyer's first words (`PrintedCardPreview`). Off, the swap is instant; the one shared preview,
    * its Caveat lines and its mirroring stay.
    */
   readonly cardPreviewMotion: boolean;
+  /**
+   * Idea 6 (§5.3.6, AC-19): the dashed route from an unlabelled "you" dot to the destination,
+   * drawn once beside the corridor page's H1 from `md` up (`CorridorRouteLine`).
+   */
+  readonly routeLine: boolean;
 }
 
 export const interactions: Interactions = {
+  morph: true,
   cardPreviewMotion: true,
+  routeLine: true,
 };

@@ -66,9 +66,10 @@ const a8 = readMigration(
  * `0026` (spec 013 §14 A-founder-2026-10-22 item 2, TASK-350) moves the payment to the purchase:
  * `payment.purchase_id` and its keys, `payment.order_id` dropped, `refund.order_id` and
  * `refund.purchase_id` with their keys, `"order" UNIQUE (id, purchase_id)`. `0029` (spec 022a
- * §5.1, TASK-368) adds `review`'s moderation, display and routing columns.
+ * §5.1, TASK-368) adds `review`'s moderation, display and routing columns. `0037` (spec 047
+ * §5.1, TASK-445) adds `order_line.discount_minor` and its check.
  */
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0026_payment_purchase.sql")}\n${readMigration("0029_reviews_close.sql")}\n${readMigration("0030_routing_notifications.sql")}`;
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0026_payment_purchase.sql")}\n${readMigration("0029_reviews_close.sql")}\n${readMigration("0030_routing_notifications.sql")}\n${readMigration("0037_discount_codes.sql")}`;
 
 const TABLES = [
   "order_status",

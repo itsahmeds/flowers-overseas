@@ -85,3 +85,35 @@ export {
   listFlags,
   toggleFlag,
 } from "./flags";
+// Spec 047 §5.2 (TASK-446): the discount codes commands, reads and cost preview.
+export {
+  bpToPercentText,
+  computedDiscountStatus,
+  createDiscountCode,
+  DISCOUNT_ACTIONS,
+  DISCOUNT_COMPUTED_STATUSES,
+  DISCOUNT_PREVIEW_MAX_ROWS,
+  disableDiscountCode,
+  discountCostPreview,
+  discountFormOptions,
+  discountInputFromForm,
+  DiscountListFilterSchema,
+  getDiscountCode,
+  listDiscountCodes,
+  minorToAmountText,
+  percentTextToBp,
+  setDiscountCodeStatus,
+  updateDiscountCode,
+} from "./discounts";
+export type {
+  DiscountCommandResult,
+  DiscountComputedStatus,
+  DiscountCostPreview,
+  DiscountDetail,
+  DiscountFormFields,
+  DiscountFormOptions,
+  DiscountListFilter,
+  DiscountListRow,
+  DiscountPreviewRow,
+  ReductionClaimWarning,
+} from "./discounts";

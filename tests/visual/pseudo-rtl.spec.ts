@@ -83,3 +83,32 @@ test(`${PSEUDO_RTL_PATH} matches the committed right-to-left baseline`, async ({
 
 // The `/ar-XB` popup baseline is deleted (spec 003 §14 A-founder-2026-10-19d, AC-30; TASK-280):
 // no page offers another language, so the popup never opens; the slim bar's task adds its own.
+
+/**
+ * Spec 041 §7 "RTL", T-28 (TASK-184): the help page under the RTL pseudo-locale. `/ar-XB/help` is
+ * the English help file inside pseudo chrome (`infoContentLocale()` reads the x-default locale's
+ * file, as a corridor guide does), so the photograph is the layout an RTL translation will fill:
+ * the contact block, the questions as headings, the in-body links, all mirrored by logical CSS.
+ * `main` only, with the header unstuck, as the LTR info-page shots are.
+ */
+const STATIC_HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
+);
+
+test(`${PSEUDO_RTL_PATH}/help matches the committed right-to-left baseline`, async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await recordConsentRefusal(context, baseURL);
+  const response = await page.goto(`${PSEUDO_RTL_PATH}/help`);
+  expect(
+    response?.status(),
+    `${PSEUDO_RTL_PATH}/help must be served; is ENABLE_PSEUDO_LOCALES=true on the target?`,
+  ).toBe(200);
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.locator("[data-fo-untranslated]")).toHaveCount(0);
+  await expect(page.locator("main")).toHaveScreenshot("ar-XB-help.png", {
+    stylePath: STATIC_HEADER_STYLE,
+  });
+});

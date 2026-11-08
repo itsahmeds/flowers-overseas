@@ -60,12 +60,24 @@ const HUBS = LOCALES.map(
 const CORRIDORS = ["en", "en-gb"].flatMap((locale) =>
   SLUGS.map((slug) => `/${locale}/${DESTINATIONS[locale] ?? ""}/${slug}`),
 );
-/** Spec 041's trust pages (TASK-182): English only until TASK-184's drafts. */
-const INFO_PAGES = ["en", "en-gb"].flatMap((locale) =>
-  ["how-it-works", "guarantee", "help", "about", "delivery"].map(
-    (segment) => `/${locale}/${segment}`,
+/** Spec 041's trust pages: English (TASK-182) and the de/pl drafts (TASK-184), spec 041 §2's paths. */
+const INFO_PAGES = [
+  ...["en", "en-gb"].flatMap((locale) =>
+    ["how-it-works", "guarantee", "help", "about", "delivery"].map(
+      (segment) => `/${locale}/${segment}`,
+    ),
   ),
-);
+  ...[
+    "so-funktioniert-es",
+    "garantie",
+    "hilfe",
+    "ueber-uns",
+    "lieferung-und-zahlung",
+  ].map((segment) => `/de/${segment}`),
+  ...["jak-to-dziala", "gwarancja", "pomoc", "o-nas", "dostawa-i-platnosc"].map(
+    (segment) => `/pl/${segment}`,
+  ),
+];
 const EVERY_PAGE = [...HOMES, ...HUBS, ...CORRIDORS, ...INFO_PAGES];
 
 /**

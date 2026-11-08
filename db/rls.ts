@@ -279,6 +279,13 @@ export const STAFF_ONLY_TABLES = [
   "blog_author",
   "consent_log",
   "db_usage_sample",
+  // spec 047 §5.1 (migration `0037_discount_codes`, TASK-445): the codes, their currencies and
+  // scope, and each order's share of a discount. Admin and system only: a florist never sees what
+  // the buyer paid or which code was used.
+  "discount_code",
+  "discount_code_country",
+  "discount_code_currency",
+  "discount_code_product",
   "feature_flag",
   "feature_flag_scope",
   // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the issuer's VAT registrations,
@@ -290,6 +297,7 @@ export const STAFF_ONLY_TABLES = [
   // Resend said, and each invoice a B1 carried. No partner, customer or public policy.
   "notification_delivery",
   "notification_delivery_invoice",
+  "order_discount",
   "order_event",
   "outbox",
   "outbox_attempt",
