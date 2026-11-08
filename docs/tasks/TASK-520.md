@@ -63,7 +63,8 @@ here.
 - 2026-11-08 S520: started in `../fo-wt-520`; row `in_progress`, draft PR 514 opened.
 - 2026-11-08 S520: engine groups (Countries, Occasions, Flowers, Help) and country-less bouquets, `SearchSource.infoPages`, the chip (change and remove GET forms, `queryWithoutDestination`), `POST /api/search/suggest` (GET 405), copy keys; unit tests green.
 - 2026-11-08 S520: header field (one form: 56 px phone row, 64 px row from md, items on row 2, 122/114 px), results page field holds `q` and `to` (`@header/-search` reads the query), `SearchSuggest` island in the deferred set; spec 004 A-orchestrator-2026-11-08b; tests updated and added; e2e spec written (CI). Next: build check, ready.
-- 2026-11-08 S520: build checked in the slot (load 15.7 at start, 5.7 after): Railway-style env-less `pnpm build` stops only at the known payments `wiring.ts` env read on `/[locale]/checkout/return` (TASK-503-build-env owns it); with placeholder non-secret values for those ten variables it exits 0, `budget:client-js` exits 0 (first-load unchanged, the suggestions chunk 1,714 B Brotli). `.next` deleted, slot released. PR marked ready.
+- 2026-11-08 S520: build checked in the slot (load 15.7 at start, 5.7 after): Railway-style env-less `pnpm build` stops only at the known payments `wiring.ts` env read on `/[locale]/checkout/return` (TASK-503-build-env owns it); with placeholder non-secret values for those ten variables it exits 0, `budget:client-js` exits 0 (first-load unchanged, the suggestions chunk 1,714 B Brotli). `.next` deleted, slot released.
+- 2026-11-08 S520: rebased on main 5dfe1acad (TASK-503 #516, TASK-390's `shop.chosen.line` now recorded on main, so 15 keys to record); the env-less Railway-style `pnpm build` exited 0 (load 2.7). PR marked ready.
 
 ## Result
 
