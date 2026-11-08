@@ -99,10 +99,15 @@ const PARSERS: readonly Entry[] = [
     entry: "src/modules/checkout/steps.ts#runRecipientStep",
     reason: "RecipientStepSchema(country, locale).safeParse(formValues(form))",
   },
+  // §14 A-founder-2026-10-25a item 1 (TASK-418): step 2 per line, step 3 once per order.
   {
-    entry: "src/modules/checkout/steps.ts#runCardAndBuyerStep",
+    entry: "src/modules/checkout/steps.ts#runCardStep",
     reason:
-      "CardAndBuyerStepSchema({ locale, offeredAddonKeys }).safeParse(formValues(form))",
+      "CardStepSchema({ locale, offeredAddonKeys }).safeParse(formValues(form))",
+  },
+  {
+    entry: "src/modules/checkout/steps.ts#runBuyerStep",
+    reason: "BuyerStepSchema({ locale }).safeParse(formValues(form))",
   },
   {
     entry: "src/modules/checkout/steps.ts#runUpdateSelection",
@@ -994,7 +999,8 @@ describe("T-57: the real tree", () => {
       "src/modules/catalog/params.ts#listingRequest",
       "src/modules/catalog/product.ts#productSearchParams",
       "src/modules/checkout/steps.ts#runRecipientStep",
-      "src/modules/checkout/steps.ts#runCardAndBuyerStep",
+      "src/modules/checkout/steps.ts#runCardStep",
+      "src/modules/checkout/steps.ts#runBuyerStep",
       "src/modules/checkout/steps.ts#runUpdateSelection",
       "src/modules/checkout/steps.ts#runRemoveLine",
       "src/modules/checkout/steps.ts#runUpdateLine",

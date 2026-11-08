@@ -201,7 +201,8 @@
   "checkout": {
     "action": {
       "toCard": "Continue to your details",
-      "toReview": "Continue to check"
+      "toReview": "Continue to check",
+      "toYourCard": "Continue to your card"
     },
     "addons": {
       "add": "Add",
@@ -317,7 +318,8 @@
       "demoNotice": "<b>Użyj przykładowych danych, a nie danych prawdziwej osoby.</b> To, co tu wpiszesz, przechowujemy przez {period, select, hours24 {24 godziny} other {7 dni}}, aby pokazać, jak działa zamawianie, a potem usuwamy dane osobowe. {controllerLine}"
     },
     "progress": {
-      "card": "Card and you",
+      "card": "Your card",
+      "details": "Your details",
       "compact": "Step {current} of {total} · {name}",
       "label": "Checkout steps",
       "recipient": "Recipient",
@@ -341,7 +343,8 @@
       "recipient": "Recipient"
     },
     "step": {
-      "card": "Your card and <em>your details</em>",
+      "card": "Your <em>card</em>",
+      "details": "Your <em>details</em>",
       "deliveryOf": "Delivery {n} of {total}",
       "recipient": "Who are the flowers <em>for?</em>",
       "review": "Check and place <em>your order</em>"

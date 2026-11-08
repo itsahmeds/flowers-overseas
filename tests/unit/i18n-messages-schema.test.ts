@@ -259,6 +259,7 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    "checkout.action.toYourCard",
     // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
     "checkout.basket.addOns",
     "checkout.basket.added",
@@ -345,6 +346,10 @@ describe("the shipped catalogues and manifests", () => {
     // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
     "checkout.legal.cancellation",
     "checkout.legal.payButton",
+    "checkout.progress.card",
+    "checkout.progress.details",
+    "checkout.step.card",
+    "checkout.step.details",
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet
     // cancel line and its dialog, the spec's and the boards' words, `reviewed: false` until the
     // record run (`.claude/state/record-approval-340.py`) attests them.
@@ -500,6 +505,8 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
     // TASK-520 (spec 045 §14 A-founder-2026-11-08a, Appendix A; the board slots): the 14 `search.*`
     // texts and the changed `nav.search.label`, sorted in above, until record-approval-520.py.
+    // TASK-418 (spec 010 §14 A-founder-2026-10-25a, AC-108): the four steps' keys; `checkout.progress.card`
+    // and `checkout.action.toYourCard` are design gaps G6 and G7 (PR 417), queued for the copy batch.
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

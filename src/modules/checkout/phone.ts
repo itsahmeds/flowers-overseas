@@ -135,7 +135,7 @@ export function parseRecipientPhone(
 }
 
 /**
- * The buyer's optional phone, from any country (spec 010 §5.2 `CardAndBuyerStepSchema`). A number
+ * The buyer's optional phone, from any country (spec 010 §5.2 `BuyerStepSchema`). A number
  * without a country code is read in the plan of the buyer's country of residence when that
  * country has one; otherwise a country code is required. Never `nonLocal`: a buyer may live
  * anywhere.

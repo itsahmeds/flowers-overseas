@@ -79,9 +79,10 @@ const PLACE_KINDS = [
 const STEP_NAME_KEYS = {
   recipient: "progress.recipient",
   card: "progress.card",
+  details: "progress.details",
   review: "progress.review",
 } as const;
-const STEP_IDS = ["recipient", "card", "review"] as const;
+const STEP_IDS = ["recipient", "card", "details", "review"] as const;
 
 function State({
   name,
@@ -136,7 +137,7 @@ export function CheckoutGallery({
   const compact = (current: number) =>
     t("progress.compact", {
       current: formatNumber(current + 1, locale),
-      total: formatNumber(3, locale),
+      total: formatNumber(STEP_IDS.length, locale),
       name: t(STEP_NAME_KEYS[STEP_IDS[current] ?? "recipient"]),
     });
   const lines: readonly SummaryLine[] = [
@@ -198,7 +199,7 @@ export function CheckoutGallery({
       </State>
 
       <State name={CHECKOUT_STATES.progress}>
-        {[0, 1, 2].map((current) => (
+        {[0, 1, 2, 3].map((current) => (
           <StepProgress
             compactLabel={compact(current)}
             current={current}

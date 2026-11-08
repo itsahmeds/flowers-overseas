@@ -1,14 +1,15 @@
 /**
- * `StepProgress` — the three steps as a segmented control (spec 010 §5.3 "Progress": three steps
- * · current · completed (link back); `docs/design/wireframes/checkout-{desktop,mobile}.dc.html`
- * `.stepper` and `.co-step`; TASK-201).
+ * `StepProgress`: the checkout's steps as a segmented control (spec 010 §5.3 "Progress": current
+ * · completed (link back); four steps since §14 A-founder-2026-10-25a item 1;
+ * `docs/design/wireframes/checkout-{desktop,mobile}.dc.html` `.stepper` and `.co-step.co4`;
+ * TASK-201, TASK-418).
  *
  * An `<ol>`, labelled; the current step carries `aria-current="step"`; completed steps are links
  * back (`?step=…`, a step already reached, AC-7); future steps are text. The current step is
  * marked by the ink ring and the card fill **and** by `aria-current`, never by colour alone.
  *
- * Below `md` the board draws a compact line ("Step 1 of 3 · Recipient" with three dots) instead
- * of the control. The compact line is decorative (`aria-hidden`), so the list is kept for
+ * Below `md` the board draws a compact line ("Step 2 of 4 · Your card" after a bar of four
+ * segments, the done and current ones in ink) instead of the control. The compact line is decorative (`aria-hidden`), so the list is kept for
  * assistive technology there, visually hidden rather than removed: a phone screen-reader user
  * still hears which step this is.
  */
@@ -19,7 +20,7 @@ import { formatNumber } from "@/modules/i18n";
 
 export interface StepProgressStep {
   readonly id: string;
-  /** "Recipient", "Card and you", "Check" (`checkout.progress.*`). */
+  /** "Recipient", "Your card", "Your details", "Check" (`checkout.progress.*`). */
   readonly name: string;
   /** Set on completed steps only: the link back. */
   readonly href?: string;
@@ -32,7 +33,7 @@ export interface StepProgressProps {
   readonly steps: readonly StepProgressStep[];
   /** The index of the current step in `steps`. */
   readonly current: number;
-  /** "Step 1 of 3 · Recipient" (`progress.compact` (checkout catalogue)), for the phone line. */
+  /** "Step 2 of 4 · Your card" (`progress.compact` (checkout catalogue)), for the phone line. */
   readonly compactLabel: string;
 }
 
@@ -91,10 +92,11 @@ export function StepProgress({
         aria-hidden="true"
         className="text-ink-2 m-0 flex items-center gap-[10px] text-sm md:hidden"
       >
-        <span className="inline-flex gap-[6px]">
+        <span className="inline-flex gap-[4px]" data-fo-step-bar="">
           {steps.map((step, index) => (
             <span
-              className={`block size-[8px] rounded-full ${index === current ? "bg-ink" : "bg-rule"}`}
+              className={`block h-[4px] w-[22px] rounded-[2px] ${index <= current ? "bg-ink" : "bg-rule"}`}
+              data-fo-step-segment={index <= current ? "on" : "off"}
               key={step.id}
             />
           ))}

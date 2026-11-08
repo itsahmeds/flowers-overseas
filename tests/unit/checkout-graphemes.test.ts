@@ -1,7 +1,8 @@
 /**
  * The card limits in graphemes (spec 010 §13 Q9, AC-10 / T-10 unit half; TASK-200), and the rest
- * of step 2's schema and the two machine posts (§5.2: `CardAndBuyerStepSchema`,
- * `CheckoutStartSchema`, `ReviewStepSchema`; AC-12's field set at the schema).
+ * of step 2's and step 3's schemas and the two machine posts (§5.2: `CardStepSchema`,
+ * `BuyerStepSchema`, `CheckoutStartSchema`, `ReviewStepSchema`; AC-12's field set at the schema;
+ * §14 A-founder-2026-10-25a item 1, the split).
  *
  * `countGraphemes()` counts a Polish letter, a Cyrillic letter and a ZWJ emoji sequence as one
  * each, precomposed or not; the card message takes exactly 200 and refuses 201 on the server,
@@ -11,8 +12,9 @@ import { describe, expect, it } from "vitest";
 
 import { CHECKOUT_LIMITS } from "../../src/config/checkout.ts";
 import {
+  BuyerStepSchema,
   CHECKOUT_ERROR_KEYS,
-  CardAndBuyerStepSchema,
+  CardStepSchema,
   CheckoutStartSchema,
   ReviewStepSchema,
 } from "../../src/modules/checkout/index.ts";
@@ -55,11 +57,12 @@ const BUYER = {
   residenceCountry: "GB",
 } as const;
 
-const schema = () =>
-  CardAndBuyerStepSchema({
+const card = () =>
+  CardStepSchema({
     locale: "pl",
     offeredAddonKeys: ["chocolates", "vase", "card"],
   });
+const buyer = () => BuyerStepSchema({ locale: "pl" });
 
 /** `n` graphemes, mixing every awkward kind, with the code-unit count far above `n`. */
 function graphemes(n: number): string {
@@ -76,14 +79,13 @@ describe("the card message and 'sign as' are limited in graphemes on the server 
   it("accepts a card message of exactly 200 graphemes", () => {
     const text = graphemes(200);
     expect(text.length).toBeGreaterThan(400);
-    const result = schema().safeParse({ ...BUYER, cardMessage: text });
+    const result = card().safeParse({ cardMessage: text });
     expect(result.success, JSON.stringify(result.error?.issues)).toBe(true);
     expect(result.data?.cardMessage).toBe(text.normalize("NFC"));
   });
 
   it("refuses 201 graphemes with the too-long key and the limit", () => {
-    const result = schema().safeParse({
-      ...BUYER,
+    const result = card().safeParse({
       cardMessage: graphemes(201),
     });
     expect(result.error?.issues).toEqual([
@@ -96,10 +98,8 @@ describe("the card message and 'sign as' are limited in graphemes on the server 
   });
 
   it("accepts 40 graphemes of 'sign as' and refuses 41", () => {
-    expect(
-      schema().safeParse({ ...BUYER, signAs: graphemes(40) }).success,
-    ).toBe(true);
-    const result = schema().safeParse({ ...BUYER, signAs: graphemes(41) });
+    expect(card().safeParse({ signAs: graphemes(40) }).success).toBe(true);
+    const result = card().safeParse({ signAs: graphemes(41) });
     expect(result.error?.issues[0]).toMatchObject({
       path: ["signAs"],
       message: CHECKOUT_ERROR_KEYS.tooLong,
@@ -108,8 +108,7 @@ describe("the card message and 'sign as' are limited in graphemes on the server 
   });
 
   it("stores both in NFC", () => {
-    const parsed = schema().parse({
-      ...BUYER,
+    const parsed = card().parse({
       cardMessage: `Kocham Ci${POLISH_DECOMPOSED}`,
       signAs: `Mam${POLISH_DECOMPOSED}`,
     });
@@ -118,19 +117,46 @@ describe("the card message and 'sign as' are limited in graphemes on the server 
   });
 
   it("treats a blank or whitespace card message as no card", () => {
-    expect(schema().parse({ ...BUYER }).cardMessage).toBe("");
-    expect(schema().parse({ ...BUYER, cardMessage: "  \n " }).cardMessage).toBe(
-      "",
-    );
+    expect(card().parse({}).cardMessage).toBe("");
+    expect(card().parse({ cardMessage: "  \n " }).cardMessage).toBe("");
   });
 });
 
-describe("step 2's field set (AC-11, AC-12 at the schema)", () => {
-  it("parses the buyer's details and turns a blank phone into none", () => {
-    expect(schema().parse({ ...BUYER, addonKeys: ["vase"] })).toEqual({
+describe("step 2's field set (AC-11; §14 A-founder-2026-10-25a item 1)", () => {
+  it("parses the card and the add-ons, and nothing of the buyer's", () => {
+    expect(card().parse({ addonKeys: ["vase"] })).toEqual({
       cardMessage: "",
       signAs: "",
       addonKeys: ["vase"],
+    });
+  });
+
+  it("refuses every buyer field on step 2 (the buyer's fields are step 3's alone)", () => {
+    for (const [key, value] of Object.entries(BUYER)) {
+      expect(
+        card().safeParse({ [key]: value }).success,
+        `${key} on step 2`,
+      ).toBe(false);
+    }
+  });
+
+  it("selects no add-on unless the buyer posts one", () => {
+    expect(card().parse({}).addonKeys).toEqual([]);
+  });
+
+  it("refuses an add-on not on offer for the destination, and a repeated one", () => {
+    for (const addonKeys of [["wine"], ["vase", "vase"]]) {
+      expect(
+        card().safeParse({ addonKeys }).error?.issues[0]?.message,
+        JSON.stringify(addonKeys),
+      ).toBe(CHECKOUT_ERROR_KEYS.addonUnavailable);
+    }
+  });
+});
+
+describe("step 3's field set (AC-12 at the schema; §14 A-founder-2026-10-25a item 1)", () => {
+  it("parses the buyer's details and turns a blank phone into none", () => {
+    expect(buyer().parse(BUYER)).toEqual({
       email: "sample.buyer@example.com",
       buyerName: "Sam Sample",
       buyerPhone: null,
@@ -138,16 +164,16 @@ describe("step 2's field set (AC-11, AC-12 at the schema)", () => {
     });
   });
 
-  it("selects no add-on unless the buyer posts one", () => {
-    expect(schema().parse(BUYER).addonKeys).toEqual([]);
-  });
-
-  it("refuses an add-on not on offer for the destination, and a repeated one", () => {
-    for (const addonKeys of [["wine"], ["vase", "vase"]]) {
+  it("refuses a card or add-on field on step 3", () => {
+    for (const extra of [
+      { cardMessage: "Hello" },
+      { signAs: "Sam" },
+      { addonKeys: ["vase"] },
+    ]) {
       expect(
-        schema().safeParse({ ...BUYER, addonKeys }).error?.issues[0]?.message,
-        JSON.stringify(addonKeys),
-      ).toBe(CHECKOUT_ERROR_KEYS.addonUnavailable);
+        buyer().safeParse({ ...BUYER, ...extra }).success,
+        JSON.stringify(extra),
+      ).toBe(false);
     }
   });
 
@@ -160,36 +186,39 @@ describe("step 2's field set (AC-11, AC-12 at the schema)", () => {
       { currency: "EUR" },
     ]) {
       expect(
-        schema().safeParse({ ...BUYER, ...extra }).success,
+        buyer().safeParse({ ...BUYER, ...extra }).success,
         JSON.stringify(extra),
+      ).toBe(false);
+      expect(
+        card().safeParse({ ...extra }).success,
+        `step 2 ${JSON.stringify(extra)}`,
       ).toBe(false);
     }
   });
 
   it("requires a valid email and a name", () => {
     expect(
-      schema().safeParse({ ...BUYER, email: "not-an-email" }).error?.issues[0]
+      buyer().safeParse({ ...BUYER, email: "not-an-email" }).error?.issues[0]
         ?.message,
     ).toBe(CHECKOUT_ERROR_KEYS.emailInvalid);
     expect(
-      schema().safeParse({ ...BUYER, email: "" }).error?.issues[0]?.message,
+      buyer().safeParse({ ...BUYER, email: "" }).error?.issues[0]?.message,
     ).toBe(CHECKOUT_ERROR_KEYS.required);
     expect(
-      schema().safeParse({ ...BUYER, buyerName: " " }).error?.issues[0]
-        ?.message,
+      buyer().safeParse({ ...BUYER, buyerName: " " }).error?.issues[0]?.message,
     ).toBe(CHECKOUT_ERROR_KEYS.required);
   });
 
   it("accepts any country of residence with a numbering plan and refuses anything else", () => {
     for (const country of ["GB", "PL", "US", "BR", "JP", "NZ"]) {
       expect(
-        schema().safeParse({ ...BUYER, residenceCountry: country }).success,
+        buyer().safeParse({ ...BUYER, residenceCountry: country }).success,
         country,
       ).toBe(true);
     }
     for (const country of ["gb", "XX", "", "GBR"]) {
       expect(
-        schema().safeParse({ ...BUYER, residenceCountry: country }).error
+        buyer().safeParse({ ...BUYER, residenceCountry: country }).error
           ?.issues[0]?.message,
         country,
       ).toBe(CHECKOUT_ERROR_KEYS.countryInvalid);
@@ -198,9 +227,9 @@ describe("step 2's field set (AC-11, AC-12 at the schema)", () => {
 
   it("parses an optional buyer phone in the residence country's plan and stores E.164", () => {
     expect(
-      schema().parse({ ...BUYER, buyerPhone: "020 7925 0918" }).buyerPhone,
+      buyer().parse({ ...BUYER, buyerPhone: "020 7925 0918" }).buyerPhone,
     ).toBe("+442079250918");
-    const bad = schema().safeParse({ ...BUYER, buyerPhone: "12" });
+    const bad = buyer().safeParse({ ...BUYER, buyerPhone: "12" });
     expect(bad.error?.issues[0]).toMatchObject({
       path: ["buyerPhone"],
       message: CHECKOUT_ERROR_KEYS.phoneInvalid,

@@ -34,7 +34,8 @@ import {
   linePriceChange,
   lineTotals,
   loadDraft,
-  runCardAndBuyerStep,
+  runBuyerStep,
+  runCardStep,
   runRecipientStep,
   runUpdateSelection,
   saveLine,
@@ -246,6 +247,15 @@ function cardForm(
     line: "1",
     cardMessage: "Happy birthday",
     signAs: "Sam",
+    ...overrides,
+  });
+}
+
+/** Step 3, "Your details", once per order (§14 A-founder-2026-10-25a item 1). */
+function buyerForm(
+  overrides: Record<string, string | readonly string[]> = {},
+): FormData {
+  return form({
     email: SAMPLE.buyer.email,
     buyerName: SAMPLE.buyer.buyerName,
     buyerPhone: "",
@@ -580,7 +590,7 @@ describe.skipIf(server.url === undefined)(
           const token = await started(connection);
           await runRecipientStep(ctx(connection, token), recipientForm());
           const card200 = `${polish}${cyrillic}${family}${"a".repeat(197)}`;
-          const refused = await runCardAndBuyerStep(
+          const refused = await runCardStep(
             ctx(connection, token),
             cardForm({ cardMessage: `${card200}b` }),
           );
@@ -592,19 +602,27 @@ describe.skipIf(server.url === undefined)(
           ).toEqual([{ key: "checkout.error.tooLong", params: { max: 200 } }]);
           expect((await active(connection, token)).card).toBeNull();
 
-          const accepted = await runCardAndBuyerStep(
+          const accepted = await runCardStep(
             ctx(connection, token),
             cardForm({ cardMessage: card200, signAs: "é".repeat(40) }),
           );
-          expect(location(accepted)).toBe("/pl/checkout?step=review");
+          expect(location(accepted)).toBe("/pl/checkout?step=details");
           const draft = await active(connection, token);
           expect(draft.card).toEqual({
             cardMessage: card200,
             signAs: "é".repeat(40),
           });
           expect(draft.card?.signAs.normalize("NFC")).toBe(draft.card?.signAs);
-          expect(draft.buyer?.email).toBe(SAMPLE.buyer.email);
+          expect(draft.buyer).toBeNull();
           expect(draft.stepsCompleted).toBe(2);
+          const details = await runBuyerStep(
+            ctx(connection, token),
+            buyerForm(),
+          );
+          expect(location(details)).toBe("/pl/checkout?step=review");
+          expect((await active(connection, token)).buyer?.email).toBe(
+            SAMPLE.buyer.email,
+          );
         });
       });
 
@@ -613,7 +631,7 @@ describe.skipIf(server.url === undefined)(
           const connection = await seeded(tx);
           const token = await started(connection);
           await runRecipientStep(ctx(connection, token), recipientForm());
-          await runCardAndBuyerStep(
+          await runCardStep(
             ctx(connection, token),
             cardForm({ cardMessage: "   " }),
           );
@@ -625,10 +643,7 @@ describe.skipIf(server.url === undefined)(
         await run(async (tx) => {
           const connection = await seeded(tx);
           const token = await started(connection);
-          const outcome = await runCardAndBuyerStep(
-            ctx(connection, token),
-            cardForm(),
-          );
+          const outcome = await runCardStep(ctx(connection, token), cardForm());
           expect(location(outcome)).toBe("/pl/checkout");
           expect((await active(connection, token)).card).toBeNull();
         });
@@ -644,7 +659,7 @@ describe.skipIf(server.url === undefined)(
           expect(OFFERED.length).toBeGreaterThan(0);
           expect((await active(connection, token)).addonKeys).toEqual([]);
           await runRecipientStep(ctx(connection, token), recipientForm());
-          const wine = await runCardAndBuyerStep(
+          const wine = await runCardStep(
             ctx(connection, token),
             cardForm({ addonKeys: ["wine"] }),
           );
@@ -710,7 +725,7 @@ describe.skipIf(server.url === undefined)(
           await runRecipientStep(ctx(connection, token), recipientForm());
           const dated =
             (await active(connection, token)).quote?.totalMinor ?? -1;
-          await runCardAndBuyerStep(
+          await runCardStep(
             ctx(connection, token),
             cardForm({ addonKeys: [PAID_ADDON] }),
           );
@@ -775,7 +790,7 @@ describe.skipIf(server.url === undefined)(
               }),
             ),
           );
-          const stale = await runCardAndBuyerStep(
+          const stale = await runCardStep(
             { ...ctx(connection, token, 3), connection: racing },
             cardForm({ addonKeys: [PAID_ADDON] }),
           );
@@ -1104,10 +1119,7 @@ describe.skipIf(server.url === undefined)(
             at(1),
             connection,
           );
-          const outcome = await runCardAndBuyerStep(
-            ctx(connection, token),
-            cardForm(),
-          );
+          const outcome = await runCardStep(ctx(connection, token), cardForm());
           expect(location(outcome)).toBe("/pl/checkout");
         });
       });
@@ -1119,10 +1131,7 @@ describe.skipIf(server.url === undefined)(
           await runRecipientStep(ctx(connection, token), recipientForm());
           await tx`UPDATE checkout_draft_line
                       SET quote = jsonb_set(quote, '{digest}', to_jsonb(${"0".repeat(64)}::text))`;
-          const outcome = await runCardAndBuyerStep(
-            ctx(connection, token),
-            cardForm(),
-          );
+          const outcome = await runCardStep(ctx(connection, token), cardForm());
           expect(location(outcome)).toBe("/pl/checkout");
           const draft = await active(connection, token);
           expect(draft.stepsCompleted).toBe(0);
@@ -1149,7 +1158,7 @@ describe.skipIf(server.url === undefined)(
             for (const minutes of [2, 3, 4]) {
               outcomes.push(
                 location(
-                  await runCardAndBuyerStep(
+                  await runCardStep(
                     ctx(connection, token, minutes),
                     cardForm(),
                   ),
@@ -1181,12 +1190,9 @@ describe.skipIf(server.url === undefined)(
             ).toBe("/pl/checkout?step=card");
             expect(
               location(
-                await runCardAndBuyerStep(
-                  ctx(connection, token, 7),
-                  cardForm(),
-                ),
+                await runCardStep(ctx(connection, token, 7), cardForm()),
               ),
-            ).toBe("/pl/checkout?step=review");
+            ).toBe("/pl/checkout?step=details");
           });
         }
       });

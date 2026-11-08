@@ -2,7 +2,7 @@
  * The checkout page's one server action (spec 010 §5.2, §5.3; TASK-204, TASK-205). Thin glue:
  * every form on `/{locale}/checkout` posts here with its routing fields
  * (`CHECKOUT_FORM_FIELDS`); this strips them, maps the side forms' buttons onto the step
- * schemas, and calls the module's action (`saveRecipientStep`, `saveCardAndBuyerStep`,
+ * schemas, and calls the module's action (`saveRecipientStep`, `saveCardStep`, `saveBuyerStep`,
  * `updateSelection`, `useNextDateAction`, `placeOrderAction`).
  *
  * Every post answers with a 303. A saved one goes where the module sends it. A refused one goes
@@ -28,7 +28,8 @@ import {
   encodeCheckoutEcho,
   isDraftToken,
   placeOrderAction,
-  saveCardAndBuyerStep,
+  saveBuyerStep,
+  saveCardStep,
   saveRecipientStep,
   updateSelection,
   useNextDateAction as nextDateAction,
@@ -136,7 +137,7 @@ const ADDON_PRESSES = new Set(["addAddon", "removeAddon"]);
 
 /**
  * An add-on pressed on step 2 (TASK-504). The button belongs to the step's own form, so the press
- * carries everything the buyer has typed on the step; the add-on is saved through
+ * carries the card and signature the buyer has typed on the step; the add-on is saved through
  * `updateSelection` (which returns to step 2) and the typed values are drawn again from the echo,
  * unvalidated and unsaved, exactly as "Use sample details" draws its values. Before this, the
  * button sat in a form of its own and a typed card message was lost on every add-on press.
@@ -186,7 +187,7 @@ export async function checkoutAction(form: FormData): Promise<void> {
   // "Use sample details" (AC-33): the form drawn again with the destination's sample, nothing
   // saved.
   if (
-    (intent === "recipient" || intent === "card") &&
+    (intent === "recipient" || intent === "card" || intent === "details") &&
     posted.get(SAMPLE_INTENT.name) === SAMPLE_INTENT.value
   ) {
     const screen = await screenFor(locale, step, line);
@@ -217,12 +218,14 @@ export async function checkoutAction(form: FormData): Promise<void> {
     intent === "recipient"
       ? await saveRecipientStep(locale, IDLE, posted)
       : intent === "card"
-        ? await saveCardAndBuyerStep(locale, IDLE, posted)
-        : intent === "selection"
-          ? await updateSelection(locale, IDLE, selection(posted))
-          : intent === "useNextDate"
-            ? await nextDateAction(locale, IDLE, posted)
-            : await placeOrderAction(locale, IDLE, posted);
+        ? await saveCardStep(locale, IDLE, posted)
+        : intent === "details"
+          ? await saveBuyerStep(locale, IDLE, posted)
+          : intent === "selection"
+            ? await updateSelection(locale, IDLE, selection(posted))
+            : intent === "useNextDate"
+              ? await nextDateAction(locale, IDLE, posted)
+              : await placeOrderAction(locale, IDLE, posted);
 
   switch (state.status) {
     case "invalid": {

@@ -1,7 +1,7 @@
 /**
  * The checkout's server actions (spec 010 §5.2 "Server actions and the route"; TASK-203):
- * `saveRecipientStep`, `saveCardAndBuyerStep`, `updateSelection`; TASK-205's `placeOrderAction`
- * (`place.ts`).
+ * `saveRecipientStep`, `saveCardStep`, `saveBuyerStep` (§14 A-founder-2026-10-25a item 1,
+ * TASK-418), `updateSelection`; TASK-205's `placeOrderAction` (`place.ts`).
  *
  * Thin: each reads the `fo_checkout` cookie, hands the form to its runner in `steps.ts` (which
  * loads the draft, re-runs the mode, parses, verifies the quote and saves), then answers with a
@@ -45,7 +45,8 @@ import {
   type StepContext,
   type StepOutcome,
   type StepState,
-  runCardAndBuyerStep,
+  runBuyerStep,
+  runCardStep,
   runRecipientStep,
   runRemoveLine,
   runUpdateLine,
@@ -95,8 +96,8 @@ export async function saveRecipientStep(
   return answer(await runRecipientStep(ctx, form), ctx.token);
 }
 
-/** Step 2, "Your card and your details". */
-export async function saveCardAndBuyerStep(
+/** Step 2, "Your card", once per line. */
+export async function saveCardStep(
   locale: unknown,
   _previous: StepState,
   form: FormData,
@@ -104,7 +105,19 @@ export async function saveCardAndBuyerStep(
   const bound = BoundLocaleSchema.safeParse(locale);
   if (!bound.success) return { status: "expired" };
   const ctx = await context(bound.data);
-  return answer(await runCardAndBuyerStep(ctx, form), ctx.token);
+  return answer(await runCardStep(ctx, form), ctx.token);
+}
+
+/** Step 3, "Your details", once per order. */
+export async function saveBuyerStep(
+  locale: unknown,
+  _previous: StepState,
+  form: FormData,
+): Promise<StepState> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runBuyerStep(ctx, form), ctx.token);
 }
 
 /** The summary panel's tier, add-on and date edits, and the price notice's confirmation. */
@@ -155,7 +168,7 @@ export async function useNextDateAction(
   return answer(await runUseNextDate(ctx, form), ctx.token);
 }
 
-/** Step 3's place control (TASK-205): one purchase for the basket, then the confirmation. */
+/** Step 4's place control (TASK-205): one purchase for the basket, then the confirmation. */
 export async function placeOrderAction(
   locale: unknown,
   _previous: StepState,
@@ -168,7 +181,7 @@ export async function placeOrderAction(
 }
 
 /**
- * Step 3's "Pay" in `test` and `live` (spec 013 §5.2 flow 2 to 3; TASK-262): the island calls it
+ * Step 4's "Pay" in `test` and `live` (spec 013 §5.2 flow 2 to 3; TASK-262): the island calls it
  * after `elements.submit()` and gets the client secret, a message key or a place to go. The
  * basket is placed by now (or was already), so its header count is cleared, as on placement.
  */

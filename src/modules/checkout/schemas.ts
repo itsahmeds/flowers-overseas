@@ -458,72 +458,20 @@ function postcodeField(model: AddressFormModel, required: boolean) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Step 2: CardAndBuyerStepSchema                                              */
+/* Step 2: CardStepSchema, step 3: BuyerStepSchema                             */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Step 2, "Your card and your details" (spec 010 §2, §5.2, AC-10, AC-11, AC-12).
- *
- * The card message (at most 200 graphemes; blank means no card), "sign as" (at most 40), the
- * add-ons the buyer ticked (only those on offer for the destination, each once; none is ever
- * pre-selected because there is no field that could say so), the buyer's email, full name and
- * optional phone (any country, read in the plan of the country of residence when typed without
- * a country code) and the country of residence (any country with a numbering plan; never used in
- * a price, EU 2018/302).
+ * Step 2, "Your card", once per line (spec 010 §2, §5.2, AC-10, AC-11; §14 A-founder-2026-10-25a
+ * item 1): the card message (at most 200 graphemes; blank means no card), "sign as" (at most 40)
+ * and the add-ons the buyer ticked (only those on offer for the destination, each once; none is
+ * ever pre-selected because there is no field that could say so). No buyer field: a posted email
+ * or name is a parse error (`.strict()`).
  *
  * @param context.offeredAddonKeys the add-ons with an active price for the destination
- *   (`listAddons()`), which TASK-205 passes; an add-on outside it is refused.
- */
-/** The card half of step 2: the card, "sign as" and the line's add-ons. */
-function cardFields(context: {
-  readonly locale: LocaleCode;
-  readonly offeredAddonKeys: readonly string[];
-}) {
-  const offered = new Set(context.offeredAddonKeys);
-  return {
-    cardMessage: textField({
-      required: false,
-      max: CHECKOUT_LIMITS.cardMessage,
-      locale: context.locale,
-      multiline: true,
-    }),
-    signAs: textField({
-      required: false,
-      max: CHECKOUT_LIMITS.signAs,
-      locale: context.locale,
-    }),
-    addonKeys: z
-      .array(z.string())
-      .optional()
-      .transform((keys, ctx) => {
-        const list = keys ?? [];
-        if (
-          list.some((key) => !offered.has(key)) ||
-          new Set(list).size !== list.length
-        ) {
-          ctx.addIssue({
-            code: "custom",
-            message: CHECKOUT_ERROR_KEYS.addonUnavailable,
-          });
-          return z.NEVER;
-        }
-        return list;
-      }),
-  };
-}
-
-/**
- * Step 2 of a basket line that is not the last (§14 A-founder-2026-10-22 item 5): the card and
- * the line's add-ons only; the buyer's fields render on the last line's step 2.
+ *   (`listAddons()`); an add-on outside it is refused.
  */
 export function CardStepSchema(context: {
-  readonly locale: LocaleCode;
-  readonly offeredAddonKeys: readonly string[];
-}) {
-  return z.object(cardFields(context)).strict();
-}
-
-export function CardAndBuyerStepSchema(context: {
   readonly locale: LocaleCode;
   readonly offeredAddonKeys: readonly string[];
 }) {
@@ -558,6 +506,29 @@ export function CardAndBuyerStepSchema(context: {
           }
           return list;
         }),
+    })
+    .strict();
+}
+
+/** Step 3's parsed value: what `checkout_draft.buyer` stores. */
+export interface BuyerStep {
+  readonly email: string;
+  readonly buyerName: string;
+  /** E.164, or `null` when left blank. */
+  readonly buyerPhone: string | null;
+  readonly residenceCountry: string;
+}
+
+/**
+ * Step 3, "Your details", once per order (spec 010 §2, §5.2, AC-12; §14 A-founder-2026-10-25a
+ * item 1): the buyer's email, full name, optional phone (any country, read in the plan of the
+ * country of residence when typed without a country code) and the country of residence (any
+ * country with a numbering plan; never used in a price, EU 2018/302). The same fields and rules
+ * step 2 carried before the split; no card or add-on field (`.strict()`).
+ */
+export function BuyerStepSchema(context: { readonly locale: LocaleCode }) {
+  return z
+    .object({
       email: formString({
         maxCodeUnits: EMAIL_MAX_CODE_UNITS,
         message: CHECKOUT_ERROR_KEYS.emailInvalid,
@@ -580,7 +551,7 @@ export function CardAndBuyerStepSchema(context: {
       ),
     })
     .strict()
-    .transform((values, ctx) => {
+    .transform((values, ctx): BuyerStep => {
       if (values.buyerPhone === "") {
         return { ...values, buyerPhone: null };
       }
@@ -598,11 +569,11 @@ export function CardAndBuyerStepSchema(context: {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Step 3: ReviewStepSchema                                                    */
+/* Step 4: ReviewStepSchema                                                    */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Step 3's post (spec 010 §5.2, AC-17): the total, currency and quote digest the buyer saw on the
+ * Step 4's post, "Check and pay" (spec 010 §5.2, AC-17): the total, currency and quote digest the buyer saw on the
  * review. The server compares all three with the draft's current quote before placing; no order
  * is written at an amount other than `confirmedTotalMinor`.
  */
