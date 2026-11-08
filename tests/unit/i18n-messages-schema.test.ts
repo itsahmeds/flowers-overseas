@@ -259,7 +259,6 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
-    "checkout.action.toYourCard",
     // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
     "checkout.basket.addOns",
     "checkout.basket.added",
@@ -346,10 +345,6 @@ describe("the shipped catalogues and manifests", () => {
     // Spec 010's lawyer-gated cancellation sentence, which B1 prints (TASK-333).
     "checkout.legal.cancellation",
     "checkout.legal.payButton",
-    "checkout.progress.card",
-    "checkout.progress.details",
-    "checkout.step.card",
-    "checkout.step.details",
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet
     // cancel line and its dialog, the spec's and the boards' words, `reviewed: false` until the
     // record run (`.claude/state/record-approval-340.py`) attests them.
