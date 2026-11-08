@@ -12,7 +12,7 @@
 import { type ReactElement, useEffect, useState } from "react";
 
 import type { CurrencyCode } from "@/config/currencies";
-import { formatMoney } from "@/modules/i18n";
+import { formatMoney } from "@/modules/i18n/client";
 
 export interface AdminSelectableRow {
   readonly id: string;

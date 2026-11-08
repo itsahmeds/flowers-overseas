@@ -132,11 +132,15 @@ describe("zone generation from the module manifest", () => {
       const except = zone?.except ?? [];
       expect(from).toHaveLength(MODULES.length - 1);
       expect(from).not.toContain(`src/modules/${name}/**`);
-      expect(except).toHaveLength(MODULES.length - 1);
+      expect(except).toHaveLength(2 * (MODULES.length - 1));
       for (const other of MODULES.filter((m) => m !== name)) {
         expect(from).toContain(`src/modules/${other}/**`);
         expect(except).toContain(
           `**/src/modules/${other}/index.{ts,tsx,js,jsx}`,
+        );
+        // The client-safe second entry (TASK-503); kept client-safe by client-server-graph.test.ts.
+        expect(except).toContain(
+          `**/src/modules/${other}/client.{ts,tsx,js,jsx}`,
         );
       }
     }

@@ -27,7 +27,7 @@ import { type ReactElement, useId, useState } from "react";
 
 import type { CurrencyCode } from "@/config/currencies";
 import { parseMinorUnits } from "@/modules/admin/order-actions/money";
-import { formatMoney } from "@/modules/i18n";
+import { formatMoney } from "@/modules/i18n/client";
 import { adminButtonClass } from "@/modules/ui/admin/AdminControls";
 import { AdminPendingSubmit } from "@/modules/ui/admin/AdminPendingSubmit";
 import { MoneyInput } from "@/modules/ui/admin/MoneyInput";

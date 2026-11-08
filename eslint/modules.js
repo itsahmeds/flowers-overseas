@@ -5,6 +5,12 @@
  *   1. `app/` imports from `modules/`, never the reverse;
  *   2. `modules/*` do not import each other's internals, only the public `index.ts` barrel.
  *
+ * A module may also publish a `client.ts`: a second public entry holding only what a
+ * `"use client"` file may load (pure functions, types, schemas), because the barrel can reach
+ * server code that a client bundle must not contain (TASK-503: `@/modules/i18n` reaches the
+ * review ledger's database writer). It is allowed exactly like `index.ts`;
+ * `tests/unit/client-server-graph.test.ts` is what keeps it client-safe.
+ *
  * `moduleBoundaryZones()` generates those zones from the single module manifest in
  * `scripts/check-layout.ts`, so a spec that adds a module updates one list and both the layout
  * check (AC-3) and the boundary lint follow. The generated `from`/`except` entries are globs,
@@ -32,7 +38,7 @@ const APP_MESSAGE =
   "`src/modules/**` must not import from `src/app/**`: app/ imports from modules/, never the reverse (plan/01 §5).";
 
 const CROSS_MODULE_MESSAGE =
-  "Cross-module imports must go through the other module's public `index.ts` barrel, not its internals (plan/01 §5).";
+  "Cross-module imports must go through the other module's public `index.ts` barrel (or its client-safe `client.ts`), not its internals (plan/01 §5).";
 
 /**
  * @param {{ srcRoot?: string, modules?: readonly string[] }} [options]
@@ -56,9 +62,10 @@ export function moduleBoundaryZones(options = {}) {
     zones.push({
       target: `${srcRoot}/modules/${target}/**`,
       from: others.map((other) => `${srcRoot}/modules/${other}/**`),
-      except: others.map(
-        (other) => `**/${srcRoot}/modules/${other}/index.{ts,tsx,js,jsx}`,
-      ),
+      except: others.flatMap((other) => [
+        `**/${srcRoot}/modules/${other}/index.{ts,tsx,js,jsx}`,
+        `**/${srcRoot}/modules/${other}/client.{ts,tsx,js,jsx}`,
+      ]),
       message: CROSS_MODULE_MESSAGE,
     });
   }
