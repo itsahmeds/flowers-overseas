@@ -68,6 +68,8 @@ const message = buildPushMessage(
     baseUrl: "https://flowersoverseas.com",
     founderZone: "Asia/Karachi",
     runbookBaseUrl: "https://example.test",
+    alertPath: (id) =>
+      id === undefined ? "/admin/alerts" : `/admin/alerts/${id}`,
   },
 );
 

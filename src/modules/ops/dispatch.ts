@@ -94,6 +94,8 @@ export interface AlertMailer {
 export interface DispatchDeps extends OpsDeps {
   /** The admin catalogue's translator (handed in by the worker). */
   readonly t: OpsTranslate;
+  /** The alert log's admin paths (`src/modules/admin/alerts.ts`, handed in by the worker). */
+  readonly alertPath: (alertId?: string) => string;
   /** The push channel, or null when Pushover is not configured. Default: from env at call time. */
   readonly push?: PushChannel | null;
   /** The missing Pushover key names when `push` is null (AC-12: names only). */
@@ -110,6 +112,7 @@ export interface DispatchDeps extends OpsDeps {
 
 export interface ResolvedDispatch extends ResolvedDeps {
   readonly t: OpsTranslate;
+  readonly alertPath: (alertId?: string) => string;
   readonly push: PushChannel | null;
   readonly pushMissing: readonly string[];
   readonly mailer: AlertMailer;
@@ -148,6 +151,7 @@ export function resolveDispatchDeps(
   return {
     ...base,
     t: deps.t,
+    alertPath: deps.alertPath,
     push,
     pushMissing: missing,
     mailer:
@@ -253,6 +257,7 @@ export function messageOptions(
     baseUrl: d.baseUrl(),
     founderZone: setting.timeZone,
     runbookBaseUrl: RUNBOOK_BASE_URL,
+    alertPath: d.alertPath,
   };
 }
 

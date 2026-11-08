@@ -37,6 +37,8 @@ const options: MessageOptions = {
   baseUrl: BASE,
   founderZone: "Asia/Karachi",
   runbookBaseUrl: "https://github.com/itsahmeds/flowers-overseas/blob/main",
+  alertPath: (id) =>
+    id === undefined ? "/admin/alerts" : `/admin/alerts/${id}`,
 };
 
 function factsFor(

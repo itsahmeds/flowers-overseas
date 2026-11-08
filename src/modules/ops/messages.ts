@@ -55,6 +55,11 @@ export interface MessageOptions {
   readonly founderZone: string;
   /** Where runbook paths are read (the repository's `blob/main`). */
   readonly runbookBaseUrl: string;
+  /**
+   * The alert log's paths (admin owns every admin path, spec 012 AC-6): the list, and one alert
+   * by its UUID. Handed in by the worker from `src/modules/admin/alerts.ts`.
+   */
+  readonly alertPath: (alertId?: string) => string;
 }
 
 const ADMIN_LOCALE = "en" as const;
@@ -68,9 +73,9 @@ function timeIn(at: Date, zone: string): string {
   return `${formatDate(at, ADMIN_LOCALE, "dayMonthTime", zone)} ${cityOf(zone)}`;
 }
 
-/** The alert page: `{base}/admin/alerts/{uuid}`. */
-export function alertUrl(baseUrl: string, alertId: string): string {
-  return `${baseUrl.replace(/\/+$/u, "")}/admin/alerts/${alertId}`;
+/** The alert page: `{base}` plus the admin path of one alert (`/admin/alerts/{uuid}`). */
+export function alertUrl(options: MessageOptions, alertId?: string): string {
+  return `${options.baseUrl.replace(/\/+$/u, "")}${options.alertPath(alertId)}`;
 }
 
 /** `[TEST] [P1] Title`. */
@@ -136,7 +141,7 @@ export function buildPushMessage(
     message: bodyLines(facts, options)
       .join("\n")
       .slice(0, PUSHOVER_LIMITS.messageMax),
-    url: alertUrl(options.baseUrl, facts.id),
+    url: alertUrl(options, facts.id),
     priority,
     ...(priority === 2
       ? {
@@ -165,7 +170,7 @@ export function buildGroupPush(
       },
     ),
     message: options.t("admin.alerts.message.openLog"),
-    url: `${options.baseUrl.replace(/\/+$/u, "")}/admin/alerts`,
+    url: alertUrl(options),
     priority,
     ...(priority === 2
       ? { retry: EMERGENCY_RETRY_SECONDS, expire: EMERGENCY_EXPIRE_SECONDS }
@@ -211,7 +216,7 @@ export function buildAlertEmail(
         ? options.t("admin.alerts.email.bumpLead")
         : options.t("admin.alerts.email.lead");
   const runbook = `${options.runbookBaseUrl.replace(/\/+$/u, "")}/${alertDefinition(facts.name).runbook}`;
-  const admin = alertUrl(options.baseUrl, facts.id);
+  const admin = alertUrl(options, facts.id);
   const lines = [
     lead,
     "",
@@ -245,7 +250,7 @@ export function buildAlertEmail(
 export function buildStormEmail(options: MessageOptions): AlertEmail {
   const subject = options.t("admin.alerts.email.stormSubject");
   const body = options.t("admin.alerts.message.openLog");
-  const url = `${options.baseUrl.replace(/\/+$/u, "")}/admin/alerts`;
+  const url = alertUrl(options);
   return {
     subject,
     text: `${body}\n${url}\n\n${options.t("admin.alerts.email.footer")}`,

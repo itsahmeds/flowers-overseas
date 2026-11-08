@@ -29,6 +29,7 @@ import {
 // from the admin module's own files, not its barrel, so the worker loads no admin sign-in surface.
 import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
+import { alertDetailHref, alertsListHref } from "../modules/admin/alerts";
 import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
 import {
   registerNotificationsOutbox,
@@ -101,6 +102,8 @@ const opsAlertDeps = {
     values?: Readonly<Record<string, string>>,
   ) => string,
   reference: orderReference,
+  alertPath: (alertId?: string) =>
+    alertId === undefined ? alertsListHref() : alertDetailHref(alertId),
 };
 
 /** One read of an original by the derive worker: a large original on a slow link, not a hang. */

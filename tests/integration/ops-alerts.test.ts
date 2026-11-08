@@ -114,6 +114,8 @@ function harness(
       return Promise.resolve();
     },
     t: adminT as unknown as DispatchDeps["t"],
+    alertPath: (id?: string) =>
+      id === undefined ? "/admin/alerts" : `/admin/alerts/${id}`,
     push,
     pushMissing: [],
     mailer: {
