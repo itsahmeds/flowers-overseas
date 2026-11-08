@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { COMPANY, type Company } from "@/config/company";
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import type {
   AlertRaiser,
   EngineConnection,
@@ -35,7 +35,7 @@ export interface Resolved {
 export function resolve(options: InvoiceOptions): Resolved {
   return {
     company: options.company ?? COMPANY,
-    alert: options.alert ?? captureAlert,
+    alert: options.alert ?? raiseLegacyAlert,
     log: options.log ?? defaultLogger,
   };
 }

@@ -29,7 +29,7 @@ import { sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 
 import { orderService, OrderModeSchema, type OrderExecutor } from "../service";
 import { withExecutor } from "../service/executor";
@@ -203,7 +203,7 @@ export async function runCloseSweep(
   const transaction = options.transaction ?? systemTransaction;
   const now = options.now ?? (() => new Date());
   const limit = options.limit ?? CLOSE_SWEEP_LIMIT;
-  const alert = options.alert ?? captureAlert;
+  const alert = options.alert ?? raiseLegacyAlert;
   const log = options.log ?? defaultLogger;
 
   const candidates = await transaction((executor) =>

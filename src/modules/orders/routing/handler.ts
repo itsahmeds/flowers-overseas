@@ -39,7 +39,7 @@ import type {
   OutboxHandler,
   OutboxHandlerContext,
 } from "../outbox/dispatcher";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 
 import { registerOutboxHandler } from "../outbox/dispatcher";
 import type { OrderEventType } from "../service/events";
@@ -59,7 +59,7 @@ const MINUTE_MS = 60_000;
 export interface RoutingHandlerDeps {
   /** Default: pg-boss. */
   readonly schedule?: RoutingScheduler;
-  /** Default: Sentry (`captureAlert`). */
+  /** Default: `raiseLegacyAlert` (spec 025: Sentry, the alert row and the page). */
   readonly alert?: RoutingAlert;
 }
 
@@ -157,7 +157,7 @@ export function routingOutboxHandler(
 ): OutboxHandler {
   const stepDeps: RoutingStepDeps = {
     schedule: deps.schedule ?? pgBossRoutingScheduler,
-    alert: deps.alert ?? captureAlert,
+    alert: deps.alert ?? raiseLegacyAlert,
   };
   return async (event, context) => {
     if (event.mode === "demo") return;

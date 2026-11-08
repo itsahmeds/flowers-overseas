@@ -117,6 +117,11 @@ const httpsUrl = z.url().refine((value) => value.startsWith("https://"), {
   message: "must use https",
 });
 
+/** A Pushover application token or user key: 30 characters, letters and digits (spec 025 AC-35). */
+const pushoverToken = z
+  .string()
+  .regex(/^[A-Za-z0-9]{30}$/u, "must be a 30-character Pushover token");
+
 /** An S3/R2 bucket name: lowercase letters, digits and dashes, 3–63 characters. */
 const bucketName = z
   .string()
@@ -375,6 +380,33 @@ export const serverEnvSchema = z.object({
    * dispatcher retries it.
    */
   OPS_ALERT_EMAIL: z.preprocess(emptyToUndefined, z.email().optional()),
+  /**
+   * The founder alert push channel (spec 025 §2 "Env", §5.6, AC-12, AC-35; TASK-488): the
+   * Pushover application token and the founder's user key, both 30-character Pushover tokens.
+   * SECRET: sent only in the POST body to `api.pushover.net`, never logged, never in Sentry, never
+   * in an error message. **Optional**: with either unset every push is recorded `skipped`
+   * (`not_configured`), one `warn` per process says so, and the alert email is still sent. The
+   * founder sets them in Railway (§12 step 8); no agent handles them.
+   */
+  PUSHOVER_APP_TOKEN: z.preprocess(emptyToUndefined, pushoverToken.optional()),
+  PUSHOVER_USER_KEY: z.preprocess(emptyToUndefined, pushoverToken.optional()),
+  /** Spec 025 §5.5 "Escalation": a second person's Pushover key, paged 15 minutes into an unacknowledged P1. Optional (§13 Q3). SECRET. */
+  PUSHOVER_BACKUP_USER_KEY: z.preprocess(
+    emptyToUndefined,
+    pushoverToken.optional(),
+  ),
+  /**
+   * Spec 025 §2 "Dead man's switch", AC-27: the healthchecks.io ping URL the minute tick GETs
+   * after a tick that reached the database with `alerts.monitor` fresh. An `https` URL. SECRET in
+   * effect (anyone with it can ping), so never logged. Optional: unset, no heartbeat is sent and
+   * one `info` line per process says so.
+   */
+  ALERT_HEARTBEAT_URL: z.preprocess(emptyToUndefined, httpsUrl.optional()),
+  /** Spec 025 AC-28: pinged once after each daily summary is sent. Optional; `https`; never logged. */
+  ALERT_SUMMARY_HEARTBEAT_URL: z.preprocess(
+    emptyToUndefined,
+    httpsUrl.optional(),
+  ),
   /**
    * Where each stored florist application is emailed (spec 011 §2 "The founder alert", §12, §13
    * Q8; TASK-213). Not secret. Optional at boot, resolved at use by

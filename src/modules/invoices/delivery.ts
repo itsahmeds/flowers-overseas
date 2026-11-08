@@ -37,7 +37,7 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import type { Storage } from "@/lib/storage";
 import {
   withExecutor,
@@ -287,7 +287,7 @@ export async function runRenderJob(
     return await renderInvoice(invoiceId, deps);
   } catch (error) {
     if (attempt.retryCount + 1 >= RENDER_ATTEMPTS) {
-      (deps.alert ?? captureAlert)("invoice.render_dead", {
+      (deps.alert ?? raiseLegacyAlert)("invoice.render_dead", {
         invoice_id: invoiceId,
         attempts: attempt.retryCount + 1,
         error_class: error instanceof Error ? error.name : "Error",
@@ -328,7 +328,7 @@ export async function runInvoiceRenderSweep(
   deps: SweepDeps = {},
 ): Promise<{ readonly queued: number; readonly overdue: number }> {
   const now = (deps.now ?? (() => new Date()))();
-  const alert = deps.alert ?? captureAlert;
+  const alert = deps.alert ?? raiseLegacyAlert;
   const log = deps.log ?? defaultLogger;
   const schedule = deps.schedule ?? createPgBossInvoiceScheduler();
   const rows = await withExecutor(

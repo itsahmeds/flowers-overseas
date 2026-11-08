@@ -28,7 +28,7 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import {
   OUTBOX_MAX_ATTEMPTS,
   type AlertRaiser,
@@ -56,7 +56,7 @@ export type InvoiceOutboxOptions = Omit<InvoiceOptions, "db" | "executor">;
 export function invoicesOutboxHandler(
   options: InvoiceOutboxOptions = {},
 ): OutboxHandler {
-  const alert: AlertRaiser = options.alert ?? captureAlert;
+  const alert: AlertRaiser = options.alert ?? raiseLegacyAlert;
   return async (event, context) => {
     if (event.mode !== "live") return;
     const step = (INVOICE_STEPS as Readonly<Record<string, string>>)[

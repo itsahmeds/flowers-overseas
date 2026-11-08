@@ -46,6 +46,11 @@ export const MODULES = [
   // florist rating belong to no listed module (`plan/01` §5 names none for reviews); registered
   // here and in `docs/architecture.md` §3 in the same PR, as the rule above requires.
   "reviews",
+  // spec 025 §2, §5.2 (TASK-488, TASK-489): founder alerts. The registry, `raiseAlert`, dispatch,
+  // escalation, the monitors and the daily summary belong to no listed module (`plan/01` §5 names
+  // none for operations); registered here and in `docs/architecture.md` §3 in the same PR, as the
+  // rule above requires.
+  "ops",
 ] as const;
 
 export const REQUIRED_DIRS = [

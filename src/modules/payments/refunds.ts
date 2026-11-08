@@ -42,7 +42,7 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { isCurrencyCode, type CurrencyCode } from "@/config/currencies";
-import { captureAlert } from "@/lib/sentry";
+import { raiseLegacyAlert } from "@/modules/ops";
 import { logger } from "@/lib/logger";
 import type { Money } from "@/modules/i18n";
 import {
@@ -98,7 +98,7 @@ function resolve(deps: RefundDeps): Resolved {
     provider: deps.provider,
     transaction: deps.transaction ?? systemTransaction,
     now: deps.now ?? (() => new Date()),
-    alert: deps.alert ?? captureAlert,
+    alert: deps.alert ?? raiseLegacyAlert,
   };
 }
 

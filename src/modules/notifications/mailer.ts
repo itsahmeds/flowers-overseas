@@ -47,6 +47,8 @@ export const mailTags = [
   // T18, the occasion reminder.
   "buyer_sign_in",
   "occasion_reminder",
+  // Spec 025 §5.2 (TASK-489): the founder's daily alert summary (`ops_alert` covers each alert).
+  "ops_daily_summary",
 ] as const;
 export type MailTag = (typeof mailTags)[number];
 

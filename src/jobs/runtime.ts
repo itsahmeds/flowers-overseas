@@ -220,6 +220,20 @@ export interface JobContext {
    * Absent where a caller runs a handler outside a tick (the suites).
    */
   readonly retryCount?: number;
+  /**
+   * pg-boss's own connection, for a handler that reads the queue itself (spec 025's
+   * `alerts.monitor`: the backlog and failure checks, TASK-489). The web role holds nothing in
+   * schema `pgboss`, so this is the only way in. Absent outside a tick.
+   */
+  readonly queue?: QueueDb;
+}
+
+/** The slice of pg-boss's database handle a handler may use: one parameterised statement. */
+export interface QueueDb {
+  executeSql(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[] }>;
 }
 
 export type JobHandler<Name extends RegisteredJobName> = (
@@ -306,6 +320,7 @@ export async function runTick(
           jobId: job.id,
           requestId: parsed.envelope.requestId,
           retryCount: typeof job.retryCount === "number" ? job.retryCount : 0,
+          queue: boss.getDb() as QueueDb,
         });
       } catch (error) {
         await boss.fail(name, job.id, {
