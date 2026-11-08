@@ -38,3 +38,14 @@ export {
   ReminderTokenSchema,
   reminderTokenHash,
 } from "./tokens";
+export { type RestoreOutcome, restoreBasket } from "./restore";
+export { suppressAddress, unsubscribeBasketReminders } from "./unsubscribe";
+export {
+  defaultReminderTransaction,
+  OneClickUnsubscribeBodySchema,
+  oneClickMethodNotAllowed,
+  oneClickUnsubscribeResponse,
+  REMINDER_LINK_HEADERS,
+  type ReminderTransaction,
+  restoreResponse,
+} from "./http";

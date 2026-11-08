@@ -477,7 +477,9 @@ async function applyStatusEvent(
     SELECT id, status, audience, order_id, template_key FROM notification_delivery
     WHERE provider_message_id = ${parsed.data.data.email_id}
     FOR UPDATE`);
-  if (found === undefined) return { kind: "ignored", reason: "unknown_object" };
+  if (found === undefined) {
+    return applyBasketReminderStatus(executor, parsed.data, incoming);
+  }
   const delivery = DeliveryRow.parse(found);
   const next = precedenceOf(delivery.status, incoming);
   if (next === delivery.status) return { kind: "ignored", reason: "stale" };
@@ -495,6 +497,65 @@ async function applyStatusEvent(
       },
     });
   }
+  return { kind: "processed", status: next };
+}
+
+const BasketReminderRow = z.object({
+  id: z.uuid(),
+  delivery_status: z.enum(RESEND_STATUS_RANK).nullable(),
+  email_hmac: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/u)
+    .nullable(),
+});
+
+/** A Resend bounce the provider calls temporary: not a hard bounce, so no suppression. */
+function isSoftBounce(data: Readonly<Record<string, unknown>>): boolean {
+  const bounce = data["bounce"];
+  if (typeof bounce !== "object" || bounce === null) return false;
+  const type = (bounce as Record<string, unknown>)["type"];
+  return typeof type === "string" && /^transient$/iu.test(type);
+}
+
+/**
+ * Spec 034 §5.2 "Resend webhooks" (AC-21; TASK-451): an event for a basket reminder's
+ * `provider_message_id` moves its `delivery_status` under the same precedence (never backwards),
+ * and a hard bounce or a complaint suppresses the address's hash for basket emails, keeping the
+ * strongest reason. Opened and clicked never reach here (ignored above).
+ */
+async function applyBasketReminderStatus(
+  executor: OrderExecutor,
+  event: z.infer<typeof ResendStatusEventSchema>,
+  incoming: DeliveryStatus,
+): Promise<Routed> {
+  const [found] = await executor.execute(sql`
+    SELECT id, delivery_status, email_hmac FROM basket_reminder
+    WHERE provider_message_id = ${event.data.email_id}
+    FOR UPDATE`);
+  if (found === undefined) return { kind: "ignored", reason: "unknown_object" };
+  const reminder = BasketReminderRow.parse(found);
+  const current = reminder.delivery_status ?? "sent";
+  const next = precedenceOf(current, incoming);
+  const suppress =
+    (incoming === "complained" ||
+      (incoming === "bounced" && !isSoftBounce(event.data))) &&
+    reminder.email_hmac !== null;
+  if (suppress && reminder.email_hmac !== null) {
+    await executor.execute(sql`
+      INSERT INTO email_suppression (email_hmac, scope, reason)
+      VALUES (${reminder.email_hmac}, 'basket_reminder', ${incoming})
+      ON CONFLICT (email_hmac, scope) DO UPDATE
+         SET reason = EXCLUDED.reason, updated_at = now()
+       WHERE array_position(ARRAY['unsubscribed', 'bounced', 'complained'], EXCLUDED.reason)
+          >= array_position(ARRAY['unsubscribed', 'bounced', 'complained'], email_suppression.reason)`);
+  }
+  if (next === current && reminder.delivery_status !== null) {
+    return suppress
+      ? { kind: "processed", status: current }
+      : { kind: "ignored", reason: "stale" };
+  }
+  await executor.execute(sql`
+    UPDATE basket_reminder SET delivery_status = ${next} WHERE id = ${reminder.id}`);
   return { kind: "processed", status: next };
 }
 
