@@ -27,7 +27,7 @@ export const ACCUSATION_PATTERNS: Readonly<
     { id: "en.verify_identity", pattern: /verify\s+your\s+identity/iu },
     { id: "en.verification", pattern: prefix("verification") },
     { id: "en.security_check", pattern: /security\s+(check|review)/iu },
-    { id: "en.under_review", pattern: /under\s+review/iu },
+    { id: "en.under_review", pattern: /under\s+(?:\p{L}+\s+)?review/iu },
     { id: "en.flagged", pattern: word("flagged") },
     { id: "en.blocked", pattern: word("block", "(ed|ing)?") },
     { id: "en.risk", pattern: word("risk", "(s|y)?") },

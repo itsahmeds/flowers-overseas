@@ -49,9 +49,27 @@ export function ibanChecksumValid(candidate: string): boolean {
   return remainder === 1;
 }
 
+/**
+ * An IBAN written whole or in space-separated groups: from each token that starts like one
+ * (two letters, two digits), the following alphanumeric tokens are joined one at a time and each
+ * joined form of IBAN length is checked against mod-97.
+ */
 function hasIban(folded: string): boolean {
-  for (const match of folded.matchAll(CARD_MESSAGE_SHAPES.iban)) {
-    if (ibanChecksumValid(match[0].replace(/ /gu, ""))) return true;
+  const tokens = folded
+    .split(/\s+/u)
+    .map((token) => token.replace(/[^a-z0-9]/gu, ""));
+  for (let start = 0; start < tokens.length; start += 1) {
+    const first = tokens[start] ?? "";
+    if (!/^[a-z]{2}\d{2}/u.test(first)) continue;
+    let candidate = "";
+    for (let end = start; end < tokens.length; end += 1) {
+      const token = tokens[end] ?? "";
+      if (token === "" || (end > start && !/^[a-z0-9]{1,4}$/u.test(token)))
+        break;
+      candidate += token;
+      if (candidate.length > 34) break;
+      if (candidate.length >= 15 && ibanChecksumValid(candidate)) return true;
+    }
   }
   return false;
 }

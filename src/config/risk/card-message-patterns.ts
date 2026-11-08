@@ -58,10 +58,11 @@ export const CARD_MESSAGE_WORDS: Readonly<
   ],
 };
 
-/** Locale-free shapes. The IBAN shape is confirmed by its mod-97 checksum before it counts. */
+/**
+ * Locale-free shapes. An IBAN (two letters, two check digits, 11 to 30 alphanumerics, whole or in
+ * groups of four) is found by the matcher's own scan and counts only with a valid mod-97 checksum.
+ */
 export const CARD_MESSAGE_SHAPES = {
-  /** Two letters, two check digits, 11 to 30 alphanumerics, spaces allowed every few characters. */
-  iban: /\b[a-z]{2}\d{2}(?:[ ]?[a-z0-9]){11,30}\b/giu,
   /** Bitcoin bech32 (`bc1…`) and legacy base58 (`1…`, `3…`) addresses. */
   bitcoin:
     /\b(?:bc1[ac-hj-np-z02-9]{11,71}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})\b/u,
