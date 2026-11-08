@@ -31,6 +31,18 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { readCatalogue } from "../../scripts/db-check-live.ts";
 import {
+  type AdminRunner,
+  createDiscountCode,
+  discountCostPreview,
+  listDiscountCodes,
+  setDiscountCodeStatus,
+  updateDiscountCode,
+} from "../../src/modules/admin/index.ts";
+import {
+  catalogProviders,
+  withCatalogProviders,
+} from "../../src/modules/catalog/providers.ts";
+import {
   codeStats,
   countUses,
   discountFinanceRows,
@@ -768,6 +780,454 @@ describe.skipIf(server.url === undefined)(
           marginAfterBaseMinor: null,
         });
       });
+    });
+  },
+);
+
+describe.skipIf(server.url === undefined)(
+  `spec 047 admin codes (TASK-446)${server.url === undefined ? ` (skipped: ${server.reason})` : ""}`,
+  () => {
+    let scratch: ScratchDatabase;
+    let c: Catalogue;
+    let run: AdminRunner;
+    const CURRENCIES = ["GBP", "EUR", "PLN"] as const;
+    const actor = () => ({ userId: c.adminId, requestId: "it-discounts" });
+    const form = (patch: Record<string, string | string[]> = {}) => ({
+      code: "",
+      campaignLabel: "Polish Saturday school, Ealing",
+      kind: "percent",
+      percent: "10",
+      startsAt: "2026-11-01T00:00",
+      endsAt: "2026-11-30T23:59",
+      zone: "Europe/London",
+      maxRedemptions: "200",
+      maxPerEmail: "1",
+      countryIds: [] as string[],
+      productIds: [] as string[],
+      ...patch,
+    });
+    const audits = async (id: string) =>
+      scratch.sql<{ action: string; entity_table: string }[]>`
+        SELECT action, entity_table FROM audit_log
+         WHERE starts_with(entity_id, ${id}) ORDER BY at, entity_table`;
+
+    beforeAll(async () => {
+      scratch = await scratchDatabase(server.url as string, "discounts_admin");
+      c = await setUpCatalogue(scratch.sql);
+      await scratch.sql`INSERT INTO admin_profile (user_id, display_name) VALUES (${c.adminId}, 'Test Founder')`;
+      run = ((context, fn) =>
+        scratch.sql.begin(async (tx) => {
+          await tx`SELECT set_config('app.audit_action', ${context.action}, true)`;
+          await asApp(tx, { role: "admin", userId: c.adminId });
+          return fn(drizzleOver(tx, scratch.sql));
+        })) as AdminRunner;
+    }, 300_000);
+
+    afterAll(async () => {
+      await scratch.drop();
+    });
+
+    it("AC-3: one audit row per changed row, with the three actions", async () => {
+      const created = await createDiscountCode(
+        actor(),
+        form({ code: "audit-one" }),
+        CURRENCIES,
+        run,
+      );
+      expect(created.ok).toBe(true);
+      if (!created.ok) return;
+      expect(await audits(created.id)).toEqual([
+        { action: "discount.create", entity_table: "discount_code" },
+      ]);
+
+      expect(
+        (
+          await updateDiscountCode(
+            actor(),
+            created.id,
+            form({ code: "audit-one" }),
+            CURRENCIES,
+            run,
+          )
+        ).ok,
+      ).toBe(true);
+      expect(await audits(created.id)).toHaveLength(1);
+
+      await updateDiscountCode(
+        actor(),
+        created.id,
+        form({ code: "audit-one", maxRedemptions: "300" }),
+        CURRENCIES,
+        run,
+      );
+      const afterUpdate = await audits(created.id);
+      expect(afterUpdate.slice(1)).toEqual([
+        { action: "discount.update", entity_table: "discount_code" },
+      ]);
+
+      await setDiscountCodeStatus(actor(), created.id, "disabled", run);
+      await setDiscountCodeStatus(actor(), created.id, "disabled", run);
+      await setDiscountCodeStatus(actor(), created.id, "active", run);
+      expect(
+        (await audits(created.id)).slice(2).map((row) => row.action),
+      ).toEqual(["discount.disable", "discount.update"]);
+
+      const taken = await createDiscountCode(
+        actor(),
+        form({ code: "AUDIT ONE" }),
+        CURRENCIES,
+        run,
+      );
+      expect(taken).toEqual({
+        ok: false,
+        reason: "invalid",
+        errors: { code: "codeTaken" },
+      });
+    });
+
+    it("AC-4: after one counted live use the offer is fixed, the rest saves", async () => {
+      const created = await createDiscountCode(
+        actor(),
+        form({
+          code: "frozen-01",
+          kind: "fixed",
+          percent: "",
+          amount_GBP: "5",
+          min_GBP: "20",
+        }),
+        CURRENCIES,
+        run,
+      );
+      if (!created.ok) throw new Error("fixture");
+      // Before any use the offer may change.
+      expect(
+        (
+          await updateDiscountCode(
+            actor(),
+            created.id,
+            form({
+              code: "frozen-01",
+              kind: "fixed",
+              percent: "",
+              amount_GBP: "6",
+              min_GBP: "20",
+            }),
+            CURRENCIES,
+            run,
+          )
+        ).ok,
+      ).toBe(true);
+      // A demo use does not freeze it; a live one does.
+      await redeem(
+        scratch.sql,
+        await placed(scratch.sql, c, "demo"),
+        created.id,
+        "x@example.test",
+        "demo",
+        600,
+      );
+      expect(
+        (
+          await updateDiscountCode(
+            actor(),
+            created.id,
+            form({
+              code: "frozen-01",
+              kind: "fixed",
+              percent: "",
+              amount_GBP: "5",
+              min_GBP: "20",
+            }),
+            CURRENCIES,
+            run,
+          )
+        ).ok,
+      ).toBe(true);
+      await redeem(
+        scratch.sql,
+        await placed(scratch.sql, c),
+        created.id,
+        "y@example.test",
+        "live",
+        500,
+      );
+      const fixed = {
+        code: "frozen-01",
+        kind: "fixed",
+        percent: "",
+        amount_GBP: "5",
+        min_GBP: "20",
+      };
+      expect(
+        await updateDiscountCode(
+          actor(),
+          created.id,
+          form({ ...fixed, amount_GBP: "7" }),
+          CURRENCIES,
+          run,
+        ),
+      ).toEqual({
+        ok: false,
+        reason: "invalid",
+        errors: { amount_GBP: "offerFrozen" },
+      });
+      expect(
+        await updateDiscountCode(
+          actor(),
+          created.id,
+          form({ ...fixed, kind: "percent", percent: "10", amount_GBP: "" }),
+          CURRENCIES,
+          run,
+        ),
+      ).toMatchObject({
+        ok: false,
+        errors: { kind: "offerFrozen" },
+      });
+      expect(
+        await updateDiscountCode(
+          actor(),
+          created.id,
+          form({ ...fixed, amount_EUR: "6", min_EUR: "20" }),
+          CURRENCIES,
+          run,
+        ),
+      ).toMatchObject({
+        ok: false,
+        errors: { amount_EUR: "offerFrozen" },
+      });
+      expect(
+        await updateDiscountCode(
+          actor(),
+          created.id,
+          form({ ...fixed, code: "frozen-02" }),
+          CURRENCIES,
+          run,
+        ),
+      ).toMatchObject({
+        ok: false,
+        errors: { code: "offerFrozen" },
+      });
+      const saved = await updateDiscountCode(
+        actor(),
+        created.id,
+        form({
+          ...fixed,
+          campaignLabel: "Renamed",
+          maxRedemptions: "50",
+          maxPerEmail: "2",
+          endsAt: "2026-12-24T23:59",
+          note: "Moved to December",
+          min_GBP: "25",
+        }),
+        CURRENCIES,
+        run,
+      );
+      expect(saved).toEqual({ ok: true, id: created.id });
+      const [row] = await scratch.sql<
+        {
+          campaign_label: string;
+          max_redemptions: number;
+          max_per_email: number;
+          note: string;
+          ends_at: Date;
+        }[]
+      >`
+        SELECT campaign_label, max_redemptions, max_per_email, note, ends_at FROM discount_code WHERE id = ${created.id}`;
+      expect(row).toMatchObject({
+        campaign_label: "Renamed",
+        max_redemptions: 50,
+        max_per_email: 2,
+        note: "Moved to December",
+      });
+      expect(new Date(String(row?.ends_at)).toISOString()).toBe(
+        "2026-12-24T23:59:00.000Z",
+      );
+    });
+
+    it("AC-5: six codes, their chips, live uses and discount given per currency", async () => {
+      const now = new Date("2026-11-08T12:00:00Z");
+      const make6 = async (text: string, fields: Record<string, unknown>) =>
+        scratch.sql.begin(async (tx) => {
+          const [row] = await tx<{ id: string }[]>`
+            INSERT INTO discount_code ${tx({
+              code: text,
+              code_normalised: text,
+              campaign_label: `Six ${text}`,
+              kind: "percent",
+              percent_bp: 1000,
+              starts_at: "2026-11-01T00:00:00Z",
+              ends_at: null,
+              max_redemptions: null,
+              ...fields,
+            })} RETURNING id`;
+          return row?.id ?? "";
+        });
+      const active = await make6("SIXACTIVE", { max_redemptions: 200 });
+      const scheduled = await make6("SIXSCHED1", {
+        starts_at: "2026-12-01T00:00:00Z",
+      });
+      const ended = await make6("SIXENDED1", {
+        starts_at: "2026-03-01T00:00:00Z",
+        ends_at: "2026-04-30T23:59:00Z",
+      });
+      const usedUp = await make6("SIXUSEDUP", { max_redemptions: 2 });
+      const disabled = await make6("SIXDISABL", { status: "disabled" });
+      const quiet = await make6("SIXQUIET1", {});
+      const orderIn = async (
+        codeId: string,
+        mode: "live" | "demo",
+        amount: number,
+        currency = "PLN",
+      ) => {
+        const orderId = await scratch.sql.begin(async (tx) => {
+          const buyer = await make.customer(tx);
+          return insertPlacedOrder(tx, {
+            customerId: buyer,
+            recipientId: await make.recipient(tx, buyer),
+            countryId: c.countryId,
+            mode,
+            currencyCode: currency,
+            totalMinor: 20_000,
+          });
+        });
+        await scratch.sql`
+          INSERT INTO order_discount (order_id, discount_code_id, code_snapshot, kind, percent_bp, amount_minor, currency_code, base_amount_minor, base_currency_code, email_key_sha256, mode)
+          SELECT ${orderId}, id, code_normalised, kind, percent_bp, ${amount}, ${currency}, ${amount}, ${currency}, ${emailKey(`${orderId}@example.test`)}, ${mode}
+            FROM discount_code WHERE id = ${codeId}`;
+        return orderId;
+      };
+      await orderIn(active, "live", 1500, "GBP");
+      await orderIn(active, "live", 2100, "PLN");
+      await orderIn(active, "live", 1200, "GBP");
+      await orderIn(active, "demo", 9999, "GBP");
+      const gone = await orderIn(active, "live", 777, "GBP");
+      await walk(scratch.sql, gone, "abandoned");
+      await orderIn(usedUp, "live", 500, "GBP");
+      await orderIn(usedUp, "live", 500, "GBP");
+      const list = await listDiscountCodes(actor(), {}, run, now);
+      const byId = new Map(list.map((row) => [row.id, row]));
+      expect(byId.get(active)).toMatchObject({
+        status: "active",
+        stats: {
+          liveUses: 3,
+          discountByCurrency: [
+            { amountMinor: 2700, currency: "GBP" },
+            { amountMinor: 2100, currency: "PLN" },
+          ],
+        },
+      });
+      expect(byId.get(scheduled)?.status).toBe("scheduled");
+      expect(byId.get(ended)?.status).toBe("ended");
+      expect(byId.get(usedUp)).toMatchObject({
+        status: "used_up",
+        stats: {
+          liveUses: 2,
+          discountByCurrency: [{ amountMinor: 1000, currency: "GBP" }],
+        },
+      });
+      expect(byId.get(disabled)?.status).toBe("disabled");
+      expect(byId.get(quiet)).toMatchObject({
+        status: "active",
+        stats: { liveUses: 0, discountByCurrency: [] },
+      });
+      expect(
+        (await listDiscountCodes(actor(), { status: "used_up" }, run, now)).map(
+          (row) => row.id,
+        ),
+      ).toEqual([usedUp]);
+    });
+
+    it("AC-6: exact preview integers with two mapped payouts, and the reduction-claim warning exactly when a lower price was in force", async () => {
+      const sku = "FO-BQ-001";
+      const productId = await scratch.sql.begin(async (tx) => {
+        const [row] = await tx<{ id: string }[]>`
+          INSERT INTO product (sku, product_type, primary_flower, colour_primary, style, price_tier, substitution_class, freshness_days)
+          VALUES (${sku}, 'bouquet', 'roses', 'red', 'classic', 'classic', 'main_flower', 5)
+          ON CONFLICT (sku) DO UPDATE SET sku = EXCLUDED.sku RETURNING id`;
+        const id = row?.id ?? "";
+        for (const payout of [14900, 9900]) {
+          const partnerId = await make.partner(tx, c.countryId, "active");
+          await tx`INSERT INTO partner_catalog_mapping (partner_id, product_id, tier_key, partner_payout_minor, currency_code)
+                   VALUES (${partnerId}, ${id}, NULL, ${payout}, 'PLN')`;
+        }
+        return id;
+      });
+      const base = catalogProviders();
+      const rows = await base.price.countryPrices();
+      const tiers = await base.catalogue.tiers();
+      const tierKey = tiers.find(
+        (tier) => tier.sku === sku && tier.isDefault,
+      )?.tierKey;
+      const current = rows.find(
+        (row) =>
+          row.sku === sku &&
+          row.countryIso2 === "PL" &&
+          row.tierKey === tierKey &&
+          row.surchargeKind === null &&
+          row.activeTo === null,
+      );
+      if (current === undefined)
+        throw new Error("fixture: no PL price for FO-BQ-001");
+      const providers = (earlierMinor: number) => ({
+        ...base,
+        price: {
+          ...base.price,
+          countryPrices: () =>
+            Promise.resolve([
+              ...rows.filter((row) => row !== current),
+              {
+                ...current,
+                retailMinor: earlierMinor,
+                activeFrom: "2026-09-01",
+                activeTo: "2026-10-29",
+              },
+              {
+                ...current,
+                retailMinor: 16900,
+                activeFrom: "2026-10-29",
+                activeTo: null,
+              },
+            ] as typeof rows),
+        },
+      });
+      const fields = form({
+        productIds: [productId],
+        countryIds: [c.countryId],
+      });
+      const lower = await withCatalogProviders(providers(15900), () =>
+        discountCostPreview(actor(), fields, CURRENCIES, run, "2026-11-08"),
+      );
+      expect(lower.rows).toEqual([
+        expect.objectContaining({
+          productId,
+          countryIso: "PL",
+          currency: "PLN",
+          vatRateBp: current.vatRateBp,
+          priceMinor: 16900,
+          discountMinor: 1690,
+          highestPayoutMinor: 14900,
+        }),
+      ]);
+      const only = lower.rows[0];
+      // PL flowers at 8 %: paid 15 210, VAT 1 127, margin 15 210 - 1 127 - 14 900 = -817.
+      expect(current.vatRateBp).toBe(800);
+      expect(only).toMatchObject({
+        vatMinor: 1127,
+        marginMinor: -817,
+        belowCost: true,
+      });
+      expect(lower.reductionClaims).toEqual([
+        expect.objectContaining({
+          countryIso: "PL",
+          lowest: { amountMinor: 15900, currency: "PLN" },
+          today: { amountMinor: 16900, currency: "PLN" },
+        }),
+      ]);
+      const higher = await withCatalogProviders(providers(17900), () =>
+        discountCostPreview(actor(), fields, CURRENCIES, run, "2026-11-08"),
+      );
+      expect(higher.reductionClaims).toEqual([]);
+      expect(higher.rows[0]?.marginMinor).toBe(only?.marginMinor);
     });
   },
 );
