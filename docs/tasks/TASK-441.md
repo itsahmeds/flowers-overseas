@@ -43,6 +43,10 @@ here.
 
 - 2026-11-08: CRM module (`src/modules/partners/crm/`), `partnerMoney`, tab bar, Money and Relationship tabs, list columns and Follow-ups due, 147 admin texts; unit `tests/unit/partners-crm.test.ts` (39) and integration `tests/integration/partners-crm-030b.test.ts` (10) green on a scratch PG16. Runbook `finance.md`, RoPA row 20 and row 11 extension, `docs/architecture.md`. Q14 is already in `docs/decisions-log.md` (2026-10-22). Next: TASK-442 in the same PR.
 
+## Copy approval
+
+- founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-441.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 030b (TASK-441, TASK-442); the founder did not read this text: the 255 admin texts of spec 030b (`admin.partners.*` CRM, money and contracts texts), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
