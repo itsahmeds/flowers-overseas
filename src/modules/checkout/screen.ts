@@ -59,6 +59,10 @@ import {
 } from "./discount";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
 import {
+  type ReminderFlagReader,
+  basketReminderOffered,
+} from "./reminders/offer";
+import {
   type DraftTotals,
   deriveLineQuote,
   lineTotals,
@@ -144,6 +148,12 @@ export interface StepScreen {
    * other step); else whether the field is locked and for how many minutes.
    */
   readonly discountControl: { readonly lockedMinutes: number | null } | null;
+  /**
+   * Spec 034 (AC-7): step 3's basket-reminder box, `null` or absent when not offered (flag off, a
+   * key unreviewed in the locale, env missing). `checked` is the draft's own consent; a refused
+   * post's echo decides instead on its re-render.
+   */
+  readonly basketReminder?: { readonly checked: boolean } | null;
 }
 
 export type CheckoutScreen =
@@ -172,6 +182,8 @@ export interface ScreenRequest {
   readonly connection?: DraftConnection;
   readonly flags?: CheckoutFlagReader;
   readonly discountFlag?: DiscountFlagReader;
+  /** Spec 034: reads `marketing.basket_reminder` (injected by the suites). */
+  readonly reminderFlag?: ReminderFlagReader;
 }
 
 const LINE_PARAM = /^[1-9][0-9]?$/u;
@@ -527,5 +539,14 @@ export async function checkoutScreen(
         : null,
     discountControl:
       codesOn && selected.step === "review" ? { lockedMinutes } : null,
+    basketReminder:
+      selected.step === "details" &&
+      (await basketReminderOffered(locale, {
+        ...(request.reminderFlag === undefined
+          ? {}
+          : { readFlag: request.reminderFlag }),
+      }))
+        ? { checked: (draft.reminderConsentAt ?? null) !== null }
+        : null,
   };
 }

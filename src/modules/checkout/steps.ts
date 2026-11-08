@@ -36,6 +36,7 @@
  */
 import { z } from "zod";
 
+import { CONSENT_WORDING_VERSION } from "@/config/basket-reminders";
 import { CHECKOUT_STEPS, type CheckoutStep } from "@/config/checkout";
 import type { CurrencyCode } from "@/config/currencies";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
@@ -46,6 +47,7 @@ import {
   listAddons,
   listTiers,
 } from "@/modules/catalog";
+import { recordBasketReminderConsent } from "@/modules/customers";
 import { MoneySchema } from "@/modules/i18n";
 
 import { assessBasket } from "./basket";
@@ -61,8 +63,13 @@ import {
   removeLine,
   saveDraft,
   saveLine,
+  withDraftConnection,
 } from "./draft";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
+import {
+  type ReminderFlagReader,
+  basketReminderOffered,
+} from "./reminders/offer";
 import {
   type QuoteCheck,
   deriveLineQuote,
@@ -136,6 +143,8 @@ export interface StepContext {
     readonly kind: "country";
     readonly ref: string;
   }) => Promise<boolean>;
+  /** Spec 034: reads `marketing.basket_reminder` (injected by the suites). */
+  readonly reminderFlag?: ReminderFlagReader;
 }
 
 /** The posted form as plain values: repeated keys become arrays, Next's own keys are dropped. */
@@ -647,17 +656,43 @@ export async function runBuyerStep(
       values,
     });
   }
-  const saved = await saveDraft(
-    draft.id,
-    { buyer: parsed.data, buyerSaved: true, locale },
-    now,
+  // Spec 034 (AC-8): the box's state is recorded only where the box was offered, before the buyer
+  // is saved (so a changed email still finds the old one), in the same transaction.
+  const offered = await basketReminderOffered(locale, {
+    ...(context.reminderFlag === undefined
+      ? {}
+      : { readFlag: context.reminderFlag }),
+  });
+  const given = values["basketReminder"] === "on";
+  const saved = await withDraftConnection(
     context.connection,
+    async (executor) => {
+      if (offered) {
+        await recordBasketReminderConsent(executor, {
+          draftId: draft.id,
+          given,
+          email: parsed.data.email,
+          locale,
+          wordingVersion: CONSENT_WORDING_VERSION,
+          now,
+        });
+      }
+      return saveDraft(
+        draft.id,
+        { buyer: parsed.data, buyerSaved: true, locale },
+        now,
+        { executor },
+      );
+    },
   );
   if (!saved) return redirect(stepPath(locale, "details"), count);
   logger.info(
     { draft_id: draft.id, step: "details", mode: draft.mode },
     "checkout.step_saved",
   );
+  if (offered) {
+    logger.info({ given }, "basket_reminder.consent");
+  }
   // A line whose price notice is open is where the buyer confirms first (§2 "Money").
   const noticeLine = draft.lines.find(
     (line) =>

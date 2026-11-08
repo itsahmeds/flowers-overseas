@@ -1108,7 +1108,9 @@
       "unavailableSummary": "{count, plural, one {One bouquet in your basket is no longer available.} other {# bouquets in your basket are no longer available.}} Please remove {count, plural, one {it} other {them}} to continue.",
       "useNext": "Use {next}",
       "addOns": "Add-ons · {list}",
-      "alsoInBasket": "Your basket also has {count, plural, one {# other bouquet} other {# other bouquets}}. Remove any you do not want before you place your order."
+      "alsoInBasket": "Your basket also has {count, plural, one {# other bouquet} other {# other bouquets}}. Remove any you do not want before you place your order.",
+      "restored": "Welcome back. Your basket is as you left it.",
+      "restoredDetails": "Welcome back. Your flowers are in your basket. For privacy, we ask for the delivery details again."
     },
     "date": {
       "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}.",
@@ -1175,6 +1177,21 @@
         "locked": "Too many tries. Please wait {minutes, plural, one {# minute} other {# minutes}} and try again."
       },
       "changedAtPlacement": "Your code {code} can no longer be used, so your total is now {new} instead of {old}. Please check it before you continue."
+    },
+    "basketReminder": {
+      "label": "If I do not finish my order, email me once with a link back to my basket.",
+      "hint": "One email, about 2 hours later. No offers. You can stop it with one click.",
+      "linkEnded": {
+        "title": "This link is no longer active",
+        "body": "Your basket link has ended, but our flowers are still here. Choose a bouquet to start again.",
+        "cta": "Choose flowers"
+      },
+      "unsubscribe": {
+        "title": "Stop basket emails?",
+        "body": "We will not email you about unfinished baskets.",
+        "button": "Stop basket emails",
+        "done": "Done. We will not send you basket emails unless you ask for one again."
+      }
     }
   },
   "confirmation": {
@@ -1588,6 +1605,21 @@
         "bodyCreditNote": "Your credit note for this order is attached as a PDF.",
         "preheader": "Order {reference}. The PDF is attached."
       }
+    },
+    "basketReminder": {
+      "subject": "Your basket is saved",
+      "preheader": "Pick up where you left off, whenever suits you.",
+      "heading": "Your basket is saved",
+      "intro": "You started an order with us. Everything you chose is still in your basket.",
+      "to": "To {country}",
+      "dateKept": "Delivery on {date}",
+      "dateMoved": "The earliest delivery date is now {date}.",
+      "dateOpen": "Choose a delivery date when you come back.",
+      "button": "Open my basket",
+      "total": "Your basket shows the total, with VAT and delivery included, before you pay.",
+      "help": "Questions? We are happy to help: {helpLink}",
+      "why": "You are getting this email because you asked us to when you started your order. It is the only one we send about this basket.",
+      "stop": "Stop basket emails"
     }
   },
   "tracking": {

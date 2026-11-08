@@ -273,12 +273,23 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.basket.otherMode",
     "checkout.basket.remove",
     "checkout.basket.removeLabel",
+    "checkout.basket.restored",
+    "checkout.basket.restoredDetails",
     "checkout.basket.title",
     "checkout.basket.to",
     "checkout.basket.total",
     "checkout.basket.unavailable",
     "checkout.basket.unavailableSummary",
     "checkout.basket.useNext",
+    "checkout.basketReminder.hint",
+    "checkout.basketReminder.label",
+    "checkout.basketReminder.linkEnded.body",
+    "checkout.basketReminder.linkEnded.cta",
+    "checkout.basketReminder.linkEnded.title",
+    "checkout.basketReminder.unsubscribe.body",
+    "checkout.basketReminder.unsubscribe.button",
+    "checkout.basketReminder.unsubscribe.done",
+    "checkout.basketReminder.unsubscribe.title",
     "checkout.date.gone",
     // Spec 004 §14 A-founder-2026-10-24a, the commerce structure: TASK-385's chooser keys
     // (`home.picker.*`, `shop.choose.*`) and TASK-386/387's home keys (`shop.price.choose`,
@@ -362,6 +373,19 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-365's florist payout statement keys (PR 475) left this queue under the delegation, all
     // but the lawyer-gated `deleteReminder` (spec 030a §13 Q12; TASK-436).
     // TASK-431's three `destinationsHub.*` count lines (spec 007 AC-37) left this queue under the delegation.
+    "emails.basketReminder.button",
+    "emails.basketReminder.dateKept",
+    "emails.basketReminder.dateMoved",
+    "emails.basketReminder.dateOpen",
+    "emails.basketReminder.heading",
+    "emails.basketReminder.help",
+    "emails.basketReminder.intro",
+    "emails.basketReminder.preheader",
+    "emails.basketReminder.stop",
+    "emails.basketReminder.subject",
+    "emails.basketReminder.to",
+    "emails.basketReminder.total",
+    "emails.basketReminder.why",
     "emails.floristPayoutStatement.deleteReminder",
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
@@ -503,6 +527,8 @@ describe("the shipped catalogues and manifests", () => {
     // texts and the changed `nav.search.label`, sorted in above, until record-approval-520.py.
     // TASK-418 (spec 010 §14 A-founder-2026-10-25a, AC-108): the four steps' keys; `checkout.progress.card`
     // and `checkout.action.toYourCard` are design gaps G6 and G7 (PR 417), queued for the copy batch.
+    // TASK-449 (spec 034 Appendix A): the basket reminder box, the two basket notices, the two
+    // basket pages and the reminder email (`emails.basketReminder.*`), sorted in above.
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

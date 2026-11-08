@@ -264,3 +264,47 @@ export function catalogueUpdatedAt(locale: string): string | undefined {
   }
   return newest;
 }
+
+/**
+ * Is every message under `prefix` reviewed **for a reader of `locale`** (spec 034 §5.2, §7, AC-7;
+ * TASK-449)? For each such key of the resolved catalogue, the nearest locale in the fallback chain
+ * that provides it must say `reviewed: true` and speak the same language (the rule above): `en-gb`
+ * inherits reviewed English, `de` never does. Used to gate consent text, which must never collect
+ * a consent in an unreviewed sentence. No key under the prefix answers `false` (fail closed).
+ */
+export function messagesReviewedFor(locale: string, prefix: string): boolean {
+  const chain = fallbackChain(locale);
+  if (chain.length === 0) return false;
+  const language = primaryLanguage(locale);
+  const source = getMessageSource();
+  const keys = flattenKeys(resolveCatalogue(locale)).filter((key) =>
+    key.startsWith(`${prefix}.`),
+  );
+  if (keys.length === 0) return false;
+  return keys.every((key) => {
+    const provider = chain.find((code) =>
+      provides(source.catalogue(code), key),
+    );
+    if (provider === undefined) return false;
+    if (primaryLanguage(provider) !== language) return false;
+    return source.meta(provider)?.[key]?.reviewed === true;
+  });
+}
+
+/**
+ * The `sourceHash` of `key` as the locale's reader gets it: the record of the nearest locale in the
+ * chain that provides the key (spec 034 §5.2 `recordBasketReminderConsent`, `wording_hash`), so a
+ * consent row names the exact sentence shown. `undefined` when no locale provides it.
+ */
+export function messageSourceHash(
+  locale: string,
+  key: string,
+): string | undefined {
+  const source = getMessageSource();
+  const provider = fallbackChain(locale).find((code) =>
+    provides(source.catalogue(code), key),
+  );
+  return provider === undefined
+    ? undefined
+    : source.meta(provider)?.[key]?.sourceHash;
+}

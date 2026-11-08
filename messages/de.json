@@ -238,7 +238,9 @@
       "total": "Total",
       "unavailable": "This bouquet is no longer available. Please remove it to continue.",
       "unavailableSummary": "{count, plural, one {One bouquet in your basket is no longer available.} other {# bouquets in your basket are no longer available.}} Please remove {count, plural, one {it} other {them}} to continue.",
-      "useNext": "Use {next}"
+      "useNext": "Use {next}",
+      "restored": "Willkommen zurück. Ihr Warenkorb ist so, wie Sie ihn verlassen haben.",
+      "restoredDetails": "Willkommen zurück. Ihre Blumen liegen im Warenkorb. Zum Schutz Ihrer Daten fragen wir die Lieferdaten erneut ab."
     },
     "buyer": {
       "country": "Country you live in",
@@ -384,6 +386,21 @@
         "locked": "Too many tries. Please wait {minutes, plural, one {# minute} other {# minutes}} and try again."
       },
       "changedAtPlacement": "Your code {code} can no longer be used, so your total is now {new} instead of {old}. Please check it before you continue."
+    },
+    "basketReminder": {
+      "label": "Wenn ich meine Bestellung nicht abschließe, schickt mir einmal eine E-Mail mit einem Link zurück zu meinem Warenkorb.",
+      "hint": "Eine E-Mail, etwa 2 Stunden später. Keine Angebote. Mit einem Klick abbestellbar.",
+      "linkEnded": {
+        "title": "Dieser Link ist nicht mehr aktiv",
+        "body": "Ihr Warenkorb-Link ist abgelaufen, aber unsere Blumen sind noch da. Wählen Sie einen Strauß, um neu zu beginnen.",
+        "cta": "Blumen wählen"
+      },
+      "unsubscribe": {
+        "title": "Warenkorb-E-Mails abbestellen?",
+        "body": "Wir schreiben Ihnen nicht mehr zu nicht abgeschlossenen Warenkörben.",
+        "button": "Warenkorb-E-Mails abbestellen",
+        "done": "Erledigt. Wir senden Ihnen keine Warenkorb-E-Mails mehr, außer Sie bitten erneut darum."
+      }
     }
   },
   "common": {
@@ -881,6 +898,21 @@
         "bodyCreditNote": "Your credit note for this order is attached as a PDF.",
         "preheader": "Order {reference}. The PDF is attached."
       }
+    },
+    "basketReminder": {
+      "subject": "Ihr Warenkorb ist gespeichert",
+      "preheader": "Machen Sie weiter, wo Sie aufgehört haben, wann es Ihnen passt.",
+      "heading": "Ihr Warenkorb ist gespeichert",
+      "intro": "Sie haben eine Bestellung bei uns begonnen. Alles, was Sie ausgewählt haben, liegt noch in Ihrem Warenkorb.",
+      "to": "Nach {country}",
+      "dateKept": "Lieferung am {date}",
+      "dateMoved": "Der früheste Liefertermin ist jetzt der {date}.",
+      "dateOpen": "Wählen Sie einen Liefertermin, wenn Sie zurückkommen.",
+      "button": "Meinen Warenkorb öffnen",
+      "total": "Ihr Warenkorb zeigt den Gesamtpreis inklusive MwSt. und Lieferung, bevor Sie bezahlen.",
+      "help": "Fragen? Wir helfen gern: {helpLink}",
+      "why": "Sie erhalten diese E-Mail, weil Sie uns beim Start Ihrer Bestellung darum gebeten haben. Es ist die einzige, die wir zu diesem Warenkorb senden.",
+      "stop": "Warenkorb-E-Mails abbestellen"
     }
   },
   "errors": {
