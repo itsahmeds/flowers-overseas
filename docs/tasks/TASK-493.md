@@ -28,13 +28,33 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the implementer (2026-11-09), left for TASK-494 or the records task:** spec 013's
+  `riskFactsFor` and the `FakePaymentProvider` risk facts (the gate's input; no caller exists in
+  this task); the velocity queries over `risk_identity` (S7 to S11, AC-14) and writing the card
+  and recipient-address identity rows (the gate's `assess`; this task writes only the email row,
+  at the pay step); the deadline defaults, due-soon alerts and site velocity alert in
+  `risk.monitor`; the app-level refund reasons `risk_cancel` and `fraud_confirmed` in
+  `REFUND_REASONS` and `cancelOrder` (only the database check gains them here); the RoPA rows,
+  the LIA and the Radar rule block of `docs/runbooks/fraud-review.md` (AC-34, AC-37).
+- **Express checkout (orchestrator ruling 2, 2026-11-08):** an email supplied by Apple Pay,
+  Google Pay or Link is not checked for disposable domains; express checkout is not built.
+- **Not run locally:** `/ar-XB` visual baselines and axe of the two checkout states (T-38), and
+  the AC-30 render scan of the step 3 and step 4 states (the unit half checks the keys).
+- **Pre-existing reds on main, not touched:** `tests/unit/ops-registry.test.ts` source scan
+  (`captureAlert` in basket reminders, contracts, balance), `rls-policies` (`partner_contract`
+  unclassified, `review_read`), `architecture-doc` (`i18n` and `discounts` rows),
+  `checkout-config` reviewed set (spec 034's keys), `payments-lifecycle` "routing hand-off"
+  (two `outbox.dead`).
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **Designer's questions on PR 529 (2026-11-08), answered by the orchestrator under the founder's
+  delegation:** (1) four steps: the email check runs where the email is asked (step 3 "Your
+  details") and the decline cap on the pay step (step 4), as drawn; (2) emails from Apple Pay,
+  Google Pay or Link are not checked here (express checkout not built; carry-forward); (3) "Start
+  again" goes to the bouquet's product page; (4) and (5) belong to TASK-494.
 
 ## Progress
 
@@ -42,11 +62,27 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-09: migration 0043 and down, risk core (normalisers, `identityHash`, `scoreOrder`,
+  `reviewDeadline`, disposable and relay lists, card-message and accusation patterns), env key.
+- 2026-11-09: `prePayCheck` in `confirm`, `endPaymentAttempts`, the 5-decline cap and the step 4
+  "ended" screen, the step 3 email check, `attemptStats`, `risk.monitor`, retention handlers,
+  flags, keys. Unit and integration suites green; PR 534.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 534. Migration `0043_risk_021` (five tables, refund reasons, six retention rows, three flags)
+with a guarded down file (`A11_ROLLBACK_REASON_IN_USE`). Module `risk` with the pure core and the
+pay-step checks; spec 013's `confirm` calls `prePayCheck` before any intent; the 5th decline ends
+the purchase by `system:risk` and step 4 shows the drawn "tries used up" state; step 3 refuses a
+disposable email in `test` and `live`; `risk.monitor` pauses payments 30 minutes on a card-testing
+burst in `live`. Tests: unit `risk-core` (68), integration `risk-prepay` (12), plus count updates
+in the registries' unit tests. Deviations: hashes are 64-character hex text, not `bytea` (spec 002
+AC-22 bans `bytea`); a payment is one per purchase, so `endPaymentAttempts` and `prePayCheck` take
+the purchase id; a `paused` refusal leaves the order open (its message says "try again in a few
+minutes"), the two email refusals close it; `RISK_HASH_KEY` is optional at boot and, when missing
+on a deployed environment, the two email checks are skipped and logged; the disposable list is a
+vendored TypeScript module (10 181 CC0 domains), not a `.txt`, so the standalone build carries it;
+"Start again" is a new key `checkout.risk.startAgain`. Orchestrator rulings: see Escalations.
