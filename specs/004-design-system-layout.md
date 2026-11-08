@@ -4447,3 +4447,7 @@ The known Lighthouse LCP flake on `/en` and `/en-gb` cannot be pleaded by this a
 - **AC-55's deferred set** gains spec 045's `SearchSuggest`.
 - **Item 13's table**, row "spec 045's default search destination", now reads "none: the country-less results page (spec 045 A-founder-2026-11-08a)".
 - **Tasks.** TASK-520 builds the header and search parts. TASK-397 (AC-87's gates) reads AC-87 and T-93 as amended here.
+
+### A-orchestrator-2026-11-08b: the header grows to two rows from 768 px to hold the search field (orchestrator default under the founder's delegation; no new AC or T id here)
+
+- **2026-11-08, A-orchestrator-2026-11-08b:** the header grows to two rows from 768 px (77 to 114 px) to hold the search field; AC-93 reads accordingly; recorded as delegated. The designer measured the one-row `xl` layout with the narrowest field at about 1,320 of the frame's 1,328 px (PR 512, `chrome-desktop.dc.html` "Why two rows at xl"), so spec 045 §14 A-founder-2026-11-08a item 2's fallback applies at every width from `md`: the logo, the field and the row's end on the 64 px row, the six items on the 48 px row, `HEADER_STICKY_HEIGHTS.desktop` 114 (was 77). Item 5's one-row `xl` header is superseded. **AC-93** now reads: "At 1440 the header holds the selector in the first row, after the field; …" (the rest unchanged). Recorded as delegated (the orchestrator under the founder's delegation of 2026-11-08), not the founder's words. Built by TASK-520.

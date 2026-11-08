@@ -14,7 +14,7 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +19 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +2 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +123 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +124 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +13 |
 | `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +17 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
@@ -26,7 +26,7 @@ task actually touches.
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +26 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +15 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
-| `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +10 |
+| `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +40 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +72 |
 
@@ -156,7 +156,7 @@ task actually touches.
 | `[locale]/@header/-choose/-next/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot… | 043 |
 | `[locale]/@header/-search/limited/page.tsx` | The rate-limited search page's header (the… | 045 |
-| `[locale]/@header/-search/page.tsx` | The search page's header, out of context | 045 |
+| `[locale]/@header/-search/page.tsx` | The search page's header, holding the searched… | 045 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{chi… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{chi… | 043 |
 | `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`:… | 043 |
@@ -259,6 +259,7 @@ task actually touches.
 | `api/internal/payments/replay-webhooks/route.ts` | POST: secret-gated replay of missed Stripe… | 013 |
 | `api/prices/[locale]/[iso2]/route.ts` | The cached prices document the deferred island… | 004 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
+| `api/search/suggest/route.ts` | The search suggestions endpoint (POST only,… | 045 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
 | `api/webhooks/resend/route.ts` | POST: Resend webhook endpoint, Svix verify,… | 016 |
 | `api/webhooks/stripe/route.ts` | POST: Stripe webhook endpoint, verify, store… | 013 |
@@ -359,10 +360,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 496 |
+| `tests/unit/` | 497 |
 | `tests/integration/` | 99 |
 | `tests/contract/` | 40 |
-| `tests/e2e/` | 77 |
+| `tests/e2e/` | 78 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |

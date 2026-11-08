@@ -42,7 +42,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **2026-11-08 S520 (self):** suggestion rows show the kind word but no thumbnail or icon circle (the board drew 32 × 40 photographs and 32 px icons; spec 045 does not mention them and the 4,096 B chunk budget is tight). A later task may add them.
+- **2026-11-08 S520 (self):** `tests/e2e/search-everywhere.spec.ts` and the height constants in `tests/e2e/header.spec.ts` were written, not run locally (no Playwright on battery); CI `ci:full` is their first run. `header.spec.ts` still holds TASK-173 era assertions ("no form control in the chrome") that predate TASK-404 and fail on `main` too.
+- **2026-11-08 S520 (self):** AC-41's 1280 px longest-locale, AC-42's CLS, AC-44's resource timing against LCP and `budget:client-js`, AC-45's network-log scan, AC-46's Lighthouse, axe and `/ar-XB` baselines are CI's (TASK-410 runs the search gates).
+- **2026-11-08 S520 (self):** `tests/unit/deferred-set.test.tsx` "every other client module is accounted for" and `pnpm i18n:check` fail on `main` already (five payments, partners and admin client modules not in `NOT_DEFERRED`; `nav.send` unused and four checkout scope entries). Not this task's files.
+- **2026-11-08 S520 (self):** the header has no selector yet (TASK-384); the field fills to 480 px where the board drew the selector after it.
 
 ## Escalations
 
@@ -56,7 +60,9 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-- 2026-11-08 S520: started in `../fo-wt-520`; row `in_progress`, draft PR opened. Next: engine groups, header field, chip, suggest route and island.
+- 2026-11-08 S520: started in `../fo-wt-520`; row `in_progress`, draft PR 514 opened.
+- 2026-11-08 S520: engine groups (Countries, Occasions, Flowers, Help) and country-less bouquets, `SearchSource.infoPages`, the chip (change and remove GET forms, `queryWithoutDestination`), `POST /api/search/suggest` (GET 405), copy keys; unit tests green.
+- 2026-11-08 S520: header field (one form: 56 px phone row, 64 px row from md, items on row 2, 122/114 px), results page field holds `q` and `to` (`@header/-search` reads the query), `SearchSuggest` island in the deferred set; spec 004 A-orchestrator-2026-11-08b; tests updated and added; e2e spec written (CI). Next: build check, ready.
 
 ## Result
 

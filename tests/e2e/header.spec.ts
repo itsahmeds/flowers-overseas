@@ -77,13 +77,14 @@ const inChrome = (selector: string): string =>
  */
 const UTILITY_HEIGHTS = { mobile: 60, desktop: 62 } as const;
 /**
- * The sticky banner: from `md` to `xl` the 64 px row, a rule, the six items' 48 px row and the
- * rule (114); from `xl` the mega menu board's 76 px row and the rule (77). `HEADER_STICKY_HEIGHTS`
- * in `src/modules/ui/layout/header-model.ts` holds the same numbers (TASK-383).
+ * The sticky banner: from `md`, at every width, the 64 px row (logo, search field, row's end), a
+ * rule, the six items' 48 px row and the rule (114; spec 045 §14 A-founder-2026-11-08a item 2's
+ * fallback, TASK-520). `HEADER_STICKY_HEIGHTS` in `src/modules/ui/layout/header-model.ts` holds
+ * the same numbers.
  */
-const STICKY_HEIGHTS = { mobile: 114, desktop: 77 } as const;
-/** Below `md`: the logo and the Menu, 64 px and the rule (AC-47: 65 ± 1). */
-const PHONE_STICKY_HEIGHT = 65;
+const STICKY_HEIGHTS = { mobile: 114, desktop: 114 } as const;
+/** Below `md`: the 64 px row, the rule, the 56 px search row and the rule (spec 045 AC-42). */
+const PHONE_STICKY_HEIGHT = 122;
 const HEADER_HEIGHTS = {
   mobile: UTILITY_HEIGHTS.mobile + STICKY_HEIGHTS.mobile,
   desktop: UTILITY_HEIGHTS.desktop + STICKY_HEIGHTS.desktop,
