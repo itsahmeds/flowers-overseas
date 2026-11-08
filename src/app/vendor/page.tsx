@@ -121,7 +121,12 @@ export default async function FloristInboxPage(): Promise<ReactElement> {
       </form>
     ) : undefined;
   return (
-    <SignedInFrame t={t} context={context} back={FLORIST_PATHS.base}>
+    <SignedInFrame
+      t={t}
+      context={context}
+      back={FLORIST_PATHS.base}
+      section="orders"
+    >
       <main className="@container grid content-start gap-[24px] px-[20px] pt-[20px] pb-[28px] md:px-[56px] md:pt-[36px] md:pb-[64px]">
         <InboxList
           locale={context.locale}

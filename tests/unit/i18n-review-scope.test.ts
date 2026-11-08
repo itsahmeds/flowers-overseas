@@ -374,6 +374,17 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
           "src/lib/auth/florist.ts",
         ],
       },
+      // Spec 030b (TASK-444): My bouquets, on the florist pages only.
+      {
+        match: "floristInbox.bouquets.*",
+        surface: "florist",
+        paths: [
+          "src/app/vendor/**",
+          "src/modules/partners/auth/**",
+          "src/lib/auth/florist.ts",
+          "src/modules/partners/portal/**",
+        ],
+      },
       // TASK-213: the founder's application alert, an email.
       {
         match: "emails.floristApplicationAlert.*",

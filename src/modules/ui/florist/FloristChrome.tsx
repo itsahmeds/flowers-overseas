@@ -16,6 +16,9 @@
  *  - `FloristDemoNotice` — `.fr-demo`: the demo line under the header on every inbox page.
  *  - `FloristMenu` — `.fr-menu`: a `<details>` disclosure holding the language form and sign-out,
  *    so it works with JavaScript off.
+ *  - `FloristSectionNav` — `.fr-nav` (spec 030b §14.2 C, AC-56; TASK-444): the orders list and
+ *    "My bouquets", the current one marked with `aria-current`. In the header from `md`
+ *    (`placement="header"`), inside the menu panel on a phone (`placement="menu"`).
  *
  *  - `FloristSignInCard`, `FloristSignInTitle`, `FloristMailDisc`, `FloristTextField` — the
  *    artboards' `.si-card`, the same 440 px card the admin sign-in draws. Drawn here rather than
@@ -199,6 +202,49 @@ export function FloristMenu({
         {children}
       </div>
     </details>
+  );
+}
+
+export interface FloristSectionLink {
+  readonly href: string;
+  readonly label: string;
+  readonly current: boolean;
+}
+
+/** `.fr-nav`: the florist's sections, pills in the header, a plain list in the menu panel. */
+export function FloristSectionNav({
+  label,
+  links,
+  placement,
+}: {
+  readonly label: string;
+  readonly links: readonly FloristSectionLink[];
+  readonly placement: "header" | "menu";
+}): ReactElement {
+  return (
+    <nav
+      aria-label={label}
+      className={
+        placement === "header"
+          ? "hidden items-center gap-[4px] md:flex"
+          : "grid gap-[2px] md:hidden"
+      }
+    >
+      {links.map((link) => (
+        <a
+          key={link.href}
+          href={link.href}
+          {...(link.current ? { "aria-current": "page" as const } : {})}
+          className={
+            placement === "header"
+              ? `text-ui inline-flex min-h-[44px] items-center rounded-full px-[12px] no-underline ${link.current ? "bg-paper-3 text-ink font-bold" : "text-ink-2"}`
+              : `text-body-s inline-flex min-h-[44px] items-center ${link.current ? "text-ink font-bold underline underline-offset-[5px]" : "text-ink-2 no-underline"}`
+          }
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
   );
 }
 

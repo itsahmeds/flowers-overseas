@@ -382,6 +382,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-214's 11 inbox page keys and TASK-215's 13 florist action keys left this queue under
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     // TASK-329's withdrawn inbox stage and spec 041's chrome left this queue under the delegation (TASK-436).
+    // Spec 030b §14.10 Appendix A (TASK-444): My bouquets, awaiting the delegated copy record.
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
     "forFlorists.apply.error.capacity",

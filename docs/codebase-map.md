@@ -20,11 +20,11 @@ task actually touches.
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/discounts-admin.test.ts` +1 |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +47 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +144 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +146 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +23 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +18 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +27 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +29 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +15 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
@@ -289,6 +289,7 @@ task actually touches.
 | `vendor/api/orders/[assignmentId]/photo/route.ts` | POST the delivery photo (deliver, or add it);… | 011 |
 | `vendor/api/orders/[assignmentId]/respond/route.ts` | POST: the florist accepts or declines an offer… | 011 |
 | `vendor/api/test-order/route.ts` | POST: the demo member's "Send a test order"… | 011 |
+| `vendor/bouquets/page.tsx` | GET {base}/bouquets: the florist's own bouquets… | 030 |
 | `vendor/chrome.tsx` | The florist pages' shared frame: header,… | 011 |
 | `vendor/layout.tsx` | Florist document: the member's language, noindex | 011 |
 | `vendor/not-found.tsx` | The florist tree's 404: an order that is not… | 011 |
@@ -372,8 +373,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 507 |
-| `tests/integration/` | 100 |
+| `tests/unit/` | 508 |
+| `tests/integration/` | 101 |
 | `tests/contract/` | 41 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

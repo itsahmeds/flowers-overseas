@@ -27,6 +27,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the builder (2026-11-08):** the browser half is CI's or later: axe on `/vendor/bouquets` (rows, empty, paused) at 390 and 1440 px (AC-56), the e2e redirect without a session and the response headers (AC-55; the headers come from `floristHeaderRules()` for `/vendor/:path*`, already asserted by `tests/unit/florist-surface.test.ts`), and the production mixed-membership case (the context already drops a demo membership in production, spec 026a's tests; the query reads only the context's partners). No Playwright spec or visual baseline added for this page.
+- **From the builder (2026-11-08):** AC-55's "no `<form>`" is read as the page's own body: the shared signed-in header keeps its sign-out and language forms, which the `florist-bouquets-*` artboards draw too. The page body has none (unit test).
+- **From the builder (2026-11-08):** the card photo is the public manifest's approved asset for the SKU (the image the product page serves, `bouquetPhoto`); `photoId` (the database `product_media` primary) is carried in the row schema but not yet the render source, because the site's photos still come from the manifest.
+- **From the builder (2026-11-08):** `pl`/`de` `changeSubject` stay English as drawn on the artboard (the subject reaches our mailbox). Pre-existing on main, not this task: `tests/unit/i18n-review-scope.test.ts` fails on the account entries (TASK-344), and `pnpm i18n:check` reports 6 problems (`nav.send`, checkout payment keys).
 
 ## Escalations
 
@@ -40,11 +44,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08: started (builder F444); no migration needed (partner RLS on `partner_catalog_mapping`, `partner_coverage`, `fulfillment_partner` and the public catalogue reads already cover the query).
+- 2026-11-08: page, query, view model, nav, keys and tests done; typecheck, lint, unit and PG16 suites green; clean-env build green. Ready for merge.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/517. `/vendor/bouquets` (server component, no island) lists the member's own `partner_catalog_mapping` rows through `floristBouquets(ctx)` under the partner context, parsed by strict schemas, with `floristBouquetState`, "You receive" via `formatMoney` in the member's language, ICU stems, and "Ask for a change" as a `mailto:` (support line while `company.supportEmail` is unset, which is today). The florist header gains the sections nav (Orders, My bouquets). 14 `floristInbox.bouquets.*` keys in `en`, `pl`, `de`, `reviewed: false`, with a review-scope entry and the delegated copy record script `.claude/state/record-approval-444.py`. No migration. Tests: unit 24 (`tests/unit/florist-bouquets.test.tsx`) plus the route-tree path in `tests/unit/florist-surface.test.ts`; integration 5 on PG16 (`tests/integration/florist-bouquets.test.ts`). The clean-env staging build passed in the build slot (a new page), `/vendor/bouquets` is dynamic.

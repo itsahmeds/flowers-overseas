@@ -6,7 +6,8 @@
  * TASK-212). Before sign-in: the header with the language links (`?hl=`, in the header from `md`,
  * under the card on a phone). Signed in: the header's menu with the language form (stored in
  * `partner_member.locale_code`, AC-32) and sign-out, and the demo line while the member's partner
- * is `demo`.
+ * is `demo`. Signed in, the sections (the orders list and "My bouquets", spec 030b AC-56) sit in
+ * the header from `md` and at the top of the menu on a phone.
  */
 import type { ReactElement, ReactNode } from "react";
 
@@ -27,6 +28,7 @@ import {
   FloristLanguageLinks,
   FloristMenu,
   FloristMenuHeading,
+  FloristSectionNav,
 } from "@/modules/ui/florist/FloristChrome";
 
 /** The language's own name, from the locale registry ("Polski"). */
@@ -80,19 +82,45 @@ export function SignedOutFrame({
   );
 }
 
-/** The signed-in frame: header with the menu, the demo line, the body. */
+/** The florist's sections (spec 030b AC-56): the orders list and "My bouquets". */
+export type FloristSection = "orders" | "bouquets";
+
+function sectionLinks(
+  t: FloristTranslator,
+  section: FloristSection | undefined,
+) {
+  return [
+    {
+      href: FLORIST_PATHS.base,
+      label: t("floristInbox.orders"),
+      current: section === "orders",
+    },
+    {
+      href: FLORIST_PATHS.bouquets,
+      label: t("floristInbox.bouquets.title"),
+      current: section === "bouquets",
+    },
+  ];
+}
+
+/** The signed-in frame: header with the sections and the menu, the demo line, the body. */
 export function SignedInFrame({
   t,
   context,
   back,
+  section,
   children,
 }: {
   readonly t: FloristTranslator;
   readonly context: FloristContext;
   /** The page itself, where the language form returns to. */
   readonly back: string;
+  /** The section this page is, marked current in the navigation; none on an order page. */
+  readonly section?: FloristSection;
   readonly children: ReactNode;
 }): ReactElement {
+  const links = sectionLinks(t, section);
+  const navLabel = t("floristInbox.bouquets.navLabel");
   return (
     <>
       <FloristHeader
@@ -100,7 +128,9 @@ export function SignedInFrame({
         homeLabel={t("floristAuth.homeLabel")}
         brand={TRADING_NAME}
       >
+        <FloristSectionNav label={navLabel} links={links} placement="header" />
         <FloristMenu label={t("floristAuth.menu")}>
+          <FloristSectionNav label={navLabel} links={links} placement="menu" />
           <FloristMenuHeading>{t("floristAuth.language")}</FloristMenuHeading>
           <FloristLanguageForm
             label={t("floristAuth.language")}

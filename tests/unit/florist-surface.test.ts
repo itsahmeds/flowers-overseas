@@ -184,6 +184,8 @@ describe("AC-22 — one mount point, built from FLORIST_BASE_PATH", () => {
       FLORIST_PATHS.signOut,
       FLORIST_PATHS.language,
       `${FLORIST_PATHS.authBase}/[...nextauth]`,
+      // Spec 030b §14.4 (TASK-444): the florist's own bouquets.
+      FLORIST_PATHS.bouquets,
     ]) {
       expect(served, path).toContain(path);
     }

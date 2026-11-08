@@ -965,6 +965,24 @@
     },
     "paused": {
       "notice": "Twoja kwiaciarnia jest wstrzymana. Możesz dokończyć zamówienia, które już przyjęto. Nowe zamówienia znów do Ciebie trafią, gdy kwiaciarnia będzie aktywna."
+    },
+    "bouquets": {
+      "title": "Moje bukiety",
+      "intro": "To są bukiety, które dla nas robisz, i kwota, którą otrzymujesz za każdy rozmiar.",
+      "youReceive": "Otrzymujesz {amount}",
+      "sku": "Kod {sku}",
+      "stems": "{count, plural, one {# łodyga} few {# łodygi} many {# łodyg} other {# łodyg}}",
+      "state": {
+        "onSale": "W sprzedaży",
+        "notYet": "Jeszcze nie w sprzedaży",
+        "paused": "Wstrzymany",
+        "withdrawn": "Wycofany ze sprzedaży"
+      },
+      "askChange": "Poproś o zmianę",
+      "changeSubject": "Change request: {sku}, size {size}",
+      "supportLine": "Aby poprosić o zmianę, skontaktuj się z nami: {support}",
+      "empty": "Nie ma jeszcze bukietów. Dodamy je tutaj, gdy uzgodnimy je z Tobą.",
+      "navLabel": "Sekcje"
     }
   },
   "footer": {
