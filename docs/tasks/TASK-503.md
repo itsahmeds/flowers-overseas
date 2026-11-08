@@ -1,4 +1,4 @@
-# TASK-503 — <task title>
+# TASK-503 — Staging builds again: client files stop importing server code
 
 Row: `TASKS.md` → TASK-503. This brief is the task's long form: the row keeps a link and one
 sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with
@@ -36,15 +36,8 @@ _None recorded._
 
 ## Progress
 
-One line per coherent step, newest last, written by the agent doing the work and pushed with
-the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
-here.
-
-_Not started._
+- 2026-11-08: `src/modules/i18n/client.ts` added, both client files moved to it, boundary zones allow `client.ts`, graph test added; typecheck 0, `pnpm build` 0 in the build slot; PR #510.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR #510. A module may publish a client-safe `client.ts` beside `index.ts` (`eslint/modules.js`); i18n's re-exports only `format.ts` and `collate.ts`, and `AdminSelectionSummary.tsx` and the refund form import `formatMoney` from it. `tests/unit/client-server-graph.test.ts` (4 unit tests, about 3 s) walks every `"use client"` file and every `modules/*/client.ts` through static, re-export and dynamic imports and fails on server packages, Node built-ins, `src/lib/db.ts` and `src/lib/env.server.ts`; `module-boundaries.test.ts` updated. `pnpm build` was run locally inside the build slot (load average about 7) because the task is a build failure: exit 0. Carry-forward: the graph test parses imports with regexes, not a TS parser; a file that builds an import specifier at runtime is not followed.
