@@ -199,6 +199,14 @@ function refused(code: string): void {
   logger.info({ code }, "checkout.refused");
 }
 
+/**
+ * The product page offered the product but the runtime database holds no row for it: a database
+ * migrated but not seeded (`pnpm db:seed --insert-only`), an operator's fault, so it is loud.
+ */
+function notInDatabase(): void {
+  logger.error({ code: "product_not_in_database" }, "checkout.refused");
+}
+
 /** A refusal into an existing basket (item 4): the notice is stored, no line is (AC-78 keys). */
 async function refuseIntoBasket(
   draft: Draft,
@@ -223,7 +231,38 @@ async function refuseIntoBasket(
   return seeOther(`/${locale}/basket`);
 }
 
-/** `POST /api/checkout/start`. */
+/**
+ * The name and Postgres `SQLSTATE` of an unexpected failure, for the log line: never its message,
+ * which can quote a row (`Key (…)=(…)`), a query's parameters or a connection string. Drizzle
+ * wraps the driver's error, so the `SQLSTATE` is looked for along the `cause` chain: `42P01` (a
+ * table missing: the runtime database is not migrated), `42501` (a role or grant), `28P01` (the
+ * login), `3D000` (no such database).
+ */
+export function failureFields(error: unknown): Record<string, string> {
+  const fields: Record<string, string> = {
+    error_name: error instanceof Error ? error.name : typeof error,
+  };
+  for (
+    let current: unknown = error, depth = 0;
+    typeof current === "object" && current !== null && depth < 5;
+    current = (current as { cause?: unknown }).cause, depth += 1
+  ) {
+    const code = (current as { code?: unknown }).code;
+    if (typeof code === "string" && /^[0-9A-Z]{5}$/u.test(code)) {
+      fields["sql_state"] = code;
+      break;
+    }
+  }
+  return fields;
+}
+
+/**
+ * `POST /api/checkout/start`. Never a 500 (TASK-504): whatever the steps below throw (a database
+ * that is unreachable or not migrated, a role without a grant, an environment that fails
+ * validation) is logged once at error level with the code `start_failed`, the error's name and
+ * its `SQLSTATE`, and the buyer is sent back to the product page, which shows the destination's
+ * state, exactly like any other refusal. Nothing is written by a start that failed.
+ */
 export async function startCheckout(
   request: Request,
   dependencies: StartDependencies = {},
@@ -235,6 +274,22 @@ export async function startCheckout(
   }
 
   const fields = await formFields(request);
+  try {
+    return await startFromFields(request, fields, dependencies);
+  } catch (error) {
+    logger.error(
+      { code: "start_failed", ...failureFields(error) },
+      "checkout.refused",
+    );
+    return seeOther(await backTo(fields).catch(() => "/"));
+  }
+}
+
+async function startFromFields(
+  request: Request,
+  fields: Record<string, string> | null,
+  dependencies: StartDependencies,
+): Promise<Response> {
   const parsed = CheckoutStartSchema.safeParse(fields ?? undefined);
   if (!parsed.success) {
     refused("invalid_selection");
@@ -413,7 +468,7 @@ export async function startCheckout(
       return seeOther(destination, [basketCookieHeader(appended.position)]);
     }
     if (appended.status === "missing") {
-      refused("product_not_in_database");
+      notInDatabase();
       return seeOther(await backTo(fields));
     }
     // `placed`: placed between the read and the lock; a new basket below.
@@ -424,7 +479,7 @@ export async function startCheckout(
     connection,
   );
   if (created === null) {
-    refused("product_not_in_database");
+    notInDatabase();
     return seeOther(await backTo(fields));
   }
   logger.info(
