@@ -15,7 +15,12 @@
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { CUSTOMER_VIEWS, PARTNER_VIEWS, PUBLIC_VIEWS } from "../../db/rls.ts";
+import {
+  CUSTOMER_VIEWS,
+  PARTNER_VIEWS,
+  PUBLIC_VIEWS,
+  STAFF_VIEWS,
+} from "../../db/rls.ts";
 import * as schema from "../../db/schema/index.ts";
 import {
   probeLocalServer,
@@ -42,6 +47,8 @@ const VIEWS = [
   ...Object.keys(CUSTOMER_VIEWS),
   // 0024 (TASK-321): the public author view (spec 044 §5.1 item 7).
   ...Object.keys(PUBLIC_VIEWS),
+  // 0039 (TASK-439): the two finance views (spec 030b §5.1), staff only.
+  ...STAFF_VIEWS,
 ];
 
 /** Functions the migrations create (trigger functions and `set_updated_at`). */
@@ -102,6 +109,10 @@ const FUNCTIONS = [
   "outbox_delivery_fanout",
   "partner_application_media_check",
   "partner_coverage_country_check",
+  // 0039 (TASK-439): the retention clock of the CRM rows (spec 030b §5.1).
+  "partner_offboarded_at",
+  // 0039 (TASK-439): a provider balance fact is never changed (spec 030b §5.1, AC-9).
+  "payment_balance_txn_immutable",
   "payout_currency_check",
   // 0035 (TASK-363): the payout lifecycle (spec 030a §5.1).
   "payout_line_frozen",

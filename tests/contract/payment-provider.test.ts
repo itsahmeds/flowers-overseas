@@ -88,7 +88,7 @@ describe("the Stripe adapter against recorded responses", () => {
 });
 
 describe("the contract suite itself", () => {
-  it("covers create, retrieve, capture, cancel, refund, refund and dispute lookups, webhook verify and parse, and event listing", () => {
+  it("covers create, retrieve, capture, cancel, refund, refund and dispute lookups, webhook verify and parse, event listing and balance facts (spec 030b)", () => {
     const names = PAYMENT_PROVIDER_CONTRACT.map(
       (contractCase) => contractCase.name.split(":")[0],
     );
@@ -103,6 +103,7 @@ describe("the contract suite itself", () => {
         "dispute lookup",
         "webhook",
         "events",
+        "balance",
       ]),
     );
   });

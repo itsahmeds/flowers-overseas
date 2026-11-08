@@ -337,6 +337,87 @@ export function formatPercentFromBasisPoints(
 }
 
 /**
+ * Spec 030b §5.2 `format.ts` (TASK-440): the admin finance formatters. Each builds an exact
+ * decimal string by integer arithmetic (`decimalString`) and hands that string to
+ * `Intl.NumberFormat`, so no float is ever formed.
+ *
+ *  - `formatRatePpm(865000, "EUR", "GBP")` → `1 EUR = 0.865000 GBP`: a rate in parts per million
+ *    of the quote currency per one unit of the base, six decimals always (§7 "Formatting");
+ *  - `formatPercentBp(2536)` → `25.36%`: basis points of a percentage, two decimals always (a
+ *    margin; `formatPercentFromBasisPoints` is the buyer-facing VAT rate with up to two);
+ *  - `formatRatingBp(9000)` → `4.50`: a 0 to 10 000 bp rating on the five-point scale, two
+ *    decimals, half away from zero.
+ */
+export function formatRatePpm(
+  ratePpm: number | bigint,
+  base: string,
+  quote: string,
+  locale: LocaleCode,
+): string {
+  const ppm = BigInt(
+    z
+      .union([z.number().int().positive(), z.bigint().positive()])
+      .parse(ratePpm),
+  );
+  const rate = numberFormat(tagFor(locale), {
+    minimumFractionDigits: 6,
+    maximumFractionDigits: 6,
+    useGrouping: "always",
+  }).format(decimalString(ppm, 6));
+  const one = numberFormat(tagFor(locale), {}).format(1);
+  return `${one} ${base} = ${rate} ${quote}`;
+}
+
+export function formatPercentBp(
+  basisPoints: number | bigint,
+  locale: LocaleCode,
+): string {
+  const bp = BigInt(z.union([z.number().int(), z.bigint()]).parse(basisPoints));
+  return numberFormat(tagFor(locale), {
+    style: "percent",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(decimalString(bp, 4));
+}
+
+export function formatRatingBp(
+  basisPoints: number | bigint,
+  locale: LocaleCode,
+): string {
+  const bp = BigInt(
+    z
+      .union([z.number().int().min(0).max(10_000), z.bigint()])
+      .parse(basisPoints),
+  );
+  // bp × 5 ÷ 10 000 out of 5, in hundredths: bp ÷ 20, half away from zero (bp is never negative).
+  const hundredths = (bp * 2n + 20n) / 40n;
+  return numberFormat(tagFor(locale), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(decimalString(hundredths, 2));
+}
+
+/**
+ * Spec 030b §5.3 (TASK-440): an amount in minor units as a plain number in its currency's
+ * exponent, no symbol (`5302` EUR → `53.02`, `-19` → `-0.19`): the finance tables name the
+ * reporting currency in the column header and show the number only.
+ */
+export function formatMinorNumber(
+  amountMinor: number | bigint,
+  currency: CurrencyCode,
+  locale: LocaleCode,
+): string {
+  const units = BigInt(
+    z.union([z.number().int(), z.bigint()]).parse(amountMinor),
+  );
+  const { minorUnitExponent } = currencyConfig(currency);
+  return numberFormat(tagFor(locale), {
+    minimumFractionDigits: minorUnitExponent,
+    maximumFractionDigits: minorUnitExponent,
+  }).format(decimalString(units, minorUnitExponent));
+}
+
+/**
  * `short` is the numeric form (`14/02/2027` / `14.02.2027`) for tables and metadata;
  * `deliveryDate` is `plan/03` §7's unambiguous weekday + month-name form (`Sat 13 Feb`,
  * `Sa., 13. Feb.`, `sob., 13 lut`) and is the one a buyer picks and a florist reads.

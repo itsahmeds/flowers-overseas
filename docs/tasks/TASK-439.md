@@ -25,7 +25,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From self-review (2026-11-08, FN439):** `webhook.process` has no job handler in `JOB_HANDLERS` yet (TASK-266's carry-forward), so the webhook enqueue of `payments.balance_fetch` only fires once TASK-266 lands; the hourly `payments.balance_sweep` covers every source meanwhile.
+- **From self-review (2026-11-08, FN439):** `tests/contract/fixtures/stripe/2026-09-30.endive/balance_transaction.json` is written in Stripe's documented shape, not byte-copied from a live account (Stripe is not keyed on staging); replace it with a recorded response once a test key exists.
+- **Founder step after deploy:** the restricted Stripe key needs "Balance transactions: Read" and "PaymentIntents: Read"; then run `pnpm payments:backfill-balance --since <ISO>` once.
+- **Pre-existing on main, not this PR:** unit `rls-policies` "staff-only tables have no other policy" (review's `review_read`), integration `audit-trail` and `migrations-round-trip` (0037's discount tables and `discount_code_shape_check` missing from their lists), unit `jobs-runtime` (TASK-488's `alerts.*` queues missing from its lists), unit `i18n-barrel` (`instantToWallClock`, `wallClockToInstant` unpinned).
 
 ## Escalations
 
@@ -39,11 +42,9 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 (builder FN439, PR 520): migration first numbered `0038`, renumbered `0039_finance_crm_030b` after TASK-488's `0038_ops_alerts` merged (coordinator). Migration, down file, mirror, snapshot, `balanceFacts` (Stripe, fake, contract case), `recordBalanceFacts`, both jobs, the webhook enqueue, retention handlers, flag. Tests: contract `payment-balance.test.ts` (5) + the contract suite's new case; integration `finance-balance-030b.test.ts` (11, PG16 scratch). Next: the backfill script, then TASK-440.
+- 2026-11-08 (FN439): `pnpm payments:backfill-balance` and its internal route; rebased on main after `0038_ops_alerts`, branch squashed to one commit for the rebase, snapshot regenerated, `pnpm db:check` exit 0 (39 migrations, RLS 103/103).
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+https://github.com/itsahmeds/flowers-overseas/pull/520 (one feature PR with TASK-440). Migration `0039_finance_crm_030b` + guarded down; `PaymentProvider.balanceFacts` (Stripe adapter, fake, contract case), `recordBalanceFacts`, `payments.balance_fetch` and hourly `payments.balance_sweep`, the webhook enqueue, retention handlers, flag `payments.balance_fetch`, `pnpm payments:backfill-balance`. Tests: contract `payment-balance.test.ts` (5) plus the provider contract case; integration `finance-balance-030b.test.ts` (12, PG16 scratch: T-04, T-06, T-07, T-09, T-10, T-32, T-33, backfill); unit `payments-backfill-balance.test.ts` (2). RoPA and runbook rows are TASK-441's.

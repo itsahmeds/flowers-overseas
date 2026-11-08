@@ -47,6 +47,7 @@ import {
   type OrderExecutor,
 } from "@/modules/orders";
 
+import type { BalanceFetchJobInput } from "./balance.ts";
 import type { PaymentTransaction } from "./context.ts";
 import { applyProviderDispute } from "./disputes.ts";
 import { applyProviderRefund, type ProviderRefundApplied } from "./refunds.ts";
@@ -237,6 +238,12 @@ export interface ProcessDeps extends Pick<
   readonly transaction?: PaymentTransaction;
   /** The lifecycle's own transactions; defaults to `transaction`. */
   readonly lifecycle?: Omit<LifecycleDeps, "provider">;
+  /**
+   * Spec 030b §2.2 (TASK-439): asks for `payments.balance_fetch` after the run's transaction has
+   * committed, for a `payment_intent.succeeded`, a succeeded refund, and a dispute created or
+   * closed. Absent: nothing is asked (the hourly sweep still finds the source).
+   */
+  readonly enqueueBalanceFetch?: (job: BalanceFetchJobInput) => Promise<void>;
 }
 
 export type ProcessOutcome =
@@ -262,11 +269,21 @@ class WebhookRetry extends Error {
   }
 }
 
+/** The balance fetches a run asks for once it has committed (spec 030b §2.2). */
+type BalanceJobs = BalanceFetchJobInput[];
+
+const DISPUTE_BALANCE_TYPES: ReadonlySet<string> = new Set([
+  "charge.dispute.created",
+  "charge.dispute.closed",
+]);
+
 async function routePaymentIntent(
+  type: string,
   objectRef: string,
   deps: ProcessDeps,
   lifecycle: LifecycleDeps,
   executor: OrderExecutor,
+  balanceJobs: BalanceJobs,
 ): Promise<Routed> {
   const [payment] = await executor.execute(sql`
     SELECT id FROM payment WHERE provider_ref = ${objectRef}`);
@@ -278,6 +295,9 @@ async function routePaymentIntent(
     throw new WebhookRetry(`retrieve_${intent.failure}`);
   }
   const result = await reconcile(paymentId, intent, lifecycle);
+  if (type === "payment_intent.succeeded" && intent.status === "succeeded") {
+    balanceJobs.push({ paymentId, source: { kind: "intent", ref: objectRef } });
+  }
   return result.outcome === "stale" || result.outcome === "unchanged"
     ? { kind: "ignored", reason: "stale" }
     : { kind: "processed" };
@@ -297,6 +317,8 @@ async function routeRefund(
   objectRef: string,
   deps: ProcessDeps,
   lifecycle: LifecycleDeps,
+  executor: OrderExecutor,
+  balanceJobs: BalanceJobs,
 ): Promise<Routed> {
   const now = lifecycle.now?.() ?? new Date();
   const alert = lifecycle.alert ?? raiseLegacyAlert;
@@ -320,15 +342,28 @@ async function routeRefund(
     }
     return outcomes;
   });
+  for (const remote of list) {
+    if (remote.status !== "succeeded") continue;
+    const [row] = await executor.execute(sql`
+      SELECT payment_id FROM refund WHERE provider_ref = ${remote.ref} AND status = 'succeeded'`);
+    if (row === undefined) continue;
+    balanceJobs.push({
+      paymentId: z.uuid().parse(row["payment_id"]),
+      source: { kind: "refund", ref: remote.ref },
+    });
+  }
   if (applied.includes("changed")) return routedOf("changed");
   if (applied.includes("unchanged")) return routedOf("unchanged");
   return routedOf("unknown");
 }
 
 async function routeDispute(
+  type: string,
   objectRef: string,
   deps: ProcessDeps,
   lifecycle: LifecycleDeps,
+  executor: OrderExecutor,
+  balanceJobs: BalanceJobs,
 ): Promise<Routed> {
   const remote = await deps.provider.retrieveDispute(objectRef);
   if (isProviderFailure(remote)) {
@@ -340,11 +375,22 @@ async function routeDispute(
   const now = lifecycle.now?.() ?? new Date();
   const alert = lifecycle.alert ?? raiseLegacyAlert;
   const transaction = lifecycle.transaction ?? systemTransaction;
-  return routedOf(
-    await transaction((executor) =>
-      applyProviderDispute(executor, remote, now, alert),
+  const routed = routedOf(
+    await transaction((inner) =>
+      applyProviderDispute(inner, remote, now, alert),
     ),
   );
+  if (DISPUTE_BALANCE_TYPES.has(type)) {
+    const [row] = await executor.execute(sql`
+      SELECT payment_id FROM payment_dispute WHERE provider_ref = ${objectRef}`);
+    if (row !== undefined) {
+      balanceJobs.push({
+        paymentId: z.uuid().parse(row["payment_id"]),
+        source: { kind: "dispute", ref: objectRef },
+      });
+    }
+  }
+  return routed;
 }
 
 /**
@@ -369,73 +415,114 @@ export async function processWebhook(
       : { methodSources: deps.lifecycle.methodSources }),
   };
 
-  return transaction(async (executor): Promise<ProcessOutcome> => {
-    const [raw] = await executor.execute(sql`
+  const balanceJobs: BalanceJobs = [];
+  const outcome = await transaction(
+    async (executor): Promise<ProcessOutcome> => {
+      const [raw] = await executor.execute(sql`
       SELECT id, status, attempts, event_type, object_ref FROM webhook_inbox
       WHERE id = ${id} FOR UPDATE SKIP LOCKED`);
-    if (raw === undefined) return { kind: "skipped", status: "busy" };
-    const status = z.string().parse(raw["status"]);
-    if (!OPEN_STATUSES.has(status)) return { kind: "skipped", status };
-    const attempts = z.number().int().parse(raw["attempts"]) + 1;
+      if (raw === undefined) return { kind: "skipped", status: "busy" };
+      const status = z.string().parse(raw["status"]);
+      if (!OPEN_STATUSES.has(status)) return { kind: "skipped", status };
+      const attempts = z.number().int().parse(raw["attempts"]) + 1;
 
-    let routed: Routed;
-    try {
-      const row = InboxEventSchema.safeParse(raw);
-      if (!row.success) throw new WebhookRetry("schema_invalid");
-      const type = row.data.event_type;
-      if (type.startsWith(PAYMENT_INTENT_PREFIX)) {
-        routed = await routePaymentIntent(
-          row.data.object_ref,
-          deps,
-          lifecycle,
-          executor,
-        );
-      } else if (REFUND_TYPES.has(type) || type === CHARGE_REFUNDED) {
-        routed = await routeRefund(type, row.data.object_ref, deps, lifecycle);
-      } else if (type.startsWith(DISPUTE_PREFIX)) {
-        routed = await routeDispute(row.data.object_ref, deps, lifecycle);
-      } else {
-        routed = { kind: "ignored", reason: "unknown_type" };
-      }
-    } catch (error) {
-      const code =
-        error instanceof WebhookRetry
-          ? error.code
-          : error instanceof Error
-            ? error.name
-            : "unknown";
-      const dead = attempts >= WEBHOOK_MAX_ATTEMPTS;
-      await executor.execute(sql`
+      let routed: Routed;
+      try {
+        const row = InboxEventSchema.safeParse(raw);
+        if (!row.success) throw new WebhookRetry("schema_invalid");
+        const type = row.data.event_type;
+        if (type.startsWith(PAYMENT_INTENT_PREFIX)) {
+          routed = await routePaymentIntent(
+            type,
+            row.data.object_ref,
+            deps,
+            lifecycle,
+            executor,
+            balanceJobs,
+          );
+        } else if (REFUND_TYPES.has(type) || type === CHARGE_REFUNDED) {
+          routed = await routeRefund(
+            type,
+            row.data.object_ref,
+            deps,
+            lifecycle,
+            executor,
+            balanceJobs,
+          );
+        } else if (type.startsWith(DISPUTE_PREFIX)) {
+          routed = await routeDispute(
+            type,
+            row.data.object_ref,
+            deps,
+            lifecycle,
+            executor,
+            balanceJobs,
+          );
+        } else {
+          routed = { kind: "ignored", reason: "unknown_type" };
+        }
+      } catch (error) {
+        const code =
+          error instanceof WebhookRetry
+            ? error.code
+            : error instanceof Error
+              ? error.name
+              : "unknown";
+        const dead = attempts >= WEBHOOK_MAX_ATTEMPTS;
+        await executor.execute(sql`
         UPDATE webhook_inbox
         SET status = ${dead ? "dead" : "failed"}, attempts = ${attempts}, last_error = ${code}
         WHERE id = ${id}`);
-      logger.warn(
-        { inbox_id: id, attempts, error_class: code, dead },
-        "payments.webhook_failed",
-      );
-      if (dead) {
-        alert("webhook.dead", { inbox_id: id, provider: "stripe" });
-        return { kind: "dead" };
+        logger.warn(
+          { inbox_id: id, attempts, error_class: code, dead },
+          "payments.webhook_failed",
+        );
+        balanceJobs.length = 0;
+        if (dead) {
+          alert("webhook.dead", { inbox_id: id, provider: "stripe" });
+          return { kind: "dead" };
+        }
+        return { kind: "failed", attempts };
       }
-      return { kind: "failed", attempts };
-    }
 
-    await executor.execute(sql`
+      await executor.execute(sql`
       UPDATE webhook_inbox
       SET status = ${routed.kind}, attempts = ${attempts},
           ignore_reason = ${routed.kind === "ignored" ? routed.reason : null},
           processed_at = ${now().toISOString()}::timestamptz, last_error = NULL
       WHERE id = ${id}`);
-    logger.info(
-      {
-        inbox_id: id,
-        outcome: routed.kind,
-        ...(routed.kind === "ignored" ? { reason: routed.reason } : {}),
-      },
-      "payments.webhook_processed",
-    );
-    return routed;
-  });
+      logger.info(
+        {
+          inbox_id: id,
+          outcome: routed.kind,
+          ...(routed.kind === "ignored" ? { reason: routed.reason } : {}),
+        },
+        "payments.webhook_processed",
+      );
+      return routed;
+    },
+  );
+
+  // Spec 030b §2.2: after the commit, never inside it. A failed enqueue loses nothing: the hourly
+  // `payments.balance_sweep` finds every source still without a row.
+  if (deps.enqueueBalanceFetch !== undefined) {
+    for (const job of balanceJobs) {
+      try {
+        await deps.enqueueBalanceFetch(job);
+      } catch (error) {
+        logger.warn(
+          {
+            inbox_id: id,
+            payment_id: job.paymentId,
+            source_kind: job.source.kind,
+            error_class: error instanceof Error ? error.name : "unknown",
+          },
+          "payments.balance_enqueue_failed",
+        );
+      }
+    }
+  }
+  return outcome;
 }
 
 // ---------------------------------------------------------------------------------------------

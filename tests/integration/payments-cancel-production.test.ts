@@ -628,6 +628,7 @@ describe.skipIf(server.url === undefined)(
           retrieveRefund: (ref) => paid.fake.retrieveRefund(ref),
           listChargeRefunds: (ref) => paid.fake.listChargeRefunds(ref),
           retrieveDispute: (ref) => paid.fake.retrieveDispute(ref),
+          balanceFacts: (source) => paid.fake.balanceFacts(source),
         };
         await cancel(orderId, "buyer", "buyer_cancel");
         await deliver(orderId, depsOf(flaky));

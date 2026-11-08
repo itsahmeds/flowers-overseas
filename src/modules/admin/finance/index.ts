@@ -1,0 +1,73 @@
+/**
+ * Public barrel for `admin/finance` (spec 030b §5.2; TASK-440): the pure order-money
+ * calculation, the range schema, the reads and the management-figures CSV. Server only; imported
+ * by `src/app/admin` and this module's tests, nowhere else (AC-5).
+ */
+export {
+  addDays,
+  allocateByWeight,
+  AllocationWeightsZero,
+  ENDED_WITHOUT_WORK_STATUSES,
+  exponentOf,
+  FINANCE_REASONS,
+  type FinanceBalanceRow,
+  type FinanceGroup,
+  type FinanceOrderFacts,
+  type FinancePayoutLine,
+  type FinanceReason,
+  type FinanceRefund,
+  marginBp,
+  newestRate,
+  type OrderMargin,
+  orderMargin,
+  type RateBook,
+  rateBookOf,
+  type RateRow,
+  rateOn,
+  type RateUse,
+  refundVatEstimate,
+  type ReportingFigures,
+  rollUp,
+  toReporting,
+  type VatSplit,
+  type WeightedPart,
+} from "./margin";
+export {
+  daysInRange,
+  financeBases,
+  type FinanceExportKind,
+  financeExportKinds,
+  type FinanceExportQuery,
+  FinanceExportQuerySchema,
+  financeFigureFilters,
+  financeModes,
+  type FinanceRange,
+  type FinanceRangeError,
+  type FinanceRangeResult,
+  FinanceRangeSchema,
+  isCalendarDay,
+  parseFinanceRange,
+  rangeQuery,
+  todayIn,
+} from "./range";
+export {
+  FINANCE_VIEW_ACTION,
+  financeOrderFacts,
+  type FinanceRunner,
+  financeRunner,
+  financeOrders,
+  orderMoney,
+  type PartnerPosition,
+  type PortfolioOverview,
+  portfolioOverview,
+  rateBook,
+  readFinance,
+} from "./queries";
+export {
+  exportFinanceCsv,
+  FINANCE_EXPORT_ACTION,
+  FINANCE_EXPORT_ENTITY,
+  financeCsv,
+  type FinanceCsvFile,
+  financeCsvFilename,
+} from "./csv";

@@ -13,6 +13,7 @@ import { createHmac } from "node:crypto";
 
 import { http, HttpResponse, type RequestHandler } from "msw";
 
+import balanceFixture from "../fixtures/stripe/2026-09-30.endive/balance_transaction.json" with { type: "json" };
 import chargeFixture from "../fixtures/stripe/2026-09-30.endive/charge.json" with { type: "json" };
 import disputeFixture from "../fixtures/stripe/2026-09-30.endive/dispute.json" with { type: "json" };
 import eventFixture from "../fixtures/stripe/2026-09-30.endive/event.json" with { type: "json" };
@@ -113,6 +114,8 @@ export class StripeEmulator {
   private readonly refunded = new Map<string, number>();
   private readonly refunds = new Map<string, Json>();
   private readonly disputes = new Map<string, Json>();
+  /** Balance transactions by their `source` (`ch_…`, `re_…`, `dp_…`), oldest first. */
+  private readonly balance = new Map<string, Json[]>();
   private readonly events: Json[] = [];
   private readonly idempotent = new Map<
     string,
@@ -240,12 +243,28 @@ export class StripeEmulator {
       }),
 
       http.get(`${base}/payment_intents/:id`, async ({ request, params }) => {
-        await this.read(request);
+        const recorded = await this.read(request);
         const intent = this.intents.get(String(params["id"]));
         if (intent === undefined) {
           return stripeError(404, "invalid_request_error", "resource_missing");
         }
-        return HttpResponse.json(this.intentView(intent, true));
+        // As Stripe does: the charge is an object only when `expand[]=latest_charge` asks.
+        const expand = recorded.pairs.some(
+          ([key, value]) => key === "expand[]" && value === "latest_charge",
+        );
+        return HttpResponse.json(this.intentView(intent, expand));
+      }),
+
+      http.get(`${base}/balance_transactions`, async ({ request }) => {
+        const recorded = await this.read(request);
+        const source = String(recorded.params["source"] ?? "");
+        const newestFirst = [...(this.balance.get(source) ?? [])].reverse();
+        return HttpResponse.json({
+          object: "list",
+          url: "/v1/balance_transactions",
+          has_more: false,
+          data: clone(newestFirst),
+        });
       }),
 
       http.post(
@@ -359,6 +378,7 @@ export class StripeEmulator {
             status: "succeeded",
           };
           this.refunds.set(String(refund["id"]), refund);
+          this.addBalance(String(refund["id"]), "refund", -amount, 0);
           return { status: 200, body: refund };
         });
       }),
@@ -482,9 +502,70 @@ export class StripeEmulator {
     return id;
   }
 
+  /**
+   * Adds one balance transaction to `source`, in the fixture's shape. EUR intents settle 1:1 here;
+   * a test that needs Stripe's FX plants the recorded values with `setBalanceTransactions`.
+   */
+  private addBalance(
+    source: string,
+    category: string,
+    amount: number,
+    fee: number,
+  ): void {
+    const list = this.balance.get(source) ?? [];
+    list.push({
+      ...clone(balanceFixture),
+      id: this.id("txn"),
+      amount,
+      fee,
+      net: amount - fee,
+      currency: "eur",
+      exchange_rate: null,
+      created: this.seconds(),
+      available_on: this.seconds() + 2 * 86_400,
+      reporting_category: category,
+      type: category === "charge" ? "charge" : category,
+      source,
+      description: "Emulated balance transaction (never stored)",
+    });
+    this.balance.set(source, list);
+  }
+
+  /** Replaces the balance transactions of `source` with recorded ones (Stripe's own shape). */
+  setBalanceTransactions(source: string, transactions: readonly Json[]): void {
+    this.balance.set(
+      source,
+      transactions.map((txn) => ({
+        ...clone(balanceFixture),
+        ...clone(txn),
+        source,
+      })),
+    );
+  }
+
+  /** Makes the intent's fixture carry a billing name and email on its charge, as Stripe's would. */
+  plantBillingDetails(ref: string, name: string, email: string): void {
+    const chargeId = this.intent(ref)["latest_charge"];
+    const charge =
+      typeof chargeId === "string" ? this.charges.get(chargeId) : undefined;
+    if (charge !== undefined) {
+      charge["billing_details"] = { name, email, address: null, phone: null };
+    }
+    this.intent(ref)["receipt_email"] = email;
+  }
+
   simulateSuccess(ref: string): Promise<void> {
     const intent = this.intent(ref);
     intent["latest_charge"] = this.newCharge(intent, true);
+    if (intent["currency"] === "eur") {
+      const amount = Number(intent["amount"]);
+      this.addBalance(
+        String(intent["latest_charge"]),
+        "charge",
+        amount,
+        Math.floor((amount * 15 + 500) / 1000) + 25,
+      );
+    }
     intent["status"] = "succeeded";
     intent["amount_received"] = intent["amount"];
     intent["last_payment_error"] = null;
@@ -555,6 +636,7 @@ export class StripeEmulator {
       reason,
       status: "needs_response",
     });
+    this.addBalance(id, "dispute", -Number(intent["amount"]), 1500);
     return Promise.resolve(id);
   }
 

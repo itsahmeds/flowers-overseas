@@ -20,8 +20,10 @@ import {
   UnsupportedCurrency,
   minorUnitsForProvider,
   providerFailure,
+  type BalanceSource,
   type CreateIntentInput,
   type PaymentProvider,
+  type ProviderBalanceFact,
   type ProviderDispute,
   type ProviderEvent,
   type ProviderFailure,
@@ -107,6 +109,36 @@ function minorOf(money: Money): number {
   return minorUnitsForProvider(money.amountMinor);
 }
 
+/**
+ * The fake's settlement: every balance fact is in EUR, at these fixed rates (ppm of 1 unit of the
+ * charge currency in EUR), so a GBP 45.90 charge settles at EUR 53.02 exactly as spec 030b's
+ * fixture does. Integer arithmetic, half up on positive values.
+ */
+export const FAKE_SETTLEMENT_RATE_PPM: Readonly<Record<string, number>> = {
+  EUR: 1_000_000,
+  GBP: 1_155_120,
+  PLN: 235_290,
+};
+const FAKE_RATE_TEXT: Readonly<Record<string, string | null>> = {
+  EUR: null,
+  GBP: "1.15512",
+  PLN: "0.23529",
+};
+
+function settle(amountMinor: number, currency: string): number {
+  const ppm = FAKE_SETTLEMENT_RATE_PPM[currency] ?? 1_000_000;
+  return Math.floor((amountMinor * ppm + 500_000) / 1_000_000);
+}
+
+/** The fake's fee: 1.5 % + 25 for a EUR charge, 2.5 % + 25 otherwise, on the settled amount. */
+export function fakeChargeFee(settledMinor: number, currency: string): number {
+  const permille = currency === "EUR" ? 15 : 25;
+  return Math.floor((settledMinor * permille + 500) / 1000) + 25;
+}
+
+/** The fee the fake charges for a dispute (in EUR minor units), returned on a win. */
+export const FAKE_DISPUTE_FEE_MINOR = 1500;
+
 export class FakePaymentProvider implements PaymentProvider {
   readonly name = "fake" as const;
   readonly livemode: boolean;
@@ -124,6 +156,10 @@ export class FakePaymentProvider implements PaymentProvider {
   private counter = 0;
   private readonly namespace: string;
   private readonly refundMode: "sync" | "async";
+  /** Sources whose balance transactions are not available yet (`simulateBalancePending`). */
+  private readonly balancePending = new Set<string>();
+  /** Facts planted on a source beside the generated ones (`simulateBalanceFact`). */
+  private readonly extraFacts = new Map<string, ProviderBalanceFact[]>();
   /** Every call, in order, for tests that assert what the lifecycle asked for. */
   readonly calls: { method: string; ref?: string; key?: string }[] = [];
 
@@ -382,7 +418,150 @@ export class FakePaymentProvider implements PaymentProvider {
     );
   }
 
+  balanceFacts(
+    source: BalanceSource,
+  ): Promise<readonly ProviderBalanceFact[] | ProviderFailure> {
+    this.calls.push({ method: "balanceFacts", ref: source.ref });
+    const at = this.clock();
+    const fact = (
+      sourceRef: string,
+      suffix: string,
+      category: string,
+      presentment: ProviderBalanceFact["presentment"],
+      amountMinor: number,
+      feeMinor: number,
+      currency: string,
+    ): ProviderBalanceFact => ({
+      providerTxnRef: `${this.namespace}_txn_${sourceRef}${suffix}`,
+      sourceRef,
+      providerType: category === "charge" ? "charge" : category,
+      reportingCategory: category,
+      presentment,
+      amountMinor,
+      feeMinor,
+      netMinor: amountMinor - feeMinor,
+      settlementCurrency: "EUR",
+      exchangeRate: FAKE_RATE_TEXT[currency] ?? null,
+      createdAt: at,
+      availableOn: null,
+      livemode: this.livemode,
+    });
+    let generated: ProviderBalanceFact[] = [];
+    let sourceRef = source.ref;
+    if (source.kind === "intent") {
+      const state = this.intents.get(source.ref);
+      if (state === undefined)
+        return Promise.resolve(providerFailure("not_found"));
+      if (state.chargeRef === undefined) return Promise.resolve([]);
+      sourceRef = state.chargeRef;
+      const settled = settle(minorOf(state.amount), state.amount.currency);
+      generated = [
+        fact(
+          sourceRef,
+          "",
+          "charge",
+          {
+            amountMinor: minorOf(state.amount),
+            currency: state.amount.currency,
+          },
+          settled,
+          fakeChargeFee(settled, state.amount.currency),
+          state.amount.currency,
+        ),
+      ];
+    } else if (source.kind === "refund") {
+      const refund = this.refunds.get(source.ref);
+      if (refund === undefined)
+        return Promise.resolve(providerFailure("not_found"));
+      if (refund.status === "succeeded") {
+        generated = [
+          fact(
+            source.ref,
+            "",
+            "refund",
+            null,
+            -settle(minorOf(refund.amount), refund.amount.currency),
+            0,
+            refund.amount.currency,
+          ),
+        ];
+      }
+    } else {
+      const dispute = this.disputes.get(source.ref);
+      if (dispute === undefined)
+        return Promise.resolve(providerFailure("not_found"));
+      const settled = settle(minorOf(dispute.amount), dispute.amount.currency);
+      generated = [
+        fact(
+          source.ref,
+          "",
+          "dispute",
+          null,
+          -settled,
+          FAKE_DISPUTE_FEE_MINOR,
+          dispute.amount.currency,
+        ),
+      ];
+      if (dispute.status === "won") {
+        generated.push(
+          fact(
+            source.ref,
+            "_reversal",
+            "dispute_reversal",
+            null,
+            settled,
+            -FAKE_DISPUTE_FEE_MINOR,
+            dispute.amount.currency,
+          ),
+        );
+      }
+    }
+    if (this.balancePending.has(sourceRef)) return Promise.resolve([]);
+    return Promise.resolve([
+      ...generated,
+      ...(this.extraFacts.get(sourceRef) ?? []).map((extra) => ({ ...extra })),
+    ]);
+  }
+
   // --- simulation hooks -------------------------------------------------------------------
+
+  /** The provider has not settled `sourceRef` yet: `balanceFacts` lists nothing until released. */
+  simulateBalancePending(sourceRef: string, pending: boolean): Promise<void> {
+    if (pending) this.balancePending.add(sourceRef);
+    else this.balancePending.delete(sourceRef);
+    return Promise.resolve();
+  }
+
+  /**
+   * Plants one more fact on `sourceRef` (a `platform_fee`, say), settled in EUR with no fee unless
+   * given. Its reference is `{namespace}_txn_{sourceRef}_{suffix}`.
+   */
+  simulateBalanceFact(
+    sourceRef: string,
+    suffix: string,
+    reportingCategory: string,
+    amountMinor: number,
+    feeMinor = 0,
+  ): Promise<void> {
+    const list = this.extraFacts.get(sourceRef) ?? [];
+    list.push({
+      providerTxnRef: `${this.namespace}_txn_${sourceRef}_${suffix}`,
+      sourceRef,
+      providerType: reportingCategory,
+      reportingCategory,
+      presentment: null,
+      amountMinor,
+      feeMinor,
+      netMinor: amountMinor - feeMinor,
+      settlementCurrency: "EUR",
+      exchangeRate: null,
+      createdAt: this.clock(),
+      availableOn: null,
+      livemode: this.livemode,
+    });
+    this.extraFacts.set(sourceRef, list);
+    return Promise.resolve();
+  }
 
   private state(ref: string): FakeIntentState {
     const state = this.intents.get(ref);

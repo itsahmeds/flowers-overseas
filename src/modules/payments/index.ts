@@ -166,3 +166,35 @@ export type {
   ReplayOptions,
   StripeEndpointConfig,
 } from "./webhooks.ts";
+
+// Spec 030b §2.2, §5.2 (TASK-439): the provider's balance facts (fee, settled amount, FX), the
+// fetch job, its hourly sweep and the backfill. The provider is built from the environment at the
+// first fetch (`balanceProviderFromEnv`), never at import.
+export {
+  BALANCE_FETCH_DEAD_ALERT,
+  BALANCE_FETCH_JOB,
+  BALANCE_FLAG,
+  BALANCE_KINDS,
+  BALANCE_SWEEP_JOB,
+  BALANCE_UNKNOWN_CATEGORY_ALERT,
+  balanceBackfillJobs,
+  balanceFetchKey,
+  BalanceFetchJobSchema,
+  balanceKindOf,
+  BalanceSourceSchema,
+  FEES_MISSING_ALERT,
+  recordBalanceFacts,
+  runBalanceBackfill,
+  runBalanceFetch,
+  runBalanceSweep,
+} from "./balance.ts";
+export type {
+  BalanceFetchJob,
+  BalanceFetchJobInput,
+  BalanceFetchOutcome,
+  BalanceJobDeps,
+  BalanceKind,
+  BalanceSweepCounts,
+  BalanceSweepDeps,
+} from "./balance.ts";
+export { stripeProviderFromEnv as balanceProviderFromEnv } from "./provider-env.ts";

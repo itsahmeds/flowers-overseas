@@ -882,6 +882,34 @@ const opsAlert: PolicyHandler = async ({ db, cutoff, dryRun }) => {
   };
 };
 
+/**
+ * Spec 030b §5.1, §13 Q11 (TASK-439): a florist's notes and contact log are deleted once the
+ * florist has been offboarded for the policy's period (`offboarded_at` at or before `cutoff`).
+ * A florist that is not offboarded keeps every row; the founder deletes notes by hand.
+ */
+function partnerCrmRows(
+  table: "partner_note" | "partner_contact_log",
+): PolicyHandler {
+  const name = sql.raw(table);
+  return async ({ db, cutoff, dryRun }) => {
+    const due = sql`${name}.partner_id IN (
+      SELECT p.id FROM public.fulfillment_partner p
+      WHERE p.offboarded_at IS NOT NULL AND p.offboarded_at <= ${ts(cutoff)})`;
+    const counted = await rows<{ count: number }>(
+      db,
+      sql`SELECT count(*)::int AS count FROM public.${name} WHERE ${due}`,
+    );
+    if (!dryRun) {
+      await db.execute(sql`DELETE FROM public.${name} WHERE ${due}`);
+    }
+    return {
+      status: dryRun ? "dry_run" : "applied",
+      counts: { [table]: counted[0]?.count ?? 0 },
+      skipped: {},
+    };
+  };
+}
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -899,6 +927,8 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   audit_log: auditLog,
   auth_email_send: authEmailSend,
   ops_alert: opsAlert,
+  partner_note: partnerCrmRows("partner_note"),
+  partner_contact_log: partnerCrmRows("partner_contact_log"),
 };
 
 /**

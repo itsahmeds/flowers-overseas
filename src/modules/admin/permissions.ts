@@ -34,6 +34,12 @@ export const adminPermissions = [
   // spec 047 §5.2 (TASK-446): the discount codes pages and their three actions.
   "discounts.read",
   "discounts.write",
+  // spec 030b §5.2 (TASK-440): money figures and their export (admin only), and the florist
+  // relationship record (admin and ops), which TASK-441's tabs read.
+  "finance.view",
+  "finance.export",
+  "partner.crm.view",
+  "partner.crm.write",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -62,6 +68,11 @@ export const ADMIN_PERMISSIONS: Readonly<
   // spec 047 §13 Q12: `admin` creates and edits; `admin` and `finance` read.
   "discounts.read": ["admin", "finance"],
   "discounts.write": ["admin"],
+  // spec 030b §5.2, §13 Q1 and Q2: money is admin only; ops read and write the relationship.
+  "finance.view": ["admin"],
+  "finance.export": ["admin"],
+  "partner.crm.view": ["admin", "ops"],
+  "partner.crm.write": ["admin", "ops"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

@@ -28,7 +28,8 @@
       "audit": "Audit log",
       "users": "Users",
       "payouts": "Payouts",
-      "discounts": "Discounts"
+      "discounts": "Discounts",
+      "finance": "Finance"
     },
     "roles": {
       "admin": "admin",
@@ -324,7 +325,8 @@
           "issue": "Issues an invoice for every paid live order to this country. Turn on only after the accountant has signed off the VAT setup."
         },
         "payments": {
-          "stripe": "Lets buyers pay through Stripe wherever checkout is open. Off sends new checkouts back to demo mode."
+          "stripe": "Lets buyers pay through Stripe wherever checkout is open. Off sends new checkouts back to demo mode.",
+          "balance_fetch": "Fetches each payment's fee, settled amount and currency conversion from Stripe. Off: the fetches wait and finance shows fees pending; nothing is lost."
         },
         "reviews": {
           "invite": "Sends one review email to every delivered order, a day after the photo.",
@@ -1617,6 +1619,202 @@
         "ageMinutes": "{count} min",
         "ageHours": "{count} h",
         "ageDays": "{count} d"
+      }
+    },
+    "finance": {
+      "title": "Finance",
+      "intro": "Management figures for live orders, in {currency} at each order's own rates. Not accounting records.",
+      "testLabel": "Test orders",
+      "testIntro": "Stripe test-mode payments only. Never added to live figures.",
+      "form": {
+        "label": "Choose the range",
+        "from": "From",
+        "to": "To",
+        "basis": "Basis",
+        "basisPaid": "Paid on",
+        "basisDelivery": "Delivery date",
+        "mode": "Orders",
+        "live": "Live",
+        "test": "Test",
+        "country": "Country",
+        "allCountries": "All countries",
+        "partner": "Florist",
+        "allPartners": "All florists",
+        "figures": "Figures",
+        "figuresAll": "All",
+        "submit": "Show figures",
+        "zone": "Dates in {zone}"
+      },
+      "error": {
+        "from_after_to": "From must be on or before To.",
+        "too_long": "Choose a range of {max} days or fewer.",
+        "not_a_date": "This is not a date. Pick one from the calendar."
+      },
+      "tax": {
+        "lead": "Accountant to confirm:",
+        "question": {
+          "supplyModel": "supply model",
+          "payoutVat": "florist VAT in the agreed amount",
+          "selfBilling": "self-billing"
+        },
+        "note": "Until a sign-off file exists, VAT figures are estimates. These are management figures, not accounting records.",
+        "row": "Accountant to confirm"
+      },
+      "basisShort": {
+        "paid": "paid on",
+        "delivery": "delivery date"
+      },
+      "modeShort": {
+        "live": "live",
+        "test": "test"
+      },
+      "totals": {
+        "title": "Totals",
+        "sub": "{from} to {to} · {basis} · {mode}",
+        "orders": "Orders",
+        "grossNative": "Gross, in buyer currencies",
+        "grossEcb": "Gross at ECB",
+        "ratesUsed": "Rates used: each order at its own rates, ECB on its paid day and Stripe as settled.",
+        "ratesLink": "Rates per order",
+        "fxCost": "FX cost",
+        "settled": "Settled by Stripe",
+        "refunds": "Refunds",
+        "vat": "VAT included in prices",
+        "net": "Net sale",
+        "floristCost": "Florist cost",
+        "fees": "Payment fees",
+        "disputes": "Disputes",
+        "margin": "Margin",
+        "marginPercent": "Margin, % of net sale",
+        "includesProvisional": "Includes {count, plural, one {# provisional order} other {# provisional orders}}.",
+        "seeWhy": "See why"
+      },
+      "counts": {
+        "title": "Figures",
+        "final": "Final",
+        "provisional": "Provisional",
+        "rateMissing": "Rate missing",
+        "note": "Provisional figures can still change; each order says why."
+      },
+      "csv": {
+        "orders": "Orders CSV",
+        "countries": "Countries CSV",
+        "florists": "Florists CSV",
+        "download": "Download CSV"
+      },
+      "owed": {
+        "title": "Owed and paid, all florists",
+        "owedNow": "Owed now",
+        "awaitingPhoto": "Earned, awaiting photo",
+        "openAdjustments": "Open adjustments",
+        "paid": "Paid, all time",
+        "none": "None",
+        "note": "Each currency on its own; never added together.",
+        "payouts": "Payouts"
+      },
+      "country": {
+        "title": "By destination country",
+        "caption": "Figures by destination country, {from} to {to}",
+        "country": "Country",
+        "all": "All"
+      },
+      "florist": {
+        "title": "By florist",
+        "caption": "Figures by florist",
+        "florist": "Florist",
+        "city": "City",
+        "owedNow": "Owed now",
+        "unassigned": "No florist yet",
+        "note": "A florist row opens that florist's orders for the same range."
+      },
+      "vat": {
+        "title": "VAT estimate by country",
+        "caption": "VAT included in prices, by destination country",
+        "native": "VAT in prices, buyer currencies",
+        "status": "Status",
+        "note": "The VAT already inside each price, less the VAT of refunds (estimated pro rata where no credit note exists). The VAT return is the accountant's."
+      },
+      "column": {
+        "orders": "Orders",
+        "gross": "Gross, buyer currencies",
+        "net": "Net sale, {currency}",
+        "floristCost": "Florist cost, {currency}",
+        "fees": "Fees, {currency}",
+        "margin": "Margin, {currency}",
+        "marginPercent": "Margin %",
+        "vat": "VAT, {currency}"
+      },
+      "empty": {
+        "title": "No paid orders in this range",
+        "body": "{from} to {to}, {basis}, {mode}. Figures start with the first live payment."
+      },
+      "rateMissing": "{count, plural, one {# order has no ECB rate. Its {currency} figures are left out of the totals and its own-currency figures are listed.} other {# orders have no ECB rate. Their {currency} figures are left out of the totals and their own-currency figures are listed.}}",
+      "allProvisional": {
+        "title": "Every figure in this range is provisional.",
+        "body": "Stripe fees or florist costs are still to come. Each order lists its reasons."
+      },
+      "loading": "Loading figures…",
+      "orders": {
+        "title": "Order figures",
+        "intro": "One row per paid order, with its rates. Management figures, not accounting records.",
+        "caption": "Orders with their money, newest paid first",
+        "order": "Order",
+        "florist": "Florist",
+        "gross": "Gross",
+        "paid": "Paid {time}",
+        "delivery": "Delivery {date}",
+        "foot": "{count, plural, one {# order} other {# orders}}",
+        "footNote": "{count, plural, one {# order} other {# orders}} · newest paid first. The CSV lists them by paid date, then reference.",
+        "emptyTitle": "No orders match",
+        "emptyBody": "Nothing in this range with these filters.",
+        "clear": "Clear filters",
+        "noRate": "No rate",
+        "noRateRange": "No ECB rate, {from} to {to}",
+        "loading": "Loading orders…"
+      },
+      "status": {
+        "final": "Final",
+        "provisional": "Provisional",
+        "rate_missing": "Rate missing"
+      },
+      "reason": {
+        "fees_pending": "Fee pending: Stripe has not reported this payment's fee yet",
+        "fees_unsupported_provider": "Fee not available: this payment provider does not report fees here yet",
+        "refund_pending": "Refund pending: a refund is requested and not settled yet",
+        "florist_not_assigned": "No florist yet: no florist has accepted this order",
+        "florist_cost_pending": "Florist cost pending: the agreed amount until the payout line is written",
+        "adjustment_open": "Adjustment open: a change to the florist amount is still undecided",
+        "fx_rate_missing": "Rate missing: no ECB rate in the {days} days before the date"
+      },
+      "source": {
+        "ecb": "ECB",
+        "stripe": "Stripe"
+      },
+      "rateLine": "{rate} · {date}",
+      "money": {
+        "title": "Money",
+        "grossEcb": "Gross at ECB",
+        "vat": "VAT included in the price",
+        "ecbAt": "at {rate}, {date}",
+        "stripeAt": "settled at {rate}, {date}",
+        "noConversion": "{currency} payment: no conversion",
+        "fxNote": "Stripe's conversion against the ECB rate",
+        "noFeeRow": "No fee row yet: settled taken as gross at ECB",
+        "balanceTxn": "Stripe balance transaction, {date}",
+        "refundsNative": "Refunds of {amount}",
+        "vatNative": "{amount} in the price",
+        "vatEstimate": "refund VAT estimated pro rata, no credit note yet",
+        "floristPaid": "{amount} at {rate}, {date} (paid {paid})",
+        "floristUnpaid": "{amount} at {rate}, {date} (not paid yet: newest rate)",
+        "floristNoRate": "{amount}, no ECB rate yet",
+        "noFlorist": "No accepted florist",
+        "feeStripe": "Stripe fee, in {currency}, from the balance transaction",
+        "feePending": "Fee pending",
+        "feeNotAvailable": "Fee not available for this provider",
+        "balanceTitle": "Balance transactions:",
+        "readOnly": "Read only. Management figures in {currency}; amounts change in Payouts, refunds in Actions.",
+        "notPaid": "No captured payment yet, so this order has no money figures.",
+        "noFigures": "No rate"
       }
     }
   },

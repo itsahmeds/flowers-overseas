@@ -308,7 +308,7 @@ describe("the route files, as Next loads them", () => {
     // §11 (TASK-342) one invoice.render_sweep under its own, before it ticks, so the same tick
     // consumes them; spec 030a §5.2 (TASK-364) adds payouts.close and payouts.watch, each under a
     // key unique for an hour; spec 013 §11 (TASK-264) one payments.monitor under its own key.
-    expect(enqueue).toHaveBeenCalledTimes(10);
+    expect(enqueue).toHaveBeenCalledTimes(11);
     expect(enqueue.mock.calls.map((call) => call.slice(1))).toEqual([
       ["outbox.dispatch", {}, { requestId: "system:jobs.tick" }],
       ["payments.production_start", {}, { requestId: "system:jobs.tick" }],
@@ -350,6 +350,16 @@ describe("the route files, as Next loads them", () => {
         {
           requestId: "system:jobs.tick",
           singletonKey: "payouts.watch",
+          singletonSeconds: 3600,
+        },
+      ],
+      // Spec 030b §5.2 (TASK-439): the balance-fact sweep, hourly.
+      [
+        "payments.balance_sweep",
+        {},
+        {
+          requestId: "system:jobs.tick",
+          singletonKey: "payments.balance_sweep",
           singletonSeconds: 3600,
         },
       ],

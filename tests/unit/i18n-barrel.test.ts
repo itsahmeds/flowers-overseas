@@ -79,12 +79,17 @@ const PINNED_EXPORTS = [
   // `formatDate` value, so the artboard's day, month, weekday and year come from one formatter.
   "formatDateParts",
   "formatList",
+  "formatMinorNumber",
   "formatMoney",
   "formatNumber",
+  // TASK-440 (spec 030b §5.2): the admin finance formatters, exact decimals into `Intl`.
+  "formatPercentBp",
   "formatPercentFromBasisPoints",
   "formatRange",
   // TASK-437: a range's two ends, for a key that joins them in words (no dash).
   "formatRangeEnds",
+  "formatRatePpm",
+  "formatRatingBp",
   // TASK-204 (spec 010 AC-12): a country's name in the locale, for the residence select.
   "formatRegionName",
   "formatRelativeTime",

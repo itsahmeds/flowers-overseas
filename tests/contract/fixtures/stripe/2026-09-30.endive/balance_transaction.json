@@ -1,0 +1,18 @@
+{
+  "amount": 100,
+  "available_on": 1234567890,
+  "balance_type": "payments",
+  "created": 1234567890,
+  "currency": "usd",
+  "description": "My First Test Charge (created for API docs)",
+  "exchange_rate": null,
+  "fee": 0,
+  "fee_details": [],
+  "id": "txn_1MiN3gLkdIwHu7ixxapQrznl",
+  "net": 100,
+  "object": "balance_transaction",
+  "reporting_category": "charge",
+  "source": "ch_3MiN3gLkdIwHu7ix0snN0B15",
+  "status": "available",
+  "type": "charge"
+}

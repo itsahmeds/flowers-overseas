@@ -134,6 +134,35 @@ export const StripeEventListSchema = z.object({
   data: z.array(StripeEventSchema),
 });
 
+/**
+ * `StripeBalanceTransactionSchema` (spec 030b §5.2): only the fields `payment_balance_txn` stores.
+ * zod's default object strips every other key, so `description` and anything Stripe adds never
+ * leave this parse. Amounts are signed integers (a refund is negative).
+ */
+export const StripeBalanceTransactionSchema = z.object({
+  id: z.string().min(1),
+  object: z.literal("balance_transaction"),
+  amount: z.number().int(),
+  fee: z.number().int(),
+  net: z.number().int(),
+  currency: z.string().length(3),
+  exchange_rate: z.number().positive().nullish(),
+  created: unixSeconds,
+  available_on: unixSeconds.nullish(),
+  reporting_category: z.string().min(1),
+  type: z.string().min(1),
+  source: z.string().min(1).nullish(),
+});
+export type StripeBalanceTransaction = z.infer<
+  typeof StripeBalanceTransactionSchema
+>;
+
+export const StripeBalanceTransactionListSchema = z.object({
+  object: z.literal("list"),
+  has_more: z.boolean(),
+  data: z.array(StripeBalanceTransactionSchema),
+});
+
 /** Stripe's error envelope. `message` is deliberately not read: it never reaches a buyer (AC-5). */
 export const StripeErrorSchema = z.object({
   error: z.object({

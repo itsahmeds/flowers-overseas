@@ -40,6 +40,12 @@ const MATRIX: Record<string, readonly string[]> = {
   // spec 047 §13 Q12 (TASK-446): admin creates and edits, admin and finance read.
   "discounts.read": ["admin", "finance"],
   "discounts.write": ["admin"],
+  // spec 030b §5.2 "Permissions", §13 Q1 and Q2 (TASK-440, AC-1): money admin only, the
+  // relationship record admin and ops.
+  "finance.view": ["admin"],
+  "finance.export": ["admin"],
+  "partner.crm.view": ["admin", "ops"],
+  "partner.crm.write": ["admin", "ops"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

@@ -46,6 +46,10 @@
  * Spec 047 (TASK-445, migration `0037_discount_codes`) adds `checkout.discount_codes`, country
  * scope, off by default: the discount code control at checkout. It dirties no page.
  *
+ * Spec 030b (TASK-439, migration `0039_finance_crm_030b`) adds `payments.balance_fetch`, global,
+ * standard risk, on by default: off holds the balance-fact fetch jobs (finance shows fees
+ * pending; nothing is lost). It dirties no page.
+ *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
 import { z } from "zod";
@@ -243,6 +247,16 @@ const REGISTRY = [
     scopeKinds: ["global"],
     description:
       "Founder alerts are pushed to the phone (spec 025). Production pushes unless this is turned off; staging and preview push only while it is on. Email is always sent.",
+    risk: "standard",
+    dirties: [],
+  },
+  // Spec 030b §5.1, §12 (migration `0039_finance_crm_030b`, TASK-439): the provider's balance
+  // facts (fee, settled amount, FX). Off holds the fetch jobs; admin pages only, no page dirtied.
+  {
+    key: "payments.balance_fetch",
+    scopeKinds: ["global"],
+    description:
+      "Fetches each payment's fee, settled amount and FX from the provider's balance transactions (spec 030b). Off: the fetch jobs wait and finance shows fees pending; nothing is lost.",
     risk: "standard",
     dirties: [],
   },

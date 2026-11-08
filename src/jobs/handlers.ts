@@ -61,9 +61,14 @@ import {
   runMonitor,
 } from "../modules/ops";
 import {
+  balanceFetchKey,
+  balanceProviderFromEnv,
   registerPaymentsOutbox,
+  runBalanceFetch,
+  runBalanceSweep,
   runPaymentsMonitor,
   runProductionStart,
+  type BalanceFetchJobInput,
 } from "../modules/payments";
 // Spec 030a §5.2 (TASK-363): the `payouts` target and F1's job, the worker's entry, not the barrel.
 import {
@@ -105,6 +110,31 @@ const opsAlertDeps = {
   alertPath: (alertId?: string) =>
     alertId === undefined ? alertsListHref() : alertDetailHref(alertId),
 };
+
+/**
+ * Spec 030b §5.2 (TASK-439): one `payments.balance_fetch`, keyed `{kind}:{ref}` (the `short`
+ * queue keeps at most one waiting job per key), not before `startAfter` when given. The pg-boss
+ * runtime and the flag reader load on first use, so loading the job table connects to nothing.
+ */
+export async function enqueueBalanceFetch(
+  job: BalanceFetchJobInput,
+  startAfter?: Date,
+): Promise<void> {
+  const { enqueue, ensureQueue, withBoss } = await import("./runtime");
+  await withBoss(async (boss) => {
+    await ensureQueue(boss, "payments.balance_fetch");
+    await enqueue(boss, "payments.balance_fetch", job, {
+      requestId: "system:payments.balance_fetch",
+      singletonKey: balanceFetchKey(job.source),
+      ...(startAfter === undefined ? {} : { startAfter }),
+    });
+  });
+}
+
+async function balanceFlagOn(): Promise<boolean> {
+  const { isEnabled } = await import("../lib/flags");
+  return isEnabled("payments.balance_fetch");
+}
 
 /** One read of an original by the derive worker: a large original on a slow link, not a hang. */
 const DERIVE_READ_TIMEOUT_MS = 60_000;
@@ -380,6 +410,22 @@ export const JOB_HANDLERS: JobHandlers = {
       ...(context.queue === undefined ? {} : { queue: context.queue }),
       fxAsOf: () => fxSnapshotStatus().fxAsOf,
     });
+  },
+  // Spec 030b §5.2 (TASK-439): one source's balance facts. Idempotent: facts are stored
+  // `ON CONFLICT (provider_txn_ref) DO NOTHING`. Without Stripe keys the provider throws
+  // `PAYMENTS_NOT_CONFIGURED` and pg-boss retries; with the flag off nothing is asked and the job
+  // re-enqueues itself for later; an empty list re-enqueues on the backoff ladder for 72 hours.
+  "payments.balance_fetch": async (payload) => {
+    await runBalanceFetch(payload, {
+      provider: () => balanceProviderFromEnv(),
+      flagOn: balanceFlagOn,
+      reschedule: (job, startAfter) => enqueueBalanceFetch(job, startAfter),
+    });
+  },
+  // Spec 030b §5.2 (TASK-439): hourly. Read-only but for the enqueues, which the fetch queue's
+  // singleton key makes idempotent; `fees_missing` is raised in the one run past its line.
+  "payments.balance_sweep": async () => {
+    await runBalanceSweep({ enqueue: (job) => enqueueBalanceFetch(job) });
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.
