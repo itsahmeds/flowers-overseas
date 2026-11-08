@@ -23,7 +23,10 @@ const ORIGIN = "https://staging.flowersoverseas.com";
 
 class FakeElement {
   parent: FakeElement | null = null;
-  constructor(readonly attributes: Record<string, string> = {}) {}
+  readonly attributes: Record<string, string>;
+  constructor(attributes: Record<string, string> = {}) {
+    this.attributes = attributes;
+  }
   getAttribute(name: string): string | null {
     return this.attributes[name] ?? null;
   }
@@ -37,21 +40,20 @@ class FakeElement {
   }
 }
 class FakeInput extends FakeElement {
-  constructor(
-    readonly name: string,
-    readonly value: string,
-    attributes: Record<string, string> = {},
-    readonly checked = true,
-  ) {
-    super(attributes);
+  readonly name: string;
+  readonly value: string;
+  readonly checked = true;
+  constructor(name: string, value: string) {
+    super({});
+    this.name = name;
+    this.value = value;
   }
 }
 class FakeForm extends FakeElement {
-  constructor(
-    attributes: Record<string, string>,
-    readonly tier: string,
-  ) {
+  readonly tier: string;
+  constructor(attributes: Record<string, string>, tier: string) {
     super(attributes);
+    this.tier = tier;
   }
   get elements() {
     return {
