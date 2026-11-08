@@ -912,7 +912,9 @@
       "total": "Koszyk pokazuje łączną kwotę z VAT i dostawą, zanim zapłacisz.",
       "help": "Pytania? Chętnie pomożemy: {helpLink}",
       "why": "Otrzymujesz ten e-mail, bo poprosiłeś o niego, rozpoczynając zamówienie. To jedyny e-mail, jaki wyślemy w sprawie tego koszyka.",
-      "stop": "Wyłącz e-maile o koszyku"
+      "stop": "Wyłącz e-maile o koszyku",
+      "helpLink": "Pomoc i kontakt",
+      "privacy": "Prywatność"
     }
   },
   "errors": {

@@ -538,6 +538,26 @@ export async function loadDraftForUpdate(
 }
 
 /**
+ * A draft by id under its row lock, in the caller's open transaction (spec 034's send and restore,
+ * TASK-450): `null` when there is none. Unlike `loadDraftForUpdate` it does not judge expiry; the
+ * caller's own rules do.
+ */
+export async function loadDraftByIdForUpdate(
+  executor: OrderExecutor,
+  draftId: string,
+): Promise<Draft | null> {
+  const rows = await executor.execute(sql`
+    SELECT ${DRAFT_COLUMNS}
+      FROM checkout_draft d
+     WHERE d.id = ${z.uuid().parse(draftId)}
+       FOR UPDATE OF d`);
+  const raw = rows[0];
+  if (raw === undefined) return null;
+  const row = DraftRowSchema.parse(raw);
+  return toDraft(row, await linesOf(executor, row.id));
+}
+
+/**
  * Marks a basket placed, in the placement's transaction (§14 A-founder-2026-10-22 item 4): the
  * purchase on the draft, each order on its line, and the buyer's, recipients' and cards' details
  * cleared (they now live in the orders' snapshots, §5.1 B). Writes nothing and answers `false`

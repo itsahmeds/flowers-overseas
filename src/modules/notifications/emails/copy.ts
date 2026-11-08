@@ -206,3 +206,55 @@ export function buyerFooterText(t: EmailTranslator, reference: string): string {
     t("emails.layout.buyerWhy", { reference }),
   ].join("\n");
 }
+
+/** The links R1's footer carries (spec 034 §5.2 "Rendering contract of R1"). */
+export interface BasketReminderFooterLinks {
+  readonly unsubscribeUrl: string;
+  readonly privacyUrl: string;
+}
+
+/**
+ * R1's frame (spec 034 §5.3, drawn in `email-basket-reminder-*.dc.html`): why it was sent and
+ * that it is the only one, the visible "Stop basket emails" link beside the privacy link, the help
+ * line and the trader identity. No reference: the reminder is about a basket, not an order.
+ */
+export function basketReminderFrame(
+  t: EmailTranslator,
+  links: BasketReminderFooterLinks,
+  link: (label: string, href: string) => SafeHtml,
+): EmailFrame {
+  const identity = operatedBy(t);
+  return {
+    audience: "buyer",
+    audienceLabel: null,
+    brand: TRADING_NAME,
+    footer: [
+      { html: text(t("emails.basketReminder.why")) },
+      {
+        html: fragment(
+          link(t("emails.basketReminder.stop"), links.unsubscribeUrl),
+          " · ",
+          link(t("emails.basketReminder.privacy"), links.privacyUrl),
+        ),
+      },
+      { html: helpLine(t, "emails.layout.buyerHours"), ink: true },
+      ...(identity === null ? [] : [{ html: text(identity) }]),
+    ],
+  };
+}
+
+/** R1's footer as plain text, after the `--` line. */
+export function basketReminderFooterText(
+  t: EmailTranslator,
+  links: BasketReminderFooterLinks,
+): string {
+  const identity = operatedBy(t);
+  return [
+    "--",
+    t("emails.basketReminder.why"),
+    `${t("emails.basketReminder.stop")}: ${links.unsubscribeUrl}`,
+    `${t("emails.basketReminder.privacy")}: ${links.privacyUrl}`,
+    helpLineText(t, "emails.layout.buyerHours"),
+    ...(identity === null ? [] : [identity]),
+  ].join("\n");
+}

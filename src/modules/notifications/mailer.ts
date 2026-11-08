@@ -31,6 +31,7 @@
 import { z } from "zod";
 
 import { type MailerConfig, mailerConfig } from "@/lib/env.auth";
+import { basketReminderEnv } from "@/lib/env.basket-reminders";
 
 /** The tag registry: every kind of message the application sends. */
 export const mailTags = [
@@ -49,6 +50,8 @@ export const mailTags = [
   "occasion_reminder",
   // Spec 025 §5.2 (TASK-489): the founder's daily alert summary (`ops_alert` covers each alert).
   "ops_daily_summary",
+  // Spec 034 §5.2 "Mailer" (TASK-450): R1, the one consented basket reminder.
+  "basket_reminder",
 ] as const;
 export type MailTag = (typeof mailTags)[number];
 
@@ -93,6 +96,22 @@ export const MailMessageSchema = z
     html: z.string().min(1),
     /** Sent as `Idempotency-Key` (spec 016 §5.2): `{source_key}:{template_key}:{recipient_ref}`. */
     idempotencyKey: z.string().min(1).max(256).optional(),
+    /**
+     * Spec 034 §5.2 "Mailer" (AC-14; TASK-450): RFC 8058's two headers, and no other header is
+     * admitted. Only a marketing message carries them.
+     */
+    headers: z
+      .object({
+        "List-Unsubscribe": z.string().regex(/^<https:\/\/[^<>\s]+>$/u),
+        "List-Unsubscribe-Post": z.literal("List-Unsubscribe=One-Click"),
+      })
+      .strict()
+      .optional(),
+    /**
+     * Which sender (spec 034 §5.2, §13 Q7): `transactional` (default) sends from `EMAIL_FROM`,
+     * `marketing` from `MARKETING_MAIL_FROM`, on its own subdomain.
+     */
+    stream: z.enum(["transactional", "marketing"]).optional(),
     /** Files sent with the message (spec 030a's statement PDF; spec 016's B1, B4 and B8). */
     attachments: z
       .array(MailAttachmentSchema)
@@ -154,12 +173,20 @@ const ResendResponseSchema = z.object({ id: z.string().min(1) });
 
 /** Resend over `fetch`. `fetchImpl` is injectable so the contract test records the request. */
 export function resendMailer(
-  config: { readonly apiKey: string; readonly from: string },
+  config: {
+    readonly apiKey: string;
+    readonly from: string;
+    /** `MARKETING_MAIL_FROM` (spec 034): a `marketing` message without it is refused. */
+    readonly marketingFrom?: string;
+  },
   fetchImpl: typeof fetch = fetch,
 ): Mailer {
   return {
     async send(input) {
       const message = MailMessageSchema.parse(input);
+      const from =
+        message.stream === "marketing" ? config.marketingFrom : config.from;
+      if (from === undefined) throw new MailerError("no marketing sender");
       let response: Response;
       try {
         response = await fetchImpl(RESEND_ENDPOINT, {
@@ -171,13 +198,17 @@ export function resendMailer(
               ? {}
               : { "idempotency-key": message.idempotencyKey }),
           },
+          // No tracking option is ever sent (spec 034 AC-13): open and click tracking stay off.
           body: JSON.stringify({
-            from: config.from,
+            from,
             to: [message.to],
             subject: message.subject,
             text: message.text,
             html: message.html,
             tags: [{ name: "tag", value: message.tag }],
+            ...(message.headers === undefined
+              ? {}
+              : { headers: message.headers }),
             ...(message.attachments === undefined
               ? {}
               : {
@@ -253,6 +284,8 @@ function bodyOf(message: MailMessage): string {
     message.text,
     message.html,
     message.attachments ?? null,
+    message.headers ?? null,
+    message.stream ?? null,
   ]);
 }
 
@@ -263,7 +296,10 @@ export interface CapturingMailer extends Mailer {
 }
 
 /** The in-process mailer. Every instance shares one store, so the route reads what a send wrote. */
-export function capturingMailer(from: string): CapturingMailer {
+export function capturingMailer(
+  from: string,
+  marketingFrom: string = from,
+): CapturingMailer {
   return {
     send(input) {
       const message = MailMessageSchema.parse(input);
@@ -293,7 +329,7 @@ export function capturingMailer(from: string): CapturingMailer {
       }
       captured.push({
         ...message,
-        from,
+        from: message.stream === "marketing" ? marketingFrom : from,
         providerRef,
         capturedAt: new Date().toISOString(),
       });
@@ -317,13 +353,22 @@ export function capturingMailer(from: string): CapturingMailer {
 export function mailerFor(
   config: MailerConfig,
   fetchImpl: typeof fetch = fetch,
+  marketingFrom?: string,
 ): Mailer {
   return config.kind === "resend"
-    ? resendMailer(config, fetchImpl)
-    : capturingMailer(config.from);
+    ? resendMailer(
+        marketingFrom === undefined ? config : { ...config, marketingFrom },
+        fetchImpl,
+      )
+    : capturingMailer(config.from, marketingFrom ?? config.from);
 }
 
 /** The mailer of this environment, resolved from `process.env` at the first send. */
 export function getMailer(): Mailer {
-  return mailerFor(mailerConfig(process.env));
+  const reminder = basketReminderEnv(process.env);
+  return mailerFor(
+    mailerConfig(process.env),
+    fetch,
+    reminder.configured ? reminder.marketingFrom : undefined,
+  );
 }

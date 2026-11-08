@@ -912,7 +912,9 @@
       "total": "Ihr Warenkorb zeigt den Gesamtpreis inklusive MwSt. und Lieferung, bevor Sie bezahlen.",
       "help": "Fragen? Wir helfen gern: {helpLink}",
       "why": "Sie erhalten diese E-Mail, weil Sie uns beim Start Ihrer Bestellung darum gebeten haben. Es ist die einzige, die wir zu diesem Warenkorb senden.",
-      "stop": "Warenkorb-E-Mails abbestellen"
+      "stop": "Warenkorb-E-Mails abbestellen",
+      "helpLink": "Hilfe und Kontakt",
+      "privacy": "Datenschutz"
     }
   },
   "errors": {

@@ -83,6 +83,7 @@ export {
   type OrphanFlagView,
   type RegisteredFlagView,
   listFlags,
+  systemTurnFlagOff,
   toggleFlag,
 } from "./flags";
 // Spec 047 §5.2 (TASK-446): the discount codes commands, reads and cost preview.

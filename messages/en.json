@@ -1619,7 +1619,9 @@
       "total": "Your basket shows the total, with VAT and delivery included, before you pay.",
       "help": "Questions? We are happy to help: {helpLink}",
       "why": "You are getting this email because you asked us to when you started your order. It is the only one we send about this basket.",
-      "stop": "Stop basket emails"
+      "stop": "Stop basket emails",
+      "helpLink": "Help and contact",
+      "privacy": "Privacy"
     }
   },
   "tracking": {

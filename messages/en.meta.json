@@ -8553,5 +8553,15 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "295dc0a97fb5360e6179062b4ac62f12577dff768f7711466df35a0a98a1f358"
+  },
+  "emails.basketReminder.helpLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "34b92f180169cf2f4745f53fb1eb533e492178501362a1196832b3b7bcf4fa3c"
+  },
+  "emails.basketReminder.privacy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "54a57c3147c49f33de5898b87084ad2b14c4ab308f762454bf92aca907478ad5"
   }
 }
