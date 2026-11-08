@@ -33,6 +33,13 @@ One dated bullet per `/review`, newest last.
   - AC-57 rollback round trip test for 0041 and the guarded down's `PARTNER_CONTRACTS_ROLLBACK_ROWS_IN_USE` case; AC-56 axe on the Contracts tab; AC-36 route-level 401/403 tests for the upload, download and actions (guards are in place: `requirePermission` first); AC-43 RLS rows for partner/customer/public roles.
   - Sentry `beforeSend` dropping request bodies on the upload route (§14.6).
   - Migration is 0041 while 0040 belongs to another open PR: `db:check` reports the gap until that merges; renumber only if 0040 is abandoned.
+- **From the finisher (2026-11-08, PR #528):** done there: the reminders job and C1/C2, the retention handler, the AC-57 round trip, AC-36 route 401/403 for upload and download, AC-43 roles. Still owed:
+  - AC-56 axe on the Contracts tab (browser test, skipped by the work order).
+  - AC-36 401/403 for the edit and withdraw server actions (guards are in place; only the routes are tested).
+  - AC-43 for `product_origin` (TASK-443's table).
+  - Sentry `beforeSend` dropping request bodies on the upload route (§14.6).
+  - The admin order page lists no contract emails (they have no order); `order-lists.tsx` falls back to the key if one ever shows.
+  - `pnpm i18n:check` fails on main with 49 scope problems along `mail-capture -> notifications -> emails/basket-reminder.ts` (TASK-449's import chain); none in this diff.
 
 ## Escalations
 
@@ -48,6 +55,7 @@ here.
 
 - 2026-11-08: migration 0041, storage `contract` kind and `downloadName`, `checkPdf` (@cantoo/pdf-lib), upload and download routes, edit and withdraw, flags and terms sync, the activation gate (trigger and preflight), Contracts tab, Agreement column, Contracts due, runbook sections, RoPA row 22 (renumbered at merge); unit and integration tests green on scratch PG16 with a local-only 0040 placeholder.
 - 2026-11-08 (finisher, branch `task/TASK-442-contract-reminders`): `partners.contract_reminders` registered (registry, tick hourly, handler), C1 `contract-review-due` and C2 `contract-review-passed` in the founder frame through `sendOpsJobNotification` (new `template` filter), the `partner_contract` retention handler (object then row per florist, audit row per failed delete, alert on the third); tests next.
+- 2026-11-08: tests green on scratch PG16: unit (emails as drawn, route guards, job lists), integration `partners-contract-reminders-030b` (AC-42 job, AC-43 roles, AC-44, AC-57). Reworded partners strings the voice scan flagged (orchestrator request). PR #528 ready.
 
 ## Result
 
@@ -57,3 +65,5 @@ What shipped, in one paragraph: the PR, the tests added per layer, the numbers a
 _Pending._
 
 PR #525 (with TASK-441). Migration 0041 with guarded down, `partner_contract`, guard and activation triggers; `checkPdf`; upload/download routes; edit and withdraw; Contracts tab; Agreement column and Contracts due; activation preflight gains `agreement`. New dependency `@cantoo/pdf-lib` 2.11.1 (maintained pdf-lib fork, pure JS). Tests: unit `tests/unit/partners-contracts.test.ts` (29), integration `tests/integration/partners-contracts-030b.test.ts` (10), storage contract suites (+contract kind), and agreement fixtures in three existing integration suites. Carry-forwards above.
+
+PR #528 (finisher): `partners.contract_reminders` (hourly) with C1 `contract-review-due` and C2 `contract-review-passed` through `sendOpsJobNotification` (new optional `template`), the `partner_contract` retention handler (wired to the private contract store at run time), 22 new `emails.ops.contracts.*` admin texts. Tests: unit `email-contracts-founder` (6), `partners-contract-routes` (12), job registry/tick/runtime lists; integration `partners-contract-reminders-030b` (6). No migration.
