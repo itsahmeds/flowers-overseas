@@ -34,6 +34,7 @@ import {
   parseContactNameEdit,
   parseNoteCreate,
   parseNoteEdit,
+  type WallClockReader,
 } from "./schemas";
 
 /** The audit actions of the CRM (lowercase and dotted, `audit_log_action_check`). */
@@ -184,7 +185,7 @@ export async function logContact(
   actor: DbActor,
   input: unknown,
   now: Date = new Date(),
-  toInstant?: (wallClock: string) => Date | undefined,
+  toInstant?: WallClockReader,
   run: PartnerAdminRunner = partnerAdminRunner,
 ): Promise<CrmCommandResult> {
   const parsed = parseContactCreate(input, now, toInstant);
@@ -226,7 +227,7 @@ export async function editContact(
   actor: DbActor,
   input: unknown,
   now: Date = new Date(),
-  toInstant?: (wallClock: string) => Date | undefined,
+  toInstant?: WallClockReader,
   run: PartnerAdminRunner = partnerAdminRunner,
 ): Promise<CrmCommandResult> {
   const parsed = parseContactEdit(input, now, toInstant);

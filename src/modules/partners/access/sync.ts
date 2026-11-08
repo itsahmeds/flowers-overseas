@@ -155,7 +155,7 @@ export async function syncPartnerOwnerMember(
     .innerJoin(country, eq(country.id, fulfillmentPartner.countryId))
     .where(eq(fulfillmentPartner.id, id));
   if (partner === undefined) {
-    throw new Error("syncPartnerOwnerMember: no such partner");
+    throw new Error("OWNER_MEMBER_SYNC: no such florist");
   }
   const email = FloristSignInEmailSchema.parse(partner.contactEmail);
 
@@ -204,9 +204,7 @@ export async function syncPartnerOwnerMember(
       .onConflictDoUpdate({ target: users.email, set: { email } })
       .returning({ id: users.id });
     if (user === undefined) {
-      throw new Error(
-        "syncPartnerOwnerMember: the user upsert returned no row",
-      );
+      throw new Error("OWNER_MEMBER_SYNC: the user upsert returned no row");
     }
     userId = user.id;
     await setAuditAction(db, PARTNER_MEMBER_ACTIONS.grant);

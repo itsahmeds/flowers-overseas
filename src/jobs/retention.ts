@@ -1064,11 +1064,11 @@ const partnerContract: PolicyHandler = async ({
         FROM public.partner_contract k
         JOIN public.fulfillment_partner p ON p.id = k.partner_id
         WHERE p.offboarded_at IS NOT NULL
-          AND p.offboarded_at <= ${
+          AND ${
             retentionDays === undefined
               ? ts(cutoff)
               : sql`${ts(now)} - ${retentionInterval(retentionDays)}`
-          }
+          } >= p.offboarded_at
         ORDER BY k.partner_id, k.id`,
   );
   if (contractStorage === undefined) {

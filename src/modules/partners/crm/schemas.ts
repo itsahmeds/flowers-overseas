@@ -49,6 +49,9 @@ export type ContactTopic = (typeof contactLogTopics)[number];
 const Version = z.iso.datetime({ offset: true });
 const IsoDate = z.iso.date();
 
+/** Turns a `datetime-local` value in the viewer's zone into an instant; `undefined` when invalid. */
+export type WallClockReader = (wallClock: string) => Date | undefined;
+
 function fieldsOf(input: unknown): Record<string, unknown> {
   return typeof input === "object" && input !== null
     ? (input as Record<string, unknown>)
