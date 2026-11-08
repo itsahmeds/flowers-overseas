@@ -28,6 +28,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the implementer's self-review (2026-11-08), left for later:**
+  - **e2e, axe, visual not written (AC-22 four-locale DOM scan, AC-23 journey capture, AC-27 `/ar-XB` baselines, AC-28 axe over five states x four locales, keyboard-only and JS-off runs, AC-26 browser recap).** Covered here at unit level (markup of every control state, no `<s>`/`<del>`/line-through/`%` in the discount line of the panel and the recap, `<bdi dir="ltr">`, form-quality attributes) and integration level; the Playwright specs are owed by a follow-up row, with CI's `ci:full` browsers.
+  - **AC-25 express:** the product page has no express wallet path on main yet (spec 010 A-founder-2026-10-24 not built), so the scan proves the product, listing and feed code never import the control or `modules/discounts`; whoever builds express must place without an `order_discount` row and assert it.
+  - **AC-24 emission:** the payload builders exist (`src/modules/analytics/discount-events.ts`); spec 023's emitter does not call them yet. `purchase.discount` is a decimal string (`"4.59"`), never a float (the `fo/no-float-money` rule); spec 023 converts at the GA4 boundary.
+  - **The flag on a basket of several destinations** reads as on only when `checkout.discount_codes` is on for every destination (`discountCodesOn`): the spec names one destination; a code never reduces a delivery to a country not switched on. Confirm or change in spec 047 §14.
+  - **The bare `code` key is not on the logger's redaction list** (spec 047 §8 lists it): `code` is the error-code field of every log line in this codebase. `discountcode`, `promo`, `promocode`, `coupon` and `couponcode` were added. Log lines of this task never carry the code text, only `discount_code_id` and the reason.
+  - **The "Applying" pending label** (board slot, not in §7) is not drawn: the control has no island. A design gap for the spec writer.
+  - **Integration fixture:** AC-8's PLN bouquet + chocolates (23 %) + date surcharge fixture is not reproduced at integration level (the seeded basket is two bouquets at one rate); allocation over mixed rates is TASK-445's property test, and VAT over paid amounts is asserted equal to `vatBreakdown()` here.
+  - **Pre-existing reds on main, untouched:** `pnpm i18n:check` (11 findings, none `checkout.discount.*`), `tests/unit/checkout-ui-components.test.tsx` and `checkout-ui-islands.test.ts` (EISDIR on the `payment` folder), `tests/integration/discounts.test.ts` rollback snapshot case (fails on main 07ab67781 too).
 
 ## Escalations
 
@@ -42,10 +51,13 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-08: worktree `../fo-wt-447` on `task/TASK-447-discounts-at-checkout` from main 07ab67781; row `in_progress`. No migration needed (0037 already holds the draft columns, `order_line.discount_minor`, `order_discount` and the flag).
+- 2026-11-08: core: `discounts/attempts.ts` (lock, site alert), `checkout/discount.ts` (flag, evaluate on the basket, apply/remove runners), draft `discountCodeId`, placement re-check under `lockAndCount`, orders write `discount_minor` and `order_discount`.
+- 2026-11-08: UI: `DiscountCodeField`, discount line in the panel and the recap, VAT on paid amounts, echo carries the notice, `checkout.discount.*` keys (en, de/pl drafts, review queue).
+- 2026-11-08: tests: unit (23), integration on PG16 (6 new + AC-18 in pay-step); clean-env build green in the slot. PR 524 marked ready.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#524](https://github.com/itsahmeds/flowers-overseas/pull/524). Step 4 carries the no-JavaScript "Add a discount code" control in the order panel (desktop and phone sheet), shown only while `checkout.discount_codes` is on for every destination; apply and remove post through the checkout's one action, the code from the form body only; five counted failures in 15 minutes lock the draft's field for 15 minutes with no lookup, and more than 100 site-wide in 10 minutes raise one `discounts.guessing` warning. The discount line, the discounted total (panel, sticky bar, pay button and pre-contract block through `screen.total`) and the VAT on paid amounts follow; placement re-checks under the code's row lock, a refusal writes nothing but the code's removal and re-renders step 4 with `changedAtPlacement`; a placed order carries `discount_minor` per line, its `order_discount` share, the discounted `buyer_total_minor`, `base_total_minor` and `vat_breakdown`; the confirmation recap shows the line. Tests: unit 23 (`tests/unit/checkout-discounts.test.tsx`), integration 6 (`tests/integration/checkout-discounts.test.ts`) plus AC-18 in `tests/integration/pay-step.test.ts`. No migration. The clean-env `next build` ran in the build slot (load 2.3) because the work order requires it before ready. e2e/axe/visual are carry-forwards.
