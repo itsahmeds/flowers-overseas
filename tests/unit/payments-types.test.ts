@@ -48,15 +48,26 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
     // service and its admin action: the amount is a refund, capped by the order's and the
     // payment's own totals (AC-28). `requestRefund` is `refund`'s first step on the caller's
     // transaction (spec 020a §12 request 1, TASK-359): the same refund amount, the same checks.
-    // Every other export takes no amount at all, spec 013 §11's monitors (TASK-264) included.
+    // Every other export takes no amount at all, spec 013 §11's monitors (TASK-264) included, and
+    // spec 030b's balance facts (TASK-439): `recordBalanceFacts` stores provider facts, never a
+    // charge amount of ours.
     expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<
       "refund" | "requestRefund"
     >();
     expect(Object.keys(payments).sort()).toEqual([
       "AdminCancelInputSchema",
       "AdminRefundInputSchema",
+      "BALANCE_FETCH_DEAD_ALERT",
+      "BALANCE_FETCH_JOB",
+      "BALANCE_FLAG",
+      "BALANCE_KINDS",
+      "BALANCE_SWEEP_JOB",
+      "BALANCE_UNKNOWN_CATEGORY_ALERT",
+      "BalanceFetchJobSchema",
+      "BalanceSourceSchema",
       "CANCELLED_STATES",
       "DISPUTABLE_STATES",
+      "FEES_MISSING_ALERT",
       "PAID_NOT_ROUTED_ALERT",
       "PAYMENTS_ACTOR",
       "PAYMENTS_MONITOR_JOB",
@@ -74,6 +85,10 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "adminCancel",
       "adminRefund",
       "adminRefundDeps",
+      "balanceBackfillJobs",
+      "balanceFetchKey",
+      "balanceKindOf",
+      "balanceProviderFromEnv",
       "cancelOrder",
       "createPaymentAcceptedOrderEffect",
       "declineMessageKey",
@@ -86,12 +101,16 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "paymentsOutboxHandler",
       "processWebhook",
       "productionStartAt",
+      "recordBalanceFacts",
       "refund",
       "refundCancelledOrder",
       "registerPaymentsOutbox",
       "replayStripeWebhooks",
       "replayWebhooks",
       "requestRefund",
+      "runBalanceBackfill",
+      "runBalanceFetch",
+      "runBalanceSweep",
       "runPaymentsMonitor",
       "runProductionStart",
       "startPayment",

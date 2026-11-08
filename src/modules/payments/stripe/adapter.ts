@@ -26,8 +26,10 @@ import type { Money } from "@/modules/i18n";
 import {
   isProviderFailure,
   providerFailure,
+  type BalanceSource,
   type CreateIntentInput,
   type PaymentProvider,
+  type ProviderBalanceFact,
   type ProviderDispute,
   type ProviderEvent,
   type ProviderFailure,
@@ -42,6 +44,7 @@ import { SUBSCRIBED_STRIPE_EVENT_TYPES } from "./events.ts";
 import { stripeCreateIntentParams, toStripeForm } from "./params.ts";
 import {
   STRIPE_DISPUTE_STATUSES,
+  StripeBalanceTransactionListSchema,
   StripeChargeSchema,
   StripeDisputeSchema,
   StripeErrorSchema,
@@ -49,6 +52,7 @@ import {
   StripePaymentIntentSchema,
   StripeRefundListSchema,
   StripeRefundSchema,
+  type StripeBalanceTransaction,
   type StripeCharge,
   type StripeDispute,
   type StripePaymentIntent,
@@ -170,6 +174,43 @@ function toProviderDispute(
     reason: dispute.reason,
     ...(typeof due === "number" ? { evidenceDueBy: new Date(due * 1000) } : {}),
     openedAt: new Date(dispute.created * 1000),
+  };
+}
+
+/** A rate Stripe sends as a JSON number, as the decimal text it was (`1.15512`), or `null`. */
+function exchangeRateText(rate: number | null | undefined): string | null {
+  if (rate === null || rate === undefined) return null;
+  const text = String(rate);
+  return /^[0-9]+(\.[0-9]+)?$/.test(text) ? text : null;
+}
+
+function isoDay(seconds: number): string {
+  return new Date(seconds * 1000).toISOString().slice(0, 10);
+}
+
+function toBalanceFact(
+  txn: StripeBalanceTransaction,
+  sourceRef: string,
+  presentment: ProviderBalanceFact["presentment"],
+  livemode: boolean,
+): ProviderBalanceFact {
+  return {
+    providerTxnRef: txn.id,
+    sourceRef: txn.source ?? sourceRef,
+    providerType: txn.type,
+    reportingCategory: txn.reporting_category,
+    presentment,
+    amountMinor: txn.amount,
+    feeMinor: txn.fee,
+    netMinor: txn.net,
+    settlementCurrency: fromStripeCurrency(txn.currency),
+    exchangeRate: exchangeRateText(txn.exchange_rate),
+    createdAt: new Date(txn.created * 1000),
+    availableOn:
+      txn.available_on === null || txn.available_on === undefined
+        ? null
+        : isoDay(txn.available_on),
+    livemode,
   };
 }
 
@@ -426,6 +467,70 @@ export function createStripeProvider(
       headers: WebhookHeaders,
     ): ProviderEvent | SignatureInvalid {
       return verifyStripeWebhook(rawBody, headers, config.webhookSecret, now());
+    },
+
+    /**
+     * Spec 030b §5.2: for an intent, `GET /v1/payment_intents/{id}` **without** expanding its
+     * charge (only `latest_charge`'s id, amount and currency are read), then
+     * `GET /v1/balance_transactions?source={charge}`; for a refund or a dispute, the list by its
+     * own id. `/v1/charges` is never called, so no billing detail reaches this process.
+     */
+    async balanceFacts(
+      source: BalanceSource,
+    ): Promise<readonly ProviderBalanceFact[] | ProviderFailure> {
+      let sourceRef = source.ref;
+      let presentment: ProviderBalanceFact["presentment"] = null;
+      let livemode: boolean | undefined;
+      if (source.kind === "intent") {
+        const intent = await request(
+          "GET",
+          intentPath(source.ref),
+          new URLSearchParams(),
+          StripePaymentIntentSchema,
+        );
+        if (isProviderFailure(intent)) return intent;
+        const chargeRef = idOf(intent.latest_charge);
+        if (chargeRef === null) return [];
+        sourceRef = chargeRef;
+        presentment = {
+          amountMinor: intent.amount,
+          currency: fromStripeCurrency(intent.currency),
+        };
+        livemode = intent.livemode;
+      }
+      const collected: ProviderBalanceFact[] = [];
+      let startingAfter: string | undefined;
+      for (;;) {
+        const form = new URLSearchParams([
+          ["source", sourceRef],
+          ["limit", String(STRIPE_EVENTS_PAGE_SIZE)],
+        ]);
+        if (startingAfter !== undefined)
+          form.set("starting_after", startingAfter);
+        const page = await request(
+          "GET",
+          "/balance_transactions",
+          form,
+          StripeBalanceTransactionListSchema,
+        );
+        if (isProviderFailure(page)) return page;
+        collected.push(
+          ...page.data.map((txn) =>
+            toBalanceFact(
+              txn,
+              sourceRef,
+              txn.reporting_category === "charge" ? presentment : null,
+              // A balance transaction carries no `livemode`: the intent's, else the key's mode.
+              livemode ?? /^(sk|rk)_live_/.test(config.secretKey),
+            ),
+          ),
+        );
+        const last = page.data.at(-1);
+        if (!page.has_more || last === undefined) break;
+        startingAfter = last.id;
+      }
+      // Stripe lists newest first; the interface is oldest first.
+      return collected.reverse();
     },
 
     async listEventsSince(

@@ -265,6 +265,47 @@ export function minorUnitsForProvider(units: number | bigint): number {
   return units;
 }
 
+/**
+ * What `balanceFacts` is asked about (spec 030b §5.2 `BalanceSourceSchema`): the intent a payment
+ * was made with (the adapter reads the charge id from it), a refund, or a dispute.
+ */
+export const balanceSourceKinds = ["intent", "refund", "dispute"] as const;
+export type BalanceSourceKind = (typeof balanceSourceKinds)[number];
+
+export interface BalanceSource {
+  readonly kind: BalanceSourceKind;
+  readonly ref: string;
+}
+
+/**
+ * One balance transaction as the provider reports it (spec 030b §2.2, §5.1): the settled amount,
+ * the fee and the net in the settlement currency, signed (a refund is negative), with the
+ * presentment amount where the provider gives it and its exchange rate as received text. Ids,
+ * amounts, currencies, rates and dates only: no billing detail, because no charge object is read.
+ */
+export interface ProviderBalanceFact {
+  readonly providerTxnRef: string;
+  /** The charge, refund or dispute the transaction belongs to (`ch_…`, `re_…`, `dp_…`). */
+  readonly sourceRef: string;
+  readonly providerType: string;
+  readonly reportingCategory: string;
+  /** What the buyer paid in their currency; `null` where the provider does not report it. */
+  readonly presentment: {
+    readonly amountMinor: number;
+    readonly currency: CurrencyCode;
+  } | null;
+  readonly amountMinor: number;
+  readonly feeMinor: number;
+  readonly netMinor: number;
+  readonly settlementCurrency: CurrencyCode;
+  /** The provider's exchange rate exactly as a decimal string (`1.15512`), or `null`. */
+  readonly exchangeRate: string | null;
+  readonly createdAt: Date;
+  /** `YYYY-MM-DD` (UTC) when the funds become available, or `null`. */
+  readonly availableOn: string | null;
+  readonly livemode: boolean;
+}
+
 /** Header names are matched case-insensitively, as HTTP does. */
 export type WebhookHeaders = Readonly<Record<string, string | undefined>>;
 
@@ -304,6 +345,13 @@ export interface PaymentProvider {
   listEventsSince(
     since: Date,
   ): Promise<readonly ProviderEvent[] | ProviderFailure>;
+  /**
+   * The balance transactions of one source (spec 030b §5.2), oldest first. An empty list means
+   * the provider has not settled it yet: the caller retries. Never reads a charge object.
+   */
+  balanceFacts(
+    source: BalanceSource,
+  ): Promise<readonly ProviderBalanceFact[] | ProviderFailure>;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -843,6 +891,69 @@ export const PAYMENT_PROVIDER_CONTRACT: readonly PaymentProviderContractCase[] =
         );
         check(isSignatureInvalid(staleResult), "stale signature: refused");
         same(staleResult.reason, "stale_timestamp", "stale signature: reason");
+      },
+    },
+    {
+      name: "balance: a paid intent has one charge fact whose net is amount minus fee, settled in EUR; a refund has a negative one; an unknown intent is not_found",
+      async run(harness) {
+        const paid = await createdIntent(harness, {
+          amount: { amountMinor: 6000, currency: "EUR" },
+          idempotencyKey: freshKey("pi:create"),
+        });
+        await harness.simulateSuccess(paid.ref);
+        const charge = await harness.chargeRefOf(paid.ref);
+        const facts = await harness.provider.balanceFacts({
+          kind: "intent",
+          ref: paid.ref,
+        });
+        check(!isProviderFailure(facts), "balanceFacts: not a failure");
+        same(facts.length, 1, "balanceFacts: one fact");
+        const [fact] = facts;
+        check(fact !== undefined, "balanceFacts: the fact");
+        same(fact.sourceRef, charge, "balance: source is the charge");
+        same(fact.reportingCategory, "charge", "balance: category");
+        same(fact.amountMinor, 6000, "balance: settled amount");
+        same(fact.settlementCurrency, "EUR", "balance: settlement currency");
+        check(fact.feeMinor > 0, "balance: a fee");
+        same(fact.netMinor, fact.amountMinor - fact.feeMinor, "balance: net");
+        same(fact.livemode, harness.livemode, "balance: livemode");
+        check(fact.providerTxnRef.length > 0, "balance: a reference");
+
+        const refund = await harness.provider.refund(
+          paid.ref,
+          { amountMinor: 1000, currency: "EUR" },
+          freshKey("refund"),
+          {
+            orderId: CONTRACT_ORDER_ID,
+            refundId: "5c8d7e6f-1a2b-4c3d-9e8f-0a1b2c3d4e5f",
+            reason: "goodwill",
+          },
+        );
+        check(!isProviderFailure(refund), "refund: not a failure");
+        const refundFacts = await harness.provider.balanceFacts({
+          kind: "refund",
+          ref: refund.ref,
+        });
+        check(!isProviderFailure(refundFacts), "refund facts: not a failure");
+        same(
+          refundFacts.map((item) => [
+            item.sourceRef,
+            item.reportingCategory,
+            item.amountMinor,
+            item.netMinor - item.amountMinor + item.feeMinor,
+          ]),
+          [[refund.ref, "refund", -1000, 0]],
+          "refund facts: one negative refund fact",
+        );
+
+        failureOf(
+          await harness.provider.balanceFacts({
+            kind: "intent",
+            ref: "pi_contract_unknown",
+          }),
+          "not_found",
+          "balanceFacts unknown",
+        );
       },
     },
     {

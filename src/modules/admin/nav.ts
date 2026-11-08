@@ -18,6 +18,7 @@ export interface AdminNavItem {
     | "partners"
     | "payouts"
     | "discounts"
+    | "finance"
     | "flags"
     | "audit"
     | "users";
@@ -59,6 +60,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "discounts",
     href: "/admin/discounts",
     permissions: ["discounts.read"],
+    built: true,
+  },
+  {
+    // Spec 030b §5.3 (TASK-440): the finance overview and order list, for `finance.view` (admin).
+    key: "finance",
+    href: "/admin/finance",
+    permissions: ["finance.view"],
     built: true,
   },
   {

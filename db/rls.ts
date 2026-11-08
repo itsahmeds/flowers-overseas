@@ -243,6 +243,16 @@ export const CUSTOMER_VIEWS = {
   ],
 } as const;
 
+/**
+ * Spec 030b §5.1 (migration `0039_finance_crm_030b`, TASK-439): the finance read model.
+ * `security_invoker` views filtered to `app_is_staff()`, `SELECT` only for `app_web`: a florist,
+ * a buyer and the public read no row (AC-4).
+ */
+export const STAFF_VIEWS = [
+  "finance_order_facts",
+  "finance_partner_position",
+] as const;
+
 /** Columns a partner must never read, whatever the path (spec 002 §8). */
 export const PARTNER_FORBIDDEN_COLUMNS = [
   "buyer_snapshot",
@@ -299,6 +309,12 @@ export const STAFF_ONLY_TABLES = [
   "notification_delivery_invoice",
   "order_discount",
   "order_event",
+  // spec 030b §5.1 (migration `0039_finance_crm_030b`, TASK-439): the founder's notes and contact
+  // log on a florist, and the provider's balance facts. Admin and system only: a florist never
+  // reads our notes or our money.
+  "partner_contact_log",
+  "partner_note",
+  "payment_balance_txn",
   "outbox",
   "outbox_attempt",
   // spec 013 / spec 002 §14 A7.5 (migration `0017_payments_a7`, TASK-254): a chargeback on a

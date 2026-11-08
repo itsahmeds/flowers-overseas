@@ -32,6 +32,13 @@ import { type SQL, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { PAYOUTS_CONFIG } from "@/config/payouts";
+import {
+  CSV_MAX_EXPONENT,
+  csvDocument,
+  csvText,
+  csvTextCell,
+  unsignedDecimalString,
+} from "@/lib/csv";
 import { logger as defaultLogger, type Logger } from "@/lib/logger";
 import type { OrderExecutor } from "@/modules/orders";
 
@@ -44,41 +51,28 @@ import { writePayoutAudit } from "./audit";
 /* -------------------------------------------------------------------------- */
 
 /** The largest exponent a currency in this system has (ISO 4217 uses 0 to 4). */
-const MAX_EXPONENT = 4;
+const MAX_EXPONENT = CSV_MAX_EXPONENT;
 
 /**
  * spec 030a §5.2 `minorToDecimalString(amountMinor, exponent)`: the machine form of an amount.
- * Refuses a negative amount, a fractional or unsafe number, and an exponent outside 0..4.
+ * Refuses a negative amount, a fractional or unsafe number, and an exponent outside 0..4. Spec
+ * 030b moved the digits to `src/lib/csv.ts` (`unsignedDecimalString`), the one writer both files use.
  */
 export function minorToDecimalString(
   amountMinor: bigint | number,
   exponent: number,
 ): string {
-  if (!Number.isInteger(exponent) || exponent < 0 || exponent > MAX_EXPONENT) {
-    throw new RangeError("an exponent is a whole number from 0 to 4");
-  }
   if (typeof amountMinor === "number" && !Number.isSafeInteger(amountMinor)) {
     throw new RangeError("an amount in minor units is a whole number");
   }
-  const value = BigInt(amountMinor);
-  if (value < 0n) {
+  if (BigInt(amountMinor) < 0n) {
     throw new RangeError("a transfer amount is not negative");
   }
-  if (exponent === 0) return value.toString();
-  const digits = value.toString().padStart(exponent + 1, "0");
-  return `${digits.slice(0, -exponent)}.${digits.slice(-exponent)}`;
+  return unsignedDecimalString(amountMinor, exponent);
 }
-
-/** The characters that make a spreadsheet read a cell as a formula (§8 "Security"). */
-const FORMULA_LEAD = /^[=+\-@\t\r]/u;
-/** The characters RFC 4180 quotes for. */
-const NEEDS_QUOTES = /[",\r\n]/u;
 
 /** One cell: neutralised against formula injection, then quoted when RFC 4180 needs it. */
-export function csvCell(value: string): string {
-  const safe = FORMULA_LEAD.test(value) ? `'${value}` : value;
-  return NEEDS_QUOTES.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
-}
+export const csvCell = csvTextCell;
 
 /** One payout as the Wise file needs it. */
 export const WiseRowSchema = z
@@ -108,9 +102,11 @@ function cellsOf(row: WiseRow): Readonly<Record<string, string>> {
   };
 }
 
-const CRLF = "\r\n";
-
-/** spec 030a §5.2 `wiseCsv(rows, header)`: the file, as a string (encode it as UTF-8, no BOM). */
+/**
+ * spec 030a §5.2 `wiseCsv(rows, header)`: the file, as a string (encode it as UTF-8, no BOM).
+ * Written by `src/lib/csv.ts`'s `csvDocument` (spec 030b): every Wise cell is a text cell, as it
+ * always was, so the bytes are unchanged.
+ */
 export function wiseCsv(
   rows: readonly WiseRow[],
   header: readonly string[] = PAYOUTS_CONFIG.wise.header,
@@ -123,14 +119,13 @@ export function wiseCsv(
         ? 1
         : 0,
   );
-  const lines = [
-    header.map(csvCell).join(","),
-    ...ordered.map((row) => {
+  return csvDocument(
+    header,
+    ordered.map((row) => {
       const cells = cellsOf(row);
-      return header.map((column) => csvCell(cells[column] ?? "")).join(",");
+      return header.map((column) => csvText(cells[column] ?? ""));
     }),
-  ];
-  return lines.map((line) => `${line}${CRLF}`).join("");
+  );
 }
 
 /* -------------------------------------------------------------------------- */

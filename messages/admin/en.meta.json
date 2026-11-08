@@ -5783,5 +5783,775 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "d7066a9380ea87cf3cc43bb821864872f856320ec7751e885c89caa0b9c748f4"
+  },
+  "admin.flags.description.payments.balance_fetch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "05b387ec6e60e2b9d9dfe37f86b9a2109bbeee1c0a686814688736cee7fd3984"
+  },
+  "admin.nav.finance": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b696d75511dc16f2b52563e3113a498311a79866f4672862197aa9a8c5c0da12"
+  },
+  "admin.finance.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b696d75511dc16f2b52563e3113a498311a79866f4672862197aa9a8c5c0da12"
+  },
+  "admin.finance.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "62584cb4b45ee2cfa8fa36163a748ff1120e74a4ddfcac42b92137e6cca66b2b"
+  },
+  "admin.finance.testLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "78a972ee49c71a8cbc355d3b6e4e22476d72035586f631a53c2d55499e33ae8e"
+  },
+  "admin.finance.testIntro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1878a569da1cfb8da57d6192924ed49a37bf45d54ee4dd4c83981aec8a676842"
+  },
+  "admin.finance.form.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e70b64be2fd9b89be35eb7a5e1042bf8199e6313efd02f3cf6992e45360649f9"
+  },
+  "admin.finance.form.from": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
+  },
+  "admin.finance.form.to": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4b06ef6d3c81436f60a318c81c42f8f7e2d774d45a22f3b9b5f3b6980d28146"
+  },
+  "admin.finance.form.basis": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cb8d295f1603859ad0226452e9d2a5e6b772cba0cc8a94632fe9c4e73e18c09d"
+  },
+  "admin.finance.form.basisPaid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "45613881f8cd58f6cb20883571d035d02a3ef5d68199dc7490bffc140df858b5"
+  },
+  "admin.finance.form.basisDelivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
+  },
+  "admin.finance.form.mode": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "admin.finance.form.live": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc"
+  },
+  "admin.finance.form.test": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "532eaabd9574880dbf76b9b8cc00832c20a6ec113d682299550d7a6e0f345e25"
+  },
+  "admin.finance.form.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "admin.finance.form.allCountries": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b2bd06b999d7b1e367a2e6dc193b7d95b9118f29c33404a83047f5c80a0a56cb"
+  },
+  "admin.finance.form.partner": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "admin.finance.form.allPartners": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "782678730e8238dfc09d0bb06aef3ae7c1ac058adc6c7e956a55a8e65b2454e2"
+  },
+  "admin.finance.form.figures": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f2f410e7009e9a31dcc7c971e662285f4071150ef1e211f76e838efb35082d1e"
+  },
+  "admin.finance.form.figuresAll": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "admin.finance.form.submit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7848fa8bc3f7fa773fb4ec9570df111b8f0e555dd3939e83f827bc5cfe3004e7"
+  },
+  "admin.finance.form.zone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e2aca3826dc6391782bed312b4932c8fc996d87f2150689b103dee7cce9f2cc6"
+  },
+  "admin.finance.error.from_after_to": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3ba1eefb48c2c42ba2b0c43cd85dd46995dc54a81fa960eced98bee39bfa6221"
+  },
+  "admin.finance.error.too_long": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b4e92e4aa70c63d2295480abe49fd110bd0bc1fb4caf6e1915b01b6cd43499c0"
+  },
+  "admin.finance.error.not_a_date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bb0c7884d4b03b1f08bfa086a8667adf9a0ea36ad6757fdbf9d473dcbe9ddba0"
+  },
+  "admin.finance.tax.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db7d36c8171474f6dd84b6e8a0617a2ea68078f1f6fa07dbdf30a1ac8722c370"
+  },
+  "admin.finance.tax.question.supplyModel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9a509b40b77b5a3e4b10497105937ec74966c519be8d203d7089b2deef2d14ef"
+  },
+  "admin.finance.tax.question.payoutVat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4fcd2a117fe158c3c5fba9c5f7f1b0a9bb9c15091951f3bb7213ee9a15555b3a"
+  },
+  "admin.finance.tax.question.selfBilling": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e65bbad8cb84a67a6e871d62f70de6ca17548780d6ec6236dae82cf2bb3f2fd1"
+  },
+  "admin.finance.tax.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d019111f611faf5b0a0e21fccd772139411325977b293e6f4a2a6c253f5f423"
+  },
+  "admin.finance.tax.row": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5649e35e112368da13170e486744ba9d4e9cdba143af45bffebe29740c28b1d"
+  },
+  "admin.finance.basisShort.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cc19368c00edecbba5d46f4f400d52527cc74022a0eb8efe3ce0fa3e05411eda"
+  },
+  "admin.finance.basisShort.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0021b37c8069ecf0bac93037c2f3714153042b29c2392c242e6177968ae94112"
+  },
+  "admin.finance.modeShort.live": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "247610f4dedd4ab7247d07dbda19c81ca9817f85820742cad49d407ffae9e4ed"
+  },
+  "admin.finance.modeShort.test": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+  },
+  "admin.finance.totals.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6bd6df68b5e9d5a56947278d92350e6115e1062ebd18d4298af990e25b143e5e"
+  },
+  "admin.finance.totals.sub": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0f65c027211623a8f4d2a236f03ff85f1c88783da710b08ad2a6e201bc745d7e"
+  },
+  "admin.finance.totals.orders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "admin.finance.totals.grossNative": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc6f7379402a65b72c921d85dc19ac7c6d52cbfc3d9841bcf7ae4b46ecead945"
+  },
+  "admin.finance.totals.grossEcb": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4bedccd425727b4013d743d77a588bed016139f1edc596935b441e3a9f9d1476"
+  },
+  "admin.finance.totals.ratesUsed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e6b3aee8388e763dec7f0c5f530cfa901d59f8decc159336c5a764f3aef8467"
+  },
+  "admin.finance.totals.ratesLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b17d52bfabeaf0bf02d025ca4db6c092081bbe66467fdcc1ef3ce08f4a348621"
+  },
+  "admin.finance.totals.fxCost": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c973eb003a3814ec4aabe3593d6fd6bc70ec7fb8804b88dbfc8b9b1fab0197ab"
+  },
+  "admin.finance.totals.settled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fd078a73d6a7b926896494eee58ed219eef53b9ae388f08cc513fc7598e0ee6d"
+  },
+  "admin.finance.totals.refunds": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0942c1799b5a167623a85f4d8818a07e0701b2a9d398630d0b964a732fd86b5d"
+  },
+  "admin.finance.totals.vat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "72cbb731c8cb97b1486aed5217baf31baf86679c9dca01ca6a90847a9708e05d"
+  },
+  "admin.finance.totals.net": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "094ee158a36fab8ca4fcb16f6560a6650494f45276a5bc9697ba5e5697ab8fbb"
+  },
+  "admin.finance.totals.floristCost": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d2ef54a946cd97263c8e4ea2efa0006d3aa5351687695844e6d11c92c09c5e3"
+  },
+  "admin.finance.totals.fees": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d9a73269db0276a345f875fd2f094d0e25da30858b71872fa942c60dd594c81a"
+  },
+  "admin.finance.totals.disputes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "110fa2bb7715b603098aed848bb65a8796db6dfd28f3bb51859d2351fea45ba9"
+  },
+  "admin.finance.totals.margin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2bf63d817630601b992694bc0b0559715001b9a24e7fe0d741eea02dce9181af"
+  },
+  "admin.finance.totals.marginPercent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b63f97a666eaeaefca6b63af090bccf2dc799ad212c9024e1315ba1b8b3e007f"
+  },
+  "admin.finance.totals.includesProvisional": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b0d030ce03837852eb93751203a4454c7ee4617c9117209d81d02176af866864"
+  },
+  "admin.finance.totals.seeWhy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0a641f8e126e6f7fce36d86454269855ebba15b6af4c96d48088ae7a518b5710"
+  },
+  "admin.finance.counts.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f2f410e7009e9a31dcc7c971e662285f4071150ef1e211f76e838efb35082d1e"
+  },
+  "admin.finance.counts.final": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4ed8fa656b74c5ddf5a54eca0f9aa9629d6c192225a85a5a0abb1a607285523"
+  },
+  "admin.finance.counts.provisional": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9b46c2e6d68c16f55ac7f5c1bbb0760788c64303df7fc2689aa90ec699baf0b6"
+  },
+  "admin.finance.counts.rateMissing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "129648a747a96fe91bde174007a139bf1526ab988e16a3f75240c8cde7c769ed"
+  },
+  "admin.finance.counts.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "34b798981f82fdd99fb64087973e5762c0b1259349c9bd266b362bb113bdd1ac"
+  },
+  "admin.finance.csv.orders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a10bf2323c423b2a208596c0622036f2d1ed2a65872ffe6e9443584fff90d890"
+  },
+  "admin.finance.csv.countries": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e317287d8e4553b71f51d3378c77e0d4ddd60a1df90fedfe66607f1bd1298ab1"
+  },
+  "admin.finance.csv.florists": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ce51635db38c709e927635ab34b120ba6733cdd0e6504fb3edd578fc7976fce8"
+  },
+  "admin.finance.csv.download": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4023b89022f326cd127e8b0f386db6c2884c194fa1c61363610c24b5bd30bcf"
+  },
+  "admin.finance.owed.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2745597ab393d71a4bc50ecd6d2278dfac2dd3b4675bfbd32e96fb773f36e001"
+  },
+  "admin.finance.owed.owedNow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5d97f99f6b9a9887cfc27a832d2c48d9cdb3703ccb7ea3f278ca269b00beb329"
+  },
+  "admin.finance.owed.awaitingPhoto": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3aabc0e46d4bcb413b44dbc45143d6a6666380c3da29401d9e7ef02a04b341cd"
+  },
+  "admin.finance.owed.openAdjustments": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b45ecab3b7f0e7460e61b9efa9f9f6f863c2c09af7611b16396ecfa0132aa63a"
+  },
+  "admin.finance.owed.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fbbfd3738c7dc0b17f71d630d43f4e6907ba409ee59029bda28a8c5d8e61c085"
+  },
+  "admin.finance.owed.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.finance.owed.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d5436e88573186e2abdf6361b769d19f354623c544a36a214e297b1a5f48e5d5"
+  },
+  "admin.finance.owed.payouts": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "15a49a3afca5ab88b823e451646bbb196925a1ef6b1f7d0382fd66218d6925c5"
+  },
+  "admin.finance.country.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4025a19495185136dae74bf6032293f0d0f61790e1dbf7c020d9ef2a44aa3678"
+  },
+  "admin.finance.country.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d68e1d02a0f3f3d0bf27a097ad2ce4742a3dc41370acdd12d6d7dc484a3b4384"
+  },
+  "admin.finance.country.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "admin.finance.country.all": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "admin.finance.florist.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2297ae863be917d03fe1091e724882c9c4e0a550183aed70c8394048f6d1f888"
+  },
+  "admin.finance.florist.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d16c9efbd8c0edf0be8c2c045f918f5b6af980a1f907316cfff59880c4b5218d"
+  },
+  "admin.finance.florist.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "admin.finance.florist.city": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc33f73246f48295702f404001e74d56f14d2f82689b2816422dc1a4c2ec4fb2"
+  },
+  "admin.finance.florist.owedNow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5d97f99f6b9a9887cfc27a832d2c48d9cdb3703ccb7ea3f278ca269b00beb329"
+  },
+  "admin.finance.florist.unassigned": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99567c8f12bafacbafacee4dbd41348a8b9f343fc2b0505bcb8a2ef35ad13b88"
+  },
+  "admin.finance.florist.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4ac15fda4c42bbfa13eb790bf8a3a3e8411f8ac26d6682b7c74be7a76fba4924"
+  },
+  "admin.finance.vat.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2a6babf78334b77a8186a255e3b3b45d851165065d04912c2a160462423fc496"
+  },
+  "admin.finance.vat.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7e7fbf3a301cb090fbe5a71229207d2703fdd48273b78bb6252f6c72fbc9a333"
+  },
+  "admin.finance.vat.native": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "68b9b73950a663a9c3425884631d8948fd2a7a74703ffa1f3364aca529818642"
+  },
+  "admin.finance.vat.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.finance.vat.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "021528efded17766b3a081eeb2db9d0d3775d3b4f04dfb5eddffa6e97f01dd59"
+  },
+  "admin.finance.column.orders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "admin.finance.column.gross": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec2738a4f8557da7fad784607d2fb2b3f02e8caed9c165513c1d052cb6833ce1"
+  },
+  "admin.finance.column.net": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aa8d9001a6484a8626f48ad3c39ea8cfa557c8b885b310697698d92c97dc82d2"
+  },
+  "admin.finance.column.floristCost": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "32fbd5637a84308c442fb398d832758d160c0dbbdfb502472feeb7c52bee728d"
+  },
+  "admin.finance.column.fees": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "615a3fdf6ffcffdab579e4b720873dd72abcce49b493cf8a63a66f64de8777ff"
+  },
+  "admin.finance.column.margin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8298695847a00528bbf230f4d448cc1b60ab2bc8b979c8e8f670c03f59d2e7ff"
+  },
+  "admin.finance.column.marginPercent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b4b818b2a65bf05f53e2ee6c6c97e92703a3d954b9dfecf6c619514315daf57c"
+  },
+  "admin.finance.column.vat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "85b45320d90ade204a5a4dacd8eba2803f098adfa161576f730d272f83dff977"
+  },
+  "admin.finance.empty.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f6f4c1dbe7853dae16891e67501845a078b4abbb66803b555e391667d0440f20"
+  },
+  "admin.finance.empty.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f86c9a98d4453851989fe6d612db5552314c2846eb8a1310c993d9b95ef4498f"
+  },
+  "admin.finance.rateMissing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e098b4c4615eb5777ec23dd50ed266fc6ac3e2b41e6eb12aa3dee62472ad6305"
+  },
+  "admin.finance.allProvisional.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "44ae9d8f2755071bad7d580c4c2d3d3f8df6aa0f566254a7e15ed3dbb2d214e9"
+  },
+  "admin.finance.allProvisional.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "82e90c6ef66c0f99da3121b7a2bc7cc5bb41a46f7aa555b3216ad214e6fe897d"
+  },
+  "admin.finance.loading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e05f56a9ade9c0114c0d47a78a1ffdf1c55700d385aa896bd9c1f32c488eb6fb"
+  },
+  "admin.finance.orders.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e844611384abc8f50319aef5da16d442b7b60d243ded23919810baeacf9500ef"
+  },
+  "admin.finance.orders.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8659757627d7d1546224306bd0e2f97a7a63c59b6e3a91d7e3cd4437fd4f61da"
+  },
+  "admin.finance.orders.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "95aa526c720330f85df07ad0760840a31550667bab97341cbcf60e935f873eb0"
+  },
+  "admin.finance.orders.order": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
+  },
+  "admin.finance.orders.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "admin.finance.orders.gross": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0589b626717ccca8914a41a144ce292bf279c52ac7135af131cece4e747e89aa"
+  },
+  "admin.finance.orders.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1acbea46778aef62a81caa5aee8b1f905927cbe66f71d826c07e252ec1c4d6ab"
+  },
+  "admin.finance.orders.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "606779b48c0da769db41faaf334165a5d9ffd9ccb9ad5012a53911325609047e"
+  },
+  "admin.finance.orders.foot": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a591518f173c997103dbd18b6c02f6e8327ff406ee2ecb854e2e75d69015e751"
+  },
+  "admin.finance.orders.footNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7db9193dfeb57b82896ebc7521d9c1dadf5fedfcfa2e182cc43d18c945927922"
+  },
+  "admin.finance.orders.emptyTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2053d2816d727fe5e093e2cbecc76cb5d23c80dd39d93031c8a49e5b2945a9ee"
+  },
+  "admin.finance.orders.emptyBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3c833ba06eca279791eabdeb88cf1af8e4e2b542786d383ad1a143e252a8dae"
+  },
+  "admin.finance.orders.clear": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "admin.finance.orders.noRate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b72200854e9c579d89c23505e06f3eb3cd84169e1b2d7fa3324af2e2904001a9"
+  },
+  "admin.finance.orders.noRateRange": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7033c5e26d4850230540bf84b99ac791b4586674b6e30fd5e64731c89ad36077"
+  },
+  "admin.finance.orders.loading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5c55a993937e48a8cb83ada480cea0694df229997b3eba5663d2b6c1940039a6"
+  },
+  "admin.finance.status.final": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4ed8fa656b74c5ddf5a54eca0f9aa9629d6c192225a85a5a0abb1a607285523"
+  },
+  "admin.finance.status.provisional": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9b46c2e6d68c16f55ac7f5c1bbb0760788c64303df7fc2689aa90ec699baf0b6"
+  },
+  "admin.finance.status.rate_missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "129648a747a96fe91bde174007a139bf1526ab988e16a3f75240c8cde7c769ed"
+  },
+  "admin.finance.reason.fees_pending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "523897a2342abe5440cf96c3a5e524c50c0afd5333dac6408f2ca6b312ff61e8"
+  },
+  "admin.finance.reason.fees_unsupported_provider": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ee2ae0473be10ed07651f1c0a152f100bf8bdfc152c844b83878404b5bc47177"
+  },
+  "admin.finance.reason.refund_pending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "af6831e2c6446e3b2cef600367b07bfc4c33401458d677cd513e00364676af84"
+  },
+  "admin.finance.reason.florist_not_assigned": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3afc14ee602d1291138274cd4964e54301e4a815b447dedc1b66266623c3e34a"
+  },
+  "admin.finance.reason.florist_cost_pending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19a81efa2071961371178294333504c2badf9e4308e3d6c0458330d1023af0dc"
+  },
+  "admin.finance.reason.adjustment_open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "96443a845e5bab0a61ad95ca6fa7cf09e2f3af34345ebde592753c8738538d28"
+  },
+  "admin.finance.reason.fx_rate_missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cd24b72f5ffab3e41ddab136add51890708f6070e5c8618f5989169e75d952f1"
+  },
+  "admin.finance.source.ecb": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "61683d66d785fe66b15172ca17b090b20f8a0b764b261a09176344a5c441a0c8"
+  },
+  "admin.finance.source.stripe": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "961a6062ba1ba2d8608e5eea8be67483d936f2f9f41e312217407198e14f087c"
+  },
+  "admin.finance.rateLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3f5df87300468bac721df166db296a7d9673c84febbfe0642c6ab9c4b387e168"
+  },
+  "admin.finance.money.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5ccc2e8715d7a17c3110afe37b8561b84b450db8efcf187d90649f212201050f"
+  },
+  "admin.finance.money.grossEcb": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4bedccd425727b4013d743d77a588bed016139f1edc596935b441e3a9f9d1476"
+  },
+  "admin.finance.money.vat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e90e2db5c5bd8c8f8d9e8b0a4f0bd196c40a8e480c7f20e91d8782a087c42db"
+  },
+  "admin.finance.money.ecbAt": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "690c9d9beaeef30a9ea925c9574ca460822289b91b23ed239365f76111f3aa5b"
+  },
+  "admin.finance.money.stripeAt": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c4af1c15e910e478cb953bcf70653c1436b14a5b4077928619d21c7e6aba06a0"
+  },
+  "admin.finance.money.noConversion": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a24d8300f2ba8ae7d969081ea7a4576b8c3f58f2484bd61726c9833a2ac4ff7b"
+  },
+  "admin.finance.money.fxNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "171a51624296f774d96e01e9780c78430b9391ed18114e40e973ea59c7b11c75"
+  },
+  "admin.finance.money.noFeeRow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c62f87f514bc6299c5273cf31e056506c89735311b5c936803d79089ae03badb"
+  },
+  "admin.finance.money.balanceTxn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c200c057936e3c5e3135bcb5fd4e1f4b1608a627c9ebaac7f7b922f7d03b1607"
+  },
+  "admin.finance.money.refundsNative": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c88c80a4d664f1c84ce2417b56915f0cfcaa637ef28bd996341347648a7435d7"
+  },
+  "admin.finance.money.vatNative": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5b4ea995bdde8487f572dae640d10a06966f9cfe7b54e1fe6c0b7e26efa8669"
+  },
+  "admin.finance.money.vatEstimate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "82dfd2e28dcd7c0438101204a9d0e9d9ef424e10e4de8aa9b1b8517bb779621a"
+  },
+  "admin.finance.money.floristPaid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b0e0f4acbdbd95f19b167df2ef6a88d81157637e9afa0e109303058b5cd502"
+  },
+  "admin.finance.money.floristUnpaid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b495091113ae991ad226e9f6fbe70d66b527223ebffa5c60023c384f17672efa"
+  },
+  "admin.finance.money.floristNoRate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d6ca892fa7ee9c0499f67c62ea45f545846a5d6baa933757449592593e656aa5"
+  },
+  "admin.finance.money.noFlorist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "872ab28b406031f4237a27e2da3a50187ae63d050bf514681c08f09a36614fb5"
+  },
+  "admin.finance.money.feeStripe": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3930d672132b4d854be5fad6e5aca72ede5b0da0b877a586ff560f98b7c9b1f0"
+  },
+  "admin.finance.money.feePending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eaf7d5380bb4fc323f0715cfc341c5364f372a2891dd1891c0c8bd9ec2fe91df"
+  },
+  "admin.finance.money.feeNotAvailable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b26f9e9f9772cdba8533ad522a5d3c7a89f8517ab707d6acf07f95ee8b97415c"
+  },
+  "admin.finance.money.balanceTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "79c445700088321d5961dca0ade39c763c3e2427e96a79b88bef24427a792228"
+  },
+  "admin.finance.money.readOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "29e7193fcc0c9b07d782997ec88da30dc46b292f03d856306465729d02162c26"
+  },
+  "admin.finance.money.notPaid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e04dc2d0a53838bd4fc970f35dcbe3eb79270237b1ad903cffcb2d7e9ad6c0c9"
+  },
+  "admin.finance.money.noFigures": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b72200854e9c579d89c23505e06f3eb3cd84169e1b2d7fa3324af2e2904001a9"
   }
 }

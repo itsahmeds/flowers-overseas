@@ -170,6 +170,10 @@ export const fulfillmentPartner = pgTable(
     prepaidOrderLimit: integer("prepaid_order_limit").notNull().default(5),
     /** The saved-recipient id in our Wise Business account, digits only. */
     wiseRecipientId: text("wise_recipient_id"),
+    // `0039_finance_crm_030b` (spec 030b §5.1; TASK-439): the person we speak to, and the
+    // retention clock of the CRM rows (set once by `partner_offboarded_at`, never cleared).
+    contactName: text("contact_name"),
+    offboardedAt: timestamp("offboarded_at", { withTimezone: true }),
   },
   (table) => [
     unique("fulfillment_partner_code_key").on(table.code),
@@ -219,6 +223,10 @@ export const fulfillmentPartner = pgTable(
     check(
       "fulfillment_partner_wise_recipient_id_check",
       sql.raw(`wise_recipient_id ~ '^[0-9]{1,20}$'`),
+    ),
+    check(
+      "fulfillment_partner_contact_name_check",
+      sql`${table.contactName} is null or char_length(btrim(${table.contactName})) between 2 and 120`,
     ),
     check(
       "fulfillment_partner_display_first_name_check",
@@ -803,5 +811,111 @@ export const payoutAdjustment = pgTable(
     ),
     index("payout_adjustment_order_id_idx").on(table.orderId),
     index("payout_adjustment_partner_id_idx").on(table.partnerId),
+  ],
+);
+
+/* -------------------------------------------------------------------------- */
+/* partner_note, partner_contact_log (`0039_finance_crm_030b`, spec 030b §5.1)  */
+/* -------------------------------------------------------------------------- */
+
+/** `partner_contact_log.channel` (spec 030b §5.1). */
+export const contactLogChannels = [
+  "phone",
+  "email",
+  "whatsapp",
+  "video",
+  "in_person",
+  "other",
+] as const;
+
+/** `partner_contact_log.direction`. */
+export const contactLogDirections = ["inbound", "outbound"] as const;
+
+/** `partner_contact_log.topic`. */
+export const contactLogTopics = [
+  "onboarding",
+  "order_issue",
+  "payout",
+  "pricing",
+  "quality",
+  "other",
+] as const;
+
+/** The founder's notes on a florist. Staff only; `body` is masked in `audit_log`. */
+export const partnerNote = pgTable(
+  "partner_note",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    partnerId: uuid("partner_id")
+      .notNull()
+      .references(() => fulfillmentPartner.id, { onDelete: "restrict" }),
+    body: text("body").notNull(),
+    pinned: boolean("pinned").notNull().default(false),
+    authorUserId: uuid("author_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    ...timestamps,
+  },
+  (table) => [
+    check(
+      "partner_note_body_check",
+      sql`char_length(btrim(${table.body})) between 1 and 2000`,
+    ),
+    index("partner_note_partner_idx").on(
+      table.partnerId,
+      table.pinned.desc(),
+      table.createdAt.desc(),
+    ),
+  ],
+);
+
+/** The contact log and its follow-ups. Staff only; `summary` is masked in `audit_log`. */
+export const partnerContactLog = pgTable(
+  "partner_contact_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    partnerId: uuid("partner_id")
+      .notNull()
+      .references(() => fulfillmentPartner.id, { onDelete: "restrict" }),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+    channel: text("channel").notNull(),
+    direction: text("direction").notNull(),
+    topic: text("topic").notNull(),
+    summary: text("summary").notNull(),
+    followUpOn: date("follow_up_on", { mode: "string" }),
+    followUpDoneAt: timestamp("follow_up_done_at", { withTimezone: true }),
+    authorUserId: uuid("author_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    ...timestamps,
+  },
+  (table) => [
+    check(
+      "partner_contact_log_channel_check",
+      sql.raw(`channel in ${valueList(contactLogChannels)}`),
+    ),
+    check(
+      "partner_contact_log_direction_check",
+      sql.raw(`direction in ${valueList(contactLogDirections)}`),
+    ),
+    check(
+      "partner_contact_log_topic_check",
+      sql.raw(`topic in ${valueList(contactLogTopics)}`),
+    ),
+    check(
+      "partner_contact_log_summary_check",
+      sql`char_length(btrim(${table.summary})) between 1 and 1000`,
+    ),
+    check(
+      "partner_contact_log_follow_up_check",
+      sql`${table.followUpDoneAt} is null or ${table.followUpOn} is not null`,
+    ),
+    index("partner_contact_log_partner_idx").on(
+      table.partnerId,
+      table.occurredAt.desc(),
+    ),
+    index("partner_contact_log_follow_up_idx")
+      .on(table.followUpOn)
+      .where(sql`follow_up_on is not null and follow_up_done_at is null`),
   ],
 );

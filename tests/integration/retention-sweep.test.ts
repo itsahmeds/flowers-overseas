@@ -997,6 +997,11 @@ describe.skipIf(server.url === undefined)(
             ["fraud_signals", "applied"],
             ["invoice_archive", "kept"],
             ["partner_application", "applied"],
+            // spec 030b §13 Q11 (TASK-439): the CRM rows of an offboarded florist; balance facts
+            // are kept with the payment records.
+            ["partner_contact_log", "applied"],
+            ["partner_note", "applied"],
+            ["payment_balance_txn", "kept"],
             ["recipient_contact", "applied"],
             // spec 012b AC-28 (TASK-293): the review ledger's attester names.
             ["review_attestation", "applied"],

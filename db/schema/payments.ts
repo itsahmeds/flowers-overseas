@@ -24,6 +24,7 @@ import {
   boolean,
   char,
   check,
+  date,
   foreignKey,
   index,
   integer,
@@ -191,6 +192,8 @@ export const payment = pgTable(
     ),
     check("payment_attempts_check", sql`${table.attempts} >= 0`),
     index("payment_purchase_id_idx").on(table.purchaseId),
+    // `0039_finance_crm_030b` (spec 030b §5.1): the finance date-range scan.
+    index("payment_captured_at_idx").on(table.capturedAt),
     uniqueIndex("payment_one_live_per_purchase_idx")
       .on(table.purchaseId)
       .where(sql`status not in ('cancelled', 'failed')`),
@@ -344,5 +347,103 @@ export const webhookInbox = pgTable(
     index("webhook_inbox_unprocessed_idx")
       .on(table.receivedAt)
       .where(sql`processed_at is null`),
+  ],
+);
+
+/** `payment_balance_txn.kind` (spec 030b §5.1): `balanceKindOf` maps a reporting category here. */
+export const balanceTxnKinds = [
+  "charge",
+  "refund",
+  "refund_failure",
+  "dispute",
+  "dispute_reversal",
+  "other",
+] as const;
+
+/**
+ * `payment_balance_txn` (`0039_finance_crm_030b`, spec 030b §5.1; TASK-439): one provider balance
+ * transaction per row, the fee, the settled amount and the FX of a money movement as the provider
+ * reported it. Immutable (`BALANCE_TXN_IMMUTABLE`); staff only; no personal data.
+ */
+export const paymentBalanceTxn = pgTable(
+  "payment_balance_txn",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => payment.id, { onDelete: "restrict" }),
+    refundId: uuid("refund_id").references(() => refund.id, {
+      onDelete: "restrict",
+    }),
+    disputeId: uuid("dispute_id").references(() => paymentDispute.id, {
+      onDelete: "restrict",
+    }),
+    kind: text("kind").notNull(),
+    provider: text("provider").notNull(),
+    providerTxnRef: text("provider_txn_ref").notNull(),
+    sourceRef: text("source_ref").notNull(),
+    providerType: text("provider_type").notNull(),
+    reportingCategory: text("reporting_category").notNull(),
+    presentmentAmountMinor: bigint("presentment_amount_minor", {
+      mode: "bigint",
+    }),
+    presentmentCurrencyCode: text("presentment_currency_code").references(
+      () => currency.code,
+      { onDelete: "restrict" },
+    ),
+    amountMinor: bigint("amount_minor", { mode: "bigint" }).notNull(),
+    feeMinor: bigint("fee_minor", { mode: "bigint" }).notNull(),
+    netMinor: bigint("net_minor", { mode: "bigint" }).notNull(),
+    settlementCurrencyCode: text("settlement_currency_code")
+      .notNull()
+      .references(() => currency.code, { onDelete: "restrict" }),
+    effectiveRatePpm: bigint("effective_rate_ppm", { mode: "bigint" }),
+    providerExchangeRate: text("provider_exchange_rate"),
+    providerCreatedAt: timestamp("provider_created_at", {
+      withTimezone: true,
+    }).notNull(),
+    availableOn: date("available_on", { mode: "string" }),
+    livemode: boolean("livemode").notNull(),
+    fetchedAt: timestamp("fetched_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("payment_balance_txn_provider_txn_ref_key").on(table.providerTxnRef),
+    check(
+      "payment_balance_txn_kind_check",
+      sql.raw(`kind in ${valueList(balanceTxnKinds)}`),
+    ),
+    check(
+      "payment_balance_txn_provider_check",
+      sql.raw(`provider in ${valueList(paymentProviders)}`),
+    ),
+    check(
+      "payment_balance_txn_effective_rate_ppm_check",
+      sql`${table.effectiveRatePpm} > 0`,
+    ),
+    check(
+      "payment_balance_txn_provider_exchange_rate_check",
+      sql.raw(`provider_exchange_rate ~ '^[0-9]+(\\.[0-9]+)?$'`),
+    ),
+    check(
+      "payment_balance_txn_net_check",
+      sql`${table.netMinor} = ${table.amountMinor} - ${table.feeMinor}`,
+    ),
+    check(
+      "payment_balance_txn_presentment_pair_check",
+      sql`(${table.presentmentAmountMinor} is null) = (${table.presentmentCurrencyCode} is null)`,
+    ),
+    check(
+      "payment_balance_txn_refund_check",
+      sql`${table.kind} not in ('refund', 'refund_failure') or ${table.refundId} is not null`,
+    ),
+    check(
+      "payment_balance_txn_dispute_check",
+      sql`${table.kind} not in ('dispute', 'dispute_reversal') or ${table.disputeId} is not null`,
+    ),
+    index("payment_balance_txn_payment_id_idx").on(table.paymentId),
+    index("payment_balance_txn_refund_id_idx").on(table.refundId),
+    index("payment_balance_txn_dispute_id_idx").on(table.disputeId),
   ],
 );

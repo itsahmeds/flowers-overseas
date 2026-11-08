@@ -27,7 +27,9 @@
  *    (§5.2, TASK-365: keyed by payout; no handler until the shared PDF renderer lands), and spec 018's
  *    invoice jobs (§5.2, TASK-342): `invoice.render` (keyed by invoice, `exclusive`, 5 attempts),
  *    `invoice.render_sweep` (enqueued by every minute tick) and `invoice.email` (keyed by invoice,
- *    `short`; its handler is spec 016's B8, TASK-334, so until then its jobs wait);
+ *    `short`; its handler is spec 016's B8, TASK-334, so until then its jobs wait); spec 030b's
+ *    `payments.balance_fetch` (§5.2, TASK-439: keyed `{kind}:{ref}`, `short`) and
+ *    `payments.balance_sweep` (enqueued by the minute tick once an hour);
  *  - **declared only** — the name is reserved for the spec that implements it
  *    (`notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -215,6 +217,26 @@ export const AlertsDispatchPayload = z
   .strict();
 
 /**
+ * `payments.balance_fetch` (spec 030b §5.2 `BalanceFetchJobSchema`, AC-6, AC-10; TASK-439): one
+ * source's balance transactions, asked once and stored. `attempt` and `firstAttemptAt` are the
+ * job's own retry clock (72 hours of backoff, then `dead`). Mirrors `payments`' schema, which the
+ * handler parses again; kept here so the registry imports no module.
+ */
+export const PaymentsBalanceFetchPayload = z
+  .object({
+    paymentId: z.uuid(),
+    source: z
+      .object({
+        kind: z.enum(["intent", "refund", "dispute"]),
+        ref: z.string().min(1).max(255),
+      })
+      .strict(),
+    attempt: z.number().int().min(0).default(0),
+    firstAttemptAt: z.iso.datetime().optional(),
+  })
+  .strict();
+
+/**
  * `alerts.monitor` and `alerts.escalate` (spec 025 §5.2 "Jobs", AC-13 to AC-27; TASK-489): one
  * minute's checks, and one minute's receipts, escalations, bumps, reminders and held digests.
  * Take nothing; the minute tick enqueues one of each under a `singletonKey`.
@@ -229,6 +251,12 @@ export const AlertsEscalatePayload = z.object({}).strict();
 export const AlertsDailySummaryPayload = z
   .object({ date: z.iso.date() })
   .strict();
+
+/**
+ * `payments.balance_sweep` (spec 030b §5.2; AC-10; TASK-439): one hourly look for sources with no
+ * balance row and live payments past the fees-missing line. Takes nothing.
+ */
+export const PaymentsBalanceSweepPayload = z.object({}).strict();
 
 /**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
@@ -333,6 +361,15 @@ export const REGISTERED_JOBS = {
     version: 1,
     payload: AlertsDailySummaryPayload,
     policy: "short",
+  },
+  "payments.balance_fetch": {
+    version: 1,
+    payload: PaymentsBalanceFetchPayload,
+    policy: "short",
+  },
+  "payments.balance_sweep": {
+    version: 1,
+    payload: PaymentsBalanceSweepPayload,
   },
 } as const satisfies Record<string, RegisteredJob>;
 

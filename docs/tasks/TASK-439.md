@@ -39,7 +39,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 (builder FN439, PR 520): migration numbered `0038` (TASK-418 merged with no migration, so `0039` would leave a gap `db:check` refuses). Migration, down file, mirror, snapshot, `balanceFacts` (Stripe, fake, contract case), `recordBalanceFacts`, both jobs, the webhook enqueue, retention handlers, flag. Tests: contract `payment-balance.test.ts` (5) + the contract suite's new case; integration `finance-balance-030b.test.ts` (11, PG16 scratch). Next: the backfill script, then TASK-440.
 
 ## Result
 

@@ -372,6 +372,9 @@ describe.skipIf(server.url === undefined)(
           ...BLOG_TABLES,
           "review",
           "admin_order_action",
+          // Spec 030b's `0039_finance_crm_030b` (TASK-439): the florist notes and contact log.
+          "partner_note",
+          "partner_contact_log",
         ].sort(),
       );
     });

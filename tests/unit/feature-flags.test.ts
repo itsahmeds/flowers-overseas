@@ -46,6 +46,7 @@ describe("T-16 — the registry", () => {
       "payouts.accrue",
       "checkout.discount_codes",
       "alerts.push",
+      "payments.balance_fetch",
     ]);
   });
 
@@ -53,6 +54,16 @@ describe("T-16 — the registry", () => {
     expect(flagDefinition("checkout.discount_codes")).toEqual({
       key: "checkout.discount_codes",
       scopeKinds: ["country"],
+      risk: "standard",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
+  });
+
+  it("registers spec 030b's payments.balance_fetch as global, standard risk, dirtying nothing (§5.1, §12)", () => {
+    expect(flagDefinition("payments.balance_fetch")).toEqual({
+      key: "payments.balance_fetch",
+      scopeKinds: ["global"],
       risk: "standard",
       dirties: [],
       description: expect.stringMatching(/\S/u) as unknown as string,

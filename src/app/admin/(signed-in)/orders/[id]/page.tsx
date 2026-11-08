@@ -13,7 +13,8 @@
  * summary when the order's status, mode and the viewer's roles allow an action; otherwise the
  * summary keeps its "not available" line. TASK-361 adds the refunds list and balance under
  * Payments, the emails list with Resend, and the action history (`order-lists.tsx`). Artboards `admin-order-detail-desktop.dc.html` (two columns, the summary sticky) and
- * `admin-order-detail-mobile.dc.html` (one column, the summary first).
+ * `admin-order-detail-mobile.dc.html` (one column, the summary first). Spec 030b (TASK-440) adds the
+ * read-only Money panel after Payments for `finance.view` only (`money-panel.tsx`).
  */
 import { notFound } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
@@ -29,6 +30,7 @@ import {
   requireAdminPage,
   zoneCity,
 } from "@/modules/admin";
+import { orderMoney, readFinance } from "@/modules/admin/finance";
 import {
   formatAddressBlock,
   formatDate,
@@ -73,6 +75,7 @@ import {
   readOrderActionsData,
   readOrderLists,
 } from "./actions-data";
+import { MoneyPanel } from "./money-panel";
 import { EmailsSection, HistorySection, RefundsBlock } from "./order-lists";
 
 /** A florist's page, only once it exists (no dead links). */
@@ -261,6 +264,15 @@ export default async function AdminOrderPage({
   const actionsPanel = OrderActionsPanel({
     data: await readOrderActionsData(order, session, outcome, lists.refunds),
   });
+
+  // Spec 030b §2.8 (TASK-440): the Money panel is read and rendered for `finance.view` only;
+  // demo orders take no money and never show it.
+  const showMoney = can(session.roles, "finance.view") && order.mode !== "demo";
+  const margin = showMoney
+    ? await readFinance(actor, (executor) =>
+        orderMoney(executor, order.orderId, session.timeZone, new Date()),
+      )
+    : null;
 
   const zone = zoneCity(session.timeZone);
   const viewer = (iso: string, style: "time" | "dayMonthTimeSeconds") =>
@@ -673,6 +685,7 @@ export default async function AdminOrderPage({
               {timeline}
               {assignments}
               {payments}
+              {showMoney ? <MoneyPanel margin={margin} /> : null}
               {emails}
               <HistorySection history={lists.history} zone={session.timeZone} />
             </>
