@@ -385,12 +385,12 @@ describe("T-38: the new English is unreviewed until the delegated record run", (
     seoDescription:
       "{count, plural, one {# country with a guide we wrote ourselves} other {# countries, each with a guide we wrote ourselves}}: what is given, what is never given, and which dates matter in a year there.",
     intro:
-      "{count, plural, one {# country, and we have written a guide to it} other {# countries, and we have written a guide to every one of them}}: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open delivery after it. Where we are not delivering yet, this page says so in the same words on every row.",
+      "{count, plural, one {# country, and we have written a guide to it} other {# countries, and we have written a guide to every one of them}}: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open ordering after it. Where ordering opens soon, this page says so in the same words on every row.",
     phoneIntro:
       "{count, plural, one {# country with a guide we wrote ourselves} other {# countries, each with a guide we wrote ourselves}}.",
   };
   const DELEGATED =
-    /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-431\.py /u;
+    /^founder \(delegated\), \d{4}-\d{2}-\d{2}: recorded by the orchestrator with record-approval-(?:431|504)\.py /u;
   const hash = (value: string): string =>
     createHash("sha256").update(value).digest("hex");
 

@@ -361,6 +361,8 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-365's florist payout statement keys (PR 475) left this queue under the delegation, all
     // but the lawyer-gated `deleteReminder` (spec 030a §13 Q12; TASK-436).
     // TASK-431's three `destinationsHub.*` count lines (spec 007 AC-37) left this queue under the delegation.
+    "delivery.picker.preview",
+    "destinationsHub.intro",
     "emails.floristPayoutStatement.deleteReminder",
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
@@ -496,6 +498,7 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.testLabel",
     // TASK-402's 14 `search.*` keys (spec 045 Appendix A) left this queue under the delegation.
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).
+    "product.demo.heading",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
