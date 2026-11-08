@@ -263,3 +263,57 @@ test("Enter in a step 1 field continues; it never presses Use sample details", a
   await expect(page.locator("#co-errors")).toBeVisible();
   expect(text(m, "checkout.action.toCard")).not.toBe("");
 });
+
+for (const javaScript of [true, false] as const) {
+  test.describe(`step 2 add-ons, JavaScript ${javaScript ? "on" : "off"}`, () => {
+    test.use({ javaScriptEnabled: javaScript });
+
+    test("an add-on press keeps the typed card and details (TASK-504)", async ({
+      page,
+    }) => {
+      const m = messages("en-gb");
+      await page.goto("/en-gb/poland/product/amber-hour");
+      await page
+        .locator('[data-fo-pdp-entry] button[value="checkout"]')
+        .click();
+      await page.waitForLoadState("domcontentloaded");
+      await page.locator('button[value="sample"]').click();
+      await page.waitForLoadState("domcontentloaded");
+      await expect(page.locator("#co-fullName")).toHaveValue(
+        SAMPLE.recipient.fields.fullName,
+      );
+      if (
+        (await page.locator('input[name="deliveryDate"]:checked').count()) === 0
+      ) {
+        await page
+          .locator('input[name="deliveryDate"]:not([disabled])')
+          .first()
+          .check({ force: true });
+      }
+      await press(page, text(m, "checkout.action.toCard"));
+      await expect(page.locator("[data-fo-checkout]")).toHaveAttribute(
+        "data-fo-checkout",
+        "card",
+      );
+      await page.locator("#co-cardMessage").fill(CARD.message);
+      await page.locator("#co-signAs").fill(CARD.signAs);
+      await page.locator("#co-buyerName").fill("Typed Buyer");
+      const addon = page
+        .locator("[data-fo-addon] button[name='addAddon']")
+        .first();
+      const key = (await addon.getAttribute("value")) ?? "";
+      await addon.click();
+      await page.waitForLoadState("domcontentloaded");
+      await expect(
+        page.locator(`[data-fo-addon="${key}"] button[name='removeAddon']`),
+      ).toBeVisible();
+      await expect(page.locator("[data-fo-checkout]")).toHaveAttribute(
+        "data-fo-checkout",
+        "card",
+      );
+      await expect(page.locator("#co-cardMessage")).toHaveValue(CARD.message);
+      await expect(page.locator("#co-signAs")).toHaveValue(CARD.signAs);
+      await expect(page.locator("#co-buyerName")).toHaveValue("Typed Buyer");
+    });
+  });
+}

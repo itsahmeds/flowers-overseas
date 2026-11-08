@@ -47,3 +47,22 @@ export function lineDateStatus(
     next: window.dates.find((date) => date.selectable)?.date ?? null,
   };
 }
+
+/**
+ * Why a posted date cannot be delivered at `now` (TASK-504), or `null` when it can: the chip's own
+ * `delivery.reason.*` key (a past cutoff, a closed weekday, a holiday), or `outside_window` for a
+ * date the calendar does not list at all (a day already past, or beyond the horizon). The start
+ * route refuses such a date rather than carrying it into a line, and logs this code, never the
+ * date (spec 010 §8 `checkout.date_refused {reason_key}`).
+ */
+export function dateRefusalReason(
+  countryIso: CountryIso2,
+  date: string,
+  now: Date,
+): string | null {
+  const window = checkoutDeliveryWindow({ countryIso, from: now });
+  const chip = window.dates.find((candidate) => candidate.date === date);
+  if (chip === undefined) return "outside_window";
+  if (chip.selectable) return null;
+  return chip.reasonKey ?? "outside_window";
+}

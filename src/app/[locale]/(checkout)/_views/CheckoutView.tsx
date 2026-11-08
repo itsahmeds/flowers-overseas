@@ -629,7 +629,9 @@ async function CardAndBuyerFields({
                         ? "bg-selected text-on-selected"
                         : "text-ink bg-transparent shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
                     }`}
-                    form={CHECKOUT_FORM_IDS.addons}
+                    // The step's own form (TASK-504): the press carries what the buyer has typed on
+                    // this step, which the action draws again after the add-on is saved.
+                    form={CHECKOUT_FORM_IDS.step}
                     name={chosen ? "removeAddon" : "addAddon"}
                     type="submit"
                     value={addon.key}
@@ -1401,13 +1403,6 @@ export async function CheckoutStepPage({
                   />
                 </StepForm>
               )}
-              {screen.step === "card" && line !== undefined ? (
-                <StepForm action={action} id={CHECKOUT_FORM_IDS.addons}>
-                  {routing("selection", screen)}
-                  {hidden("returnStep", "card")}
-                  {hidden("line", String(line.position))}
-                </StepForm>
-              ) : null}
             </div>
           </div>
           {total === null || line === undefined ? null : (

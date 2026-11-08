@@ -108,10 +108,11 @@ function screenPath(
 }
 
 /** Writes the echo and answers with a 303 to the screen it names. */
-async function echoTo(
+/** Store what the screen draws again, without leaving yet. */
+async function keepEcho(
   locale: LocaleCode,
   echo: CheckoutEchoInput,
-): Promise<never> {
+): Promise<void> {
   const encoded = encodeCheckoutEcho(echo);
   if (encoded !== null) {
     (await cookies()).set(
@@ -120,7 +121,51 @@ async function echoTo(
       checkoutEchoCookieAttributes(locale),
     );
   }
+}
+
+async function echoTo(
+  locale: LocaleCode,
+  echo: CheckoutEchoInput,
+): Promise<never> {
+  await keepEcho(locale, echo);
   redirect(screenPath(locale, echo));
+}
+
+/** The add-on buttons' names on step 2 (`CheckoutView`), each carrying one add-on key. */
+const ADDON_PRESSES = new Set(["addAddon", "removeAddon"]);
+
+/**
+ * An add-on pressed on step 2 (TASK-504). The button belongs to the step's own form, so the press
+ * carries everything the buyer has typed on the step; the add-on is saved through
+ * `updateSelection` (which returns to step 2) and the typed values are drawn again from the echo,
+ * unvalidated and unsaved, exactly as "Use sample details" draws its values. Before this, the
+ * button sat in a form of its own and a typed card message was lost on every add-on press.
+ */
+async function pressAddon(
+  locale: LocaleCode,
+  posted: FormData,
+  line: string | undefined,
+): Promise<never> {
+  const values: Record<string, string> = {};
+  const press = new FormData();
+  for (const [key, value] of posted.entries()) {
+    if (typeof value !== "string") continue;
+    if (ADDON_PRESSES.has(key)) press.append(key, value);
+    else if (key !== "addonKeys") values[key] = value;
+  }
+  const position = Number(line ?? posted.get("line") ?? 1);
+  press.append("line", String(position));
+  press.append("returnStep", "card");
+  await keepEcho(locale, {
+    step: "card",
+    line: Number.isInteger(position) && position > 0 ? position : 1,
+    values,
+    errors: {},
+    attempt: 0,
+  });
+  await updateSelection(locale, IDLE, selection(press));
+  // Not saved (an add-on no longer offered, an expired basket): the page draws the basket as it is.
+  redirect(`/${locale}/checkout`);
 }
 
 export async function checkoutAction(form: FormData): Promise<void> {
@@ -158,6 +203,13 @@ export async function checkoutAction(form: FormData): Promise<void> {
       errors: {},
       attempt: 0,
     });
+  }
+
+  if (
+    intent === "card" &&
+    [...posted.keys()].some((key) => ADDON_PRESSES.has(key))
+  ) {
+    await pressAddon(locale, posted, line);
   }
 
   const state =

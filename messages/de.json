@@ -598,7 +598,7 @@
     "legend": "When should it arrive?",
     "picker": {
       "live": "Bestellen bis {time} in {city}, nach der Uhrzeit des Empfängers, nicht Ihrer",
-      "preview": "This is how delivery dates will work in {country}. We are not taking orders yet.",
+      "preview": "This is how delivery dates will work in {country}. Ordering opens soon.",
       "unavailable": "Delivery dates for {country} open when ordering does."
     },
     "reason": {
@@ -642,7 +642,7 @@
   "destinationsHub": {
     "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.",
     "h1": "Where we can <em>send flowers</em>",
-    "intro": "{count, plural, one {# Land, und dazu haben wir einen Ratgeber geschrieben} other {# Länder, und zu jedem haben wir einen Ratgeber geschrieben}}: was man schenkt, was man nie schenkt, wie eine Adresse geschrieben wird und welche Daten dort im Jahr zählen. Wir schreiben zuerst den Ratgeber und öffnen danach die Lieferung. Wo wir noch nicht liefern, sagt diese Seite das in jeder Zeile mit denselben Worten.",
+    "intro": "{count, plural, one {# Land, und dazu haben wir einen Ratgeber geschrieben} other {# Länder, und zu jedem haben wir einen Ratgeber geschrieben}}: was man schenkt, was man nie schenkt, wie eine Adresse geschrieben wird und welche Daten dort im Jahr zählen. Wir schreiben zuerst den Ratgeber und öffnen danach die Bestellungen. Wo Bestellungen bald möglich sind, sagt diese Seite das in jeder Zeile mit denselben Worten.",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
     "phoneIntro": "{count, plural, one {# Land mit einem Ratgeber, den wir selbst geschrieben haben} other {# Länder, jedes mit einem Ratgeber, den wir selbst geschrieben haben}}.",
     "readGuide": "Read the guide →",
@@ -1342,7 +1342,7 @@
     },
     "demo": {
       "body": "When ordering opens, this is the price you will pay. Nothing is added at a later step.",
-      "heading": "Ordering is not open yet"
+      "heading": "Ordering opens soon"
     },
     "destination": {
       "change": "change destination",

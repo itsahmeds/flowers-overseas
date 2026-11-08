@@ -46,6 +46,7 @@ import { BASKET_MAX_LINES } from "@/config/checkout";
 import { isCountryIso2 } from "@/config/countries";
 import type { CurrencyCode } from "@/config/currencies";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
+import { EnvValidationError } from "@/lib/env.schema";
 import { logger } from "@/lib/logger";
 import {
   type Quote,
@@ -68,6 +69,7 @@ import {
   loadDraft,
   saveDraft,
 } from "./draft";
+import { dateRefusalReason } from "./dates";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
 import {
   BasketCurrencyUnavailable,
@@ -303,8 +305,20 @@ export async function startCheckout(
   }
 
   // The product page offers a date only when the destination is live (spec 009 AC-8); in `demo`
-  // and `test` step 1 shows the demo calendar, so a posted date is not carried over.
-  const deliveryDate = mode === "live" ? (start.date ?? null) : null;
+  // and `test` step 1 shows the demo calendar, so a posted date is not carried over. A live date
+  // the destination cannot deliver at `now` (a day already past, a closed Sunday, a holiday, a
+  // passed cutoff: a cached page can still show one) is refused here, never stored: the line
+  // starts with no date and step 1 asks for one (TASK-504).
+  const postedDate = mode === "live" ? (start.date ?? null) : null;
+  const dateRefusal =
+    postedDate === null ? null : dateRefusalReason(countryIso, postedDate, now);
+  if (dateRefusal !== null) {
+    logger.info(
+      { reason_key: dateRefusal, country_iso: countryIso, mode },
+      "checkout.date_refused",
+    );
+  }
+  const deliveryDate = dateRefusal === null ? postedDate : null;
   const selection = {
     countryIso,
     sku: start.sku,
@@ -330,7 +344,12 @@ export async function startCheckout(
         connection,
       );
     }
-    refused("no_price");
+    if (error instanceof EnvValidationError) {
+      // A deployment without `QUOTE_SIGNING_SECRET` cannot sign a price, so every start is sent
+      // back to the product page: an operator's fault, not the buyer's, and loud (TASK-504). The
+      // code is the one field, so nothing of the secret can reach a log.
+      logger.error({ code: "quote_signing_unavailable" }, "checkout.refused");
+    } else refused("no_price");
     return seeOther(await backTo(fields));
   }
 
