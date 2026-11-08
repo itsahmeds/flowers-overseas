@@ -385,6 +385,9 @@ test.describe("T-50 (AC-45): the guide is calm, not bland", () => {
           }
           widest = Math.max(widest, bottom - cursor);
           const ornaments: string[] = [];
+          // Spec 004 §14 A-orchestrator-2026-11-08a: AC-45 exempts spec 042's one route-line SVG
+          // (`aria-hidden`, at most 180 x 120, `data-fo-route-line`), and only the first one.
+          let routeLineExempted = false;
           for (const element of Array.from(main.querySelectorAll("*"))) {
             const rect = element.getBoundingClientRect();
             if (rect.width === 0 || rect.height === 0) continue;
@@ -404,7 +407,14 @@ test.describe("T-50 (AC-45): the guide is calm, not bland", () => {
               rect.width >= 48 &&
               rect.height >= 48
             ) {
-              ornaments.push(`aria-hidden ${element.tagName}`);
+              const routeLine =
+                !routeLineExempted &&
+                element.tagName.toLowerCase() === "svg" &&
+                element.hasAttribute("data-fo-route-line") &&
+                rect.width <= 180 &&
+                rect.height <= 120;
+              if (routeLine) routeLineExempted = true;
+              else ornaments.push(`aria-hidden ${element.tagName}`);
             }
           }
           return { widest, ornaments };

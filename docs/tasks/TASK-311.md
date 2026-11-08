@@ -10,6 +10,7 @@ Spec 042 §5.3.6 and §13 Q8 (every default: the corridor page only, the unlabel
 - `docs/design/` artboards from PR 297 (spec 042): `system/motion-interactions.dc.html` motion 18, `corridor-country-desktop`, `corridor-country-mobile` (not shown). Match them pixel for pixel.
 - Spec 042's shared ACs (AC-1 to AC-6) are TASK-313's; this PR still records its own idea's row of the §5.3.0 byte table in `
 - 2026-11-08 (finisher F-OLD): rebased onto `ec41cb020` (97 commits): `globals.css` keeps main's occasion-tabs block and adds the route line's after it; `laptop-guide.png` took main's image (it needs a re-render once CI shows the diff). typecheck 0; the three unit files 29/29. T-50 (AC-45 vs AC-19) is still in main's `corridor-first-screen.spec.ts`, so the escalation stays open and the row stays `blocked`: merging this PR as it stands turns that e2e red.
+- 2026-11-08 (finisher F-OLD): the orchestrator's ruling applied: T-50 in `tests/e2e/corridor-first-screen.spec.ts` skips the first `svg[data-fo-route-line]` of at most 180 x 120 and nothing else; spec 004 §14 A-orchestrator-2026-11-08a added (`specs:index` current); row back to `in_review`.
 
 ## Result` (AC-1) and runs AC-3 to AC-6 for its idea. The first idea PR to land creates `tests/unit/interactions-budget.test.ts` and `interactions-css.test.ts`; later ones extend them.
 - One build-time boolean per idea in `src/config/interactions.ts` (§12): no runtime flag, no database read on the render path.
@@ -40,7 +41,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   T-50 fails on `/en-gb/send-flowers-to/poland` and `/en/send-flowers-to/germany` at 1440 and
   1280 with `aria-hidden svg`. Neither spec names the other. Options: (a) amend AC-45 to exempt
   spec 042's route line (`[data-fo-route-line]`, decorative, CSS-drawn, out of flow) and its T-50
-  probe with it; (b) drop idea 6 from the guide. Not decided here. Answer: `open`.
+  probe with it; (b) drop idea 6 from the guide. Not decided here. **Answer (2026-11-08,
+  orchestrator under the founder's delegation, recorded as delegated): (a).** The founder asked for
+  the route line by name (10-19 ideas), so AC-19 wins; spec 004 §14 A-orchestrator-2026-11-08a
+  exempts the one marked route-line SVG (at most 180 x 120) from AC-45, and T-50 skips it and only
+  it. Closed.
 
 ## Progress
 
