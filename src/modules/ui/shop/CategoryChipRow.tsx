@@ -1,6 +1,6 @@
 /**
  * `CategoryChipRow` — the sibling row (spec 008 §2 "Sort, filters, pagination", §13 **Q6**, T-30;
- * TASK-108; `docs/design/wireframes/country-category-desktop.dc.html`, "Also for Poland").
+ * TASK-108; `docs/design/wireframes/country-category-desktop.dc.html`, "Also for {country}", the country from the URL; TASK-390).
  *
  * **This row is the whole browsing affordance.** No filters ship in Phase 0 (§13 Q6): a facet that
  * is worth browsing gets a real authored path (`plan/02` §7), so every chip here is a **link to a
@@ -28,7 +28,7 @@ import type { ChipLinkView } from "./viewModel.ts";
 export interface CategoryChipRowProps {
   readonly items: readonly ChipLinkView[];
   readonly locale: LocaleCode;
-  /** The row's visible eyebrow *and* its accessible name — "Also for Poland" on the artboard. */
+  /** The row's visible eyebrow *and* its accessible name — "Also for {country}" on the artboard, the country the URL names. */
   readonly heading: string;
   /** For the `<nav>`'s `aria-labelledby`, where a page renders more than one row. */
   readonly id?: string;
@@ -46,7 +46,7 @@ export function CategoryChipRow({
   const ordered = sortBy(items, locale, (item) => item.name);
 
   return (
-    // v2 (the country category and occasion artboards' "Also for Poland"): the cornflower eyebrow
+    // v2 (the country category and occasion artboards' "Also for {country}"): the cornflower eyebrow
     // names the `<nav>`, and the chips are a list of card pills; the current one is the only
     // selected (cornflower) pill and is not a link to the page the reader is on.
     <Stack as="nav" gap="md" aria-labelledby={`${id}-heading`} id={id}>

@@ -77,6 +77,8 @@ async function viewFor(
 }
 
 const roses = await viewFor("en", "poland", "roses");
+// Fifty products, so three pages at 24 (AC-10 as amended; TASK-390): the pager's subject.
+const mixed = await viewFor("en", "poland", "mixed-flowers");
 
 describe("the populated country category (§5.3 row 2)", () => {
   const html = render(<CountryCategoryPage view={roses} />, "en");
@@ -266,16 +268,23 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(grid).toBeGreaterThan(-1);
     expect(form).toBeGreaterThan(-1);
     expect(form).toBeLessThan(grid);
-    expect(html.indexOf("data-fo-pagination")).toBeGreaterThan(grid);
+    // Fifteen roses are one page at 24: no pager (AC-10 as amended; TASK-390).
+    expect(roses.pageCount).toBe(1);
+    expect(html).not.toContain("data-fo-pagination");
     expect(text).not.toContain("Change the order");
     expect(html).toMatch(
       /<label[^>]*for="listing-sort"[^>]*>Sort by<\/label>/u,
     );
     // The pager links only `?page=N`; no sorted URL is ever a crawlable link (AC-15).
     expect(html).not.toMatch(/href="[^"]*[?&]sort=/iu);
-    expect(roses.pageCount).toBe(2);
-    expect(html).toContain("Pages of products");
-    expect(html).toContain(`href="${roses.path}?page=2"`);
+    const paged = render(<CountryCategoryPage view={mixed} />, "en");
+    expect(mixed.pageCount).toBe(3);
+    expect(paged.indexOf("data-fo-pagination")).toBeGreaterThan(
+      paged.indexOf("data-fo-listing-grid="),
+    );
+    expect(paged).toContain("Pages of products");
+    expect(paged).toContain(`href="${mixed.path}?page=2"`);
+    expect(paged).not.toMatch(/href="[^"]*[?&]sort=/iu);
   });
 
   it("omits the delivery-facts panel the artboard draws (§14 A9)", () => {
@@ -299,7 +308,7 @@ describe("the populated country category (§5.3 row 2)", () => {
  * **AC-24: one nomination, and it is the first card's photograph** (§5.4, **AC-24**, T-24).
  *
  * `/en/poland/flowers/roses` carries a photograph on its first card — since TASK-168 approved photo
- * batch 2, all twelve of its twelve cards do (three since TASK-080) — so the count it ships with is
+ * batch 2, all of its cards do (three since TASK-080; fifteen on one page since 24 per page, TASK-390) — so the count it ships with is
  * pinned as a stated number rather than recomputed from the page's own output, and the two
  * fabricated views below prove that the nomination follows the *first card's* photograph rather
  * than the page having one anywhere. The occasion twin is
@@ -322,17 +331,17 @@ describe("the one LCP nomination (§5.4, AC-24, T-24)", () => {
     };
   }
 
-  it("nominates exactly one on the page as it ships: twelve of twelve cards are photographs, and the first is one", () => {
+  it("nominates exactly one on the page as it ships: fifteen of fifteen cards are photographs, and the first is one", () => {
     // The pin. Stated numbers, read from the view model: if the corpus changes, this line goes
     // red and the new numbers are written here deliberately.
-    expect(roses.items).toHaveLength(12);
+    expect(roses.items).toHaveLength(15);
     expect(
       roses.items.filter((card) => card.photo.kind === "asset"),
-    ).toHaveLength(12);
+    ).toHaveLength(15);
     expect(roses.items[0]?.photo.kind).toBe("asset");
     const nominated = lcpNominations(shipped);
-    expect(nominated.images).toBe(12);
-    // One of the twelve, never two: the preload's `imagesrcset`/`imagesizes` are the first card's
+    expect(nominated.images).toBe(15);
+    // One of the fifteen, never two: the preload's `imagesrcset`/`imagesizes` are the first card's
     // own `<source>`, which is AC-24's "built from the same manifest lookup as its `srcset`".
     expect(nominated.eager).toBe(1);
     expect(nominated.high).toBe(1);
@@ -340,20 +349,20 @@ describe("the one LCP nomination (§5.4, AC-24, T-24)", () => {
     expect(nominated.preloaded).toEqual(
       expectedPreloads(firstCardPhotograph(shipped)),
     );
-    // And it is the **first card's** image, not merely one of the twelve.
+    // And it is the **first card's** image, not merely one of the fifteen.
     expect(nominatedImageCard(shipped)).toBe(0);
   });
 
   it("withdraws the nomination with the first card's photograph, and promotes nothing in its place", () => {
     // The data flip AC-20 promises, in the direction nobody tests: withdraw the first card's
     // image and the page must nominate **nothing** — not the next photograph down the grid,
-    // whose box is not the LCP element. Eleven photographs remain, all lazy.
+    // whose box is not the LCP element. Fourteen photographs remain, all lazy.
     const markup = render(
       <CountryCategoryPage view={withoutPhotographAt(0)} />,
       "en",
     );
     const nominated = lcpNominations(markup);
-    expect(nominated.images).toBe(11);
+    expect(nominated.images).toBe(14);
     expect(firstCardPhotograph(markup)).toBeUndefined();
     expect(nominated.preloaded).toEqual(expectedPreloads(undefined));
     expect(nominated.eager).toBe(0);

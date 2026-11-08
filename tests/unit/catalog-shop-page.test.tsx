@@ -75,11 +75,12 @@ async function viewFor(locale: string, country: string): Promise<ListingView> {
 const en = await viewFor("en", "poland");
 
 /**
- * How many of the twelve cards on `/en/poland/flowers` carry an approved photograph: all twelve
- * since TASK-168 approved photo batch 2 (two from TASK-080's bytes before). Pinned, not
+ * How many of the 24 cards on `/en/poland/flowers` page 1 carry an approved photograph: all of
+ * them since TASK-168 approved photo batch 2 (two from TASK-080's bytes before; 24 per page since
+ * TASK-390). Pinned, not
  * recomputed, so AC-24's case cannot drift with the corpus unnoticed.
  */
-const PHOTOGRAPHED_CARDS = 12;
+const PHOTOGRAPHED_CARDS = 24;
 
 describe("the populated shop root (§5.3 row 1)", () => {
   const html = render(<CountryShopRootPage view={en} />, "en");
@@ -124,7 +125,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
     expect(text).not.toContain("Every price here is the price you will pay");
     // No **purchase** affordance of any kind, disabled or otherwise. The one `<form>` and the one
     // `<button>` on the page are the sort control TASK-114 added (`method="get"`, submit): a
-    // control that only re-renders the same twelve bouquets in another order, and the only way to
+    // control that only re-renders the same bouquets in another order, and the only way to
     // sort with JavaScript off. Counted exactly, so a second form — a basket, an email capture —
     // fails here.
     expect(html.match(/<form/giu) ?? []).toHaveLength(1);
@@ -273,7 +274,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
     // bytes for the first Polish card are ever withdrawn this goes red and the new numbers are
     // written here deliberately. `tests/support/lcp-nomination.ts` is PR 89 round 3's reading of
     // AC-24, reused rather than restated; the browser-side half is `tests/e2e/country-shop.spec.ts`.
-    expect(en.items).toHaveLength(12);
+    expect(en.items).toHaveLength(24);
     expect(en.items.filter((card) => card.photo.kind === "asset")).toHaveLength(
       PHOTOGRAPHED_CARDS,
     );
@@ -308,7 +309,7 @@ describe("page 2 and a sorted page (AC-9, AC-10; TASK-114)", () => {
     const html = render(<CountryShopRootPage view={second} />, "en");
     const text = textOf(html);
     expect(second.page).toBe(2);
-    expect(second.items).toHaveLength(12);
+    expect(second.items).toHaveLength(24);
     expect(text).toContain("page 2 of");
     expect(text).toContain("Previous");
     // Page 1's link is the bare URL, and the current page is not a link at all.

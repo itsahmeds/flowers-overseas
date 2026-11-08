@@ -109,9 +109,9 @@ afterEach(() => {
 });
 
 describe("the product-count floor is one named constant, applied to existence (§13 Q7, AC-3)", () => {
-  it("is six, and page size is twelve", () => {
+  it("is six, and page size is 24 (AC-10 as amended)", () => {
     expect(PRODUCT_COUNT_FLOOR).toBe(6);
-    expect(LISTING_PAGE_SIZE).toBe(12);
+    expect(LISTING_PAGE_SIZE).toBe(24);
   });
 
   it("refuses a country category one product below the floor", async () => {
@@ -754,7 +754,7 @@ describe('sorting happens over the set, then the page is cut from it (§2 "Sort"
     return amounts;
   }
 
-  it("gives `?sort=price-asc` page 1 the twelve cheapest of the whole listing", async () => {
+  it("gives `?sort=price-asc` page 1 the 24 cheapest of the whole listing", async () => {
     const all = [...(await everyAmount())].sort((left, right) => left - right);
     expect(all.length).toBeGreaterThan(LISTING_PAGE_SIZE);
 
