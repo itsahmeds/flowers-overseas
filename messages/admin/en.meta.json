@@ -5339,6 +5339,11 @@
     "reviewed": false,
     "sourceHash": "d6835d87f85a3f2eea3d5c907365fd5f28eb5aa45b52fc618a4480ff0492da05"
   },
+  "admin.alerts.name.risk.card_testing_suspected": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cc8bd4dbee87560053bbd7cd379d0d306c47daba86726b27f94b381e00c36897"
+  },
   "admin.alerts.name.payment.amount_mismatch": {
     "source": "human",
     "reviewed": false,

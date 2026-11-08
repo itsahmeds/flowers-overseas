@@ -1822,6 +1822,9 @@
         "outbox": {
           "dead": "An order step failed for good"
         },
+        "risk": {
+          "card_testing_suspected": "Many declined card payments in 10 minutes; new payments paused for 30 minutes in live"
+        },
         "payment": {
           "amount_mismatch": "Payment amount does not match the order",
           "paid_not_routed": "Paid order not sent to a florist",

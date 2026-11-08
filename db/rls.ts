@@ -281,6 +281,10 @@ export const STAFF_ONLY_TABLES = [
   "ops_alert",
   "ops_alert_notification",
   "ops_alert_setting",
+  // spec 021 §5.1 (migration `0043_risk_021`, TASK-493): the review queue and the blocklist, the
+  // two risk tables an admin decides on (approve, cancel, block), audited by `audit_row_change()`.
+  "risk_review",
+  "risk_blocklist",
   // spec 012 (migration `0014_admin_identity`, TASK-217): the admin profile and the sign-in
   // core's send log. RLS and the staff policy are in `0014` itself, not in `0011`.
   "admin_profile",
@@ -380,6 +384,11 @@ export const SYSTEM_WRITE_ADMIN_READ_TABLES = [
   // spec 034 §5.1 B (migration `0040_basket_reminder`, TASK-449): the reminders, read by the
   // admin metrics page; no email, name or money column.
   "basket_reminder",
+  // spec 021 §5.1 (migration `0043_risk_021`, TASK-493): keyed identity hashes, assessments and
+  // payment pauses, written by the risk module's system transactions and read by an admin.
+  "risk_identity",
+  "risk_assessment",
+  "risk_pause",
 ] as const;
 
 /**

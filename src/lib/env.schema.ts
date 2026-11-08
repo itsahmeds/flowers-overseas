@@ -128,6 +128,17 @@ const base64Secret = z
     { message: "must decode to at least 32 bytes (`openssl rand -base64 32`)" },
   );
 
+/** Base64 (standard or url-safe, padded or not) of exactly 32 bytes (spec 021 AC-31). */
+const base64Key32 = z
+  .string()
+  .regex(/^[A-Za-z0-9+/_-]+={0,2}$/u, "must be base64")
+  .refine(
+    (value) =>
+      Buffer.from(value.replace(/-/gu, "+").replace(/_/gu, "/"), "base64")
+        .length === 32,
+    { message: "must decode to exactly 32 bytes (`openssl rand -base64 32`)" },
+  );
+
 /** An RFC 5322 mailbox: `Name <address>` or a bare address (spec 034 §5.2, AC-28). */
 const mailbox = z
   .string()
@@ -443,6 +454,16 @@ export const serverEnvSchema = z.object({
    * {reason: 'env'}`).
    */
   CONTACT_HMAC_SECRET: z.preprocess(emptyToUndefined, base64Secret.optional()),
+  /**
+   * The key of the fraud pre-checks' identity hashes (spec 021 §5.2 "Normalisation and hashing",
+   * AC-31; TASK-493): base64 of exactly 32 random bytes (`openssl rand -base64 32`), different per
+   * environment. An email, card fingerprint or address reaches the risk tables only as
+   * HMAC-SHA-256 under this key. SECRET: never logged. Rotating it forgets every hash
+   * (`docs/runbooks/fraud-review.md`). **Optional at boot, read at use** (`riskHashKey()`): absent
+   * in `development` and `test`, a fixed test key is used; absent in a deployed environment, the
+   * identity checks are skipped and logged (`risk.hash_key_missing`) while the pause still applies.
+   */
+  RISK_HASH_KEY: z.preprocess(emptyToUndefined, base64Key32.optional()),
   /**
    * The sender of the basket reminder (spec 034 §5.2 "Mailer", §13 Q7, AC-14; TASK-450): a
    * mailbox (`Name <address>` or a bare address) on the marketing subdomain verified in Resend.
