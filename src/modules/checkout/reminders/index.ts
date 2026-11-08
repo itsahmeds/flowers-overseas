@@ -49,3 +49,4 @@ export {
   type ReminderTransaction,
   restoreResponse,
 } from "./http";
+export { attributeRecovery, cancelPendingForDraft } from "./attribution";

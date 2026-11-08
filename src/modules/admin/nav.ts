@@ -19,6 +19,7 @@ export interface AdminNavItem {
     | "payouts"
     | "discounts"
     | "finance"
+    | "basketReminders"
     | "flags"
     | "audit"
     | "users";
@@ -66,6 +67,14 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     // Spec 030b §5.3 (TASK-440): the finance overview and order list, for `finance.view` (admin).
     key: "finance",
     href: "/admin/finance",
+    permissions: ["finance.view"],
+    built: true,
+  },
+  {
+    // Spec 034 §14 item 4, §13 Q12 (TASK-452): "Basket emails", the admin role only (revenue
+    // figures included), through `finance.view`, which only `admin` holds.
+    key: "basketReminders",
+    href: "/admin/basket-reminders",
     permissions: ["finance.view"],
     built: true,
   },

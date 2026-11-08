@@ -6558,5 +6558,170 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "e4ec2da6b8730431718167632abc8c1eb51c95030e0c67579dc11da65f772238"
+  },
+  "admin.nav.basketReminders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dbd106c033a1b48d0d1ac9050d1f25277babcd1ddd009a90abc7532c6f3c1f5e"
+  },
+  "admin.basketReminders.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dbd106c033a1b48d0d1ac9050d1f25277babcd1ddd009a90abc7532c6f3c1f5e"
+  },
+  "admin.basketReminders.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b1f14677d00e5ba9beb5caefe78e2fcc31dcb0594454175c9b6e9ae7c04e8b7"
+  },
+  "admin.basketReminders.range.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6e795d4d3cc21c5ca8349ab5e917482197aa612d1a218f9e9411467db73242bb"
+  },
+  "admin.basketReminders.range.7d": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f920bb639c9307589b65e5f639391d65dcb86b0611ac47f58f7c769215326ee"
+  },
+  "admin.basketReminders.range.30d": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ffd7280513ce285e6d9dc8d0b7078c4f39c8fe0e69b0d0a87d8af2965e445d7a"
+  },
+  "admin.basketReminders.range.90d": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "38825b0f646bb29351a778d5db6052f736e9f728eb9ff15070ae8f46d3b1ebc4"
+  },
+  "admin.basketReminders.sent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c16bc82bf1f04ede04d1bc0bdf714b1a2e523ac5fa06fee7b9466c6d2d54af1e"
+  },
+  "admin.basketReminders.recovered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ea300d066d552adc094b3940f07d89e047746fd02f98a7d0e1b6e4e9748412ff"
+  },
+  "admin.basketReminders.rate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "89ced0c56524b305eb5bf1865b28caa5a0057934746696cef32a8a6bfe00f614"
+  },
+  "admin.basketReminders.revenue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f8995f2ca29c38c7dc5be435c71cd8d1eccbef83dbac951b0a6dac9a10a4aa4d"
+  },
+  "admin.basketReminders.revenueNone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "225c16218f210687437058526329a1af0dd907885416f75bd68e2773b36b36a9"
+  },
+  "admin.basketReminders.linksOpened": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "00a329e4fd23162324ff6623778eede44d20e571fb4f9bbc56648846635aca11"
+  },
+  "admin.basketReminders.failed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5d8156cf0ee07c2ef369881a8948d5289305373d7ea5055f49448274c8952589"
+  },
+  "admin.basketReminders.stopped": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1a4f630ac1b69fd00728fa8a672ded71d0eae8516cb23e78f94529113399b79b"
+  },
+  "admin.basketReminders.bounced": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b23b4c7368391d50ebd0b1781345d5a2bba58a9b4d7fa080cc549ba90938d890"
+  },
+  "admin.basketReminders.complained": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d1f5e253f251abfcb4b8b01f539bea84691ebf498d679fdbb1733af42103c47d"
+  },
+  "admin.basketReminders.skipped": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d65babceb52a9d53c76e30ec917f129b8355e9cb18b6b8f7a598ae0ab45fa7fa"
+  },
+  "admin.basketReminders.column.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.basketReminders.column.count": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "37bac4952becf21ac5838d3c9ba82811bc421c857571e89634dcbe346681d54c"
+  },
+  "admin.basketReminders.reason.purchased": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1f6ae85b17300e4d76f099a062fd9556aa7edc8d73193a8eb537bb6fd1f3449f"
+  },
+  "admin.basketReminders.reason.purchased_elsewhere": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ba561bf7d8e9e7c52bae623acb233b0423836d19b81156a7515541efb5c3efa"
+  },
+  "admin.basketReminders.reason.consent_withdrawn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "edec03f14946fec0690c00298d334e451b13928589f0b9cf414de6ddb5d038ea"
+  },
+  "admin.basketReminders.reason.suppressed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b9c0496ad1365988dbd9848031c1c969b3345638e24328d5a75abe81a07aa325"
+  },
+  "admin.basketReminders.reason.recent_reminder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52452b9bb9f809f1c223c6788d252f19576d7c14f231f1a5c163e419fabd561f"
+  },
+  "admin.basketReminders.reason.no_available_line": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a06f9c3ace86a8eaa6fed2c845936d7d43ca46a8b00476bac14bef4e5a4aee4a"
+  },
+  "admin.basketReminders.reason.no_email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "21b99e3ab780da4c647c3781d984025ccf74311c0fa288d0321862db1f1678a9"
+  },
+  "admin.basketReminders.reason.too_late": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "50144c9ea93706291936efd5a65571f5a8b535c86601ccbf376c7cd113e1c522"
+  },
+  "admin.basketReminders.reason.flag_off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "24c5aee557c6de70ac105908d9b96164a74b7c0bd4f0c09bd9c6ad6986b31028"
+  },
+  "admin.basketReminders.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fa99995d90d19d874b12595ac69a225286d6fafc4985a328d27856f7bbbc00f5"
+  },
+  "admin.basketReminders.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "316791a0dbe8be50a303b36fe47a0330220c8f1472c166cb455feac27f452238"
+  },
+  "admin.basketReminders.paused": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cdee4292f49f07f6ed89d75a15eeda22b6204d7a18d17a208a9e3727c1705809"
+  },
+  "admin.basketReminders.pausedHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "00bae9e2443bf0d132500cb2dd8fdd8c0a34d4ddd35641a4c9588c9b36bc3b12"
   }
 }
