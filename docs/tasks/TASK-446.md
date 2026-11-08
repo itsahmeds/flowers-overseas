@@ -45,6 +45,10 @@ here.
 - 2026-11-08 DC445: `modules/admin/discounts.ts` (list, detail, create, update with the frozen offer, status, cost preview, form parsing), permissions `discounts.read`/`discounts.write`, nav entry, pages `/admin/discounts`, `/new`, `/[id]` with the client form island (copy and figures as props, imports nothing server side), wall-clock helpers in `i18n/format.ts`, 125 admin keys.
 - 2026-11-08 DC445: unit `discounts-admin` (25) and integration admin block (4: audit actions, frozen offer, six-code list, preview integers and the reduction claim) green; runbook, RoPA rows 9 and 11, architecture row; `record-approval-445.py --check` passes.
 
+## Copy approval
+
+- founder (delegated), 2026-11-08: recorded by the orchestrator with record-approval-445.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 047 (TASK-445, TASK-446); the founder did not read this text: the 125 admin texts of spec 047 (`admin.discounts.*`, `admin.nav.discounts`, `admin.flags.description.checkout.discount_codes`), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
