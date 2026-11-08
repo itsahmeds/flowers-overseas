@@ -31,6 +31,16 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (b) (2026-10-22):** the advisor memo `docs/advice/2026-10-22-spec-018-accounts-rows-and-design.md` and spec 018 §14 A-founder-2026-10-22 supersede this brief's Binding where they differ: launch slice; the surface is `buyer` (`__Secure-fo-buyer.*`, `Path=/`, `/api/auth/buyer`, `src/lib/auth/buyer.ts`, `requireBuyerContext`), not `__Host-fo-account`; open sign-up with the global cap (C.4); `/{locale}/account` is the sign-in page and never redirects (C.5); every credit note on the detail; the header "Account" link while `account` is on; "Sign out on all devices" UI is TASK-352's. ACs per the row (AC-47 surface half, AC-48 to AC-52, AC-62 added). The core extension is TASK-351's and merges first. Artboards: PR 336 `account-*`.
 
+- **From the builder (2026-11-08, PR 503, launch core shipped; the rest carried here):**
+  1. **AC-52 confirmation nudge** ("Save to my account", `sendAccountLink()`, `accountNudgeSent`): not built. Needs the three `confirmation.postPurchase.accountNudge*` keys and a server action under `(checkout)` that mints T14 with the return path `/{locale}/account/orders/{reference}` for the draft cookie's order email.
+  2. **Header "Account" link and footer "Your account" (AC-34 header half, AC-51 link and byte-identity half, §13 Q23):** not built. `site-links.ts` still has `sign-in`/`my-orders` unpublished; the board's "[slot] Account" label has no key; `account.open` is read per request but public ISR pages are cached, so the flag needs a `dirties` kind (or a code flip) before the link can follow it; spec 004's header baselines move once.
+  3. **Cookie register (C.16):** `fo_session` is still the declared row; the `__Secure-fo-buyer.*` rows need new `consent.cookies.*.purpose` copy in a counted namespace (the banner panel). TASK-346 owns "the buyer cookie rows replace fo_session"; left to it.
+  4. **Integration suites owed in the test pass (founder 2026-11-08: "the test pass comes later"):** T-48's mail counts with the capturing mailer and the 300-send cap on a real `auth_email_send`; T-49 (link existing guest customer, create one, never link a redacted one, `last_signed_in_at`, no second customer); T-25/T-51 RLS (another customer's reference 404, cookie-less and signed-in `GET /{locale}/account` headers in four locales); T-23 owner half (invoice 404 to another customer's session); T-28 account half (cancel from each state of P; `in_production` refused). Unit coverage today: `tests/unit/buyer-surface.test.ts` (22).
+  5. **AC-47 cross-surface cases** (buyer cookie under `/admin` and `/vendor`, admin/florist cookies on account routes) rest on TASK-351's surface-bound tokens and its integration case `:463`; no account-route integration test yet.
+  6. **Unicode local parts** (`zoë@example.test`) answer the same `sent` page and receive no link (spec 012's form schema refuses them; widening it is a core change). Plus addressing works.
+  7. **Pre-existing i18n:check failures on main, not this diff:** `nav.send` unused, and five `checkout.*`/`payments.*` keys read from `src/modules/ui/checkout/payment/*` outside their scope paths.
+  8. **The account lists `live` orders in production and `live` + `test` elsewhere** (AC-25 "demo and test orders are absent in production"); say so if preview should list `live` only.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -43,11 +53,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-08 A344: migration `0036_buyer_sign_in` (`customer.last_signed_in_at`); `src/lib/auth/buyer.ts` (surface, open sign-up, cap, `afterSignIn`, `requireBuyerContext`, route work); `/api/auth/buyer/*` routes; T14 template.
+- 2026-11-08 A344: `/{locale}/account` (sign-in form or order list), confirm page, order detail with recipient recap, documents, "Cancel for free"; owner-session invoice download; account headers; copy (44 en keys, de/pl drafts), review scope, header slots; `tests/unit/buyer-surface.test.ts`. PR 503 ready. Carry-forwards above.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 503](https://github.com/itsahmeds/flowers-overseas/pull/503): the launch core of the buyer account. The `buyer` surface on spec 012's core (`src/lib/auth/buyer.ts`, `/api/auth/buyer/{request,confirm,sign-out}`, Auth.js endpoints 404), open sign-up with the global cap (`src/config/auth.ts`: 300, alert from 100), one identical `303` for every address shape AC-48 names, the return path (`/{locale}/account` and below, `/{locale}/checkout`), first sign-in linking or creating the customer and stamping `last_signed_in_at` (migration `0036`), T14 (`src/modules/notifications/emails/account-sign-in.ts`); `/{locale}/account` as the sign-in page and the order list (grouped by purchase, refund lines, signed Track link, Invoice), the confirm page, `/{locale}/account/orders/{reference}` (timeline, recipient recap until the sweep, documents, "Cancel for free" through `cancelOrderAsBuyer`), the owner-session invoice download, `noindex`/`no-store`/`no-referrer` headers, everything 404 while `account.open` is off. Tests: unit 22 (`tests/unit/buyer-surface.test.ts`); integration suites are carry-forward 4. No build, browser or CI run (work order 2026-11-08). New `en` keys: 44, listed in `.claude/state/record-approval-344.py`.

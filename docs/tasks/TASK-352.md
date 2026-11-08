@@ -31,6 +31,7 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size L
 One dated bullet per `/review`, newest last.
 
 _None yet._
+- 2026-11-08 (from TASK-344, PR 503): `customer.last_signed_in_at` shipped in migration `0036_buyer_sign_in`; `NNNN_buyer_account` adds only the other four `customer` columns of C.11, and its down file must not drop `last_signed_in_at`.
 
 ## Escalations
 
