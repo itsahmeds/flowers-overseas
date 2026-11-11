@@ -37,16 +37,19 @@ SET LOCAL ROLE app_owner;
  * A. customer
  * ------------------------------------------------------------------------ */
 
+ALTER TABLE public.customer ADD COLUMN preferred_locale text NULL;
+ALTER TABLE public.customer ADD COLUMN preferred_currency text NULL;
+ALTER TABLE public.customer ADD COLUMN reminder_consent boolean NOT NULL DEFAULT false;
+ALTER TABLE public.customer ADD COLUMN reminder_unsubscribe_token text NULL;
 ALTER TABLE public.customer
-  ADD COLUMN preferred_locale           text    NULL,
-  ADD COLUMN preferred_currency         text    NULL,
-  ADD COLUMN reminder_consent           boolean NOT NULL DEFAULT false,
-  ADD COLUMN reminder_unsubscribe_token text    NULL,
   ADD CONSTRAINT customer_preferred_locale_locale_code_fk FOREIGN KEY (preferred_locale)
-    REFERENCES public.locale (code),
+    REFERENCES public.locale (code) ON DELETE RESTRICT;
+ALTER TABLE public.customer
   ADD CONSTRAINT customer_preferred_currency_currency_code_fk FOREIGN KEY (preferred_currency)
-    REFERENCES public.currency (code),
-  ADD CONSTRAINT customer_reminder_unsubscribe_token_key UNIQUE (reminder_unsubscribe_token),
+    REFERENCES public.currency (code) ON DELETE RESTRICT;
+ALTER TABLE public.customer
+  ADD CONSTRAINT customer_reminder_unsubscribe_token_key UNIQUE (reminder_unsubscribe_token);
+ALTER TABLE public.customer
   ADD CONSTRAINT customer_reminder_unsubscribe_token_check
     CHECK (reminder_unsubscribe_token ~ '^[A-Za-z0-9_-]{22}$');
 

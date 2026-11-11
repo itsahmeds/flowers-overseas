@@ -112,9 +112,12 @@ export const customer = pgTable(
      * Spec 018 §14 C.7.2, C.11 (migration `0047_buyer_account`, TASK-352): the language of the
      * emails no order carries, and the buyer's currency. Neither redirects or changes a URL.
      */
-    preferredLocale: text("preferred_locale").references(() => locale.code),
+    preferredLocale: text("preferred_locale").references(() => locale.code, {
+      onDelete: "restrict",
+    }),
     preferredCurrency: text("preferred_currency").references(
       () => currency.code,
+      { onDelete: "restrict" },
     ),
     /** C.7.4: explicit consent to occasion reminders, independent of `marketingConsent`. */
     reminderConsent: boolean("reminder_consent").notNull().default(false),

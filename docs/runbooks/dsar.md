@@ -34,7 +34,9 @@ A person asks for a copy of their data, asks us to delete it, or objects to a us
 ## Diagnosis: where the data lives
 `customer` (name, email, phone, country, consent), `address`, `recipient` and `recipient_address`,
 `"order".buyer_snapshot` and `recipient_snapshot`, the card message on `order_line`,
-`consent_log`, `users` / `accounts` / `sessions` (only if they ever signed in), delivery photos
+`consent_log`, `users` / `accounts` / `sessions` (only if they ever signed in), the account's
+`saved_recipient` and `occasion_reminder` rows and the `customer` preferences (spec 018 C.11),
+**other buyers' `saved_recipient` rows holding a recipient's phone**, delivery photos
 (`delivery_proof` and its R2 objects), `payment` and `refund` (amounts and provider references, no
 card number), `invoice` (its snapshot, kept by law), Resend's send logs, and any CRM or review
 invitation.
@@ -126,6 +128,14 @@ Spec 002 §8 and spec 018 §5.2: pseudonymise, keep the accounting record, flag 
        contact_redacted = true, contact_redacted_at = now()
    WHERE customer_id = :'customer_id';
 
+   -- The account's saved recipients and reminders go outright (spec 018 C.9).
+   DELETE FROM occasion_reminder WHERE customer_id = :'customer_id';
+   DELETE FROM saved_recipient WHERE customer_id = :'customer_id';
+   UPDATE customer
+   SET preferred_locale = NULL, preferred_currency = NULL, reminder_consent = false,
+       reminder_unsubscribe_token = NULL
+   WHERE id = :'customer_id';
+
    -- Only if they ever signed in: the account rows go.
    DELETE FROM sessions WHERE user_id = (SELECT user_id FROM customer WHERE id = :'customer_id');
    DELETE FROM accounts WHERE user_id = (SELECT user_id FROM customer WHERE id = :'customer_id');
@@ -156,6 +166,20 @@ Spec 002 §8 and spec 018 §5.2: pseudonymise, keep the accounting record, flag 
    or the User Deletion API). Ids older than 60 days are already cleared by the retention sweep
    and cannot be traced to the person any more. A later refund of these orders is not sent to
    GA4 (skipped `ids_cleared`).
+
+### A recipient's erasure or objection: saved recipients (spec 018 C.7.3)
+A buyer may keep a recipient's delivery details in their account (`saved_recipient`). When a
+recipient asks for erasure, or objects, every saved copy holding their phone goes, across every
+customer, and nothing else. The buyer is not told who asked. Normalise the phone to E.164 first
+(`+48500000000`), then, in one transaction:
+
+<!-- dsar:saved-recipient-by-phone (tests/integration/buyer-account.test.ts runs this block) -->
+```sql
+DELETE FROM saved_recipient WHERE phone_e164 = :'phone_e164';
+```
+
+Log the count it deleted in the request's row. The order's own `recipient` follows the steps above
+and the 90-day sweep; it is never exempted.
 
 ### Objection
 Stop the processing objected to (marketing: `marketing_consent = false`) and log it. Marketing is
