@@ -20,20 +20,23 @@ import {
   boolean,
   check,
   cidr,
+  date,
   foreignKey,
   index,
   integer,
   jsonb,
   pgTable,
+  smallint,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
 import { users } from "./auth.ts";
-import { country, postcodeZone } from "./geo.ts";
-import { timestamps } from "./i18n.ts";
+import { country, currency, postcodeZone } from "./geo.ts";
+import { locale, timestamps } from "./i18n.ts";
 import { E164_PATTERN } from "./partners.ts";
 
 /* -------------------------------------------------------------------------- */
@@ -105,8 +108,30 @@ export const customer = pgTable(
      * buyer sign-in; the inactive-account sweep (C.9) reads it.
      */
     lastSignedInAt: timestamp("last_signed_in_at", { withTimezone: true }),
+    /**
+     * Spec 018 §14 C.7.2, C.11 (migration `0045_buyer_account`, TASK-352): the language of the
+     * emails no order carries, and the buyer's currency. Neither redirects or changes a URL.
+     */
+    preferredLocale: text("preferred_locale").references(() => locale.code, {
+      onDelete: "restrict",
+    }),
+    preferredCurrency: text("preferred_currency").references(
+      () => currency.code,
+      { onDelete: "restrict" },
+    ),
+    /** C.7.4: explicit consent to occasion reminders, independent of `marketingConsent`. */
+    reminderConsent: boolean("reminder_consent").notNull().default(false),
+    /** C.11: 16 CSPRNG bytes, base64url, set at first consent (TASK-353). */
+    reminderUnsubscribeToken: text("reminder_unsubscribe_token"),
   },
   (table) => [
+    unique("customer_reminder_unsubscribe_token_key").on(
+      table.reminderUnsubscribeToken,
+    ),
+    check(
+      "customer_reminder_unsubscribe_token_check",
+      sql.raw("reminder_unsubscribe_token ~ '^[A-Za-z0-9_-]{22}$'"),
+    ),
     check(
       "customer_email_normalised_check",
       sql.raw(`email_normalised ~ '${EMAIL_SHAPE_PATTERN}'`),
@@ -233,6 +258,106 @@ export const recipientAddress = pgTable(
       sql.raw(`place_kind in ${valueList(recipientPlaceKinds)}`),
     ),
     index("recipient_address_recipient_id_idx").on(table.recipientId),
+  ],
+);
+
+/* -------------------------------------------------------------------------- */
+/* saved_recipient, occasion_reminder (spec 018 §14 C.11; `0045`, TASK-352)    */
+/* -------------------------------------------------------------------------- */
+
+/** C.7.3: at most this many saved recipients per customer (`SAVED_RECIPIENT_LIMIT`). */
+export const SAVED_RECIPIENT_MAX = 20;
+
+/** C.7.4: at most this many reminders per customer (`OCCASION_REMINDER_LIMIT`). */
+export const OCCASION_REMINDER_MAX = 50;
+
+/** `occasion_reminder.occasion_key`. */
+export const reminderOccasionKeys = [
+  "birthday",
+  "anniversary",
+  "name_day",
+  "other",
+] as const;
+
+/** `occasion_reminder.lead_days`. */
+export const reminderLeadDays = [3, 7, 14] as const;
+
+/**
+ * A recipient the buyer chose to keep (C.7.3): exactly full name, phone, address lines, postcode,
+ * city, country and `last_used_at`. **No card message, delivery note, place kind or email**
+ * (`plan/07` §1.3; `db:check`'s recipient-email rule lists this table).
+ */
+export const savedRecipient = pgTable(
+  "saved_recipient",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customer.id, { onDelete: "cascade" }),
+    fullName: text("full_name").notNull(),
+    phoneE164: text("phone_e164").notNull(),
+    lines: text("lines").array().notNull(),
+    postalCode: text("postal_code"),
+    city: text("city").notNull(),
+    countryId: uuid("country_id")
+      .notNull()
+      .references(() => country.id),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    check(
+      "saved_recipient_full_name_check",
+      sql`btrim(${table.fullName}) <> ''`,
+    ),
+    check(
+      "saved_recipient_phone_e164_check",
+      sql.raw(`phone_e164 ~ '${E164_PATTERN}'`),
+    ),
+    check(
+      "saved_recipient_lines_check",
+      sql`cardinality(${table.lines}) between 1 and 4 and array_position(${table.lines}, null) is null`,
+    ),
+    check("saved_recipient_city_check", sql`btrim(${table.city}) <> ''`),
+    index("saved_recipient_customer_id_idx").on(table.customerId),
+    index("saved_recipient_phone_e164_idx").on(table.phoneE164),
+  ],
+);
+
+/** An occasion reminder (C.7.4): day and month, no year and no free text. */
+export const occasionReminder = pgTable(
+  "occasion_reminder",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customer.id, { onDelete: "cascade" }),
+    savedRecipientId: uuid("saved_recipient_id").references(
+      () => savedRecipient.id,
+      { onDelete: "set null" },
+    ),
+    occasionKey: text("occasion_key").notNull(),
+    day: smallint("day").notNull(),
+    month: smallint("month").notNull(),
+    leadDays: smallint("lead_days").notNull(),
+    lastSentFor: date("last_sent_for"),
+    ...timestamps,
+  },
+  (table) => [
+    check(
+      "occasion_reminder_occasion_key_check",
+      sql.raw(`occasion_key in ${valueList(reminderOccasionKeys)}`),
+    ),
+    check(
+      "occasion_reminder_lead_days_check",
+      sql.raw(`lead_days in (${reminderLeadDays.join(", ")})`),
+    ),
+    check(
+      "occasion_reminder_calendar_check",
+      sql`${table.month} between 1 and 12 and ${table.day} >= 1 and ${table.day} <= case when ${table.month} = 2 then 29 when ${table.month} in (4, 6, 9, 11) then 30 else 31 end`,
+    ),
+    index("occasion_reminder_customer_id_idx").on(table.customerId),
+    index("occasion_reminder_month_day_idx").on(table.month, table.day),
   ],
 );
 

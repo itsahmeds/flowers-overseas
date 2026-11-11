@@ -169,6 +169,10 @@ export const CUSTOMER_SCOPED_TABLES = {
   // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the buyer's own invoices and
   // credit notes, read-only (an invoice never changes).
   invoice: "read",
+  // spec 018 §14 C.11 (migration `0045_buyer_account`, TASK-352): the buyer's saved recipients
+  // and occasion reminders, theirs to add and remove.
+  saved_recipient: "write",
+  occasion_reminder: "write",
 } as const;
 
 /**

@@ -7,7 +7,10 @@
  * 303 to `/{locale}/account` with this path as the return path (AC-25, AC-50). The reference is
  * read under the buyer's `customer` context, so another customer's order, a `demo` order or an
  * unknown reference is a 404 (RLS, not only an application check). `?cancel=` draws the cancel
- * dialog or the refusal (`./actions.ts`). With `account.open` off: 404.
+ * dialog or the refusal (`./actions.ts`). With `account.open` off: 404. While
+ * `account.recipients` is on, the recipient card offers the save box (TASK-352, AC-54): absent for
+ * a hospital, funeral home or cemetery and after the sweep; "Saved" once a copy exists;
+ * `?save=limit` draws the limit line.
  */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -16,6 +19,7 @@ import type { ReactElement } from "react";
 import { z } from "zod";
 
 import { requireBuyerContext } from "@/lib/auth/buyer";
+import { recipientSaveOffer } from "@/modules/customers";
 import {
   accountOrderDetail,
   ownedOrderIds,
@@ -26,8 +30,10 @@ import {
   accountLocale,
   accountOpen,
   asCustomer,
+  asCustomerAccount,
   listedModes,
   orderDetailPath,
+  recipientsOpen,
 } from "../../_parts/account-request";
 import { OrderDetailView } from "./OrderDetailView";
 
@@ -40,6 +46,7 @@ interface DetailParams {
 
 const QuerySchema = z.object({
   cancel: z.enum(["review", "refused"]).nullable().catch(null).default(null),
+  save: z.enum(["limit"]).nullable().catch(null).default(null),
 });
 
 export async function generateMetadata({
@@ -71,8 +78,20 @@ export default async function AccountOrderRoute({
   );
   if (orderId === undefined) notFound();
   const detail = await accountOrderDetail(orderId, { locale });
-  const { cancel } = QuerySchema.parse(await searchParams);
+  const { cancel, save } = QuerySchema.parse(await searchParams);
+  const offer = (await recipientsOpen())
+    ? await recipientSaveOffer(
+        asCustomerAccount(context),
+        context.customerId,
+        orderId,
+      )
+    : "not_offered";
   return (
-    <OrderDetailView cancelState={cancel} detail={detail} locale={locale} />
+    <OrderDetailView
+      cancelState={cancel}
+      detail={detail}
+      locale={locale}
+      saveState={save === "limit" && offer === "offered" ? "limit" : offer}
+    />
   );
 }

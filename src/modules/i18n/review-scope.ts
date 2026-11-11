@@ -129,6 +129,12 @@ const ACCOUNT_PATHS = [
   "src/app/api/auth/buyer/**",
   "src/lib/auth/buyer.ts",
 ];
+/** The checkout subtrees the account's details form reads too (spec 018 §14 C.7.2; TASK-352). */
+const ACCOUNT_SHARED_CHECKOUT_SUBTREES: readonly string[] = [
+  "buyer",
+  "error",
+  "field",
+];
 const CHECKOUT_SUBTREES = [
   "action",
   // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349): only
@@ -197,10 +203,14 @@ const EMAIL_PATHS = ["src/modules/notifications/emails/**"];
 const FLORIST_INBOX_PAGE_PATHS = [...FLORIST_PATHS, ...EMAIL_PATHS];
 
 const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
+  // Spec 018 §14 C.7.2 (TASK-352): the account's details form prints step 3's labels, the
+  // "optional" mark and the field errors verbatim (`account-details-*`, "Copy: verbatim").
   ...CHECKOUT_SUBTREES.map((subtree) => ({
     match: `checkout.${subtree}.*`,
     surface: "checkout",
-    paths: CHECKOUT_PATHS,
+    paths: ACCOUNT_SHARED_CHECKOUT_SUBTREES.includes(subtree)
+      ? [...CHECKOUT_PATHS, ...ACCOUNT_PATHS]
+      : CHECKOUT_PATHS,
   })),
   // The account's order detail (TASK-344) prints the confirmation's cancel line and dialog verbatim.
   {

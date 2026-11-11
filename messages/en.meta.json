@@ -8231,6 +8231,174 @@
     "reviewedAt": "2026-11-08T13:02:40Z",
     "sourceHash": "1d393b0081b632c54654eb08c345ff76b92ae4efe0768b4c0f64b9ebbe920492"
   },
+  "account.nav.details": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "c0bcd4c0f8e707844c003e6e8720cc209aff9410eb44daa252875e31c5468199"
+  },
+  "account.nav.recipients": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "f25cb5d1186637b5f80daa1312e51c750df0abddcb2a43e96e489e451f999035"
+  },
+  "account.details.title": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "c0bcd4c0f8e707844c003e6e8720cc209aff9410eb44daa252875e31c5468199"
+  },
+  "account.details.emailNote": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "17c25ffaa5e37cb7c9be561fc9aff2b4a93b7a6fcdd0b23fbd9527245bba86e0"
+  },
+  "account.details.language": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "108199db2302530d17c33d21b2eafecf6c435608397b284b6fe7f18fff06c6aa"
+  },
+  "account.details.currency": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "3ac1a9ec4fa7a9fa612a30803f3d88fa479a45431f644190ebcc18d3eaafdb3a"
+  },
+  "account.details.currencyOption": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "4fdcc1bf882d21d8bdaea7662bf0e7ed7f8720a3ac539b60f3b2760211721f45"
+  },
+  "account.details.save": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "account.details.saved": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "fca046ccd586c67f7fe0b3c12c29873a8abf9376f7cd514fc6272ec03b2de0b3"
+  },
+  "account.details.signOutEverywhere": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "d28874d58fea2c7dfa522c3d1c06a8fd57233f2d930e71c5cbc387c1a9533872"
+  },
+  "account.details.signOutEverywhereNote": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "3091ecfadf1c800ed15e7b9634aff56be5d6d2e9cdd6c332efe15aad72271293"
+  },
+  "account.recipients.save": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "99554e3e79ff5e8085cec98b0006a8e17b178ad5ddec90df2345b83480dcdcba"
+  },
+  "account.recipients.saveHint": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "e2a23dda47bb9b756a0f7107aedfa724afd851fedd491a777433f57a013dbcc4"
+  },
+  "account.recipients.saveSubmit": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "account.recipients.saved": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "09e1f47a098e416570abff175c83e88bf1320f7a1837c3f111e10cc8c6a651b2"
+  },
+  "account.recipients.empty": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "c86b99686c053a1b29082c2f335f22914a2651a034a10070593f78966df0516a"
+  },
+  "account.recipients.place": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "c1da53047cea3973071e512ce3d9cfb1c57e01876dc4d8769333bdcdb856a555"
+  },
+  "account.recipients.remove": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
+  },
+  "account.recipients.removeLabel": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "e6a3c4a1250a6ad3f10faa22333e5e50a6ba78e5b28a3b26f5743d9f8c7ede93"
+  },
+  "account.recipients.removeTitle": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "01c1f0250884f59318b310f94ab575cdbf6fc21434dcc27756f349a6526b2bde"
+  },
+  "account.recipients.removeBody": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "239611c44fa1440214cf931c36ae0d6464e67856555024c0acfba3fc9c681bd9"
+  },
+  "account.recipients.keep": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "183f00f483d3844e875d26eac74c676054383aef38ed5a8e4d1505ef21008585"
+  },
+  "account.recipients.removed": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "455c4f40175e0a06822d57b750843ed0b562136ad6b995beb2fa79536c45d8d0"
+  },
+  "account.recipients.limit": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-352.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-352); the founder did not read this text",
+    "reviewedAt": "2026-11-11T15:37:20Z",
+    "sourceHash": "7e2b5739a0a14a6f426e84d919989a7bdc96f1faa26518d63bb6523c0f3683ee"
+  },
   "search.chip.choose": {
     "source": "human",
     "reviewed": true,

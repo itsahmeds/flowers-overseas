@@ -321,7 +321,9 @@
           "discount_codes": "Shows the \"Add a discount code\" link at checkout, per country. Codes themselves are made and disabled under Discounts."
         },
         "account": {
-          "open": "Opens the customer account and its privacy requests, everywhere or per language."
+          "open": "Opens the customer account and its privacy requests, everywhere or per language.",
+          "recipients": "Lets signed-in buyers save a recipient from an order and see the list in their account. Keep off in production until the saved-recipients assessment is signed.",
+          "reminders": "Lets signed-in buyers save occasion dates and get a reminder email before each. Keep off until the reminder email and its consent line are approved."
         },
         "invoice": {
           "issue": "Issues an invoice for every paid live order to this country. Turn on only after the accountant has signed off the VAT setup."

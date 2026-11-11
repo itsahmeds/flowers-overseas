@@ -5,7 +5,12 @@
  * written. The step is the pressed button's value; spec 013's `cancelOrder`, through
  * `cancelOrderAsBuyer`, is the only path to a status change (`orderService.transition`, ADR-0009).
  * Every answer is a 303 back to the detail (`?cancel=review` draws the dialog, `?cancel=refused` the
- * refusal), so both steps work with JavaScript off. Only the action is exported.
+ * refusal), so both steps work with JavaScript off.
+ *
+ * TASK-352 adds `saveRecipientFromAccountAction` (spec 018 §14 C.7.3, C.13; AC-54): with the box
+ * ticked and `account.recipients` on, the order (read under the buyer's context, RLS) has its
+ * recipient copied into one `saved_recipient` row; an unticked box writes nothing. It answers a
+ * 303 back to the detail, with `?save=limit` when the customer already keeps 20.
  */
 "use server";
 
@@ -13,6 +18,7 @@ import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
 import { getBuyerContext, signInHref } from "@/lib/auth/buyer";
+import { saveRecipientFromOrder } from "@/modules/customers";
 import { cancelOrderAsBuyer } from "@/modules/orders/buyer-cancel";
 import { ownedOrderIds } from "@/modules/orders/account-orders";
 
@@ -20,8 +26,10 @@ import {
   accountLocale,
   accountOpen,
   asCustomer,
+  asCustomerAccount,
   listedModes,
   orderDetailPath,
+  recipientsOpen,
 } from "../../_parts/account-request";
 
 const BoundSchema = z.string().max(32).catch("");
@@ -58,4 +66,35 @@ export async function cancelFromAccountAction(
     case "not_found":
       notFound();
   }
+}
+
+const SaveBoxSchema = z.literal("on").nullable().catch(null);
+
+export async function saveRecipientFromAccountAction(
+  boundLocale: string,
+  boundReference: string,
+  form: FormData,
+): Promise<never> {
+  const locale = accountLocale(BoundSchema.parse(boundLocale));
+  if (locale === null || !(await accountOpen(locale))) notFound();
+  if (!(await recipientsOpen())) notFound();
+  const reference = BoundSchema.parse(boundReference);
+  const path = orderDetailPath(locale, reference);
+  const context = await getBuyerContext();
+  if (context === null) redirect(signInHref(locale, path));
+  const ticked = SaveBoxSchema.parse(PostedFormSchema.parse(form)?.get("save"));
+  if (ticked === null) redirect(path);
+  const [orderId] = await ownedOrderIds(
+    asCustomer(context),
+    listedModes(),
+    reference,
+  );
+  if (orderId === undefined) notFound();
+  const outcome = await saveRecipientFromOrder(
+    asCustomerAccount(context),
+    context.customerId,
+    orderId,
+    new Date(),
+  );
+  redirect(outcome === "limit" ? `${path}?save=limit` : path);
 }

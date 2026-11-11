@@ -259,6 +259,23 @@ export const DEFERRED_FOREIGN_KEYS: readonly (readonly [
     "SET NULL",
     "0010_auth.sql",
   ],
+  // spec 018 §14 C.11 (`0045_buyer_account`, TASK-352): the buyer's email language and currency.
+  [
+    "customer_preferred_locale_locale_code_fk",
+    "preferred_locale",
+    "locale",
+    "code",
+    "RESTRICT",
+    "0045_buyer_account.sql",
+  ],
+  [
+    "customer_preferred_currency_currency_code_fk",
+    "preferred_currency",
+    "currency",
+    "code",
+    "RESTRICT",
+    "0045_buyer_account.sql",
+  ],
   // spec 011 §5.1 (`0022_florists_v0`, TASK-211): the florist's language.
   [
     "partner_member_locale_code_locale_code_fk",

@@ -17,7 +17,7 @@ task actually touches.
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +129 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
-| `customers` | Public barrel for `customers` (customers,… | 019 | — |
+| `customers` | Public barrel for `customers` (customers,… | 019 | `unit/account-details-form.test.ts` |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/checkout-discounts.test.tsx` +2 |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +49 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +147 |
@@ -119,11 +119,20 @@ task actually touches.
 | `[locale]/(account)/account/_parts/SignInView.tsx` | `/{locale}/account` without a buyer session… | 018 |
 | `[locale]/(account)/account/_parts/account-request.ts` | The account pages' request helpers (spec 018… | 018 |
 | `[locale]/(account)/account/_parts/order-display.ts` | What the account's list and detail share | 018 |
+| `[locale]/(account)/account/details/DetailsForm.tsx` | The details form (`account-details-*` "the… | 018 |
+| `[locale]/(account)/account/details/DetailsView.tsx` | `account-details-*`: the | 018 |
+| `[locale]/(account)/account/details/actions.ts` | The details page's two server actions (spec 018… | 018 |
+| `[locale]/(account)/account/details/details-fields.ts` | The details form's field names, ids and answer… | 018 |
+| `[locale]/(account)/account/details/details-form.ts` | The details form's boundary: the | 018 |
+| `[locale]/(account)/account/details/page.tsx` | The buyer's details: name, phone, country,… | 018 |
 | `[locale]/(account)/account/invoices/[invoiceId]/route.ts` | GET: the invoice PDF for a signed link or the… | 018 |
 | `[locale]/(account)/account/orders/[reference]/OrderDetailView.tsx` | One order for its owner (`account-order-detail-*… | 018 |
 | `[locale]/(account)/account/orders/[reference]/actions.ts` | The account order detail's one server action:… | 018 |
 | `[locale]/(account)/account/orders/[reference]/page.tsx` | The buyer's one order: timeline, recipient,… | 018 |
 | `[locale]/(account)/account/page.tsx` | The buyer account: sign-in form without a… | 018 |
+| `[locale]/(account)/account/recipients/RecipientsView.tsx` | `account-recipients-*` | 018 |
+| `[locale]/(account)/account/recipients/actions.ts` | The saved-recipients page's one server action:… | 018 |
+| `[locale]/(account)/account/recipients/page.tsx` | The buyer's saved recipients: the list and… | 018 |
 | `[locale]/(account)/account/sign-in/confirm/page.tsx` | The buyer sign-in link's page: one Continue… | 018 |
 | `[locale]/(checkout)/_views/CheckoutHeader.tsx` | The checkout's header | 010 |
 | `[locale]/(checkout)/_views/CheckoutView.tsx` | `/{locale}/checkout`, drawn (spec 010 §2 "The… | 010 |
@@ -164,8 +173,10 @@ task actually touches.
 | `[locale]/@header/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | The header of the product parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
+| `[locale]/@header/(account)/account/details/page.tsx` | Account details header | 018 |
 | `[locale]/@header/(account)/account/orders/[reference]/page.tsx` | Account order detail header | 018 |
 | `[locale]/@header/(account)/account/page.tsx` | Account header | 018 |
+| `[locale]/@header/(account)/account/recipients/page.tsx` | Account saved recipients header | 018 |
 | `[locale]/@header/(account)/account/sign-in/confirm/page.tsx` | Account sign-in confirm header | 018 |
 | `[locale]/@header/(checkout)/basket/link-ended/page.tsx` | The header of spec 034's basket reminder page… | 034 |
 | `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
@@ -423,8 +434,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 534 |
-| `tests/integration/` | 118 |
+| `tests/unit/` | 535 |
+| `tests/integration/` | 119 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

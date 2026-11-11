@@ -32,11 +32,13 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue, spec 047's checkout.discount_codes, spec 025's alerts.push, spec 030b's payments.balance_fetch, spec 034's marketing.basket_reminder and spec 021's three risk flags", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's four, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue, spec 047's checkout.discount_codes, spec 025's alerts.push, spec 030b's payments.balance_fetch, spec 034's marketing.basket_reminder and spec 021's three risk flags", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
       "account.open",
+      "account.recipients",
+      "account.reminders",
       "invoice.issue",
       "payments.stripe",
       "reviews.invite",
@@ -120,6 +122,18 @@ describe("T-16 — the registry", () => {
       dirties: [],
       description: expect.stringMatching(/\S/u) as unknown as string,
     });
+  });
+
+  it("registers spec 018's account.recipients and account.reminders as global, standard risk, dirtying nothing (C.11)", () => {
+    for (const key of ["account.recipients", "account.reminders"] as const) {
+      expect(flagDefinition(key)).toEqual({
+        key,
+        scopeKinds: ["global"],
+        description: expect.stringMatching(/\S/u) as unknown as string,
+        risk: "standard",
+        dirties: [],
+      });
+    }
   });
 
   it("registers spec 018's flags: account.open global or per locale, invoice.issue per country", () => {

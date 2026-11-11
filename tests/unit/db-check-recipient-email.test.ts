@@ -148,7 +148,7 @@ describe("T-27 — the fixture of spec 002 §10, end to end through db:check", (
   });
 });
 
-describe("AC-27 — every name the pattern /e[-_]?mail/i covers, on both recipient tables", () => {
+describe("AC-27 — every name the pattern /e[-_]?mail/i covers, on every recipient table (spec 018 AC-54: saved_recipient)", () => {
   const names = [
     "email",
     "e_mail",
@@ -158,7 +158,8 @@ describe("AC-27 — every name the pattern /e[-_]?mail/i covers, on both recipie
     "recipient_email",
     "emailaddress",
   ];
-  for (const table of ["recipient", "recipient_address"]) {
+  // `saved_recipient` joined the list with spec 018 §14 C.11 (AC-54, TASK-352).
+  for (const table of ["recipient", "recipient_address", "saved_recipient"]) {
     for (const name of names) {
       it(`${table}.${name}`, () => {
         const lines = gate(

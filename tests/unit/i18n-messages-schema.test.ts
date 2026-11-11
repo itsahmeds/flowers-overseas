@@ -259,6 +259,8 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-352 (spec 018 C.13, C.15; the account-details-* and account-recipients-* slots): the
+    // details and saved-recipients texts, until record-approval-352.py.
     // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
     "checkout.basket.addOns",
     "checkout.basket.added",

@@ -12,6 +12,12 @@
  * The recipient recap (name, address, phone, card) shows until the 90-day sweep; after it only the
  * city and "We removed the recipient's details on {date}." (AC-26). The florist line appears from
  * "Being made", never before. No "Change" or "Edit" control. Every word from the catalogues.
+ *
+ * Under the recap, while `account.recipients` is on (TASK-352; spec 018 C.7.3, C.13, AC-54): the
+ * unticked box "Save {name}'s details for next time" with its hint and its own Save submit (works
+ * with JavaScript off); "Saved to your recipients." once a copy exists; the limit line after a
+ * refused 21st save. Absent, not disabled, for a hospital, funeral home or cemetery, after the
+ * sweep, and with the flag off.
  */
 import { getTranslations } from "next-intl/server";
 import type { ReactElement } from "react";
@@ -22,6 +28,7 @@ import { accountPath } from "@/lib/auth/buyer";
 import { formatDate } from "@/modules/i18n";
 import { refundLineValues } from "@/modules/orders";
 import type { AccountOrderDetail } from "@/modules/orders/account-orders";
+import { ReminderConsentCheckbox } from "@/modules/ui/checkout/ReminderConsentCheckbox";
 import { buttonClass } from "@/modules/ui/checkout/styles";
 
 import { invoicePath, orderDetailPath } from "../../_parts/account-request";
@@ -32,9 +39,20 @@ import {
   deliveryDay,
   money,
 } from "../../_parts/order-display";
-import { cancelFromAccountAction } from "./actions";
+import {
+  cancelFromAccountAction,
+  saveRecipientFromAccountAction,
+} from "./actions";
 
 export type DetailCancelState = "review" | "refused" | null;
+
+/** The save box's state (C.13): offered, offered after a refused 21st save, saved, or absent. */
+export type DetailSaveState = "offered" | "limit" | "saved" | "not_offered";
+
+/** The recipient's first name, for "Save {name}'s details" (the board: "Save Maria's details"). */
+function firstName(fullName: string): string {
+  return fullName.trim().split(/\s+/u)[0] ?? fullName;
+}
 
 const CARD =
   "bg-card rounded-field grid gap-[10px] px-[18px] py-[18px] shadow-[inset_0_0_0_1px_var(--color-rule)] md:px-[22px]";
@@ -54,10 +72,12 @@ export async function OrderDetailView({
   locale,
   detail,
   cancelState,
+  saveState = "not_offered",
 }: {
   readonly locale: LocaleCode;
   readonly detail: AccountOrderDetail;
   readonly cancelState: DetailCancelState;
+  readonly saveState?: DetailSaveState;
 }): Promise<ReactElement> {
   const t = await getTranslations({ locale, namespace: "account" });
   const tr = await getTranslations({ locale, namespace: "tracking" });
@@ -222,7 +242,55 @@ export async function OrderDetailView({
                     </div>
                   )}
                 </dl>
+              ) : null}
+              {recipient.kind !== "shown" ||
+              saveState === "not_offered" ? null : saveState === "saved" ? (
+                <p
+                  className="text-ink m-0 font-bold"
+                  data-fo-account-recipient-saved=""
+                  role="status"
+                >
+                  {t("recipients.saved")}
+                </p>
               ) : (
+                <form
+                  action={saveRecipientFromAccountAction.bind(
+                    null,
+                    locale,
+                    reference,
+                  )}
+                  className="border-rule grid gap-[12px] border-t border-solid pt-[14px]"
+                  data-fo-account-save-recipient=""
+                >
+                  <ReminderConsentCheckbox
+                    checked={false}
+                    hint={t("recipients.saveHint")}
+                    id={`save-recipient-${reference}`}
+                    label={t("recipients.save", {
+                      name: firstName(recipient.fullName),
+                    })}
+                    name="save"
+                  />
+                  {saveState === "limit" ? (
+                    <p
+                      className="text-ink m-0"
+                      data-fo-account-recipient-limit=""
+                      role="status"
+                    >
+                      {t("recipients.limit")}
+                    </p>
+                  ) : null}
+                  <div>
+                    <button
+                      className={buttonClass("ghost", "sm")}
+                      type="submit"
+                    >
+                      {t("recipients.saveSubmit")}
+                    </button>
+                  </div>
+                </form>
+              )}
+              {recipient.kind === "shown" ? null : (
                 <p
                   className="text-ink-2 m-0"
                   data-fo-account-recipient-removed=""

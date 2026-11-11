@@ -1877,7 +1877,9 @@
   "account": {
     "nav": {
       "orders": "Orders",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "details": "Your details",
+      "recipients": "Saved recipients"
     },
     "orders": {
       "title": "Your orders",
@@ -1907,6 +1909,32 @@
       "invoice": "Invoice",
       "creditNote": "Credit note",
       "pdf": "PDF"
+    },
+    "details": {
+      "title": "Your details",
+      "emailNote": "To change your email, message us.",
+      "language": "Language for our emails",
+      "currency": "Currency",
+      "currencyOption": "{code} · {name}",
+      "save": "Save",
+      "saved": "Saved.",
+      "signOutEverywhere": "Sign out on all devices",
+      "signOutEverywhereNote": "Signs you out here and on every other phone or computer. Your orders stay."
+    },
+    "recipients": {
+      "save": "Save {name}'s details for next time",
+      "saveHint": "Only if they would be happy for you to. We keep them until you remove them, or for 2 years after you last use them.",
+      "saveSubmit": "Save",
+      "saved": "Saved to your recipients.",
+      "empty": "No saved recipients yet. You can save one from an order.",
+      "place": "{city}, {country}",
+      "remove": "Remove",
+      "removeLabel": "Remove {name}",
+      "removeTitle": "Remove {name}?",
+      "removeBody": "We delete these details. Your orders are not changed.",
+      "keep": "Keep",
+      "removed": "Removed. We have deleted these details.",
+      "limit": "You have saved 20 recipients, the most we keep. Remove one to save another."
     }
   }
 }
