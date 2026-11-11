@@ -562,6 +562,19 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       utc: "24 Dec 2027, 09:02",
       brand: "visa",
       last4: "4242",
+      // TASK-299's `admin.media.*` and `admin.catalogue.photos.*`.
+      order: "2",
+      id: "3c1e",
+      state: "Approved",
+      waiting: "2",
+      width: "3,024",
+      height: "4,032",
+      mime: "image/jpeg",
+      // TASK-300's `admin.countries.*`.
+      first: "Monday",
+      last: "Saturday",
+      floor: "6",
+      iso2: "PL",
     };
     // `code` is a discount code's plain value everywhere but this one key, where it is a tag.
     const plain: Record<string, Record<string, unknown>> = {

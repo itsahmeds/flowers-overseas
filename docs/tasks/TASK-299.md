@@ -28,7 +28,7 @@ One dated bullet per `/review`, newest last.
 - 2026-11-11 (implementer, TASK-299): **T-23's e2e half** (no `<img>` on a public page for a pending photo): the storefront still renders from the seed manifest, so an uploaded photo reaches no public page until the database media provider lands with the cutover's media half. The rule is in place on both sides: `resolveMedia` refuses unapproved assets and now a file-name alt (`altIsFileName`, unit test), and `photoRendersIn` is the admin's view of the same rule.
 - 2026-11-11 (implementer, TASK-299): the upload's `media.derive_variants` job ends `not_approved` for a pending public photo (the worker never publishes before approval, TASK-082); the approval enqueues it again and that run publishes the ladder. A lost enqueue after commit is recovered by approving again (idempotent worker).
 - 2026-11-11 (implementer, TASK-299): `/admin/media` shows a placeholder tile with the short id, not a thumbnail: a pending photo has no variant and the private original is too heavy for a grid. A private thumbnail ladder is a later nicety.
-- 2026-11-11 (implementer, TASK-299): main is red on two things outside this task: `tests/unit/ui-barrel.test.ts` (TASK-370's `RatingStars` and `StarRadioGroup` are not in the expected surface) and `tests/integration/media-derive-variants.test.ts` (its fixture inserts approved assets directly, which TASK-293's `review_write_guard()` refuses, `REVIEW_DIRECT_WRITE`). `pnpm check:no-db` also fails on `src/modules/analytics` (two `drizzle-orm` imports).
+- 2026-11-11 (implementer, TASK-299): outside this task, as of `39502e40c`: `tests/integration/media-derive-variants.test.ts` is red (its fixture inserts approved assets directly, which TASK-293's `review_write_guard()` refuses, `REVIEW_DIRECT_WRITE`), and `pnpm check:no-db` fails on `src/modules/analytics` (two `drizzle-orm` imports). `tests/unit/admin-scans.test.ts` lacked TASK-300's `first`, `last`, `floor` and `iso2` params; added here with this task's own, so the scan passes. `admin-permission-binding`'s first case can pass its 5 s limit on a cold transform under load (3.1 s warm).
 
 ## Escalations
 
@@ -44,6 +44,7 @@ here.
 
 - 2026-11-11: upload route, `src/modules/admin/media.ts` commands (upload, review through `attest()`, attach, alt), the metadata strip (`media-image.ts`), `/admin/media`, `/admin/media/[id]`, the photos tab, 143 admin texts; typecheck green. Next: tests (unit for the strip, integration T-22/T-23 on a scratch PG16), lint.
 - 2026-11-11: tests green (unit 11 + 1, integration 10 on a local PG16); codebase map regenerated; `record-approval-299.py` written. Next: clean-env build in the build slot, ready.
+- 2026-11-11: clean-env staging build exit 0 in the build slot; rebased on `39502e40c`; the two admin scans name the new pages and keys. Ready.
 
 ## Result
 

@@ -163,6 +163,10 @@ describe("/admin/users is bound to users.manage (AC-4)", () => {
       "src/app/admin/(signed-in)/finance/orders/page.tsx": "finance.view",
       "src/app/admin/(signed-in)/finance/page.tsx": "finance.view",
       "src/app/admin/(signed-in)/flags/page.tsx": "flags.toggle",
+      // Spec 012b §5.3 (TASK-299): every role reads the photos; upload and review are checked
+      // by the route and the action (`media.upload`, `media.review`).
+      "src/app/admin/(signed-in)/media/[id]/page.tsx": null,
+      "src/app/admin/(signed-in)/media/page.tsx": null,
       "src/app/admin/(signed-in)/orders/[id]/page.tsx": "orders.view",
       "src/app/admin/(signed-in)/orders/page.tsx": "orders.view",
       "src/app/admin/(signed-in)/page.tsx": null,
