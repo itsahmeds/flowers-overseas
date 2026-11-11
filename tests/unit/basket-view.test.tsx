@@ -26,6 +26,7 @@ import {
 import type { BasketPage, BasketPageLine } from "../../src/modules/checkout";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
+import { unreviewedOrDelegated } from "./support/approval.ts";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: ({
@@ -460,7 +461,8 @@ describe("AC-74 basket half: no relay language", () => {
         key === "nav.basketCount" ||
         key === "nav.basket"
       ) {
-        expect(record.reviewed, key).toBe(false);
+        // Unreviewed, or approved since by the orchestrator's delegated record (TASK-522).
+        expect(unreviewedOrDelegated(record), key).toBe(true);
       }
     }
   });

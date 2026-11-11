@@ -194,6 +194,16 @@ describe("AC-18: an `<img>` only when approved, with variants and with alt (T-18
     expect(html).toContain('data-fo-media-placeholder="altRepeatsProductName"');
   });
 
+  it("refuses an alt that is a file name (spec 012b AC-23, TASK-299)", () => {
+    const html = withManifest(
+      <MediaAsset assetId={PRODUCT_ASSET} locale="en" />,
+      { alt: "lipa-peonies-15.jpg" },
+    );
+
+    expect(html).not.toContain("<img");
+    expect(html).toContain('data-fo-media-placeholder="altIsFileName"');
+  });
+
   it("renders the placeholder for an asset that is not in the manifest at all", () => {
     const html = withManifest(<MediaAsset assetId="fo-nope" locale="en" />);
     expect(html).toContain('data-fo-media-placeholder="unknownAsset"');

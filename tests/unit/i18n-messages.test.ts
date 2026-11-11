@@ -34,6 +34,11 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces plus spec 004's chrome namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
+      // `account` and `auth` are the buyer account's namespaces (spec 018 and its sign-in), on
+      // `noindex` routes under `(account)` and the buyer auth API; `reviews` is spec 022a's
+      // (TASK-368 to TASK-373); `search` is the site search's (spec 045).
+      "account",
+      "auth",
       // `catalog` is spec 005 §7's namespace: the tier, add-on, surcharge and facet **label
       // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
       // from TASK-067. It is deliberately in no `ROUTE_NAMESPACES` entry, so it reaches no
@@ -119,6 +124,8 @@ describe("the shell catalogue", () => {
       // the confirmation states' payment lines, all on `noindex` checkout routes.
       "payments",
       "product",
+      "reviews",
+      "search",
       // `shop` is spec 008 §7's namespace (TASK-108): the listing grid's accessible name, the
       // toolbar's count, its three sort labels and the ranking disclosure, the pagination labels
       // and the empty state's two sentences. Like `catalog` and `media` it is in no

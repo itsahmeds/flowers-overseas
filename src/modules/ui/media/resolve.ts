@@ -32,6 +32,8 @@ import {
   boxForAsset,
   variantsFor,
 } from "./manifest.ts";
+import { isFileNameAlt } from "../../../config/media-upload.ts";
+
 import { resolveLoader } from "./loader.ts";
 import type { MediaSlot } from "./slots.ts";
 
@@ -43,6 +45,7 @@ export const PLACEHOLDER_REASONS = [
   "noVariants",
   "noAlt",
   "altRepeatsProductName",
+  "altIsFileName",
 ] as const;
 export type PlaceholderReason = (typeof PLACEHOLDER_REASONS)[number];
 
@@ -175,6 +178,11 @@ export function resolveMedia({
       : altFor(assetId, locale, manifest);
   if (alt === undefined || alt.trim() === "") {
     return { kind: "placeholder", reason: "noAlt" };
+  }
+  // Spec 012b AC-23 (TASK-299): an alt that is a file name (`peonies-15.jpg`) or the asset's own
+  // id says nothing about the image, so the image does not render in that locale.
+  if (isFileNameAlt(alt, [assetId])) {
+    return { kind: "placeholder", reason: "altIsFileName" };
   }
   if (productName !== undefined && normalise(alt) === normalise(productName)) {
     return { kind: "placeholder", reason: "altRepeatsProductName" };

@@ -170,7 +170,11 @@ describe("the checkout islands (AC-38)", () => {
     const code = await bundled;
     expect(code).not.toMatch(/createElement\(\s*["']script["']/);
     expect(code).not.toMatch(/dangerouslySetInnerHTML|innerHTML\s*=/);
-    for (const file of readdirSync(CHECKOUT_UI)) {
+    // Recursive: spec 013's pay step lives in `payment/` (TASK-262; TASK-522).
+    for (const file of readdirSync(CHECKOUT_UI, {
+      recursive: true,
+      encoding: "utf8",
+    }).filter((entry) => /\.tsx?$/.test(entry))) {
       expect(readFileSync(`${CHECKOUT_UI}${file}`, "utf8"), file).not.toMatch(
         /<script|dangerouslySetInnerHTML/,
       );

@@ -51,7 +51,8 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
     // Every other export takes no amount at all, spec 013 §11's monitors (TASK-264) included, and
     // spec 030b's balance facts (TASK-439): `recordBalanceFacts` stores provider facts, never a
     // charge amount of ours. Spec 021's `attemptStats`, `endPaymentAttempts` (TASK-493) and
-    // `riskFactsFor` (TASK-494) take ids and instants only.
+    // `riskFactsFor` (TASK-494) take ids and instants only; TASK-495's `requestBalanceRefund`
+    // computes the order's own remaining balance (no amount argument) and `disputesFor` reads.
     expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<
       "refund" | "requestRefund"
     >();
@@ -98,6 +99,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "createPaymentAcceptedOrderEffect",
       "declineMessageKey",
       "deliverAcceptance",
+      "disputesFor",
       "endPaymentAttempts",
       "ingestStripeWebhook",
       "paidNotRoutedDue",
@@ -113,6 +115,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "registerPaymentsOutbox",
       "replayStripeWebhooks",
       "replayWebhooks",
+      "requestBalanceRefund",
       "requestRefund",
       "riskFactsFor",
       "runBalanceBackfill",

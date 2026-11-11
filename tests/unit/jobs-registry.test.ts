@@ -58,6 +58,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "outbox.dispatch",
       // spec 030b §14.5 (TASK-442): the hourly contract review reminders.
       "partners.contract_reminders",
+      // spec 022a §5.2 (TASK-372): the 90-day rating refresh.
+      "partners.rating_refresh",
       // spec 013 §11 (TASK-264): the paid-not-routed and webhook-silence monitors.
       // spec 030b (TASK-439): the balance facts and their hourly sweep.
       "payments.balance_fetch",
@@ -71,6 +73,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       // spec 018 §14 C.7.4 (TASK-353): one day's occasion reminders.
       "reminders.daily",
       "retention.sweep",
+      // spec 022a §5.2 (TASK-370): the review invitation, now registered.
+      "review.request",
       "risk.monitor",
       "routing.sla_watch",
       "webhook.process",
@@ -79,13 +83,12 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     ]);
   });
 
-  it("declares exactly the six names later specs implement", () => {
+  it("declares exactly the five names later specs implement", () => {
     expect([...DECLARED_JOBS].sort()).toEqual([
       "fx.refresh",
       "notification.deliver",
       "occasion.reminders",
       "payout.accrue",
-      "review.request",
       "sitemap.regenerate",
     ]);
   });
@@ -154,8 +157,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
     // 40, plus spec 012b's `catalogue.publish` and `cache.invalidate` (TASK-295), plus spec 018's
-    // `reminders.daily` (TASK-353).
-    expect(new Set(JOB_NAMES).size).toBe(43);
+    // `reminders.daily` (TASK-353), plus spec 022a's `partners.rating_refresh` (TASK-372).
+    expect(new Set(JOB_NAMES).size).toBe(44);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

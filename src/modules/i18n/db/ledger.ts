@@ -329,6 +329,19 @@ export async function attest(
         return refused("unknown_subject");
       }
       if (current.hash !== input.valueHash) return refused("stale_hash");
+      // Spec 012b §2.7, AC-23 (TASK-299): a florist's photo is licensed by the florist's signed
+      // terms, so it is approved only once that florist has a recorded `terms_version`.
+      if (subject.kind === "media_asset" && input.decision === "approved") {
+        const unlicensed = await rows<{ one: number }>(
+          db,
+          sql`SELECT 1 AS one FROM public.media_asset a
+              JOIN public.fulfillment_partner f ON f.id = a.supplier_partner_id
+              WHERE a.checksum_sha256 = ${subject.ref} AND a.source = 'partner'
+                AND f.terms_version IS NULL
+              LIMIT 1`,
+        );
+        if (unlicensed.length > 0) return refused("no_supplier_terms");
+      }
 
       let sourceHash: string | null = null;
       if (

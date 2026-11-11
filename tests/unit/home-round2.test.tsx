@@ -442,7 +442,9 @@ describe("the marker keeps the approval (AC-52; T-57)", () => {
    */
   const BOARD_MARKED: readonly (readonly [string, string])[] = [
     ["checkout.step.recipient", "for?"],
-    ["checkout.step.card", "your details"],
+    // Design PR 417 gaps G6 and G7 (TASK-418): step 2 is "Your card", step 3 "Your details".
+    ["checkout.step.card", "card"],
+    ["checkout.step.details", "details"],
     ["checkout.step.review", "your order"],
     ["confirmation.demo.title", "is in."],
   ];

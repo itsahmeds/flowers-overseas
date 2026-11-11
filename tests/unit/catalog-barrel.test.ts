@@ -30,6 +30,7 @@ import { COUNTRIES } from "../../src/config/countries.ts";
 import { CURRENCIES } from "../../src/config/currencies.ts";
 import { MODULES } from "../../scripts/check-layout.ts";
 import { findDatabaseImports } from "../../scripts/check-no-db-imports.ts";
+import { isServerActionModule } from "./support/import-closure.ts";
 import * as catalog from "../../src/modules/catalog/index.ts";
 import {
   catalogProviders,
@@ -93,6 +94,8 @@ function reachableFrom(entry: string): Reached {
   const walk = (file: string, chain: readonly string[]): void => {
     if (files.includes(file)) return;
     files.push(file);
+    // A `"use server"` module reaches a client as action references only (TASK-522).
+    if (file !== entry && isServerActionModule(sourceOf(file))) return;
     for (const specifier of specifiersOf(sourceOf(file))) {
       const local = resolveLocal(file, specifier);
       if (local === null) {

@@ -5,7 +5,7 @@
  * 403 to every role without `users.manage` (ops, finance, content), and let `admin` past the
  * guard. Nothing is written on a 403: the guard throws before the command runs (no database here).
  */
-import { readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
@@ -141,23 +141,64 @@ describe("/admin/users is bound to users.manage (AC-4)", () => {
             : [];
       });
     })("src/app/admin/(signed-in)");
-    expect(pages.sort()).toEqual([
-      "src/app/admin/(signed-in)/applications/[id]/page.tsx",
-      "src/app/admin/(signed-in)/applications/page.tsx",
-      "src/app/admin/(signed-in)/audit/page.tsx",
+    // Every signed-in page and the permission its first statement asks for (`null`: the page
+    // computes it, e.g. from the role; the binding tests above cover those). TASK-522 added the
+    // pages merged since TASK-295 and the source check, so a page cannot join unguarded.
+    const GUARDS: Readonly<Record<string, string | null>> = {
+      "src/app/admin/(signed-in)/applications/[id]/page.tsx":
+        "application.manage",
+      "src/app/admin/(signed-in)/applications/page.tsx": "application.manage",
+      "src/app/admin/(signed-in)/audit/page.tsx": "audit.read",
       // spec 012b §2.8 (TASK-300): any admin role reads both; the actions need `country.status`.
-      "src/app/admin/(signed-in)/countries/[iso2]/page.tsx",
-      "src/app/admin/(signed-in)/countries/page.tsx",
-      "src/app/admin/(signed-in)/flags/page.tsx",
-      "src/app/admin/(signed-in)/orders/[id]/page.tsx",
-      "src/app/admin/(signed-in)/orders/page.tsx",
-      "src/app/admin/(signed-in)/page.tsx",
-      "src/app/admin/(signed-in)/partners/[code]/page.tsx",
-      "src/app/admin/(signed-in)/partners/new/page.tsx",
-      "src/app/admin/(signed-in)/partners/page.tsx",
-      "src/app/admin/(signed-in)/publish/page.tsx",
-      "src/app/admin/(signed-in)/users/page.tsx",
-    ]);
+      "src/app/admin/(signed-in)/countries/[iso2]/page.tsx": null,
+      "src/app/admin/(signed-in)/countries/page.tsx": null,
+      "src/app/admin/(signed-in)/basket-reminders/page.tsx": "finance.view",
+      "src/app/admin/(signed-in)/catalogue/products/[sku]/page.tsx": null,
+      "src/app/admin/(signed-in)/catalogue/products/new/page.tsx":
+        "catalogue.edit",
+      "src/app/admin/(signed-in)/catalogue/products/page.tsx": null,
+      "src/app/admin/(signed-in)/discounts/[id]/page.tsx": "discounts.read",
+      "src/app/admin/(signed-in)/discounts/new/page.tsx": "discounts.write",
+      "src/app/admin/(signed-in)/discounts/page.tsx": "discounts.read",
+      "src/app/admin/(signed-in)/finance/orders/page.tsx": "finance.view",
+      "src/app/admin/(signed-in)/finance/page.tsx": "finance.view",
+      "src/app/admin/(signed-in)/flags/page.tsx": "flags.toggle",
+      // Spec 012b §5.3 (TASK-299): every role reads the photos; upload and review are checked
+      // by the route and the action (`media.upload`, `media.review`).
+      "src/app/admin/(signed-in)/media/[id]/page.tsx": null,
+      "src/app/admin/(signed-in)/media/page.tsx": null,
+      "src/app/admin/(signed-in)/orders/[id]/page.tsx": "orders.view",
+      "src/app/admin/(signed-in)/orders/page.tsx": "orders.view",
+      "src/app/admin/(signed-in)/page.tsx": null,
+      "src/app/admin/(signed-in)/partners/[code]/contracts/page.tsx":
+        "partner.contract.view",
+      "src/app/admin/(signed-in)/partners/[code]/money/page.tsx":
+        "finance.view",
+      "src/app/admin/(signed-in)/partners/[code]/page.tsx": null,
+      "src/app/admin/(signed-in)/partners/[code]/relationship/page.tsx":
+        "partner.crm.view",
+      "src/app/admin/(signed-in)/partners/new/page.tsx": "partner.edit",
+      "src/app/admin/(signed-in)/partners/page.tsx": null,
+      "src/app/admin/(signed-in)/payouts/[id]/page.tsx": "payouts.manage",
+      "src/app/admin/(signed-in)/payouts/exports/[id]/page.tsx":
+        "payouts.manage",
+      "src/app/admin/(signed-in)/payouts/page.tsx": "payouts.manage",
+      "src/app/admin/(signed-in)/publish/page.tsx": "catalogue.publish",
+      "src/app/admin/(signed-in)/reviews/[id]/page.tsx": "reviews.moderate",
+      "src/app/admin/(signed-in)/reviews/page.tsx": "reviews.moderate",
+      "src/app/admin/(signed-in)/risk/[reviewId]/page.tsx": "risk.review",
+      "src/app/admin/(signed-in)/risk/page.tsx": "risk.review",
+      "src/app/admin/(signed-in)/users/page.tsx": "users.manage",
+    };
+    expect(pages.sort()).toEqual(Object.keys(GUARDS).sort());
+    for (const [page, permission] of Object.entries(GUARDS)) {
+      const source = readFileSync(join(repoRoot, page), "utf8");
+      expect(source, page).toContain(
+        permission === null
+          ? "requireAdminPage("
+          : `requireAdminPage("${permission}")`,
+      );
+    }
   });
 });
 
@@ -354,6 +395,8 @@ describe("/admin/partners and /admin/applications are bound to the §5.2 matrix 
     saveCoverageAction: ["admin", "ops"],
     saveBlackoutAction: ["admin", "ops"],
     saveMappingAction: ["admin", "finance"],
+    // spec 030a (TASK-363): the florist's payout terms, `partner.payout`.
+    savePayoutTermsAction: ["admin", "finance"],
     setPartnerStatusAction: ["admin", "ops"],
     markContactedAction: ["admin", "ops"],
     convertApplicationAction: ["admin", "ops"],

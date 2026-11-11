@@ -225,6 +225,9 @@ describe("src/modules/ui barrel", () => {
         "REVIEW_KINDS",
         "ReviewsSection",
         "TRENDING_BASES",
+        // spec 022a (TASK-371): the review form's star radio group and the stars it displays.
+        "RatingStars",
+        "StarRadioGroup",
         "destinationStatusProviderOf",
         "emptyTrendingProvider",
         "getDestinationStatusProvider",

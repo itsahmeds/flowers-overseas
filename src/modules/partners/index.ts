@@ -1,4 +1,4 @@
-/** Public barrel for `partners` (fulfilment partners, coverage, payouts). Owned by: spec 011 (application), spec 026/027 (portal). */
+/** Public barrel for `partners` (fulfilment partners, coverage, payouts). Owned by: spec 011 (application), spec 026/027 (portal), spec 030b (CRM). */
 // Spec 011 (TASK-210): the florist inbox's view shapes and its presentational components, the
 // exports TASK-214's inbox pages import and the walkthrough renders (AC-3's import identity), and
 // the two public florists pages. The application page and its sent page are deliberately **not**

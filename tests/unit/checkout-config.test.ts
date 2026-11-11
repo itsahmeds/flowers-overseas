@@ -398,6 +398,23 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         enMeta[key]?.reviewedBy ?? "",
       ),
     );
+    // TASK-447's `checkout.discount.*`, TASK-449's basket reminder keys and TASK-493's
+    // `checkout.risk.*`, each recorded by the orchestrator with its own script (TASK-522).
+    const recordedLater = metaKeys.filter((key) =>
+      [
+        ["checkout.discount.", "447"],
+        ["checkout.basketReminder.", "449"],
+        ["checkout.basket.restored", "449"],
+        ["checkout.risk.", "493"],
+      ].some(
+        ([prefix, task]) =>
+          key.startsWith(prefix ?? "") &&
+          new RegExp(
+            `^founder \\(delegated\\), \\d{4}-\\d{2}-\\d{2}: recorded by the orchestrator with record-approval-${task ?? ""}\\.py `,
+            "u",
+          ).test(enMeta[key]?.reviewedBy ?? ""),
+      ),
+    );
     expect(reviewed.toSorted()).toEqual(
       [
         "checkout.address.city",
@@ -411,6 +428,7 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         ...recorded204,
         ...recorded340,
         ...recorded418,
+        ...recordedLater,
       ].toSorted(),
     );
     for (const key of reviewed) {

@@ -54,6 +54,7 @@ import {
   defaultTierForSku,
   tiersForSku,
 } from "../../src/config/catalogue/tiers.data.ts";
+import { isServerActionModule } from "./support/import-closure.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const datasetDir = "src/config/catalogue";
@@ -555,6 +556,8 @@ describe("the dataset directory is server-only, database-free config (AC-2, AC-3
       const walk = (file: string): void => {
         if (seen.includes(file)) return;
         seen.push(file);
+        // A `"use server"` module reaches a client as action references only (TASK-522).
+        if (file !== entry && isServerActionModule(sourceOf(file))) return;
         const code = sourceOf(file).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
         for (const match of code.matchAll(
           /(?:from|import\s*\()\s*["']([^"']+)["']/g,

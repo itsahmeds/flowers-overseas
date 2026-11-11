@@ -1,6 +1,7 @@
 /**
  * Public barrel for `ops`: founder alerts, their log, escalation, monitors and the daily summary
  * (spec 025; TASK-488, TASK-489).
+ * Owned by: spec 025.
  *
  * The one way to raise an alert is `raiseAlert` (or `raiseLegacyAlert`, the synchronous shape the
  * older call sites used). `captureAlert` (`src/lib/sentry.ts`) is called from this module only,

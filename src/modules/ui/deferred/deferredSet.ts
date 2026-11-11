@@ -229,6 +229,23 @@ export const NOT_DEFERRED: Readonly<Record<string, string>> = {
     "the order page's phone Actions bar and sheet (TASK-361): admin only, not a public page, no LCP budget",
   "src/app/admin/(signed-in)/orders/[id]/refund-form.tsx":
     "the order page's refund dialog form (TASK-361): admin only, not a public page, no LCP budget",
+  // Listed by TASK-522: client modules merged without a row here.
+  "src/app/admin/(signed-in)/discounts/discount-form.tsx":
+    "the discount form's live cost preview (TASK-445): admin only, not a public page, no LCP budget",
+  "src/modules/ui/admin/AdminSelectionSummary.tsx":
+    "the payout pages' selection total (TASK-367): admin only, not a public page, no LCP budget",
+  "src/modules/ui/admin/RiskDecisionForm.tsx":
+    "the risk review queue's decision form (TASK-494): admin only, not a public page, no LCP budget",
+  "src/app/[locale]/(account)/account/details/DetailsForm.tsx":
+    "the account details form (TASK-352): a noindex, no-store account page, on no audited URL",
+  "src/modules/partners/ui/apply/ApplyForm.tsx":
+    "the florist application form (TASK-213): a noindex page, on no audited URL",
+  "src/modules/partners/ui/inbox/InboxRefresh.tsx":
+    "the florist inbox's refresh (TASK-214): under FLORIST_BASE_PATH, not a public page, no LCP budget",
+  "src/modules/ui/checkout/payment/PaymentPanel.tsx":
+    "the pay step's card panel (TASK-262): a noindex, no-store checkout step, on no audited URL",
+  "src/modules/ui/checkout/payment/PaymentErrorNotice.tsx":
+    "the pay step's decline notice (TASK-262): a noindex, no-store checkout step, on no audited URL",
   "src/modules/ui/product/CardMessageField.tsx":
     "the product page's card field: on no audited URL, and its buy section belongs to PR 239 (TASK-228); clause 4's new row is the orchestrator's",
 };

@@ -37,6 +37,7 @@ import {
 } from "../../src/modules/partners/portal/view.ts";
 import { BouquetList } from "../../src/modules/partners/ui/portal/BouquetList.tsx";
 import { SignedInFrame } from "../../src/app/vendor/chrome.tsx";
+import { unreviewedOrDelegated } from "./support/approval.ts";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const LANGUAGES = ["en", "pl", "de"] as const;
@@ -331,7 +332,7 @@ describe("T-56: keys, voice and the sections navigation", () => {
       );
       const meta = JSON.parse(
         readFileSync(join(ROOT, "messages", `${locale}.meta.json`), "utf8"),
-      ) as Record<string, { reviewed: boolean }>;
+      ) as Record<string, { reviewed: boolean; reviewedBy?: string }>;
       const own = Object.keys(messages).filter((key) =>
         key.startsWith("floristInbox.bouquets."),
       );
@@ -340,7 +341,8 @@ describe("T-56: keys, voice and the sections navigation", () => {
       );
       for (const key of own) {
         const value = messages[key] ?? "";
-        expect(meta[key]?.reviewed, key).toBe(false);
+        // Unreviewed, or approved since by the orchestrator's delegated record (TASK-522).
+        expect(unreviewedOrDelegated(meta[key]), key).toBe(true);
         expect(bannedVoiceWordsIn(value), key).toEqual([]);
         expect(value, key).not.toMatch(/[–—]/u);
       }
