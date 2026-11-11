@@ -1,7 +1,7 @@
 -- 0046_placeholder_window: the `catalogue.placeholder_window` flag row (spec 012b §2.5, §12
 -- "Feature flags", AC-8; TASK-295).
 --
--- Numbered 0046 (orchestrator, 2026-11-11): main ends at 0044 (TASK-294); 0045 is reserved.
+-- Numbered 0046 (orchestrator, 2026-11-11): main ends at 0045 (TASK-352).
 -- Global and on from the cutover: while on, a publish may remove a `source = 'seed'` product's URL
 -- (AC-8). The founder turns it off once, when the site opens to search engines, and it is never
 -- turned back on (§13 Q6; the one-way control is TASK-297's). `src/config/feature-flags.ts`
