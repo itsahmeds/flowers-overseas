@@ -195,6 +195,37 @@ export function accountFooterText(t: EmailTranslator, whyKey: string): string {
   ].join("\n");
 }
 
+/**
+ * T18's frame (spec 018 §14 C.7.4; `email-account-*` T18; TASK-353): the account frame, whose last
+ * line says why the address received it, then the visible "Stop reminders" link to the unsubscribe
+ * page (C.16: one-click withdrawal in every email, besides the `List-Unsubscribe` header).
+ */
+export function occasionReminderFrame(
+  t: EmailTranslator,
+  stopUrl: string,
+  link: (label: string, href: string) => SafeHtml,
+): EmailFrame {
+  const frame = accountFrame(t, "emails.account.reminder.why");
+  return {
+    ...frame,
+    footer: [
+      ...frame.footer,
+      { html: link(t("emails.account.reminder.stop"), stopUrl) },
+    ],
+  };
+}
+
+/** T18's footer as plain text, after the `--` line. */
+export function occasionReminderFooterText(
+  t: EmailTranslator,
+  stopUrl: string,
+): string {
+  return [
+    accountFooterText(t, "emails.account.reminder.why"),
+    `${t("emails.account.reminder.stop")}: ${stopUrl}`,
+  ].join("\n");
+}
+
 /** The buyer frame's footer as plain text, after the `--` line. */
 export function buyerFooterText(t: EmailTranslator, reference: string): string {
   const identity = operatedBy(t);

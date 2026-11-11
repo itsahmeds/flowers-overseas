@@ -30,12 +30,17 @@ import { z } from "zod";
 
 import { signedLinkSecret } from "./env.signed-link";
 
-/** What a link is for (spec 018 §5.2). Each is its own MAC domain. */
+/**
+ * What a link is for (spec 018 §5.2). Each is its own MAC domain. `unsubscribe` (spec 018 §14
+ * A-founder-2026-10-22 C.11; TASK-353): an occasion reminder's stop link, payload
+ * `{ t: reminder_unsubscribe_token }`, no expiry; the token rotates when consent is given again.
+ */
 export const SIGNED_LINK_PURPOSES = [
   "track",
   "invoice",
   "privacy",
   "export",
+  "unsubscribe",
 ] as const;
 export const PurposeSchema = z.enum(SIGNED_LINK_PURPOSES);
 export type Purpose = z.infer<typeof PurposeSchema>;
@@ -101,7 +106,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 /**
  * Signs `payload` for `purpose`. `expiresAt`, when given, is written into the payload as `exp`
- * and so is covered by the MAC. Throws on a purpose outside the four, on a payload that already
+ * and so is covered by the MAC. Throws on a purpose outside the five, on a payload that already
  * uses the reserved key, and on an invalid date: these are programming errors, never input.
  */
 export function sign(

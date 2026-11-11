@@ -68,6 +68,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "payouts.prepaid_ready",
       "payouts.statement_email",
       "payouts.watch",
+      // spec 018 §14 C.7.4 (TASK-353): one day's occasion reminders.
+      "reminders.daily",
       "retention.sweep",
       "risk.monitor",
       "routing.sla_watch",
@@ -151,8 +153,9 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    // 40, plus spec 012b's `catalogue.publish` and `cache.invalidate` (TASK-295).
-    expect(new Set(JOB_NAMES).size).toBe(42);
+    // 40, plus spec 012b's `catalogue.publish` and `cache.invalidate` (TASK-295), plus spec 018's
+    // `reminders.daily` (TASK-353).
+    expect(new Set(JOB_NAMES).size).toBe(43);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

@@ -50,3 +50,44 @@ export type {
   SaveOffer,
   SaveRecipientOutcome,
 } from "./buyer-account";
+// Spec 018 §14 A-founder-2026-10-22 C.7.4 (TASK-353): occasion reminders, their own consent, the
+// one-click stop and the daily send.
+export {
+  createReminder,
+  dueReminders,
+  isCalendarDay,
+  mintUnsubscribeToken,
+  OCCASION_KEYS,
+  OCCASION_REMINDER_LIMIT,
+  OccasionReminderSchema,
+  readReminders,
+  REMINDER_LEAD_DAYS,
+  ReminderInputSchema,
+  reminderTargets,
+  reminderUnsubscribeLinkToken,
+  removeReminder,
+  runOccasionReminders,
+  setReminderConsent,
+  unsubscribeReminders,
+} from "./reminders";
+export type {
+  CreateReminderOutcome,
+  DueReminder,
+  OccasionKey,
+  OccasionReminder,
+  OccasionReminderJobDeps,
+  OccasionReminderRun,
+  ReminderChannel,
+  ReminderInput,
+  ReminderLeadDays,
+  ReminderRunners,
+  ReminderState,
+  ReminderTarget,
+} from "./reminders";
+// The one-click `POST /api/reminders/unsubscribe` (RFC 8058; TASK-353).
+export {
+  REMINDER_UNSUBSCRIBE_HEADERS,
+  reminderOneClickMethodNotAllowed,
+  reminderOneClickResponse,
+} from "./reminder-http";
+export { systemAccountRunner } from "./system-runner";

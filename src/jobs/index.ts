@@ -280,6 +280,12 @@ export const BasketRemindersSendPayload = z
   .strict();
 
 /**
+ * `reminders.daily` (spec 018 §14 A-founder-2026-10-22 C.7.4, C.12, AC-57; TASK-353): one day's
+ * occasion reminders. Takes nothing; the minute tick enqueues one per UTC day, not before 07:00.
+ */
+export const RemindersDailyPayload = z.object({}).strict();
+
+/**
  * `partners.contract_reminders` (spec 030b §14.5, AC-42; TASK-442): one hourly look at the current
  * agreements' and addenda's review dates. Takes nothing; the minute tick enqueues one an hour.
  */
@@ -435,6 +441,7 @@ export const REGISTERED_JOBS = {
     version: 1,
     payload: PartnersContractRemindersPayload,
   },
+  "reminders.daily": { version: 1, payload: RemindersDailyPayload },
   "basket-reminders.scan": { version: 1, payload: BasketRemindersScanPayload },
   "basket-reminders.send": {
     version: 1,

@@ -259,6 +259,8 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-353 (spec 018 C.7.4, C.13, C.15; the account-reminders-* and email-account-* slots):
+    // the reminders page, the stop page and T18, until record-approval-353.py.
     // TASK-352 (spec 018 C.13, C.15; the account-details-* and account-recipients-* slots): the
     // details and saved-recipients texts, until record-approval-352.py.
     // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
@@ -348,6 +350,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-447 (spec 047 §7): the discount control's 18 `checkout.discount.*` texts, until record-approval-447.py.
     "checkout.legal.cancellation",
     "checkout.legal.payButton",
+    // TASK-353 (spec 018 C.7.4, C.15; email-account-* T18): until record-approval-353.py.
     // TASK-340 (spec 018 §5.2, §7; §14 A-founder-2026-10-14b): the post-purchase block, the quiet
     // cancel line and its dialog, the spec's and the boards' words, `reviewed: false` until the
     // record run (`.claude/state/record-approval-340.py`) attests them.

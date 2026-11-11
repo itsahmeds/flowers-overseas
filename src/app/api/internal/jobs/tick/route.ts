@@ -13,7 +13,8 @@
  * once an hour (a `singletonKey` unique for 3600 seconds), `payouts.close` and `payouts.watch`
  * (spec 030a §5.2, TASK-364); `payments.balance_sweep` (spec 030b §5.2, TASK-439) and
  * `partners.contract_reminders` (spec 030b §14.5, TASK-442); and one
- * `alerts.monitor` and one `alerts.escalate` (spec 025 §5.2, TASK-489), after which a tick that
+ * `alerts.monitor` and one `alerts.escalate` (spec 025 §5.2, TASK-489), and, once per UTC day
+ * not before 07:00, `reminders.daily` (spec 018 §14 C.7.4, TASK-353), after which a tick that
  * reached the database pings the heartbeat (AC-27).
  */
 import { SCAN_EVERY_MINUTES } from "@/config/basket-reminders";
@@ -31,6 +32,23 @@ export const revalidate = 0;
 const HOURLY_SECONDS = 3600;
 /** Spec 034 §5.2: the basket reminder scan's period, `SCAN_EVERY_MINUTES` in seconds. */
 const BASKET_REMINDER_SCAN_SECONDS = SCAN_EVERY_MINUTES * 60;
+
+/** Spec 018 C.7.4: `reminders.daily` runs once per UTC day (pg-boss's slot is the UTC day). */
+const DAILY_SECONDS = 86_400;
+/** Spec 018 C.7.4: the hour, UTC, the occasion reminders go out. */
+const REMINDERS_HOUR_UTC = 7;
+
+/** 07:00 UTC of `now`'s UTC day: the day's job waits for it when enqueued earlier. */
+function remindersDailyStartAfter(now: Date): Date {
+  return new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      REMINDERS_HOUR_UTC,
+    ),
+  );
+}
 
 export function POST(request: Request): Promise<Response> {
   return tickResponse(request, {
@@ -136,6 +154,18 @@ export function POST(request: Request): Promise<Response> {
             requestId: "system:jobs.tick",
             singletonKey: "basket-reminders.scan",
             singletonSeconds: BASKET_REMINDER_SCAN_SECONDS,
+          },
+        );
+        // Spec 018 §14 C.7.4 (TASK-353): the occasion reminders, once per UTC day from 07:00.
+        await enqueue(
+          boss,
+          "reminders.daily",
+          {},
+          {
+            requestId: "system:jobs.tick",
+            singletonKey: "reminders.daily",
+            singletonSeconds: DAILY_SECONDS,
+            startAfter: remindersDailyStartAfter(new Date()),
           },
         );
         const counts = await runTick(boss, JOB_HANDLERS);

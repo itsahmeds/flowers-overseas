@@ -1502,6 +1502,16 @@
         "paste": "Or paste this link into your browser:",
         "ignore": "If you did not ask for this, you can ignore this email.",
         "why": "You receive this email because someone asked to sign in with this address."
+      },
+      "reminder": {
+        "subject": "{occasion} on {date}",
+        "occasionTitle": "{key, select, birthday {Birthday} anniversary {Anniversary} name_day {Name day} other {Other occasion}}",
+        "occasion": "{key, select, birthday {birthday} anniversary {anniversary} name_day {name day} other {occasion}}",
+        "body": "{name, select, none {Your {occasion} reminder: {date}.} other {{name}'s {occasion} is on {date}.}}",
+        "time": "There is still time to send flowers for the day.",
+        "button": "Choose flowers",
+        "why": "You get this email because you asked us for reminders.",
+        "stop": "Stop reminders"
       }
     },
     "floristPayoutStatement": {
@@ -1879,7 +1889,8 @@
       "orders": "Orders",
       "signOut": "Sign out",
       "details": "Your details",
-      "recipients": "Saved recipients"
+      "recipients": "Saved recipients",
+      "reminders": "Reminders"
     },
     "orders": {
       "title": "Your orders",
@@ -1935,6 +1946,38 @@
       "keep": "Keep",
       "removed": "Removed. We have deleted these details.",
       "limit": "You have saved 20 recipients, the most we keep. Remove one to save another."
+    },
+    "reminders": {
+      "intro": "We email you before each date you save, so there is time to send flowers.",
+      "consent": "Email me reminders before the dates I save. I can stop at any time.",
+      "occasion": "{key, select, birthday {Birthday} anniversary {Anniversary} name_day {Name day} other {Other occasion}}",
+      "lead": "{days, plural, other {# days before}}",
+      "off": "Turn off reminders",
+      "offConfirm": "Turning reminders off deletes your saved dates.",
+      "unsubscribeDone": "Reminders are off. We have deleted your saved dates.",
+      "addTitle": "Add a date",
+      "occasionLabel": "Occasion",
+      "forLabel": "For",
+      "optional": "optional",
+      "forNone": "No saved recipient",
+      "dayLabel": "Day",
+      "monthLabel": "Month",
+      "leadLabel": "How early",
+      "save": "Save this date",
+      "saved": "Saved.",
+      "empty": "No dates saved yet.",
+      "line": "{occasion} · {date}",
+      "lineFor": "{lead} · <bdi>{name}</bdi>",
+      "remove": "Remove",
+      "removeLabel": "Remove {occasion} on {date}",
+      "offTitle": "Turn off reminders?",
+      "keep": "Keep them",
+      "errorConsent": "Tick the box so we may email you reminders.",
+      "errorDate": "That date does not exist. Choose another day or month.",
+      "limit": "You have saved 50 dates, the most we keep. Remove one to add another.",
+      "unsubscribeTitle": "Stop reminders?",
+      "unsubscribeButton": "Stop reminders",
+      "unsubscribeDoneTitle": "Reminders are off."
     }
   }
 }

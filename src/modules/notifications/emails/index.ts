@@ -189,3 +189,11 @@ export {
   renderBasketReminderEmail,
   reminderDate,
 } from "./basket-reminder";
+// Spec 018 §14 C.7.4's T18, the occasion reminder (TASK-353); the `reminders.daily` job sends it.
+export {
+  type OccasionReminderEmailProps,
+  OccasionReminderEmailPropsSchema,
+  type RenderedOccasionReminderEmail,
+  renderOccasionReminderEmail,
+  reminderDayMonth,
+} from "./occasion-reminder";

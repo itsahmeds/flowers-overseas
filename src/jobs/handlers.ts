@@ -563,6 +563,12 @@ export const JOB_HANDLERS: JobHandlers = {
       await import("../modules/partners/contracts/reminders");
     await runContractReminders();
   },
+  // Spec 018 §14 C.7.4 (TASK-353): one day's occasion reminders. Idempotent: each reminder is
+  // claimed through `last_sent_for` in the transaction that sends it, so a retry sends nothing twice.
+  "reminders.daily": async () => {
+    const { runRemindersDaily } = await import("./occasion-reminders");
+    await runRemindersDaily();
+  },
   // Spec 034 §5.2 (TASK-450): the basket reminder's scan and one reminder's send.
   "basket-reminders.scan": async () => {
     const { runBasketReminderScan } = await import("./basket-reminders");

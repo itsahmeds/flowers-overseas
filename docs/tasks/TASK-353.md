@@ -28,7 +28,29 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-11 (TASK-353, PR 541, left open by the implementer):
+  - **Sender.** T18 goes from `EMAIL_FROM` (the transactional stream), as `email-account-*` draws it. Spec 034's
+    `marketing` stream (`MARKETING_MAIL_FROM`, its own subdomain) may be the better home for consent-based mail;
+    switching is one `stream: "marketing"` in `src/jobs/occasion-reminders.ts` once the founder decides.
+  - **Suppression.** T18 does not read spec 034's `email_suppression`; a bounce or complaint stops nothing but
+    the one-click stop does. A later task can add the check to `dueReminders`.
+  - **Missed day.** If `reminders.daily` fails every retry on a day (alert `reminders.daily_failed`), that day's
+    reminders are not caught up the next day: each run looks only at its own UTC date.
+  - **Copy.** 39 new `en` texts (`account.nav.reminders`, `account.reminders.*`, `emails.account.reminder.*`) ship
+    `reviewed: false`; `.claude/state/record-approval-353.py --check` passes. de and pl are echoes. Two choices
+    against C.15's table, both from the boards: the body's second sentence is its own key `time` (T18 draws two
+    lines), and the occasion inside the sentence is lower case (`emails.account.reminder.occasion`, the designer's
+    escalation) with `occasionTitle` for the subject. The one-click `POST` answers the done sentence in English (the
+    request carries no locale).
+  - **Browser half.** No Playwright, axe or visual baseline for the two pages: T-58's e2e half and AC-33's axe and
+    keyboard are TASK-346's. A `GET` of the stop page writes nothing by construction (it renders one form; the
+    write is the server action on `POST`); the API's `GET` answers 405 (unit test).
+  - **RoPA and cookies** for reminders: TASK-346 (C.16).
+  - **Refused add.** A refused add (no consent, no such date, 50 reached) redirects with an error code only, so
+    the posted values are not kept (no date or name in a URL).
+  - **Main is red elsewhere** (not this task): `tests/unit/i18n-review-scope.test.ts` (registry drift) and
+    `tests/unit/i18n-messages.test.ts` (namespaces `account`, `auth`) fail on `origin/main` too.
+  - `DECLARED_JOBS` still lists `occasion.reminders` (`plan/01` §8's placeholder); `reminders.daily` is the job.
 
 ## Escalations
 
@@ -42,11 +64,25 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11: worktree `../fo-wt-353`, branch `task/TASK-353-occasion-reminders`; row in progress. The `Mailer` `headers` field already shipped with spec 034 (TASK-450), so this task reuses it. No migration needed (0045 has the table and columns).
+- 2026-11-11: built and pushed: customers `reminders.ts` (consent, create, remove, stop, daily send), T18, the job and
+  the tick, `POST /api/reminders/unsubscribe`, the reminders page and the stop page; unit 19 and integration 14 green;
+  rebased on `origin/main`; clean-env build exit 0. Ready for the orchestrator.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 541. `src/modules/customers/reminders.ts`: `createReminder` (consent needed the first time, then one
+`consent_log` row `{"occasion_reminders": true}`, a fresh 22-character unsubscribe token, in one `system`
+transaction with the reminder; a foreign saved recipient refused), `removeReminder` (RLS), `setReminderConsent`
+(off deletes every reminder), `unsubscribeReminders` (signed `t`, purpose `unsubscribe`), `reminderTargets` (29
+February for 28 February in a common year), `runOccasionReminders` (claim through `last_sent_for` in the send's
+transaction). T18 in `src/modules/notifications/emails/occasion-reminder.ts`; the job `reminders.daily` (tick: once
+per UTC day, `startAfter` 07:00 UTC; alert on failure); `POST /api/reminders/unsubscribe` (RFC 8058, same 200 body
+for any token, 400 other bodies, 405 `GET`); `/{locale}/account/reminders` and `/{locale}/account/reminders/
+unsubscribe`; the side list's Reminders item; the i18n `monthName` date style. Tests: unit 19
+(`occasion-reminders.test.ts`) plus the job registry, runtime and tick lists; integration 14
+(`occasion-reminders.test.ts`, PG16). The clean-env `next build` ran in the build slot because the work order requires
+it before ready (exit 0). Carry-forwards above.
