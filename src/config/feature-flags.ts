@@ -122,6 +122,11 @@ const FeatureFlagDefinitionSchema = z
     description: z.string().trim().min(1),
     risk: z.enum(flagRiskLevels),
     dirties: z.array(z.enum(flagDirtyKinds)),
+    /**
+     * `"off"`: the flag may only be turned off, never on again (spec 012b §2.5,
+     * `catalogue.placeholder_window`, §13 Q6).
+     */
+    oneWay: z.literal("off").optional(),
   })
   .strict()
   .superRefine((flag, context) => {
@@ -347,6 +352,7 @@ const REGISTRY = [
       "Placeholder products may be retired, removed from a country and renamed freely while on, and a publish may remove their URLs (spec 012b). Admin only, one way: turned off when the site opens to search engines, never on again.",
     risk: "high",
     dirties: [],
+    oneWay: "off",
   },
 ] as const satisfies readonly FeatureFlagDefinition[];
 

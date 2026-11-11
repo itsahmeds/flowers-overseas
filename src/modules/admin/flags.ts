@@ -83,7 +83,8 @@ export type FlagToggleRefusal =
   | "forbidden"
   | "mismatch"
   | "conflict"
-  | "not_seeded";
+  | "not_seeded"
+  | "one_way";
 
 export type FlagToggleResult =
   | {
@@ -312,6 +313,10 @@ export async function toggleFlag(
     if (!actor.roles.includes("admin"))
       return { ok: false, reason: "forbidden" };
     if (confirmKey !== key) return { ok: false, reason: "mismatch" };
+  }
+  // Spec 012b §2.5 (AC-16; TASK-297): a one-way flag is turned off once and never on again.
+  if (flag.oneWay === "off" && toggle.data.enabled) {
+    return { ok: false, reason: "one_way" };
   }
 
   const outcome = await deps.run(

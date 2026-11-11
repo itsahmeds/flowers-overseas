@@ -17,6 +17,7 @@ import { isCountryIso2 } from "@/config/countries";
 import {
   type FlagKey,
   type FlagScopeKind,
+  flagDefinition,
   isRegisteredFlagKey,
 } from "@/config/feature-flags";
 import {
@@ -56,6 +57,7 @@ const REFUSED = [
   "mismatch",
   "conflict",
   "not_seeded",
+  "one_way",
 ] as const;
 
 const ResultSchema = z.object({
@@ -117,6 +119,11 @@ const CONFIRM_BODY = {
   "risk.pay_pause": {
     on: "admin.flags.confirmBody.risk.pay_pause.on",
     off: "admin.flags.confirmBody.risk.pay_pause.off",
+  },
+  // Spec 012b §2.5 (TASK-297): one way; the page offers no Turn on once it is off.
+  "catalogue.placeholder_window": {
+    on: "admin.flags.confirmBody.catalogue.placeholder_window.on",
+    off: "admin.flags.confirmBody.catalogue.placeholder_window.off",
   },
 } as const satisfies Partial<
   Record<FlagKey, { readonly on: string; readonly off: string }>
@@ -183,6 +190,10 @@ function Toggle({
     onLabel: adminT("admin.flags.on"),
     offLabel: adminT("admin.flags.off"),
   };
+  // Spec 012b §2.5 (TASK-297): a one-way flag that is off has no control, only the reason.
+  if (flagDefinition(flag.key).oneWay === "off" && !value.enabled) {
+    return <AdminNote>{adminT("admin.flags.oneWayOff")}</AdminNote>;
+  }
   if (flag.risk === "high") {
     const body = confirmBodyFor(flag.key);
     if (body === undefined) return <AdminNote>{flag.key}</AdminNote>;

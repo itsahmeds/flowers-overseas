@@ -436,6 +436,12 @@
             "on": "Every new payment will be refused until you turn this off. Nothing is charged. Type the flag's name to confirm.",
             "off": "New payments will be taken again. Type the flag's name to confirm."
           }
+        },
+        "catalogue": {
+          "placeholder_window": {
+            "off": "Placeholder bouquets will be held to the same rules as real ones: once a product has been on sale in a live country it cannot be retired, taken off a country or renamed. This cannot be turned back on. Type the flag's name to confirm.",
+            "on": "This flag cannot be turned on again once it is off."
+          }
         }
       },
       "confirmField": "Flag name",
@@ -455,8 +461,10 @@
         "forbidden": "Only an admin can change a high-risk flag. Nothing changed.",
         "mismatch": "The name you typed does not match the flag. Nothing changed.",
         "conflict": "This flag changed since the page opened. Nothing changed; the current value is shown.",
-        "not_seeded": "This flag is not in the database. Nothing changed."
-      }
+        "not_seeded": "This flag is not in the database. Nothing changed.",
+        "one_way": "This flag can only be turned off, never on again. Nothing changed."
+      },
+      "oneWayOff": "Off for good. This flag is never turned on again."
     },
     "blog": {
       "rule": {
