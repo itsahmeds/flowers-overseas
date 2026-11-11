@@ -261,6 +261,8 @@ export {
   TierKeySchema,
 } from "./schemas";
 export { availability, isSaleable } from "./availability";
+// Spec 012b §2.3 (TASK-295): existence now, and what a publish would change.
+export { existenceDiff, existsNow, isStructuralPath } from "./existence";
 export { isProductIndexable } from "./read";
 export { lowestPriceInLast30Days } from "./pricing/history";
 export { quote, verifyQuote } from "./pricing/quote";

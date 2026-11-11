@@ -11,6 +11,7 @@ import {
   environment,
 } from "@/lib/env";
 import { cspEnforceState } from "@/lib/csp-state";
+import { runningManifest } from "@/lib/existence";
 import { healthResponse, reportCspEnforce } from "@/lib/health";
 import { fxSnapshotStatus } from "@/modules/catalog";
 import { searchIndexStats } from "@/modules/search";
@@ -50,5 +51,8 @@ export function GET(request: Request): Response {
     // Spec 045 §11 (TASK-401): the search index's age and size, read from the process's engine
     // without building it; still no database call.
     search: searchIndexStats(),
+    // Spec 012b §2.3, AC-5 (TASK-295): the SHA-256 of the URL set this build emitted, read from
+    // the manifest file the build wrote beside the server; still no database call.
+    existenceHash: runningManifest()?.existenceHash ?? null,
   });
 }

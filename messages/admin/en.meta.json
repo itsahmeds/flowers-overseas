@@ -834,6 +834,11 @@
     "reviewed": false,
     "sourceHash": "1239736b7e995480c178e84db349c1824d01227ac547a393c176a7ce4b7a4ee6"
   },
+  "admin.flags.description.catalogue.placeholder_window": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ed130021d74e06d5820c87efeb330e41f2f11f2ed7ceb57b879342eed808637a"
+  },
   "admin.flags.description.checkout.demo_guard": {
     "source": "human",
     "reviewed": false,

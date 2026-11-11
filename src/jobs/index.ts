@@ -286,6 +286,32 @@ export const BasketRemindersSendPayload = z
 export const PartnersContractRemindersPayload = z.object({}).strict();
 
 /**
+ * `catalogue.publish` (spec 012b §2.3, AC-7; TASK-295): one step of one publish run, then the next
+ * a minute later until it is finished; idempotent by run id. `addedUrls` travels with the job so
+ * that the step after `verified` can request each added URL once.
+ */
+export const CataloguePublishPayload = z
+  .object({
+    runId: z.uuid(),
+    addedUrls: z.array(z.string().regex(/^\/[^\s?#]*$/u)).max(20_000),
+  })
+  .strict();
+
+/**
+ * `cache.invalidate` (spec 012b §2.3 F1, AC-38; TASK-295): `invalidate()` with these tags, run by
+ * the tick, inside a request, where Next's `revalidatePath` works. A deployment's boot hands its
+ * `dataAsOf` tag set here, because `instrumentation.ts` runs outside any request.
+ */
+export const CacheInvalidatePayload = z
+  .object({
+    tags: z
+      .array(z.string().regex(/^[a-z]+(?::[A-Za-z0-9_-]+)*$/u))
+      .min(1)
+      .max(5_000),
+  })
+  .strict();
+
+/**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per
  * `singletonKey`, so a second enqueue for the same key while one waits is a no-op, while a job
  * already running may enqueue its own successor (a deferred offer, the next offer). `exclusive`:
@@ -410,6 +436,8 @@ export const REGISTERED_JOBS = {
     policy: "short",
     retryLimit: 3,
   },
+  "catalogue.publish": { version: 1, payload: CataloguePublishPayload },
+  "cache.invalidate": { version: 1, payload: CacheInvalidatePayload },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */

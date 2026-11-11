@@ -29,7 +29,7 @@ import {
 const REQUEST_ID = "3f2a1c64-9b7e-4d21-8f0a-5c6d7e8f9a0b";
 
 describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", () => {
-  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start, payments.monitor and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready, payouts.close, payouts.watch and payouts.statement_email, spec 018's three invoice jobs (TASK-342), spec 020a's notifications.resend (TASK-360) spec 030b's payments.balance_fetch and payments.balance_sweep (TASK-439) and partners.contract_reminders (TASK-442)", () => {
+  it("registers exactly the four queues the Binding names, spec 013's outbox.dispatch, payments.production_start, payments.monitor and webhook.process, spec 022a's order.close_sweep, spec 016's six routing jobs (TASK-328, TASK-329), spec 030a's payouts.prepaid_ready, payouts.close, payouts.watch and payouts.statement_email, spec 018's three invoice jobs (TASK-342), spec 020a's notifications.resend (TASK-360) spec 030b's payments.balance_fetch and payments.balance_sweep (TASK-439), partners.contract_reminders (TASK-442) and spec 012b's catalogue.publish and cache.invalidate (TASK-295)", () => {
     expect([...REGISTERED_JOB_NAMES].sort()).toEqual([
       // spec 025 (TASK-488, TASK-489): founder alerts.
       "alerts.daily_summary",
@@ -42,6 +42,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       // spec 034 (TASK-450): the basket reminder's scan and send.
       "basket-reminders.scan",
       "basket-reminders.send",
+      "cache.invalidate",
+      "catalogue.publish",
       "db.backup_verify",
       "invoice.email",
       "invoice.render",
@@ -149,7 +151,8 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(40);
+    // 40, plus spec 012b's `catalogue.publish` and `cache.invalidate` (TASK-295).
+    expect(new Set(JOB_NAMES).size).toBe(42);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

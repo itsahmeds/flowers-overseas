@@ -38,6 +38,12 @@ export async function register(): Promise<void> {
     const { primeCountryRegistry } =
       await import("./src/modules/geo/db/runtime");
     await primeCountryRegistry();
+    // Spec 012b §2.3 (TASK-295): verify the open publish run against this deployment and purge
+    // what changed while it built. Never during the build, and never blocking the boot.
+    if (!isBuildPhase()) {
+      const { bootPublish } = await import("./src/lib/publish-runtime");
+      void bootPublish();
+    }
   }
   if (process.env.NEXT_RUNTIME === "edge") {
     await import("./sentry.edge.config");

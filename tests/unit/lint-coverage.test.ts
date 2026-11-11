@@ -150,6 +150,7 @@ const SDK_TABLE: readonly {
       "scripts/orders-rotate-tracking.ts",
       "scripts/florists-demo-member.ts",
       "scripts/catalogue-parity-catalogue.ts",
+      "scripts/existence-manifest.ts",
     ],
   },
   {

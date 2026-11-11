@@ -93,6 +93,8 @@ export const SDK_ADAPTERS = [
     // same read-only transaction as `scripts/catalogue-parity.ts` (TASK-294).
     // `scripts/florists-demo-member.ts` is spec 011 §2's `pnpm florists:demo-member`, one
     // transaction over the direct URL that links or unlinks a demo florist member (TASK-214).
+    // `scripts/existence-manifest.ts` reads the database's `now()` once through
+    // `DATABASE_BUILD_URL` before `next build` (spec 012b §2.3 F1, TASK-295).
     files: [
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
@@ -105,6 +107,7 @@ export const SDK_ADAPTERS = [
       "scripts/orders-rotate-tracking.ts",
       "scripts/florists-demo-member.ts",
       "scripts/catalogue-parity-catalogue.ts",
+      "scripts/existence-manifest.ts",
     ],
     use: "src/lib/db.ts",
   },

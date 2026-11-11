@@ -358,6 +358,9 @@
           "gate": "Holds an order for your review before it goes to a florist when the fraud checks say so, and cancels it on a decisive signal. Off: every order is still checked and recorded, but none is held or cancelled.",
           "strict": "Stricter fraud checks: an order is held from a lower score, and every first order above the strict amount waits for your review.",
           "pay_pause": "Refuses every new payment while on. Nothing is charged; buyers see that payments are not available right now."
+        },
+        "catalogue": {
+          "placeholder_window": "Lets placeholder bouquets be retired, removed and renamed freely before the site opens to search engines. Admin only. It is turned off once, when indexing opens, and never on again."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
