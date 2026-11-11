@@ -216,8 +216,9 @@ describe("the fetched snapshot is inlined at build, not read at runtime (AC-31)"
     // `env` in next.config replaces the literal member access `process.env.FX_BUILD_SNAPSHOT` in
     // the bundle; any other spelling (a destructure, a computed key) would be read at runtime,
     // where the running container has no such variable and would serve the committed snapshot.
-    expect(read("next.config.ts")).toContain(
-      'env: { FX_BUILD_SNAPSHOT: process.env.FX_BUILD_SNAPSHOT ?? "" }',
+    // The `env` block also inlines the GA4 measurement id (spec 023 AC-5; TASK-492).
+    expect(read("next.config.ts")).toMatch(
+      /env: \{\s*FX_BUILD_SNAPSHOT: process\.env\.FX_BUILD_SNAPSHOT \?\? "",/u,
     );
     expect(read("src/modules/catalog/static/index.ts")).toContain(
       "resolveBundledFx(process.env.FX_BUILD_SNAPSHOT, FX_SNAPSHOT)",

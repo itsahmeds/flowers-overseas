@@ -68,6 +68,8 @@ describe("scripts/build.ts (AC-30, AC-31)", () => {
     expect(ecbRequests).toBe(1);
     expect(lines).toEqual([
       '{"msg":"fx.snapshot","source":"ecb-build","fx_as_of":"2026-10-02"}',
+      // TASK-294's second build step: no build database login here, so the repository file.
+      "country-registry: the repository file (no build database login for this environment)",
     ]);
     expect(spawnSync).toHaveBeenCalledTimes(1);
     const [command, args, options] = spawnSync.mock.calls[0] as unknown as [

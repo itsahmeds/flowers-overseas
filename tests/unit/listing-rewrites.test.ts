@@ -261,9 +261,10 @@ describe("the listing rewrite (TASK-170)", () => {
     expect(source).toMatch(
       /import \{[^}]*\blistingRewriteRules\b[^}]*\} from "\.\/src\/lib\/listing-rewrites"/u,
     );
-    // First in the list; the product rules follow (spec 009 AC-37, `product-script-budget.test.ts`).
+    // First after the two-segment search rule (spec 045, TASK-402); the product rules follow
+    // (spec 009 AC-37, `product-script-budget.test.ts`).
     expect(source).toMatch(
-      /beforeFiles:\s*\[\s*\.\.\.listingRewriteRules\(\),/u,
+      /beforeFiles:\s*\[(?:\s*\/\/[^\n]*)*\s*\.\.\.searchRewriteRules\(\),\s*\.\.\.listingRewriteRules\(\),/u,
     );
   });
 });
