@@ -6,7 +6,7 @@ lawyer's review is recommended, not blocking.
 
 | | |
 |---|---|
-| Processing | A signed-in buyer keeps a recipient's delivery details in their account to send flowers to the same person again without retyping them (`saved_recipient`, migration `0047_buyer_account`) |
+| Processing | A signed-in buyer keeps a recipient's delivery details in their account to send flowers to the same person again without retyping them (`saved_recipient`, migration `0045_buyer_account`) |
 | Controller | Flowers Overseas (the entity in `src/config/company.ts`) |
 | Data subjects | Recipients of orders: third parties who did not place the order |
 | Data | Full name, phone number, address lines, postcode, city, country, the date the copy was last used. **Never** the card message, the delivery note, the type of place (hospital, funeral home, cemetery and the others), a ward or room, or an email address |

@@ -1,8 +1,8 @@
--- 0047_buyer_account: the buyer account's details, preferences, saved recipients and occasion
+-- 0045_buyer_account: the buyer account's details, preferences, saved recipients and occasion
 -- reminders (spec 018 §14 A-founder-2026-10-22 C.7.2, C.7.3, C.7.4, C.11; AC-53, AC-54, AC-55,
 -- AC-56 table half; TASK-352).
 --
--- Numbered 0047 by the orchestrator (2026-11-11): 0045 and 0046 are held for other builders. It
+-- Numbered 0045 by the orchestrator (2026-11-11; first numbered 0047, renumbered at merge). It
 -- follows this spec's first migration (`0021_post_purchase`, TASK-337) and precedes
 -- `NNNN_privacy_requests` (TASK-345).
 --
@@ -27,7 +27,7 @@
 --      `buyer_account_inactive` (730 days, pseudonymise; its sweep step is TASK-345's).
 --   F. Flags `account.recipients` and `account.reminders`, global, default off.
 --
--- Rollback: `0047_buyer_account.down.sql`, which refuses with `BUYER_ACCOUNT_DATA_EXISTS` once a
+-- Rollback: `0045_buyer_account.down.sql`, which refuses with `BUYER_ACCOUNT_DATA_EXISTS` once a
 -- buyer has saved a recipient, a reminder, a preference or a reminder consent (C.11: from then
 -- on, a forward fix).
 

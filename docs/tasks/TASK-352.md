@@ -33,7 +33,7 @@ One dated bullet per `/review`, newest last.
 _None yet._
 - 2026-11-08 (from TASK-344, PR 503): `customer.last_signed_in_at` shipped in migration `0036_buyer_sign_in`; `NNNN_buyer_account` adds only the other four `customer` columns of C.11, and its down file must not drop `last_signed_in_at`.
 - 2026-11-11 (TASK-352, PR 540, left open by the implementer):
-  - **Migration number.** The file is `0047_buyer_account` (orchestrator's number). Until 0045 and 0046 merge, `pnpm db:check` and the migration runner refuse the set (`version 0047 does not continue the sequence (expected 0045)`), so CI's db:check and integration jobs are red on this PR alone. If 0045/0046 never land, renumber to the next free version (file names, header comment, `tests/fixtures/schema-foreign-keys.ts`, and the `--to 0046` of the rollback test in `tests/integration/buyer-account.test.ts`). Locally the suites ran with two empty placeholder migrations 0045/0046 that were never committed.
+  - **Migration number.** Built as `0047_buyer_account`; renumbered to `0045` by the orchestrator at merge (2026-11-11), since TASK-494 needed no migration. The rollback test now rolls back `--to 0044`.
   - **`buyer_account_inactive`** is seeded (730 days, pseudonymise) with no sweep handler: the sweep reports it `no_handler` until TASK-345 adds C.9's inactive-account step.
   - **Checkout seam.** `buyerCheckoutProfile(request)` and `takeSavedRecipientForCheckout(request, id)` live in `src/modules/customers/checkout-profile.ts` (imported by path, not through the barrel, so the barrel stays free of the sign-in surface). R1 to R4 are TASK-419's.
   - **Cookie register.** The details page now writes `fo_currency` from the server (on the `no-store` save response only); `src/config/cookies.ts` still says `writer: "browser"`. The register and RoPA rows for the account, saved recipients and preferences are TASK-346's (C.16).
@@ -53,7 +53,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-- 2026-11-11: migration 0047 + down, mirror, RLS classes, flags, sweep step, module (`buyer-account.ts`, `checkout-profile.ts`), details and recipients pages, save box on the order detail, keys; draft PR 540.
+- 2026-11-11: migration 0045 + down, mirror, RLS classes, flags, sweep step, module (`buyer-account.ts`, `checkout-profile.ts`), details and recipients pages, save box on the order detail, keys; draft PR 540.
 - 2026-11-11: integration suite (19 tests) and unit tests green on scratch PG16; DSAR runbook SQL, LIA draft; rebased on main 57068da04; clean-env build green in the slot; ready.
 
 ## Result
@@ -61,7 +61,7 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-PR 540: migration `0047_buyer_account` with a guarded rollback (`BUYER_ACCOUNT_DATA_EXISTS`); the four
+PR 540: migration `0045_buyer_account` with a guarded rollback (`BUYER_ACCOUNT_DATA_EXISTS`); the four
 `customer` columns, `saved_recipient` (C.11's columns only, 20 per customer by a serialised constraint
 trigger), `occasion_reminder` (calendar and lead checks, 50 per customer), customer-scoped RLS, three
 retention rows, two flags off; the buyer update guard now also pins the reminder columns and

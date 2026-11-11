@@ -1,6 +1,6 @@
 /**
  * Spec 018 §14 A-founder-2026-10-22 row A against a migrated PG16 (T-53, T-54, T-55, T-61; AC-53,
- * AC-54, AC-55, AC-61; TASK-352): migration `0047_buyer_account` (its tables, columns, checks,
+ * AC-54, AC-55, AC-61; TASK-352): migration `0045_buyer_account` (its tables, columns, checks,
  * limits, RLS, retention and flag rows, and its guarded rollback), `saveDetails` and the buyer's
  * update guard, `saveRecipientFromOrder` by place kind and at the 21st save, `removeSavedRecipient`
  * and `markSavedRecipientUsed` under two customers and `public`, the `saved_recipient` sweep step
@@ -150,7 +150,7 @@ async function savedRow(
 describe.skipIf(server.url === undefined)(
   "spec 018 row A on a migrated database (TASK-352)",
   () => {
-    describe("0047's schema (C.11)", () => {
+    describe("0045's schema (C.11)", () => {
       it("saved_recipient has exactly C.11's columns: no card message, note, place kind or email (AC-54)", async () => {
         const columns = await db!.sql<{ column_name: string }[]>`
           SELECT column_name FROM information_schema.columns
@@ -620,14 +620,14 @@ describe.skipIf(server.url === undefined)(
             return who;
           });
           await expect(
-            runner(db!.url, ["--down", "--to", "0046"]),
+            runner(db!.url, ["--down", "--to", "0044"]),
           ).rejects.toThrow(/BUYER_ACCOUNT_DATA_EXISTS/u);
           const [still] = await db!.sql<{ count: number }[]>`
           SELECT count(*)::int AS count FROM saved_recipient`;
           expect(still?.count).toBe(1);
           await db!
             .sql`DELETE FROM saved_recipient WHERE customer_id = ${anna.customerId}`;
-          await runner(db!.url, ["--down", "--to", "0046"]);
+          await runner(db!.url, ["--down", "--to", "0044"]);
           const [gone] = await db!.sql<
             { tables: number; columns: number; flags: number }[]
           >`

@@ -6,7 +6,7 @@
  * runner, which in production is the buyer's `customer` database context (`asCustomer` of the
  * account pages): `customer`, `"order"`, `recipient`, `saved_recipient` admit only rows whose
  * customer's `user_id` is the session's user, so another customer's id reads and deletes nothing.
- * The buyer's update guard (`0011`, widened by `0047`) refuses any change to the email, consent,
+ * The buyer's update guard (`0011`, widened by `0045`) refuses any change to the email, consent,
  * redaction or sign-in columns from a buyer session.
  *
  *  - `saveDetails`: name, phone (already E.164), country of residence, email language and currency.

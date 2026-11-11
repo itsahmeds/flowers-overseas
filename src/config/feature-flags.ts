@@ -178,7 +178,7 @@ const REGISTRY = [
     risk: "standard",
     dirties: [],
   },
-  // Spec 018 §14 A-founder-2026-10-22 C.7.3, C.7.4, C.11 (migration `0047_buyer_account`,
+  // Spec 018 §14 A-founder-2026-10-22 C.7.3, C.7.4, C.11 (migration `0045_buyer_account`,
   // TASK-352): saved recipients and occasion reminders, each global and off. Every route they
   // gate is `noindex`, `no-store`, so neither dirties a page.
   {

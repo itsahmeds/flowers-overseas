@@ -109,7 +109,7 @@ export const customer = pgTable(
      */
     lastSignedInAt: timestamp("last_signed_in_at", { withTimezone: true }),
     /**
-     * Spec 018 §14 C.7.2, C.11 (migration `0047_buyer_account`, TASK-352): the language of the
+     * Spec 018 §14 C.7.2, C.11 (migration `0045_buyer_account`, TASK-352): the language of the
      * emails no order carries, and the buyer's currency. Neither redirects or changes a URL.
      */
     preferredLocale: text("preferred_locale").references(() => locale.code, {
@@ -262,7 +262,7 @@ export const recipientAddress = pgTable(
 );
 
 /* -------------------------------------------------------------------------- */
-/* saved_recipient, occasion_reminder (spec 018 §14 C.11; `0047`, TASK-352)    */
+/* saved_recipient, occasion_reminder (spec 018 §14 C.11; `0045`, TASK-352)    */
 /* -------------------------------------------------------------------------- */
 
 /** C.7.3: at most this many saved recipients per customer (`SAVED_RECIPIENT_LIMIT`). */

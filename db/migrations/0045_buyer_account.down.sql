@@ -1,4 +1,4 @@
--- Rollback of 0047_buyer_account (spec 018 §14 A-founder-2026-10-22 C.11 "Rollback"; TASK-352).
+-- Rollback of 0045_buyer_account (spec 018 §14 A-founder-2026-10-22 C.11 "Rollback"; TASK-352).
 --
 -- Pre-production only. Refuses with BUYER_ACCOUNT_DATA_EXISTS, changing nothing, once any buyer
 -- has saved a recipient, a reminder, a preference or a reminder consent: from then on this is a
