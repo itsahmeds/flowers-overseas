@@ -12,14 +12,14 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +28 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +30 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +133 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +134 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | `unit/account-details-form.test.ts` |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/checkout-discounts.test.tsx` +2 |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +50 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +52 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +149 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +25 |
@@ -89,6 +89,7 @@ task actually touches.
 | `risk/disposable-domains.ts` | The disposable email domains: a | 021 |
 | `risk/relay-allowlist.ts` | Privacy relay domains | 021 |
 | `routing.ts` | The routing rules' numbers (spec 016 §5.2… | 016 |
+| `sanctions.ts` | Destinations the go-live preflight refuses… | 012 |
 | `search.ts` | Site search's numbers and word lists | 045 |
 | `site-links.ts` | Site-link registry | 004 |
 | `trending.ts` | The florists' picks the "Most sent this week"… | 004 |
@@ -254,6 +255,10 @@ task actually touches.
 | `admin/(signed-in)/catalogue/products/new/page.tsx` | GET /admin/catalogue/products/new: a new… | 012 |
 | `admin/(signed-in)/catalogue/products/page.tsx` | GET /admin/catalogue/products: every product,… | 012 |
 | `admin/(signed-in)/catalogue/products/view.tsx` | The product editor's shared pieces: the outcome… | 012 |
+| `admin/(signed-in)/countries/[iso2]/actions.ts` | POST /admin/countries/[iso2]: the go-live flip,… | 012 |
+| `admin/(signed-in)/countries/[iso2]/page.tsx` | GET /admin/countries/[iso2]: one country… | 012 |
+| `admin/(signed-in)/countries/page.tsx` | GET /admin/countries: every destination, its… | 012 |
+| `admin/(signed-in)/countries/status.tsx` | The country status chip and the country-page… | 012 |
 | `admin/(signed-in)/discounts/[id]/page.tsx` | GET /admin/discounts/[id]: one code, edit,… | 047 |
 | `admin/(signed-in)/discounts/actions.ts` | /admin/discounts actions, each guarded first | 047 |
 | `admin/(signed-in)/discounts/discount-form.tsx` | The discount code form island: fields,… | 047 |
@@ -462,8 +467,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 549 |
-| `tests/integration/` | 126 |
+| `tests/unit/` | 551 |
+| `tests/integration/` | 127 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |
