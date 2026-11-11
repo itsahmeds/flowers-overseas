@@ -67,6 +67,7 @@ import {
   AdminTimeline,
 } from "@/modules/ui/admin/AdminRecord";
 
+import { OrderRiskPanel } from "./risk-panel";
 import { AdminFrame } from "../../frame";
 import { CHIP_TONE, deliveryDay, formatOrderMoney, ModeChip } from "../view";
 import { highestSeq, OrderActionsPanel } from "./actions-panel";
@@ -273,6 +274,14 @@ export default async function AdminOrderPage({
         orderMoney(executor, order.orderId, session.timeZone, new Date()),
       )
     : null;
+
+  const riskPanel = await OrderRiskPanel({
+    orderId: order.orderId,
+    mode: order.mode,
+    status: order.status,
+    session,
+    requestId: actor.requestId,
+  });
 
   const zone = zoneCity(session.timeZone);
   const viewer = (iso: string, style: "time" | "dayMonthTimeSeconds") =>
@@ -666,15 +675,15 @@ export default async function AdminOrderPage({
         />
         <AdminRecordColumns
           aside={
-            actionsPanel === null ? (
-              summary
-            ) : (
-              <div className="grid gap-[16px]">
-                {/* On a phone a card without controls sits under the summary (TASK-361). */}
+            <div className="grid gap-[16px]">
+              {actionsPanel === null ? null : (
+                /* On a phone a card without controls sits under the summary (TASK-361). */
                 <div className="min-w-0 max-md:order-last">{actionsPanel}</div>
-                {summary}
-              </div>
-            )
+              )}
+              {summary}
+              {/* Spec 021 §5.3 (TASK-494): the Risk card, under Summary. */}
+              {riskPanel}
+            </div>
           }
           main={
             <>

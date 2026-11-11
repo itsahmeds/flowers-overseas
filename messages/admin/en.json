@@ -30,7 +30,8 @@
       "payouts": "Payouts",
       "discounts": "Discounts",
       "finance": "Finance",
-      "basketReminders": "Basket emails"
+      "basketReminders": "Basket emails",
+      "risk": "Risk"
     },
     "roles": {
       "admin": "admin",
@@ -2199,6 +2200,259 @@
       "off": "Basket emails are off.",
       "paused": "Basket emails were paused automatically on {date} because too many were marked as spam or bounced.",
       "pausedHint": "Turn them back on in Flags once the cause is fixed."
+    },
+    "risk": {
+      "title": "Risk review",
+      "summary": "{count, plural, one {# open} other {# open}} · soonest deadline first",
+      "column": {
+        "order": "Order",
+        "placed": "Placed ({zone})",
+        "delivery": "Delivery (local)",
+        "total": "Total",
+        "score": "Score",
+        "signals": "Signals",
+        "deadline": "Decide by ({zone})",
+        "recommended": "Recommended",
+        "decided": "Decided ({zone})",
+        "outcome": "Outcome",
+        "by": "By",
+        "reason": "Reason"
+      },
+      "recommendation": {
+        "approve": "Approve",
+        "cancel": "Cancel",
+        "refund": "Refund"
+      },
+      "left": {
+        "hours": "{hours} h {minutes} min left",
+        "minutes": "{minutes} min left",
+        "passed": "Deciding now: deadline passed",
+        "none": "No deadline"
+      },
+      "empty": {
+        "title": "Nothing to review",
+        "body": "Held orders appear here within a minute of payment."
+      },
+      "shadow": "Checks are recorded only: risk.gate is off, so nothing is held. Turn it on in Flags.",
+      "shadowLink": "Flags",
+      "decidedSummary": "Decided in the last 7 days ({count})",
+      "decidedEmpty": "Nothing decided in the last 7 days.",
+      "outcome": {
+        "open": "Open",
+        "approved": "Approved",
+        "auto_released": "Released at the deadline",
+        "cancelled": "Cancelled and refunded",
+        "auto_cancelled": "Cancelled at the deadline",
+        "auto_refunded": "Refunded at the deadline",
+        "superseded": "Closed without action"
+      },
+      "automatic": "automatic",
+      "reason": {
+        "looks_genuine": "Looks genuine",
+        "buyer_contacted": "Spoke to the buyer",
+        "card_testing": "Card testing",
+        "stolen_card_suspected": "Card looks stolen",
+        "blocklist_match": "Matches the blocklist",
+        "efw": "Card network warning",
+        "deadline_default": "Deadline default",
+        "superseded": "The order changed first",
+        "other": "Other"
+      },
+      "points": {
+        "hold": "Always holds",
+        "cancel": "Cancels"
+      },
+      "detail": {
+        "back": "Risk review",
+        "chipPre": "Held before routing",
+        "chipPost": "After routing",
+        "placed": "Placed {date} ({zone})",
+        "opened": "Review opened {date} ({zone})",
+        "whyHeld": "Why it is held",
+        "whyOpen": "Why it is open",
+        "score": "Score",
+        "scoreValue": "{score} / 100",
+        "high": "high",
+        "scoreNote": "Held at 40 or more, or by any signal that always holds. Card, buyer and delivery in different countries is never counted.",
+        "radar": "Radar",
+        "radarLevel": "Radar risk level",
+        "radarScore": "Radar risk score",
+        "radarOutcome": "Radar outcome",
+        "threeDs": "3D Secure",
+        "threeDsShift": "Authenticated: liability shift",
+        "threeDsNoShift": "Not authenticated: no liability shift",
+        "notReported": "Not reported",
+        "rules": "Rules",
+        "rulesValue": "Version {version}, assessed {date} ({zone})",
+        "buyer": "Buyer",
+        "buyerEmail": "Email",
+        "buyerName": "Name",
+        "buyerLogged": "Opening this review is recorded in the audit log.",
+        "buyerHidden": "Hidden for your role. Admins with orders.view_pii can see the buyer's email and name.",
+        "decide": "Decide",
+        "decideBy": "Decide by {date} ({zone})",
+        "decideLocal": "{left} · {local} at the destination ({destZone})",
+        "recommended": {
+          "approve": "Recommended: approve",
+          "cancel": "Recommended: cancel",
+          "refund": "Recommended: refund"
+        },
+        "defaultRelease": "At the deadline with no decision: release to florists (liability shift, and a score under 70).",
+        "defaultCancel": "At the deadline with no decision: cancel and refund in full, without blocking (no liability shift, or a score of 70 or more).",
+        "noDeadline": "No deadline",
+        "noDeadlineNote": "being made, so nothing happens on its own",
+        "postNote": "A card network warning arrived after our florist started making the bouquet. Refund from the order page if you choose to; otherwise keep the evidence pack ready for a dispute.",
+        "postOpen": "Open the order to refund",
+        "blockUnavailable": "Not available",
+        "blockAdminsOnly": "Admins only.",
+        "decided": "Decided",
+        "closed": "Closed",
+        "decidedPerson": "{outcome} by {name} on {date} ({zone}). Reason: {reason}.",
+        "decidedAuto": "{outcome} automatically, {date} ({zone}).",
+        "closedLine": "Closed without action on {date} ({zone}): the order changed before anyone decided. Nothing more to do here.",
+        "outcome": "Outcome",
+        "orderNow": "Order now",
+        "summary": "Summary",
+        "mode": "Mode",
+        "status": "Status",
+        "destination": "Destination",
+        "delivery": "Delivery",
+        "deliveryValue": "{date} (local)",
+        "city": "City",
+        "total": "Total",
+        "openOrder": "Open the order and its timeline"
+      },
+      "action": {
+        "approve": "Approve",
+        "cancel": "Cancel and refund",
+        "cancel_block": "Cancel, refund and block",
+        "pending": {
+          "approve": "Approving…",
+          "cancel": "Cancelling…",
+          "cancel_block": "Cancelling…"
+        }
+      },
+      "dialog": {
+        "why": "Why",
+        "whatHappens": "What happens",
+        "keep": "Keep reviewing",
+        "close": "Close",
+        "approveGo": "The order goes to florists now, as any paid order does.",
+        "approveNoRefund": "No refund. The buyer notices nothing.",
+        "refunded": "The buyer is refunded {amount} in full, to the card or wallet they paid with.",
+        "refundedFraud": "The buyer is refunded {amount} in full, to the card or wallet they paid with. Stripe is told the payment was fraudulent, which adds the card and email to Radar's block lists.",
+        "buyerEmail": "The buyer receives the cancellation email:",
+        "buyerLine": "We could not deliver this order. We have refunded {amount}.",
+        "notBlocked": "Nothing is offered to a florist. The email and card are not blocked.",
+        "blocked": "This email and this card go on our blocklist for 12 months: a later order with either is refused at the pay step, with no payment taken."
+      },
+      "result": {
+        "approved": "Approved. The order goes to florists now.",
+        "cancelled": "Cancelled. A refund of {amount} is on its way.",
+        "cancelled_blocked": "Cancelled and blocked. A refund of {amount} is on its way.",
+        "already_decided": "This review was already decided. Nothing was done.",
+        "superseded": "The order changed while you were deciding. The review is closed and nothing else was done.",
+        "refused": "That did not go through. Nothing was done."
+      },
+      "panel": {
+        "title": "Risk",
+        "lastCheck": "Last check",
+        "pass": "Passed",
+        "hold": "Held",
+        "cancel": "Cancelled",
+        "shadow": {
+          "pass": "Recorded only: would have passed",
+          "hold": "Recorded only: would have held",
+          "cancel": "Recorded only: would have cancelled"
+        },
+        "shadowNote": "risk.gate is off, so the order went on as usual",
+        "meta": "{date} · rules version {version}",
+        "review": "Review",
+        "reviewNone": "None",
+        "reviewOpen": "Open: decide by {date}",
+        "reviewOpenNoDeadline": "Open: no deadline",
+        "reviewDecided": "{outcome}, {date}",
+        "notChecked": "Not checked yet: the order is not paid",
+        "demo": "Demo order: never checked"
+      },
+      "signal": {
+        "S1": {
+          "label": "Radar: elevated risk",
+          "why": "Stripe Radar rated this payment elevated."
+        },
+        "S1h": {
+          "label": "Radar: highest risk",
+          "why": "Stripe Radar rated this payment highest, and it still went through."
+        },
+        "S2": {
+          "label": "Radar review rule",
+          "why": "One of our Radar review rules fired on this payment."
+        },
+        "S3": {
+          "label": "No 3D Secure liability shift",
+          "why": "The bank did not authenticate the payment, so a fraud dispute would cost us."
+        },
+        "S4": {
+          "label": "Large first order",
+          "why": "A first order with this email, at or above the first-order amount."
+        },
+        "S5": {
+          "label": "Total at the review band",
+          "why": "Every order at or above the review amount is decided by a person."
+        },
+        "S6": {
+          "label": "Same-day first order",
+          "why": "A first order with this email, for delivery today."
+        },
+        "S7": {
+          "label": "3 or more paid orders for this email",
+          "why": "This email paid for 3 or more orders in the last 24 hours."
+        },
+        "S8": {
+          "label": "4 or more addresses for this email",
+          "why": "This email sent to 4 or more different addresses in the last 7 days."
+        },
+        "S9": {
+          "label": "3 or more cards for this email",
+          "why": "Three or more different cards paid with this email in the last 7 days."
+        },
+        "S10": {
+          "label": "3 or more emails for this card",
+          "why": "This card paid under 3 or more different emails in the last 7 days."
+        },
+        "S11": {
+          "label": "3 or more buyers for this address",
+          "why": "Three or more different buyers sent to this address in the last 7 days."
+        },
+        "S12": {
+          "label": "3 or more declined tries",
+          "why": "The payment was declined 3 or more times before it went through."
+        },
+        "S13": {
+          "label": "Card from a third country",
+          "why": "The card was issued outside both the buyer's country and the destination. It counts only beside another signal."
+        },
+        "S14": {
+          "label": "Throwaway email",
+          "why": "The email's domain is on the disposable list."
+        },
+        "S15": {
+          "label": "Card message asks for money",
+          "why": "The card message or signature reads like a payment, transfer, crypto or gift card request."
+        },
+        "S16": {
+          "label": "Radar facts missing",
+          "why": "We could not read the payment's Radar facts, so a person decides."
+        },
+        "D1": {
+          "label": "Matches the blocklist",
+          "why": "This email or card is on our blocklist."
+        },
+        "D2": {
+          "label": "Card network warning",
+          "why": "The card's issuer reported this payment as possible fraud."
+        }
+      }
     }
   },
   "emails": {

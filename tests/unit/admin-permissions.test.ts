@@ -49,6 +49,11 @@ const MATRIX: Record<string, readonly string[]> = {
   // spec 030b §13 Q15 (TASK-442): contracts are admin only.
   "partner.contract.view": ["admin"],
   "partner.contract.write": ["admin"],
+  // spec 021 §5.2 "Permissions" (TASK-494, AC-22): the queue admin and ops; blocking and the
+  // evidence pack admin only.
+  "risk.review": ["admin", "ops"],
+  "risk.blocklist": ["admin"],
+  "risk.evidence": ["admin"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

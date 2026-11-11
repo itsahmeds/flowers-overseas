@@ -110,6 +110,16 @@ export const VELOCITY = {
 } as const;
 /** On a peak day, S7, S8 and S11 need this many more (§13 Q11). */
 export const PEAK_DAY_EXTRA = 2;
+/**
+ * The occasions that make a delivery date a peak day (§13 Q11: "Mother's Day, Women's Day,
+ * Valentine's"), read against the destination's occasion calendar (spec 007). Keys of spec 005's
+ * taxonomy; a country without one of them simply has no such peak.
+ */
+export const PEAK_OCCASION_KEYS = [
+  "mothers_day",
+  "womens_day",
+  "valentines",
+] as const;
 /** S12: declined attempts on this order before it was paid. */
 export const S12_DECLINES = 3;
 

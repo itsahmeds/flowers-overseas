@@ -8138,5 +8138,915 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "c3cd2ef5ba42d075910fec390c90cc14964479483be7680c06a8b137082c5c58"
+  },
+  "admin.nav.risk": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0711a8d636e4c068ae59fa80c03ad68e7bd9fe473c1f9248fd2cf3716e3fb715"
+  },
+  "admin.risk.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "75c08c2234e926535b02f455664078d8a47b0aad77145275def2cf79bd3b77a6"
+  },
+  "admin.risk.summary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19e4766dbd5a8d2b58f61896fffad4e4af58afd53eb80471a28c2bc1116892b7"
+  },
+  "admin.risk.column.order": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
+  },
+  "admin.risk.column.placed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0fba2f93bd1b57ba6ed05ea4ff8a7bce490e447eee1ecfe965e005f1ca17a7ff"
+  },
+  "admin.risk.column.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8ad01a2ec4283aa8c2384fdb45881854f7598394e9f5ae51060497411f0f571f"
+  },
+  "admin.risk.column.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "admin.risk.column.score": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "38e5a46cbc5ad32842ac60a4f1425ac9b31c06bac685f446a06ab72b87de31ed"
+  },
+  "admin.risk.column.signals": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "88b01c8a4bff9a08b6b56b8de43beb07205956d64d1c58eff683de7eaf3645e5"
+  },
+  "admin.risk.column.deadline": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "557a56ffa138b8eb96e135a5ef96bcf6afe8d6f730e1a6c02205bd6b0a4148d8"
+  },
+  "admin.risk.column.recommended": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d70604e8430461372849bbd123d85771e11423870a507e8fa4650a7e9a5a50ef"
+  },
+  "admin.risk.column.decided": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e89ffef26bb2da5d0daf886f1ffcb4ae7ef1c456ce1a662e0dadfb85dc72156f"
+  },
+  "admin.risk.column.outcome": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e80abb5b14656d4eed8fd93705fd4c774d7653b05162763770bd23f1755db1a"
+  },
+  "admin.risk.column.by": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "125466b821c6448a68d22c6ddbdbbc921f6b174a620f0fcbc3d219afd7d22b47"
+  },
+  "admin.risk.column.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.risk.recommendation.approve": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6007acbe30b2cd98703e83350ea665c06009fcd51f26dd73b309294235f45f21"
+  },
+  "admin.risk.recommendation.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.risk.recommendation.refund": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b37bd35081fcbc6676dcfdfa7a7389f70be9ed70f7d50f5163708e2fafe65f8"
+  },
+  "admin.risk.left.hours": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ddb3bb31bdfd47fe53724e2fa87d068fb8293ec58f2ba0a951ac97886b0bdae6"
+  },
+  "admin.risk.left.minutes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2548469bbeb39346f1c93bee0054fc4c58a30d5aa3d69e6cc004884f6a06e860"
+  },
+  "admin.risk.left.passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5c52ce02cba9aa96dd766fe567fde25e896385e27fd8531738c2398811cfd2a9"
+  },
+  "admin.risk.left.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cd52ba54a4c109bde4c7b1c1e8ce6aeacfdb855a0f1ff63cc2335bb0e462dc07"
+  },
+  "admin.risk.empty.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1a60b0977a4f386c50944ffdc60bec9f902f0d2d1ec72802993f851904acb555"
+  },
+  "admin.risk.empty.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7500701e9bc13bfbe6d86f97765da046c9c1cc3114c503bd836709784b7caf93"
+  },
+  "admin.risk.shadow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5afa33f354ac053c75bc5454898cbb3e74d9dac84f5f60f84d63dca8a4bf7cb"
+  },
+  "admin.risk.shadowLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"
+  },
+  "admin.risk.decidedSummary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7aece0dbcdc81318aa573497d1ff2a4f6c1a44f12575824f9c5b854efe290178"
+  },
+  "admin.risk.decidedEmpty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e30d14f3f9b2d79ddbd4d247166d5f0bdfb3d12ffa133c1d75fbe05e4dc68bb"
+  },
+  "admin.risk.outcome.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "admin.risk.outcome.approved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "87b42e40c2a290e01d87b721bf381c3c5e259d1eb0a4660e41fdbf8bc73f7ddd"
+  },
+  "admin.risk.outcome.auto_released": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99eb1d465f1b36cf68fc84c600cada939093a7493827d3d725e2b94bcddd2535"
+  },
+  "admin.risk.outcome.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e4de18ac850231f730fb2c11b76b3f64686995e58a742cc862b1cb8312dbc07"
+  },
+  "admin.risk.outcome.auto_cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d46dc7df71cdd00ec91543dc73f8b6faa3ade64b80d81360bd2da456d5a3ed5b"
+  },
+  "admin.risk.outcome.auto_refunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cb96bf89a6e6b9e94eb199681e2d17d4da13d4aac074cc2a3ae745c137dd244e"
+  },
+  "admin.risk.outcome.superseded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5c59c89a5f5eebf3282c4b9a6ee253fdfb9e169f4c89ba74cae16c1b6a714f16"
+  },
+  "admin.risk.automatic": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "53e0ff348c9be93a14d05757c5717681c1d9539bf600022d12495d406fedcc4e"
+  },
+  "admin.risk.reason.looks_genuine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c2df324f1a66fee0d37db1c58652f7a9306704694aa3f6a95d92039182840f41"
+  },
+  "admin.risk.reason.buyer_contacted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "47d3d87dc1175908d2e623b41a8d4b4602ab193def120003c14a9da7e9235b91"
+  },
+  "admin.risk.reason.card_testing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6a44f32c909dc075df5e1437917c68a9cde9003b98d94e410fd35c190a2400ea"
+  },
+  "admin.risk.reason.stolen_card_suspected": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2e8227f558ed99583d87442a1666891855a63db58324a85ca004cadc39a06483"
+  },
+  "admin.risk.reason.blocklist_match": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1cb1cd458a87167ac8974b1125a5bec1a430fafc585c384b3f376eed7cc7b84"
+  },
+  "admin.risk.reason.efw": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4bb30ba4f975c2729b1f3484ac9302a8b4428006b5c2060a34743b2c02de40f6"
+  },
+  "admin.risk.reason.deadline_default": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6a5f8da6c2ca4c757fced55a28c689c166c4ac8ae12dc81b1b9c8cfef032bb76"
+  },
+  "admin.risk.reason.superseded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "41be8086c09e6ded6fa3c420a233b510d2942c70dc9f50545ddf57b282d20483"
+  },
+  "admin.risk.reason.other": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
+  },
+  "admin.risk.points.hold": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a75c324e75216653ddb3c82d90ae7f2533fc8d2201da565cd38d1af3473b5ff7"
+  },
+  "admin.risk.points.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3dd428a7f6adfffa0edb65d7a3ad7a3be0dc78aa66b41eb951c52d384163f82"
+  },
+  "admin.risk.detail.back": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "75c08c2234e926535b02f455664078d8a47b0aad77145275def2cf79bd3b77a6"
+  },
+  "admin.risk.detail.chipPre": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3833764c668ff5522fb70d2e494750d54b66ccd53b7f651ac7000dd72a57c31e"
+  },
+  "admin.risk.detail.chipPost": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36f11c1c35b9f40130fa4b02172caaedf0624d13e23f7403148831a34e8b9edb"
+  },
+  "admin.risk.detail.placed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d474d483afd433fe6835650409852c031c8d32d64ac4123c2a68f8bc028cff45"
+  },
+  "admin.risk.detail.opened": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "698422b02469f7a211faafec2ce209a45f3bb674f6fbacf51c23acd093aa6975"
+  },
+  "admin.risk.detail.whyHeld": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "65fe75fa96495cf5e86c24dba73da12819b172c11df3647009d9ae9eb47fd129"
+  },
+  "admin.risk.detail.whyOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f6e11734ce54fa063fec1a37f63d716c6ab04d5696e77729d537ee3fb30ba8b0"
+  },
+  "admin.risk.detail.score": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "38e5a46cbc5ad32842ac60a4f1425ac9b31c06bac685f446a06ab72b87de31ed"
+  },
+  "admin.risk.detail.scoreValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aab9fef1f974e066277c8ff731d484258921593da4d86817a7e79f12fe76d3e0"
+  },
+  "admin.risk.detail.high": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6ef7c9b15ecdd69083724b84cfdc2100351963488b51b4ea2fcbddf493fbec94"
+  },
+  "admin.risk.detail.scoreNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aaea0633fa6b51489cc2c88f5a47a5097b8fabb4fc2c07ac82eb9e3c3fe2200a"
+  },
+  "admin.risk.detail.radar": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "524f83272866534594cd954f8be8216bbc92df1db0c64993050612c8cb3fb0fd"
+  },
+  "admin.risk.detail.radarLevel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8fb0d888b99691fbdc617fcad9cd3993a4b3802a683e6d1cbf7f0388083000a3"
+  },
+  "admin.risk.detail.radarScore": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99aad2944068845bb3510c5c17a00d0ea74bf43e30be6d6eab3f6c3eccb66bbf"
+  },
+  "admin.risk.detail.radarOutcome": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b9d10f66f157755ca1564656d3a17ed05e8b193ce497a8dd9f76a0fea8ae0639"
+  },
+  "admin.risk.detail.threeDs": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "59e7e3235869699fc6d029d45ead26244ec3d4ae23cbf8a2b87ba33ad76adf30"
+  },
+  "admin.risk.detail.threeDsShift": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc7022ae80d7f1f9c98f777dae1466f1e19cf4c216c024a004f69ab118b65fcb"
+  },
+  "admin.risk.detail.threeDsNoShift": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "523a27dfe706614844e9e16e118ca3ac06ac1667f48aa7c5f41cc0b2198c25d2"
+  },
+  "admin.risk.detail.notReported": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "adadface0166af24b309d83f8a85dd9a597127650808f7627cf8cf90e9b8a019"
+  },
+  "admin.risk.detail.rules": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4228aeb07c410ffc9d15b458bf7c2bf8d9dfa7af632f2c339e69f8cb54654da3"
+  },
+  "admin.risk.detail.rulesValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6a2900de26da337c1594547ade2737e6532deb9ba515583b280b6ff43a5305d6"
+  },
+  "admin.risk.detail.buyer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a2a54d668c45a20d0b4367e954c70654928409f6c569b0991afdbe66b70e6628"
+  },
+  "admin.risk.detail.buyerEmail": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "admin.risk.detail.buyerName": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "admin.risk.detail.buyerLogged": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9caa7331a1832312805aead2e415e5488797af27a876f2418944abf4774926e"
+  },
+  "admin.risk.detail.buyerHidden": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bcf8be099c671f04b650e79ba59a675977ad8d254590763927c831d58c5be5d9"
+  },
+  "admin.risk.detail.decide": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "30fddb9fe4315e8f420ce7dc22cd48ee96913b96ca85cc7c7f68bfffb21bcb70"
+  },
+  "admin.risk.detail.decideBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "42812f5e8df7b06253f8a34d6bafe1d6756ead0941f116f42a07fe651954b55e"
+  },
+  "admin.risk.detail.decideLocal": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ef572a01bc2399430589418877929537a5df635e4d8758dd99c5a03d991ff04b"
+  },
+  "admin.risk.detail.recommended.approve": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d4e620c83776d9721a91d36d52c8172cbea0081436f464da603256ad40933519"
+  },
+  "admin.risk.detail.recommended.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1cc5f1e9d583df7dd1248fa12c6df3527e1c43d529550f3c2e94ea6bd48faf0b"
+  },
+  "admin.risk.detail.recommended.refund": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "91252e239f2d69e56d1ab99c0b825ca4ff367bc2104b86e3f5dea914b6dfa48f"
+  },
+  "admin.risk.detail.defaultRelease": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "951a39ae1e3b5dd10ac7df026b4df1e3a51c843a872f8626f3f642595faa8023"
+  },
+  "admin.risk.detail.defaultCancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "894c29ae5faead4f08e241b6cf907efe00ff51a753aa3bcc010a5885ba43faff"
+  },
+  "admin.risk.detail.noDeadline": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cd52ba54a4c109bde4c7b1c1e8ce6aeacfdb855a0f1ff63cc2335bb0e462dc07"
+  },
+  "admin.risk.detail.noDeadlineNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "42d64f56e3e31dac564da6204664a83d7c2b941e858f7550004ac1f4522aeacd"
+  },
+  "admin.risk.detail.postNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31524c44eca08be39841e100cbb4c5af02d16922c18169869193d8edf6d4b854"
+  },
+  "admin.risk.detail.postOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4c6fc713d8a292048a7577fc8bdd36ae9b097f77f6e7d97954ebbd7495478f9a"
+  },
+  "admin.risk.detail.blockUnavailable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "67a926f7008e2b0e7f2b3f7a4b37597834830110be1d51138f425d6f3449bc09"
+  },
+  "admin.risk.detail.blockAdminsOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0ddc976b94f7bd36472ba3da6ed0a76411449729973733fd3c36544030798b0a"
+  },
+  "admin.risk.detail.decided": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "30ba702eee51c2a58e8237ce27c7d2caa308ce1341c50226149c40b1ea79d5df"
+  },
+  "admin.risk.detail.closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c21ead0614e7e1b70edb3759e1d19ca1e12e6036980d10bfb73052fb1a018efa"
+  },
+  "admin.risk.detail.decidedPerson": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99752dabdc8d2cce04b65a8b11dc9ae9448c0b9d0b4528e0f6346eaf64c11f1b"
+  },
+  "admin.risk.detail.decidedAuto": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "13ac6633b4058ed205a2bd28133454647b2acebdf79cbc494a55037f4b78f8d8"
+  },
+  "admin.risk.detail.closedLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7344848a5537029e52c4165d2856f5ce32e8611b28bde8cb70c1383600c22450"
+  },
+  "admin.risk.detail.outcome": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e80abb5b14656d4eed8fd93705fd4c774d7653b05162763770bd23f1755db1a"
+  },
+  "admin.risk.detail.orderNow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "375f3f3a5bcaa18fa2995deb7ec936cb31d27f1e3f4877d7cd61255662e8be53"
+  },
+  "admin.risk.detail.summary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e76a94ac8320d515375e625bef1829238b097ecbd33611b59eeefd4ffefebfb"
+  },
+  "admin.risk.detail.mode": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5e23ec6a300dc60a79641769017e16e9bf042cbd8fd0a54586a048ab9da972ff"
+  },
+  "admin.risk.detail.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.risk.detail.destination": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "293d404a500f5f9a149916d810ff4f4231bd5d6ecd25eb0f55a867e2095eca48"
+  },
+  "admin.risk.detail.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52bfe584a5fc450539e2aa651b990fa2415060492a243816ab2994292089c6fd"
+  },
+  "admin.risk.detail.deliveryValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3986ad5760243ee4e75c5a5133ab640619dc8286d3c773105b96952f6cb2726b"
+  },
+  "admin.risk.detail.city": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc33f73246f48295702f404001e74d56f14d2f82689b2816422dc1a4c2ec4fb2"
+  },
+  "admin.risk.detail.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "admin.risk.detail.openOrder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b8c8b41ae98ddc9731cc541b5a69fb8a760b2403a83bdf266aa8eea7e5b2a105"
+  },
+  "admin.risk.action.approve": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6007acbe30b2cd98703e83350ea665c06009fcd51f26dd73b309294235f45f21"
+  },
+  "admin.risk.action.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f95fe35ec83a255bb729f9bd01c07832b9c5f7ec419d9c42eb7bf1af8c387b17"
+  },
+  "admin.risk.action.cancel_block": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b27463b783e44657df0a0503e0086967ba2013d017aa2d716ba4fe7c64222a7e"
+  },
+  "admin.risk.action.pending.approve": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e99dcb0a97a2320d918759da7764db0150f7d4198018b700840cdb78cde90b2f"
+  },
+  "admin.risk.action.pending.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "91b104db05da1b2d48c57a5aa60128f660e6572f89835ec858f6eb25b8f4af0f"
+  },
+  "admin.risk.action.pending.cancel_block": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "91b104db05da1b2d48c57a5aa60128f660e6572f89835ec858f6eb25b8f4af0f"
+  },
+  "admin.risk.dialog.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d3ae14a50bfe463f804c73c9fd16e88c36bf5a0bf4a56f98ae696a91eb2de149"
+  },
+  "admin.risk.dialog.whatHappens": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "70fbb54bd5e6ff77ad448bae4307cccaab65d37717f72d5e6ebd307d903d28aa"
+  },
+  "admin.risk.dialog.keep": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "34411a1bde474b8b970fa70e63207be862a681492556993d0fb99031dcc78b0b"
+  },
+  "admin.risk.dialog.close": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed"
+  },
+  "admin.risk.dialog.approveGo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2f25adea65d32ff2a8cd5b2391be17e485d2cd81343ec4506d09ea5664c7643a"
+  },
+  "admin.risk.dialog.approveNoRefund": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a56e7f94dada70f6c419797c84d9a5968eeb80e5d0b7417045118f4bad20a22"
+  },
+  "admin.risk.dialog.refunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "82684341278ff658da4b16a130fa0bab8c48617725022f50ca72f8a4b3d60397"
+  },
+  "admin.risk.dialog.refundedFraud": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6bb1377a62e270cb6bd5e196ac5b39e5c01d049c0ed9546a4ecc060eb04e0894"
+  },
+  "admin.risk.dialog.buyerEmail": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c8ff5247444d8d734d85fc7a60269c9d8d4370dae094917e1434d251f31ef6dc"
+  },
+  "admin.risk.dialog.buyerLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dda3c0fb27c6f55f8098ec094e024c21f6cfbea249c430653a8316cd5b0db90d"
+  },
+  "admin.risk.dialog.notBlocked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "29a6f1be9d7be05ecf31364a14c46ffc1ec2308383ec0c52ad894988000120fc"
+  },
+  "admin.risk.dialog.blocked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d54ce15aa3f209937cfb5a9332496a9d31b0e0f6775c17ac7f393559fe353cd9"
+  },
+  "admin.risk.result.approved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0ff7027f3f9c1f8ad2dc89f8e48e31cf3a6564396d2eebab46d7ac0a00a0fd2d"
+  },
+  "admin.risk.result.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d477dfb88adb910c7371b9892f0372357fc4f62b8f4b196990d5926a6984369"
+  },
+  "admin.risk.result.cancelled_blocked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "93567377a18bd44d4d031ce5299b21421586f25e52a68e4e0fbd967f8bf7cc33"
+  },
+  "admin.risk.result.already_decided": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c31707e349f42305e8155f94d0e35503e101546916b40c9731eaf3ceb923cc3d"
+  },
+  "admin.risk.result.superseded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2a9cf0a4854c512cee3fc6ccabf95354a200b058fcc2162ecd4c5db91f4aa4de"
+  },
+  "admin.risk.result.refused": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48638695274f947f85041b8037391ee09074e3170ffc05202f538254cdb5cedd"
+  },
+  "admin.risk.panel.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0711a8d636e4c068ae59fa80c03ad68e7bd9fe473c1f9248fd2cf3716e3fb715"
+  },
+  "admin.risk.panel.lastCheck": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c982b23dfadd0a0077e562884415b2bfd238f9f7a0b323590b8f6695971efc68"
+  },
+  "admin.risk.panel.pass": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "436fe71bb9561f0596161c4d50c7b23327b4189acaf63dc89f4f9205b67a7528"
+  },
+  "admin.risk.panel.hold": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "85cd61f8c3c8a01e655e88062f7f60a33127b6947903765e9a2a41037d24936e"
+  },
+  "admin.risk.panel.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "admin.risk.panel.shadow.pass": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "918e115e2cabc5f1d62767e94af502b0e13b9e589384614544fa65eda668c9d5"
+  },
+  "admin.risk.panel.shadow.hold": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "553195c367a9e3926340078db0de0e844ce45c246e4066f122710d787b535a81"
+  },
+  "admin.risk.panel.shadow.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1fe38a83fc17877444e688ca4829dd915d305c05b8a8922208b3e00bec0e4bb9"
+  },
+  "admin.risk.panel.shadowNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c741a97e39844709ea1527a1e8d51e9c30013c1e0c4ab4c0233b74509cf58215"
+  },
+  "admin.risk.panel.meta": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "194ae8544983226bebdc6a55eace997d4e352fc869bb74d6c12d1bc7a45c6400"
+  },
+  "admin.risk.panel.review": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "admin.risk.panel.reviewNone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.risk.panel.reviewOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f20228e5a7fbd95cf0b364d3d0aff8cda73a3bd2c792f37a6dcf7d2349b5e46d"
+  },
+  "admin.risk.panel.reviewOpenNoDeadline": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9bba05f7b698ad40d9a1dcf97c01dfab100618c85680a9ba29c45b9a5896687c"
+  },
+  "admin.risk.panel.reviewDecided": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d9a6b60669dc279934c8234876ff8001e79b7fe2067173d63463eace22413fa9"
+  },
+  "admin.risk.panel.notChecked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f2bcfd308a89809171c2a008b5e8df7b00c899c89736ade9f06190fc3936b16d"
+  },
+  "admin.risk.panel.demo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7dbcc28220ccc31d94a79dde923d5aa0e08698fd1273f6709b72f1b484cc391"
+  },
+  "admin.risk.signal.S1.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "be98aaaac5d80d9c86d5ea87021bd006e74f74d61d57a358a57320493ec64945"
+  },
+  "admin.risk.signal.S1.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "948161bd37888dd5694f784255f8735e0209158487345deb4c360b5c0e587687"
+  },
+  "admin.risk.signal.S1h.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6bc62a822186bed12f1ec3d2967bd58491901879d82cdcf382cb3fae4c814002"
+  },
+  "admin.risk.signal.S1h.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "35c5bdf90a3db1c0c80c13637d2e71bd5531bfe8db73e4df21e527e4f6b2540e"
+  },
+  "admin.risk.signal.S2.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bab37910e526777caaffeec1e047c0ae01ddde5983aa436a04009511420d953a"
+  },
+  "admin.risk.signal.S2.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dfc6ac0508f4e09a6a749092fd649815edccb878ec80620cbc35368322f9abb1"
+  },
+  "admin.risk.signal.S3.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "05aff3aea144b38d28babb8566494eb32e7e72db096aae0b435ebfb65efdc2db"
+  },
+  "admin.risk.signal.S3.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "194d27f60ab70d5bc4dc812bbb836fa80d855301127c29b5b3d8e5916aa16909"
+  },
+  "admin.risk.signal.S4.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b0323138c15abb94eb4bb8bd5f48a29ffb320b8b6e77fdeaa434ac8a779f7bbf"
+  },
+  "admin.risk.signal.S4.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "75e2afedb904c9ac5cb9f65bf92f3db6f76fb7997fdfcb64906740b0fc370545"
+  },
+  "admin.risk.signal.S5.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5b41c92f52018049a0a67800093b340d550c5e907a4857b7a2a4541d237d207e"
+  },
+  "admin.risk.signal.S5.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "128652b043576c7d25cb9059f8845ec6f0fe822fd7f1ed06df5fdd51baf87236"
+  },
+  "admin.risk.signal.S6.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "88608623fcc963f03a8b7228c409b69995a78faa2d879f3dc10f1732dcd11888"
+  },
+  "admin.risk.signal.S6.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7aaf917d4faedaf1937650403fe48c1531b10b0be3bfaf3259bea61c9bebfd8d"
+  },
+  "admin.risk.signal.S7.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99b25112760fa83d89802f4c8c5baf1490f10bf1e2aaa62fb9cf716ccaf3f70c"
+  },
+  "admin.risk.signal.S7.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "78c736b064bdd3e8cba44d82de4637a7018a164c07013d73c2ce4d66c2797d1c"
+  },
+  "admin.risk.signal.S8.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7dfef58a0aeb58c44fad527ff85799d996685b236af8030fb6956ff3a9e052bb"
+  },
+  "admin.risk.signal.S8.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f7f25dfe0411c323421942d39ea33f1023a0bd9aa5c43fd7e7737cf3823225ba"
+  },
+  "admin.risk.signal.S9.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9a27eeddf5f662b22888a86763254e3d617e438fd7ebf98a06356e71da78acd1"
+  },
+  "admin.risk.signal.S9.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0ae523853842a3b878e8e114a7aace060806b05d43f8ddebb94b1984b6aebde8"
+  },
+  "admin.risk.signal.S10.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "09874dff9613dacea8e065936b5f10971b4d2e4c480d30e04bc71394ef814f23"
+  },
+  "admin.risk.signal.S10.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b71e88332f3e2915ec15fee2616268968b4fb9a4da396c9d88a897a503d0a564"
+  },
+  "admin.risk.signal.S11.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a96615cbffe00281a2fe9327b71e7b8d29f35d14ca73bc25b39104322a1cfc5"
+  },
+  "admin.risk.signal.S11.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "265b917c975b066178cc657434aab7d18d174b00dd20ef4e21a7663eaa486b46"
+  },
+  "admin.risk.signal.S12.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2f7d71b9a50821122c7483923de2a614d4eaf5a5e4ba45a3106c32ec1c7f8936"
+  },
+  "admin.risk.signal.S12.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9ed443c8be3155c044f858735566696d6b98afd49ce200ce472dbed26b09c1dc"
+  },
+  "admin.risk.signal.S13.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3d5e888d3ec3c7d2a0a9197c226cd08d2f532da509efbfa39bdcbe367005ab0c"
+  },
+  "admin.risk.signal.S13.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "939925bcc16aec72cac8b5b5a6db88d2c708e0a4ec8f3acc7d5245162feb7b60"
+  },
+  "admin.risk.signal.S14.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0b29c155c6476cd1c10d142401fd9f5b2bc6c87558551d7c11ef6eab47fc5927"
+  },
+  "admin.risk.signal.S14.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc858d457670cb62fbe35bf50416aea7a2fa0836b09a4efcadacfed10c098aae"
+  },
+  "admin.risk.signal.S15.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4711639e42abcdf2ce36822f980482e4bcccf3dff12896013bef0fda68705c91"
+  },
+  "admin.risk.signal.S15.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6701706a2700502c512483282126aec8029c3d1fcf75eb652f94d24d8729010f"
+  },
+  "admin.risk.signal.S16.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "013de8ead5da2bf717f91f7d56faed3cf73546da9b4910dc067fa48770208d59"
+  },
+  "admin.risk.signal.S16.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e0edc600333177b0f3d562dd5e9f264a87f8fc1175efe683cad607f83b6b459"
+  },
+  "admin.risk.signal.D1.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1cb1cd458a87167ac8974b1125a5bec1a430fafc585c384b3f376eed7cc7b84"
+  },
+  "admin.risk.signal.D1.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5879e8237e78851ebd44dd55907de6aa025d49e8a45b126f917eb322f107c85d"
+  },
+  "admin.risk.signal.D2.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4bb30ba4f975c2729b1f3484ac9302a8b4428006b5c2060a34743b2c02de40f6"
+  },
+  "admin.risk.signal.D2.why": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a238c5b4ab8a0b7fcfdfc6a70388970a2eb39d66a4c983821331a8bd258d0dbf"
   }
 }

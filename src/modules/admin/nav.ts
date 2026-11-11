@@ -14,6 +14,7 @@ export interface AdminNavItem {
   readonly key:
     | "home"
     | "orders"
+    | "risk"
     | "applications"
     | "partners"
     | "payouts"
@@ -35,6 +36,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "orders",
     href: "/admin/orders",
     permissions: ["orders.view"],
+    built: true,
+  },
+  {
+    // Spec 021 §5.3 (TASK-494): the risk review queue, for `risk.review` (admin, ops).
+    key: "risk",
+    href: "/admin/risk",
+    permissions: ["risk.review"],
     built: true,
   },
   {

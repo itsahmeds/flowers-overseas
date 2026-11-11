@@ -64,6 +64,9 @@ import {
 } from "../modules/ops";
 import {
   attemptStats,
+  cancelOrder,
+  riskFactsFor,
+  stripeProviderFromEnv,
   balanceFetchKey,
   balanceProviderFromEnv,
   registerPaymentsOutbox,
@@ -95,7 +98,12 @@ import {
   watchRoutingSla,
 } from "../modules/orders/routing/jobs";
 
-import { detectCardTesting } from "../modules/risk";
+import {
+  detectCardTesting,
+  type GateDeps,
+  riskGatedRouting,
+  runReviewDeadlines,
+} from "../modules/risk";
 import { appEnvironment } from "../lib/env.schema";
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
@@ -162,10 +170,27 @@ registerPaymentsOutbox();
 // the tax point, for every profile whose `vat_currency_code` differs from the invoice currency.
 setVatRateProvider(createNbpRateProvider());
 
+/**
+ * Spec 021 §5.2 (TASK-494): what the risk gate and its deadline default need from payments. The
+ * Stripe provider is built from the environment at the first assessment (never at load); without
+ * keys `riskFactsFor` fails, the gate retries once and then holds the order (S16).
+ */
+const riskGateDeps: GateDeps = {
+  riskFactsFor: (orderId, executor) =>
+    riskFactsFor(orderId, {
+      provider: stripeProviderFromEnv(),
+      transaction: (fn) => fn(executor),
+    }),
+  cancelOrder: (orderId, actor, reason, options) =>
+    cancelOrder(orderId, actor, reason, options),
+  alert: raiseLegacyAlert,
+};
+
 // Spec 016 §5.2 (TASK-328): the `routing` target, for `test` and `live` orders: a secured
 // payment enqueues `order.route`, a delivery the photo reminder. Replaces the stand-in that made
-// every routing delivery end `dead`.
-registerRoutingOutbox();
+// every routing delivery end `dead`. Spec 021 §5.2 (TASK-494): composed as
+// `routing: riskGatedRouting(routingHandler)`, so a paid order is assessed before any offer.
+registerRoutingOutbox({}, (inner) => riskGatedRouting(inner, riskGateDeps));
 
 // Spec 016 §5.2 (TASK-331): the `notifications` target and its hold. While `notifications.email`
 // is off, every notifications delivery stays `pending` and is sent once when it is turned on.
@@ -406,6 +431,12 @@ export const JOB_HANDLERS: JobHandlers = {
       mode: live ? "live" : "test",
       attemptStats: (since, until) =>
         attemptStats(since, until, { livemode: live }),
+      alert: raiseLegacyAlert,
+    });
+    // Spec 021 §5.2 (TASK-494): deadline defaults and due-soon alerts. Each review is decided in
+    // its own transaction under the order's lock, so a re-run finds it decided.
+    await runReviewDeadlines({
+      cancelOrder: riskGateDeps.cancelOrder,
       alert: raiseLegacyAlert,
     });
   },
