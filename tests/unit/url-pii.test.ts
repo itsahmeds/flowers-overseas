@@ -258,38 +258,7 @@ const EXTERNAL_QUERY_KEYS: readonly {
   {
     entry: "src/modules/ops/pushover.ts#token",
     reason:
-      "Pushover's API app token, in the POST form body and the receipts URL Pushover defines (TASK-488); a secret, not personal data",
-  },
-  {
-    entry: "src/modules/ops/pushover.ts#user",
-    reason:
-      "Pushover's user key of the founder's device, in the POST form body (TASK-488)",
-  },
-  {
-    entry: "src/modules/ops/pushover.ts#title",
-    reason:
-      "an ops alert's title, in the POST form body to Pushover (TASK-488); alerts carry no customer data",
-  },
-  {
-    entry: "src/modules/ops/pushover.ts#priority",
-    reason: "Pushover's priority number, POST form body (TASK-488)",
-  },
-  {
-    entry: "src/modules/ops/pushover.ts#url",
-    reason: "the admin link an alert opens, POST form body (TASK-488)",
-  },
-  {
-    entry: "src/modules/ops/pushover.ts#retry",
-    reason: "Pushover's emergency retry seconds, POST form body (TASK-488)",
-  },
-  {
-    entry: "src/modules/ops/pushover.ts#expire",
-    reason: "Pushover's emergency expiry seconds, POST form body (TASK-488)",
-  },
-  {
-    entry: "src/modules/ops/pushover.ts#tags",
-    reason:
-      "Pushover's receipt tags (an alert name), POST form body (TASK-488)",
+      "Pushover's API app token on the receipt lookup URL Pushover defines (TASK-488); a secret, not personal data. Sends go as a JSON body (TASK-521)",
   },
   {
     entry: "src/lib/auth/buyer.ts#return",
@@ -898,13 +867,6 @@ describe("the real tree (T-59)", () => {
         "src/app/vendor/sign-in/confirm/page.tsx#hl",
         "src/modules/catalog/chooser-choice.ts#q",
         "src/modules/ops/pushover.ts#token",
-        "src/modules/ops/pushover.ts#user",
-        "src/modules/ops/pushover.ts#title",
-        "src/modules/ops/pushover.ts#priority",
-        "src/modules/ops/pushover.ts#url",
-        "src/modules/ops/pushover.ts#retry",
-        "src/modules/ops/pushover.ts#expire",
-        "src/modules/ops/pushover.ts#tags",
         "src/lib/auth/buyer.ts#return",
         "src/lib/auth/buyer.ts#state",
         "src/modules/payments/stripe/adapter.ts#source",
