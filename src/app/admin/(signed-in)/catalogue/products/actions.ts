@@ -1,5 +1,5 @@
 /**
- * @purpose POST actions of the product editor: details, sizes, text, status, prices, removal from a country
+ * @purpose POST actions of the product editor: details, sizes, text, photos, status, prices, removal from a country
  * @spec 012b
  *
  * Thin (`plan/01` §5): each action's first statement is `requirePermission(…)`, then the form is
@@ -15,12 +15,15 @@ import { z } from "zod";
 import {
   type CatalogueActor,
   type CatalogueRefusal,
+  type MediaActor,
   adminRequestId,
+  attachPhoto,
   can,
   removeFromCountry,
   replaceDraftPrice,
   requirePermission,
   saveCopy,
+  savePhotoAlt,
   saveProduct,
   saveTiers,
   setProductStatus,
@@ -234,4 +237,58 @@ export async function removeFromCountryAction(form: FormData): Promise<void> {
     ? new URLSearchParams({ result: "saved" })
     : refusalQuery(result);
   redirect(`${BASE}/${sku}?tab=prices&${query.toString()}`);
+}
+
+/* Spec 012b §2.7 (TASK-299): the photos tab. */
+
+const PHOTOS = "tab=photos";
+
+async function mediaActorOf(session: {
+  readonly userId: string;
+  readonly roles: readonly string[];
+}): Promise<MediaActor> {
+  return {
+    userId: session.userId,
+    requestId: await adminRequestId(),
+    roles: session.roles,
+  };
+}
+
+/** `attachMedia`: a photo onto the product, as the main photo only when approved and none is. */
+export async function attachPhotoAction(form: FormData): Promise<void> {
+  const session = await requirePermission("catalogue.edit");
+  const actor = await mediaActorOf(session);
+  const sku = skuOf(form);
+  const result = await attachPhoto(actor, {
+    productId: text(form, "productId"),
+    updatedAt: text(form, "updatedAt"),
+    assetId: text(form, "assetId"),
+    primary: text(form, "primary") === "yes",
+  });
+  const query = new URLSearchParams(
+    result.ok
+      ? { photoResult: "attached" }
+      : { photoResult: "refused", photoReason: result.reason },
+  );
+  redirect(`${BASE}/${sku}?${PHOTOS}&${query.toString()}`);
+}
+
+/** `saveAlt`: one attached photo's alt text in one language; empty removes it. */
+export async function savePhotoAltAction(form: FormData): Promise<void> {
+  const session = await requirePermission("catalogue.edit");
+  const actor = await mediaActorOf(session);
+  const sku = skuOf(form);
+  const result = await savePhotoAlt(actor, {
+    productId: text(form, "productId"),
+    updatedAt: text(form, "updatedAt"),
+    productMediaId: text(form, "productMediaId"),
+    locale: text(form, "locale"),
+    alt: text(form, "alt"),
+  });
+  const query = new URLSearchParams(
+    result.ok
+      ? { photoResult: "altSaved" }
+      : { photoResult: "refused", photoReason: result.reason },
+  );
+  redirect(`${BASE}/${sku}?${PHOTOS}&${query.toString()}`);
 }

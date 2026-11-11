@@ -254,6 +254,7 @@ describe("the input schemas and the refusals (AC-11)", () => {
       permission_denied: 403,
       unknown_subject: 404,
       stale_hash: 409,
+      no_supplier_terms: 409,
       note_required: 422,
     });
   });

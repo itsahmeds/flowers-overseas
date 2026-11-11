@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012, 030 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +30 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012, 030 | `integration/admin-flags.test.ts`, `integration/admin-media.test.ts` +32 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +134 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
@@ -76,6 +76,7 @@ task actually touches.
 | `locales-client.data.ts` | The few locale values the browser needs, and… | 003 |
 | `locales.data.ts` | Locale data as plain typed constants — the… | 004 |
 | `locales.ts` | Locale registry | 003 |
+| `media-upload.ts` | The admin photo upload's limits and the… | 012 |
 | `mega-menu.ts` | The mega menu's shape as config (spec 004 §14… | 004 |
 | `notifications.ts` | The buyer emails' configuration slots | 016 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004… | 004 |
@@ -276,6 +277,9 @@ task actually touches.
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
+| `admin/(signed-in)/media/[id]/page.tsx` | GET /admin/media/[id]: one photo at full size,… | 012 |
+| `admin/(signed-in)/media/actions.ts` | POST action of the photo review page: approve… | 012 |
+| `admin/(signed-in)/media/page.tsx` | GET /admin/media: every photo, newest first,… | 012 |
 | `admin/(signed-in)/orders/[id]/actions-data.ts` | Reads what the order page's Actions card and… | 020 |
 | `admin/(signed-in)/orders/[id]/actions-panel.tsx` | The order page's Actions card: reroute, cancel… | 020 |
 | `admin/(signed-in)/orders/[id]/actions.ts` | /admin/orders/[id] reroute, cancel, refund and… | 020 |
@@ -330,6 +334,8 @@ task actually touches.
 | `admin/api/auth/confirm/route.ts` | POST: confirm sign-in, use the token (AC-9) | 012 |
 | `admin/api/auth/request/route.ts` | POST: ask for a link, one 303 for all (AC-2) | 012 |
 | `admin/api/auth/sign-out/route.ts` | POST: admin sign-out | 012 |
+| `admin/api/media/[id]/original/route.ts` | GET /admin/api/media/[id]/original: a photo's… | 012 |
+| `admin/api/media/route.ts` | POST /admin/api/media: upload one photo,… | 012 |
 | `admin/api/orders/head/route.ts` | GET: the order queue's head, for the 3 s poll… | 012 |
 | `admin/api/payouts/[payoutId]/statement/route.ts` | GET: a sent payout's statement PDF through a… | 030 |
 | `admin/api/payouts/exports/[exportId]/route.ts` | GET: one Wise export as its bulk-payment CSV,… | 030 |
@@ -467,8 +473,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 552 |
-| `tests/integration/` | 127 |
+| `tests/unit/` | 553 |
+| `tests/integration/` | 128 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

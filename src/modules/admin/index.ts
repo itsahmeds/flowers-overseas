@@ -54,6 +54,33 @@ export {
   publishHomeCounts,
   publishPageView,
 } from "./publish";
+// Spec 012b §2.7 (TASK-299): photos, their upload, review, attachment and alt text.
+export {
+  MEDIA_ACTIONS,
+  MEDIA_SOURCES,
+  MEDIA_STATES,
+  type MediaActor,
+  type MediaDetailView,
+  type MediaListFilter,
+  MediaListFilterSchema,
+  type MediaListRow,
+  type MediaListView,
+  type MediaRefusalReason,
+  type ProductPhoto,
+  type ProductPhotosView,
+  UPLOAD_DEPICTS,
+  type UploadRefusalReason,
+  type UploadResult,
+  attachPhoto,
+  mediaDetail,
+  mediaList,
+  mediaOriginal,
+  photoRendersIn,
+  productPhotos,
+  reviewPhoto,
+  savePhotoAlt,
+  uploadPhoto,
+} from "./media";
 // Spec 012b §2.8 (TASK-300): the country list and page, the preflight, the flip, the fiscal fields.
 export {
   COUNTRY_ACTIONS,
