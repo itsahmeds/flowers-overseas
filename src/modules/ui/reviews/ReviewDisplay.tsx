@@ -15,7 +15,7 @@
  * gates admit them (AC-28). Server-rendered, inline SVG in fixed boxes, no script.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement, ReactNode } from "react";
+import type { CSSProperties, ReactElement, ReactNode } from "react";
 
 import { COMPANY, whatsappHref } from "@/config/company";
 import type { LocaleCode } from "@/config/locales";
@@ -125,9 +125,10 @@ export function RatingSummary({
                   {t("stars", { count: stars })}
                 </span>
                 <span className="bg-paper-3 block h-[8px] overflow-hidden rounded-full shadow-[inset_0_0_0_1px_var(--color-rule)]">
+                  {/* The bar's length as a share of the track: a CSS length, not displayed text. */}
                   <i
-                    className="bg-ink-2 block h-full rounded-[inherit]"
-                    style={{ inlineSize: `${String(share)}%` }}
+                    className="bg-ink-2 block h-full w-[calc(var(--fo-bar-share)*1%)] rounded-[inherit]"
+                    style={{ "--fo-bar-share": share } as CSSProperties}
                   />
                 </span>
                 <span className="num text-end" data-fo-review-bar-count={count}>
