@@ -63,7 +63,7 @@ const ORIGIN = "https://flowersoverseas.test";
 const AFS = "afs-123@invite.trustpilot.example";
 const BUYER_EMAIL = "ada.buyer@example.test";
 const PHOTO_AT = new Date("2027-03-27T09:00:00.000Z");
-const silent = createLogger({ level: "silent", write: () => undefined });
+const silent = createLogger({ level: "fatal", write: () => undefined });
 
 registerReviewInviteTemplate({
   policyUrl: (locale) => `${ORIGIN}/${locale}/legal/reviews`,
