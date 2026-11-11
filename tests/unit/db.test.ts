@@ -472,14 +472,21 @@ describe("the build-phase client (spec 012b AC-4)", () => {
     expect(readers).toEqual([
       join("lib", "build-login.ts"),
       join("lib", "db.ts"),
+      join("lib", "env.schema.ts"),
       join("lib", "railway.ts"),
     ]);
+    // env.schema.ts declares the key's shape (spec 012b AC-29) through build-login.ts's constant;
+    // it names it only in prose and reads no environment of its own.
+    const schema = readFileSync(join(srcDir, "lib", "env.schema.ts"), "utf8");
+    expect(schema).not.toMatch(/"DATABASE_BUILD_URL"/u);
+    expect(schema).toContain("[BUILD_DATABASE_URL_KEY]:");
     // build-login.ts names the key once and answers a boolean (TASK-294's staging fallback); it
     // imports nothing, so it can open no connection.
     const login = readFileSync(join(srcDir, "lib", "build-login.ts"), "utf8");
     expect(login.match(/"DATABASE_BUILD_URL"/gu)).toHaveLength(1);
     expect(login).not.toMatch(/^import /mu);
-    // railway.ts names the key once, as an optional Railway variable, and reads no environment.
+    // railway.ts names the key once, as a contract key a PR environment need not carry, and reads
+    // no environment.
     const railway = readFileSync(join(srcDir, "lib", "railway.ts"), "utf8");
     expect(railway.match(/"DATABASE_BUILD_URL"/gu)).toHaveLength(1);
     expect(railway).not.toMatch(/env[^\n]*DATABASE_BUILD_URL/u);

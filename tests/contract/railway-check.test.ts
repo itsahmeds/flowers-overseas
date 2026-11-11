@@ -129,7 +129,7 @@ describe("service drift (AC-9, T-10)", () => {
 });
 
 describe("the declared key set (AC-11)", () => {
-  it("is AC-11's 41: the 39 of the env contract plus APP_ENV and NEXT_PUBLIC_APP_ENV", () => {
+  it("is AC-11's 55: the 53 of the env contract plus APP_ENV and NEXT_PUBLIC_APP_ENV", () => {
     // 29 since TASK-200 added QUOTE_SIGNING_SECRET (spec 005 §13 Q5, spec 010 §8); 33 since TASK-217
     // added the sign-in core's AUTH_SECRET, RESEND_API_KEY, EMAIL_FROM and MAILER (spec 012 §2.2);
     // 34 since TASK-337 added SIGNED_LINK_SECRET (spec 018 §5.2, §12 founder action 1); 36 since
@@ -137,23 +137,77 @@ describe("the declared key set (AC-11)", () => {
     // TASK-368 added REVIEW_TOKEN_SECRET and TRUSTPILOT_AFS_ADDRESS (spec 022a AC-33).
     // 39 since TASK-331 added OPS_ALERT_EMAIL (spec 016 §12); 40 since TASK-213 added
     // FLORIST_APPLICATIONS_NOTIFY_EMAIL (spec 011 §12); 41 since TASK-335 added
-    // RESEND_WEBHOOK_SECRET (spec 016 §12).
-    expect(CONTRACT_VARIABLE_KEYS).toHaveLength(41);
+    // RESEND_WEBHOOK_SECRET (spec 016 §12); 52 with the alert, analytics, basket-reminder and
+    // risk keys of specs 021, 023, 025 and 034; 55 since TASK-301 added spec 012b's
+    // DATABASE_BUILD_URL, PUBLISH_TARGET and RAILWAY_PUBLISH_TOKEN (AC-29).
+    expect(CONTRACT_VARIABLE_KEYS).toHaveLength(55);
     expect(CONTRACT_VARIABLE_KEYS).toContain("APP_ENV");
     expect(CONTRACT_VARIABLE_KEYS).toContain("NEXT_PUBLIC_APP_ENV");
   });
 
-  it("requires 37 of them: the four Vercel keys are injected, never pasted", () => {
-    expect(REQUIRED_VARIABLE_KEYS).toHaveLength(37);
+  it("requires 51 of them: the four Vercel keys are injected, never pasted", () => {
+    expect(REQUIRED_VARIABLE_KEYS).toHaveLength(51);
     for (const key of PLATFORM_INJECTED_CONTRACT_KEYS) {
       expect(CONTRACT_VARIABLE_KEYS, key).toContain(key);
       expect(REQUIRED_VARIABLE_KEYS, key).not.toContain(key);
     }
   });
+
+  // Spec 012b §5.2 "env", §12 "Environments", AC-29 (TASK-301).
+  it("declares spec 012b's three keys, required in staging and production", () => {
+    for (const key of [
+      "DATABASE_BUILD_URL",
+      "PUBLISH_TARGET",
+      "RAILWAY_PUBLISH_TOKEN",
+    ]) {
+      expect(CONTRACT_VARIABLE_KEYS, key).toContain(key);
+      expect(REQUIRED_VARIABLE_KEYS, key).toContain(key);
+    }
+    for (const environmentName of ["staging", "production"] as const) {
+      expect(
+        compareVariableKeys(
+          REQUIRED_VARIABLE_KEYS.filter((key) => key !== "PUBLISH_TARGET"),
+          environmentName,
+        ).missing,
+      ).toEqual(["PUBLISH_TARGET"]);
+      expect(
+        compareVariableKeys(
+          REQUIRED_VARIABLE_KEYS.filter(
+            (key) => key !== "RAILWAY_PUBLISH_TOKEN",
+          ),
+          environmentName,
+        ).missing,
+      ).toEqual(["RAILWAY_PUBLISH_TOKEN"]);
+      expect(
+        compareVariableKeys(
+          REQUIRED_VARIABLE_KEYS.filter((key) => key !== "DATABASE_BUILD_URL"),
+          environmentName,
+        ).missing,
+      ).toEqual(["DATABASE_BUILD_URL"]);
+    }
+  });
+
+  it("asks a PR environment for PUBLISH_TARGET but not for the build login or a token, and accepts both", () => {
+    const without = REQUIRED_VARIABLE_KEYS.filter(
+      (key) => key !== "DATABASE_BUILD_URL" && key !== "RAILWAY_PUBLISH_TOKEN",
+    );
+    expect(compareVariableKeys(without, "pr-123")).toEqual({
+      missing: [],
+      unexpected: [],
+      ok: true,
+    });
+    expect(compareVariableKeys(REQUIRED_VARIABLE_KEYS, "pr-123").ok).toBe(true);
+    expect(
+      compareVariableKeys(
+        without.filter((key) => key !== "PUBLISH_TARGET"),
+        "pr-123",
+      ).missing,
+    ).toEqual(["PUBLISH_TARGET"]);
+  });
 });
 
 describe("variable key sets (AC-11, T-11)", () => {
-  it("passes on the 41 contract keys plus the staging access switch", () => {
+  it("passes on the contract keys plus the staging access switch", () => {
     const report = runRailwayCheck({
       declared,
       environmentName: "staging",

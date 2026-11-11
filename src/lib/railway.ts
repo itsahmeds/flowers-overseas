@@ -168,7 +168,7 @@ export function findServiceInstance(
     .find((node) => node.serviceName === serviceName);
 }
 
-/** The declared contract: AC-11's 29 keys, straight from the zod schemas. */
+/** The declared contract: AC-11's keys (spec 012b AC-29 adds three), straight from the zod schemas. */
 export const CONTRACT_VARIABLE_KEYS: readonly string[] = [...ENV_KEYS].sort();
 
 /**
@@ -204,9 +204,8 @@ export const FX_REFRESH_AT_KEY = "FX_REFRESH_AT";
 /**
  * The build's database login (spec 012b §2.0 item 2, §12 founder action 4, AC-4; TASK-292): a
  * **build** variable of `web` in `staging` and `production`, read by `src/lib/db.ts` while `next
- * build` runs and by nothing at runtime. Optional here until spec 012b's records task moves it
- * into the env contract (AC-29), so the founder can set it before then without this check
- * reporting it as unexpected. No PR environment builds from the database.
+ * build` runs. Since TASK-301 (AC-29) it is part of the env contract, so `staging` and
+ * `production` must carry it; a PR environment need not (`CONTRACT_KEYS_NOT_REQUIRED` below).
  */
 export const DATABASE_BUILD_URL_KEY = "DATABASE_BUILD_URL";
 
@@ -222,18 +221,27 @@ export const DATABASE_BUILD_URL_KEY = "DATABASE_BUILD_URL";
 export const OPTIONAL_VARIABLE_KEYS: Readonly<
   Record<"production" | "staging" | "preview", readonly string[]>
 > = Object.freeze({
-  production: [
-    FX_REFRESH_AT_KEY,
-    DATABASE_BUILD_URL_KEY,
-    R2_PRIVATE_BUCKET_KEY,
-  ],
-  staging: [
-    STAGING_BASIC_AUTH_KEY,
-    FX_REFRESH_AT_KEY,
-    DATABASE_BUILD_URL_KEY,
-    R2_PRIVATE_BUCKET_KEY,
-  ],
+  production: [FX_REFRESH_AT_KEY, R2_PRIVATE_BUCKET_KEY],
+  staging: [STAGING_BASIC_AUTH_KEY, FX_REFRESH_AT_KEY, R2_PRIVATE_BUCKET_KEY],
   preview: [STAGING_BASIC_AUTH_KEY],
+});
+
+/** The environment-scoped publish token (spec 012b §5.2 "env", AC-29). */
+export const RAILWAY_PUBLISH_TOKEN_KEY = "RAILWAY_PUBLISH_TOKEN";
+
+/**
+ * Contract keys an environment kind **need not** carry (spec 012b §12 "Environments", AC-29;
+ * TASK-301). A PR environment builds no image from the database and publishes nothing
+ * (`PUBLISH_TARGET=none`), so neither the build login nor a project token is asked of it; both
+ * stay contract keys there, so carrying one is not reported as unexpected. `staging` and
+ * `production` need all three of spec 012b's keys.
+ */
+export const CONTRACT_KEYS_NOT_REQUIRED: Readonly<
+  Record<"production" | "staging" | "preview", readonly string[]>
+> = Object.freeze({
+  production: [],
+  staging: [],
+  preview: [DATABASE_BUILD_URL_KEY, RAILWAY_PUBLISH_TOKEN_KEY],
 });
 
 /**
@@ -277,9 +285,13 @@ export function compareVariableKeys(
   liveKeys: readonly string[],
   environmentName: string,
 ): VariableKeyReport {
-  const optional = OPTIONAL_VARIABLE_KEYS[environmentKind(environmentName)];
+  const kind = environmentKind(environmentName);
+  const optional = OPTIONAL_VARIABLE_KEYS[kind];
+  const notRequired = CONTRACT_KEYS_NOT_REQUIRED[kind];
   const live = new Set(liveKeys);
-  const missing = REQUIRED_VARIABLE_KEYS.filter((key) => !live.has(key)).sort();
+  const missing = REQUIRED_VARIABLE_KEYS.filter(
+    (key) => !live.has(key) && !notRequired.includes(key),
+  ).sort();
   const unexpected = [...live]
     .filter(
       (key) =>
