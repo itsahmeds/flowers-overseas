@@ -700,16 +700,30 @@ export async function verifyOnBoot(deps: BootDeps): Promise<BootOutcome> {
       }
     }
   }
-  let invalidatedTags: readonly string[] = [];
-  const dataAsOf = deps.manifest?.dataAsOf ?? null;
-  if (dataAsOf !== null) {
-    const tags = [
-      ...new Set(await deps.changedSince(new Date(dataAsOf))),
-    ].sort();
-    if (tags.length > 0) {
-      await deps.invalidate(tags);
-      invalidatedTags = tags;
-    }
-  }
+  const invalidatedTags = await invalidateChangedSince({
+    dataAsOf: deps.manifest?.dataAsOf ?? null,
+    changedSince: deps.changedSince,
+    invalidate: deps.invalidate,
+  });
   return { verifiedRunId, mismatchRunId, invalidatedTags };
+}
+
+/**
+ * The `dataAsOf` half of boot (advisor F1, AC-38): `invalidate()` once with the union of the §5.4
+ * tags of every row changed after `dataAsOf`, and not at all when none changed or there is no
+ * `dataAsOf`. The deployed boot runs it inside the `cache.invalidate` job (`./publish-boot.ts`),
+ * where the tag builders and `revalidatePath` are available; the tags it invalidated are returned.
+ */
+export async function invalidateChangedSince(deps: {
+  readonly dataAsOf: string | null;
+  readonly changedSince: (dataAsOf: Date) => Promise<readonly string[]>;
+  readonly invalidate: (tags: readonly string[]) => Promise<unknown>;
+}): Promise<readonly string[]> {
+  if (deps.dataAsOf === null) return [];
+  const tags = [
+    ...new Set(await deps.changedSince(new Date(deps.dataAsOf))),
+  ].sort();
+  if (tags.length === 0) return [];
+  await deps.invalidate(tags);
+  return tags;
 }

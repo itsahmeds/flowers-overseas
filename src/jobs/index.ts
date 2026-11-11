@@ -300,16 +300,22 @@ export const CataloguePublishPayload = z
 /**
  * `cache.invalidate` (spec 012b §2.3 F1, AC-38; TASK-295): `invalidate()` with these tags, run by
  * the tick, inside a request, where Next's `revalidatePath` works. A deployment's boot hands its
- * `dataAsOf` tag set here, because `instrumentation.ts` runs outside any request.
+ * `dataAsOf` here, because `instrumentation.ts` runs outside any request and cannot reach the
+ * tag builders.
  */
-export const CacheInvalidatePayload = z
-  .object({
-    tags: z
-      .array(z.string().regex(/^[a-z]+(?::[A-Za-z0-9_-]+)*$/u))
-      .min(1)
-      .max(5_000),
-  })
-  .strict();
+export const CacheInvalidatePayload = z.union([
+  z
+    .object({
+      tags: z
+        .array(z.string().regex(/^[a-z]+(?::[A-Za-z0-9_-]+)*$/u))
+        .min(1)
+        .max(5_000),
+    })
+    .strict(),
+  // The boot's `dataAsOf` (`src/lib/publish-boot.ts`): the job reads the rows changed after it
+  // and invalidates their §5.4 tags once (`invalidateChangedSinceJob()`).
+  z.object({ changedSince: z.iso.datetime({ offset: true }) }).strict(),
+]);
 
 /**
  * pg-boss's queue policy for a job. `short`: at most one **waiting** (`created`) job per

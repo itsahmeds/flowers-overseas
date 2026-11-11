@@ -16,7 +16,11 @@ import { z } from "zod";
 
 import { invalidate } from "../lib/cache";
 import { withSystemContext } from "../lib/db";
-import { PUBLISH_POLL_SECONDS, runPublishJob } from "../lib/publish-runtime";
+import {
+  PUBLISH_POLL_SECONDS,
+  invalidateChangedSinceJob,
+  runPublishJob,
+} from "../lib/publish-runtime";
 import { logger } from "../lib/logger";
 import {
   createNbpRateProvider,
@@ -524,9 +528,14 @@ export const JOB_HANDLERS: JobHandlers = {
       }),
     );
   },
-  // Spec 012b §2.3 F1 (TASK-295): a deployment's `dataAsOf` tags, purged inside the tick.
+  // Spec 012b §2.3 F1 (TASK-295): a command's tags, or a deployment's `dataAsOf` read and its
+  // rows' tags purged once, inside the tick.
   "cache.invalidate": async (payload) => {
-    await invalidate(payload.tags);
+    if ("tags" in payload) {
+      await invalidate(payload.tags);
+      return;
+    }
+    await invalidateChangedSinceJob(payload.changedSince);
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay. Spec

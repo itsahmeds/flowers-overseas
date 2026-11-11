@@ -8,14 +8,15 @@
  *    transaction, then one `catalogue.publish` job for the run;
  *  - `runPublishJob()`: the job's handler: one step, and the next step a minute later until the
  *    run is finished;
- *  - `bootPublish()`: `verifyOnBoot()` at every deployment's start, then the `dataAsOf`
- *    invalidation.
+ *  - `invalidateChangedSinceJob()`: the `cache.invalidate` job's `dataAsOf` step, which the
+ *    boot enqueues (`./publish-boot.ts`: the boot itself must not reach the catalogue barrel,
+ *    whose fonts cannot load in `instrumentation.ts`).
  */
 import { sql } from "drizzle-orm";
 
 import { existenceDiff, isStructuralPath } from "@/modules/catalog";
 
-import { appEnvironment, commitSha } from "./env.schema";
+import { appEnvironment } from "./env.schema";
 import { invalidate } from "./cache";
 import { type WarmOutcome, warmUrls as warmPaths } from "./cache-warm";
 import { unionTags, type AdminCommand } from "./command-tags";
@@ -24,13 +25,11 @@ import { runningManifest } from "./existence";
 import { isEnabled } from "./flags";
 import { logger } from "./logger";
 import {
-  PUBLISH_FAILED_SIGNAL,
   type PublishRun,
   advancePublishRun,
+  invalidateChangedSince,
   requestPublish,
   selectPublishTarget,
-  trackedRef,
-  verifyOnBoot,
 } from "./publish";
 import { dbPublishStore } from "./publish-store";
 import { captureWarning } from "./sentry";
@@ -168,21 +167,6 @@ export async function changedSinceCommands(
   return commands;
 }
 
-/** Hand `tags` to the `cache.invalidate` job. */
-async function enqueueInvalidation(tags: readonly string[]): Promise<void> {
-  const { enqueue, withBoss } = await import("../jobs/runtime");
-  await withBoss((boss) =>
-    enqueue(
-      boss,
-      "cache.invalidate",
-      { tags: [...tags] },
-      {
-        requestId: "system:catalogue.publish",
-      },
-    ),
-  );
-}
-
 /** Enqueue the first step of a run's `catalogue.publish` job. */
 export async function enqueuePublishJob(
   runId: string,
@@ -201,37 +185,19 @@ export async function enqueuePublishJob(
 }
 
 /**
- * At every deployment's start (`instrumentation.ts`, never during the build): verify the open run
- * and invalidate what changed while the build ran. A failure is logged and reported, never fatal:
- * the deployment serves either way, and an unverified run times out on its own.
+ * The `cache.invalidate` job's `changedSince` step (AC-38): the boot hands over the build's
+ * `dataAsOf` (`./publish-boot.ts`), and this, inside the tick, invalidates once the union of the
+ * §5.4 tags of every row changed after it, or nothing.
  */
-export async function bootPublish(): Promise<void> {
-  const environment = environmentNow();
-  if (trackedRef(environment) === null && environment !== "preview") return;
-  try {
-    await withSystemContext(PUBLISH_JOB, (db) =>
-      verifyOnBoot({
-        store: dbPublishStore(db),
-        environment,
-        commit: commitSha(process.env),
-        manifest: runningManifest(),
-        now: new Date(),
-        changedSince: async (dataAsOf) =>
-          unionTags(await changedSinceCommands(db, dataAsOf)),
-        // Outside any request here, so the purge runs as a job inside the next tick, where
-        // `revalidatePath` works (`cache.invalidate`).
-        invalidate: (tags) => enqueueInvalidation(tags),
-        report: captureWarning,
-      }),
-    );
-  } catch (error) {
-    logger.warn(
-      {
-        event: "catalogue.publish.boot_failed",
-        error_class: error instanceof Error ? error.name : "Error",
-      },
-      "publish boot step failed",
-    );
-    captureWarning(PUBLISH_FAILED_SIGNAL, { stage: "boot" });
-  }
+export async function invalidateChangedSinceJob(
+  dataAsOf: string,
+): Promise<readonly string[]> {
+  return withSystemContext("cache.invalidate", (db) =>
+    invalidateChangedSince({
+      dataAsOf,
+      changedSince: async (since) =>
+        unionTags(await changedSinceCommands(db, since)),
+      invalidate,
+    }),
+  );
 }

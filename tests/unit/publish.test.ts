@@ -448,3 +448,62 @@ describe("T-40: the dataAsOf boot invalidation", () => {
     }
   });
 });
+
+describe("the boot reaches no page code (instrumentation.ts bundles it)", () => {
+  /** Every relative or `@/` import of `file`, followed through `src/lib` only. */
+  async function libGraph(file: string, seen = new Set<string>()) {
+    const { readFileSync, existsSync } = await import("node:fs");
+    const { resolve, dirname } = await import("node:path");
+    if (seen.has(file)) return seen;
+    seen.add(file);
+    const text = readFileSync(file, "utf8");
+    for (const match of text.matchAll(/from "(\.{1,2}\/[^"]+|@\/[^"]+)"/gu)) {
+      const spec = match[1] ?? "";
+      const base = spec.startsWith("@/")
+        ? resolve(process.cwd(), "src", spec.slice(2))
+        : resolve(dirname(file), spec);
+      const next = [base, `${base}.ts`, `${base}/index.ts`].find(
+        (candidate) => candidate.endsWith(".ts") && existsSync(candidate),
+      );
+      if (next !== undefined && next.includes("/src/lib/")) {
+        await libGraph(next, seen);
+      } else if (next !== undefined) {
+        seen.add(next);
+      }
+    }
+    return seen;
+  }
+
+  it("publish-boot and existence-load import neither the catalogue barrel nor the cache", async () => {
+    const { resolve } = await import("node:path");
+    const files = [
+      ...(await libGraph(resolve(process.cwd(), "src/lib/publish-boot.ts"))),
+      ...(await libGraph(resolve(process.cwd(), "src/lib/existence-load.ts"))),
+    ].map((file) => file.replace(`${process.cwd()}/`, ""));
+    expect(files).toContain("src/lib/publish.ts");
+    expect(files).not.toContain("src/modules/catalog/index.ts");
+    expect(files).not.toContain("src/modules/ui/index.ts");
+    expect(files).not.toContain("src/lib/cache.ts");
+    expect(files).not.toContain("src/lib/command-tags.ts");
+    expect(files).not.toContain("src/lib/publish-runtime.ts");
+  });
+
+  it("cache.invalidate takes a command's tags or the boot's dataAsOf, never both", async () => {
+    const { CacheInvalidatePayload } = await import("../../src/jobs/index.ts");
+    expect(
+      CacheInvalidatePayload.safeParse({ tags: ["product:FO-BQ-001"] }).success,
+    ).toBe(true);
+    expect(
+      CacheInvalidatePayload.safeParse({
+        changedSince: "2026-11-02T09:59:00.000000Z",
+      }).success,
+    ).toBe(true);
+    expect(
+      CacheInvalidatePayload.safeParse({
+        tags: ["sitemap"],
+        changedSince: "2026-11-02T09:59:00.000000Z",
+      }).success,
+    ).toBe(false);
+    expect(CacheInvalidatePayload.safeParse({ tags: [] }).success).toBe(false);
+  });
+});

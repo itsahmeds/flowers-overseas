@@ -44,7 +44,7 @@ export async function register(): Promise<void> {
       const { loadExistenceManifest } =
         await import("./src/lib/existence-load");
       loadExistenceManifest();
-      const { bootPublish } = await import("./src/lib/publish-runtime");
+      const { bootPublish } = await import("./src/lib/publish-boot");
       void bootPublish();
     }
   }
