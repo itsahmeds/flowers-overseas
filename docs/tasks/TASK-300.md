@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 implementer: branch from main f0f1120c4; reading the brief, spec §2.8, §5.2, §5.4, AC-25, AC-39, T-25, T-41 and the go-live boards.
 
 ## Result
 
