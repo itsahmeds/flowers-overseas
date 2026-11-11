@@ -34,18 +34,22 @@ import {
 } from "../../src/lib/storage.ts";
 import { OBJECT_KEY_FIXTURES } from "../contract/support/object-key-fixtures.ts";
 
+/** The kinds with derived variants: not a backup, and not a contract (its original only). */
 const MEDIA_KINDS = objectKinds.filter(
-  (kind): kind is Exclude<ObjectKind, "backup"> => kind !== "backup",
+  (kind): kind is Exclude<ObjectKind, "backup" | "contract"> =>
+    kind !== "backup" && kind !== "contract",
 );
 
 describe("objectKey — the convention of spec 002 §5.2 (AC-22, T-22)", () => {
-  it("covers the five kinds of §5.2's ObjectKind, in its order", () => {
+  it("covers the five kinds of §5.2's ObjectKind, in its order, and spec 030b's contract", () => {
     expect([...objectKinds]).toEqual([
       "product",
       "delivery_proof",
       "brand",
       "partner",
       "backup",
+      // spec 030b §14.5 (TASK-442): a signed florist contract, stored unchanged.
+      "contract",
     ]);
   });
 
@@ -149,10 +153,10 @@ describe("objectKey — the convention of spec 002 §5.2 (AC-22, T-22)", () => {
         objectKey(kind, "same-id", { variant: "640", format: "avif" }),
       );
       expect(new Set(keys).size).toBe(MEDIA_KINDS.length);
-      const originals = MEDIA_KINDS.map((kind) =>
+      const originals = [...MEDIA_KINDS, "contract" as const].map((kind) =>
         objectKey(kind, "same-id", "original"),
       );
-      expect(new Set(originals).size).toBe(MEDIA_KINDS.length);
+      expect(new Set(originals).size).toBe(MEDIA_KINDS.length + 1);
     });
   });
 

@@ -378,12 +378,15 @@ export const consentLog = pgTable(
     occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
     /** A network, never a host (`plan/07` §5): IPv4 /24 or wider, IPv6 /48 or wider. */
     sourceIpTruncated: cidr("source_ip_truncated"),
-    /** Spec 034 §5.1 D: a `contact` subject's `contactHmac(email)`; null for every other kind. */
-    subjectHmac: text("subject_hmac"),
     /** Written once, never updated, so there is no `updated_at`. */
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    /**
+     * Spec 034 §5.1 D: a `contact` subject's `contactHmac(email)`; null for every other kind.
+     * Last, where migration 0040's `ADD COLUMN` puts it in the table.
+     */
+    subjectHmac: text("subject_hmac"),
   },
   (table) => [
     check(
