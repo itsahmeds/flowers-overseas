@@ -216,3 +216,42 @@ export async function applyProviderDispute(
   );
   return "changed";
 }
+
+/** One dispute of an order's payment, as `disputesFor` reports it: ids and codes only. */
+export interface OrderDispute {
+  readonly disputeId: string;
+  /** The provider's reason code (`fraudulent`, `product_not_received`, …). */
+  readonly reason: string;
+  readonly status: "open" | "won" | "lost" | "closed";
+}
+
+const OrderDisputeRow = z.object({
+  id: z.uuid(),
+  reason: z.string().min(1),
+  status: z.enum(["open", "won", "lost", "closed"]),
+});
+
+/**
+ * `disputesFor(orderId)` (spec 021 §12 requirement (f) on spec 013; AC-27; TASK-495): every
+ * dispute on the payment of the order's purchase, oldest first, on the caller's transaction.
+ */
+export async function disputesFor(
+  executor: OrderExecutor,
+  orderId: string,
+): Promise<readonly OrderDispute[]> {
+  const id = z.uuid().parse(orderId);
+  const rows = await executor.execute(sql`
+    SELECT d.id, d.reason, d.status FROM payment_dispute d
+    JOIN payment p ON p.id = d.payment_id
+    JOIN "order" o ON o.purchase_id = p.purchase_id
+    WHERE o.id = ${id}
+    ORDER BY d.opened_at, d.id`);
+  return rows.map((row) => {
+    const parsed = OrderDisputeRow.parse(row);
+    return {
+      disputeId: parsed.id,
+      reason: parsed.reason,
+      status: parsed.status,
+    };
+  });
+}

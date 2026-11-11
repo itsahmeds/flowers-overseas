@@ -118,9 +118,11 @@ describe("T-01 — no session, nothing admin (AC-1)", () => {
       for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE"]) {
         const handler = loaded[method];
         if (typeof handler !== "function") continue;
+        // A dynamic route's handler destructures its context (`{ params }`), as Next passes it.
         const error = await thrown(() =>
-          (handler as (r: Request) => unknown)(
+          (handler as (r: Request, c: unknown) => unknown)(
             new Request(`https://example.test/${file}`, { method }),
+            { params: Promise.resolve({}) },
           ),
         );
         expect(digestOf(error), method).toBe("NEXT_HTTP_ERROR_FALLBACK;401");

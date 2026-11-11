@@ -294,6 +294,7 @@ task actually touches.
 | `admin/(signed-in)/publish/page.tsx` | GET /admin/publish: what a publish would add… | 012 |
 | `admin/(signed-in)/risk/[reviewId]/page.tsx` | GET /admin/risk/[reviewId]: one review, its… | 021 |
 | `admin/(signed-in)/risk/actions.ts` | /admin/risk decisions: approve, cancel and… | 021 |
+| `admin/(signed-in)/risk/evidence/[orderId]/route.ts` | GET /admin/risk/evidence/[orderId]: the… | 021 |
 | `admin/(signed-in)/risk/page.tsx` | GET /admin/risk: open risk reviews by deadline,… | 021 |
 | `admin/(signed-in)/risk/view.tsx` | The risk pages' shared pieces: signal labels,… | 021 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3,… | 012 |
@@ -438,9 +439,9 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 540 |
-| `tests/integration/` | 120 |
-| `tests/contract/` | 44 |
+| `tests/unit/` | 542 |
+| `tests/integration/` | 121 |
+| `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |
 | `tests/visual/` | 23 |

@@ -372,6 +372,9 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       // Spec 016 (TASK-332): the job worker hands the founder's emails (A1, W) their English copy
       // and the admin order path. It renders no page; the tick route that loads it is internal.
       "src/jobs/handlers.ts",
+      // Spec 034 (TASK-449): the basket-reminder job turns its own flag off on an anomaly through
+      // `systemTurnFlagOff`; it renders nothing and runs only in the worker.
+      "src/jobs/basket-reminders.ts",
     ];
     const importers = sources.filter(
       (f) =>
@@ -447,7 +450,7 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       rate: "8%",
       status: "routed",
       window: "09:00–12:00",
-      code: (chunks: string) => chunks,
+      code: "SPRING10",
       // TASK-321's `admin.blog.rule.*`.
       slug: "feed",
       length: 12,
@@ -509,10 +512,55 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       local: "8 Oct, 07:13",
       destZone: "Europe/Warsaw",
       outcome: "Approved",
+      // The keys of TASK-442 (contracts), the CRM, discounts, alerts, payouts and finance pages
+      // that shipped without a value here (TASK-495 restores the scan).
+      template: "v1",
+      topic: "Pricing",
+      due: "5 Oct",
+      rating: "4.5",
+      days: 30,
+      by: "admin",
+      pages: 3,
+      mb: "1.2",
+      start: "19 Oct",
+      end: "25 Oct",
+      active: "2",
+      uses: "3",
+      cap: "10",
+      margin: "12%",
+      lowest: "40.00 zł",
+      today: "5 Oct",
+      title: "Queue stalled",
+      url: "https://example.test/runbook",
+      severity: "P1",
+      subject: "Queue stalled",
+      age: "5 min",
+      p1: "1",
+      p2: "2",
+      p3: "3",
+      todayAtRisk: "1",
+      tomorrow: "4",
+      tomorrowAtRisk: "0",
+      keys: "VAPID_PUBLIC_KEY",
+      percent: "80%",
+      basis: "paid",
+      mode: "live",
+      paid: "100.00 zł",
+      // TASK-495's `admin.risk.evidence.*` (`label`, `local`, `pages`, `version`, `when` serve it too).
+      value: "FO-7K2M-9QXA",
+      page: "1",
+      utc: "24 Dec 2027, 09:02",
+      brand: "visa",
+      last4: "4242",
+    };
+    // `code` is a discount code's plain value everywhere but this one key, where it is a tag.
+    const plain: Record<string, Record<string, unknown>> = {
+      "admin.orders.detail.timelineNote": { code: (chunks: string) => chunks },
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);
-      expect(adminT(key as never, params as never), key).not.toBe(key);
+      const values = { ...params, ...plain[key] };
+      expect(adminT(key as never, values as never), key).not.toBe(key);
     }
   });
 });

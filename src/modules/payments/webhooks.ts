@@ -25,6 +25,12 @@
  *  - `charge.dispute.*`: the dispute is retrieved and applied (`applyProviderDispute`): opened,
  *    decided, or nothing new (`stale`) (AC-24, AC-31; TASK-261). Rows TASK-260 left `ignored`
  *    with `awaiting_handler` are re-processed with `pnpm jobs:replay-webhooks --inbox-id`.
+ *  - `radar.early_fraud_warning.created` (spec 021 §5.2, §12 requirement (e); TASK-495): the
+ *    warning is retrieved, its intent finds our payment, and each order of the purchase goes to
+ *    the risk module's `handleEarlyFraudWarning` (handed in as `earlyFraudWarning`), on this run's
+ *    transaction. A throw (`ORDER_IN_HANDOVER` for an `accepted` order) fails the row, which is
+ *    retried with the backoff until the order is `paid`. Without the handler the row is `ignored`
+ *    with `awaiting_handler` and replayed later.
  *  - any other type: `ignored` with `unknown_type` (AC-25).
  *
  * A row that fails `InboxEventSchema`, or whose processing throws, is `failed` and retried; on its
@@ -88,6 +94,26 @@ const REFUND_TYPES: ReadonlySet<string> = new Set([
 /** About a charge (`ch_…`): every refund of it is applied. */
 const CHARGE_REFUNDED = "charge.refunded";
 const DISPUTE_PREFIX = "charge.dispute.";
+const EARLY_FRAUD_WARNING = "radar.early_fraud_warning.created";
+
+/** Spec 021's `EarlyFraudWarningV1` fields, as the risk module parses them (no personal data). */
+export interface EarlyFraudWarningInput {
+  readonly orderId: string;
+  readonly warning: {
+    readonly id: string;
+    readonly charge: string;
+    readonly fraud_type: string;
+    readonly actionable: boolean;
+    readonly livemode: boolean;
+    readonly created: number;
+  };
+}
+
+/** Spec 021's `handleEarlyFraudWarning`, bound by the job layer (payments never imports risk). */
+export type EarlyFraudWarningHandler = (
+  input: EarlyFraudWarningInput,
+  executor: OrderExecutor,
+) => Promise<void>;
 
 const systemTransaction: PaymentTransaction = (fn) =>
   withExecutor(undefined, "payments.webhook", fn);
@@ -244,6 +270,8 @@ export interface ProcessDeps extends Pick<
    * closed. Absent: nothing is asked (the hourly sweep still finds the source).
    */
   readonly enqueueBalanceFetch?: (job: BalanceFetchJobInput) => Promise<void>;
+  /** Spec 021 §12 (e) (TASK-495): where an early fraud warning goes, one order at a time. */
+  readonly earlyFraudWarning?: EarlyFraudWarningHandler;
 }
 
 export type ProcessOutcome =
@@ -393,6 +421,48 @@ async function routeDispute(
   return routed;
 }
 
+async function routeEarlyFraudWarning(
+  objectRef: string,
+  deps: ProcessDeps,
+  executor: OrderExecutor,
+): Promise<Routed> {
+  if (deps.earlyFraudWarning === undefined) {
+    return { kind: "ignored", reason: "awaiting_handler" };
+  }
+  const warning = await deps.provider.retrieveEarlyFraudWarning(objectRef);
+  if (isProviderFailure(warning)) {
+    if (warning.failure === "not_found") {
+      return { kind: "ignored", reason: "unknown_object" };
+    }
+    throw new WebhookRetry(`retrieve_${warning.failure}`);
+  }
+  const [payment] = await executor.execute(sql`
+    SELECT purchase_id FROM payment WHERE provider_ref = ${warning.intentRef}`);
+  if (payment === undefined) {
+    return { kind: "ignored", reason: "unknown_object" };
+  }
+  const orders = await executor.execute(sql`
+    SELECT id FROM "order" WHERE purchase_id = ${z.uuid().parse(payment["purchase_id"])}
+    ORDER BY id`);
+  for (const order of orders) {
+    await deps.earlyFraudWarning(
+      {
+        orderId: z.uuid().parse(order["id"]),
+        warning: {
+          id: warning.ref,
+          charge: warning.chargeRef,
+          fraud_type: warning.fraudType,
+          actionable: warning.actionable,
+          livemode: warning.livemode,
+          created: Math.floor(warning.createdAt.getTime() / 1000),
+        },
+      },
+      executor,
+    );
+  }
+  return { kind: "processed" };
+}
+
 /**
  * Processes one inbox row (`webhook.process`). Idempotent: a settled row, or one another run
  * holds, is skipped.
@@ -457,6 +527,12 @@ export async function processWebhook(
             lifecycle,
             executor,
             balanceJobs,
+          );
+        } else if (type === EARLY_FRAUD_WARNING) {
+          routed = await routeEarlyFraudWarning(
+            row.data.object_ref,
+            deps,
+            executor,
           );
         } else {
           routed = { kind: "ignored", reason: "unknown_type" };

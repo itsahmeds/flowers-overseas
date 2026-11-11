@@ -1,0 +1,9 @@
+{
+  "actionable": true,
+  "charge": "ch_1234",
+  "created": 1234567890,
+  "fraud_type": "misc",
+  "id": "issfr_1Pgc79B7WZ01zgkWxwDzEIPX",
+  "livemode": false,
+  "object": "radar.early_fraud_warning"
+}

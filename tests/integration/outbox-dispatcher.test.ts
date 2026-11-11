@@ -180,6 +180,7 @@ describe.skipIf(server.url === undefined)(
           invoices: recording(),
           notifications: recording(),
           "analytics.ga4": recording(),
+          risk: recording(),
           payouts: recording(),
           payments,
           routing,
@@ -311,6 +312,7 @@ describe.skipIf(server.url === undefined)(
             invoices: recording(),
             notifications: recording(),
             "analytics.ga4": recording(),
+            risk: recording(),
             payouts: recording(),
             payments,
             routing,
@@ -384,6 +386,7 @@ describe.skipIf(server.url === undefined)(
           invoices: recording(),
           notifications: recording(),
           "analytics.ga4": recording(),
+          risk: recording(),
           payouts: recording(),
           payments: recording(),
           routing: throwing(),
@@ -401,6 +404,7 @@ describe.skipIf(server.url === undefined)(
           invoices: recording(),
           notifications: recording(),
           "analytics.ga4": recording(),
+          risk: recording(),
           payouts: recording(),
           payments: recording(),
           routing: throwing(),
@@ -410,6 +414,7 @@ describe.skipIf(server.url === undefined)(
           invoices: recording(),
           notifications: recording(),
           "analytics.ga4": recording(),
+          risk: recording(),
           payouts: recording(),
           payments: recording(),
           routing: throwing(),
@@ -419,6 +424,7 @@ describe.skipIf(server.url === undefined)(
           invoices: recording(),
           notifications: recording(),
           "analytics.ga4": recording(),
+          risk: recording(),
           payouts: recording(),
           payments: recording(),
           routing: recording(),
@@ -462,6 +468,7 @@ describe.skipIf(server.url === undefined)(
             invoices: recording(),
             notifications: recording(),
             "analytics.ga4": recording(),
+            risk: recording(),
             payouts: recording(),
             payments: write("kept", false),
             routing: write("undone", true),
@@ -490,6 +497,7 @@ describe.skipIf(server.url === undefined)(
             invoices: recording(),
             notifications: recording(),
             "analytics.ga4": recording(),
+            risk: recording(),
             payouts: recording(),
             payments: recording(),
             routing,
@@ -539,6 +547,7 @@ describe.skipIf(server.url === undefined)(
             invoices: recording(),
             notifications: recording(),
             "analytics.ga4": recording(),
+            risk: recording(),
             payouts: recording(),
             payments: recording(),
             routing,
@@ -570,14 +579,16 @@ describe.skipIf(server.url === undefined)(
         };
       });
       // Spec 016 (TASK-331) routes row 2 to `notifications` too (V3 shares the event name); for a
-      // `test` order from `placed` that delivery sends nothing.
+      // `test` order from `placed` that delivery sends nothing. Spec 023 (TASK-491) adds
+      // `analytics.ga4` for `test` and `live`.
       expect(result.created.map((d) => d.target).sort()).toEqual([
+        "analytics.ga4",
         "notifications",
         "routing",
       ]);
       expect(result.counts).toEqual({
-        claimed: 2,
-        sent: 2,
+        claimed: 3,
+        sent: 3,
         failed: 0,
         dead: 0,
       });
@@ -605,6 +616,7 @@ describe.skipIf(server.url === undefined)(
             invoices: recording(),
             notifications: recording(),
             "analytics.ga4": recording(),
+            risk: recording(),
             payouts: recording(),
             payments: recording(),
             routing,
@@ -622,10 +634,14 @@ describe.skipIf(server.url === undefined)(
           left,
         };
       });
-      // Two deliveries per row 2 since spec 016 (routing and notifications; TASK-331).
-      expect(result.counts.claimed).toBe(2);
+      // Three deliveries per row 2: routing, notifications (TASK-331) and analytics.ga4 (TASK-491).
+      expect(result.counts.claimed).toBe(3);
       expect(result.orders).toEqual([result.second.orderId]);
-      expect(result.left.map((d) => d.status)).toEqual(["pending", "pending"]);
+      expect(result.left.map((d) => d.status)).toEqual([
+        "pending",
+        "pending",
+        "pending",
+      ]);
     });
 
     it("an admin's transaction fans out deliveries it cannot read (SECURITY DEFINER trigger, system-only table)", async () => {

@@ -131,6 +131,11 @@ export const REVIEW_MAX_HOLD_MS = 12 * 60 * 60_000;
 export const REVIEW_MIN_WINDOW_MS = 30 * 60_000;
 /** `risk.review_due_soon` fires once at `deadline − 60 min`. */
 export const REVIEW_DUE_SOON_MS = 60 * 60_000;
+/** An EFW on a `paid` order: decide by `productionStartAt − 60 min` (§5.2 "After routing"). */
+export const POST_ROUTING_MARGIN_MS = 60 * 60_000;
+/** Site velocity (§5.2): more than this many new-email `live` orders paid in an hour alerts. */
+export const SITE_VELOCITY_MAX_NEW_EMAILS = 5;
+export const SITE_VELOCITY_WINDOW_MINUTES = 60;
 
 /** The pay step: the order's declined attempts that end it (spec 013 AC-5's counter). */
 export const MAX_DECLINED_ATTEMPTS = 5;

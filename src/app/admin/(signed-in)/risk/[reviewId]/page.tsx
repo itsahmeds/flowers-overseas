@@ -9,8 +9,10 @@
  * (`logAdminRead`); without it a sentence says why and nothing is read (AC-19). Approve, Cancel
  * and refund, and (with `risk.blocklist`) Cancel, refund and block each open a native dialog with
  * the reason picker and what happens, naming the amount to be refunded (AC-20, AC-21, AC-22).
- * A review opened after routing has no close action here, only the link to refund from the order
- * page (orchestrator ruling on the boards, PR 529). Decided and superseded reviews say who, when
+ * A review opened after routing on a `paid` order reads "Keep the order" and "Refund in full"
+ * (the remaining captured balance; TASK-495, AC-26); one on an order already being made has no
+ * close action here, only the link to refund from the order page (orchestrator ruling on the
+ * boards, PR 529). Decided and superseded reviews say who, when
  * and why. Artboards `admin-risk-desktop.dc.html` and `admin-risk-mobile.dc.html`.
  */
 import { notFound } from "next/navigation";
@@ -77,6 +79,7 @@ const ResultSchema = z
     "approved",
     "cancelled",
     "cancelled_blocked",
+    "refunded",
     "already_decided",
     "superseded",
     "refused",
@@ -101,7 +104,8 @@ function Outcome({
   if (
     result === "approved" ||
     result === "cancelled" ||
-    result === "cancelled_blocked"
+    result === "cancelled_blocked" ||
+    result === "refunded"
   ) {
     return (
       <AdminToast>
@@ -112,37 +116,52 @@ function Outcome({
   return <AdminRefusal>{adminT(`admin.risk.result.${result}`)}</AdminRefusal>;
 }
 
+/** A post-routing review's two buttons: "Keep the order" and "Refund in full" (TASK-495). */
+const POST_LABEL: Readonly<
+  Partial<Record<ReviewDecision, "keep" | "refundFull">>
+> = { approve: "keep", cancel: "refundFull" };
+
 function DecisionDialog({
   review,
   decision,
   amount,
+  post = false,
 }: {
   readonly review: ReviewView;
   readonly decision: ReviewDecision;
   readonly amount: string;
+  readonly post?: boolean;
 }): ReactElement {
+  const postLabel = post ? POST_LABEL[decision] : undefined;
   const buyerLine = {
     text: adminT("admin.risk.dialog.buyerEmail"),
     quote: adminT("admin.risk.dialog.buyerLine", { amount }),
   };
   const consequences =
-    decision === "approve"
-      ? [
-          { text: adminT("admin.risk.dialog.approveGo") },
-          { text: adminT("admin.risk.dialog.approveNoRefund") },
-        ]
-      : decision === "cancel"
+    postLabel === "keep"
+      ? [{ text: adminT("admin.risk.dialog.keepGo") }]
+      : postLabel === "refundFull"
         ? [
             { text: adminT("admin.risk.dialog.refunded", { amount }) },
-            buyerLine,
-            { text: adminT("admin.risk.dialog.notBlocked") },
+            { text: adminT("admin.risk.dialog.refundStops") },
           ]
-        : [
-            { text: adminT("admin.risk.dialog.refundedFraud", { amount }) },
-            buyerLine,
-            { text: adminT("admin.risk.dialog.blocked") },
-          ];
-  const label = adminT(`admin.risk.action.${decision}`);
+        : decision === "approve"
+          ? [
+              { text: adminT("admin.risk.dialog.approveGo") },
+              { text: adminT("admin.risk.dialog.approveNoRefund") },
+            ]
+          : decision === "cancel"
+            ? [
+                { text: adminT("admin.risk.dialog.refunded", { amount }) },
+                buyerLine,
+                { text: adminT("admin.risk.dialog.notBlocked") },
+              ]
+            : [
+                { text: adminT("admin.risk.dialog.refundedFraud", { amount }) },
+                buyerLine,
+                { text: adminT("admin.risk.dialog.blocked") },
+              ];
+  const label = adminT(`admin.risk.action.${postLabel ?? decision}`);
   return (
     <AdminActionDialog
       id={`risk-${decision}`}
@@ -164,7 +183,9 @@ function DecisionDialog({
         consequences={consequences}
         keepLabel={adminT("admin.risk.dialog.keep")}
         confirmLabel={label}
-        pendingLabel={adminT(`admin.risk.action.pending.${decision}`)}
+        pendingLabel={adminT(
+          `admin.risk.action.pending.${postLabel ?? decision}`,
+        )}
         tone={DECISION_TONE[decision]}
       />
     </AdminActionDialog>
@@ -195,6 +216,9 @@ export default async function AdminRiskReviewPage({
   const zone = zoneCity(session.timeZone);
   const amount = money(review.totalMinor, review.currency);
   const pre = review.kind === "pre_routing";
+  // An EFW on a `paid` order (AC-26): a deadline, and the two post-routing buttons.
+  const postPaid =
+    !pre && review.deadlineAt !== null && review.orderStatus === "paid";
   const open = review.status === "open";
   const left = timeLeft(review.deadlineAt, now);
   const canBlock = can(session.roles, "risk.blocklist");
@@ -224,13 +248,15 @@ export default async function AdminRiskReviewPage({
             zone,
           })}
           left={
-            review.destinationZone === null
-              ? left.text
-              : adminT("admin.risk.detail.decideLocal", {
-                  left: left.text,
-                  local: at(review.deadlineAt, review.destinationZone),
-                  destZone: review.destinationZone,
-                })
+            postPaid
+              ? adminT("admin.risk.detail.leftRefund", { left: left.text })
+              : review.destinationZone === null
+                ? left.text
+                : adminT("admin.risk.detail.decideLocal", {
+                    left: left.text,
+                    local: at(review.deadlineAt, review.destinationZone),
+                    destZone: review.destinationZone,
+                  })
           }
         />
       )}
@@ -243,7 +269,9 @@ export default async function AdminRiskReviewPage({
                 ? "admin.risk.detail.defaultRelease"
                 : "admin.risk.detail.defaultCancel",
             )
-          : adminT("admin.risk.detail.postNote")}
+          : postPaid
+            ? adminT("admin.risk.detail.defaultRefund")
+            : adminT("admin.risk.detail.postNote")}
       </RiskDefault>
       {pre ? (
         <div className="grid gap-[8px]">
@@ -262,6 +290,21 @@ export default async function AdminRiskReviewPage({
               {adminT("admin.risk.detail.blockAdminsOnly")}
             </p>
           )}
+        </div>
+      ) : postPaid ? (
+        <div className="grid gap-[8px]">
+          <DecisionDialog
+            review={review}
+            decision="approve"
+            amount={amount}
+            post
+          />
+          <DecisionDialog
+            review={review}
+            decision="cancel"
+            amount={amount}
+            post
+          />
         </div>
       ) : (
         <a

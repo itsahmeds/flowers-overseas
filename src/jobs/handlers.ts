@@ -37,6 +37,7 @@ import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
 import { registerAnalyticsOutbox } from "../modules/analytics";
 import { alertDetailHref, alertsListHref } from "../modules/admin/alerts";
+import { partnerContractsHref } from "../modules/admin/partners";
 import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
 import {
   registerNotificationsOutbox,
@@ -69,9 +70,15 @@ import {
   runMonitor,
 } from "../modules/ops";
 import {
+  adminRefundDeps,
   attemptStats,
   cancelOrder,
+  disputesFor,
+  productionStartAt,
+  requestBalanceRefund,
   riskFactsFor,
+  submitRefund,
+  type EarlyFraudWarningHandler,
   stripeProviderFromEnv,
   balanceFetchKey,
   balanceProviderFromEnv,
@@ -105,9 +112,14 @@ import {
 } from "../modules/orders/routing/jobs";
 
 import {
+  dailyCounters,
   detectCardTesting,
+  detectSiteVelocity,
   type GateDeps,
+  handleEarlyFraudWarning,
   riskGatedRouting,
+  riskOutboxHandler,
+  type RiskRefund,
   runReviewDeadlines,
 } from "../modules/risk";
 import { appEnvironment } from "../lib/env.schema";
@@ -192,6 +204,45 @@ const riskGateDeps: GateDeps = {
   alert: raiseLegacyAlert,
 };
 
+/** Spec 021 §5.2 (TASK-495): the order's remaining balance as one refund, on the caller's transaction. */
+const riskRefundBalance: RiskRefund = (orderId, actor, reason, executor) =>
+  requestBalanceRefund(orderId, actor, reason, executor);
+
+/**
+ * Sends a risk refund after its transaction committed. Without Stripe keys it stays `requested`
+ * and `payments.sweep` (d) sends it once they exist.
+ */
+async function submitRiskRefund(refundId: string): Promise<void> {
+  const deps = adminRefundDeps();
+  if (deps !== null) await submitRefund(refundId, deps);
+}
+
+/**
+ * Spec 021 §5.2 (TASK-495): `risk.handleEarlyFraudWarning`, for `webhook.process` to hand to spec
+ * 013's `processWebhook` as `earlyFraudWarning` when TASK-266 wires that job with the production
+ * provider. A `decide_now` refund it requests is sent by `payments.sweep` (d).
+ */
+export const earlyFraudWarningHandler: EarlyFraudWarningHandler = async (
+  input,
+  executor,
+) => {
+  await handleEarlyFraudWarning(input, executor, {
+    cancelOrder: riskGateDeps.cancelOrder,
+    refundBalance: riskRefundBalance,
+    productionStartAt: (timing) => productionStartAt(timing),
+    alert: raiseLegacyAlert,
+  });
+};
+
+// Spec 021 §5.2 "Chargebacks" (TASK-495): the `risk` target. A `fraudulent` dispute puts the
+// order's email and card hashes on the blocklist (`source = 'dispute'`) and supersedes open reviews.
+registerOutboxHandler(
+  "risk",
+  riskOutboxHandler({
+    disputesFor: (executor, orderId) => disputesFor(executor, orderId),
+  }),
+);
+
 // Spec 016 §5.2 (TASK-328): the `routing` target, for `test` and `live` orders: a secured
 // payment enqueues `order.route`, a delivery the photo reminder. Replaces the stand-in that made
 // every routing delivery end `dead`. Spec 021 §5.2 (TASK-494): composed as
@@ -228,8 +279,7 @@ registerOpsEmailTemplates({
   // Spec 030a §2.7: F2's link to the payouts list (TASK-364; TASK-367 builds the page).
   payoutsHref: payoutsListHref,
   // Spec 030b §14.4: C1 and C2's link to the florist's Contracts tab (TASK-442).
-  contractsHref: (partnerCode) =>
-    `/admin/partners/${encodeURIComponent(partnerCode)}/contracts`,
+  contractsHref: partnerContractsHref,
 });
 
 // Spec 016 §5.2 (TASK-333): the buyer emails B1 to B6 and B8. The refunds come through spec 013's
@@ -441,10 +491,17 @@ export const JOB_HANDLERS: JobHandlers = {
     });
     // Spec 021 §5.2 (TASK-494): deadline defaults and due-soon alerts. Each review is decided in
     // its own transaction under the order's lock, so a re-run finds it decided.
+    // Spec 021 §5.2 (TASK-495): a post-routing review's deadline refunds in full, sent after commit.
     await runReviewDeadlines({
       cancelOrder: riskGateDeps.cancelOrder,
+      refundBalance: riskRefundBalance,
+      submitRefund: submitRiskRefund,
       alert: raiseLegacyAlert,
     });
+    // Spec 021 §5.2, §11 (TASK-495): the site velocity alert (once per burst) and, on the first
+    // tick of a UTC day, the daily counter line. Both read only; a re-run raises nothing new.
+    await detectSiteVelocity({ alert: raiseLegacyAlert });
+    await dailyCounters();
   },
   "alerts.monitor": async (_payload, context) => {
     await runMonitor({

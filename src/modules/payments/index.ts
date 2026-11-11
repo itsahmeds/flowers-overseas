@@ -102,6 +102,7 @@ export type { RefundReason } from "./events.ts";
 export {
   refund,
   refundCancelledOrder,
+  requestBalanceRefund,
   requestRefund,
   submitRefund,
   succeededRefunds,
@@ -161,6 +162,8 @@ export {
   WEBHOOK_MAX_BYTES,
 } from "./webhooks.ts";
 export type {
+  EarlyFraudWarningHandler,
+  EarlyFraudWarningInput,
   ProcessOutcome,
   ReplayCounts,
   ReplayOptions,
@@ -215,3 +218,5 @@ export {
   riskFactsFor,
 } from "./risk-facts.ts";
 export { stripeProviderFromEnv } from "./provider-env.ts";
+// Spec 021 §12 requirement (f) (TASK-495): the risk target reads an order's disputes.
+export { type OrderDispute, disputesFor } from "./disputes.ts";
