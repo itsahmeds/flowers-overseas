@@ -1,7 +1,8 @@
 /**
  * The account pages' request helpers (spec 018 §14 A-founder-2026-10-22 C.5, C.13, AC-25, AC-34;
  * TASK-344): the `account.open` flag for a locale, the locale of a route, the order modes the
- * account lists in this environment, and the buyer's RLS-scoped runner.
+ * account lists in this environment, and the buyer's RLS-scoped runner. TASK-352 adds the
+ * `account.recipients` flag, the account runner of `@/modules/customers` and the two page paths.
  */
 import { randomUUID } from "node:crypto";
 
@@ -11,6 +12,7 @@ import { appEnvironment } from "@/lib/env.schema";
 import { isEnabled } from "@/lib/flags";
 import { logger } from "@/lib/logger";
 import { routableLocale } from "@/modules/i18n";
+import type { AccountRunner } from "@/modules/customers";
 import {
   accountOrderModes,
   type CustomerRunner,
@@ -34,6 +36,22 @@ export async function accountOpen(locale: LocaleCode): Promise<boolean> {
   }
 }
 
+/**
+ * Whether saved recipients are on (spec 018 §14 C.7.3, C.11; TASK-352): `account.recipients`,
+ * global. A flag that cannot be read is off: the page answers 404 and the save box is absent.
+ */
+export async function recipientsOpen(): Promise<boolean> {
+  try {
+    return await isEnabled("account.recipients");
+  } catch (error) {
+    logger.warn(
+      { error_name: error instanceof Error ? error.name : "unknown" },
+      "account.flag_unreadable",
+    );
+    return false;
+  }
+}
+
 /** The route's locale when the site serves it, else `null` (the page answers 404). */
 export function accountLocale(requested: string): LocaleCode | null {
   const code = routableLocale(requested)?.code;
@@ -48,6 +66,22 @@ export function listedModes(): readonly string[] {
 /** The buyer's `customer` database context as a runner: RLS scopes every read (AC-25). */
 export function asCustomer(context: BuyerContext): CustomerRunner {
   return customerRunner(toDbContext(context, randomUUID()));
+}
+
+/** The buyer's `customer` database context as the customers module's runner (RLS). */
+export function asCustomerAccount(context: BuyerContext): AccountRunner {
+  const run = asCustomer(context);
+  return (fn) => run((executor) => fn(executor));
+}
+
+/** `/{locale}/account/details`. */
+export function detailsPath(locale: LocaleCode): string {
+  return `/${locale}/account/details`;
+}
+
+/** `/{locale}/account/recipients`. */
+export function recipientsPath(locale: LocaleCode): string {
+  return `/${locale}/account/recipients`;
 }
 
 /** `/{locale}/account/orders/{reference}`. */

@@ -824,6 +824,16 @@
     "reviewed": false,
     "sourceHash": "49aa5ea7f28d8fb0040c9eb00d1cd0898dfcf8007a48bd92fea5720bfb0fb65a"
   },
+  "admin.flags.description.account.recipients": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "65820c2b092f78155e6271a64eb726054d1dc0c12ae4077fd6da9c2f42b3fc4d"
+  },
+  "admin.flags.description.account.reminders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1239736b7e995480c178e84db349c1824d01227ac547a393c176a7ce4b7a4ee6"
+  },
   "admin.flags.description.checkout.demo_guard": {
     "source": "human",
     "reviewed": false,

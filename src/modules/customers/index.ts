@@ -24,3 +24,29 @@ export type {
   RecipientInput,
   UpsertedCustomer,
 } from "./writers";
+// Spec 018 §14 A-founder-2026-10-22 C.7.2, C.7.3 (TASK-352): the buyer account's details,
+// preferences and saved recipients. The checkout seam is `./checkout-profile` (it reads the
+// buyer session), imported by path so this barrel stays free of the sign-in surface.
+export {
+  AccountDetailsSchema,
+  DetailsInputSchema,
+  listSavedRecipients,
+  readAccountDetails,
+  recipientSaveOffer,
+  removeSavedRecipient,
+  SAVED_RECIPIENT_LIMIT,
+  SavedRecipientSchema,
+  saveDetails,
+  saveRecipientFromOrder,
+  UNSAVEABLE_PLACE_KINDS,
+  markSavedRecipientUsed,
+} from "./buyer-account";
+export type {
+  AccountDetails,
+  AccountExecutor,
+  AccountRunner,
+  DetailsInput,
+  SavedRecipient,
+  SaveOffer,
+  SaveRecipientOutcome,
+} from "./buyer-account";

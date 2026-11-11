@@ -150,6 +150,9 @@ function tableNames(body: string, pattern: RegExp): string[] {
 export const RECIPIENT_TABLES: readonly string[] = [
   "recipient",
   "recipient_address",
+  // Spec 018 §14 C.11, AC-54 (migration `0047_buyer_account`, TASK-352): a buyer's saved copy of
+  // a recipient holds no email either.
+  "saved_recipient",
 ];
 
 /** AC-27's pattern, verbatim: `email`, `e_mail`, `e-mail`, any case, anywhere in the name. */

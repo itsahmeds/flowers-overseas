@@ -93,6 +93,10 @@
  *    `risk_assessment` and `risk_review` (12 months; an open review and its assessment are never
  *    swept), `risk_blocklist` (12 months after the last match) and `risk_pause` (30 days after
  *    its end): spec 021 §5.1 A11 (c), AC-33; TASK-493.
+ *  - `saved_recipient` (730 days after `last_used_at`, delete; spec 018 §14 A-founder-2026-10-22
+ *    C.7.3, C.11, AC-55; TASK-352): a buyer's saved copy of a recipient that nobody used for two
+ *    years. The order's own `recipient` keeps `recipient_contact`'s 90 days with no exemption.
+ *    `occasion_reminder` is `keep`; `buyer_account_inactive` is TASK-345's handler.
  *  A key with no handler here is reported `no_handler` and nothing is written for it.
  *
  * `dryRun` writes nothing — no row, no object — and reports the same counts, because every count
@@ -1182,6 +1186,27 @@ function riskRows(
   };
 }
 
+/**
+ * `saved_recipient` (730 days after `last_used_at`, delete; spec 018 §14 C.7.3, C.11, AC-55;
+ * TASK-352). A delete, not a pseudonymisation: the row is the buyer's copy, and no order points
+ * at it.
+ */
+const savedRecipients: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = sql`last_used_at <= ${ts(cutoff)}`;
+  const counted = await rows<{ count: number }>(
+    db,
+    sql`SELECT count(*)::int AS count FROM public.saved_recipient WHERE ${due}`,
+  );
+  if (!dryRun) {
+    await db.execute(sql`DELETE FROM public.saved_recipient WHERE ${due}`);
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { saved_recipient: counted[0]?.count ?? 0 },
+    skipped: {},
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -1212,6 +1237,7 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   risk_review: riskRows("risk_review"),
   risk_blocklist: riskRows("risk_blocklist"),
   risk_pause: riskRows("risk_pause"),
+  saved_recipient: savedRecipients,
 };
 
 /**

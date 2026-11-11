@@ -16,6 +16,8 @@ export interface ReminderConsentCheckboxProps {
   readonly label: string;
   readonly hint: string;
   readonly checked: boolean;
+  /** The posted field's name; spec 018's save box (TASK-352) posts `save`. */
+  readonly name?: string;
 }
 
 export function ReminderConsentCheckbox({
@@ -23,6 +25,7 @@ export function ReminderConsentCheckbox({
   label,
   hint,
   checked,
+  name = "basketReminder",
 }: ReminderConsentCheckboxProps): ReactElement {
   const hintId = `${id}-hint`;
   return (
@@ -35,7 +38,7 @@ export function ReminderConsentCheckbox({
         className="peer bg-card checked:bg-selected focus-visible:outline-focus m-0 size-[24px] cursor-pointer appearance-none rounded-[6px] shadow-[inset_0_0_0_1.5px_var(--color-field-edge)] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22white%22%20stroke-width=%223%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M5%2012l5%205L19%207%22/%3E%3C/svg%3E')] checked:bg-[length:16px_16px] checked:bg-center checked:bg-no-repeat checked:shadow-none focus-visible:outline-[2.5px] focus-visible:outline-offset-[3px] focus-visible:outline-solid"
         defaultChecked={checked}
         id={id}
-        name="basketReminder"
+        name={name}
         type="checkbox"
         value="on"
       />

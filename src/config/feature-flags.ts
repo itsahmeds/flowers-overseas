@@ -178,6 +178,25 @@ const REGISTRY = [
     risk: "standard",
     dirties: [],
   },
+  // Spec 018 §14 A-founder-2026-10-22 C.7.3, C.7.4, C.11 (migration `0047_buyer_account`,
+  // TASK-352): saved recipients and occasion reminders, each global and off. Every route they
+  // gate is `noindex`, `no-store`, so neither dirties a page.
+  {
+    key: "account.recipients",
+    scopeKinds: ["global"],
+    description:
+      "Saved recipients in the account (spec 018 C.7.3): the save box on an order and the recipients page. Off in production until the founder signs docs/compliance/lia-saved-recipients.md.",
+    risk: "standard",
+    dirties: [],
+  },
+  {
+    key: "account.reminders",
+    scopeKinds: ["global"],
+    description:
+      "Occasion reminders in the account (spec 018 C.7.4): the reminders page and the daily email. Off until the founder approves the email and the consent line.",
+    risk: "standard",
+    dirties: [],
+  },
   {
     key: "invoice.issue",
     scopeKinds: ["country"],

@@ -259,6 +259,32 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-352 (spec 018 C.13, C.15; the account-details-* and account-recipients-* slots): the
+    // details and saved-recipients texts, until record-approval-352.py.
+    "account.details.currency",
+    "account.details.currencyOption",
+    "account.details.emailNote",
+    "account.details.language",
+    "account.details.save",
+    "account.details.saved",
+    "account.details.signOutEverywhere",
+    "account.details.signOutEverywhereNote",
+    "account.details.title",
+    "account.nav.details",
+    "account.nav.recipients",
+    "account.recipients.empty",
+    "account.recipients.keep",
+    "account.recipients.limit",
+    "account.recipients.place",
+    "account.recipients.remove",
+    "account.recipients.removeBody",
+    "account.recipients.removeLabel",
+    "account.recipients.removeTitle",
+    "account.recipients.removed",
+    "account.recipients.save",
+    "account.recipients.saveHint",
+    "account.recipients.saveSubmit",
+    "account.recipients.saved",
     // The basket page (spec 010 §14 A-founder-2026-10-22, Appendix A; TASK-349).
     "checkout.basket.addOns",
     "checkout.basket.added",
