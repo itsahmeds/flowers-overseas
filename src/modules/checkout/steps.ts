@@ -50,6 +50,7 @@ import {
 } from "@/modules/catalog";
 import { recordBasketReminderConsent } from "@/modules/customers";
 import { MoneySchema } from "@/modules/i18n";
+import { isDisposableEmail } from "@/modules/risk";
 
 import { assessBasket } from "./basket";
 import { lineDateStatus } from "./dates";
@@ -81,6 +82,9 @@ import {
   LinePositionSchema,
   RecipientStepSchema,
 } from "./schemas";
+
+/** Spec 021 §7: the step 3 email field's message for a disposable address. */
+export const CHECKOUT_RISK_EMAIL_KEY = "checkout.risk.emailLasting";
 
 /* -------------------------------------------------------------------------- */
 /* Outcomes                                                                    */
@@ -653,6 +657,20 @@ export async function runBuyerStep(
       step: "details",
       line: 1,
       errors: issuesOf(parsed.error),
+      values,
+    });
+  }
+  // Spec 021 §5.2 "Disposable email" (AC-2; TASK-493): in `test` and `live` only, a disposable
+  // address is refused on the field, every value kept and nothing written; a relay passes.
+  if (
+    (draft.mode === "test" || draft.mode === "live") &&
+    isDisposableEmail(parsed.data.email)
+  ) {
+    return render({
+      status: "invalid",
+      step: "details",
+      line: 1,
+      errors: { email: [{ key: CHECKOUT_RISK_EMAIL_KEY }] },
       values,
     });
   }

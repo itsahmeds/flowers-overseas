@@ -24,6 +24,12 @@ export { signedLinkSecret } from "./env.signed-link";
 export { reviewTokenSecret, trustpilotAfsAddress } from "./env.reviews";
 export { opsAlertEmail } from "./env.notifications";
 export {
+  RISK_HASH_KEY_KEY,
+  type RiskHashKey,
+  TEST_RISK_HASH_KEY,
+  riskHashKey,
+} from "./env.risk";
+export {
   FLORIST_APPLICATIONS_NOTIFY_EMAIL_KEY,
   floristApplicationsNotifyEmail,
 } from "./env.florists";

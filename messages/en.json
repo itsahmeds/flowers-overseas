@@ -1192,6 +1192,11 @@
         "button": "Stop basket emails",
         "done": "Done. We will not send you basket emails unless you ask for one again."
       }
+    },
+    "risk": {
+      "attemptsExhausted": "This payment did not go through and nothing was charged. Please start again, or call or message us and we will help you place your order.",
+      "emailLasting": "Please use an email address you will keep. We send your order confirmation and updates to it.",
+      "startAgain": "Start again"
     }
   },
   "confirmation": {

@@ -213,6 +213,7 @@ describe("ensureQueues", () => {
       "payouts.statement_email",
       "payouts.watch",
       "retention.sweep",
+      "risk.monitor",
       "routing.sla_watch",
       "webhook.process",
       "webhook.resend.process",
@@ -458,6 +459,7 @@ describe("runTick — each job settled exactly once", () => {
       "payouts.statement_email",
       "payouts.watch",
       "retention.sweep",
+      "risk.monitor",
       "routing.sla_watch",
       "webhook.resend.process",
     ]);

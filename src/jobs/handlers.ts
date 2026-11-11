@@ -58,10 +58,12 @@ import { fxSnapshotStatus } from "../modules/catalog";
 import {
   dispatchAlert,
   runDailySummary,
+  raiseLegacyAlert,
   runEscalation,
   runMonitor,
 } from "../modules/ops";
 import {
+  attemptStats,
   balanceFetchKey,
   balanceProviderFromEnv,
   registerPaymentsOutbox,
@@ -93,6 +95,8 @@ import {
   watchRoutingSla,
 } from "../modules/orders/routing/jobs";
 
+import { detectCardTesting } from "../modules/risk";
+import { appEnvironment } from "../lib/env.schema";
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
 
@@ -394,6 +398,17 @@ export const JOB_HANDLERS: JobHandlers = {
   },
   // Spec 025 §5.2 (TASK-489): the minute's checks. Writes only `ops_alert`; a re-run raises the
   // same fingerprints, which deduplicate into the rows already open.
+  // Spec 021 §5.2 (TASK-493): the card-testing detector. A re-run in the same window finds the
+  // pause it wrote (live) and raises nothing new; in test the alert log deduplicates.
+  "risk.monitor": async () => {
+    const live = appEnvironment(process.env) === "production";
+    await detectCardTesting({
+      mode: live ? "live" : "test",
+      attemptStats: (since, until) =>
+        attemptStats(since, until, { livemode: live }),
+      alert: raiseLegacyAlert,
+    });
+  },
   "alerts.monitor": async (_payload, context) => {
     await runMonitor({
       ...(context.queue === undefined ? {} : { queue: context.queue }),

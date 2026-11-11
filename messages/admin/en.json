@@ -350,6 +350,11 @@
         },
         "analytics": {
           "mp_send": "Sends each purchase and refund to Google Analytics from our server, only for buyers who accepted analytics. Off: nothing is sent and each one is recorded as skipped."
+        },
+        "risk": {
+          "gate": "Holds an order for your review before it goes to a florist when the fraud checks say so, and cancels it on a decisive signal. Off: every order is still checked and recorded, but none is held or cancelled.",
+          "strict": "Stricter fraud checks: an order is held from a lower score, and every first order above the strict amount waits for your review.",
+          "pay_pause": "Refuses every new payment while on. Nothing is charged; buyers see that payments are not available right now."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -1821,6 +1826,9 @@
         },
         "outbox": {
           "dead": "An order step failed for good"
+        },
+        "risk": {
+          "card_testing_suspected": "Many declined card payments in 10 minutes; new payments paused for 30 minutes in live"
         },
         "payment": {
           "amount_mismatch": "Payment amount does not match the order",

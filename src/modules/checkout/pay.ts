@@ -155,6 +155,9 @@ export async function runPay(
     case "not_payable":
       // Already paid (another tab, a webhook first) or closed: the confirmation says which.
       return { kind: "redirect", location: donePath(locale) };
+    case "refused":
+      // Spec 021: the pre-check refused before any intent; spec 013's notice, nothing charged.
+      return { kind: "error", messageKey: confirmed.messageKey };
   }
 }
 
@@ -178,6 +181,10 @@ export async function runPaymentDeclined(
   if (synced.kind === "paid") {
     return { kind: "redirect", location: donePath(context.locale) };
   }
+  if (synced.kind === "ended") {
+    // Spec 021 (AC-4): step 4 renders the attempts-used-up state, with no retry.
+    return { kind: "redirect", location: stepPath(context.locale, "review") };
+  }
   return { kind: "error", messageKey: synced.messageKey ?? GENERIC };
 }
 
@@ -199,7 +206,8 @@ export async function paymentReturnLocation(
   if (lookup.status === "active" && lookup.draft.purchaseId !== null) {
     const step = stepOf(lookup.draft.mode);
     if (step?.sync !== undefined) {
-      await step.sync(lookup.draft.purchaseId);
+      const synced = await step.sync(lookup.draft.purchaseId);
+      if (synced.kind === "ended") return stepPath(locale.data, "review");
     }
   }
   return donePath(locale.data);

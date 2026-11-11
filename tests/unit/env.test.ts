@@ -597,7 +597,7 @@ const repoFile = (relative: string): string =>
  * here is what `validateEnv()` does with the answer.
  */
 describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
-  it("carries APP_ENV and NEXT_PUBLIC_APP_ENV, and 49 keys in total", () => {
+  it("carries APP_ENV and NEXT_PUBLIC_APP_ENV, and 52 keys in total", () => {
     expect(ENV_KEYS).toContain(APP_ENV_KEY);
     expect(ENV_KEYS).toContain(NEXT_PUBLIC_APP_ENV_KEY);
     // PR #62's 26-key contract plus the two spec 040 adds. The number is spelled out because
@@ -613,8 +613,9 @@ describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
     // `ALERT_HEARTBEAT_URL`, `ALERT_SUMMARY_HEARTBEAT_URL`; spec 023 (TASK-491) `GA4_API_SECRET`
     // and `GA4_MP_VALIDATE`;
     // spec 034 (TASK-449) the basket
-    // reminder's two: `CONTACT_HMAC_SECRET`, `MARKETING_MAIL_FROM`.
-    expect(ENV_KEYS).toHaveLength(51);
+    // reminder's two: `CONTACT_HMAC_SECRET`, `MARKETING_MAIL_FROM`; spec 021 (TASK-493) the risk
+    // hash key `RISK_HASH_KEY`.
+    expect(ENV_KEYS).toHaveLength(52);
     expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
   });
 

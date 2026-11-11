@@ -32,8 +32,9 @@ import { type IntegerMoney } from "@/modules/catalog";
 import { infoPageExists, infoPagePath } from "@/modules/content";
 import { formatDate, formatMoney, formatNumber } from "@/modules/i18n";
 import { PAGE_FRAME } from "@/modules/ui";
-import { DemoBanner } from "@/modules/ui/checkout";
+import { DemoBanner, checkoutButtonClass } from "@/modules/ui/checkout";
 import {
+  PaymentErrorNotice,
   PaymentPanel,
   PreContractBlock,
   type PreContractBlockProps,
@@ -401,6 +402,98 @@ export async function UnpaidPayPage({
               city: delivery.city,
             })),
           })}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/**
+ * Step 4 after the 5th declined attempt (spec 021 §5.2 "Attempt cap", §5.3, §7; AC-4, AC-30;
+ * TASK-493; the "tries used up" state on `docs/design/wireframes/checkout-*.dc.html`): the
+ * purchase is closed unpaid, so there is no card form, no Pay and no "Change" link. Spec 013's
+ * notice takes focus with `checkout.risk.attemptsExhausted`, then "Start again" (the first
+ * bouquet's product page, orchestrator ruling 2026-11-08; the checkout start when none resolves)
+ * and the support phone and WhatsApp link, as `payments.step.noScript` has them.
+ */
+export async function AttemptsEndedPage({
+  locale,
+  mode,
+  productPath,
+}: {
+  readonly locale: LocaleCode;
+  readonly mode: "test" | "live";
+  readonly productPath: string | null;
+}): Promise<ReactElement> {
+  const all = (await getTranslations({ locale })) as unknown as Translate;
+  const t = await getTranslations({ locale, namespace: "checkout" });
+  return (
+    <>
+      {mode === "test" ? (
+        <>
+          <DemoBanner
+            body={t("demo.bannerBody")}
+            innerClassName={PAGE_FRAME}
+            title={t("demo.bannerTitle")}
+          />
+          <p
+            className={`${PAGE_FRAME} text-ink-2 m-0 pt-[10px] text-sm`}
+            role="note"
+          >
+            {all("payments.step.testLabel")}
+          </p>
+        </>
+      ) : null}
+      <div
+        className={`${PAGE_FRAME} pt-[32px] pb-[64px] md:pt-[40px]`}
+        data-fo-pay-step="ended"
+      >
+        <div className="grid max-w-[720px] gap-[18px]">
+          <h1 className={H1}>
+            {t.rich("step.review", { em: (chunks) => <em>{chunks}</em> })}
+          </h1>
+          <section
+            aria-labelledby="co-pay-title"
+            className="border-rule grid gap-[14px] border-t border-solid pt-[22px]"
+          >
+            <h2
+              className="display m-0 text-(length:--text-lg) leading-[1.15]"
+              id="co-pay-title"
+            >
+              {all("payments.step.payTitle")}
+            </h2>
+            <PaymentErrorNotice
+              message={all("checkout.risk.attemptsExhausted")}
+            >
+              <a
+                className={checkoutButtonClass(
+                  "primary",
+                  "sm",
+                  "justify-self-start",
+                )}
+                data-fo-start-again=""
+                href={productPath ?? `/${locale}`}
+              >
+                {all("checkout.risk.startAgain")}
+              </a>
+              <p className="m-0 flex flex-wrap gap-x-[22px] gap-y-[8px]">
+                <a
+                  className="text-link font-bold underline"
+                  href={`tel:${COMPANY.contact.phoneE164}`}
+                >
+                  {COMPANY.contact.phoneDisplay}
+                </a>
+                <a
+                  className="text-link font-bold underline"
+                  href={whatsappHref(COMPANY.contact)}
+                >
+                  {all("tracking.help.whatsapp", {
+                    phone: COMPANY.contact.phoneDisplay,
+                  })}
+                </a>
+              </p>
+            </PaymentErrorNotice>
+          </section>
         </div>
       </div>
     </>

@@ -51,6 +51,11 @@ export const MODULES = [
   // none for operations); registered here and in `docs/architecture.md` §3 in the same PR, as the
   // rule above requires.
   "ops",
+  // spec 021 §5.2 (TASK-493): fraud pre-checks, the risk score, the review queue and the
+  // chargeback evidence pack. `plan/01` §5 names no module for fraud (it sits between `payments`
+  // and `orders`); registered here and in `docs/architecture.md` §3 in the same PR, as the rule
+  // above requires.
+  "risk",
 ] as const;
 
 export const REQUIRED_DIRS = [

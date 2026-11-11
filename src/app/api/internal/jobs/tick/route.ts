@@ -114,7 +114,12 @@ export function POST(request: Request): Promise<Response> {
           );
         }
         // Spec 025 §5.2 (TASK-489): the alert monitors and the escalation pass, once a minute.
-        for (const name of ["alerts.monitor", "alerts.escalate"] as const) {
+        // Spec 021 §5.2 (TASK-493): `risk.monitor`, the card-testing check, once a minute too.
+        for (const name of [
+          "alerts.monitor",
+          "alerts.escalate",
+          "risk.monitor",
+        ] as const) {
           await enqueue(
             boss,
             name,

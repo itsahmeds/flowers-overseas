@@ -161,6 +161,17 @@ export type CheckoutScreen =
    * refresh, a failed 3DS): step 3 again, rebuilt from the purchase's orders.
    */
   | { readonly kind: "unpaid"; readonly mode: "test" | "live" }
+  /**
+   * Spec 021 §5.2 "Attempt cap" (AC-4; TASK-493): the 5th declined attempt closed the purchase
+   * unpaid (`payment_failed` by `system:risk`): step 4 says nothing was charged, with "Start
+   * again" (the first bouquet's product page, orchestrator ruling 2026-11-08) and the contact
+   * line, and no retry.
+   */
+  | {
+      readonly kind: "ended";
+      readonly mode: "test" | "live";
+      readonly productPath: string | null;
+    }
   | { readonly kind: "empty" }
   | {
       readonly kind: "closed";
@@ -378,6 +389,30 @@ async function purchaseUnpaid(
   return statuses.length > 0 && statuses.every((status) => status === "placed");
 }
 
+/** The risk module's actor (spec 021 §5.2), which closes a purchase at its 5th decline. */
+const RISK_CLOSE_ACTOR = "system:risk";
+
+/** Every order of the purchase ended `payment_failed` by the attempt cap (spec 021 AC-4). */
+async function purchaseAttemptsEnded(
+  purchaseId: string,
+  connection: DraftConnection | undefined,
+): Promise<boolean> {
+  const [row] = await withDraftConnection(connection, (executor) =>
+    executor.execute(sql`
+      SELECT count(*)::int AS orders,
+             count(*) FILTER (
+               WHERE o.status = 'payment_failed'
+                 AND EXISTS (SELECT 1 FROM order_event e
+                              WHERE e.order_id = o.id AND e.to_status = 'payment_failed'
+                                AND e.actor = ${RISK_CLOSE_ACTOR}))::int AS ended
+        FROM "order" o WHERE o.purchase_id = ${purchaseId}`),
+  );
+  const parsed = z
+    .object({ orders: z.number().int(), ended: z.number().int() })
+    .parse(row);
+  return parsed.orders > 0 && parsed.ended === parsed.orders;
+}
+
 /** The screen for a request (the file header). */
 export async function checkoutScreen(
   request: ScreenRequest,
@@ -392,6 +427,20 @@ export async function checkoutScreen(
       (await purchaseUnpaid(draft.purchaseId, request.connection))
     ) {
       return { kind: "unpaid", mode: draft.mode };
+    }
+    if (
+      (draft.mode === "test" || draft.mode === "live") &&
+      (await purchaseAttemptsEnded(draft.purchaseId, request.connection))
+    ) {
+      const first = draft.lines[0];
+      return {
+        kind: "ended",
+        mode: draft.mode,
+        productPath:
+          first === undefined
+            ? null
+            : await productPathOf(request.locale, first.sku, first.countryIso),
+      };
     }
     return { kind: "placed" };
   }

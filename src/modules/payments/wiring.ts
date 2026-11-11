@@ -67,6 +67,9 @@ export function ensureStripePaymentSteps(): void {
       methodSources: methodSourcesFromFlags((key) =>
         isRegisteredFlagKey(key) ? isEnabled(key) : Promise.resolve(false),
       ),
+      // Spec 021 (TASK-493): `risk.pay_pause` for the pay-step pre-check.
+      riskFlag: (key) =>
+        isRegisteredFlagKey(key) ? isEnabled(key) : Promise.resolve(false),
     },
   });
 }

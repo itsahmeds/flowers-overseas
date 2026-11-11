@@ -248,6 +248,9 @@ describe("migration 0011 — each class gets exactly its policies", () => {
     expect(SYSTEM_WRITE_ADMIN_READ_TABLES).toEqual([
       "purchase",
       "basket_reminder",
+      "risk_identity",
+      "risk_assessment",
+      "risk_pause",
     ]);
     for (const table of SYSTEM_WRITE_ADMIN_READ_TABLES) {
       expect(policiesOf(table), table).toEqual([

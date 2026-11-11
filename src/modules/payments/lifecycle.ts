@@ -36,6 +36,7 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { isCurrencyCode } from "@/config/currencies";
+import { MAX_DECLINED_ATTEMPTS } from "@/config/risk";
 import {
   PENDING_PAYMENT_TIMEOUT_MINUTES,
   REQUESTED_REFUND_RETRY_MINUTES,
@@ -432,6 +433,8 @@ interface Decision {
   readonly after?: "cancel_intent";
   /** `captured_after_close`: the refunds to send once the transaction has committed. */
   readonly refundIds?: readonly string[];
+  /** Spec 021 (AC-4): this decline was the purchase's last allowed attempt. */
+  readonly exhausted?: boolean;
 }
 
 /** An intent state the order has not passed: decide nothing, wait. */
@@ -642,7 +645,10 @@ export async function reconcile(
           { executor },
         );
       }
-      return { result: { outcome: "attempt_failed", ...base } };
+      return {
+        result: { outcome: "attempt_failed", ...base },
+        exhausted: attempt >= MAX_DECLINED_ATTEMPTS,
+      };
     }
     return { result: { outcome: "unchanged", ...base } };
   });
@@ -670,6 +676,10 @@ export async function reconcile(
     },
     "payments.reconcile",
   );
+  // Spec 021 §5.2 "Attempt cap" (AC-4): the 5th decline ends the purchase's payment.
+  if (decision.exhausted === true && decision.result.purchaseId !== null) {
+    await endPaymentAttempts(decision.result.purchaseId, RISK_ACTOR, deps);
+  }
   return decision.result;
 }
 
@@ -726,6 +736,7 @@ async function closeUnpaid(
   purchaseId: string,
   payment: Payment | null,
   now: Date,
+  actor: string = SWEEP_ACTOR,
 ): Promise<boolean> {
   const purchase = await readPurchase(executor, purchaseId);
   const orders = await lockOrders(executor, purchaseId);
@@ -747,7 +758,7 @@ async function closeUnpaid(
     await transition(
       order.id,
       failed ? "order.payment_failed" : "order.abandoned",
-      SWEEP_ACTOR,
+      actor,
       failed
         ? payloadOf(purchase.mode, {
             payment_id: payment.id,
@@ -766,6 +777,54 @@ async function closeUnpaid(
     "payments.sweep_closed",
   );
   return true;
+}
+
+/** The actor of the risk module's closes (spec 021 §5.2). */
+export const RISK_ACTOR = "system:risk";
+
+export type EndAttemptsResult =
+  | { readonly kind: "closed" }
+  | { readonly kind: "kept"; readonly reason: "not_placed" | "provider" };
+
+/**
+ * `endPaymentAttempts(purchaseId, actor)` (spec 021 §5.2 "Attempt cap", "Pay-step pre-check",
+ * §12 requirement (b) on spec 013; AC-3, AC-4; TASK-493): sweep (b) for one purchase, now. The
+ * intent, if one exists at the provider, is cancelled first (key `void:{paymentId}`), and only
+ * once the provider confirms are the orders closed, every one in one transaction: row 3
+ * (`order.payment_failed`) after a declined attempt, else row 4 (`order.abandoned`), by `actor`.
+ * A payment is one per purchase (spec 010 §13 Q19), so spec 021's per-order call closes the
+ * purchase its order belongs to. A purchase already past `placed` is left as it is.
+ */
+export async function endPaymentAttempts(
+  purchaseId: string,
+  actor: string,
+  deps: LifecycleDeps,
+): Promise<EndAttemptsResult> {
+  const id = z.uuid().parse(purchaseId);
+  const d = resolve(deps);
+  const now = d.now();
+  const payment = await d.transaction((executor) =>
+    livePayment(executor, id, false),
+  );
+  if (payment !== null && payment.provider_ref !== null) {
+    const cancelled = await d.provider.cancel(
+      payment.provider_ref,
+      `void:${payment.id}`,
+    );
+    if (isProviderFailure(cancelled) || cancelled.status !== "canceled") {
+      logger.warn(
+        { purchase_id: id, payment_id: payment.id, outcome: "kept" },
+        "payments.end_attempts_kept",
+      );
+      return { kind: "kept", reason: "provider" };
+    }
+  }
+  const closed = await d.transaction(async (executor) => {
+    const locked =
+      payment === null ? null : await lockPayment(executor, payment.id);
+    return closeUnpaid(executor, id, locked, now, actor);
+  });
+  return closed ? { kind: "closed" } : { kind: "kept", reason: "not_placed" };
 }
 
 /**

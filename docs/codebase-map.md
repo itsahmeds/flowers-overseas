@@ -26,8 +26,9 @@ task actually touches.
 | `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +31 |
-| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +18 |
+| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +19 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
+| `risk` | Public barrel for `risk`: fraud pre-checks… | 021 | `unit/risk-core.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +77 |
@@ -83,6 +84,10 @@ task actually touches.
 | `payments.ts` | Payment lifecycle timings: the unpaid-purchase… | 013 |
 | `payouts.ts` | Florist payout settings: prepaid default, alert… | 030 |
 | `reviews.ts` | Review constants: invite timing, text cap,… | 022 |
+| `risk.ts` | The fraud pre-checks' numbers (spec 021 §5.2… | 021 |
+| `risk/card-message-patterns.ts` | The card-message patterns of signal S15 (spec… | 021 |
+| `risk/disposable-domains.ts` | The disposable email domains: a | 021 |
+| `risk/relay-allowlist.ts` | Privacy relay domains | 021 |
 | `routing.ts` | The routing rules' numbers (spec 016 §5.2… | 016 |
 | `search.ts` | Site search's numbers and word lists | 045 |
 | `site-links.ts` | Site-link registry | 004 |
@@ -411,8 +416,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 529 |
-| `tests/integration/` | 115 |
+| `tests/unit/` | 530 |
+| `tests/integration/` | 116 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

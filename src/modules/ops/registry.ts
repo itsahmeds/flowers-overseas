@@ -149,6 +149,16 @@ export const ALERT_REGISTRY = {
     "P2",
     "payment-refund-exceeds-captured",
   ),
+  // Spec 021 §5.2 "Card-testing detector" (TASK-493): one per 10-minute window; in live the
+  // detector also pauses new payments for 30 minutes.
+  "risk.card_testing_suspected": {
+    severity: "P1",
+    scope: "component",
+    component: "stripe",
+    resolve: "manual",
+    actBy: "none",
+    runbook: rb("fraud-review", "risk-card-testing-suspected"),
+  },
   // Spec 016.
   "routing.no_partner": {
     severity: "P1",

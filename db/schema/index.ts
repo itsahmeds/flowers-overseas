@@ -39,3 +39,4 @@ export * from "./orders.ts";
 export * from "./partners.ts";
 export * from "./payments.ts";
 export * from "./review.ts";
+export * from "./risk.ts";

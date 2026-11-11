@@ -32,7 +32,7 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue, spec 047's checkout.discount_codes, spec 025's alerts.push, spec 030b's payments.balance_fetch and spec 034's marketing.basket_reminder", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's two, spec 013's payments.stripe, spec 022a's two review switches, spec 016's two rollback switches, spec 030a's payouts.accrue, spec 047's checkout.discount_codes, spec 025's alerts.push, spec 030b's payments.balance_fetch, spec 034's marketing.basket_reminder and spec 021's three risk flags", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
@@ -49,6 +49,9 @@ describe("T-16 — the registry", () => {
       "payments.balance_fetch",
       "analytics.mp_send",
       "marketing.basket_reminder",
+      "risk.gate",
+      "risk.strict",
+      "risk.pay_pause",
     ]);
   });
 

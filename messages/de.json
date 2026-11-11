@@ -401,6 +401,11 @@
         "button": "Warenkorb-E-Mails abbestellen",
         "done": "Erledigt. Wir senden Ihnen keine Warenkorb-E-Mails mehr, außer Sie bitten erneut darum."
       }
+    },
+    "risk": {
+      "attemptsExhausted": "This payment did not go through and nothing was charged. Please start again, or call or message us and we will help you place your order.",
+      "emailLasting": "Please use an email address you will keep. We send your order confirmation and updates to it.",
+      "startAgain": "Start again"
     }
   },
   "common": {

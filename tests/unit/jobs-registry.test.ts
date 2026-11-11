@@ -67,6 +67,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
       "payouts.statement_email",
       "payouts.watch",
       "retention.sweep",
+      "risk.monitor",
       "routing.sla_watch",
       "webhook.process",
       // spec 016 (TASK-335): one stored Resend webhook.
@@ -148,7 +149,7 @@ describe("registered versus declared-only (TASK-024 Binding, spec 002 §5.2)", (
     expect([...JOB_NAMES].sort()).toEqual(
       [...REGISTERED_JOB_NAMES, ...DECLARED_JOBS].sort(),
     );
-    expect(new Set(JOB_NAMES).size).toBe(39);
+    expect(new Set(JOB_NAMES).size).toBe(40);
     expect(isRegisteredJob("toString")).toBe(false);
   });
 

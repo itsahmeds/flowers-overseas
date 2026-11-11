@@ -505,6 +505,7 @@ describe("the shipped catalogues and manifests", () => {
     // and `checkout.action.toYourCard` are design gaps G6 and G7 (PR 417), queued for the copy batch.
     // TASK-449 (spec 034 Appendix A): the basket reminder box, the two basket notices, the two
     // basket pages and the reminder email (`emails.basketReminder.*`), sorted in above.
+    // TASK-493 (spec 021 §7): the three `checkout.risk.*` texts, sorted in above, until record-approval-493.py.
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
