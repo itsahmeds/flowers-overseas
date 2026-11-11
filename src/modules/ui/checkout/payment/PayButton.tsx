@@ -1,8 +1,8 @@
 /**
  * The pay button (spec 013 §5.3 "Components", §8 "Button and price display"; AC-3; TASK-262;
  * `.s13-paybtn` on the checkout boards). A real `<button>` that names the obligation to pay and
- * the amount ("Pay £45.90 and place order", spec 010's `checkout.legal.payButton`, the amount
- * through `formatMoney`), with a visible pending state. Presentational: the panel owns the state.
+ * the amount ("Pay £45.90 and place order", spec 010's pay-button sentence, the amount through
+ * `formatMoney`), with a visible pending state. Presentational: the panel owns the state.
  */
 import type { ReactElement } from "react";
 

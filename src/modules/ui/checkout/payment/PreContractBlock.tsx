@@ -4,8 +4,8 @@
  * component: rendered in the HTML, directly above the pay button, never by script.
  *
  * What the buyer gets (one row per delivery, its characteristics and date), the total with VAT
- * and delivery included, the cancelling item (spec 010's lawyer-gated
- * `checkout.legal.cancellation`, exactly), the trader's identity and the links to the terms and
+ * and delivery included, the cancelling item (spec 010's lawyer-gated cancellation sentence,
+ * exactly), the trader's identity and the links to the terms and
  * the withdrawal page, once for the whole purchase. In `test` it carries the "Draft, not in force"
  * label. Every string arrives as a prop: this file holds no copy.
  */

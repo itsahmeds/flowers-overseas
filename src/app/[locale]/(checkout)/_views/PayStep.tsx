@@ -67,6 +67,12 @@ const MESSAGE_KEYS = [
   "checkout.error.unable",
 ] as const;
 
+/** The panel's fallbacks, both in `MESSAGE_KEYS` (TASK-521: the shared panel names no key). */
+const PANEL_MESSAGE_KEYS = {
+  generic: "payments.error.generic",
+  unavailable: "payments.error.unavailable",
+} as const;
+
 function day(date: string): Date {
   return new Date(`${date}T12:00:00Z`);
 }
@@ -202,6 +208,7 @@ async function Panel({
       <PaymentPanel
         declined={payDeclinedAction}
         locale={locale}
+        messageKeys={PANEL_MESSAGE_KEYS}
         messages={messages}
         pay={payStepAction}
         payLabel={all("checkout.legal.payButton", {

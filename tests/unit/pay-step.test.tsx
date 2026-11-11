@@ -308,6 +308,7 @@ describe("the PaymentPanel controller (AC-1, AC-5)", () => {
       preparation: PREPARATION,
       locale: "en-gb",
       origin: "https://flowersoverseas.com",
+      unavailableKey: "payments.error.unavailable",
       load,
       pay: vi.fn(),
       declined: vi.fn(),
@@ -342,6 +343,7 @@ describe("the PaymentPanel controller (AC-1, AC-5)", () => {
       preparation: PREPARATION,
       locale: "pl",
       origin: "https://flowersoverseas.com",
+      unavailableKey: "payments.error.unavailable",
       load: () => Promise.resolve(stripe),
       pay,
       declined: vi.fn(),
@@ -380,6 +382,7 @@ describe("the PaymentPanel controller (AC-1, AC-5)", () => {
       preparation: PREPARATION,
       locale: "en-gb",
       origin: "https://flowersoverseas.com",
+      unavailableKey: "payments.error.unavailable",
       load: () => Promise.resolve(stripe),
       pay: () => Promise.resolve({ kind: "confirm", clientSecret: "s" }),
       declined,
@@ -399,6 +402,7 @@ describe("the PaymentPanel controller (AC-1, AC-5)", () => {
       preparation: PREPARATION,
       locale: "en-gb",
       origin: "https://x.test",
+      unavailableKey: "payments.error.unavailable",
       load: () => Promise.resolve(invalid.stripe),
       pay,
       declined: vi.fn(),
@@ -411,6 +415,7 @@ describe("the PaymentPanel controller (AC-1, AC-5)", () => {
       preparation: PREPARATION,
       locale: "en-gb",
       origin: "https://x.test",
+      unavailableKey: "payments.error.unavailable",
       load: () => Promise.resolve(stripeDouble().stripe),
       pay: () =>
         Promise.resolve({
@@ -429,6 +434,7 @@ describe("the PaymentPanel controller (AC-1, AC-5)", () => {
       preparation: PREPARATION,
       locale: "en-gb",
       origin: "https://x.test",
+      unavailableKey: "payments.error.unavailable",
       load: () => Promise.resolve(null),
       pay: vi.fn(),
       declined: vi.fn(),
@@ -571,6 +577,10 @@ describe("the pay button and the panel's server HTML (AC-3, AC-5)", () => {
         declined={vi.fn()}
         load={vi.fn()}
         locale="en-gb"
+        messageKeys={{
+          generic: "payments.error.generic",
+          unavailable: "payments.error.unavailable",
+        }}
         messages={{}}
         pay={vi.fn()}
         payLabel="Pay £45.90 and place order"

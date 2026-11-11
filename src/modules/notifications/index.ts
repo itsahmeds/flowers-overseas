@@ -130,13 +130,9 @@ export type {
   ResendTransaction,
   SvixHeaders,
 } from "./resend-webhook";
-// Spec 034's R1, the basket reminder (§5.2 "Rendering contract of R1"; TASK-450).
-export {
-  BasketReminderEmailPropsSchema,
-  ReminderEmailLineSchema,
-  renderBasketReminderEmail,
-  reminderDate,
-} from "./emails/basket-reminder";
+// Spec 034's R1, the basket reminder (§5.2 "Rendering contract of R1"; TASK-450): its types only.
+// The renderer and its schemas are exported by `./emails` with the other email templates, never by
+// this barrel, which pages reach (TASK-521).
 export type {
   BasketReminderEmailProps,
   ReminderEmailLine,

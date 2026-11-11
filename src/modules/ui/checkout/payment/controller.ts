@@ -86,17 +86,23 @@ export type PanelResult =
   | { readonly kind: "invalid" }
   | { readonly kind: "left" };
 
+/** The fallback message keys the pay step hands the panel (`PaymentPanelProps.messageKeys`). */
+export interface PanelMessageKeys {
+  readonly generic: string;
+  readonly unavailable: string;
+}
+
 export interface PaymentControllerDeps {
   readonly preparation: PanelPreparation;
   readonly locale: string;
   /** `window.location.origin`. */
   readonly origin: string;
+  /** The message key the panel shows when Stripe.js is not ready (the pay step's choice). */
+  readonly unavailableKey: string;
   readonly load: StripeLoader;
   readonly pay: (form: FormData) => Promise<PayAnswer>;
   readonly declined: () => Promise<DeclineAnswer>;
 }
-
-const UNAVAILABLE = "payments.error.unavailable";
 
 /** The Elements options of a deferred intent (Stripe's names, our values). */
 export function elementsOptions(
@@ -136,7 +142,7 @@ export function createPaymentController(deps: PaymentControllerDeps) {
     /** "Pay" (the file header). */
     async pay(form: FormData): Promise<PanelResult> {
       if (stripe === null || elements === null) {
-        return { kind: "message", messageKey: UNAVAILABLE };
+        return { kind: "message", messageKey: deps.unavailableKey };
       }
       const submitted = await elements.submit();
       if (submitted.error !== undefined) return { kind: "invalid" };

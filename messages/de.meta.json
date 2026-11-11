@@ -3079,11 +3079,6 @@
     "reviewed": false,
     "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
   },
-  "nav.send": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "e3be5078f2ccbc19c3787792fca859fba0ab68e95b0030b11ff3f21e28222e52"
-  },
   "nav.utility.cutoff": {
     "source": "machine",
     "reviewed": false,

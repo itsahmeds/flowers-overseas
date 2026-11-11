@@ -25,6 +25,7 @@ import {
   type Mailer,
   MailerError,
 } from "@/modules/notifications";
+import { renderBasketReminderEmail } from "@/modules/notifications/emails";
 
 import { base, country } from "./support/rows.ts";
 import {
@@ -145,6 +146,7 @@ function sendDeps(
   return {
     executor: runnerOf(tx),
     mailer,
+    render: renderBasketReminderEmail,
     readFlag: async () => true,
     env: ENV,
     window: () => ({

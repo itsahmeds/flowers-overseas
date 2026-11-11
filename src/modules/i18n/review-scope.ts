@@ -100,6 +100,9 @@ const CHECKOUT_PATHS = [
 const PAYMENTS_PATHS = [
   ...CHECKOUT_PATHS,
   "src/modules/payments/**",
+  // Spec 021's pre-pay risk checks (TASK-493): they pick which payment error the pay step shows
+  // and render nothing; no indexable page imports `src/modules/risk/` (TASK-521).
+  "src/modules/risk/**",
   // The webhook endpoint and the replay route (TASK-260): POST handlers that answer a status and
   // counts and render nothing, so no payment key can reach an indexable page through them.
   "src/app/api/webhooks/**",

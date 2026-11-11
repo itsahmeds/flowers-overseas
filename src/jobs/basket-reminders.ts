@@ -33,6 +33,7 @@ import { infoPagePath } from "../modules/content";
 import { checkoutDeliveryWindow } from "../modules/geo";
 import { loadMessages } from "../modules/i18n";
 import { getMailer } from "../modules/notifications";
+import { renderBasketReminderEmail } from "../modules/notifications/emails";
 import type { OrderExecutor, RawRow } from "../modules/orders";
 import {
   assetById,
@@ -156,6 +157,7 @@ export async function runBasketReminderSend(
       sendBasketReminder(reminderId, now, {
         executor: executorOf(db),
         mailer: getMailer(),
+        render: renderBasketReminderEmail,
         readFlag: defaultReminderFlag,
         env: process.env,
         window: (input) => checkoutDeliveryWindow(input),

@@ -28,10 +28,11 @@ import { basketReminderEnv } from "@/lib/env.basket-reminders";
 import type { EnvSource } from "@/lib/env.schema";
 import type { Logger } from "@/lib/logger";
 import {
+  type BasketReminderEmailProps,
   type Mailer,
   MailerError,
-  renderBasketReminderEmail,
   type ReminderEmailLine,
+  type RenderedBasketReminderEmail,
 } from "@/modules/notifications";
 import type { OrderExecutor } from "@/modules/orders";
 
@@ -68,6 +69,13 @@ export type ReminderLineView = Omit<ReminderEmailLine, "date">;
 export interface SendDeps {
   readonly executor: OrderExecutor;
   readonly mailer: Mailer;
+  /**
+   * R1's renderer, `renderBasketReminderEmail` from `@/modules/notifications/emails`, handed in by
+   * the job worker: the email copy stays off the module barrel, which pages reach (TASK-521).
+   */
+  readonly render: (
+    props: BasketReminderEmailProps,
+  ) => RenderedBasketReminderEmail;
   readonly readFlag: ReminderFlagReader;
   readonly env: EnvSource;
   readonly window: DeliveryWindowFn;
@@ -231,7 +239,7 @@ export async function sendBasketReminder(
            unsubscribe_token_sha256 = ${reminderTokenHash(unsubscribeToken)}
      WHERE id = ${id}`);
 
-  const rendered = renderBasketReminderEmail({
+  const rendered = deps.render({
     locale,
     lines,
     restoreUrl,
