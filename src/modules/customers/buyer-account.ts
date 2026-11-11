@@ -139,7 +139,7 @@ export async function saveDetails(
       RETURNING id`),
   );
   if (updated.length === 0) return false;
-  logger.info({}, "account.details.saved");
+  logger.info({}, "account.details.updated");
   return true;
 }
 
