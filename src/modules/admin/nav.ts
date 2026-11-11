@@ -22,6 +22,7 @@ export interface AdminNavItem {
     | "discounts"
     | "finance"
     | "basketReminders"
+    | "catalogue"
     | "publish"
     | "flags"
     | "audit"
@@ -93,6 +94,14 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "basketReminders",
     href: "/admin/basket-reminders",
     permissions: ["finance.view"],
+    built: true,
+  },
+  // Spec 012b §2.5 (TASK-297): the product editor. Every role reads the list; editing is
+  // `catalogue.edit`, prices `price.edit`.
+  {
+    key: "catalogue",
+    href: "/admin/catalogue/products",
+    permissions: ["catalogue.edit", "price.edit"],
     built: true,
   },
   // Spec 012b §2.3 (TASK-295): structural changes go out here.

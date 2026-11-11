@@ -10833,5 +10833,1005 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "a28ecbb52a5bec7aed64ed54e97e11abe82f0f1ad23771301af013f58ccd8584"
+  },
+  "admin.nav.catalogue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "103451395067d3891c26ab4bd5a33fcb0a387d6c719a32528c3f8ed310c477c6"
+  },
+  "admin.flags.confirmBody.catalogue.placeholder_window.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ee884dd5fe9bed2675d3411206722ca705a7080c152648a5f6f388c90c43e27d"
+  },
+  "admin.flags.confirmBody.catalogue.placeholder_window.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a6ce5505fdd1726d8278ee08427119bd20cc4aed3652e790c45f6afe5077114c"
+  },
+  "admin.flags.refused.one_way": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "78df7b42411a814a6963e1707b1b970704d4187fa3aff8508e3de71191ba2e73"
+  },
+  "admin.flags.oneWayOff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "41d6f98f3f2d98f83b7988c9c42b4cf86bb1b09f4c24275d147e22cb14f338c2"
+  },
+  "admin.catalogue.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "103451395067d3891c26ab4bd5a33fcb0a387d6c719a32528c3f8ed310c477c6"
+  },
+  "admin.catalogue.summary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b2380e39f008d0e4862ea8c5f2575d31303a8901e7c195ef92a15ee75b40305a"
+  },
+  "admin.catalogue.newProduct": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "44e14c8d217005243884a0e7311c78400e6fdc537e5fe6545757439c2d1885f6"
+  },
+  "admin.catalogue.readOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6717476021fa93d69e237ea79f0b7234b7ff8f4e109e5e7398cfd04c9ca9366c"
+  },
+  "admin.catalogue.filters.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5a1a760a9b54ed5912c4dd12e409c3a45218de5da3074fae059795e7458b93b"
+  },
+  "admin.catalogue.filters.type": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "admin.catalogue.filters.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.catalogue.filters.source": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0e570ca6fabe24f94e52c1833f3ffd25567022beb826fa16891f3322051bc221"
+  },
+  "admin.catalogue.filters.anyType": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b05fc1fe6984e8b64b53dff60959f79fe7914726c9488a6dc0ed70a735e45d63"
+  },
+  "admin.catalogue.filters.anyStatus": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ac78229d6b822ce5ab1df22e38cd10c8d31d718c851f8b55a0899e82f9006b71"
+  },
+  "admin.catalogue.filters.anySource": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5fce0fc52d2b74679ea1314ef4b5c6be2f8f4e55d37981a2f9d99d0235c5fc68"
+  },
+  "admin.catalogue.filters.apply": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31e392d1c0378beca611de66c0f4c71cba29159905cc54242d9bddee5b23d851"
+  },
+  "admin.catalogue.filters.clear": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "83b12c2216efb4fdc924e1deb5182e905e4926ed0c1c324d467107f46d5a26a9"
+  },
+  "admin.catalogue.source.seed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4b24fed0274a31618ac1b665ee162af331b4b70fdff74f3f9ddedc94b4da745"
+  },
+  "admin.catalogue.source.real": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e55fe37737b783cc821bb77a370950bb6a51dcf386ab6ee70d31808409ba412e"
+  },
+  "admin.catalogue.status.draft": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ebf12ef47cf575b3ba9a3cc019c5310146fdac88f6d1be6618d6e91158c2f174"
+  },
+  "admin.catalogue.status.active": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "admin.catalogue.status.retired": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a9f71bc2404c91936d123fb820e9e9b75a47d292eed38e776df0dcf7a07b6ef2"
+  },
+  "admin.catalogue.type.bouquet": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
+  },
+  "admin.catalogue.type.arrangement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5f33ce3fb567244a02e0472d07e2bdcbc56dc457aa2977b02d9d095c45e9c38b"
+  },
+  "admin.catalogue.type.plant": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0bd287f6ce17c0df72d097db9e24f828fbe5e24987012f8153a21ef6189a3747"
+  },
+  "admin.catalogue.type.funeral": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5fc0b80512c542779aee4b5c9519d748c67042af7ebfe6dc8e8f28495bfb8f61"
+  },
+  "admin.catalogue.type.gift_set": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1bd49180c6828894af6f26e4d0525ecd7c992e361eb22aee854fd35ca42816e9"
+  },
+  "admin.catalogue.type.hamper": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "003d146283c4a5c6506baacaa82ef09692b1f990034b50156939bbb12f1c9f7b"
+  },
+  "admin.catalogue.type.voucher": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48662446a8b6f685129d539f7cced5504ce1dad52c48f9b430417e6dded7bd5c"
+  },
+  "admin.catalogue.columns.product": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fb9ef894175c327470f768d95ca7bee65e19853a0eaace3805f8a7b8a12270da"
+  },
+  "admin.catalogue.columns.type": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "admin.catalogue.columns.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.catalogue.columns.pricedIn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7891b7987d454c001046ab8356f3e21a11d4afd075a6d2050170303dd4789a80"
+  },
+  "admin.catalogue.columns.text": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "71988c4d8e0803ba4519f0b2864c1331c14a1890bf8694e251379177bfedb5c3"
+  },
+  "admin.catalogue.columns.notes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085"
+  },
+  "admin.catalogue.pricedIn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f66789caa9c9deeb9c842870d47a8d8fccbf80791e12521f4c6e778d9ecf9407"
+  },
+  "admin.catalogue.placeholderChip": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4b24fed0274a31618ac1b665ee162af331b4b70fdff74f3f9ddedc94b4da745"
+  },
+  "admin.catalogue.empty.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1fafe2f6db9a425bddb528c26cc2e9a2b69d09732c0cccd86af104953d481aea"
+  },
+  "admin.catalogue.empty.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "327bd6fd28a8d08ee8a0848cb7b1ab04e8c3cf25d0900ecb4962723b69ad5b27"
+  },
+  "admin.catalogue.filteredEmpty.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0a239a1f4125a27f9df77e55fafc4c10f2b0833d35f4f758c7e37c44a81c7a1e"
+  },
+  "admin.catalogue.filteredEmpty.clear": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "admin.catalogue.back": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "103451395067d3891c26ab4bd5a33fcb0a387d6c719a32528c3f8ed310c477c6"
+  },
+  "admin.catalogue.fromFlorist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4a34b85bc8cd9c82012836ed68281fda545efa7402c402282e31b2da4ad766de"
+  },
+  "admin.catalogue.tabs.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5daf4d6a76ffc93e5128ed14f7cd49b8f7ef7cdf56e2f3e19a6373908e0bea03"
+  },
+  "admin.catalogue.tabs.details": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df"
+  },
+  "admin.catalogue.tabs.sizes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "74a3978d10045c73c94bf4ce0c2125efd6f93a654afea5b8853cd65c33fd82f5"
+  },
+  "admin.catalogue.tabs.text": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "71988c4d8e0803ba4519f0b2864c1331c14a1890bf8694e251379177bfedb5c3"
+  },
+  "admin.catalogue.tabs.prices": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5a6e4f56c0a254e0704672a2d71fae4356ee298c8c63b7edab8264e31c49ce3a"
+  },
+  "admin.catalogue.tabs.margin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2bf63d817630601b992694bc0b0559715001b9a24e7fe0d741eea02dce9181af"
+  },
+  "admin.catalogue.details.sku": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f88ba99c9b342767aca28a216f553424e3c8c1c0e9266808a592e5c46835fbf6"
+  },
+  "admin.catalogue.details.skuHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f29896ec41c45cc699ecbeeb4cbea0e6094bc9f3f9360428eb8d1d6e33ada53a"
+  },
+  "admin.catalogue.details.productType": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "admin.catalogue.details.primaryFlower": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "41d5fc91b89a19dd90d4c325748b0d00a428754e3e8c26b73e413e4bdd920f71"
+  },
+  "admin.catalogue.details.colourPrimary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d21426ea83487f557c11c5b8c201db23cb7a33a8247fa1bb3a3110ee39725fe7"
+  },
+  "admin.catalogue.details.style": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7e744141b40ea5501412e42c8b40fd0b05f1608aa2e4073944ccccbd82f24ee8"
+  },
+  "admin.catalogue.details.priceTier": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "396491b7a570cda868475989acdc288510a49185a32366817335b9d459f93fa3"
+  },
+  "admin.catalogue.details.priceTierHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "93124a30503db38f627f7a69754e6869ecc6b95e2f740a55bfd9ac93a37a1913"
+  },
+  "admin.catalogue.details.substitutionClass": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e6b53ebe63465c3a79ef4f717014f14eda7267c49bdf255397cfc9c59f1c6ee7"
+  },
+  "admin.catalogue.details.substitutionHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4c119cfa96c2884917e75c85007023c65e85344fa236a422e2588fc111fd3c04"
+  },
+  "admin.catalogue.details.vaseIncluded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "203e182ee96b9e9997808bd6bd5244e88ca5626cb2b5bbade40aae8de701db71"
+  },
+  "admin.catalogue.details.stemCount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8fa24ab28e6727381520ee5c5193f3c74f15f1cdccec37520f1388277ac5e7ac"
+  },
+  "admin.catalogue.details.stemCountHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "95a6858edcd12d7a4fc6c7d92fa5156aa74355085aa81d981d39987dc8b01912"
+  },
+  "admin.catalogue.details.freshnessDays": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "850a9526e0cec0208a244cd0deb62b483d45595ffc68815e8b50f260aa3a570e"
+  },
+  "admin.catalogue.details.partnerOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "083083d2462f3c354d203acdf26a6cb4ffce8b64580a750d197154f466567d96"
+  },
+  "admin.catalogue.details.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c000d120ef450c49c3b7476aea115dd7a71cad6afa3ab3463369d565026cf809"
+  },
+  "admin.catalogue.details.floristNone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99567c8f12bafacbafacee4dbd41348a8b9f343fc2b0505bcb8a2ef35ad13b88"
+  },
+  "admin.catalogue.details.floristHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "47618eef3ef3ed5fd80d1d3ec23685ceb1064a25cd4626b637af5df3aea706cd"
+  },
+  "admin.catalogue.details.floristPrice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9bfce7e232d376b2f2ba6eb0d4cc6d647e0faf0bac2c1bc98373ee2a4b484d0f"
+  },
+  "admin.catalogue.details.floristPriceHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cf0c7c5410d829a25fca62ee9baa2c2875a6f4dfad30c1487521363383383bc7"
+  },
+  "admin.catalogue.details.supplierAbsent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f7d2b32a920eb2bed05d41378ad912e84ef232786a2234a4164de98416d3b5a9"
+  },
+  "admin.catalogue.details.yes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e"
+  },
+  "admin.catalogue.details.no": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "admin.catalogue.details.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "admin.catalogue.details.create": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "07d07af207607fd083498abc929abaebc73825db5f3a2b3e02783dee6c0c2d8e"
+  },
+  "admin.catalogue.details.saveHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "46e59a35ce1d26ba84bc7a591a9425456c8dff1cec58f95546c059fcb5bd9247"
+  },
+  "admin.catalogue.sizes.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "74a3978d10045c73c94bf4ce0c2125efd6f93a654afea5b8853cd65c33fd82f5"
+  },
+  "admin.catalogue.sizes.key": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "admin.catalogue.sizes.stems": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8fa24ab28e6727381520ee5c5193f3c74f15f1cdccec37520f1388277ac5e7ac"
+  },
+  "admin.catalogue.sizes.sort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
+  },
+  "admin.catalogue.sizes.default": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "admin.catalogue.sizes.floristPrice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9bfce7e232d376b2f2ba6eb0d4cc6d647e0faf0bac2c1bc98373ee2a4b484d0f"
+  },
+  "admin.catalogue.sizes.addRow": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8211a858284017ee35eb9c687de8d9b559c614ed3679e2c1a5bd892fd3da3a8a"
+  },
+  "admin.catalogue.sizes.hint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ee7a365e2c715107b6fe39884925245d3590c76081b09f20baf5671ce6582bb0"
+  },
+  "admin.catalogue.sizes.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36da9dd32c2f74196b2a825a5f7e422ff5f6c64f9ab518bc655a42309c24622b"
+  },
+  "admin.catalogue.text.languages": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "318655cea4bd2096fbfad433d7c019bac40750d1a456fc34d366df41fcc77197"
+  },
+  "admin.catalogue.text.notReviewed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc9250522c33e4585176104da3e604996cfdabcd45e0908de6008921d1f67d16"
+  },
+  "admin.catalogue.text.approved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "87b42e40c2a290e01d87b721bf381c3c5e259d1eb0a4660e41fdbf8bc73f7ddd"
+  },
+  "admin.catalogue.text.noText": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "66aba5c4e65d2cc353498ee5394c2d364ed227e1eb76346d460286e3b38dc4ea"
+  },
+  "admin.catalogue.text.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "admin.catalogue.text.slug": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "33802c6d27094be7c4ea7352b74deb2312bc67eb6bbf99ef79c7ea8c92b4ffa5"
+  },
+  "admin.catalogue.text.slugHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "931f415884e59aac4e6ce915bcbf5e16ee066c66ca8383917f43528608fb6545"
+  },
+  "admin.catalogue.text.slugLocked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "791f0e952ee7bf375d99ad9c22c8b27ec8f41fb432edbaf298da1469f2c4716b"
+  },
+  "admin.catalogue.text.slugFree": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "043b1e4772b08d79f9b875422d861a0b74ddd06ded8e5dd19993b4ba89e73262"
+  },
+  "admin.catalogue.text.description": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "admin.catalogue.text.descriptionHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a11d0b7e2807f20be623a8fcb6e20ca0ace2795d78970112ed8300f1aeea4405"
+  },
+  "admin.catalogue.text.seoTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "464919e426cfda2bcd9aa2acba102ebe64ff4742e54839ca2c1ed5253adbaf7d"
+  },
+  "admin.catalogue.text.seoTitleHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fa2f1772f83f2c1607c394b09c2208d4ce77f4721f0236181ca54f87ff119cf4"
+  },
+  "admin.catalogue.text.seoDescription": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "354bb67ebf6ec8e76f1697ac82bf16018086178ca31b6b0d20dedc31ec5c8764"
+  },
+  "admin.catalogue.text.seoDescriptionHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "376a67bb9f0158b52373919e0c3ac1bd09e0275bc3b054b6a070d232988d186f"
+  },
+  "admin.catalogue.text.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b9a9f800f817e38eeb62513dcc466f4ea7211ca74f2bb7df0267cddf22213c3f"
+  },
+  "admin.catalogue.text.reasonHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "37f403ef3127e0ea9017f6958621d8740fab3389755e4bf6ee9c3c008e47d921"
+  },
+  "admin.catalogue.text.forbidden": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "df43cf9181fa9f8d2fd552464f1900e91542018aa6a70294b92d2c109651ce95"
+  },
+  "admin.catalogue.text.save": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "793017feeca893abdf5eaaaea860989755f6346b455d9439180568c8861f03b7"
+  },
+  "admin.catalogue.prices.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5a6e4f56c0a254e0704672a2d71fae4356ee298c8c63b7edab8264e31c49ce3a"
+  },
+  "admin.catalogue.prices.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "admin.catalogue.prices.size": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1af851907331c0ed99e7c63b4e55df808bc5fc4c990a1cf80ca8c0f76daf1f3b"
+  },
+  "admin.catalogue.prices.current": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d361181f5d400009c7a30bb09ebd18221402e55da561a8ee1e9d0fe4b8dbafb4"
+  },
+  "admin.catalogue.prices.since": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "98af1ed61831e6ab92bbb2a4d429344c8d0581c77d5c85311c5ed8a3207d2eea"
+  },
+  "admin.catalogue.prices.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "438bd865063e1c177a872abb6137270ea9efe7f333be99efd278f5cdafed0ba0"
+  },
+  "admin.catalogue.prices.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e6b410fdb02cdcf052493732c3e67c534194d7f214c1038faa048db73771f593"
+  },
+  "admin.catalogue.prices.amountHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fecd43f6934ffcf9675a493ecc14c0b6c816cab4ef2daf65b5c695f468043025"
+  },
+  "admin.catalogue.prices.check": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "54ce67e1bfc970935d08d9d56fe58290134be8bce136fd5ce963255086f56a1a"
+  },
+  "admin.catalogue.prices.remove": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "750ff29f6747f6da6f22a326e8e634fd5ea321132ca86ab5adeaf3050d4071e1"
+  },
+  "admin.catalogue.prices.removeAbsent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "605920f87ecab98df0ec9b3b14cdaa8961e2bd480e8210f05b8ab9c4c6cbce60"
+  },
+  "admin.catalogue.prices.editAbsent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "da7fb90b40a267e8d2fe872fc1ba40b234571b2c5298c3d4f1b9187bfc45e07d"
+  },
+  "admin.catalogue.change.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1756b89646ca42df49328561659cdc7e66f5c61a9ef3b545da1a3ec96c8e455"
+  },
+  "admin.catalogue.change.locale": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "admin.catalogue.change.old": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fe18013d93d22f4f2a70344d30c00fe62d2ef29189ae5d25ccbda81fbd9c92b0"
+  },
+  "admin.catalogue.change.new": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "admin.catalogue.change.percent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c0bf75bd78bf9572596720d596bd5a20a5b9145cde0fe50dec1e783cb184d69b"
+  },
+  "admin.catalogue.change.warn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6618c4759698c56581ec11c7e664c5d679a8028f65d2187b64b094afc2110d2c"
+  },
+  "admin.catalogue.change.lowest": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c8e24bfaa77d988033641220ca839b6136c5a0785e53d7f6a0fa2d09d088bd9c"
+  },
+  "admin.catalogue.change.lowestNone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8fdec3874f2f154494f9e8e517e9b95982c63b7a7d996e488c531a3494282875"
+  },
+  "admin.catalogue.change.share": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a3d03697fc261b0ac57ec7fb8ff69891f006a54c7705ca2cd79fcde2abaebe13"
+  },
+  "admin.catalogue.change.below": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f6ce476cb784d5a65d241211d757581a291121f84e733e52d6fd3ec00b18b3a6"
+  },
+  "admin.catalogue.change.sameDay": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3220fa72e61a7c68f8d179575fc29151efaab8e309375d1febc4f0a263823336"
+  },
+  "admin.catalogue.change.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.catalogue.change.confirm": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1756b89646ca42df49328561659cdc7e66f5c61a9ef3b545da1a3ec96c8e455"
+  },
+  "admin.catalogue.change.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.catalogue.change.draftNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "34a0397e4df959cbdb3b09f7474873564e67b3753f3084fd4bba9c902a68fa7b"
+  },
+  "admin.catalogue.margin.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2bf63d817630601b992694bc0b0559715001b9a24e7fe0d741eea02dce9181af"
+  },
+  "admin.catalogue.margin.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "admin.catalogue.margin.show": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0df6f1cad36c49da768a6efdcc2c4be102f5729f7381cb53e4ff8061d17eaeb6"
+  },
+  "admin.catalogue.margin.size": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1af851907331c0ed99e7c63b4e55df808bc5fc4c990a1cf80ca8c0f76daf1f3b"
+  },
+  "admin.catalogue.margin.gross": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "93c91c851e7acc17d881c9b89ea954be1183070254014be03a93d169cf52dbbd"
+  },
+  "admin.catalogue.margin.vat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4885a17383f949c7b45650abce6474987141080831e902c37623e8a09ec3188f"
+  },
+  "admin.catalogue.margin.net": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "660fb2c41d028988b2093656a80d3ae99bc67cd0d5acca5c6063793819b15881"
+  },
+  "admin.catalogue.margin.lowest": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d7f8ad1f67f13eb0d1f446e301ade7b3c30c018d0c8e8d10f38059428046d9ec"
+  },
+  "admin.catalogue.margin.highest": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5b7011143fe1fe55a9843edc734c2ea4b7214735af8b7684f85fef49a3b76511"
+  },
+  "admin.catalogue.margin.margin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2bf63d817630601b992694bc0b0559715001b9a24e7fe0d741eea02dce9181af"
+  },
+  "admin.catalogue.margin.share": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "85a6be93524db172cac6ed81ad809cacd8ed51be3dd5b064cb545a35acd14eb8"
+  },
+  "admin.catalogue.margin.suggested": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "12fdf568c45ae7017010de2356b3e0818a1ac2c93d636cde456d60b42f7a79e3"
+  },
+  "admin.catalogue.margin.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7c8377acba1a5e37a1c15af82e35cb374ded74bb87e0cae992be7a33e2358e3a"
+  },
+  "admin.catalogue.margin.noFlorist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4dffd77176d546855db49d56e7684e1f8d02753ac2f3980951243834e191cfa4"
+  },
+  "admin.catalogue.margin.rate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d6123d6359d5da1af5ef806b826e768fcec925d4df92885785debcdde391a6cd"
+  },
+  "admin.catalogue.margin.unconverted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d27f57a654dabd2b99826dc80fb7ff31aa765de9b15cf3d34e233b9c68a7b1db"
+  },
+  "admin.catalogue.statusCard.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8b586fc084ef8f06dfa177c4f39b4a973f1c1718a41070ba5f930a16aa32c1b1"
+  },
+  "admin.catalogue.statusCard.toActivate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d830e3a720f4f8663cd67ba3b66d169bc37355b863f33bf2791663dd98c112af"
+  },
+  "admin.catalogue.statusCard.condition.en_copy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9a76bd6b994d0f5f85a6854f5fe513b495e31de99ef08c5710b322d07db4d17e"
+  },
+  "admin.catalogue.statusCard.condition.sizes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bf25b798317e9a0b39199a2d26948a54d7d62a8b04f78d099bcf4a1141d480c3"
+  },
+  "admin.catalogue.statusCard.condition.primary_photo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "23e2b3fe99ac0ff2594e5de1d0a7ee6d601927ad3ec33fbe29a1b5c08bc723c3"
+  },
+  "admin.catalogue.statusCard.condition.price": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "911f67a42b9df4d36258a57fa2e2dccbf102597dca42859678cfb23865604fe0"
+  },
+  "admin.catalogue.statusCard.met": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "admin.catalogue.statusCard.missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6be36ca49ee85210c5d1ad9c377d90a9859c66d889110a2a5b0dccd390d12e20"
+  },
+  "admin.catalogue.statusCard.activate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "027c592e08663b3adc2aa4a6ba300248d758f939a0c0d413f79255fc0bb61441"
+  },
+  "admin.catalogue.statusCard.activateHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b4df773a76dd5b91def5c6bd334ed3fcc88bbcb2e52e83d44fd83e1b39460a7"
+  },
+  "admin.catalogue.statusCard.retire": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "da8597f3f278b486ace5860548bae116411051ce01424fd6e84a2c3c8fae33fa"
+  },
+  "admin.catalogue.statusCard.retireAbsent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9347391cb191fca633d67efb463351a961552ec78dab6fddb253499255d138d5"
+  },
+  "admin.catalogue.statusCard.onSite": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "963b17019546465639ef442adbf2c37ecab3060b739ae55eee7688cd2a084290"
+  },
+  "admin.catalogue.statusCard.exposedYes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d93c859ae7e980b609cb15b81ca308ce236c6d3099a828a682f867a05f848d99"
+  },
+  "admin.catalogue.statusCard.exposedNo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "admin.catalogue.statusCard.window": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "09709acdb8be744ae64879bf59c47530662178cf6c64839c95666c316461aab4"
+  },
+  "admin.catalogue.saved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fca046ccd586c67f7fe0b3c12c29873a8abf9376f7cd514fc6272ec03b2de0b3"
+  },
+  "admin.catalogue.refused.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "20f3d3e6128be862bdedca298abb1f8ad267384e81b6be59ee6db4b6ff000f59"
+  },
+  "admin.catalogue.refused.rules": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3fc439b63f0c0959e02e0f9a7da607af476ed46655241b4adb4f95d1ba287a4"
+  },
+  "admin.catalogue.refused.reason_required": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6fa88cc69fe9d824e4dc133eaced5f98ae6704a5ab7649611d59957b85bc8445"
+  },
+  "admin.catalogue.refused.conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31c09555a6cbc0c84fc7fe0950246104c7d5019cbd25dbcc605a9d3be8d5d863"
+  },
+  "admin.catalogue.refused.not_found": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "baae8712d46e311997cabd33ed2bc82c6f21202be5ff9247f821d0b04bd6faf0"
+  },
+  "admin.catalogue.refused.duplicate_sku": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "79ffdbf48b1e8cb7e2b25ac06a0f68dc9a0507d7d0dc703a8ab17323c91bdcc1"
+  },
+  "admin.catalogue.refused.forbidden_locale": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3f3b620ab5a8cf26391b8383ce0262f401c1db7a488f14a7569c171f181376a0"
+  },
+  "admin.catalogue.refused.exposed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "921c9c8c57aa54d7d40cede055a6ce6e4ecd433359268dd758636d96cb2e70e6"
+  },
+  "admin.catalogue.refused.preconditions": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "98f3e3984a95f68ab439a38613a2cf03bf978a2d08bd7831d2b27f9a439b26e4"
+  },
+  "admin.catalogue.refused.same_day": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "26606292c19cf2a91162595fb8b470b6fdf8ea2d6aca1864c6799b738eaae785"
+  },
+  "admin.catalogue.refused.not_draft": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7edc11d3d825be93f0842b22b6e1b8503dadc092e0015556ad0827602c8d6e97"
+  },
+  "admin.catalogue.refused.below_payout": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cd2af20a16b18df28d5e9bdee7efaef58ce4ae0768b6a2e3d78e3ea602f79700"
+  },
+  "admin.catalogue.refused.supplier": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cae50a9bb0d40db14ac4454f734d24a790fd63904a1dd5dab0e88fc94269efd1"
+  },
+  "admin.catalogue.refused.mapping_failed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36db02bb048ce7db58378f102293c0a0b5e163cb87e2f71ae5a3b541f665d440"
+  },
+  "admin.catalogue.refused.no_vat_rate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "39f4ccf244d2e3cd8ec69da667703ebea1a185d86558ec7f646e400f2dc537ca"
+  },
+  "admin.catalogue.refused.transition": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc9601ab5e8827b7ec083cbf7ecd1180b24fab55fb22286ca1dcf4e8b50b2d8c"
+  },
+  "admin.catalogue.rule.slug.shape": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d13f2b9174b77f79dbd913956fbd7573ab3f9c3a668dea184448eb1464dbfe3"
+  },
+  "admin.catalogue.rule.slug.unique": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eaa63ac3f72b7aca9a5c778be4f329391a55c8cd1dcc7ffb345c24666b1ef991"
+  },
+  "admin.catalogue.rule.tier.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a8e8a9b849cd52fa82115235740b19f567ba194e71539680fb1f8d0be84a199b"
+  },
+  "admin.catalogue.rule.tier.default_one": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "62b0bfc74db75950146e0511619c838278c9f0252e28a92f3187b89b14d288a3"
+  },
+  "admin.catalogue.rule.tier.stem_count_odd": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "41c63dfe3dfeee81171147ba323c489298d6483c9dd4f2b28aad672219f05083"
+  },
+  "admin.catalogue.rule.tier.stem_count_thirteen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c0885c9acc5fce0aef82f03de7433a5e1764aae0732e8f19b32c6780e541de6"
+  },
+  "admin.catalogue.rule.tier.stem_key": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2561825378a950ca436a04259dc6ef68abeed871c0a31708fc26806c6d391e08"
+  },
+  "admin.catalogue.rule.price.integer_minor": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d58690c1fa45383f327ae2f6583779e5e6626ecb11dd610d620017a7cdeafb66"
+  },
+  "admin.catalogue.rule.price.currency": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d4b327f3531c2c096f82e7e3b4209e9e388475000b386c49b1ae3f5d1f4c1e9a"
+  },
+  "admin.catalogue.rule.price.one_open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3c7a8d77f97784525b4ff53bb23d02474d53c7d9f67aaf96214d832bc6bc212d"
+  },
+  "admin.catalogue.rule.price.band": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0edebd51799bc1285f26c349e0b28403008deeba67af6734a706d3be3021d496"
+  },
+  "admin.catalogue.rule.price.rounding": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "87b175c2b9b11cd825562bf42a782e4069be7541adb4466a25a0245d3c40a958"
+  },
+  "admin.catalogue.rule.copy.banned_word": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8c5924b61dfd588a8300c34c69e7313e79ef2931572c4285b386a6ec03907adf"
+  },
+  "admin.catalogue.rule.copy.florist_name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b97dbc138296bc79eed2fc7768a6c922c22d61f8cc2712c9f89dea3252e432db"
+  },
+  "admin.catalogue.rule.copy.price_literal": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "27d15682ed1a9d20d582f2847caa52e177f1c2eceef758ad76b4109803557130"
+  },
+  "admin.catalogue.rule.copy.seo_title_length": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cae4e754d00d808661b96b365bda3ec5df4a7f1f1a457f52218b303f2215018c"
+  },
+  "admin.catalogue.rule.copy.seo_description_length": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d3f6280d79f9ae13d13c2627a84f73eeaa1b1dc9420eff1d0e1f32e600c5789e"
+  },
+  "admin.catalogue.rule.copy.contact": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2fc3ea466d2096fc3b13a5f5abea17db83b8a01d22f5440ef67ae46330baf864"
+  },
+  "admin.catalogue.rule.copy.competitor": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a17e227d6ddca1aff6ecb8822dfc263626e6c888554435e5339837a69ecf7059"
+  },
+  "admin.catalogue.rule.copy.description_words": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c1ab0e4f4a967b9df691277b57906de1fd74ccae532e077a0bac21e2358fe0db"
   }
 }

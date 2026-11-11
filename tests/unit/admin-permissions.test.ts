@@ -58,6 +58,10 @@ const MATRIX: Record<string, readonly string[]> = {
   "catalogue.publish": ["admin", "content"],
   // Spec 022a §2 (TASK-372): moderation is admin and ops.
   "reviews.moderate": ["admin", "ops"],
+  // spec 012b §5.2 (TASK-297, TASK-298).
+  "catalogue.edit": ["admin", "content"],
+  "catalogue.supplier": ["admin", "finance"],
+  "price.edit": ["admin", "finance"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

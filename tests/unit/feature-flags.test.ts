@@ -58,12 +58,14 @@ describe("T-16 — the registry", () => {
     ]);
   });
 
-  it("registers spec 012b's placeholder window: global, high risk, dirties nothing", () => {
+  it("registers spec 012b's placeholder window: global, high risk, dirties nothing, one way", () => {
     expect(flagDefinition("catalogue.placeholder_window")).toEqual({
       key: "catalogue.placeholder_window",
       scopeKinds: ["global"],
       risk: "high",
       dirties: [],
+      // TASK-297 (AC-16): turned off once, never on again.
+      oneWay: "off",
       description: expect.stringMatching(/\S/u) as unknown as string,
     });
   });

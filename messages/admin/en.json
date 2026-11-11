@@ -32,6 +32,7 @@
       "finance": "Finance",
       "basketReminders": "Basket emails",
       "risk": "Risk",
+      "catalogue": "Catalogue",
       "publish": "Publish",
       "reviews": "Reviews"
     },
@@ -436,6 +437,12 @@
             "on": "Every new payment will be refused until you turn this off. Nothing is charged. Type the flag's name to confirm.",
             "off": "New payments will be taken again. Type the flag's name to confirm."
           }
+        },
+        "catalogue": {
+          "placeholder_window": {
+            "off": "Placeholder bouquets will be held to the same rules as real ones: once a product has been on sale in a live country it cannot be retired, taken off a country or renamed. This cannot be turned back on. Type the flag's name to confirm.",
+            "on": "This flag cannot be turned on again once it is off."
+          }
         }
       },
       "confirmField": "Flag name",
@@ -455,8 +462,10 @@
         "forbidden": "Only an admin can change a high-risk flag. Nothing changed.",
         "mismatch": "The name you typed does not match the flag. Nothing changed.",
         "conflict": "This flag changed since the page opened. Nothing changed; the current value is shown.",
-        "not_seeded": "This flag is not in the database. Nothing changed."
-      }
+        "not_seeded": "This flag is not in the database. Nothing changed.",
+        "one_way": "This flag can only be turned off, never on again. Nothing changed."
+      },
+      "oneWayOff": "Off for good. This flag is never turned on again."
     },
     "blog": {
       "rule": {
@@ -2695,6 +2704,247 @@
         "done": "Saved. The public pages are updated.",
         "refused": "Not saved: choose a reason from the list, and write a note for a removal.",
         "not_found": "This review no longer exists."
+      }
+    },
+    "catalogue": {
+      "title": "Catalogue",
+      "summary": "{total, plural, one {# product} other {# products}} · {florist} from florists · {seed} placeholders",
+      "newProduct": "New product",
+      "readOnly": "You can read the catalogue. Editing needs the catalogue role.",
+      "filters": {
+        "label": "Filter products",
+        "type": "Type",
+        "status": "Status",
+        "source": "Source",
+        "anyType": "Any type",
+        "anyStatus": "Any status",
+        "anySource": "Placeholder or florist",
+        "apply": "Apply",
+        "clear": "Clear"
+      },
+      "source": {
+        "seed": "Placeholder",
+        "real": "Real"
+      },
+      "status": {
+        "draft": "Draft",
+        "active": "Active",
+        "retired": "Retired"
+      },
+      "type": {
+        "bouquet": "Bouquet",
+        "arrangement": "Arrangement",
+        "plant": "Plant",
+        "funeral": "Funeral",
+        "gift_set": "Gift set",
+        "hamper": "Hamper",
+        "voucher": "Voucher"
+      },
+      "columns": {
+        "product": "Product",
+        "type": "Type",
+        "status": "Status",
+        "pricedIn": "Priced in",
+        "text": "Text",
+        "notes": "Notes"
+      },
+      "pricedIn": "{count, plural, =0 {No price yet} one {# country} other {# countries}}",
+      "placeholderChip": "Placeholder",
+      "empty": {
+        "title": "No products yet",
+        "body": "A fresh database has no catalogue until the seed runs. Add the first product, or run the seed."
+      },
+      "filteredEmpty": {
+        "title": "No product matches these filters",
+        "clear": "Clear filters"
+      },
+      "back": "Catalogue",
+      "fromFlorist": "From {florist}",
+      "tabs": {
+        "label": "Product sections",
+        "details": "Details",
+        "sizes": "Sizes",
+        "text": "Text",
+        "prices": "Prices",
+        "margin": "Margin"
+      },
+      "details": {
+        "sku": "SKU",
+        "skuHint": "FO-BQ-001 style: the type's letters and three digits. It never changes.",
+        "productType": "Type",
+        "primaryFlower": "Main flower",
+        "colourPrimary": "Main colour",
+        "style": "Style",
+        "priceTier": "Price band",
+        "priceTierHint": "Sets the price range the price check warns outside of.",
+        "substitutionClass": "If a flower is short",
+        "substitutionHint": "Substitution class.",
+        "vaseIncluded": "Vase included",
+        "stemCount": "Stems",
+        "stemCountHint": "Leave empty for a product without a stem count.",
+        "freshnessDays": "Fresh for (days)",
+        "partnerOnly": "Only the florist who makes it",
+        "florist": "Florist who makes it",
+        "floristNone": "No florist yet",
+        "floristHint": "Onboarding and active florists only, never a demo one.",
+        "floristPrice": "Florist's price",
+        "floristPriceHint": "What we pay the florist for any size, in their payout currency. Per size on the Sizes tab.",
+        "supplierAbsent": "Choosing the florist and their price needs the finance or admin role.",
+        "yes": "Yes",
+        "no": "No",
+        "save": "Save",
+        "create": "Create draft",
+        "saveHint": "Saving checks every rule the catalogue check runs in CI."
+      },
+      "sizes": {
+        "title": "Sizes",
+        "key": "Key",
+        "stems": "Stems",
+        "sort": "Order",
+        "default": "Default",
+        "floristPrice": "Florist's price",
+        "addRow": "Empty rows add a size; clear a key to remove it.",
+        "hint": "Exactly one size is the default; it is the one the shop shows first. The florist's price is what we pay that florist for the size, in their payout currency. Saving writes it to their product list in the same step, or nothing is saved.",
+        "save": "Save sizes"
+      },
+      "text": {
+        "languages": "Languages",
+        "notReviewed": "Not reviewed",
+        "approved": "Approved",
+        "noText": "No text",
+        "name": "Name",
+        "slug": "Address (slug)",
+        "slugHint": "Lowercase letters, digits and hyphens.",
+        "slugLocked": "Locked: this product has been on sale in a live country, so its address cannot change.",
+        "slugFree": "Free to change: never on sale in a live country.",
+        "description": "Description",
+        "descriptionHint": "{words, plural, one {# word} other {# words}} · 60 to 90",
+        "seoTitle": "Search title",
+        "seoTitleHint": "{count} of 60 characters",
+        "seoDescription": "Search description",
+        "seoDescriptionHint": "{count} of 155 characters",
+        "reason": "Reason to save anyway",
+        "reasonHint": "Stored on the audit row with the change.",
+        "forbidden": "You are not a reviewer for this language, so its text is read only here.",
+        "save": "Save text"
+      },
+      "prices": {
+        "title": "Prices",
+        "country": "Country",
+        "size": "Size",
+        "current": "Price now",
+        "since": "Since",
+        "none": "No price",
+        "amount": "New price",
+        "amountHint": "All-in: VAT and delivery included, in the country's currency.",
+        "check": "Check the price",
+        "remove": "Take off {country}",
+        "removeAbsent": "Cannot be taken off {country}: it has been on sale in a live country.",
+        "editAbsent": "Changing a price needs the finance or admin role."
+      },
+      "change": {
+        "title": "Confirm the price",
+        "locale": "Language",
+        "old": "Now",
+        "new": "New",
+        "percent": "Change",
+        "warn": "A change of more than 30 %. Check the amount before you confirm.",
+        "lowest": "Lowest price in the last 30 days",
+        "lowestNone": "No price in the last 30 days",
+        "share": "The florist's share of the net price is {share}, above 65 %. Saving needs a reason.",
+        "below": "Refused: the net price is at or below the highest florist price {payout}, so every order would lose money.",
+        "sameDay": "This price already changed today. The next change can start tomorrow.",
+        "reason": "Reason",
+        "confirm": "Confirm the price",
+        "cancel": "Cancel",
+        "draftNote": "Never active: the price is replaced, with no history."
+      },
+      "margin": {
+        "title": "Margin",
+        "country": "Country",
+        "show": "Show",
+        "size": "Size",
+        "gross": "Price",
+        "vat": "VAT",
+        "net": "Net",
+        "lowest": "Lowest florist price",
+        "highest": "Highest florist price",
+        "margin": "Margin",
+        "share": "Florist's share",
+        "suggested": "Suggested price",
+        "none": "No price in this country yet.",
+        "noFlorist": "No florist mapped",
+        "rate": "Converted at the rate of {date}.",
+        "unconverted": "No rate that day for {florists}."
+      },
+      "statusCard": {
+        "title": "Status: {status}",
+        "toActivate": "To make it active:",
+        "condition": {
+          "en_copy": "English name, slug and description",
+          "sizes": "At least one size, exactly one of them the default",
+          "primary_photo": "An approved main photo",
+          "price": "A price in at least one country"
+        },
+        "met": "Done",
+        "missing": "Missing",
+        "activate": "Make active",
+        "activateHint": "After that, the product is on the site from the next publish.",
+        "retire": "Retire",
+        "retireAbsent": "Cannot be retired: it has been on sale in a live country.",
+        "onSite": "On the site",
+        "exposedYes": "Yes, so its address and countries are fixed",
+        "exposedNo": "No",
+        "window": "The placeholder window is open: placeholders can still be renamed, taken off a country and retired."
+      },
+      "saved": "Saved.",
+      "refused": {
+        "invalid": "That could not be read. Nothing was saved.",
+        "rules": "A catalogue rule refuses this. Nothing was saved.",
+        "reason_required": "A soft rule needs a reason before this saves.",
+        "conflict": "This product changed since the page opened. Nothing was saved; the current version is shown.",
+        "not_found": "That product or country does not exist.",
+        "duplicate_sku": "That SKU is taken. Nothing was saved.",
+        "forbidden_locale": "You are not a reviewer for that language. Nothing was saved.",
+        "exposed": "This product has been on sale in a live country, so this is not allowed.",
+        "preconditions": "Not every condition is met yet.",
+        "same_day": "This price already changed today. Nothing was saved.",
+        "not_draft": "This product has been active, so its price changes from today instead.",
+        "below_payout": "The net price is at or below the highest florist price. Nothing was saved.",
+        "supplier": "That florist cannot make bouquets: only onboarding and active florists can.",
+        "mapping_failed": "The florist's price could not be saved, so nothing was saved.",
+        "no_vat_rate": "This country has no VAT rate yet. Nothing was saved.",
+        "transition": "That status change is not possible from here."
+      },
+      "rule": {
+        "slug": {
+          "shape": "Lowercase letters, digits and single hyphens only.",
+          "unique": "Another product uses this address in this language."
+        },
+        "tier": {
+          "none": "Add at least one size.",
+          "default_one": "Exactly one size is the default.",
+          "stem_count_odd": "Stem counts are odd numbers.",
+          "stem_count_thirteen": "No size offers 13 stems.",
+          "stem_key": "The key must read stems_ and the stem count."
+        },
+        "price": {
+          "integer_minor": "Type an amount like 229.00 or 229,00, with no sign or grouping.",
+          "currency": "The price is in the country's currency.",
+          "one_open": "There can be one price at a time.",
+          "band": "Outside the price band for this type.",
+          "rounding": "Does not end the way prices in this currency end."
+        },
+        "copy": {
+          "banned_word": "Uses a word we never show buyers.",
+          "florist_name": "Names a florist or their city.",
+          "price_literal": "Contains a price; prices come from the price list.",
+          "seo_title_length": "Longer than 60 characters.",
+          "seo_description_length": "Longer than 155 characters.",
+          "contact": "Contains an email address, phone number or web address.",
+          "competitor": "Names another flower company.",
+          "description_words": "Outside 60 to 90 words."
+        }
       }
     }
   },

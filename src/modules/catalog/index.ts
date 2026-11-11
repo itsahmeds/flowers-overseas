@@ -692,3 +692,42 @@ export {
   CountryOccasionPage,
   type CountryOccasionPageProps,
 } from "./ui/CountryOccasionPage.tsx";
+
+// Spec 012b §2.5 (AC-15; TASK-297): the shared catalogue rules with their ids, read by the admin
+// save and by `catalogue:check` / `seed:check`. Pure.
+export {
+  HARD_RULES,
+  SOFT_RULES,
+  RULE_IDS,
+  copyViolations,
+  hardViolations,
+  isHardRule,
+  openPriceViolations,
+  priceViolations,
+  slugUniqueViolations,
+  slugViolations,
+  softViolations,
+  tierViolations,
+  violation,
+  type RuleId,
+  type Violation,
+} from "./validate/index.ts";
+// Spec 012b §2.6 (AC-18, AC-20, AC-21; TASK-298): typed prices, the price-change confirmation
+// and the margin view. Pure: the commands that write are the admin module's.
+export { parseMinorInput, type MinorInput } from "./cms/money-input.ts";
+export {
+  DraftPriceReplaceSchema,
+  PriceChangeSchema,
+  ProductDelistSchema,
+  pricePreview,
+  type PriceChange,
+  type PricePreview,
+} from "./cms/price-change.ts";
+export {
+  marginVerdict,
+  marginView,
+  suggestedPrice,
+  type DatedRates,
+  type MarginVerdict,
+  type MarginView,
+} from "./cms/margin.ts";

@@ -12,15 +12,15 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +26 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +28 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +131 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +133 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | `unit/account-details-form.test.ts` |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/checkout-discounts.test.tsx` +2 |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +50 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +148 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +149 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +25 |
 | `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
@@ -249,6 +249,11 @@ task actually touches.
 | `admin/(signed-in)/applications/view.tsx` | The application pages' shared pieces: status… | 012 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
 | `admin/(signed-in)/basket-reminders/page.tsx` | GET /admin/basket-reminders: basket email… | 034 |
+| `admin/(signed-in)/catalogue/products/[sku]/page.tsx` | GET /admin/catalogue/products/[sku]: one… | 012 |
+| `admin/(signed-in)/catalogue/products/actions.ts` | POST actions of the product editor: details,… | 012 |
+| `admin/(signed-in)/catalogue/products/new/page.tsx` | GET /admin/catalogue/products/new: a new… | 012 |
+| `admin/(signed-in)/catalogue/products/page.tsx` | GET /admin/catalogue/products: every product,… | 012 |
+| `admin/(signed-in)/catalogue/products/view.tsx` | The product editor's shared pieces: the outcome… | 012 |
 | `admin/(signed-in)/discounts/[id]/page.tsx` | GET /admin/discounts/[id]: one code, edit,… | 047 |
 | `admin/(signed-in)/discounts/actions.ts` | /admin/discounts actions, each guarded first | 047 |
 | `admin/(signed-in)/discounts/discount-form.tsx` | The discount code form island: fields,… | 047 |
@@ -457,8 +462,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 546 |
-| `tests/integration/` | 125 |
+| `tests/unit/` | 549 |
+| `tests/integration/` | 126 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |
