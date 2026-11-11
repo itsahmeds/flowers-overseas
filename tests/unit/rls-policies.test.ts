@@ -128,7 +128,7 @@ const BUILD_POLICIES_WRITTEN: Policy[] = [
   using: (m[4] ?? "").replace(/\s+/g, " "),
   check: "",
 }));
-/** In force: `0051` (TASK-373) drops `0018`'s `review_build_read`; the build reads `public_review`. */
+/** In force: `0047` (TASK-373) drops `0018`'s `review_build_read`; the build reads `public_review`. */
 const BUILD_POLICIES = BUILD_POLICIES_WRITTEN.filter(
   (policy) => !DROPPED.has(`${policy.table}.${policy.name}`),
 );
@@ -423,7 +423,7 @@ describe("migration 0011 — each class gets exactly its policies", () => {
       ...CUSTOMER_VIEWS,
       ...PUBLIC_VIEWS,
     })) {
-      // The view as the last migration that (re)creates it wrote it: `0051` (TASK-373) replaces
+      // The view as the last migration that (re)creates it wrote it: `0047` (TASK-373) replaces
       // `0029`'s `public_review` with one more column.
       const match = [
         ...up.matchAll(
@@ -545,7 +545,7 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
       [
         ...BUILD_ROLE_READ_TABLES,
         ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
-        // Granted by `0018`, revoked by `0051` (TASK-373): the build reads `public_review`.
+        // Granted by `0018`, revoked by `0047` (TASK-373): the build reads `public_review`.
         "review",
       ].sort(),
     );

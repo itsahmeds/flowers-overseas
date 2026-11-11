@@ -348,7 +348,7 @@ describe.skipIf(server.url === undefined)(
         expect(cards.map((card) => [card.id, card.text])).toEqual([
           [withheld.reviewId, null],
         ]);
-        // The card's withheld line (AC-18 page half; `0051`, TASK-373): the reason is public only
+        // The card's withheld line (AC-18 page half; `0047`, TASK-373): the reason is public only
         // for a withheld text; the removal reason and the note never are.
         expect(cards[0]?.withheld_reason).toBe("abuse");
         const [refresh] = await refreshPartnerRatings(
@@ -361,7 +361,7 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
-    it("T-24/T-26 data (TASK-373): `0051`'s view reads by product SKU and country, a visible text has no withheld reason, and the build reads the view only", async () => {
+    it("T-24/T-26 data (TASK-373): `0047`'s view reads by product SKU and country, a visible text has no withheld reason, and the build reads the view only", async () => {
       await rolledBack(scratch.sql, async (tx) => {
         const admin = await adminUser(tx);
         const parents = await orderParents(tx);

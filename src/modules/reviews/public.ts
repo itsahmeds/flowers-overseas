@@ -95,7 +95,7 @@ const CardRow = z.object({
   iso2: z.string().nullable(),
   response_text: z.string().nullable(),
   response_at: z.coerce.date().nullable(),
-  /** `0051` (TASK-373): why the text was withheld, `NULL` unless it was. */
+  /** `0047` (TASK-373): why the text was withheld, `NULL` unless it was. */
   withheld_reason: z.enum(["personal_data", "abuse", "illegal"]).nullable(),
 });
 export type PublicReview = z.infer<typeof CardRow>;

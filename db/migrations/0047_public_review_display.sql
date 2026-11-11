@@ -1,9 +1,9 @@
 SET LOCAL ROLE app_owner;
 
--- 0051_public_review_display: what the reviews page, the blocks and the build read (spec 022a §2
+-- 0047_public_review_display: what the reviews page, the blocks and the build read (spec 022a §2
 -- "Display", §5.3 card, §5.4; AC-18 page half, AC-25; TASK-373).
 --
--- Numbered 0051 (orchestrator, 2026-11-11): 0047 to 0050 are held by other builders.
+-- Numbered 0047 (orchestrator, 2026-11-11; built as 0051, renumbered at merge).
 --
 --   1. `public_review` gains `withheld_reason`: the moderation reason of a review published
 --      without its text (`personal_data`, `abuse` or `illegal`), else `NULL`. The card prints
@@ -15,7 +15,7 @@ SET LOCAL ROLE app_owner;
 --      carry-forward): `app_build` gains `SELECT` on `public_review` and loses `0018`'s
 --      `review_build_read` policy and its table `SELECT` on `review`.
 --
--- Rollback: `0051_public_review_display.down.sql` restores `0029`'s view and `0018`'s build read.
+-- Rollback: `0047_public_review_display.down.sql` restores `0029`'s view and `0018`'s build read.
 
 CREATE OR REPLACE VIEW public.public_review WITH (security_barrier = true) AS
   SELECT r.id, r.rating, CASE WHEN r.text_visible THEN r.text END AS text, r.display_name,

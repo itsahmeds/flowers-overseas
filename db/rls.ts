@@ -103,7 +103,7 @@ export const BUILD_ROLE_READ_TABLES = [
 /**
  * The build role's filtered reads granted by `0018`: the same rows a public render sees
  * (`PUBLIC_FILTERED_TABLES`, without the blog's, which `0024` grants). `0018`'s
- * `review_build_read` is gone since `0051` (spec 022a's display task, TASK-373): the build reads
+ * `review_build_read` is gone since `0047` (spec 022a's display task, TASK-373): the build reads
  * published reviews through `public_review` (`PUBLIC_VIEWS`), as every public render does.
  */
 export const BUILD_ROLE_FILTERED_TABLES = {
@@ -230,7 +230,7 @@ export const PUBLIC_VIEWS = {
     "product_id",
     "response_text",
     "response_at",
-    // `0051` (TASK-373): the reason of a review published without its text, else `NULL`.
+    // `0047` (TASK-373): the reason of a review published without its text, else `NULL`.
     "withheld_reason",
   ],
   // spec 012b §5.1 item 3 (migration `0044_catalogue_cms`, TASK-294, advisor F3): what a real

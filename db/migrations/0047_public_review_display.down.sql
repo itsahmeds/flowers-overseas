@@ -1,4 +1,4 @@
--- Rollback of 0051_public_review_display (spec 022a §5.3; TASK-373): `0029`'s view without
+-- Rollback of 0047_public_review_display (spec 022a §5.3; TASK-373): `0029`'s view without
 -- `withheld_reason`, and `0018`'s build read of published reviews on the table.
 
 SET LOCAL ROLE app_owner;

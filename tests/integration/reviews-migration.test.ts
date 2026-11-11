@@ -52,7 +52,7 @@ const PUBLIC_REVIEW_COLUMNS = [
   "product_id",
   "response_text",
   "response_at",
-  // `0051_public_review_display` (TASK-373): the reason of a withheld text, else `NULL`.
+  // `0047_public_review_display` (TASK-373): the reason of a withheld text, else `NULL`.
   "withheld_reason",
 ];
 
