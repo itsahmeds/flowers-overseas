@@ -48,4 +48,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 542 (feature PR for TASK-370 to TASK-373). AC-6 to AC-11: outbox target `reviews` (`src/modules/orders/outbox/routes.ts`), `createReviewInvite` / `runReviewRequest` (`src/modules/reviews/invite.ts`), B9 renderer (`src/modules/notifications/emails/review-invite.ts`), token (`src/modules/reviews/token.ts`), Mailer `bcc`. Tests: integration `tests/integration/reviews-invite.test.ts` (5), unit `tests/unit/reviews-invite-email.test.ts`. Copy `emails.reviewInvite.*` (8 keys, en/de/pl) `reviewed: false`, queued for the founder's batch (`.claude/state/record-approval-370.py`).
