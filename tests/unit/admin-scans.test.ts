@@ -498,6 +498,13 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       minutes: "60",
       // TASK-367's `admin.payouts.*` and `admin.partners.payoutTerms.*`.
       used: "2",
+      // TASK-297's and TASK-298's `admin.catalogue.*`.
+      seed: "84",
+      share: "66.00%",
+      payout: "212.04 PLN",
+      florists: "pl-krk-pod-lipa",
+      // TASK-295's `admin.publish.list*`.
+      language: "English",
       formatted: "45.00 zł",
       hours: 19,
       kind: "weekly",

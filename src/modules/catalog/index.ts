@@ -699,10 +699,6 @@ export {
   HARD_RULES,
   SOFT_RULES,
   RULE_IDS,
-  SLUG_PATTERN,
-  SEO_TITLE_MAX,
-  SEO_DESCRIPTION_MAX,
-  DESCRIPTION_WORDS,
   copyViolations,
   hardViolations,
   isHardRule,
@@ -721,7 +717,6 @@ export {
 export { parseMinorInput, type MinorInput } from "./cms/money-input.ts";
 export {
   DraftPriceReplaceSchema,
-  PRICE_CHANGE_WARN_BP,
   PriceChangeSchema,
   ProductDelistSchema,
   pricePreview,
@@ -729,7 +724,6 @@ export {
   type PricePreview,
 } from "./cms/price-change.ts";
 export {
-  PAYOUT_SHARE_WARN_BP,
   marginVerdict,
   marginView,
   suggestedPrice,

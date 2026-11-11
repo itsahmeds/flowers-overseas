@@ -136,6 +136,7 @@ export {
   TierEditSchema,
   activationUnmet,
   catalogueList,
+  catalogueSuppliers,
   marginTab,
   previewPriceChange,
   productEditorView,

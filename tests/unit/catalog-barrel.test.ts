@@ -427,6 +427,31 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // the dedupe rule (AC-98).
         "dedupeSection",
         "homeView",
+        // Spec 012b §2.5, §2.6 (TASK-297, TASK-298): the shared catalogue rules, typed prices,
+        // the price-change confirmation and the margin view. Pure.
+        "HARD_RULES",
+        "SOFT_RULES",
+        "RULE_IDS",
+        "copyViolations",
+        "hardViolations",
+        "isHardRule",
+        "openPriceViolations",
+        "priceViolations",
+        "slugUniqueViolations",
+        "slugViolations",
+        "softViolations",
+        "tierViolations",
+        "violation",
+        "parseMinorInput",
+        "DraftPriceReplaceSchema",
+        "PriceChangeSchema",
+        "ProductDelistSchema",
+        "pricePreview",
+        "marginVerdict",
+        "marginView",
+        "suggestedPrice",
+        // Spec 023 (GA4 item facts), exported on main before this list named it.
+        "ga4ProductFacts",
       ].sort(),
     );
   });
@@ -441,6 +466,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/chooser-choice.ts`,
       // The chooser's paths (spec 004 §14 A-founder-2026-10-24a item 3; TASK-381).
       `${moduleDir}/chooser.ts`,
+      // Spec 012b §2.6 (TASK-298): typed prices, the price change, the margin view. Pure.
+      `${moduleDir}/cms/margin.ts`,
+      `${moduleDir}/cms/money-input.ts`,
+      `${moduleDir}/cms/price-change.ts`,
       `${moduleDir}/copy.ts`,
       // The one country order: `sortWeight`, then collation (item 13; TASK-381).
       `${moduleDir}/country-order.ts`,
@@ -524,6 +553,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/labels.ts`,
       // What the three country listings' head says (spec 043 item 1, §5.3 E; TASK-289).
       `${moduleDir}/ui/listingHead.ts`,
+      // Spec 012b §2.5 (TASK-297): the shared catalogue rules with their ids.
+      `${moduleDir}/validate/catalogue.ts`,
+      `${moduleDir}/validate/index.ts`,
+      `${moduleDir}/validate/rules.ts`,
     ]);
   });
 });

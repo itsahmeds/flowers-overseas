@@ -51,6 +51,10 @@ export const adminPermissions = [
   "catalogue.publish",
   // spec 022a §2 "Moderation" (TASK-372): the reviews queue, a review, and the four actions.
   "reviews.moderate",
+  // spec 012b §5.2 (TASK-297, TASK-298): the product editor, its supplier florist, its prices.
+  "catalogue.edit",
+  "catalogue.supplier",
+  "price.edit",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -94,6 +98,11 @@ export const ADMIN_PERMISSIONS: Readonly<
   "catalogue.publish": ["admin", "content"],
   // spec 022a §2: moderation is admin and ops; the order link inside it still needs `orders.view`.
   "reviews.moderate": ["admin", "ops"],
+  // spec 012b §5.2: products, sizes, copy (admin, content); the supplier florist and its payout
+  // (admin, finance; also `partner.payout`); prices (admin, finance).
+  "catalogue.edit": ["admin", "content"],
+  "catalogue.supplier": ["admin", "finance"],
+  "price.edit": ["admin", "finance"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

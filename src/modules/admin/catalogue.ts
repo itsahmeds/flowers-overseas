@@ -1237,8 +1237,8 @@ export interface CatalogueListRow {
   readonly id: string;
   readonly sku: string;
   readonly name: string | null;
-  readonly productType: string;
-  readonly status: string;
+  readonly productType: (typeof productTypes)[number];
+  readonly status: "draft" | "active" | "retired";
   readonly source: string;
   readonly pricedIn: number;
   readonly florists: readonly string[];
@@ -1290,8 +1290,8 @@ export async function catalogueList(
       id: row.id,
       sku: row.sku,
       name: row.name,
-      productType: row.type,
-      status: row.status,
+      productType: z.enum(productTypes).parse(row.type),
+      status: z.enum(["draft", "active", "retired"]).parse(row.status),
       source: row.source,
       pricedIn: row.priced,
       florists: row.florists ?? [],
@@ -1553,5 +1553,22 @@ export async function marginTab(
       }
     }
     return out;
+  });
+}
+
+/** The florists a bouquet may come from: onboarding and active, never demo (the supplier picker). */
+export async function catalogueSuppliers(
+  actor: CatalogueActor,
+  run: AdminRunner = adminRunner,
+): Promise<readonly { id: string; code: string; currency: string }[]> {
+  return run(context(actor, CATALOGUE_ACTIONS.view), async (db) => {
+    const rows = await db.execute<{
+      id: string;
+      code: string;
+      currency: string;
+    }>(sql`
+      SELECT id, code, payout_currency_code AS currency FROM fulfillment_partner
+       WHERE status IN ('active', 'onboarding') ORDER BY code`);
+    return [...rows];
   });
 }
