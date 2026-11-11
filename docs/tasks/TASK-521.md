@@ -32,38 +32,33 @@ _None recorded._
 
 ## Escalations
 
-1. **`src/modules/ops/pushover.ts:135`, key `message` (TASK-488).** The Pushover client builds its
-   POST form body with `new URLSearchParams({ ..., message })`; T-59 counts every `URLSearchParams`
-   key as a URL key, and `message` is a PII key name (`isRedactedKey`), so rule (b) refuses to pin
-   it. It is not PII in a URL (a server-to-Pushover POST body, the alert text), so it is not a
-   privacy bug, but no pin can make it green. Decision needed: (a) give T-59 a separate,
-   file-scoped list of POST-body keys exempt from rule (b), or (b) have the Pushover adapter send
-   JSON (a TASK-488 follow-up in app code). `url-pii.test.ts` stays red on exactly that one line
-   until then.
-2. **`pnpm i18n:check` still exits 1 with 17 findings that are not the API-route or type-only
-   kind**: 6 unused keys (`nav.send`, `search.suggest.kind.{product,occasion,category,destination,page}`);
-   6 key reads from outside their entry's `paths` (`src/modules/risk/prepay.ts`
-   `payments.error.generic`, new with TASK-493;`src/modules/ui/checkout/payment/PaymentPanel.tsx`
-   `checkout.error.unable` and `payments.error.generic`, `controller.ts` `payments.error.unavailable`,
-   `PayButton.tsx` `checkout.legal.payButton`, `PreContractBlock.tsx` `checkout.legal.cancellation`);
-   5 import-rule findings for `src/modules/notifications/emails/{basket-reminder,copy,html,layout,theme}.ts`
-   (entry `tracking`) through a real value chain: `src/app/[locale]/-search/limited/page.tsx` ->
-   `modules/search` -> `modules/ops` (`raiseLegacyAlert`) -> `modules/ops/dispatch.ts` ->
-   `modules/notifications/index.ts`, which re-exports the TASK-449 basket-reminder email. Each needs
-   its own task (catalogue cleanup, scope paths, and the notifications barrel).
+1. Resolved by the orchestrator's ruling (founder delegated), 2026-11-11: `src/modules/ops/pushover.ts`
+   sent its POST as form fields, so T-59 read `message` as a URL key it may not pin. The adapter
+   now sends a JSON body; the test gained no exemption.
+2. Resolved by the same ruling: the 17 remaining `i18n:check` findings are fixed in this PR (see
+   Result).
 
 ## Progress
 
 - 2026-11-11: `src/app/api/` is a non-indexable app directory; type-only imports are not import-rule
   edges (the 33 GA4 findings were `import type { StepScreen }` from `@/modules/checkout`).
-- 2026-11-11: T-59 pins 44 new query keys and 6 new segment names; one key (`message`) escalated.
+- 2026-11-11: T-59 pins 37 new query keys and 6 new segment names; one key (`message`) escalated.
+- 2026-11-11: rulings applied: Pushover sends JSON; the 17 remaining i18n findings are fixed.
 
 ## Result
 
 - Part 1: `scripts/i18n-check-scope.ts` adds `src/app/api/` to `NON_INDEXABLE_APP_DIRECTORIES` and
-  drops type-only imports (`import type`, `export type ... from`, all-`type` named imports) from the
-  import graph. `pnpm i18n:check`: 49 -> 17 findings (16, plus one TASK-493 brought), none of the fixed kinds (Escalation 2).
-  Tests: `tests/unit/i18n-scope-admin-roots.test.ts` (6, green).
-- Part 2: `tests/unit/url-pii.test.ts` pins the new keys and segments; 11 of 15 green, the 4 red
-  ones fail only on `pushover.ts:135 message` (Escalation 1). No personal field found in any URL.
-- No build: tooling and tests only.
+  drops type-only imports from the import graph (33 GA4 findings were `import type`). The other
+  17, fixed by ruling: `nav.send` deleted unread from en/de/pl and their meta; the header names
+  `search.suggest.kind.*` in full; the shared payment panel takes its fallback keys from the pay
+  step (`messageKeys`, `unavailableKey`); `src/modules/risk/**` joins `PAYMENTS_PATHS`; the basket
+  reminder renderer leaves the notifications barrel for `@/modules/notifications/emails` (the
+  rule in that file's header), injected into `sendBasketReminder` by `src/jobs/basket-reminders.ts`.
+  `pnpm i18n:check` exits 0.
+- Part 2: `tests/unit/url-pii.test.ts` pins 37 keys and 6 segment names, all opaque ids, codes,
+  tokens, fixed words or third-party API parameters; no personal field in a URL. Pushover sends a
+  JSON body (`tests/contract/ops-pushover.test.ts` asserts it). 15/15 green.
+- Not mine, still red on main: `tests/unit/payments-copy.test.ts` (8 cases, the `payments.step.*`
+  keys added since its pinned list); `i18n-check.test.ts`'s pl-hidden case times out at 5 s under
+  load. Integration suites touched (`basket-reminder-send`, support) were not run: no local Postgres.
+- Clean-env build in the slot: app code changed.
