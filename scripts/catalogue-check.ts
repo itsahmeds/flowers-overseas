@@ -98,6 +98,14 @@ import {
   priceBandKeys,
 } from "../src/config/catalogue/schemas.ts";
 import { PRODUCT_TIERS } from "../src/config/catalogue/tiers.data.ts";
+import {
+  FORBIDDEN_STEM_COUNT,
+  type RuleId,
+  openPriceViolations,
+  priceViolations,
+  stemViolations,
+  tierViolations,
+} from "../src/modules/catalog/validate/index.ts";
 
 export const CLI_NAME = "catalogue:check";
 
@@ -136,6 +144,11 @@ export interface Problem {
   /** SKU, destination, key or column set — whatever names the offender. */
   readonly subject: string;
   readonly reason: string;
+  /**
+   * The shared rule id (`src/modules/catalog/validate/`, spec 012b AC-15): the admin save refuses
+   * the same fault with the same id. Absent for a gate-only check (FX, projections, labels).
+   */
+  readonly rule?: RuleId;
 }
 
 /** Everything the checks read. Injected so a test can mutate one field and nothing else. */
@@ -349,8 +362,10 @@ function checkTiers(input: CatalogueCheckInput): Problem[] {
   const problems: Problem[] = [];
   for (const product of input.products) {
     const tiers = input.tiers.filter((tier) => tier.sku === product.sku);
-    if (tiers.length === 0) {
+    const shared = tierViolations(tiers);
+    if (shared.some((item) => item.rule === "tier.none")) {
       problems.push({
+        rule: "tier.none",
         mode: "no-tier",
         file: TIERS_FILE,
         subject: product.sku,
@@ -360,8 +375,9 @@ function checkTiers(input: CatalogueCheckInput): Problem[] {
       continue;
     }
     const defaults = tiers.filter((tier) => tier.isDefault);
-    if (defaults.length !== 1) {
+    if (shared.some((item) => item.rule === "tier.default_one")) {
       problems.push({
+        rule: "tier.default_one",
         mode: "default-tier",
         file: TIERS_FILE,
         subject: product.sku,
@@ -373,7 +389,7 @@ function checkTiers(input: CatalogueCheckInput): Problem[] {
 }
 
 /** The stem count no tier may offer: the French guide says thirteen is avoided (`fr-guide.md`). */
-export const FORBIDDEN_STEM_COUNT = 13;
+export { FORBIDDEN_STEM_COUNT };
 
 /**
  * Every offered stem count is odd and never 13, in every country (spec 005 §14
@@ -395,24 +411,30 @@ function checkStemTiers(input: CatalogueCheckInput): Problem[] {
   for (const tier of input.tiers) {
     if (tier.stems === null) continue;
     const subject = `${tier.sku} ${tier.tierKey}`;
-    if (tier.stems % 2 === 0) {
+    const broken = new Set(
+      stemViolations(tier, "stems").map((item) => item.rule),
+    );
+    if (broken.has("tier.stem_count_odd")) {
       problems.push({
+        rule: "tier.stem_count_odd",
         mode: "stem-tier",
         file: TIERS_FILE,
         subject,
         reason: `offers ${String(tier.stems)} stems, an even count: every offered stem count is odd, in every country, because an even number is for a grave in Poland, Romania and Italy (spec 005 §14 A-founder-2026-10-14c, AC-36)`,
       });
     }
-    if (tier.stems === FORBIDDEN_STEM_COUNT) {
+    if (broken.has("tier.stem_count_thirteen")) {
       problems.push({
+        rule: "tier.stem_count_thirteen",
         mode: "stem-tier",
         file: TIERS_FILE,
         subject,
         reason: `offers ${String(FORBIDDEN_STEM_COUNT)} stems: no tier offers thirteen, which the French guide says is avoided (spec 005 §14 A-founder-2026-10-14c, AC-36)`,
       });
     }
-    if (tier.tierKey !== `stems_${String(tier.stems)}`) {
+    if (broken.has("tier.stem_key")) {
       problems.push({
+        rule: "tier.stem_key",
         mode: "stem-tier",
         file: TIERS_FILE,
         subject,
@@ -461,8 +483,16 @@ function checkPriceCoverage(input: CatalogueCheckInput): Problem[] {
     activeByKey.set(rowKey, (activeByKey.get(rowKey) ?? 0) + 1);
   }
   for (const [rowKey, count] of activeByKey) {
-    if (count > 1) {
+    if (
+      openPriceViolations([
+        ...Array.from({ length: count }, () => ({
+          key: rowKey,
+          activeTo: null,
+        })),
+      ]).length > 0
+    ) {
       problems.push({
+        rule: "price.one_open",
         mode: "ambiguous-price",
         file: DATA_FILE,
         subject: rowKey,
@@ -549,6 +579,7 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
   for (const row of input.countryPrices) {
     if (!Number.isInteger(row.retailMinor)) {
       problems.push({
+        rule: "price.integer_minor",
         mode: "float-money",
         file: DATA_FILE,
         subject: `${row.sku} ${row.tierKey ?? row.surchargeKind ?? "-"} ${row.countryIso2}`,
@@ -557,6 +588,7 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
     }
     if (!isCurrencyCode(row.currency)) {
       problems.push({
+        rule: "price.currency",
         mode: "float-money",
         file: DATA_FILE,
         subject: `${row.sku} ${row.countryIso2}`,
@@ -564,12 +596,31 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
       });
       continue;
     }
+    const destinationCurrency = destinations.get(row.countryIso2)?.currency;
+    if (
+      destinationCurrency !== undefined &&
+      Number.isInteger(row.retailMinor) &&
+      priceViolations({
+        amountMinor: row.retailMinor,
+        currency: row.currency,
+        countryCurrency: destinationCurrency,
+      }).some((item) => item.rule === "price.currency")
+    ) {
+      problems.push({
+        rule: "price.currency",
+        mode: "float-money",
+        file: DATA_FILE,
+        subject: `${row.sku} ${row.countryIso2}`,
+        reason: `is priced in \`${row.currency}\`, not ${row.countryIso2}'s \`${destinationCurrency}\`: a price is in the destination's currency (spec 012b §2.5)`,
+      });
+    }
     if (
       row.surchargeKind === null &&
       isActive(row) &&
       !endsInRoundingStyle(row.retailMinor, row.currency)
     ) {
       problems.push({
+        rule: "price.rounding",
         mode: "rounding-ending",
         file: DATA_FILE,
         subject: `${row.sku} ${row.tierKey ?? "-"} ${row.countryIso2}`,
@@ -594,6 +645,7 @@ function checkAmounts(input: CatalogueCheckInput): Problem[] {
     if (band === undefined) continue;
     if (row.retailMinor < band.fromMinor || row.retailMinor > band.toMinor) {
       problems.push({
+        rule: "price.band",
         mode: "band",
         file: DATA_FILE,
         subject: `${row.sku} ${row.tierKey ?? "-"} ${row.countryIso2}`,
@@ -668,6 +720,7 @@ function checkAddonPrices(input: CatalogueCheckInput): Problem[] {
     counts.set(rowKey, (counts.get(rowKey) ?? 0) + 1);
     if (!Number.isInteger(row.retailMinor)) {
       problems.push({
+        rule: "price.integer_minor",
         mode: "float-money",
         file: DATA_FILE,
         subject: rowKey,

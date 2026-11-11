@@ -100,10 +100,7 @@ import {
   catalogueCheckInput,
   checkCatalogue,
 } from "../scripts/catalogue-check.ts";
-import {
-  PRICE_LITERAL_PATTERN,
-  shingleDistinctness,
-} from "../scripts/corridor-check.ts";
+import { shingleDistinctness } from "../scripts/corridor-check.ts";
 import { floristSentenceFor } from "../scripts/i18n-draft.ts";
 import { CORE_RANGE_SIZE } from "../src/config/commerce.ts";
 import { COMPETITOR_MARKS } from "../src/config/competitors.ts";
@@ -132,6 +129,12 @@ import type {
 import { LAUNCH_LOCALE_DATA } from "../src/config/locales.data.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { bannedVoiceWordsIn } from "../src/config/voice.ts";
+import {
+  copyViolations,
+  hardViolations,
+  priceLiteralsIn,
+  slugViolations,
+} from "../src/modules/catalog/validate/index.ts";
 import {
   isLocaleIndexable,
   unreviewedShare,
@@ -1663,36 +1666,10 @@ export function nativeDeliveryTimingPhrasesIn(text: string): readonly string[] {
 }
 
 /**
- * A price written number-first, the way German and Polish write it: `49 €`, `49,90 €`, `49,– €`,
- * `149 zł`, `99 lei`. The number may end in a dash for "no cents" (`49,–`), and the currency may
- * be a symbol, an ISO code or the local word (`/break 150` hole 5).
+ * The price literals a piece of copy contains: moved to the shared catalogue rules (spec 012b
+ * §2.5, AC-15; TASK-297) so the product editor refuses the same forms.
  */
-const TRAILING_CURRENCY_PRICE_PATTERN =
-  /\d[\d.,]*(?:[.,]?[-–—]+)?\s?(?:[£€$]|(?:zł|zl|złotych|pln|eur|euro|euros|gbp|ron|lei)(?![\p{L}\p{N}]))/iu;
-
-/**
- * A price written currency-first with an ISO code or a currency word: `EUR 49`, `PLN 149`,
- * `RON 99`, `zł 149` (`/break 150` hole 5). The symbol-first form (`€49`) is the corridor gate's.
- */
-const LEADING_CODE_PRICE_PATTERN =
-  /(?<![\p{L}\p{N}])(?:eur|euro|gbp|pln|ron|lei|zł|zl)\s?\d[\d.,]*/iu;
-
-/**
- * The price literals a piece of copy contains: the corridor gate's pattern, plus the number-first
- * and code-first forms German and Polish copy use.
- */
-export function priceLiteralsIn(text: string): readonly string[] {
-  return [
-    PRICE_LITERAL_PATTERN,
-    TRAILING_CURRENCY_PRICE_PATTERN,
-    LEADING_CODE_PRICE_PATTERN,
-  ]
-    .map((pattern) => pattern.exec(text)?.[0].trim())
-    .filter(
-      (match, index, all): match is string =>
-        match !== undefined && all.indexOf(match) === index,
-    );
-}
+export { priceLiteralsIn };
 
 /** The intros of one locale's hub pages: `human` category and occasion rows with a description. */
 function hubIntroRows(
@@ -1845,6 +1822,33 @@ function headCopyProblems(
         rule: "dash-in-head",
         message: `\`${field}\` ${JSON.stringify(value)} carries ${describeHeadDashes(found)}: head copy takes a colon or a full stop (spec 006 §14 A-founder-2026-10-15a)`,
       });
+    }
+    if (row.entity === "product") {
+      // Spec 012b §2.5 (AC-15; TASK-297): the product editor's hard copy and slug rules, with the
+      // same rule ids the admin save refuses with.
+      const shared = [
+        ...slugViolations(row.slug ?? ""),
+        ...hardViolations(
+          copyViolations(
+            {
+              name: row.name,
+              description: row.descriptionMd ?? "",
+              seoTitle: row.seoTitle ?? "",
+              seoDescription: row.seoDescription ?? "",
+            },
+            { floristTerms: [] },
+          ),
+        ),
+      ];
+      for (const item of shared) {
+        problems.push({
+          family: "copy",
+          file: dataFile(path),
+          key,
+          rule: item.rule,
+          message: `\`${item.field}\` breaks the catalogue rule \`${item.rule}\` the product editor refuses too (spec 012b §2.5, AC-15)`,
+        });
+      }
     }
     if (row.entity !== "product" || typeof row.seoTitle !== "string") continue;
     if (row.seoTitle === row.name || row.seoTitle.startsWith(`${row.name}: `)) {
