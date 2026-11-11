@@ -24,6 +24,7 @@ import { logger } from "@/lib/logger";
 import { upcomingOccasions } from "@/modules/geo";
 import {
   BuyerSnapshotSchema,
+  jsonb,
   type OrderExecutor,
   RecipientSnapshotSchema,
 } from "@/modules/orders";
@@ -166,18 +167,23 @@ export function isPeakDay(countryIso2: string, deliveryDate: string): boolean {
   );
 }
 
-/** An earlier `live` order with this email hash, delivered and never charged back. */
+/**
+ * An earlier order of the same mode with this email hash, delivered and never charged back. In
+ * `live` this is §5.2's "no earlier `live` order"; a `test` order compares with `test` orders,
+ * so staging's synthetic orders (AC-11) never mix with real ones.
+ */
 async function deliveredBefore(
   executor: OrderExecutor,
   orderId: string,
   email: string,
+  mode: "test" | "live",
 ): Promise<boolean> {
   const [row] = await executor.execute(sql`
     SELECT EXISTS (
       SELECT 1 FROM risk_identity i
       JOIN "order" o ON o.id = i.order_id
       WHERE i.kind = 'email' AND i.hash = ${email} AND o.id <> ${orderId}
-        AND o.mode = 'live'
+        AND o.mode = ${mode}
         AND EXISTS (SELECT 1 FROM order_event d
                     WHERE d.order_id = o.id AND d.type = 'order.delivered')
         AND NOT EXISTS (SELECT 1 FROM order_event c
@@ -284,7 +290,7 @@ export async function assess(
     firstOrder:
       hashes.email === null
         ? true
-        : !(await deliveredBefore(executor, orderId, hashes.email)),
+        : !(await deliveredBefore(executor, orderId, hashes.email, order.mode)),
     peakDay: isPeakDay(order.destination_country, order.delivery_date),
     cardMessageMatch: recipient.success
       ? cardMessageMatches(recipient.data.cardMessage, recipient.data.signAs)
@@ -305,7 +311,7 @@ export async function assess(
                                  signals, liability_shift, radar_risk_level, radar_risk_score,
                                  radar_outcome, created_at)
     VALUES (${orderId}, 'routing', ${order.mode}, ${RISK_RULES_VERSION}, ${scored.score},
-            ${scored.decision}, ${deps.enforced}, ${JSON.stringify(scored.signals)}::jsonb,
+            ${scored.decision}, ${deps.enforced}, ${jsonb(scored.signals)},
             ${facts?.liabilityShift ?? null}, ${facts?.riskLevel ?? null},
             ${facts?.riskScore ?? null}, ${outcomeCode(facts?.outcomeType ?? null)},
             ${now.toISOString()}::timestamptz)
