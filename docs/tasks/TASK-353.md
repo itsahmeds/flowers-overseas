@@ -42,7 +42,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11: worktree `../fo-wt-353`, branch `task/TASK-353-occasion-reminders`; row in progress. The `Mailer` `headers` field already shipped with spec 034 (TASK-450), so this task reuses it. No migration needed (0045 has the table and columns).
 
 ## Result
 
