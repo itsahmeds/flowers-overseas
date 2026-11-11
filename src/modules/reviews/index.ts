@@ -83,3 +83,9 @@ export type {
   ReviewDetail,
   ReviewScope,
 } from "./moderate";
+export {
+  listPublicReviews,
+  REVIEWS_PAGE_SIZE,
+  reviewSummary,
+} from "./public";
+export type { PublicReview, ReviewScopeFilter, ReviewSummary } from "./public";

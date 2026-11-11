@@ -29,8 +29,10 @@ import {
   ModerationActionSchema,
   overduePendingReviews,
   queueCounts,
+  listPublicReviews,
   redactForCustomer,
   reviewQueue,
+  reviewSummary,
 } from "@/modules/reviews";
 
 import { registerFixtureEventSchemas } from "../fixtures/order-engine.ts";
@@ -332,6 +334,19 @@ describe.skipIf(server.url === undefined)(
           SELECT id, rating, text FROM public_review WHERE id IN (${withheld.reviewId}, ${removed.reviewId})`;
         expect(visible).toEqual([
           { id: withheld.reviewId, rating: 2, text: null },
+        ]);
+        // The public reads see the same: the withheld 2 with no text counts; the removed 1 and the
+        // two pending 5s are not there (TASK-373 summary and list).
+        const summary = await reviewSummary(runnerOf(tx), "all");
+        expect(summary).toMatchObject({
+          average: 2,
+          count: 1,
+          withText: 0,
+          distribution: { 1: 0, 2: 1, 3: 0, 4: 0, 5: 0 },
+        });
+        const cards = await listPublicReviews(runnerOf(tx), "all", 1);
+        expect(cards.map((card) => [card.id, card.text])).toEqual([
+          [withheld.reviewId, null],
         ]);
         const [refresh] = await refreshPartnerRatings(
           runnerOf(tx),
