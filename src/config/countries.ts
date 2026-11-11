@@ -447,9 +447,9 @@ export type CmsSource = "static" | "database";
  * roots so that a deployment never prices from one source and lists destinations from the other.
  *
  * The database in `DATABASE_REGISTRY_ENVIRONMENTS`, **while the deployment carries the build's
- * database login** (`BUILD_DATABASE_URL_KEY`, spec 012b §12 founder action 4;
- * `buildDatabaseConfigured()` in `src/lib/db.ts`, the only module that reads the key). Without it the deployment, build and
- * server alike, keeps serving this file and the authored dataset, and says so in its log
+ * database login** (spec 012b §12 founder action 4; `buildDatabaseConfigured()` in
+ * `src/lib/db.ts`, the only module that reads it). Without it the deployment, build and server
+ * alike, keeps serving this file and the authored dataset, and says so in its log
  * (`src/modules/geo/db/runtime.ts`). That is the staging fallback the orchestrator ordered on
  * 2026-11-11 so a build without the variable still passes; it departs from §2.0 item 2's "no
  * fallback" and is recorded in `docs/tasks/TASK-294.md` (Escalations). Build and server decide on

@@ -400,6 +400,14 @@ describe.skipIf(server.url === undefined)(
           "partner_contact_log",
           // Spec 030b's `0041_partner_contracts` (TASK-442): the florist contract register.
           "partner_contract",
+          // Spec 047's `0037_discount_codes` (TASK-445): the codes and their three scopes.
+          "discount_code",
+          "discount_code_country",
+          "discount_code_currency",
+          "discount_code_product",
+          // Spec 021's `0043_risk_021` (TASK-493): the blocklist and the review queue.
+          "risk_blocklist",
+          "risk_review",
           ...CATALOGUE_CMS_AUDITED_TABLES,
         ].sort(),
       );

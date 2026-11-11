@@ -42,7 +42,7 @@ export type CountryRegistrySource = CmsSource;
 /**
  * The composition root's rule (spec 012b §2.2, AC-3; TASK-294), `cmsSourceFor()`: `production`,
  * `staging` and `preview` serve the database's registry (`dbCountryRegistry`) while the
- * deployment carries the build login (`BUILD_DATABASE_URL_KEY`), the file's otherwise and in
+ * deployment carries the build login (`buildDatabaseConfigured()`), the file's otherwise and in
  * `development` and `test`. The catalogue's composition root reads the same rule.
  */
 export function countryRegistrySourceFor(

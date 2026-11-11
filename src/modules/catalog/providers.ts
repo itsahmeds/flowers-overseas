@@ -184,7 +184,7 @@ export type CatalogSource = CmsSource;
 
 /**
  * The composition root's rule, `cmsSourceFor()`: `production`, `staging` and `preview` read the
- * database while the deployment carries the build login (`BUILD_DATABASE_URL_KEY`), and the
+ * database while the deployment carries the build login (`buildDatabaseConfigured()`), and the
  * repository otherwise, as `development` and `test` always do. The country registry reads the same rule
  * (`countryRegistrySourceFor()`), so a deployment never prices from one source and lists
  * destinations from the other. `databaseConfigured` is the test seam.
@@ -267,7 +267,7 @@ let swapped: CatalogProviders | undefined;
  * The composition root: the single place that decides which implementation the module reads.
  *
  * Spec 012b's cutover (TASK-294, AC-3): the database providers in `production`, `staging` and
- * `preview` once the deployment carries the build login (`BUILD_DATABASE_URL_KEY`), the
+ * `preview` once the deployment carries the build login (`buildDatabaseConfigured()`), the
  * repository's otherwise and in `development` and `test` (`catalogSourceFor()`). The swap changes no file outside
  * `src/modules/catalog` (spec 005 AC-27). Once on the database, a read that fails fails the
  * render or the build: no per-read fallback to the files (spec 012b §2.0 item 2).
