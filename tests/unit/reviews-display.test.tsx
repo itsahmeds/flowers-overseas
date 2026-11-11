@@ -23,7 +23,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { infoPage } from "@/config/info-pages";
-import { REVIEWS_PAGE_INDEX_MINIMUM, ratingValueOf } from "@/config/reviews";
+import { ratingValueOf } from "@/config/review-rating";
+import { REVIEWS_PAGE_INDEX_MINIMUM } from "@/config/reviews";
 import { isPublished } from "@/config/site-links";
 import { loadMessages } from "@/modules/i18n";
 import {

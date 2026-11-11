@@ -19,7 +19,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import { COMPANY, whatsappHref } from "@/config/company";
 import type { LocaleCode } from "@/config/locales";
-import { ratingValueOf } from "@/config/reviews";
+import { ratingValueOf } from "@/config/review-rating";
 
 import { formatDate, formatNumber, formatRegionName } from "../../i18n";
 import { Display, Eyebrow } from "../primitives/typography.tsx";

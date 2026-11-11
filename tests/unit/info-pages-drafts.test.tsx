@@ -187,7 +187,8 @@ describe("T-23 / AC-23: a draft file for each of the ten pages, in de and pl", (
         (SPEC_041_PAGE_IDS as readonly string[]).includes(match[1] ?? "")
       );
     });
-    expect(drafts).toHaveLength(20);
+    // Spec 041's ten pages, plus spec 022a's review policy in its legal machinery (TASK-373).
+    expect(drafts).toHaveLength(22);
     for (const file of drafts) {
       expect(file.source, file.path).toMatch(/^source: machine$/mu);
       expect(file.source, file.path).toMatch(/^reviewed: false$/mu);
@@ -314,7 +315,8 @@ describe("T-23 / AC-23, AC-20: no draft is in any sitemap", () => {
       ),
     );
     // The control: the drafts that exist on the committed config are found at all.
-    expect(paths.size).toBe(14);
+    // Spec 022a's review policy adds its two drafts (TASK-373).
+    expect(paths.size).toBe(16);
     for (const locale of ["en", "en-gb", "de", "pl"]) {
       for (const row of staticSitemapEntries(locale, INDEXING)) {
         const path = new URL(row.loc).pathname;

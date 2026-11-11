@@ -9,7 +9,7 @@
  * a `review` entry exists only for a card whose author chose to show a first name (§6), with the
  * card's own rating and text.
  */
-import { ratingValueOf } from "@/config/reviews";
+import { ratingValueOf } from "@/config/review-rating";
 
 import type { JsonLdNode } from "./JsonLd.tsx";
 
