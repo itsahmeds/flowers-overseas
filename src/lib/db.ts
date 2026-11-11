@@ -49,6 +49,10 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { z } from "zod";
 
+import {
+  BUILD_DATABASE_URL_KEY,
+  BUILD_DATABASE_URL_PATTERN,
+} from "./build-login";
 import { logger } from "./logger";
 
 /** The five values `app.role` may take (spec 002 §2 "RLS and roles"). */
@@ -69,8 +73,8 @@ export const BUILD_ROLE = "app_build";
 /** Next's `PHASE_PRODUCTION_BUILD` (`next/constants`), the value of `NEXT_PHASE` during a build. */
 export const BUILD_PHASE = "phase-production-build";
 
-/** The one key the build's connection string is read from. */
-export const BUILD_DATABASE_URL_KEY = "DATABASE_BUILD_URL";
+/** The one key the build's connection string is read from (`./build-login.ts`). */
+export { BUILD_DATABASE_URL_KEY };
 
 /** True while `next build` runs: the build-phase client applies (spec 012b §5.2). */
 function isBuildPhase(
@@ -79,9 +83,7 @@ function isBuildPhase(
   return environment["NEXT_PHASE"] === BUILD_PHASE;
 }
 
-const buildDatabaseUrlSchema = z
-  .string()
-  .regex(/^postgres(?:ql)?:\/\/[^\s]+$/u);
+const buildDatabaseUrlSchema = z.string().regex(BUILD_DATABASE_URL_PATTERN);
 
 /**
  * The build's connection string, or a throw that names the key and never echoes a value (spec 001

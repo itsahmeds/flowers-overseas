@@ -260,7 +260,7 @@ export {
   QuoteSchema,
   TierKeySchema,
 } from "./schemas";
-export { availability } from "./availability";
+export { availability, isSaleable } from "./availability";
 export { isProductIndexable } from "./read";
 export { lowestPriceInLast30Days } from "./pricing/history";
 export { quote, verifyQuote } from "./pricing/quote";

@@ -25,7 +25,7 @@ import {
   controllerName,
   whatsappHref,
 } from "@/config/company";
-import { COUNTRIES } from "@/config/countries";
+import { activeCountries } from "@/config/countries";
 import {
   type ApplicationFormState,
   FLORIST_LANGUAGES,
@@ -182,7 +182,7 @@ function ApplyFormSection({
   )
     ? locale.slice(0, 2)
     : "en";
-  const countries = sortBy(COUNTRIES, localeCode(locale), (country) =>
+  const countries = sortBy(activeCountries(), localeCode(locale), (country) =>
     label(t, country.nameKey),
   ).map((country) => ({
     value: country.iso2,

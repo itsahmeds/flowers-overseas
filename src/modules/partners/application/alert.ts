@@ -21,7 +21,7 @@
 import { createTranslator } from "next-intl";
 
 import { TRADING_NAME } from "@/config/company.data";
-import { COUNTRIES } from "@/config/countries";
+import { activeCountries } from "@/config/countries";
 import { type EnvSource, appEnvironment } from "@/lib/env.schema";
 import { floristApplicationsNotifyEmail } from "@/lib/env.florists";
 import { loadMessages } from "@/modules/i18n";
@@ -67,7 +67,9 @@ export function applicationAlertRows(
   t: AlertTranslator,
 ): readonly (readonly [label: string, value: string])[] {
   const none = t("emails.floristApplicationAlert.none");
-  const country = COUNTRIES.find((row) => row.iso2 === application.country);
+  const country = activeCountries().find(
+    (row) => row.iso2 === application.country,
+  );
   const weekends = {
     yes: "forFlorists.apply.field.weekends.yes",
     sometimes: "forFlorists.apply.field.weekends.sometimes",

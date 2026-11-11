@@ -38,7 +38,7 @@ import {
   DEST_COOKIE_NAME,
 } from "@/config/cookies";
 import {
-  COUNTRIES,
+  activeCountries,
   type CountryIso2,
   type CountryRegion,
   countryConfig,
@@ -80,7 +80,7 @@ export function normaliseCountryInput(value: string): string {
 function namesByCountry(): ReadonlyMap<CountryIso2, readonly string[]> {
   const locales = launchLocaleCodes().filter(isLocaleCode);
   const out = new Map<CountryIso2, string[]>();
-  for (const country of COUNTRIES) {
+  for (const country of activeCountries()) {
     const names = new Set<string>();
     for (const locale of locales) {
       const name = normaliseCountryInput(countryDisplayName(country, locale));
@@ -153,7 +153,7 @@ export function closestCountries(
     if (score <= limit) scored.push({ iso2, score });
   }
   const order = orderCountries(
-    COUNTRIES.filter((country) =>
+    activeCountries().filter((country) =>
       scored.some((entry) => entry.iso2 === country.iso2),
     ),
     locale,
@@ -411,7 +411,7 @@ export async function chooserPageView(
     action: choiceRoutePath(next),
     remembered,
     chips: shopCodes.slice(0, options.chips).map(view),
-    datalist: orderCountries(COUNTRIES, locale).map((country) =>
+    datalist: orderCountries(activeCountries(), locale).map((country) =>
       countryDisplayName(country, locale),
     ),
     state,

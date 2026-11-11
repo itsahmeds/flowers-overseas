@@ -26,12 +26,30 @@ import {
   COUNTRIES,
   type CountryConfig,
   type CountryOperations,
+  type CmsSource,
+  cmsSourceFor,
   countryStatuses,
 } from "../../config/countries.ts";
 
 /** A source of the destination registry. Both answer the same shape (`CountryConfig`). */
 export interface CountryRegistryProvider {
   countries(): Promise<readonly CountryConfig[]>;
+}
+
+/** Where a deployment's destination registry comes from (spec 012b AC-3). */
+export type CountryRegistrySource = CmsSource;
+
+/**
+ * The composition root's rule (spec 012b §2.2, AC-3; TASK-294), `cmsSourceFor()`: `production`,
+ * `staging` and `preview` serve the database's registry (`dbCountryRegistry`) while the
+ * deployment carries the build login (`buildDatabaseConfigured()`), the file's otherwise and in
+ * `development` and `test`. The catalogue's composition root reads the same rule.
+ */
+export function countryRegistrySourceFor(
+  environment: string,
+  buildDatabaseConfigured: boolean,
+): CountryRegistrySource {
+  return cmsSourceFor(environment, buildDatabaseConfigured);
 }
 
 /** The file registry, as a provider. */

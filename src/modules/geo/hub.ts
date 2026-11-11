@@ -36,7 +36,7 @@
  * so the hub cannot describe a country in words nobody reviewed.
  */
 import {
-  COUNTRIES,
+  activeCountries,
   type CountryIso2,
   type CountryRegion,
   countryRegions,
@@ -158,7 +158,7 @@ export function hubView(
   locale: string,
   nameOf: (nameKey: string) => string = (nameKey) => nameKey,
 ): HubView {
-  const all = COUNTRIES.map((country) =>
+  const all = activeCountries().map((country) =>
     destinationView(country.iso2, country.nameKey, locale),
   );
   const ordered = sortBy(all, localeCode(locale), (destination) =>
@@ -168,7 +168,7 @@ export function hubView(
   const regions = countryRegions.flatMap((region): HubRegionView[] => {
     const members = ordered.filter(
       (destination) =>
-        COUNTRIES.find((country) => country.iso2 === destination.iso2)
+        activeCountries().find((country) => country.iso2 === destination.iso2)
           ?.region === region,
     );
     // A region with nothing to link to renders nothing at all — heading included.

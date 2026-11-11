@@ -33,6 +33,16 @@ import type {
   ProductTierRecord as ProductTierDataRecord,
 } from "@/config/catalogue/schemas";
 
+import { buildDatabaseConfigured } from "@/lib/build-login";
+import { appEnvironment } from "@/lib/env.schema";
+
+import { type CmsSource, cmsSourceFor } from "@/config/countries";
+
+import {
+  dbCatalogueProvider,
+  dbPriceProvider,
+  dbSaleabilityProvider,
+} from "./db";
 import {
   staticCatalogueProvider,
   staticFlagProvider,
@@ -124,6 +134,22 @@ export interface FlagProvider {
   flags(): Promise<readonly FeatureFlagRecord[]>;
 }
 
+/**
+ * One offer a real florist can make and deliver: a non-demo `active` florist with a mapping that
+ * can fulfil the product (and size) and coverage in the destination (spec 012b §2.5, F3, AC-39).
+ * `tierKey` is `null` for a product sold without sizes.
+ */
+export interface SaleableOfferRecord {
+  readonly sku: string;
+  readonly tierKey: string | null;
+  readonly countryIso2: string;
+}
+
+/** The `saleable_offer` view (spec 012b §5.1 item 3), ids resolved to SKU and ISO code. */
+export interface SaleabilityProvider {
+  saleableOffers(): Promise<readonly SaleableOfferRecord[]>;
+}
+
 /** The provider set the module resolves everything from. */
 export interface CatalogProviders {
   readonly catalogue: CatalogueProvider;
@@ -140,21 +166,116 @@ const STATIC_PROVIDERS: CatalogProviders = {
   flags: staticFlagProvider,
 };
 
+/**
+ * The cutover's set (spec 012b §2.2, AC-3; TASK-294): products, tiers and prices from Postgres
+ * (`./db`, TASK-070). FX stays the committed snapshot until TASK-071's `fx.refresh` writes rates
+ * (`./db/fx.ts` says why), and the flag scopes stay `./static/flags` until spec 012's admin owns
+ * them, exactly as before the cutover.
+ */
+const DATABASE_PROVIDERS: CatalogProviders = {
+  catalogue: dbCatalogueProvider,
+  price: dbPriceProvider,
+  fx: staticFxRateProvider,
+  flags: staticFlagProvider,
+};
+
+/** Where the catalogue and prices come from in an environment (spec 012b AC-3). */
+export type CatalogSource = CmsSource;
+
+/**
+ * The composition root's rule, `cmsSourceFor()`: `production`, `staging` and `preview` read the
+ * database while the deployment carries the build login (`buildDatabaseConfigured()`), and the
+ * repository otherwise, as `development` and `test` always do. The country registry reads the same rule
+ * (`countryRegistrySourceFor()`), so a deployment never prices from one source and lists
+ * destinations from the other. `databaseConfigured` is the test seam.
+ */
+export function catalogSourceFor(
+  environment: string,
+  databaseConfigured: boolean = buildDatabaseConfigured(),
+): CatalogSource {
+  return cmsSourceFor(environment, databaseConfigured);
+}
+
+/**
+ * The environments where a product is saleable only when a real florist can make it (spec 012b
+ * §2.5, §5.2 "`availability()` composes it in `production` and `staging`", AC-39). Not `preview`:
+ * it shares the staging database but takes no real order.
+ */
+export const SALEABILITY_ENVIRONMENTS = ["production", "staging"] as const;
+
+/** The set `catalogSourceFor()` names for `environment`. */
+export function providersFor(
+  environment: string,
+  databaseConfigured: boolean = buildDatabaseConfigured(),
+): CatalogProviders {
+  return catalogSourceFor(environment, databaseConfigured) === "database"
+    ? DATABASE_PROVIDERS
+    : STATIC_PROVIDERS;
+}
+
+/**
+ * The saleability term for `environment` (spec 012b §2.5, AC-39): the `saleable_offer` view in
+ * `production` and `staging` while they read the database catalogue, absent everywhere else,
+ * where a demo florist's coverage is what the demo shop shows (spec 016's mode pairing) and
+ * `isSaleable()` answers `true`. A deployment on the file catalogue (no build login)
+ * composes no term, as before the cutover: one switch turns the whole cutover on.
+ */
+export function saleabilityFor(
+  environment: string,
+  databaseConfigured: boolean = buildDatabaseConfigured(),
+): SaleabilityProvider | undefined {
+  return (SALEABILITY_ENVIRONMENTS as readonly string[]).includes(
+    environment,
+  ) && catalogSourceFor(environment, databaseConfigured) === "database"
+    ? dbSaleabilityProvider
+    : undefined;
+}
+
+/** A saleability term put in place by `withSaleability()`, for the length of its body only. */
+let swappedSaleability:
+  { provider: SaleabilityProvider | undefined } | undefined;
+
+/** The composition root's saleability term (`saleabilityFor()` of this environment). */
+export function saleabilityProvider(): SaleabilityProvider | undefined {
+  return swappedSaleability === undefined
+    ? saleabilityFor(appEnvironment(process.env))
+    : swappedSaleability.provider;
+}
+
+/** Run `body` with `provider` as the saleability term (the test seam; never in the barrel). */
+export async function withSaleability<T>(
+  provider: SaleabilityProvider | undefined,
+  body: () => Promise<T>,
+): Promise<T> {
+  if (swappedSaleability !== undefined) {
+    throw new Error(
+      "withSaleability() is already swapping; one swap at a time",
+    );
+  }
+  swappedSaleability = { provider };
+  try {
+    return await body();
+  } finally {
+    swappedSaleability = undefined;
+  }
+}
+
 /** A set put in place by `withCatalogProviders()`, for the length of its body only. */
 let swapped: CatalogProviders | undefined;
 
 /**
  * The composition root: the single place that decides which implementation the module reads.
  *
- * The database implementations exist (`./db`, TASK-070) and nothing selects them yet: spec 012b's
- * cutover (TASK-294, AC-3) changes this function body to choose them by environment, and that swap
- * changes no file outside `src/modules/catalog` (AC-27), which is what
- * `tests/integration/catalog-db-providers.test.ts` exercises through `withCatalogProviders()`.
+ * Spec 012b's cutover (TASK-294, AC-3): the database providers in `production`, `staging` and
+ * `preview` once the deployment carries the build login (`buildDatabaseConfigured()`), the
+ * repository's otherwise and in `development` and `test` (`catalogSourceFor()`). The swap changes no file outside
+ * `src/modules/catalog` (spec 005 AC-27). Once on the database, a read that fails fails the
+ * render or the build: no per-read fallback to the files (spec 012b §2.0 item 2).
  */
 export function catalogProviders(): CatalogProviders {
   // A fresh object per call, as before the hook existed: a caller that assigned to the answer
   // could otherwise change every later caller's providers.
-  return { ...(swapped ?? STATIC_PROVIDERS) };
+  return { ...(swapped ?? providersFor(appEnvironment(process.env))) };
 }
 
 /**

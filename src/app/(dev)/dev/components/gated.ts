@@ -22,7 +22,7 @@ import type { DestinationStatusProvider } from "@/modules/ui";
 import type { HomeView, ReviewsProvider } from "@/modules/ui";
 import { destinationStatusProviderOf, reviewsProviderOf } from "@/modules/ui";
 
-import { COUNTRIES } from "@/config/countries";
+import { activeCountries, COUNTRY_CODES } from "@/config/countries";
 import { localePath } from "@/modules/i18n";
 
 /**
@@ -32,11 +32,11 @@ import { localePath } from "@/modules/i18n";
  */
 export const GALLERY_HOME_PICKER: HomeView["picker"] = {
   action: "/api/choose/en",
-  chips: COUNTRIES.slice(0, 3).map((country) => ({
-    code: country.iso2.toLowerCase(),
-    name: country.iso2,
+  chips: COUNTRY_CODES.slice(0, 3).map((iso2) => ({
+    code: iso2.toLowerCase(),
+    name: iso2,
   })),
-  datalist: COUNTRIES.map((country) => country.iso2),
+  datalist: [...COUNTRY_CODES],
 };
 
 /** Reviews that announce themselves as fixtures — see the header. */
@@ -74,6 +74,6 @@ export const GALLERY_REVIEWS: ReviewsProvider = reviewsProviderOf([
  * TASK-092, because a corridor URL carries a per-locale slug (spec 007 AC-20).
  */
 export const GALLERY_DESTINATIONS_PUBLISHED: DestinationStatusProvider =
-  destinationStatusProviderOf(COUNTRIES, (iso2, locale) =>
+  destinationStatusProviderOf(activeCountries, (iso2, locale) =>
     iso2 === "PL" ? localePath(locale, "destinations", "poland") : undefined,
   );

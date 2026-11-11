@@ -24,6 +24,13 @@ import postgres from "postgres";
 import { z } from "zod";
 
 import { COUNTRIES, type CountryConfig } from "../src/config/countries.ts";
+import {
+  type ParityRow,
+  catalogueParity,
+  catalogueParityLines,
+  readCatalogueRows,
+  staticCatalogueRows,
+} from "./catalogue-parity-catalogue.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { listingPath, localePath } from "../src/modules/i18n/routing.ts";
 import {
@@ -98,7 +105,7 @@ export function parityReport(
   const urls = new Set(differences.flatMap((d) => d.urls));
   lines.push(
     differences.length === 0
-      ? `${CLI_NAME}: ${String(staticCountries.length)} countries agree on every registry field (country half; the catalogue and price half is TASK-294's)`
+      ? `${CLI_NAME}: ${String(staticCountries.length)} countries agree on every registry field (country half)`
       : `${CLI_NAME}: ${String(differences.length)} differing field(s) across ${String(urls.size)} URL(s)`,
   );
   return { differences, lines };
@@ -121,11 +128,46 @@ export async function readCountryRows(target: string): Promise<unknown[]> {
   }
 }
 
+/** Both halves' reads, in one read-only transaction against the target. */
+export async function readTarget(
+  target: string,
+): Promise<{ countryRows: unknown[]; catalogueRows: readonly ParityRow[] }> {
+  const sql = postgres(target, {
+    max: 1,
+    prepare: false,
+    connect_timeout: 10,
+    onnotice: () => undefined,
+  });
+  try {
+    return await sql.begin("read only", async (tx) => ({
+      countryRows: [...(await tx.unsafe(COUNTRY_REGISTRY_QUERY))],
+      catalogueRows: await readCatalogueRows(tx),
+    }));
+  } finally {
+    await sql.end({ timeout: 5 });
+  }
+}
+
+/** The whole report: the country half, then the catalogue and price half (TASK-294). */
+export function fullParityReport(
+  countryRows: readonly unknown[],
+  catalogueRows: readonly ParityRow[],
+  staticRows: readonly ParityRow[] = staticCatalogueRows(),
+): { differing: number; lines: string[] } {
+  const countries = parityReport(countryRows);
+  const catalogue = catalogueParity(staticRows, catalogueRows);
+  return {
+    differing: countries.differences.length + catalogue.length,
+    lines: [...countries.lines, ...catalogueParityLines(catalogue, CLI_NAME)],
+  };
+}
+
 async function main(): Promise<number> {
   const { target } = parseParityArgs(process.argv.slice(2));
-  const { differences, lines } = parityReport(await readCountryRows(target));
+  const { countryRows, catalogueRows } = await readTarget(target);
+  const { differing, lines } = fullParityReport(countryRows, catalogueRows);
   process.stdout.write(`${lines.join("\n")}\n`);
-  return differences.length === 0 ? 0 : 1;
+  return differing === 0 ? 0 : 1;
 }
 
 if (import.meta.url === `file://${process.argv[1] ?? ""}`) {

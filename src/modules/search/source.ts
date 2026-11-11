@@ -20,7 +20,7 @@ import {
   productTypes,
 } from "@/config/catalogue/schemas";
 import {
-  COUNTRIES,
+  activeCountries,
   type CountryIso2,
   countrySlug,
   deliveryDatesOpen,
@@ -286,7 +286,7 @@ export function catalogSearchSource(): SearchSource {
 
     destinations(locale) {
       return Promise.all(
-        COUNTRIES.map(async (country): Promise<SearchDestination> => {
+        activeCountries().map(async (country): Promise<SearchDestination> => {
           const iso2 = country.iso2;
           const words = new Set<string>();
           const names: SearchLabel[] = [];

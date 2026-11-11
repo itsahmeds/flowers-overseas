@@ -229,6 +229,9 @@ export const PUBLIC_VIEWS = {
     "response_text",
     "response_at",
   ],
+  // spec 012b §5.1 item 3 (migration `0044_catalogue_cms`, TASK-294, advisor F3): what a real
+  // florist can make, ids only, so neither public role reads a partner table (AC-39).
+  saleable_offer: ["product_id", "tier_key", "country_id"],
 } as const;
 
 /** The buyer's order timeline without the internal payload and actor (review round 1, nit 3). */
@@ -333,6 +336,9 @@ export const STAFF_ONLY_TABLES = [
   // spec 030a §5.1 (migration `0035_payouts_030a`, TASK-363): which sent payouts went into which
   // Wise file. Partners, customers and the public read nothing.
   "payout_export",
+  // spec 012b §2.3 (migration `0044_catalogue_cms`, TASK-294): structural publish runs; the admin
+  // publish page and the `catalogue.publish` job read and write them, the public reads none.
+  "publish_run",
   "retention_policy",
   // spec 012b (migration `0023_review_attestation`, TASK-293): the review ledger and the reviewer
   // locales. Runtime review lookups run in `withSystemContext('attestations.read')`; the ledger

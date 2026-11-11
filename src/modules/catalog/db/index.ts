@@ -9,10 +9,9 @@
  * of `src/modules/catalog` (spec 012b §12): the rest of the module stays database-free (AC-2), and
  * nothing outside the module can reach them (the barrel exports no provider).
  *
- * Not selected by anything yet. The composition root that picks the database catalogue and price
- * providers in `production`, `staging` and `preview` is TASK-294's cutover (spec 012b AC-3), once
- * `pnpm catalogue:parity` is empty; the FX provider waits for TASK-071's `fx.refresh` to write
- * rates (`./fx.ts`).
+ * Selected by `../providers.ts` (TASK-294's cutover, spec 012b AC-3) in `production`, `staging`
+ * and `preview` once the deployment carries the build login (`cmsSourceFor()`); the FX provider
+ * waits for TASK-071's `fx.refresh` to write rates (`./fx.ts`).
  */
 import type { CatalogProviders } from "../providers";
 
@@ -20,6 +19,7 @@ import { createDbCatalogueProvider } from "./catalogue";
 import { createDbFxRateProvider } from "./fx";
 import { createDbPriceProvider } from "./price";
 import { type CatalogDbOptions, DEFAULT_CATALOG_DB_OPTIONS } from "./read";
+import { createDbSaleabilityProvider } from "./saleable";
 
 export type { CatalogDbOptions, CatalogDbRead, CatalogReadScope } from "./read";
 
@@ -42,3 +42,8 @@ export const dbCatalogueProvider = production.catalogue;
 export const dbPriceProvider = production.price;
 /** `fx_rate`, every `as_of`. */
 export const dbFxRateProvider = production.fx;
+/** The `saleable_offer` view (spec 012b AC-39; TASK-294). */
+export const dbSaleabilityProvider = createDbSaleabilityProvider(
+  DEFAULT_CATALOG_DB_OPTIONS,
+);
+export { createDbSaleabilityProvider } from "./saleable";

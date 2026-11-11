@@ -14,12 +14,12 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +25 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +127 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +129 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/checkout-discounts.test.tsx` +2 |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +48 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +49 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +147 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +25 |
@@ -353,6 +353,7 @@ task actually touches.
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec… |
 | `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next… |
 | `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs,… |
+| `catalogue-parity-catalogue.ts` | — | `pnpm catalogue:parity`, the catalogue and… |
 | `catalogue-parity.ts` | `catalogue:parity` | Static vs database registry parity, read-only… |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` |
@@ -367,6 +368,7 @@ task actually touches.
 | `corridor-check-cases.ts` | — | One deliberately failing fixture per… |
 | `corridor-check.ts` | `corridor:check` | `pnpm corridor:check` — the corridor content… |
 | `corridor-index.ts` | `corridor:index` | `pnpm corridor:index` — regenerate the typed… |
+| `country-registry-build-step.ts` | — | `pnpm build`'s country-registry step: the… |
 | `coverage-thresholds.ts` | — | Coverage-threshold loader for… |
 | `db-check-live.ts` | — | `pnpm db:check`, connected half |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001… |
@@ -416,8 +418,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 530 |
-| `tests/integration/` | 116 |
+| `tests/unit/` | 533 |
+| `tests/integration/` | 117 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

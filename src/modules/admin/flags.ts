@@ -23,7 +23,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { featureFlag, featureFlagScope } from "../../../db/schema/ops";
-import { COUNTRIES, isCountryIso2 } from "@/config/countries";
+import { COUNTRY_CODES, isCountryIso2 } from "@/config/countries";
 import {
   FEATURE_FLAGS,
   type FeatureFlagDefinition,
@@ -141,7 +141,7 @@ function scopesFor(
   return flag.scopeKinds.flatMap((kind): FlagScope[] => {
     switch (kind) {
       case "country":
-        return COUNTRIES.map((country) => ({ kind, ref: country.iso2 }));
+        return COUNTRY_CODES.map((iso2) => ({ kind, ref: iso2 }));
       case "global":
         return [{ kind, ref: "*" }];
       default:

@@ -41,6 +41,7 @@ import {
   misconfiguredCloudflareCache,
   parseCloudflarePurgeConfig,
 } from "./cache-cloudflare.ts";
+import { runBeforeInvalidateHooks } from "./invalidate-hooks.ts";
 import { type Logger, logger as processLogger } from "./logger.ts";
 import { productRoutePathFor } from "./product-rewrites.ts";
 import { captureWarning } from "./sentry.ts";
@@ -308,6 +309,12 @@ function notifyInvalidateListeners(tags: readonly string[]): void {
   }
 }
 
+/** The before-invalidate hooks live in `./invalidate-hooks.ts` (TASK-294); re-exported here. */
+export {
+  type BeforeInvalidateHook,
+  onBeforeInvalidate,
+} from "./invalidate-hooks.ts";
+
 /** The Sentry signal of a toggle whose change is saved but not yet visible (spec 012 §11). */
 export const CACHE_INVALIDATE_FAILED_SIGNAL = "cache.invalidate.failed";
 
@@ -361,6 +368,7 @@ export async function invalidate(
   const names = [...new Set(tags)];
 
   let origin: InvalidationOutcome["origin"] = "ok";
+  if (await runBeforeInvalidateHooks(names)) origin = "failed";
   const documents = new Set<string>();
   try {
     for (const tag of names) {

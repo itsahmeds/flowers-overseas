@@ -45,6 +45,7 @@
  */
 import { z } from "zod";
 
+import { buildDatabaseConfigured } from "../lib/build-login.ts";
 import { pickerState } from "../modules/geo/delivery/state.ts";
 
 import { launchLocales } from "./locales.ts";
@@ -402,7 +403,14 @@ const countries = [
   },
 ] as const;
 
-/** Parsed at module load: a malformed registry throws on first import, never at request time. */
+/**
+ * Parsed at module load: a malformed registry throws on first import, never at request time.
+ *
+ * **The file registry**: the seed's source, the static providers' answer and the overlay base of
+ * the database registry (spec 012b §2.2). Code that renders or prices reads `activeCountries()` or
+ * `countryConfig()` instead, which answer from the database in `production`, `staging` and
+ * `preview` (AC-3); `tests/unit/country-registry-cutover.test.ts` scans for any other reader.
+ */
 export const COUNTRIES = CountryRegistrySchema.parse(
   countries,
 ) as readonly CountryConfig[];
@@ -418,9 +426,228 @@ const byIso2 = new Map<string, CountryConfig>(
   COUNTRIES.map((country) => [country.iso2, country]),
 );
 
+/* -------------------------------------------------------------------------- */
+/* The registry a deployment serves (spec 012b §2.2, AC-3; TASK-294).          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The environments whose registry is the database's (spec 012b AC-3): `production`, `staging`
+ * and `preview`. `development` and `test` serve this file.
+ */
+export const DATABASE_REGISTRY_ENVIRONMENTS = [
+  "production",
+  "staging",
+  "preview",
+] as const;
+
+/** Where a deployment's catalogue, prices and destination registry come from (spec 012b AC-3). */
+export type CmsSource = "static" | "database";
+
+/**
+ * The cutover's one rule, shared by the catalogue, price, saleability and country composition
+ * roots so that a deployment never prices from one source and lists destinations from the other.
+ *
+ * The database in `DATABASE_REGISTRY_ENVIRONMENTS`, **while the deployment carries the build's
+ * database login** (spec 012b §12 founder action 4; `buildDatabaseConfigured()` in
+ * `src/lib/build-login.ts`; only `src/lib/db.ts` connects with it). Without it the deployment, build and server
+ * alike, keeps serving this file and the authored dataset, and says so in its log
+ * (`src/modules/geo/db/runtime.ts`). That is the staging fallback the orchestrator ordered on
+ * 2026-11-11 so a build without the variable still passes; it departs from §2.0 item 2's "no
+ * fallback" and is recorded in `docs/tasks/TASK-294.md` (Escalations). Build and server decide on
+ * the same variable, so the pages a build prerendered and the prices checkout charges come from
+ * one source in either state.
+ */
+export function cmsSourceFor(
+  environment: string,
+  buildDatabaseConfigured: boolean,
+): CmsSource {
+  return buildDatabaseConfigured &&
+    (DATABASE_REGISTRY_ENVIRONMENTS as readonly string[]).includes(environment)
+    ? "database"
+    : "static";
+}
+
+/**
+ * The slot the database registry is installed in, on `globalThis` so that every bundle of one
+ * server process (Next compiles `instrumentation.ts`, route handlers and pages separately) reads
+ * the one copy `src/modules/geo/db/runtime.ts` installed.
+ */
+const REGISTRY_SLOT = Symbol.for("flowers-overseas.country-registry");
+
+interface InstalledRegistry {
+  readonly countries: readonly CountryConfig[];
+  readonly byIso2: ReadonlyMap<string, CountryConfig>;
+}
+
+type RegistryHolder = { [REGISTRY_SLOT]?: InstalledRegistry };
+
+function installed(): InstalledRegistry | undefined {
+  return (globalThis as RegistryHolder)[REGISTRY_SLOT];
+}
+
+/**
+ * Whether this process must serve the database's registry: `cmsSourceFor()` of `APP_ENV` (spec 040
+ * §5.2's signal) and the build login. `APP_ENV` is read raw rather than through `appEnvironment()`
+ * so this file depends on nothing in `src/lib` but the import-free `build-login.ts`; a value that
+ * is not one of the three is not a database environment, and `appEnvironment()` refuses an
+ * unparseable one at boot anyway. Without the build login nothing is required and the file
+ * answers, in the build's page-data workers too, where no boot hook has run.
+ */
+function databaseRegistryRequired(): boolean {
+  return (
+    cmsSourceFor(process.env["APP_ENV"] ?? "", buildDatabaseConfigured()) ===
+    "database"
+  );
+}
+
+/**
+ * Put `countries` in place as the registry every `countryConfig()` read answers from (spec 012b
+ * AC-3). Refused unless it holds exactly this file's destinations, each once, because a new
+ * destination is a code change (slugs, region; `src/modules/geo/registry.ts`).
+ */
+export function installCountryRegistry(
+  countries: readonly CountryConfig[],
+): void {
+  const codes = countries.map((country) => country.iso2);
+  if (
+    new Set(codes).size !== codes.length ||
+    codes.length !== COUNTRIES.length ||
+    codes.some((iso2) => !byIso2.has(iso2))
+  ) {
+    throw new Error(
+      "installCountryRegistry: the registry must hold exactly the destinations of src/config/countries.ts, each once",
+    );
+  }
+  (globalThis as RegistryHolder)[REGISTRY_SLOT] = {
+    countries,
+    byIso2: new Map(countries.map((country) => [country.iso2, country])),
+  };
+}
+
+/** Remove an installed registry (tests only; a deployment installs once and refreshes). */
+export function uninstallCountryRegistry(): void {
+  delete (globalThis as RegistryHolder)[REGISTRY_SLOT];
+}
+
+/**
+ * The environment variable `pnpm build` (`scripts/build.ts`) hands `next build` the database's
+ * registry in, read once through the build login before the build starts (TASK-294). Next runs no
+ * `instrumentation.ts` hook in the build's page-data and prerender workers, so this is how they
+ * serve the database's registry; the running server installs its own at boot and never reads it.
+ */
+export const COUNTRY_REGISTRY_BUILD_SNAPSHOT_ENV =
+  "COUNTRY_REGISTRY_BUILD_SNAPSHOT";
+
+/** Next's `PHASE_PRODUCTION_BUILD`, the value of `NEXT_PHASE` while `next build` runs. */
+const BUILD_PHASE = "phase-production-build";
+
+/**
+ * What the build snapshot carries per destination: exactly the facts the database registry
+ * overlays on this file (`countryRegistryFromRows()` in `src/modules/geo/registry.ts`), so the
+ * workers serve the same registry the server installs at boot.
+ */
+export const CountryRegistryBuildFactsSchema = z.array(
+  z
+    .object({
+      iso2: z.string(),
+      status: z.enum(countryStatuses),
+      guidePublished: z.boolean(),
+      operations: CountryOperationsSchema.optional(),
+    })
+    .strict(),
+);
+export type CountryRegistryBuildFacts = z.infer<
+  typeof CountryRegistryBuildFactsSchema
+>;
+
+/** The snapshot's facts of `countries` (what `scripts/build.ts` hands the workers). */
+export function countryRegistryBuildFacts(
+  countries: readonly CountryConfig[],
+): CountryRegistryBuildFacts {
+  return countries.map((country) => ({
+    iso2: country.iso2,
+    status: country.status,
+    guidePublished: country.guidePublished,
+    ...(country.operations === undefined
+      ? {}
+      : { operations: country.operations }),
+  }));
+}
+
+/**
+ * Install the build's snapshot of the database registry, when this process is a `next build`
+ * worker that was handed one: each destination of this file with the snapshot's facts overlaid.
+ * Parsed at the boundary; a destination missing from it, or one this file does not have, throws
+ * and fails the build.
+ */
+function installBuildSnapshot(): InstalledRegistry | undefined {
+  if (process.env["NEXT_PHASE"] !== BUILD_PHASE) return undefined;
+  const raw = process.env[COUNTRY_REGISTRY_BUILD_SNAPSHOT_ENV];
+  if (raw === undefined || raw === "") return undefined;
+  const facts = new Map(
+    CountryRegistryBuildFactsSchema.parse(JSON.parse(raw)).map(
+      (row) => [row.iso2, row] as const,
+    ),
+  );
+  if (facts.size !== COUNTRIES.length) {
+    throw new Error(
+      `${COUNTRY_REGISTRY_BUILD_SNAPSHOT_ENV} must hold exactly the destinations of src/config/countries.ts`,
+    );
+  }
+  installCountryRegistry(
+    COUNTRIES.map((country) => {
+      const row = facts.get(country.iso2);
+      if (row === undefined) {
+        throw new Error(
+          `${COUNTRY_REGISTRY_BUILD_SNAPSHOT_ENV} has no ${country.iso2}`,
+        );
+      }
+      const overlaid: CountryConfig = {
+        ...country,
+        status: row.status,
+        guidePublished: row.guidePublished,
+      };
+      // The row's operations, or none: a country without agreed operations has no block.
+      if (row.operations !== undefined) {
+        return { ...overlaid, operations: row.operations };
+      }
+      delete overlaid.operations;
+      return overlaid;
+    }),
+  );
+  return installed();
+}
+
+/**
+ * The registry this process serves: the installed one, the build's snapshot, or `undefined`
+ * where the file answers. Throws where the database's registry is required and neither exists.
+ */
+function servedRegistry(): InstalledRegistry | undefined {
+  const registry = installed() ?? installBuildSnapshot();
+  if (registry !== undefined) return registry;
+  if (databaseRegistryRequired()) {
+    throw new Error(
+      "COUNTRY_REGISTRY_NOT_LOADED: this environment serves the database's country registry and none is installed (spec 012b AC-3)",
+    );
+  }
+  return undefined;
+}
+
+/**
+ * The destination registry this process serves: the installed database registry (or, in a
+ * `next build` worker, the build's snapshot of it), or, where none is required (`development`,
+ * `test`, or a deployment without the build login), this file. Where the database's registry is
+ * required an absent one **throws** rather than answering from the file: a page built from the
+ * file while checkout charges from the database is the "shown ≠ charged" failure spec 012b §2.0
+ * item 2 forbids.
+ */
+export function activeCountries(): readonly CountryConfig[] {
+  return servedRegistry()?.countries ?? COUNTRIES;
+}
+
 /** Look a destination up by ISO code. Throws on an unknown code: the set is closed data. */
 export function countryConfig(iso2: CountryIso2): CountryConfig {
-  const country = byIso2.get(iso2);
+  const country = (servedRegistry()?.byIso2 ?? byIso2).get(iso2);
   if (country === undefined) {
     throw new Error(`unknown country code: ${iso2}`);
   }
@@ -503,7 +730,7 @@ export function deliveryDatesOpen(iso2: CountryIso2): boolean {
  * `tests/e2e/chrome-honesty.spec.ts` green.
  */
 export function anyDeliveryDatesOpen(): boolean {
-  return COUNTRIES.some((country) => deliveryDatesOpen(country.iso2));
+  return activeCountries().some((country) => deliveryDatesOpen(country.iso2));
 }
 
 /**
@@ -562,5 +789,5 @@ export function toCountryRow(country: CountryConfig): CountryRow {
 export function countriesInRegion(
   region: CountryRegion,
 ): readonly CountryConfig[] {
-  return COUNTRIES.filter((country) => country.region === region);
+  return activeCountries().filter((country) => country.region === region);
 }

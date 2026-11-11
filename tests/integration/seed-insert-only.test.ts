@@ -32,6 +32,7 @@ import {
   scratchDatabase,
   type ScratchDatabase,
   type Sql,
+  withoutTriggers,
 } from "./support/scratch-db.ts";
 
 const server = await probeLocalServer();
@@ -166,7 +167,8 @@ describe.skipIf(server.url === undefined)(
       await scratch.sql`UPDATE city_translation SET name = 'Edited'
         WHERE slug = 'rome' AND locale_code = 'en'`;
       await scratch.sql`UPDATE country SET vat_rate_bp = 2300 WHERE iso2 = 'ES'`;
-      await scratch.sql`UPDATE country_price SET retail_minor = retail_minor + 100
+      // Not `retail_minor`: a plain seed writes a price amount on insert only (`0044`, F2).
+      await scratch.sql`UPDATE country_price SET vat_rate_bp = vat_rate_bp + 100
         WHERE id = (SELECT cp.id FROM country_price cp JOIN product p ON p.id = cp.product_id
                     WHERE p.sku = 'FO-BQ-005' ORDER BY cp.tier_key, cp.country_id LIMIT 1)`;
       await scratch.sql`DELETE FROM product_translation
@@ -209,7 +211,11 @@ describe.skipIf(server.url === undefined)(
       await scratch.sql`DELETE FROM product_translation
         WHERE product_id = ${id} AND locale_code = 'en'`;
       await scratch.sql`UPDATE product_tier SET sort = sort + 10 WHERE product_id = ${id}`;
-      await scratch.sql`UPDATE country_price SET retail_minor = retail_minor + 1 WHERE product_id = ${id}`;
+      await withoutTriggers(
+        scratch.sql,
+        (tx) =>
+          tx`UPDATE country_price SET retail_minor = retail_minor + 1 WHERE product_id = ${id}`,
+      );
       await scratch.sql`UPDATE partner_catalog_mapping SET partner_payout_minor = 1 WHERE product_id = ${id}`;
       const children = async () =>
         scratch.sql.unsafe<{ r: string }[]>(
@@ -250,7 +256,11 @@ describe.skipIf(server.url === undefined)(
       await scratch.sql`DELETE FROM occasion_country WHERE ctid =
         (SELECT ctid FROM occasion_country WHERE country_id = ${nlId} LIMIT 1)`;
       await scratch.sql`UPDATE city_translation SET name = 'Admin city' WHERE country_id = ${nlId}`;
-      await scratch.sql`UPDATE country_price SET retail_minor = retail_minor + 7 WHERE country_id = ${nlId}`;
+      await withoutTriggers(
+        scratch.sql,
+        (tx) =>
+          tx`UPDATE country_price SET retail_minor = retail_minor + 7 WHERE country_id = ${nlId}`,
+      );
       await scratch.sql`UPDATE fulfillment_partner SET source = 'real' WHERE code = 'demo-de-1'`;
       await scratch.sql`UPDATE partner_coverage SET capacity_per_day = 2
         WHERE partner_id = (SELECT id FROM fulfillment_partner WHERE code = 'demo-de-1')`;

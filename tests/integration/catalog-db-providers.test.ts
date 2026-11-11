@@ -497,6 +497,8 @@ describe.skipIf(server.url === undefined)(
 
       it("refuses a price no number holds exactly, rather than rounding it", async () => {
         await rolledBack(scratch.sql, async (tx) => {
+          // A fixture: `0044`'s guard refuses a price change on an active product.
+          await tx`SET LOCAL session_replication_role = replica`;
           await tx`UPDATE country_price SET retail_minor = 9007199254740993
                    WHERE id = (SELECT id FROM country_price ORDER BY id LIMIT 1)`;
           const db = databaseSet(oneRequest(inTransaction(tx, scratch.sql)));

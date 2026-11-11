@@ -25,7 +25,7 @@
  */
 import { CORE_RANGE_SIZE } from "@/config/commerce";
 import {
-  COUNTRIES,
+  activeCountries,
   deliveryDatesOpen,
   isCountryIso2,
 } from "@/config/countries";
@@ -83,7 +83,7 @@ export interface ShopData {
 
 /** The registries and the catalogue as committed. */
 export const committedShopData: ShopData = {
-  countries: () => COUNTRIES,
+  countries: () => activeCountries(),
   orderingOpen: (iso2) => isCountryIso2(iso2) && deliveryDatesOpen(iso2),
   shopRootExists: (iso2, locale) =>
     listingExists({ pageType: "countryShopRoot", locale, countryIso: iso2 }),
