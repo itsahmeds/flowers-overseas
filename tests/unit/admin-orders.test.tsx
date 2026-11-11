@@ -98,6 +98,8 @@ vi.mock("@/modules/admin", async (importOriginal) => {
     adminRequestId: () => Promise.resolve("request-1"),
     // Spec 020a's Actions card reads the refund state (TASK-358); none in these fixtures.
     orderRefunds: () => Promise.resolve(null),
+    // Spec 020a's action history (TASK-361); none in these fixtures (TASK-522).
+    orderActionHistory: () => Promise.resolve(null),
     logAdminRead: (_actor: unknown, entity: string, id: string) => {
       if (data.viewLogFails) {
         return Promise.reject(new Error("audit_log write failed"));
@@ -107,6 +109,29 @@ vi.mock("@/modules/admin", async (importOriginal) => {
     },
   };
 });
+
+// The detail page's database reads that arrived after this suite (TASK-522): spec 030b's
+// Money panel (TASK-440, `finance.view` only; no money facts in these fixtures) and spec 021's
+// risk panel (TASK-494; no assessment or review in these fixtures). Unmocked, each opens a
+// database transaction, which a unit run has no environment for.
+vi.mock("@/modules/admin/order-actions/resend", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@/modules/admin/order-actions/resend")
+  >()),
+  // Spec 020a's emails list (TASK-360) reads the notifications flag and the deliveries.
+  orderEmails: () => Promise.resolve(null),
+}));
+
+vi.mock("@/modules/admin/finance", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/admin/finance")>()),
+  readFinance: () => Promise.resolve(null),
+}));
+
+vi.mock("@/modules/risk", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/risk")>()),
+  adminRiskTransaction: () => () =>
+    Promise.resolve({ assessment: null, review: null }),
+}));
 
 vi.mock("@/modules/orders/routing/jobs", () => ({
   rerouteCandidates: () => Promise.resolve([]),
