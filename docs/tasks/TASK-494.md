@@ -72,6 +72,10 @@ here.
   nav, flag confirmations, 186 admin keys; unit and integration suites green; clean-env build
   green. PR 536.
 
+## Copy approval
+
+- founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-494.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 021 (TASK-494); the founder did not read this text: the 186 admin texts of spec 021 (`admin.risk.*` and the two risk flag confirmations), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
