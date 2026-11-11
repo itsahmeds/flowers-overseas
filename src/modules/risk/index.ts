@@ -125,8 +125,11 @@ export {
   type CardTestingOutcome,
   type ReviewDeadlineCounts,
   type ReviewDeadlineDeps,
+  type SiteVelocityDeps,
   cardTestingSuspected,
+  dailyCounters,
   detectCardTesting,
+  detectSiteVelocity,
   runReviewDeadlines,
 } from "./monitor.ts";
 export {

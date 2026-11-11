@@ -106,7 +106,9 @@ import {
 } from "../modules/orders/routing/jobs";
 
 import {
+  dailyCounters,
   detectCardTesting,
+  detectSiteVelocity,
   type GateDeps,
   handleEarlyFraudWarning,
   riskGatedRouting,
@@ -490,6 +492,10 @@ export const JOB_HANDLERS: JobHandlers = {
       submitRefund: submitRiskRefund,
       alert: raiseLegacyAlert,
     });
+    // Spec 021 §5.2, §11 (TASK-495): the site velocity alert (once per burst) and, on the first
+    // tick of a UTC day, the daily counter line. Both read only; a re-run raises nothing new.
+    await detectSiteVelocity({ alert: raiseLegacyAlert });
+    await dailyCounters();
   },
   "alerts.monitor": async (_payload, context) => {
     await runMonitor({

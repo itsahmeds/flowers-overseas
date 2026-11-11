@@ -8,7 +8,8 @@
  * unless one is active. In `test` it alerts only. Nine declines, or 10 out of 25, do nothing.
  *
  * The deadline defaults and the due-soon alerts join this job with the gate (TASK-494,
- * `runReviewDeadlines` below). Logs carry counts only.
+ * `runReviewDeadlines` below); the site velocity alert and the daily counter line with the
+ * records (TASK-495, `detectSiteVelocity` and `dailyCounters` below). Logs carry counts only.
  */
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -16,6 +17,8 @@ import { z } from "zod";
 import { logger } from "@/lib/logger";
 import type { AlertRaiser } from "@/modules/orders";
 import {
+  SITE_VELOCITY_MAX_NEW_EMAILS,
+  SITE_VELOCITY_WINDOW_MINUTES,
   CARD_TESTING_DECLINE_SHARE,
   CARD_TESTING_MIN_DECLINES,
   CARD_TESTING_PAUSE_MINUTES,
@@ -24,6 +27,7 @@ import {
 } from "@/config/risk";
 
 import { type RiskDeps, resolveRiskDeps } from "./context.ts";
+import { isPeakDay } from "./assess.ts";
 import { activePause } from "./prepay.ts";
 import {
   applyDeadlineDefault,
@@ -189,4 +193,136 @@ export async function runReviewDeadlines(
     );
   }
   return { dueSoon: dueSoon.length, decided };
+}
+
+const NewEmailRow = z.object({
+  country_iso2: z.string(),
+  delivery_date: z.string(),
+  paid_at: z
+    .union([z.date(), z.string()])
+    .transform((value) => new Date(value)),
+});
+
+export interface SiteVelocityDeps extends RiskDeps {
+  readonly alert: AlertRaiser;
+}
+
+/**
+ * The site velocity alert (spec 021 §5.2 "Site velocity alert", §11; `plan/06` §2.3; TASK-495):
+ * more than `SITE_VELOCITY_MAX_NEW_EMAILS` `live` orders paid in the last hour by email hashes
+ * never seen on an earlier order, on delivery dates the destination's occasion calendar does not
+ * mark as a major occasion, raise `risk.velocity_site` (alert only; the founder may turn on
+ * `risk.strict`). Raised once per burst: only on the tick where the count first passes the
+ * threshold (the window ending a minute earlier held no more than it). Returns the count.
+ */
+export async function detectSiteVelocity(
+  deps: SiteVelocityDeps,
+): Promise<{ readonly count: number; readonly alerted: boolean }> {
+  const d = resolveRiskDeps(deps);
+  const now = d.now();
+  const windowMs = SITE_VELOCITY_WINDOW_MINUTES * 60_000;
+  const since = new Date(now.getTime() - windowMs - 60_000);
+  const rows = await d.transaction(async (executor) =>
+    (
+      await executor.execute(sql`
+        SELECT c.iso2 AS country_iso2, o.delivery_date::text AS delivery_date,
+               e.occurred_at AS paid_at
+        FROM order_event e
+        JOIN "order" o ON o.id = e.order_id
+        JOIN country c ON c.id = o.destination_country_id
+        JOIN risk_identity i ON i.order_id = o.id AND i.kind = 'email'
+        WHERE e.type = 'order.captured' AND e.from_status = 'placed'
+          AND o.mode = 'live'
+          AND e.occurred_at > ${since.toISOString()}::timestamptz
+          AND e.occurred_at <= ${now.toISOString()}::timestamptz
+          AND NOT EXISTS (SELECT 1 FROM risk_identity earlier
+                          WHERE earlier.kind = 'email' AND earlier.hash = i.hash
+                            AND earlier.order_id <> o.id
+                            AND earlier.created_at < i.created_at)`)
+    ).map((row) => NewEmailRow.parse(row)),
+  );
+  const offPeak = rows.filter(
+    (row) => !isPeakDay(row.country_iso2, row.delivery_date),
+  );
+  const within = (end: number): number =>
+    offPeak.filter(
+      (row) =>
+        row.paid_at.getTime() > end - windowMs && row.paid_at.getTime() <= end,
+    ).length;
+  const count = within(now.getTime());
+  const before = within(now.getTime() - 60_000);
+  const alerted =
+    count > SITE_VELOCITY_MAX_NEW_EMAILS &&
+    before <= SITE_VELOCITY_MAX_NEW_EMAILS;
+  if (alerted) {
+    deps.alert("risk.velocity_site", {
+      count,
+      window_minutes: SITE_VELOCITY_WINDOW_MINUTES,
+    });
+    logger.warn(
+      {
+        job: "risk.monitor",
+        count,
+        window_minutes: SITE_VELOCITY_WINDOW_MINUTES,
+        outcome: "velocity_site",
+      },
+      "risk.velocity_site",
+    );
+  }
+  return { count, alerted };
+}
+
+const CountRow = z.object({
+  stage: z.string(),
+  decision: z.string(),
+  count: z.coerce.number().int(),
+});
+
+/**
+ * The daily counter line of `risk.monitor` (spec 021 §11, §13 Q9; TASK-495): on the first tick of
+ * a UTC day, the previous day's assessments by decision, reviews by outcome (the automatic
+ * decisions among them) and pauses, one `risk.daily` line each, counts only. The founder's tuning
+ * data after 100 orders. Returns the lines written (none on any other tick).
+ */
+export async function dailyCounters(
+  deps: RiskDeps = {},
+): Promise<readonly z.infer<typeof CountRow>[]> {
+  const d = resolveRiskDeps(deps);
+  const now = d.now();
+  if (now.getUTCHours() !== 0 || now.getUTCMinutes() !== 0) return [];
+  const end = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+  const start = new Date(end.getTime() - 86_400_000);
+  const from = start.toISOString();
+  const to = end.toISOString();
+  const rows = await d.transaction(async (executor) =>
+    (
+      await executor.execute(sql`
+        SELECT 'assessment' AS stage, decision, count(*)::int AS count FROM risk_assessment
+        WHERE created_at >= ${from}::timestamptz AND created_at < ${to}::timestamptz
+        GROUP BY decision
+        UNION ALL
+        SELECT 'review' AS stage, status AS decision, count(*)::int AS count FROM risk_review
+        WHERE created_at >= ${from}::timestamptz AND created_at < ${to}::timestamptz
+        GROUP BY status
+        UNION ALL
+        SELECT 'pause' AS stage, cause AS decision, count(*)::int AS count FROM risk_pause
+        WHERE starts_at >= ${from}::timestamptz AND starts_at < ${to}::timestamptz
+        GROUP BY cause
+        ORDER BY 1, 2`)
+    ).map((row) => CountRow.parse(row)),
+  );
+  for (const row of rows) {
+    logger.info(
+      {
+        job: "risk.monitor",
+        stage: row.stage,
+        decision: row.decision,
+        count: row.count,
+      },
+      "risk.daily",
+    );
+  }
+  return rows;
 }

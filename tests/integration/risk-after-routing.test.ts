@@ -56,7 +56,9 @@ import {
   type RiskRefund,
   type RiskTransaction,
   buildEvidencePack,
+  dailyCounters,
   decideReview,
+  detectSiteVelocity,
   emailHash,
   handleEarlyFraudWarning,
   prePayCheck,
@@ -999,6 +1001,74 @@ describe.skipIf(server.url === undefined)(
           t: adminT as unknown as EvidenceTranslate,
         });
         expect(none).toBeNull();
+      });
+    });
+
+    describe("risk.monitor: the site velocity alert and the daily counter line (§5.2, §11)", () => {
+      it("risk.velocity_site fires once when a 6th new-email live order is paid within the hour; 5 do not, and the next tick adds nothing", async () => {
+        const t = new Date("2027-03-03T12:00:00Z");
+        const at = (minutes: number) => new Date(t.getTime() - minutes * MIN);
+        for (const minutes of [50, 40, 30, 20, 10, 0]) {
+          await scratch.sql.begin(async (tx) => {
+            const countryId = await country(tx, "PL");
+            const customerId = await customer(tx);
+            const recipientId = await recipient(tx, customerId);
+            const orderId = await insertPlacedOrder(tx, {
+              customerId,
+              recipientId,
+              countryId,
+              mode: "live",
+              currencyCode: "PLN",
+              totalMinor: 10_000,
+            });
+            await tx`UPDATE "order" SET delivery_date = ${FAR_DATE}::date WHERE id = ${orderId}`;
+            await applyTransition(
+              tx,
+              orderId,
+              "order.captured",
+              "paid_unrouted",
+              at(minutes),
+            );
+            await tx`INSERT INTO risk_identity (order_id, kind, hash, created_at, expires_at)
+                     VALUES (${orderId}, 'email',
+                             ${emailHash(`${randomUUID()}@example.test`, KEY) ?? ""},
+                             ${at(minutes)}, ${new Date(t.getTime() + 86_400_000)})`;
+          });
+        }
+        const velocity = (now: Date) =>
+          detectSiteVelocity({
+            alert,
+            transaction: transactionOf(),
+            now: () => now,
+          });
+        const before = alerts.length;
+        expect(await velocity(at(1))).toEqual({ count: 5, alerted: false });
+        expect(await velocity(t)).toEqual({ count: 6, alerted: true });
+        expect(await velocity(at(-1))).toEqual({ count: 6, alerted: false });
+        expect(alerts.slice(before)).toEqual([
+          {
+            alert: "risk.velocity_site",
+            fields: { count: 6, window_minutes: 60 },
+          },
+        ]);
+      });
+
+      it("the daily counter line: on the first tick of a UTC day, counts by decision, review outcome and pause; nothing at 00:01", async () => {
+        const midnight = new Date(
+          Math.ceil(Date.now() / 86_400_000) * 86_400_000,
+        );
+        const rows = await dailyCounters({
+          transaction: transactionOf(),
+          now: () => midnight,
+        });
+        expect(rows.some((row) => row.stage === "assessment")).toBe(true);
+        expect(rows.some((row) => row.stage === "review")).toBe(true);
+        expect(
+          await dailyCounters({
+            transaction: transactionOf(),
+            now: () => new Date(midnight.getTime() + MIN),
+          }),
+        ).toEqual([]);
       });
     });
 
