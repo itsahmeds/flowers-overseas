@@ -20,6 +20,7 @@ import {
 } from "@/modules/checkout";
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 
+import { SimplePageAnalytics } from "../../../page-analytics";
 import { ConfirmationPage } from "../../_views/ConfirmationView";
 // Spec 013 §5.3 (TASK-263): registers the `test` and `live` states with spec 010's seam.
 import "../../_views/PaymentConfirmation";
@@ -64,6 +65,7 @@ export default async function CheckoutDonePage({
         confirmation={confirmation}
         locale={locale}
       />
+      <SimplePageAnalytics locale={locale} pageType="checkout_done" />
     </main>
   );
 }

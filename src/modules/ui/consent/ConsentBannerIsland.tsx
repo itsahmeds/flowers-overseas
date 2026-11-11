@@ -47,6 +47,11 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import {
+  type ClientApi,
+  startAnalyticsIfGranted,
+} from "@/modules/analytics/client";
+
 import { ConsentBannerView, ConsentSavedView } from "./ConsentBannerView";
 import { type ConsentPhase, consentEscapeStep } from "./consentEscape";
 import { localeGateHeld, subscribeLocaleGate } from "./localeGateReader";
@@ -77,6 +82,7 @@ type Phase = ConsentPhase;
 
 interface GtagWindow {
   gtag?: (...args: unknown[]) => void;
+  __foAnalytics?: ClientApi;
 }
 
 /** Consent Mode v2 grants, in the vocabulary the default-denied bootstrap already used. */
@@ -345,6 +351,13 @@ export function ConsentBannerIsland({
         (window as GtagWindow).gtag?.("consent", "update", consentUpdate(next));
       } catch {
         // No tag, or a tag that threw. Neither changes what the visitor decided.
+      }
+      // Spec 023 §5.2 (TASK-492): a grant starts the deferred GA4 chunk in this page view; a
+      // withdrawal stops it at once and deletes `_ga` and `_ga_*`.
+      if (next.analytics) {
+        startAnalyticsIfGranted(config.cookieName, config.policyVersion);
+      } else {
+        (window as GtagWindow).__foAnalytics?.stop();
       }
       try {
         void fetch(config.endpoint, {

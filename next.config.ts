@@ -173,7 +173,16 @@ const nextConfig: NextConfig = {
   // reads it from the environment and none fetches a rate. Empty — the committed snapshot — for
   // `next dev`, a bare `next build`, and every build whose fetch failed. Public data only: a date
   // and ten integer rates.
-  env: { FX_BUILD_SNAPSHOT: process.env.FX_BUILD_SNAPSHOT ?? "" },
+  //
+  // The GA4 measurement id is inlined the same way, empty when unset (spec 023 AC-5; TASK-492): a
+  // build without an id then compiles the GA4 loader's body away (`src/modules/analytics/client/
+  // loader.ts`), so it ships no loader, no `import()` and no deferred chunk, exactly as its CSP
+  // names no Google source.
+  env: {
+    FX_BUILD_SNAPSHOT: process.env.FX_BUILD_SNAPSHOT ?? "",
+    NEXT_PUBLIC_GA4_MEASUREMENT_ID:
+      process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID ?? "",
+  },
   // The container of spec 040 §5.3 (AC-8, TASK-098) runs `node server.js` from `.next/standalone`:
   // Next traces the server's dependencies and writes a self-contained tree, so the runtime image
   // carries no development `node_modules`.

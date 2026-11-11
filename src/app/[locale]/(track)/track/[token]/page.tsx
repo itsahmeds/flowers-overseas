@@ -10,6 +10,8 @@ import { getTrackingView } from "@/modules/orders";
 import { buyerRefundLines } from "@/modules/orders/buyer-refund-lines";
 import { transactionalMetadata } from "@/modules/seo";
 
+import { SimplePageAnalytics } from "../../../page-analytics";
+
 import { orderForToken } from "./tracking-routes";
 import { TrackingPageView } from "./TrackingPageView";
 
@@ -61,11 +63,14 @@ export default async function TrackRoute({
   });
   const base = localePath(locale, "home", "track", token);
   return (
-    <TrackingPageView
-      calendarHref={`${base}/calendar.ics`}
-      locale={locale}
-      photoHref={`${base}/photo`}
-      view={view}
-    />
+    <>
+      <TrackingPageView
+        calendarHref={`${base}/calendar.ics`}
+        locale={locale}
+        photoHref={`${base}/photo`}
+        view={view}
+      />
+      <SimplePageAnalytics locale={locale} pageType="tracking" />
+    </>
   );
 }

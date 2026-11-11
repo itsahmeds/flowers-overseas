@@ -32,6 +32,8 @@
  */
 import { lazy, Suspense, useEffect, useState } from "react";
 
+import { startAnalyticsIfGranted } from "@/modules/analytics/client";
+
 import { useHydrated } from "../deferred/useHydrated";
 
 import type { ConsentBannerIslandProps } from "./ConsentBannerIsland";
@@ -49,6 +51,13 @@ export function ConsentBannerLoader({
   const [opener, setOpener] = useState<HTMLElement | null | undefined>();
   const activated = opener !== undefined;
   const attribute = view.config.reopenAttribute;
+  const { cookieName, policyVersion } = view.config;
+
+  // Spec 023 §5.2 (TASK-492): with a measurement id and a stored analytics grant, the deferred
+  // GA4 chunk loads after `load` and idle; with either missing, nothing at all loads.
+  useEffect(() => {
+    startAnalyticsIfGranted(cookieName, policyVersion);
+  }, [cookieName, policyVersion]);
 
   useEffect(() => {
     if (prompt || activated) return undefined;

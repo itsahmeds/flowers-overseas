@@ -950,6 +950,7 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     expect(ON_INPUT_CHUNK_MARKERS).toEqual([
       "fo:deferred:home-sentence",
       "data-fo-consent-panel",
+      "fo:analytics:deferred",
     ]);
   });
 
@@ -958,6 +959,7 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     expect(onInputChunkMarkers({})).toEqual([
       "fo:deferred:home-sentence",
       "data-fo-consent-panel",
+      "fo:analytics:deferred",
       "fo:consent:island",
     ]);
     // A malformed id loads no tag (`ga4MeasurementId`), so nothing needs consent.
@@ -967,7 +969,11 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     // The consent-active build: the sheet asks on load, so its chunk is page-load again.
     expect(
       onInputChunkMarkers({ NEXT_PUBLIC_GA4_MEASUREMENT_ID: GA4_FIXTURE }),
-    ).toEqual(["fo:deferred:home-sentence", "data-fo-consent-panel"]);
+    ).toEqual([
+      "fo:deferred:home-sentence",
+      "data-fo-consent-panel",
+      "fo:analytics:deferred",
+    ]);
   });
 
   it("charges the listing sort island only to a document that mounts SortLoader (TASK-289)", () => {
@@ -991,6 +997,7 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
       expect(onInputChunkMarkers(active, locale), locale).toEqual([
         "fo:deferred:home-sentence",
         "data-fo-consent-panel",
+        "fo:analytics:deferred",
         "data-fo-language-popup",
       ]);
     }
@@ -998,6 +1005,7 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     expect(onInputChunkMarkers(active)).toEqual([
       "fo:deferred:home-sentence",
       "data-fo-consent-panel",
+      "fo:analytics:deferred",
     ]);
     // `de` shown: every page offers a language, so the popup's loader mounts and it is page-load.
     await withLocaleRegistry(deShown, () => {
@@ -1005,6 +1013,7 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
         expect(onInputChunkMarkers(active, locale), locale).toEqual([
           "fo:deferred:home-sentence",
           "data-fo-consent-panel",
+          "fo:analytics:deferred",
         ]);
       }
     });

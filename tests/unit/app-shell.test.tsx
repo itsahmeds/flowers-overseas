@@ -395,7 +395,7 @@ describe("the layout reads consent once (spec 004 §14 A-founder-2026-10-19d cla
     }
   });
 
-  it("`G-FIXTURE00`: the tag's `src` carries the reader's id, and the banner asks", async () => {
+  it("`G-FIXTURE00`: the bootstrap carries the reader's id as `data-fo-ga4`, no tag, and the banner asks", async () => {
     vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", "G-FIXTURE00");
     try {
       const tree = await layoutTree();
@@ -405,9 +405,11 @@ describe("the layout reads consent once (spec 004 §14 A-founder-2026-10-19d cla
         "G-FIXTURE00",
       ]);
       expect(banners.map((element) => element.props["prompt"])).toEqual([true]);
-      expect(renderToStaticMarkup(scripts[0]!)).toContain(
-        'src="https://www.googletagmanager.com/gtag/js?id=G-FIXTURE00"',
-      );
+      // Spec 023 AC-4 (Consent Mode basic, ADR-0022): the id rides on the bootstrap's attribute
+      // and the deferred loader injects the tag after a grant; the served HTML has no tag.
+      const html = renderToStaticMarkup(scripts[0]!);
+      expect(html).toContain('data-fo-ga4="G-FIXTURE00"');
+      expect(html).not.toContain("googletagmanager");
     } finally {
       vi.unstubAllEnvs();
     }

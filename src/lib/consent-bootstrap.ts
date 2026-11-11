@@ -13,10 +13,8 @@
  * A CSP hash covers the script's **text content** and not its attributes. Interpolating the GA4
  * id into the source would make the hashed bytes depend on an environment variable, so the policy
  * would have to be recomputed per environment and a preview with the id set would report a
- * violation on the production hash. Instead the id rides on `data-fo-ga4` and the script reads it
- * from `document.currentScript`: the hashed bytes are a compile-time constant in every
- * environment, and the ordering guarantee that matters — consent default *before* `config` —
- * holds inside a single synchronous block.
+ * violation on the production hash. Instead the id rides on `data-fo-ga4`, which the deferred
+ * loader reads after a grant: the hashed bytes are a compile-time constant in every environment.
  *
  * ## What it does, in order
  *
@@ -28,26 +26,18 @@
  *     `wait_for_update` so a tag that loads before the visitor answers waits instead of guessing;
  *  3. switches `url_passthrough` off (no consent state in our URLs — `CLAUDE.md`: no PII in URLs)
  *     and `ads_data_redaction` on, which is the pre-consent behaviour §8 promises;
- *  4. only if `data-fo-ga4` is present, queues `js` and `config` for the tag that follows, with
- *     `page_location` set to the address with every token replaced by `:token` (spec 018 AC-14;
- *     TASK-339): the tracking link's path token and a signed link's `?t=`, through the two
- *     expressions of `./url-tokens.ts`, so `page_view` never carries a credential; and on a search
- *     address (`/{locale}/{searchSegment}`) without its query string or fragment (spec 045 §8,
- *     AC-23; TASK-403), through `searchLocationPattern()` of `./search-routes.ts`, so the words a
- *     buyer typed never reach GA4.
  *
- * With no id, steps 1–3 still run: `dataLayer` carries a default-denied entry on every localised
- * document, which is exactly what AC-18 asserts and what makes Phase 0 AC 7 true the moment the
- * founder pastes an id in.
+ * It queues **no** `js` and **no** `config` (spec 023 §2 A, §5.0, AC-4; ADR-0022, Consent Mode
+ * basic; TASK-492): nothing reaches Google before an analytics grant. After a grant the deferred
+ * loader (`src/modules/analytics/client/loader.ts`) reads the id from `data-fo-ga4`, injects
+ * `gtag.js` after `load` and idle, and queues `js` and `config` itself, with the sanitised
+ * `page_location` (`src/modules/analytics/location.ts`, which absorbed the token and search
+ * rewrites this script used to do).
+ *
+ * The three steps run with or without an id: `dataLayer` carries a default-denied entry on every
+ * localised document, which is exactly what spec 004 AC-18 asserts.
  */
 import { createHash } from "node:crypto";
-
-import { searchLocationPattern } from "./search-routes.ts";
-import {
-  QUERY_TOKEN,
-  TOKEN_PLACEHOLDER,
-  TRACK_PATH_TOKEN,
-} from "./url-tokens.ts";
 
 /** The attribute the measurement id rides on. Not part of the hashed bytes (see above). */
 export const GA4_ID_ATTRIBUTE = "data-fo-ga4";
@@ -84,12 +74,7 @@ export const CONSENT_BOOTSTRAP_SCRIPT =
   `!function(){var w=window;w.dataLayer=w.dataLayer||[];` +
   `function g(){w.dataLayer.push(arguments)}w.gtag=g;` +
   `g("consent","default",${JSON.stringify(CONSENT_DEFAULT_SIGNALS)});` +
-  `g("set","url_passthrough",false);g("set","ads_data_redaction",true);` +
-  `var s=document.currentScript,i=s&&s.getAttribute("${GA4_ID_ATTRIBUTE}");` +
-  `if(i){var l=location.href.replace(/${TRACK_PATH_TOKEN.source}/g,"$1${TOKEN_PLACEHOLDER}")` +
-  `.replace(/${QUERY_TOKEN.source}/g,"$1${TOKEN_PLACEHOLDER}")` +
-  `.replace(/${searchLocationPattern().source}/,"$1");` +
-  `g("js",new Date());g("config",i,{page_location:l})}}();`;
+  `g("set","url_passthrough",false);g("set","ads_data_redaction",true)}();`;
 
 /**
  * The `'sha256-'` source expression for `script-src`, base64 as the CSP grammar wants it and

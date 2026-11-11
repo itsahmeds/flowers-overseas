@@ -1,14 +1,14 @@
 /**
- * The GA4 tag seam (spec 004 §2 "Consent", §5.2, AC-21; TASK-050).
+ * The GA4 tag URL (spec 004 §5.2; spec 023 §5.2 "Loading and withdrawal"; TASK-492).
  *
- * Pure and tiny on purpose: the *event* plan, the `consent_state` dimension and the server-side
- * `purchase` event are spec 023's (§3). All that lives here is what Phase 0 needs — the URL of
- * the tag for a configured measurement id, built from the one origin the CSP allowlists, so the
- * policy and the loader cannot name different hosts.
+ * Import-free on purpose: the deferred chunk (`client/deferred.ts`) builds the URL it injects
+ * after a grant from this file, and nothing else may ride into that chunk. The host is inside the
+ * consent-active build's `script-src` source `https://*.googletagmanager.com` (`src/lib/csp.ts`).
+ * `tests/unit/url-pii.test.ts` names the URL's line, so keep it where it is.
  */
-import { GOOGLE_TAG_MANAGER_ORIGIN } from "@/lib/csp";
+export const GTAG_SCRIPT_ORIGIN = "https://www.googletagmanager.com";
 
 /** The tag URL for a measurement id. The id is validated by `ga4MeasurementId()` upstream. */
 export function ga4TagUrl(measurementId: string): string {
-  return `${GOOGLE_TAG_MANAGER_ORIGIN}/gtag/js?id=${measurementId}`;
+  return `${GTAG_SCRIPT_ORIGIN}/gtag/js?id=${encodeURIComponent(measurementId)}`;
 }

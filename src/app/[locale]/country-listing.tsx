@@ -20,6 +20,7 @@ import {
 } from "@/modules/seo";
 
 import { ListingJsonLd } from "./listing-json-ld";
+import { ListingAnalytics } from "./page-analytics";
 
 /**
  * The country category's and the country occasion's head and body, **once**, for the two route
@@ -207,12 +208,14 @@ export async function CountryListing({
     <>
       <CountryCategoryPage view={view} />
       <ListingJsonLd view={view} />
+      <ListingAnalytics view={view} />
       {alternates}
     </>
   ) : (
     <>
       <CountryOccasionPage view={view} />
       <ListingJsonLd view={view} />
+      <ListingAnalytics view={view} />
       {alternates}
     </>
   );

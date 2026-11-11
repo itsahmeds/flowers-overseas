@@ -31,6 +31,8 @@ import {
 // Caveat's one importer, so the barrel must not reach it (`tests/unit/fonts.test.ts`).
 import { ProductPage } from "@/modules/ui/product/ProductPage";
 
+import { ProductAnalytics } from "./page-analytics";
+
 /**
  * The product page's head and body, **once**, for the two route files that render it (spec 009
  * §2, §5.4, §14 **A10**, AC-15, AC-24; TASK-127, TASK-228, TASK-128), as `./country-listing.tsx`
@@ -200,6 +202,7 @@ export async function productRouteBody(
         view={product}
       />
       {productAlternates}
+      <ProductAnalytics view={product} />
       {/* `BreadcrumbList` from the trail above, and the gated `Product` + `Offer` (spec 009
           AC-18; TASK-130): one `productView()` in, so the markup cannot disagree with the page. */}
       <JsonLd

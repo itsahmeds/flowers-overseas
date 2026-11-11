@@ -167,7 +167,7 @@ describe("step 3's policy in test and live (spec 013 §5.4, AC-2)", () => {
       `'self' 'sha256-AAAA' ${GOOGLE_TAG_MANAGER_ORIGIN} 'nonce-${NONCE}' 'strict-dynamic' https://js.stripe.com https://*.js.stripe.com`,
     );
     expect(directivesOf(policy).get("connect-src")).toBe(
-      `'self' ${GOOGLE_TAG_MANAGER_ORIGIN} ${GOOGLE_ANALYTICS_ORIGIN} https://api.stripe.com`,
+      `'self' ${GOOGLE_ANALYTICS_ORIGIN} https://*.analytics.google.com ${GOOGLE_TAG_MANAGER_ORIGIN} https://api.stripe.com`,
     );
   });
 

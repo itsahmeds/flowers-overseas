@@ -18,6 +18,28 @@
 /** The subset of Stripe.js the panel uses (`@stripe/stripe-js` is not a dependency). */
 export interface StripeElementLike {
   mount(target: string | HTMLElement): void;
+  /** The Payment Element's `change` event: `value.type` is the selected method (spec 023). */
+  on?(
+    event: "change",
+    handler: (change: { readonly value?: { readonly type?: string } }) => void,
+  ): void;
+}
+
+/** The GA4 client the deferred chunk publishes; absent while analytics is not running. */
+interface AnalyticsTrackWindow {
+  __foAnalytics?: {
+    track(name: string, params?: Record<string, unknown>): void;
+  };
+}
+
+/** `add_payment_info` at Pay (spec 023 §5.2, §14 A-orchestrator-2026-10-25 items 1 and 4). */
+function trackPaymentInfo(paymentType: string): void {
+  if (typeof window === "undefined") return;
+  (window as AnalyticsTrackWindow).__foAnalytics?.track("add_payment_info", {
+    payment_type: /^[a-z][a-z0-9_]{0,39}$/u.test(paymentType)
+      ? paymentType
+      : "card",
+  });
 }
 export interface StripeElementsLike {
   create(type: "payment", options?: Record<string, unknown>): StripeElementLike;
@@ -93,6 +115,8 @@ export function elementsOptions(
 export function createPaymentController(deps: PaymentControllerDeps) {
   let stripe: StripeLike | null = null;
   let elements: StripeElementsLike | null = null;
+  // The Payment Element's selected method, `card` until it says otherwise (spec 023 AC-14).
+  let paymentType = "card";
   return {
     /** Loads Stripe.js and mounts the Element; `false` when Stripe.js cannot load. */
     async mount(target: string | HTMLElement): Promise<boolean> {
@@ -102,7 +126,11 @@ export function createPaymentController(deps: PaymentControllerDeps) {
       );
       if (stripe === null) return false;
       elements = stripe.elements(elementsOptions(deps.preparation));
-      elements.create("payment").mount(target);
+      const element = elements.create("payment");
+      element.on?.("change", (change) => {
+        paymentType = change.value?.type ?? paymentType;
+      });
+      element.mount(target);
       return true;
     },
     /** "Pay" (the file header). */
@@ -112,6 +140,8 @@ export function createPaymentController(deps: PaymentControllerDeps) {
       }
       const submitted = await elements.submit();
       if (submitted.error !== undefined) return { kind: "invalid" };
+      // Pay pressed on a valid form, before the server call and `confirmPayment` (AC-14).
+      trackPaymentInfo(paymentType);
       const answer = await deps.pay(form);
       if (answer.kind === "redirect") {
         return { kind: "navigate", location: answer.location };
