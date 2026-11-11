@@ -14,13 +14,14 @@
  *  - a `paths` glob that matches a shared file (`SHARED_DIRECTORIES`, `SHARED_FILES`): a glob that
  *    covers a file every page uses would let the whole site count as one surface;
  *  - **the import rule**: a file under any entry's `paths` that a shared file, or a file under
- *    `src/app/` outside every entry's `paths` and outside `NON_INDEXABLE_APP_DIRECTORIES` (admin),
- *    imports, directly or through other files.
+ *    `src/app/` outside every entry's `paths` and outside `NON_INDEXABLE_APP_DIRECTORIES` (admin, API
+ *    route handlers), imports, directly or through other files.
  *    Without it a checkout component placed on a product page shows `checkout.*` copy on an
  *    indexable page while the key is named only inside a checkout file. The graph is the static
  *    `import`, `export ... from` and `import()` with a literal path of `src/`, read by
- *    TypeScript's own import scanner; `@/` resolves into the scanned `src/`. Keys built at run
- *    time are invisible here; spec 007's built-HTML marker check (A17 clause 4) owns them.
+ *    TypeScript's own import scanner, less the type-only imports the compiler erases; `@/`
+ *    resolves into the scanned `src/`. Keys built at run time are invisible here; spec 007's
+ *    built-HTML marker check (A17 clause 4) owns them.
  *
  * Globs are relative to the directory that holds `src/` and use `**` (any depth) and `*` (within a
  * segment); every other character, `[locale]` and `(checkout)` included, is literal.
@@ -64,9 +65,14 @@ const APP_DIRECTORY = "src/app/";
  * and refund actions reach `src/modules/payments` from `src/app/admin/` (TASK-358; the answer
  * TASK-359's brief asked for). A shared file an admin page imports is still a root of its own, so
  * nothing an indexable page renders escapes the rule through admin.
+ * And `src/app/api/`: route handlers (`route.ts`) return JSON, redirects or plain responses and
+ * render no HTML page at all, so the keys they reach (the basket-reminder unsubscribe route, the
+ * internal mail-capture route; TASK-449) never show on an indexable page (TASK-521). A shared file
+ * an API route imports is still a root of its own.
  */
 export const NON_INDEXABLE_APP_DIRECTORIES: readonly string[] = [
   "src/app/admin/",
+  "src/app/api/",
 ];
 
 const SOURCE_EXTENSIONS = [".ts", ".tsx"];
@@ -179,10 +185,47 @@ function malformedReason(raw: unknown): string | undefined {
   return reasons.join("; ");
 }
 
+/** Whether a top-level `import`/`export ... from` is erased at compile time, so it renders nothing. */
+function isTypeOnlyDeclaration(statement: ts.Statement): boolean {
+  if (ts.isExportDeclaration(statement)) return statement.isTypeOnly;
+  if (!ts.isImportDeclaration(statement)) return false;
+  const clause = statement.importClause;
+  if (clause === undefined) return false;
+  if (clause.isTypeOnly) return true;
+  if (clause.name !== undefined) return false;
+  const bindings = clause.namedBindings;
+  return (
+    bindings !== undefined &&
+    ts.isNamedImports(bindings) &&
+    bindings.elements.length > 0 &&
+    bindings.elements.every((element) => element.isTypeOnly)
+  );
+}
+
+/**
+ * The module specifiers a file reaches at run time. `import type`, `export type ... from` and an
+ * `import { type A, type B }` whose every binding is a type are erased by the compiler: they put no
+ * module, and so no key, on the page (TASK-521; the GA4 page glue imports only `StepScreen`'s type
+ * from `@/modules/checkout`). A side-effect `import "x"` and any value binding still count.
+ */
 function importsOf(content: string): string[] {
+  const source = ts.createSourceFile(
+    "scan.tsx",
+    content,
+    ts.ScriptTarget.Latest,
+    false,
+    ts.ScriptKind.TSX,
+  );
+  const erased = source.statements
+    .filter(isTypeOnlyDeclaration)
+    .map((statement) => [statement.pos, statement.end] as const);
   return ts
     .preProcessFile(content, true, true)
-    .importedFiles.map((entry) => entry.fileName);
+    .importedFiles.filter(
+      (entry) =>
+        !erased.some(([start, end]) => entry.pos >= start && entry.end <= end),
+    )
+    .map((entry) => entry.fileName);
 }
 
 function resolveImport(
