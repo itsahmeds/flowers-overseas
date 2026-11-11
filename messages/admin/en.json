@@ -34,7 +34,8 @@
       "risk": "Risk",
       "catalogue": "Catalogue",
       "publish": "Publish",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "countries": "Countries"
     },
     "roles": {
       "admin": "admin",
@@ -2945,6 +2946,155 @@
           "competitor": "Names another flower company.",
           "description_words": "Outside 60 to 90 words."
         }
+      }
+    },
+    "countries": {
+      "title": "Countries",
+      "intro": "Going live is a switch here, never a code change. Each country shows what still stands in the way.",
+      "col": {
+        "country": "Country",
+        "status": "Status",
+        "firstLive": "First live",
+        "guide": "Guide",
+        "countryPage": "Country page",
+        "realFlorists": "Real florists",
+        "priced": "Priced products",
+        "saleable": "Can be bought",
+        "check": "Go-live check"
+      },
+      "status": {
+        "demo": "Demo",
+        "live": "Live",
+        "disabled": "Disabled"
+      },
+      "notYet": "Not yet",
+      "published": "Published",
+      "notPublished": "Not published",
+      "toFix": "{count, plural, one {# to fix} other {# to fix}}",
+      "ready": "Ready",
+      "noLongerHold": "{count, plural, one {# no longer holds} other {# no longer hold}}",
+      "allHold": "All hold",
+      "legend": "Real florists: active, not demo, covering the country. Can be bought: active, priced, with an approved main photo and a real florist who makes it.",
+      "empty": "No country is in the database yet. The seed adds them.",
+      "back": "Countries",
+      "firstLiveAt": "First live {date} ({timeZone})",
+      "firstLiveNotYet": "First live: not yet",
+      "facts": {
+        "title": "Delivery and tax",
+        "vatRate": "VAT rate",
+        "vatRateCode": "vat_rate_bp {value}",
+        "zone": "Time zone",
+        "cutoff": "Same-day order by",
+        "cutoffValue": "{time}, {city} time",
+        "deliveryDays": "Delivery days",
+        "dayRange": "{first} to {last}",
+        "sundays": "Sundays",
+        "supplyModel": "Supply model",
+        "supplyNote": "the accountant’s answer, plan/06 §4",
+        "notSet": "Not set",
+        "guide": "Guide",
+        "countryPage": "Country page"
+      },
+      "weekday": {
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday",
+        "7": "Sunday"
+      },
+      "sunday": {
+        "none": "No delivery",
+        "peak": "Peak days only",
+        "always": "Every Sunday"
+      },
+      "supply": {
+        "principal": "Principal",
+        "agent": "Agent"
+      },
+      "later": {
+        "title": "Later",
+        "body": "Editing these comes after the first sale. Only a missing VAT rate or supply model can be set now, in the go-live check."
+      },
+      "florists": {
+        "title": "Florists covering {country}",
+        "colFlorist": "Florists",
+        "colStatus": "Status",
+        "colProducts": "Products they make",
+        "neverCounts": "never counts",
+        "empty": "No florist covers {country} yet."
+      },
+      "products": {
+        "title": "Products in {country}",
+        "priced": "Priced",
+        "saleable": "Can be bought"
+      },
+      "check": {
+        "title": "Go live",
+        "checked": "Checked just now. Go live appears when every line is ticked.",
+        "liveTitle": "Still true?",
+        "liveChecked": "Checked just now. Nothing here changes {country}’s status by itself.",
+        "met": "Met",
+        "missing": "Missing",
+        "operations": "Delivery days, time zone and same-day time set",
+        "fiscal": "VAT rate and supply model set",
+        "fiscalNoVat": "VAT rate and supply model set: the VAT rate is not set",
+        "fiscalNoSupply": "VAT rate and supply model set: the supply model is not set",
+        "fiscalNeither": "VAT rate and supply model set: neither is set",
+        "florist": "At least one real florist covers {country}",
+        "products": "At least {floor} products can be bought here: {count} of {floor}",
+        "corridor": "The English country guide is reviewed in its live version",
+        "sanctions": "{country} is not on the sanctions list"
+      },
+      "demoNote": "While {country} is a demo, checkout runs only as a demonstration: no money is taken.",
+      "alsoNeeded": "Real orders also need checkout open for {country} and payments switched on (Flags).",
+      "liveNoFlorist": "No real florist covers {country}, so every product shows “cannot be sent” and nothing can be bought.",
+      "noPermission": "Only an admin can change the status.",
+      "disabledNote": "{country} is disabled. It can go back to demo.",
+      "noDisabled": "Disabled is not offered for a live country until the “gone” page exists.",
+      "goLive": {
+        "button": "Go live in {country}",
+        "title": "Take {country} live?",
+        "bodySearch": "{country}’s pages can be found by search engines and join the sitemaps within a minute.",
+        "bodyOffers": "Prices show as offers, for the products that can be bought.",
+        "bodyPublish": "A publish starts, to add the pages only a live country has, such as city pages.",
+        "bodyFirstLive": "First live is set to now and never changes again.",
+        "field": "Type {iso2} to confirm",
+        "cancel": "Cancel",
+        "confirm": "Go live"
+      },
+      "backToDemo": {
+        "button": "Back to demo",
+        "title": "Move {country} back to demo?",
+        "body": "Within a minute its pages are hidden from search engines again and leave the sitemaps. Nobody can place a real order. First live keeps its date.",
+        "cancel": "Cancel",
+        "confirm": "Back to demo"
+      },
+      "fiscal": {
+        "title": "The accountant’s answer",
+        "note": "Shown only while a value is missing. Once both are set, this form is gone.",
+        "vat": "VAT rate, in basis points",
+        "vatHint": "For example 800 for 8 %. A whole number from 0 to 10000.",
+        "supply": "Supply model",
+        "reason": "Reason",
+        "reasonHint": "Name the accountant’s answer: who, when, where it is recorded. Required, and stored on the audit row.",
+        "save": "Save",
+        "saved": "Saved. The go-live check has been read again.",
+        "alreadySet": "That value is already set, so nothing changed. Changing it comes after the first sale.",
+        "errorVat": "Enter a whole number from 0 to 10000.",
+        "errorSupply": "Choose principal or agent.",
+        "errorReason": "Name the accountant’s answer."
+      },
+      "result": {
+        "live": "{country} is live. Its pages update within a minute; a publish has started.",
+        "liveNoPublish": "{country} is live. Its pages update within a minute.",
+        "demo": "{country} is back to demo. Its pages are hidden from search engines within a minute.",
+        "publishNotStarted": "The publish did not start ({code}). Start it on the Publish page.",
+        "mismatch": "That is not {iso2}. Nothing changed.",
+        "conflict": "The status changed since this page was opened. Nothing changed.",
+        "preflight": "The go-live check is not clear any more. Nothing changed.",
+        "refused": "That change is not allowed. Nothing changed."
       }
     }
   },

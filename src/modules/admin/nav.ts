@@ -23,6 +23,7 @@ export interface AdminNavItem {
     | "finance"
     | "basketReminders"
     | "catalogue"
+    | "countries"
     | "publish"
     | "flags"
     | "audit"
@@ -102,6 +103,14 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "catalogue",
     href: "/admin/catalogue/products",
     permissions: ["catalogue.edit", "price.edit"],
+    built: true,
+  },
+  // Spec 012b §2.8 (TASK-300): every destination and its go-live check; any admin role reads
+  // it, only `country.status` (admin) flips a status.
+  {
+    key: "countries",
+    href: "/admin/countries",
+    permissions: [],
     built: true,
   },
   // Spec 012b §2.3 (TASK-295): structural changes go out here.

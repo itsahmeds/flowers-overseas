@@ -175,3 +175,25 @@ export {
   DestinationsHubPage,
   type DestinationsHubPageProps,
 } from "./ui/DestinationsHubPage.tsx";
+// Country go-live's rules (spec 012b §2.8, AC-25; TASK-300): the three boundaries of §5.2, the
+// preflight's reasons, the status graph and the fiscal inputs. The database half (the facts, the
+// two commands) is `src/modules/admin/countries.ts`.
+export {
+  CountryStatusFlipSchema,
+  GoLiveFiscalFieldsSchema,
+  PreflightResultSchema,
+  VatRateBpSchema,
+  confirmsCode,
+  evaluatePreflight,
+  fiscalInputsFor,
+  flipRefusal,
+  preflightReasons,
+  supplyModels,
+  type CountryStatusFlip,
+  type FlipRefusal,
+  type GoLiveFiscalFields,
+  type PreflightFacts,
+  type PreflightReason,
+  type PreflightResult,
+  type SupplyModel,
+} from "./go-live.ts";
