@@ -22,7 +22,7 @@ Spec 012b §12 slice A task 4 (second half). Founder approval 2026-10-20, "all d
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- **2026-11-11 (implementer, self-review):** T-09's preview half (a price and a name edit in the edge HTML within 60 s) and T-05's e2e are owed to the e2e pass; the T-09 table's command rows arrive with TASK-297 to TASK-300.
 
 ## Escalations
 
@@ -36,11 +36,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 implementer: built with TASK-295 in PR #538 (see its brief); PR 449's grid, search, `urlsForTag`, `cache:warm` and §5.4 table commits ported onto main.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#538](https://github.com/itsahmeds/flowers-overseas/pull/538), with TASK-295. The listings and links half of AC-5: `productPageAdmitted()` (`src/modules/catalog/listing.ts`) in `productsFor()` (shop root, country category and occasion, hubs per country), the category tiles and `catalogSearchSource().products`, a no-op without a manifest or inside `databaseOnly()`. `urlsForTag`/`pathsForTag` resolve `sitemap` and `country:{iso2}`. `pnpm cache:warm` (`scripts/cache-warm.ts`). AC-9: `src/lib/command-tags.ts` (`commandTags`, `commandOutcome`, `applyCommand`) and the table-driven T-09 (`tests/unit/command-tags.test.ts`); no catalogue, price, photo, review or country admin command exists on main yet, so the table's rows wait for TASK-297 to TASK-300 to call `applyCommand`. Tests: unit `command-tags`, `cache-warm`, `cache-cloudflare`, `cache-product-tags`, `existence` (grid and search cases).
