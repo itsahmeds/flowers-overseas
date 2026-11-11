@@ -17,6 +17,7 @@ import { loadMessages } from "@/modules/i18n";
 
 import type { AccountRunner } from "./buyer-account";
 import { unsubscribeReminders } from "./reminders";
+import { systemAccountRunner } from "./system-runner";
 
 /** The headers of every answer: never cached, never indexed, no referrer. */
 export const REMINDER_UNSUBSCRIBE_HEADERS: Readonly<Record<string, string>> = {
@@ -32,19 +33,6 @@ const OneClickBodySchema = z
 
 const ONE_CLICK_MAX_BYTES = 1_024;
 const TOKEN_MAX_LENGTH = 512;
-
-/** The production `system` runner, loaded on first use (nothing connects at import). */
-const defaultSystemRunner: AccountRunner = async (fn) => {
-  const { withSystemContext } = await import("@/lib/db");
-  return withSystemContext("reminders.unsubscribe", (db) =>
-    fn({
-      async execute(query) {
-        const rows: unknown = await db.execute(query);
-        return rows as readonly Record<string, unknown>[];
-      },
-    }),
-  );
-};
 
 /** The done sentence, in English: the request carries no locale (C.15 `unsubscribeDone`). */
 function doneText(): string {
@@ -79,7 +67,7 @@ export async function reminderOneClickResponse(
   const token = new URL(request.url).searchParams.get("t") ?? "";
   if (token !== "" && token.length <= TOKEN_MAX_LENGTH) {
     await unsubscribeReminders(
-      input.system ?? defaultSystemRunner,
+      input.system ?? systemAccountRunner("reminders.unsubscribe"),
       token,
       input.now ?? new Date(),
     );

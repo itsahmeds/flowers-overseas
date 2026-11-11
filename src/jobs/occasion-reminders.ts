@@ -12,18 +12,17 @@
  * database or the environment at import.
  */
 import type { LocaleCode } from "../config/locales";
-import { withSystemContext } from "../lib/db";
 import { isEnabled } from "../lib/flags";
 import { logger } from "../lib/logger";
 import { captureAlert } from "../lib/sentry";
 import { listingHref } from "../modules/catalog";
 import {
-  type AccountRunner,
   type DueReminder,
   type OccasionKey,
   type OccasionReminderRun,
   reminderUnsubscribeLinkToken,
   runOccasionReminders,
+  systemAccountRunner,
 } from "../modules/customers";
 import { getMailer, type Mailer } from "../modules/notifications";
 import { renderOccasionReminderEmail } from "../modules/notifications/emails";
@@ -125,17 +124,6 @@ export async function sendOccasionReminder(
   });
 }
 
-/** The `system` context as the customers module's runner. */
-export const systemAccountRunner: AccountRunner = (fn) =>
-  withSystemContext("reminders.daily", (db) =>
-    fn({
-      async execute(query) {
-        const rows: unknown = await db.execute(query);
-        return rows as readonly Record<string, unknown>[];
-      },
-    }),
-  );
-
 /** `account.reminders`; a flag that cannot be read is off (nothing is sent). */
 async function remindersFlagOn(): Promise<boolean> {
   try {
@@ -160,7 +148,7 @@ export async function runRemindersDaily(
   );
   try {
     return await runOccasionReminders(now, {
-      system: systemAccountRunner,
+      system: systemAccountRunner("reminders.daily"),
       flagOn: remindersFlagOn,
       send: (reminder) => sendOccasionReminder(reminder, { mailer, origin }),
     });

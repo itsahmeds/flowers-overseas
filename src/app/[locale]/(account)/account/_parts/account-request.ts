@@ -13,7 +13,7 @@ import { appEnvironment } from "@/lib/env.schema";
 import { isEnabled } from "@/lib/flags";
 import { logger } from "@/lib/logger";
 import { routableLocale } from "@/modules/i18n";
-import type { AccountRunner } from "@/modules/customers";
+import { type AccountRunner, systemAccountRunner } from "@/modules/customers";
 import {
   accountOrderModes,
   type CustomerRunner,
@@ -74,17 +74,8 @@ export async function remindersOpen(): Promise<boolean> {
  * reminder consent columns and `consent_log`, which a buyer session may not write, and only for
  * the customer the server resolved from the session.
  */
-export const asSystemAccount: AccountRunner = async (fn) => {
-  const { withSystemContext } = await import("@/lib/db");
-  return withSystemContext("account.reminders", (db) =>
-    fn({
-      async execute(query) {
-        const rows: unknown = await db.execute(query);
-        return rows as readonly Record<string, unknown>[];
-      },
-    }),
-  );
-};
+export const asSystemAccount: AccountRunner =
+  systemAccountRunner("account.reminders");
 
 /** The route's locale when the site serves it, else `null` (the page answers 404). */
 export function accountLocale(requested: string): LocaleCode | null {
