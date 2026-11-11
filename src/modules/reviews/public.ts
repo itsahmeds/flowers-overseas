@@ -23,7 +23,8 @@ export type ReviewScopeFilter =
 function where(scope: ReviewScopeFilter, stars?: number) {
   const star = stars === undefined ? sql`` : sql`AND v.rating = ${stars}`;
   if (scope === "all") return sql`WHERE true ${star}`;
-  if ("productId" in scope) return sql`WHERE v.product_id = ${scope.productId} ${star}`;
+  if ("productId" in scope)
+    return sql`WHERE v.product_id = ${scope.productId} ${star}`;
   // The PDP knows its product by SKU (TASK-373); `product` is public reference data.
   if ("productSku" in scope) {
     return sql`WHERE v.product_id = (SELECT p.id FROM product p WHERE p.sku = ${scope.productSku}) ${star}`;

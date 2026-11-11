@@ -91,7 +91,10 @@ export function ReviewsPageView({
           <p className="text-ui text-ink-2 m-0 max-w-[46ch] leading-(--line-height-tight)">
             {t("page.verify")}{" "}
             {policyHref === undefined ? null : (
-              <a className="text-link underline underline-offset-4" href={policyHref}>
+              <a
+                className="text-link underline underline-offset-4"
+                href={policyHref}
+              >
                 {t("policyLink")}
               </a>
             )}

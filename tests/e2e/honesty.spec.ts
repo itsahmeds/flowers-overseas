@@ -193,3 +193,40 @@ test.describe("AC-16: no structured data or hreflang from a 004 page; the canoni
     expect(blocks.join("")).not.toContain("FAQPage");
   });
 });
+
+/**
+ * Spec 022a **AC-28** and **AC-27**'s served half (TASK-373). The seed publishes no review and both
+ * review flags are off, so every page renders exactly as before: no `[data-fo-reviews]` region (a
+ * planted one with zero reviews is the gate's red case, `tests/support/reviews-gate.ts`), no
+ * footer review link, no review page, and no `aggregateRating`, `Review` or Trustpilot figure in
+ * any JSON-LD.
+ */
+test.describe("AC-28: with zero published reviews nothing about reviews is served", () => {
+  for (const path of [...LOCALES, "/en/send-flowers-to/poland"]) {
+    test(`${path} has no review region, link or markup`, async ({ page }) => {
+      const response = await page.goto(path);
+      expect(response?.status()).toBeLessThan(400);
+      await expect(page.locator("[data-fo-reviews]")).toHaveCount(0);
+      const blocks = (
+        await page
+          .locator('script[type="application/ld+json"]')
+          .allTextContents()
+      ).join("");
+      expect(blocks).not.toMatch(
+        /aggregateRating|"Review"|"review"|trustpilot/iu,
+      );
+    });
+  }
+
+  for (const path of [
+    "/en/reviews",
+    "/de/bewertungen",
+    "/pl/opinie",
+    "/en/legal/reviews",
+  ]) {
+    test(`${path} answers 404 on the seed`, async ({ page }) => {
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(404);
+    });
+  }
+});

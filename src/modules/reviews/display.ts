@@ -94,14 +94,18 @@ function executorOf(db: DbTransaction): OrderExecutor {
   };
 }
 
-function publicRead<T>(fn: (executor: OrderExecutor) => Promise<T>): Promise<T> {
+function publicRead<T>(
+  fn: (executor: OrderExecutor) => Promise<T>,
+): Promise<T> {
   return withDbContext({ role: "public", requestId: randomUUID() }, (db) =>
     fn(executorOf(db)),
   );
 }
 
 /** The production reader: the public context, or nothing where there is no database. */
-export function databaseReviewReader(readable = reviewsReadable()): ReviewReader {
+export function databaseReviewReader(
+  readable = reviewsReadable(),
+): ReviewReader {
   if (!readable) {
     return {
       summary: () => Promise.resolve(EMPTY_REVIEW_SUMMARY),
@@ -110,9 +114,12 @@ export function databaseReviewReader(readable = reviewsReadable()): ReviewReader
     };
   }
   return {
-    summary: (scope) => publicRead((executor) => reviewSummary(executor, scope)),
+    summary: (scope) =>
+      publicRead((executor) => reviewSummary(executor, scope)),
     list: (scope, page, options) =>
-      publicRead((executor) => listPublicReviews(executor, scope, page, options)),
+      publicRead((executor) =>
+        listPublicReviews(executor, scope, page, options),
+      ),
     inviteFlagOn: () => isEnabled(REVIEWS_INVITE_FLAG),
   };
 }
@@ -132,9 +139,8 @@ function scopeOf(key: string): ReviewScopeFilter {
   return "all";
 }
 
-const cachedSummary = cache(
-  (key: string): Promise<ReviewSummary> =>
-    databaseReviewReader().summary(scopeOf(key)),
+const cachedSummary = cache((key: string): Promise<ReviewSummary> =>
+  databaseReviewReader().summary(scopeOf(key)),
 );
 const cachedPage = cache(
   (key: string, page: number, stars: number, pageSize: number) =>
@@ -221,7 +227,10 @@ export function reviewsPageQuery(
   const rawStars = query["stars"];
   const pageText = one(rawPage);
   const starsText = one(rawStars);
-  if ((rawPage !== undefined && pageText === undefined) || (rawStars !== undefined && starsText === undefined)) {
+  if (
+    (rawPage !== undefined && pageText === undefined) ||
+    (rawStars !== undefined && starsText === undefined)
+  ) {
     return { kind: "notFound" };
   }
   let stars: ReviewStars | undefined;
@@ -240,10 +249,14 @@ export async function reviewsPageDisplay(
   page: number,
   stars: ReviewStars | undefined,
   reader: ReviewReader = renderReviewReader,
-): Promise<(ReviewDisplay & { readonly pages: number; readonly listed: number }) | undefined> {
+): Promise<
+  | (ReviewDisplay & { readonly pages: number; readonly listed: number })
+  | undefined
+> {
   const summary = await reader.summary("all");
   if (summary.count === 0) return undefined;
-  const listed = stars === undefined ? summary.count : summary.distribution[stars];
+  const listed =
+    stars === undefined ? summary.count : summary.distribution[stars];
   const pages = Math.max(1, Math.ceil(listed / REVIEWS_PAGE_SIZE));
   if (page > pages) return undefined;
   const reviews = await reader.list(

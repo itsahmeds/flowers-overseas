@@ -12,7 +12,8 @@ import { FORBIDDEN_REVIEW_SHAPES, textOf } from "./listing-honesty.ts";
 /** Every `[data-fo-reviews]` element's outer HTML, outermost first. */
 export function reviewRegions(html: string): string[] {
   const regions: string[] = [];
-  const opening = /<([a-z][a-z0-9]*)\b[^>]*\sdata-fo-reviews(?:=(?:""|"[^"]*"))?[^>]*>/giu;
+  const opening =
+    /<([a-z][a-z0-9]*)\b[^>]*\sdata-fo-reviews(?:=(?:""|"[^"]*"))?[^>]*>/giu;
   let match: RegExpExecArray | null;
   while ((match = opening.exec(html)) !== null) {
     const tag = match[1] ?? "";

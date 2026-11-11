@@ -170,7 +170,7 @@ export async function productRouteBody(
   // Spec 022a's line, block and `Product` review markup (AC-26, AC-27; TASK-373): one read of
   // this product's published reviews, so the three cannot disagree; absent under three.
   const reviews = await productReviews(match.locale, match.sku);
-    const productAlternates = (
+  const productAlternates = (
     <LanguageAlternates
       paths={await productAlternatePaths({
         sku: match.sku,
@@ -215,10 +215,7 @@ export async function productRouteBody(
         nodes={
           options === undefined
             ? []
-            : withReviewMarkup(
-                productJsonLd(product, label, options),
-                reviews,
-              )
+            : withReviewMarkup(productJsonLd(product, label, options), reviews)
         }
       />
     </>

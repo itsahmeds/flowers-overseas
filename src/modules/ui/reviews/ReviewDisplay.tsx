@@ -83,7 +83,10 @@ export function RatingSummary({
   const average = summary.average ?? 0;
   const shown = visibleAverage(average, locale);
   return (
-    <div className="grid min-w-0 content-start gap-[18px]" data-fo-rating-summary="">
+    <div
+      className="grid min-w-0 content-start gap-[18px]"
+      data-fo-rating-summary=""
+    >
       <div className="flex flex-wrap items-center gap-x-[16px] gap-y-[10px]">
         <span
           className="display num text-ink text-[64px] leading-[0.95]"
@@ -97,7 +100,10 @@ export function RatingSummary({
             size={24}
             value={average}
           />
-          <span className="text-ui text-ink-2" data-fo-review-count={summary.count}>
+          <span
+            className="text-ui text-ink-2"
+            data-fo-review-count={summary.count}
+          >
             {t("count", { count: summary.count })}
           </span>
         </div>
@@ -314,11 +320,17 @@ export function ReviewsBlock({
             summary={summary}
           />
           <p className="m-0 flex flex-wrap gap-x-[24px] gap-y-[8px]">
-            <a className="text-link underline underline-offset-4" href={reviewsHref}>
+            <a
+              className="text-link underline underline-offset-4"
+              href={reviewsHref}
+            >
               {t("block.seeAll")}
             </a>
             {policyHref === undefined ? null : (
-              <a className="text-link underline underline-offset-4" href={policyHref}>
+              <a
+                className="text-link underline underline-offset-4"
+                href={policyHref}
+              >
                 {t("policyLink")}
               </a>
             )}

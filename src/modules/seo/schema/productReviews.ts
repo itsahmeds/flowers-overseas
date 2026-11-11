@@ -36,7 +36,9 @@ export function withProductReviews(
   input: ProductReviewMarkupInput,
 ): JsonLdNode {
   if (product["@type"] !== "Product") {
-    throw new Error("review markup goes on a Product node only (spec 022a AC-27)");
+    throw new Error(
+      "review markup goes on a Product node only (spec 022a AC-27)",
+    );
   }
   const reviews = input.cards
     .filter((card) => card.displayName !== null)
@@ -55,7 +57,9 @@ export function withProductReviews(
         ? {}
         : {
             reviewBody: card.text,
-            ...(card.localeCode === null ? {} : { inLanguage: card.localeCode }),
+            ...(card.localeCode === null
+              ? {}
+              : { inLanguage: card.localeCode }),
           }),
     }));
   return {

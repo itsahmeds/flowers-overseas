@@ -53,10 +53,7 @@ import { ReviewsPageView } from "@/modules/ui/reviews/ReviewsPageView";
 
 import { cardOf } from "../../src/app/[locale]/reviews-route.tsx";
 import { withReviewMarkup } from "../../src/app/[locale]/reviews-blocks.tsx";
-import {
-  reviewRegions,
-  reviewsGateFindings,
-} from "../support/reviews-gate.ts";
+import { reviewRegions, reviewsGateFindings } from "../support/reviews-gate.ts";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
@@ -79,7 +76,9 @@ function fixtures(
     id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
     rating: index === options.oneStarAt ? 1 : (cycle[index % 4] ?? 5),
     text:
-      index < (options.withText ?? n) ? `Lovely flowers, number ${String(index)}.` : null,
+      index < (options.withText ?? n)
+        ? `Lovely flowers, number ${String(index)}.`
+        : null,
     display_name: index % 3 === 0 ? "Anna" : null,
     locale_code: index % 2 === 0 ? "en" : "pl",
     published_at: new Date(Date.UTC(2027, 4, 30 - index, 12)),
@@ -92,10 +91,15 @@ function fixtures(
   }));
 }
 
-function inScope(rows: readonly Fixture[], scope: ReviewScopeFilter): Fixture[] {
+function inScope(
+  rows: readonly Fixture[],
+  scope: ReviewScopeFilter,
+): Fixture[] {
   if (scope === "all") return [...rows];
-  if ("productSku" in scope) return rows.filter((r) => r.sku === scope.productSku);
-  if ("countryIso2" in scope) return rows.filter((r) => r.iso2 === scope.countryIso2);
+  if ("productSku" in scope)
+    return rows.filter((r) => r.sku === scope.productSku);
+  if ("countryIso2" in scope)
+    return rows.filter((r) => r.iso2 === scope.countryIso2);
   return [];
 }
 
@@ -103,7 +107,8 @@ function summaryOf(rows: readonly Fixture[]): ReviewSummary {
   const count = rows.length;
   const at = (n: number) => rows.filter((r) => r.rating === n).length;
   return {
-    average: count === 0 ? null : rows.reduce((s, r) => s + r.rating, 0) / count,
+    average:
+      count === 0 ? null : rows.reduce((s, r) => s + r.rating, 0) / count,
     count,
     withText: rows.filter((r) => r.text !== null).length,
     distribution: { 1: at(1), 2: at(2), 3: at(3), 4: at(4), 5: at(5) },
@@ -142,7 +147,9 @@ describe("T-24: the reviews page's existence, robots term, pagination and query"
     expect(await reviewsPageExists(reader([]))).toBe(false);
     expect(await reviewsPageDisplay(1, undefined, reader([]))).toBeUndefined();
     expect(await reviewsPageExists(reader(fixtures(1)))).toBe(true);
-    expect((await reviewsPageDisplay(1, undefined, reader(fixtures(1))))?.reviews).toHaveLength(1);
+    expect(
+      (await reviewsPageDisplay(1, undefined, reader(fixtures(1))))?.reviews,
+    ).toHaveLength(1);
   });
 
   it("meets the index minimum at 10 reviews with text and not at 9", () => {
@@ -150,7 +157,9 @@ describe("T-24: the reviews page's existence, robots term, pagination and query"
     expect(reviewsPageMeetsIndexMinimum(summaryOf(fixtures(9)))).toBe(false);
     expect(reviewsPageMeetsIndexMinimum(summaryOf(fixtures(10)))).toBe(true);
     // Ten published, one of them without visible text: still under the minimum.
-    expect(reviewsPageMeetsIndexMinimum(summaryOf(fixtures(10, { withText: 9 })))).toBe(false);
+    expect(
+      reviewsPageMeetsIndexMinimum(summaryOf(fixtures(10, { withText: 9 }))),
+    ).toBe(false);
   });
 
   it("lists 20 per page, newest first: page 2 of 21 holds the oldest, page 3 is no page", async () => {
@@ -161,7 +170,9 @@ describe("T-24: the reviews page's existence, robots term, pagination and query"
     expect(one?.reviews).toHaveLength(20);
     expect(one?.reviews[0]?.id).toBe(rows[0]?.id);
     expect(two?.reviews.map((r) => r.id)).toEqual([rows[20]?.id]);
-    expect(await reviewsPageDisplay(3, undefined, reader(rows))).toBeUndefined();
+    expect(
+      await reviewsPageDisplay(3, undefined, reader(rows)),
+    ).toBeUndefined();
   });
 
   it("filters by stars, with the filter's own page count", async () => {
@@ -173,11 +184,29 @@ describe("T-24: the reviews page's existence, robots term, pagination and query"
   });
 
   it("parses ?page and ?stars: page=1 is the bare URL, malformed is no page", () => {
-    expect(reviewsPageQuery({})).toEqual({ kind: "page", page: 1, stars: undefined });
-    expect(reviewsPageQuery({ page: "1" })).toEqual({ kind: "firstPage", stars: undefined });
-    expect(reviewsPageQuery({ page: "1", stars: "1" })).toEqual({ kind: "firstPage", stars: 1 });
-    expect(reviewsPageQuery({ page: "2" })).toEqual({ kind: "page", page: 2, stars: undefined });
-    expect(reviewsPageQuery({ stars: "1" })).toEqual({ kind: "page", page: 1, stars: 1 });
+    expect(reviewsPageQuery({})).toEqual({
+      kind: "page",
+      page: 1,
+      stars: undefined,
+    });
+    expect(reviewsPageQuery({ page: "1" })).toEqual({
+      kind: "firstPage",
+      stars: undefined,
+    });
+    expect(reviewsPageQuery({ page: "1", stars: "1" })).toEqual({
+      kind: "firstPage",
+      stars: 1,
+    });
+    expect(reviewsPageQuery({ page: "2" })).toEqual({
+      kind: "page",
+      page: 2,
+      stars: undefined,
+    });
+    expect(reviewsPageQuery({ stars: "1" })).toEqual({
+      kind: "page",
+      page: 1,
+      stars: 1,
+    });
     for (const bad of [
       { page: "0" },
       { page: "02" },
@@ -189,7 +218,9 @@ describe("T-24: the reviews page's existence, robots term, pagination and query"
       { page: ["2", "3"] },
       { stars: ["1", "2"] },
     ]) {
-      expect(reviewsPageQuery(bad), JSON.stringify(bad)).toEqual({ kind: "notFound" });
+      expect(reviewsPageQuery(bad), JSON.stringify(bad)).toEqual({
+        kind: "notFound",
+      });
     }
   });
 });
@@ -216,8 +247,8 @@ describe("T-25: the summary and the cards equal the published set", () => {
     const average = /data-fo-review-average="([^"]+)"/u.exec(html)?.[1];
     expect(average).toBe(ratingValueOf(summary.average ?? 0).toFixed(1));
     expect(html).toContain('data-fo-review-count="21"');
-    const bars = [...html.matchAll(/data-fo-review-bar-count="(\d+)"/gu)].map((m) =>
-      Number(m[1]),
+    const bars = [...html.matchAll(/data-fo-review-bar-count="(\d+)"/gu)].map(
+      (m) => Number(m[1]),
     );
     expect(bars).toHaveLength(5);
     expect(bars.reduce((a, b) => a + b, 0)).toBe(21);
@@ -228,38 +259,63 @@ describe("T-25: the summary and the cards equal the published set", () => {
 
   it("shows each card's stars' text, its words in their own lang, the name or Verified buyer, the badge, the month and country, the reply and the withheld line", () => {
     expect(html).toContain('aria-label="Rated 5 out of 5"');
-    expect(html).toMatch(/<p[^>]*dir="auto"[^>]*lang="pl"[^>]*>Lovely flowers, number 1\.<\/p>/u);
+    expect(html).toMatch(
+      /<p[^>]*dir="auto"[^>]*lang="pl"[^>]*>Lovely flowers, number 1\.<\/p>/u,
+    );
     expect(html).toContain("<bdi>Anna</bdi>");
     expect(html).toContain("Verified buyer");
     expect(html).toContain("verified order");
     expect(html).toContain("Delivered April 2027 · Poland");
     expect(html).toContain("Reply from Flowers Overseas");
     expect(html).toContain("Thank you for ordering.");
-    expect(html).toContain("This review’s comment was withheld: abusive language");
+    expect(html).toContain(
+      "This review’s comment was withheld: abusive language",
+    );
     expect(html).toContain(encodeURIComponent(rows[0]?.id ?? "x"));
     expect(html).toContain('href="/en/legal/reviews"');
     // The pages: page 2 linked, page 1 current, no `?page=1` anywhere.
     expect(html).toContain('href="/en/reviews?page=2"');
-    expect(html).not.toContain("page=1\"");
+    expect(html).not.toContain('page=1"');
   });
 });
 
 describe("T-26: the PDP and corridor blocks", () => {
   it("renders with 3 published reviews of the product and not with 2", async () => {
-    expect(await reviewBlockDisplay({ productSku: "AMBER-HOUR" }, reader(fixtures(2)))).toBeUndefined();
+    expect(
+      await reviewBlockDisplay(
+        { productSku: "AMBER-HOUR" },
+        reader(fixtures(2)),
+      ),
+    ).toBeUndefined();
     const other = [...fixtures(2), ...fixtures(5, { sku: "OTHER" })];
-    expect(await reviewBlockDisplay({ productSku: "AMBER-HOUR" }, reader(other))).toBeUndefined();
-    expect(await reviewBlockDisplay({ productSku: "AMBER-HOUR" }, reader(fixtures(3)))).toBeDefined();
+    expect(
+      await reviewBlockDisplay({ productSku: "AMBER-HOUR" }, reader(other)),
+    ).toBeUndefined();
+    expect(
+      await reviewBlockDisplay(
+        { productSku: "AMBER-HOUR" },
+        reader(fixtures(3)),
+      ),
+    ).toBeDefined();
   });
 
   it("renders with 3 published reviews of orders to the country and not with 2", async () => {
-    expect(await reviewBlockDisplay({ countryIso2: "PL" }, reader(fixtures(2)))).toBeUndefined();
-    expect(await reviewBlockDisplay({ countryIso2: "DE" }, reader(fixtures(3)))).toBeUndefined();
-    expect(await reviewBlockDisplay({ countryIso2: "PL" }, reader(fixtures(3)))).toBeDefined();
+    expect(
+      await reviewBlockDisplay({ countryIso2: "PL" }, reader(fixtures(2))),
+    ).toBeUndefined();
+    expect(
+      await reviewBlockDisplay({ countryIso2: "DE" }, reader(fixtures(3))),
+    ).toBeUndefined();
+    expect(
+      await reviewBlockDisplay({ countryIso2: "PL" }, reader(fixtures(3))),
+    ).toBeDefined();
   });
 
   it("shows at most 5 cards, and links to the reviews page and the policy", async () => {
-    const display = await reviewBlockDisplay({ productSku: "AMBER-HOUR" }, reader(fixtures(8)));
+    const display = await reviewBlockDisplay(
+      { productSku: "AMBER-HOUR" },
+      reader(fixtures(8)),
+    );
     expect(display?.reviews).toHaveLength(5);
     expect(display?.summary.count).toBe(8);
     const html = render(
@@ -286,7 +342,10 @@ describe("T-27: review markup on the PDP's Product node only, equal to what it s
   const crumbs = { "@type": "BreadcrumbList", itemListElement: [] } as const;
 
   it("adds aggregateRating equal to the visible summary and a review per visible named card", async () => {
-    const display = await reviewBlockDisplay({ productSku: "AMBER-HOUR" }, reader(fixtures(8)));
+    const display = await reviewBlockDisplay(
+      { productSku: "AMBER-HOUR" },
+      reader(fixtures(8)),
+    );
     if (display === undefined) throw new Error("fixture under the minimum");
     const nodes = withReviewMarkup([crumbs, product], {
       display,
@@ -297,7 +356,11 @@ describe("T-27: review markup on the PDP's Product node only, equal to what it s
     const marked = nodes[1] as Record<string, unknown>;
     const html = render(
       "en",
-      <RatingSummary locale="en" starsHref={() => "/"} summary={display.summary} />,
+      <RatingSummary
+        locale="en"
+        starsHref={() => "/"}
+        summary={display.summary}
+      />,
     );
     const visible = /data-fo-review-average="([^"]+)"/u.exec(html)?.[1];
     expect(marked["aggregateRating"]).toEqual({
@@ -308,17 +371,32 @@ describe("T-27: review markup on the PDP's Product node only, equal to what it s
       worstRating: 1,
     });
     const named = display.reviews.filter((r) => r.display_name !== null);
-    const entries = marked["review"] as { author: { name: string }; reviewRating: { ratingValue: number } }[];
+    const entries = marked["review"] as {
+      author: { name: string };
+      reviewRating: { ratingValue: number };
+    }[];
     expect(entries).toHaveLength(named.length);
     expect(entries.length).toBeLessThanOrEqual(5);
-    expect(entries.map((e) => e.reviewRating.ratingValue)).toEqual(named.map((r) => r.rating));
+    expect(entries.map((e) => e.reviewRating.ratingValue)).toEqual(
+      named.map((r) => r.rating),
+    );
     expect(entries.every((e) => e.author.name === "Anna")).toBe(true);
   });
 
   it("puts nothing anywhere when the page has no Product node or no block", () => {
-    expect(withReviewMarkup([crumbs, undefined], undefined)).toEqual([crumbs, undefined]);
-    expect(JSON.stringify(withReviewMarkup([crumbs], undefined))).not.toMatch(/aggregateRating|"Review"/u);
-    expect(() => withProductReviews({ "@type": "Organization" }, { average: 5, count: 3, cards: [] })).toThrow();
+    expect(withReviewMarkup([crumbs, undefined], undefined)).toEqual([
+      crumbs,
+      undefined,
+    ]);
+    expect(JSON.stringify(withReviewMarkup([crumbs], undefined))).not.toMatch(
+      /aggregateRating|"Review"/u,
+    );
+    expect(() =>
+      withProductReviews(
+        { "@type": "Organization" },
+        { average: 5, count: 3, cards: [] },
+      ),
+    ).toThrow();
   });
 
   it("rounds the markup and the page the same way", () => {
@@ -328,7 +406,11 @@ describe("T-27: review markup on the PDP's Product node only, equal to what it s
         <RatingSummary
           locale="en"
           starsHref={() => "/"}
-          summary={{ average, count: 3, distribution: { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1 } }}
+          summary={{
+            average,
+            count: 3,
+            distribution: { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1 },
+          }}
         />,
       );
       expect(/data-fo-review-average="([^"]+)"/u.exec(html)?.[1]).toBe(
@@ -351,22 +433,36 @@ describe("T-28: the honesty gate admits review words only inside a live [data-fo
   );
 
   it("is green for a region with published reviews", () => {
-    expect(reviewsGateFindings({ html: `<main>${block}</main>`, published: 3 })).toEqual([]);
+    expect(
+      reviewsGateFindings({ html: `<main>${block}</main>`, published: 3 }),
+    ).toEqual([]);
   });
 
   it("is red for a planted region with zero published reviews", () => {
-    expect(reviewsGateFindings({ html: `<main>${block}</main>`, published: 0 })).toContain(
-      "a [data-fo-reviews] region with zero published reviews",
-    );
+    expect(
+      reviewsGateFindings({ html: `<main>${block}</main>`, published: 0 }),
+    ).toContain("a [data-fo-reviews] region with zero published reviews");
   });
 
   it("is red for a review word outside a region, and admits the footer links only while reviews exist", () => {
-    expect(reviewsGateFindings({ html: "<p>Read our reviews</p>", published: 3 })).toContain(
-      "review outside [data-fo-reviews]",
-    );
+    expect(
+      reviewsGateFindings({ html: "<p>Read our reviews</p>", published: 3 }),
+    ).toContain("review outside [data-fo-reviews]");
     const footer = '<footer><a href="/en/reviews">Reviews</a></footer>';
-    expect(reviewsGateFindings({ html: footer, published: 3, footerLinks: ["Reviews"] })).toEqual([]);
-    expect(reviewsGateFindings({ html: footer, published: 0, footerLinks: ["Reviews"] })).not.toEqual([]);
+    expect(
+      reviewsGateFindings({
+        html: footer,
+        published: 3,
+        footerLinks: ["Reviews"],
+      }),
+    ).toEqual([]);
+    expect(
+      reviewsGateFindings({
+        html: footer,
+        published: 0,
+        footerLinks: ["Reviews"],
+      }),
+    ).not.toEqual([]);
   });
 });
 
@@ -375,7 +471,10 @@ describe("T-23: the policy and the footer links exist with the data", () => {
     expect(await reviewPolicyLive(reader([]))).toBe(false);
     expect(await reviewPolicyLive(reader([], true))).toBe(true);
     expect(await reviewPolicyLive(reader(fixtures(1)))).toBe(true);
-    expect(await missingReviewLinkIds(reader([]))).toEqual(["reviews", "review-policy"]);
+    expect(await missingReviewLinkIds(reader([]))).toEqual([
+      "reviews",
+      "review-policy",
+    ]);
     expect(await missingReviewLinkIds(reader([], true))).toEqual(["reviews"]);
     expect(await missingReviewLinkIds(reader(fixtures(1)))).toEqual([]);
   });
@@ -391,7 +490,10 @@ describe("T-23: the policy and the footer links exist with the data", () => {
   it.each(["en", "en-gb", "de", "pl"])(
     "carries the eight sections of §8 in %s and is noindex while lawyerReviewed is false",
     (locale) => {
-      const file = readFileSync(join(ROOT, "content/legal", locale, "review-policy.md"), "utf8");
+      const file = readFileSync(
+        join(ROOT, "content/legal", locale, "review-policy.md"),
+        "utf8",
+      );
       const ids = [...file.matchAll(/\{#([a-z-]+)\}/gu)].map((m) => m[1]);
       expect(ids).toEqual([
         "who-can-review",
@@ -417,18 +519,26 @@ describe("T-23: the policy and the footer links exist with the data", () => {
     expect(isPublished("reviews")).toBe(true);
     expect(isPublished("review-policy")).toBe(true);
     const hrefs = (unavailable: string[]) =>
-      [...footerView("de", { unavailable }).columns, footerView("de", { unavailable }).legal]
+      [
+        ...footerView("de", { unavailable }).columns,
+        footerView("de", { unavailable }).legal,
+      ]
         .flatMap((group) => group.links)
         .filter((link) => link.id === "reviews" || link.id === "review-policy")
         .map((link) => ("href" in link ? link.href : undefined));
-    expect(hrefs([])).toEqual(["/de/bewertungen", "/de/rechtliches/bewertungsrichtlinie"]);
+    expect(hrefs([])).toEqual([
+      "/de/bewertungen",
+      "/de/rechtliches/bewertungsrichtlinie",
+    ]);
     expect(hrefs(["reviews", "review-policy"])).toEqual([undefined, undefined]);
   });
 });
 
 describe("T-32: the pay step's review notice", () => {
   it.each(["en", "en-gb", "de", "pl"])("exists in %s", (locale) => {
-    const messages = loadMessages(locale, ["checkout"]) as { checkout: { reviewNotice?: string } };
+    const messages = loadMessages(locale, ["checkout"]) as {
+      checkout: { reviewNotice?: string };
+    };
     expect(messages.checkout.reviewNotice).toMatch(/\S/u);
     expect(messages.checkout.reviewNotice).not.toMatch(/[–—]/u);
   });
