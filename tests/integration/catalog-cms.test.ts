@@ -436,7 +436,10 @@ describe.skipIf(server.url === undefined)(
         expect(
           await replaceDraftPrice(admin, price(id, "DE", "49.90"), deps),
         ).toMatchObject({ ok: true });
+        const before = invalidated.length;
         expect(await activate()).toMatchObject({ ok: true });
+        // T-09's structural row: a status change waits for a publish, nothing is invalidated.
+        expect(invalidated.length).toBe(before);
         const row = await productRow(id);
         expect(row.status).toBe("active");
         expect(row.first_active_at).not.toBeNull();
@@ -483,6 +486,13 @@ describe.skipIf(server.url === undefined)(
             deps,
           ),
         ).toMatchObject({ ok: true });
+        // T-09's copy row: the product's tag, its countries' and the sitemap, once.
+        const sku = (await productRow(id)).sku;
+        expect(invalidated.at(-1)).toEqual([
+          "catalog:PL",
+          `product:${sku}`,
+          "sitemap",
+        ]);
       });
 
       it("a never-live product is free: priced only in Germany, it renames, leaves and retires", async () => {
