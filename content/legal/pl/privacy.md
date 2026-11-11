@@ -2,13 +2,16 @@
 seoTitle: "Polityka prywatności"
 seoDescription: "Kto odpowiada za Państwa dane osobowe na tej stronie, co przetwarzamy dziś i po otwarciu zamówień, kto je przetwarza i jakie mają Państwo prawa."
 h1: "Polityka prywatności"
-version: "0.1.0"
+version: "0.2.0"
 effectiveFrom: "2026-10-24"
 inForce: true
 lawyerReviewed: false
 lawyerReviewedAt: null
 regime: eu
 changeLog:
+  - version: "0.2.0"
+    date: "2026-11-11"
+    summary: "Dodano Trustpilot, który wysyłałby własne zaproszenie do wystawienia opinii; wyłączone."
   - version: "0.1.0"
     date: "2026-10-24"
     summary: "Pierwsza wersja, opublikowana przed sprawdzeniem przez prawnika."
@@ -21,7 +24,7 @@ links:
     label: "Dane firmy"
 source: machine
 reviewed: false
-updatedAt: "2026-10-25"
+updatedAt: "2026-11-11"
 ---
 
 ## Kto jest odpowiedzialny {#who-is-responsible}
@@ -83,6 +86,7 @@ Korzystając z podanych wyżej danych kontaktowych, mogą Państwo zapytać nas,
 - **Sentry** odbiera raporty o błędach w swoim regionie w Unii Europejskiej.
 - **Neon** prowadzi naszą bazę danych we Frankfurcie.
 - **Google** prowadziłby Google Analytics, które jest wyłączone.
+- **Trustpilot** wysyłałby własne zaproszenie do wystawienia opinii, co jest wyłączone.
 
 ## Przekazywanie danych poza Unię Europejską {#transfers}
 

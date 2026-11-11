@@ -622,7 +622,16 @@ describe("T-21 / AC-21: the legal links in the footer", () => {
 describe("T-25 / AC-25: the notices name every processor the RoPA names", () => {
   const ropa = readFileSync(resolve(ROOT, "docs/compliance/ropa.md"), "utf8");
   /** The processor names this project uses, and the RoPA's numbered rows' Recipients cells. */
-  const KNOWN = ["Railway", "Cloudflare", "Vercel", "Sentry", "Neon", "Google"];
+  const KNOWN = [
+    "Railway",
+    "Cloudflare",
+    "Vercel",
+    "Sentry",
+    "Neon",
+    "Google",
+    // Spec 022a §8 (3) (TASK-373): RoPA row 27, inactive until `reviews.trustpilot`.
+    "Trustpilot",
+  ];
   const rows = new Map(
     ropa
       .split("\n")

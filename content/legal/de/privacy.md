@@ -2,13 +2,16 @@
 seoTitle: "Datenschutzerklärung"
 seoDescription: "Wer für Ihre Daten auf dieser Website verantwortlich ist, was wir heute und ab der ersten Bestellung verarbeiten, wer sie verarbeitet und Ihre Rechte."
 h1: "Datenschutzerklärung"
-version: "0.1.0"
+version: "0.2.0"
 effectiveFrom: "2026-10-24"
 inForce: true
 lawyerReviewed: false
 lawyerReviewedAt: null
 regime: eu
 changeLog:
+  - version: "0.2.0"
+    date: "2026-11-11"
+    summary: "Trustpilot genannt, das eine eigene Einladung zur Bewertung senden würde; ausgeschaltet."
   - version: "0.1.0"
     date: "2026-10-24"
     summary: "Erste Fassung, veröffentlicht, bevor ein Anwalt sie geprüft hat."
@@ -21,7 +24,7 @@ links:
     label: "Impressum"
 source: machine
 reviewed: false
-updatedAt: "2026-10-25"
+updatedAt: "2026-11-11"
 ---
 
 ## Wer verantwortlich ist {#who-is-responsible}
@@ -83,6 +86,7 @@ Sie können uns über die oben genannten Kontaktdaten fragen, was wir über Sie 
 - **Sentry** empfängt Fehlerberichte, in seiner Region in der Europäischen Union.
 - **Neon** betreibt unsere Datenbank in Frankfurt.
 - **Google** würde Google Analytics betreiben, das ausgeschaltet ist.
+- **Trustpilot** würde eine eigene Einladung zur Bewertung senden, was ausgeschaltet ist.
 
 ## Übermittlungen außerhalb der Europäischen Union {#transfers}
 
