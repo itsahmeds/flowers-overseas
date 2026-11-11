@@ -145,6 +145,9 @@ describe("/admin/users is bound to users.manage (AC-4)", () => {
       "src/app/admin/(signed-in)/applications/[id]/page.tsx",
       "src/app/admin/(signed-in)/applications/page.tsx",
       "src/app/admin/(signed-in)/audit/page.tsx",
+      // spec 012b §2.8 (TASK-300): any admin role reads both; the actions need `country.status`.
+      "src/app/admin/(signed-in)/countries/[iso2]/page.tsx",
+      "src/app/admin/(signed-in)/countries/page.tsx",
       "src/app/admin/(signed-in)/flags/page.tsx",
       "src/app/admin/(signed-in)/orders/[id]/page.tsx",
       "src/app/admin/(signed-in)/orders/page.tsx",

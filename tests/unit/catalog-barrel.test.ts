@@ -290,6 +290,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productCardView",
         // spec 012b AC-5 (TASK-296): a grid's half of "the database AND the running manifest".
         "productPageAdmitted",
+        // spec 012b §2.8: the go-live preflight's "n of 6" (TASK-300).
+        "productCountFloor",
         // spec 043 §5.2 (TASK-290): photographed products first, re-exported from the design system.
         "photoFirst",
         "publishedCountries",

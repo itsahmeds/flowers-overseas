@@ -48,12 +48,12 @@ const TABLE: readonly {
     tags: ["catalog:PL", "product:FO-BQ-004", "sitemap"],
   },
   {
-    row: "go-live fiscal fields (country facts)",
+    row: "go-live fiscal fields (country facts): setGoLiveFiscalFields, TASK-300",
     command: { kind: "countryFacts", iso2: "PL" },
     tags: ["catalog:PL", "corridor:PL", "country:PL"],
   },
   {
-    row: "country status flip",
+    row: "country status flip: setCountryStatus, TASK-300",
     command: { kind: "countryStatus", iso2: "PL" },
     tags: [
       "catalog:PL",

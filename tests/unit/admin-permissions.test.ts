@@ -62,6 +62,8 @@ const MATRIX: Record<string, readonly string[]> = {
   "catalogue.edit": ["admin", "content"],
   "catalogue.supplier": ["admin", "finance"],
   "price.edit": ["admin", "finance"],
+  // spec 012b §5.2 "Permission rows" (TASK-300): the go-live flip and fiscal fields, admin only.
+  "country.status": ["admin"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

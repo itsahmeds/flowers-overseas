@@ -184,6 +184,16 @@ import type {
 export const PRODUCT_COUNT_FLOOR = 6;
 
 /**
+ * The floor, read: spec 012b §2.8's go-live preflight asks for "at least six
+ * (`PRODUCT_COUNT_FLOOR`) products that can be bought" in the country, and shows "n of 6". It
+ * applies the number to saleable products, never to a listing's existence, which stays
+ * `listingExists()`'s alone (TASK-300).
+ */
+export function productCountFloor(): number {
+  return PRODUCT_COUNT_FLOOR;
+}
+
+/**
  * Products per page on a country listing (spec 008 AC-10 as amended by §14 A-founder-2026-10-24a:
  * "24 per page"; spec 004 §14 A-founder-2026-10-24a item 8; TASK-390). The hubs' size is the same
  * number (`HUB_PAGE_SIZE`), so every listing pages alike.

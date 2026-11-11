@@ -55,6 +55,8 @@ export const adminPermissions = [
   "catalogue.edit",
   "catalogue.supplier",
   "price.edit",
+  // spec 012b §5.2 (TASK-300): the go-live flip and the two go-live fiscal fields.
+  "country.status",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -103,6 +105,8 @@ export const ADMIN_PERMISSIONS: Readonly<
   "catalogue.edit": ["admin", "content"],
   "catalogue.supplier": ["admin", "finance"],
   "price.edit": ["admin", "finance"],
+  // spec 012b §5.2: the go-live flip is admin only.
+  "country.status": ["admin"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */
