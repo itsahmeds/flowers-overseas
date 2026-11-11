@@ -47,6 +47,8 @@ export const adminPermissions = [
   "risk.review",
   "risk.blocklist",
   "risk.evidence",
+  // spec 012b §5.2 (TASK-295): Publish, the rebuild of the tracked branch head.
+  "catalogue.publish",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -87,6 +89,7 @@ export const ADMIN_PERMISSIONS: Readonly<
   "risk.review": ["admin", "ops"],
   "risk.blocklist": ["admin"],
   "risk.evidence": ["admin"],
+  "catalogue.publish": ["admin", "content"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

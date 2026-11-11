@@ -21,6 +21,7 @@ export interface AdminNavItem {
     | "discounts"
     | "finance"
     | "basketReminders"
+    | "publish"
     | "flags"
     | "audit"
     | "users";
@@ -84,6 +85,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "basketReminders",
     href: "/admin/basket-reminders",
     permissions: ["finance.view"],
+    built: true,
+  },
+  // Spec 012b §2.3 (TASK-295): structural changes go out here.
+  {
+    key: "publish",
+    href: "/admin/publish",
+    permissions: ["catalogue.publish"],
     built: true,
   },
   {
