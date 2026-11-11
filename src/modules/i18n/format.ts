@@ -449,6 +449,9 @@ export function formatMinorNumber(
  * step with the short zone name ("Tue 6 Oct, 19:22 CEST", spec 018 §7 "Formatting"), and
  * `weekdayDayMonth` is the delivery line and the calendar tile ("Thursday 8 October"; no year,
  * because a tracking link lives 90 days after the delivery date).
+ *
+ * `monthName` is the month alone, standalone ("March", "März", "marzec"), added by TASK-353 for
+ * spec 018 C.7.4's reminder form (`account-reminders-*`: the month select). Read in UTC.
  */
 export type DateStyle =
   | "short"
@@ -461,12 +464,14 @@ export type DateStyle =
   | "dayMonthTimeSeconds"
   | "time"
   | "stepTime"
-  | "weekdayDayMonth";
+  | "weekdayDayMonth"
+  | "monthName";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
   deliveryDate: { weekday: "short", day: "numeric", month: "short" },
   dayMonth: { day: "numeric", month: "long" },
+  monthName: { month: "long" },
   dayMonthTime: {
     day: "numeric",
     month: "short",

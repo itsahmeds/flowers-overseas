@@ -6389,5 +6389,200 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "962e64b761961fe056e96cdc9641daaf786022d8c32cec531c6da20c71218c24"
+  },
+  "account.nav.reminders": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7971dd7526694c6ae3f2db570e44bfaa79cf30a63067a47f161b6e62c5426ef8"
+  },
+  "account.reminders.intro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "729eeeca58c7151dedfabfd5922fead07182f214aa39543b9b1e8faa77cc4053"
+  },
+  "account.reminders.consent": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8d89b306e62d576a44742458ac2e6755f66ce041df26d27d9c94116b61ca17d6"
+  },
+  "account.reminders.occasion": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "61f50a7f84fbed31d495582f0c29d24d2c3be0f522d4f960b51ba37a49cac373"
+  },
+  "account.reminders.lead": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b926862bad43465b0ed30dc7c6866568e53f2c8587f9824220726fa297905b9c"
+  },
+  "account.reminders.off": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5477f5684e5ed6cbb02c2deecd1a24330205ee6f726541d6238e00993b2bd580"
+  },
+  "account.reminders.offConfirm": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8d63a8643909a197baa3e6685e86935d3ce15fef9bd301462aabef4597421d73"
+  },
+  "account.reminders.unsubscribeDone": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ded30ea5d108f30aa999c6539d87a572bed9c7afd188d25499fe49fe863f9c87"
+  },
+  "account.reminders.addTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "117583c74f0418245b07cc69d5700c81c6389fda8a2f4e299d6aa9eb5daed3dc"
+  },
+  "account.reminders.occasionLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f68e0b1ef1269baeea223f00199f2e45e5f8d4a4bddd585d7074efce4c33c435"
+  },
+  "account.reminders.forLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ca15ebc05a3c5c1348753b209c4452c54022dbe565d9943b11c795e3af9eb0b0"
+  },
+  "account.reminders.optional": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ec91fdd9256cb75ae611249b50cb7eb16533f0fa91b86239ec1d439a1ea033b8"
+  },
+  "account.reminders.forNone": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "08ab614f60d4b9857e88c5afdc8c5ccd086a184b7e40bcc0e0ddf724b1d9f580"
+  },
+  "account.reminders.dayLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8f2364e11b8be3ff008f32b3dedb54e659362429bcc9e3eb6acb6070de4ffbff"
+  },
+  "account.reminders.monthLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "310ca503ef36f177ddbc760463fcaec1edc6eca12bfd590ad7bb244b31e59543"
+  },
+  "account.reminders.leadLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0f6e5a36c56ec6d485dfac3a1d0618233ad68347687f2883a989c752a3478def"
+  },
+  "account.reminders.save": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3da7c82d2f65f0df760e3b1a35072d02e2ff2adfeed7f2c7d8b473ae9ab2d3f5"
+  },
+  "account.reminders.saved": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fca046ccd586c67f7fe0b3c12c29873a8abf9376f7cd514fc6272ec03b2de0b3"
+  },
+  "account.reminders.empty": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4be7460227da7daace83415a093937938e8a917fcb96e0f95991ea8ed00e4702"
+  },
+  "account.reminders.line": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f7e216328d4cd76d79592468130f3413f009dc595f12698b0c3cf9e7a1d31562"
+  },
+  "account.reminders.lineFor": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fafe589d32b205cbdeeb0c522378fcf151b99ab11bff5eba2540a1b39782a839"
+  },
+  "account.reminders.remove": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
+  },
+  "account.reminders.removeLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "85a306041429f5158925fd0c73964ebbf9199ee60814d98cf67ab4d60126dea9"
+  },
+  "account.reminders.offTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "704104c0d3fd9cd1855cd18046f998de76202a0d5973c38978383a62d7264332"
+  },
+  "account.reminders.keep": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0d472b0953093973c51a8d2a24f2ce0a5c17967305820fe66b576a8fb0f824f4"
+  },
+  "account.reminders.errorConsent": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "cdf24edd9c5200843df468ed0c946eff2cf13b153af891752d8062fe42ed48e9"
+  },
+  "account.reminders.errorDate": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ebf20307940968e42d8c648f90e92650b72ae8457648bad7e708d03ecf6540a4"
+  },
+  "account.reminders.limit": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5693772f2f7e3c53258d6c4dcbff880fdb66c1385e911019e9c97fb6f8aafaf7"
+  },
+  "account.reminders.unsubscribeTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2f692040c38e904b1b54db0a022ab331c05dee609b4d630c987199d3fbea99ea"
+  },
+  "account.reminders.unsubscribeButton": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bd85a452f89c450ad5b001f8daefce9f8d39ac5f5762b6b3cc4bc655385281d1"
+  },
+  "account.reminders.unsubscribeDoneTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c6f8e6d8e6e6b127e10391f4069601cee195f1f439d79e7575198810acac8e4e"
+  },
+  "emails.account.reminder.subject": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f81a8c380f85c058cddf93cfd4ab13eacf466b3e6f676d47eb888bcc0d56874c"
+  },
+  "emails.account.reminder.occasionTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "61f50a7f84fbed31d495582f0c29d24d2c3be0f522d4f960b51ba37a49cac373"
+  },
+  "emails.account.reminder.occasion": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "dc32bbb1a9b588cc1f90732057ee7b1ead3c60a4a0eda87cbdcb6ad1befd5981"
+  },
+  "emails.account.reminder.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2f2af44309c2415071e413dd1e51db83454d7f46629ac0f5bffcb29f99f9527a"
+  },
+  "emails.account.reminder.time": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4b5f8a1ac90fa087dc0fb5b6444e177e497df91a43f9e225cf92d4422699405f"
+  },
+  "emails.account.reminder.button": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "67365fd526e0b1747973be9e31ecb6a622a97d5e0796e2340206b36dfc6d9274"
+  },
+  "emails.account.reminder.why": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "527329b03f5b53bb505fea3ba3439cb25924e042bdfc8c0bb9bf30f61796f774"
+  },
+  "emails.account.reminder.stop": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bd85a452f89c450ad5b001f8daefce9f8d39ac5f5762b6b3cc4bc655385281d1"
   }
 }

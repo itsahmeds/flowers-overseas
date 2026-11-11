@@ -309,7 +309,7 @@ describe("the route files, as Next loads them", () => {
     // consumes them; spec 030a §5.2 (TASK-364) adds payouts.close and payouts.watch, each under a
     // key unique for an hour; spec 013 §11 (TASK-264) one payments.monitor under its own key.
     // Spec 021 (TASK-493) adds one risk.monitor a minute.
-    expect(enqueue).toHaveBeenCalledTimes(14);
+    expect(enqueue).toHaveBeenCalledTimes(15);
     expect(enqueue.mock.calls.map((call) => call.slice(1))).toEqual([
       ["outbox.dispatch", {}, { requestId: "system:jobs.tick" }],
       ["payments.production_start", {}, { requestId: "system:jobs.tick" }],
@@ -401,7 +401,23 @@ describe("the route files, as Next loads them", () => {
           singletonSeconds: 600,
         },
       ],
+      // Spec 018 §14 C.7.4 (TASK-353): the occasion reminders, once per UTC day, from 07:00.
+      [
+        "reminders.daily",
+        {},
+        {
+          requestId: "system:jobs.tick",
+          singletonKey: "reminders.daily",
+          singletonSeconds: 86_400,
+          startAfter: expect.any(Date),
+        },
+      ],
     ]);
+    const daily = enqueue.mock.calls.find(
+      (call) => call[1] === "reminders.daily",
+    )?.[3] as { startAfter: Date } | undefined;
+    const today = new Date().toISOString().slice(0, 10);
+    expect(daily?.startAfter.toISOString()).toBe(`${today}T07:00:00.000Z`);
     for (const order of enqueue.mock.invocationCallOrder) {
       expect(order).toBeLessThan(tick.mock.invocationCallOrder[0] ?? 0);
     }

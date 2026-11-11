@@ -2,7 +2,8 @@
  * The account pages' request helpers (spec 018 §14 A-founder-2026-10-22 C.5, C.13, AC-25, AC-34;
  * TASK-344): the `account.open` flag for a locale, the locale of a route, the order modes the
  * account lists in this environment, and the buyer's RLS-scoped runner. TASK-352 adds the
- * `account.recipients` flag, the account runner of `@/modules/customers` and the two page paths.
+ * `account.recipients` flag, the account runner of `@/modules/customers` and the two page paths;
+ * TASK-353 the `account.reminders` flag, the `system` runner for the reminder consent and two paths.
  */
 import { randomUUID } from "node:crypto";
 
@@ -52,6 +53,39 @@ export async function recipientsOpen(): Promise<boolean> {
   }
 }
 
+/**
+ * Whether occasion reminders are on (spec 018 §14 C.7.4, C.11; TASK-353): `account.reminders`,
+ * global. A flag that cannot be read is off: the page answers 404 and the nav item is absent.
+ */
+export async function remindersOpen(): Promise<boolean> {
+  try {
+    return await isEnabled("account.reminders");
+  } catch (error) {
+    logger.warn(
+      { error_name: error instanceof Error ? error.name : "unknown" },
+      "account.flag_unreadable",
+    );
+    return false;
+  }
+}
+
+/**
+ * The `system` database context as the customers module's runner (TASK-353): only for the
+ * reminder consent columns and `consent_log`, which a buyer session may not write, and only for
+ * the customer the server resolved from the session.
+ */
+export const asSystemAccount: AccountRunner = async (fn) => {
+  const { withSystemContext } = await import("@/lib/db");
+  return withSystemContext("account.reminders", (db) =>
+    fn({
+      async execute(query) {
+        const rows: unknown = await db.execute(query);
+        return rows as readonly Record<string, unknown>[];
+      },
+    }),
+  );
+};
+
 /** The route's locale when the site serves it, else `null` (the page answers 404). */
 export function accountLocale(requested: string): LocaleCode | null {
   const code = routableLocale(requested)?.code;
@@ -82,6 +116,16 @@ export function detailsPath(locale: LocaleCode): string {
 /** `/{locale}/account/recipients`. */
 export function recipientsPath(locale: LocaleCode): string {
   return `/${locale}/account/recipients`;
+}
+
+/** `/{locale}/account/reminders`. */
+export function remindersPath(locale: LocaleCode): string {
+  return `/${locale}/account/reminders`;
+}
+
+/** `/{locale}/account/reminders/unsubscribe`: the stop page, no session needed (C.13). */
+export function reminderUnsubscribePath(locale: LocaleCode): string {
+  return `/${locale}/account/reminders/unsubscribe`;
 }
 
 /** `/{locale}/account/orders/{reference}`. */

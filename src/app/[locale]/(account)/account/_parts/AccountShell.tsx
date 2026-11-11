@@ -2,9 +2,9 @@
  * The signed-in account's frame (`account-orders-*`, `account-order-detail-*` "Shell"; spec 018
  * §14 C.13; TASK-344): a 232 px side list beside the content from `lg`, the same list as a row of
  * chips under the header on a phone. Orders, Your details, Saved recipients while
- * `account.recipients` is on (TASK-352), then Sign out, a `POST` button that works with JavaScript
- * off. Reminders and Privacy join with the tasks that build their pages (TASK-353, TASK-345): a
- * link to a page that does not answer is not drawn (spec 004 §14 A20).
+ * `account.recipients` is on (TASK-352), Reminders while `account.reminders` is on (TASK-353), then
+ * Sign out, a `POST` button that works with JavaScript off. Privacy joins with the task that builds
+ * its page (TASK-345): a link to a page that does not answer is not drawn (spec 004 §14 A20).
  */
 import { getTranslations } from "next-intl/server";
 import type { ReactElement, ReactNode } from "react";
@@ -13,15 +13,22 @@ import type { LocaleCode } from "@/config/locales";
 import { accountPath, BUYER_AUTH_PATHS } from "@/lib/auth/buyer";
 import { PAGE_FRAME } from "@/modules/ui/primitives/layout";
 
-import { detailsPath, recipientsOpen, recipientsPath } from "./account-request";
+import {
+  detailsPath,
+  recipientsOpen,
+  recipientsPath,
+  remindersOpen,
+  remindersPath,
+} from "./account-request";
 
 /** The account's pages, in the side list's order. */
-export type AccountPage = "orders" | "details" | "recipients";
+export type AccountPage = "orders" | "details" | "recipients" | "reminders";
 
 const NAV_KEY = {
   orders: "nav.orders",
   details: "nav.details",
   recipients: "nav.recipients",
+  reminders: "nav.reminders",
 } as const satisfies Record<AccountPage, string>;
 
 const ITEM = [
@@ -48,6 +55,9 @@ export async function AccountShell({
     { page: "details", href: detailsPath(locale) },
     ...((await recipientsOpen())
       ? [{ page: "recipients" as const, href: recipientsPath(locale) }]
+      : []),
+    ...((await remindersOpen())
+      ? [{ page: "reminders" as const, href: remindersPath(locale) }]
       : []),
   ];
   return (
