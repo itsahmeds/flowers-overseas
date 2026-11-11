@@ -29,11 +29,11 @@ import { RatingStars } from "./RatingStars.tsx";
 /** The reasons a comment can be withheld for (spec 022a §5.1); each has its own label. */
 export type WithheldReason = "personal_data" | "abuse" | "illegal";
 
-const WITHHELD_KEY: Readonly<Record<WithheldReason, string>> = {
+const WITHHELD_KEY = {
   personal_data: "card.withheldReason.personalData",
   abuse: "card.withheldReason.abuse",
   illegal: "card.withheldReason.illegal",
-};
+} as const satisfies Readonly<Record<WithheldReason, string>>;
 
 /** One published review as a card shows it: `public_review`'s columns, nothing private. */
 export interface ReviewCardData {

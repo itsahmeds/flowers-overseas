@@ -155,6 +155,7 @@ const FAKE_FIFTH: LocaleConfig = {
     delivery: "delivery",
     imprint: "imprint",
     search: "search",
+    reviews: "reviews",
   },
 };
 

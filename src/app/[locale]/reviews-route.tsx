@@ -58,7 +58,7 @@ import {
 
 /** The locales the page may render in: every routable one (the set is the same in each). */
 export function reviewsLocales(): string[] {
-  return routableLocaleCodes();
+  return [...routableLocaleCodes()];
 }
 
 /** The page's own address in `locale`: `/{locale}/{reviews}`. */
