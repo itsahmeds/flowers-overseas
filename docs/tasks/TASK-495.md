@@ -64,6 +64,10 @@ here.
 - 2026-11-11: integration suite `risk-after-routing` (24) green; stale reds fixed in `admin-unauthenticated` (route context) and `outbox-dispatcher` (analytics.ga4 rows); site velocity alert and daily counter line; runbook, LIA, RoPA rows 23 and 24, records unit tests.
 - 2026-11-11: rebased on main (TASK-352), map regenerated; typecheck, touched unit, contract and integration suites green; clean-env build green in the build slot (exit 0). Ready.
 
+## Copy approval
+
+- founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-495.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 021 (TASK-495); the founder did not read this text: the 57 admin texts of spec 021 (`admin.risk.*`: post-routing decisions, the evidence button and the evidence pack's captions), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
