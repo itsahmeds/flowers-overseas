@@ -46,6 +46,10 @@ here.
 - 2026-11-11: tests green (unit 11 + 1, integration 10 on a local PG16); codebase map regenerated; `record-approval-299.py` written. Next: clean-env build in the build slot, ready.
 - 2026-11-11: clean-env staging build exit 0 in the build slot; rebased on `39502e40c`; the two admin scans name the new pages and keys. Ready.
 
+## Copy approval
+
+- founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-299.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 012b (TASK-299); the founder did not read this text: the 143 admin texts of spec 012b's photos (`admin.media.*`, `admin.catalogue.photos.*`, the photos tab and the nav entry), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
