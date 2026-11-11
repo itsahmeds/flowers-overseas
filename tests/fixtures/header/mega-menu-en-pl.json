@@ -142,7 +142,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 22900,
+            "amountMinor": 19900,
             "currency": "PLN"
           },
           "priceLabelKey": "catalog.price.inclusive",
@@ -319,7 +319,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 30900,
+            "amountMinor": 26900,
             "currency": "PLN"
           },
           "priceLabelKey": "catalog.price.inclusive",
@@ -377,7 +377,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 30900,
+            "amountMinor": 26900,
             "currency": "PLN"
           },
           "priceLabelKey": "catalog.price.inclusive",

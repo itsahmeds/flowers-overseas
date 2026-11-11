@@ -10,6 +10,7 @@
  * nothing about the token. Any other body answers 400 and writes nothing; `GET` answers 405 (the
  * confirm page is `/{locale}/account/reminders/unsubscribe`). The token is never logged.
  */
+import { TRANSACTIONAL_ROBOTS_HEADERS } from "@/modules/seo";
 import { createTranslator } from "next-intl";
 import { z } from "zod";
 
@@ -22,7 +23,7 @@ import { systemAccountRunner } from "./system-runner";
 /** The headers of every answer: never cached, never indexed, no referrer. */
 export const REMINDER_UNSUBSCRIBE_HEADERS: Readonly<Record<string, string>> = {
   "cache-control": "no-store, private",
-  "x-robots-tag": "noindex, nofollow",
+  ...TRANSACTIONAL_ROBOTS_HEADERS,
   "referrer-policy": "no-referrer",
 };
 

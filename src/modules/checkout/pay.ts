@@ -24,6 +24,7 @@ import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
 import { logger } from "@/lib/logger";
+import { TRANSACTIONAL_ROBOTS_HEADERS } from "@/modules/seo";
 
 import { loadDraft, withDraftConnection } from "./draft";
 import { paymentStepFor } from "./payment-step";
@@ -191,7 +192,7 @@ export async function runPaymentDeclined(
 /** The three headers of AC-4, on every answer of the return route. */
 export const PAYMENT_RETURN_HEADERS = Object.freeze({
   "cache-control": "no-store",
-  "x-robots-tag": "noindex, nofollow",
+  ...TRANSACTIONAL_ROBOTS_HEADERS,
   "referrer-policy": "no-referrer",
 });
 

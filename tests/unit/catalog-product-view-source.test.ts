@@ -195,6 +195,9 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
     "src/modules/catalog/listing.ts",
     "src/modules/catalog/product.ts",
     "src/modules/checkout/pricing.ts",
+    // The florist inbox's demo order (TASK-214) prices its bouquet through the same provider;
+    // listed by TASK-522.
+    "src/modules/orders/demo/place-demo-order.ts",
   ],
   dateSurcharges: ["src/modules/catalog/product.ts"],
   deliveryWindow: ["src/modules/catalog/product.ts"],

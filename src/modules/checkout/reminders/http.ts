@@ -11,6 +11,7 @@
  *    cookie, session, CSRF token or Origin check: the mail provider posts it). The same 200 body
  *    for a known and an unknown token; any other body answers 400 and writes nothing.
  */
+import { TRANSACTIONAL_ROBOTS_HEADERS } from "@/modules/seo";
 import { z } from "zod";
 
 import { logger } from "@/lib/logger";
@@ -48,7 +49,7 @@ export const defaultReminderTransaction: ReminderTransaction = async (
 /** The headers every reminder link response carries (AC-16, AC-31). */
 export const REMINDER_LINK_HEADERS: Readonly<Record<string, string>> = {
   "cache-control": "no-store, private",
-  "x-robots-tag": "noindex, nofollow",
+  ...TRANSACTIONAL_ROBOTS_HEADERS,
   "referrer-policy": "no-referrer",
 };
 

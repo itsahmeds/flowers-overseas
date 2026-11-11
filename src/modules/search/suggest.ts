@@ -13,6 +13,7 @@
  * noindex`. No header, cookie or IP is read (ADR-0006): the same words, locale and `to` give every
  * visitor the same answer.
  */
+import { UNLISTED_ROBOTS_HEADERS } from "@/modules/seo";
 import { SEARCH_CONFIG, type SearchConfig } from "@/config/search";
 
 import { searchEngine } from "./default-engine";
@@ -23,7 +24,7 @@ import { SuggestRequestSchema } from "./schemas";
 /** The headers on every answer of the route, the refusals included. */
 export const SUGGEST_HEADERS: Readonly<Record<string, string>> = {
   "Cache-Control": "private, no-store",
-  "X-Robots-Tag": "noindex",
+  ...UNLISTED_ROBOTS_HEADERS,
 };
 
 export interface SuggestRouteDeps {

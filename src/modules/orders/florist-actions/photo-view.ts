@@ -18,6 +18,8 @@ import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { TRANSACTIONAL_ROBOTS_HEADERS } from "@/modules/seo";
+
 import { withDbContext } from "@/lib/db";
 import type { ObjectLocation } from "@/lib/storage";
 
@@ -72,7 +74,7 @@ export async function floristDeliveryPhotoUrl(
 const PHOTO_HEADERS = {
   "Content-Type": "image/jpeg",
   "Cache-Control": "private, no-store",
-  "X-Robots-Tag": "noindex, nofollow",
+  ...TRANSACTIONAL_ROBOTS_HEADERS,
   "Referrer-Policy": "no-referrer",
   "X-Content-Type-Options": "nosniff",
 } as const;

@@ -28,6 +28,20 @@ export const TRANSACTIONAL_ROBOTS = "noindex,nofollow" as const;
 /** The `X-Robots-Tag` value of a transactional page. */
 export const TRANSACTIONAL_ROBOTS_HEADER = "noindex, nofollow" as const;
 
+/**
+ * The same header as a response-headers entry, for a route handler that answers a transactional
+ * request itself (the pay step's return route, spec 013 AC-4), so no robots literal is spelled
+ * outside this module (spec 007 AC-14).
+ */
+export const TRANSACTIONAL_ROBOTS_HEADERS = Object.freeze({
+  "x-robots-tag": TRANSACTIONAL_ROBOTS_HEADER,
+});
+
+/** `X-Robots-Tag: noindex` alone, as a headers entry: the search suggest route (spec 045). */
+export const UNLISTED_ROBOTS_HEADERS = Object.freeze({
+  "x-robots-tag": "noindex",
+});
+
 /** Next's `metadata.robots` object form of the same directive (the checkout's pages use it). */
 export const TRANSACTIONAL_ROBOTS_META = {
   index: false,
