@@ -14,13 +14,13 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +26 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +129 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +131 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | `unit/account-details-form.test.ts` |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/checkout-discounts.test.tsx` +2 |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +49 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +147 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +50 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +148 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +25 |
 | `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
@@ -29,7 +29,7 @@ task actually touches.
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +19 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `risk` | Public barrel for `risk`: fraud pre-checks… | 021 | `unit/risk-core.test.ts` |
-| `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +11 |
+| `search` | The only import path into the search module:… | 045 | `unit/existence.test.ts`, `unit/search-config.test.ts` +12 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +77 |
 
@@ -264,7 +264,7 @@ task actually touches.
 | `admin/(signed-in)/orders/[id]/risk-panel.tsx` | The order page's Risk card: the last check, the… | 021 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
-| `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
+| `admin/(signed-in)/page.tsx` | GET /admin: the three counters, plus spec… | 012 |
 | `admin/(signed-in)/partners/[code]/contracts/[id]/download/route.ts` | GET /admin/partners/[code]/contracts/[id]/downlo… | 030 |
 | `admin/(signed-in)/partners/[code]/contracts/actions.ts` | The Contracts tab's edit and withdraw actions,… | 030 |
 | `admin/(signed-in)/partners/[code]/contracts/loading.tsx` | The florist Contracts tab's loading state: a… | 030 |
@@ -290,6 +290,8 @@ task actually touches.
 | `admin/(signed-in)/payouts/outcome.ts` | The payouts pages' outcome in the query string:… | 030 |
 | `admin/(signed-in)/payouts/page.tsx` | GET /admin/payouts: five payout groups, open… | 030 |
 | `admin/(signed-in)/payouts/view.tsx` | The payout pages' shared view pieces: money,… | 030 |
+| `admin/(signed-in)/publish/actions.ts` | POST /admin/publish: the Publish button's… | 012 |
+| `admin/(signed-in)/publish/page.tsx` | GET /admin/publish: what a publish would add… | 012 |
 | `admin/(signed-in)/risk/[reviewId]/page.tsx` | GET /admin/risk/[reviewId]: one review, its… | 021 |
 | `admin/(signed-in)/risk/actions.ts` | /admin/risk decisions: approve, cancel and… | 021 |
 | `admin/(signed-in)/risk/page.tsx` | GET /admin/risk: open risk reviews by deadline,… | 021 |
@@ -367,7 +369,8 @@ task actually touches.
 | `attestations-import.ts` | `attestations:import` | Recorded approvals into the review ledger… |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the… |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec… |
-| `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next… |
+| `build.ts` | `build` | `pnpm build`: the ECB snapshot step, `next… |
+| `cache-warm.ts` | `cache:warm` | `pnpm cache:warm`: request each given URL once… |
 | `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs,… |
 | `catalogue-parity-catalogue.ts` | — | `pnpm catalogue:parity`, the catalogue and… |
 | `catalogue-parity.ts` | `catalogue:parity` | Static vs database registry parity, read-only… |
@@ -394,6 +397,7 @@ task actually touches.
 | `decisions-log.ts` | `decisions:log` | Decision files collected into… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11… |
 | `env-check.ts` | `env:check` | `pnpm env:check` |
+| `existence-manifest.ts` | — | The existence manifest step of `pnpm build`:… |
 | `florists-demo-member.ts` | `florists:demo-member` | Link or unlink an email to a seeded demo… |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed… |
 | `fonts/build-wordmark.ts` | `fonts:wordmark` | `pnpm fonts:wordmark` — outlines the wordmark… |
@@ -434,8 +438,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 535 |
-| `tests/integration/` | 119 |
+| `tests/unit/` | 540 |
+| `tests/integration/` | 120 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |
