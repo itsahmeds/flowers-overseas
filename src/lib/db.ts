@@ -103,6 +103,19 @@ function buildDatabaseUrl(
 }
 
 /**
+ * Whether this deployment carries the build's database login (spec 012b §12 founder action 4):
+ * `DATABASE_BUILD_URL` holds a `postgres://` connection string. The cutover's composition roots
+ * read the database only then (`cmsSourceFor()` in `src/config/countries.ts`; TASK-294's staging
+ * fallback). Answers a boolean and never the value, so the key stays read by this module alone.
+ */
+export function buildDatabaseConfigured(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+): boolean {
+  return buildDatabaseUrlSchema.safeParse(environment[BUILD_DATABASE_URL_KEY])
+    .success;
+}
+
+/**
  * The per-request context, validated at the boundary like every other input (`CLAUDE.md`: "Zod at
  * every boundary"). `requestId` is the `x-request-id` correlation id of spec 001 §5.2.
  */

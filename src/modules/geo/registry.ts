@@ -26,7 +26,8 @@ import {
   COUNTRIES,
   type CountryConfig,
   type CountryOperations,
-  DATABASE_REGISTRY_ENVIRONMENTS,
+  type CmsSource,
+  cmsSourceFor,
   countryStatuses,
 } from "../../config/countries.ts";
 
@@ -36,21 +37,19 @@ export interface CountryRegistryProvider {
 }
 
 /** Where a deployment's destination registry comes from (spec 012b AC-3). */
-export type CountryRegistrySource = "static" | "database";
+export type CountryRegistrySource = CmsSource;
 
 /**
- * The composition root's rule (spec 012b §2.2, AC-3; TASK-294): `production`, `staging` and
- * `preview` serve the database's registry (`dbCountryRegistry`), `development` and `test` the
- * file's. One list, `DATABASE_REGISTRY_ENVIRONMENTS`, which the file registry's own guard reads too.
+ * The composition root's rule (spec 012b §2.2, AC-3; TASK-294), `cmsSourceFor()`: `production`,
+ * `staging` and `preview` serve the database's registry (`dbCountryRegistry`) while the
+ * deployment carries the build login (`BUILD_DATABASE_URL_KEY`), the file's otherwise and in
+ * `development` and `test`. The catalogue's composition root reads the same rule.
  */
 export function countryRegistrySourceFor(
   environment: string,
+  buildDatabaseConfigured: boolean,
 ): CountryRegistrySource {
-  return (DATABASE_REGISTRY_ENVIRONMENTS as readonly string[]).includes(
-    environment,
-  )
-    ? "database"
-    : "static";
+  return cmsSourceFor(environment, buildDatabaseConfigured);
 }
 
 /** The file registry, as a provider. */

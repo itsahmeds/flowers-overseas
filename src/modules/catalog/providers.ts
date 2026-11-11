@@ -35,9 +35,10 @@ import type {
 
 import { appEnvironment } from "@/lib/env.schema";
 
-import { DATABASE_REGISTRY_ENVIRONMENTS } from "@/config/countries";
+import { type CmsSource, cmsSourceFor } from "@/config/countries";
 
 import {
+  buildDatabaseConfigured,
   dbCatalogueProvider,
   dbPriceProvider,
   dbSaleabilityProvider,
@@ -179,20 +180,20 @@ const DATABASE_PROVIDERS: CatalogProviders = {
 };
 
 /** Where the catalogue and prices come from in an environment (spec 012b AC-3). */
-export type CatalogSource = "static" | "database";
+export type CatalogSource = CmsSource;
 
 /**
- * The composition root's rule: `production`, `staging` and `preview` read the database,
- * `development` and `test` the repository. The same three environments as the country
- * registry's (`DATABASE_REGISTRY_ENVIRONMENTS`), so a deployment never prices from one source
- * and lists destinations from the other.
+ * The composition root's rule, `cmsSourceFor()`: `production`, `staging` and `preview` read the
+ * database while the deployment carries the build login (`BUILD_DATABASE_URL_KEY`), and the
+ * repository otherwise, as `development` and `test` always do. The country registry reads the same rule
+ * (`countryRegistrySourceFor()`), so a deployment never prices from one source and lists
+ * destinations from the other. `databaseConfigured` is the test seam.
  */
-export function catalogSourceFor(environment: string): CatalogSource {
-  return (DATABASE_REGISTRY_ENVIRONMENTS as readonly string[]).includes(
-    environment,
-  )
-    ? "database"
-    : "static";
+export function catalogSourceFor(
+  environment: string,
+  databaseConfigured: boolean = buildDatabaseConfigured(),
+): CatalogSource {
+  return cmsSourceFor(environment, databaseConfigured);
 }
 
 /**
@@ -203,21 +204,29 @@ export function catalogSourceFor(environment: string): CatalogSource {
 export const SALEABILITY_ENVIRONMENTS = ["production", "staging"] as const;
 
 /** The set `catalogSourceFor()` names for `environment`. */
-export function providersFor(environment: string): CatalogProviders {
-  return catalogSourceFor(environment) === "database"
+export function providersFor(
+  environment: string,
+  databaseConfigured: boolean = buildDatabaseConfigured(),
+): CatalogProviders {
+  return catalogSourceFor(environment, databaseConfigured) === "database"
     ? DATABASE_PROVIDERS
     : STATIC_PROVIDERS;
 }
 
 /**
  * The saleability term for `environment` (spec 012b §2.5, AC-39): the `saleable_offer` view in
- * `production` and `staging`, absent everywhere else, where a demo florist's coverage is what the
- * demo shop shows (spec 016's mode pairing) and `isSaleable()` answers `true`.
+ * `production` and `staging` while they read the database catalogue, absent everywhere else,
+ * where a demo florist's coverage is what the demo shop shows (spec 016's mode pairing) and
+ * `isSaleable()` answers `true`. A deployment on the file catalogue (no build login)
+ * composes no term, as before the cutover: one switch turns the whole cutover on.
  */
 export function saleabilityFor(
   environment: string,
+  databaseConfigured: boolean = buildDatabaseConfigured(),
 ): SaleabilityProvider | undefined {
-  return (SALEABILITY_ENVIRONMENTS as readonly string[]).includes(environment)
+  return (SALEABILITY_ENVIRONMENTS as readonly string[]).includes(
+    environment,
+  ) && catalogSourceFor(environment, databaseConfigured) === "database"
     ? dbSaleabilityProvider
     : undefined;
 }
@@ -258,9 +267,10 @@ let swapped: CatalogProviders | undefined;
  * The composition root: the single place that decides which implementation the module reads.
  *
  * Spec 012b's cutover (TASK-294, AC-3): the database providers in `production`, `staging` and
- * `preview`, the repository's in `development` and `test` (`catalogSourceFor()`). The swap changes
- * no file outside `src/modules/catalog` (spec 005 AC-27). There is no fallback: a database read
- * that fails, fails the render or the build (spec 012b §2.0 item 2).
+ * `preview` once the deployment carries the build login (`BUILD_DATABASE_URL_KEY`), the
+ * repository's otherwise and in `development` and `test` (`catalogSourceFor()`). The swap changes no file outside
+ * `src/modules/catalog` (spec 005 AC-27). Once on the database, a read that fails fails the
+ * render or the build: no per-read fallback to the files (spec 012b §2.0 item 2).
  */
 export function catalogProviders(): CatalogProviders {
   // A fresh object per call, as before the hook existed: a caller that assigned to the answer

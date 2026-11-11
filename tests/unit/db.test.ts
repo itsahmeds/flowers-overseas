@@ -87,7 +87,10 @@ describe("the exported surface (AC-3)", () => {
       .map(([name]) => name)
       .sort();
 
+    // `buildDatabaseConfigured` answers a boolean about the build login, never a client or a
+    // value: the cutover's switch (spec 012b AC-3, TASK-294's staging fallback).
     expect(functions).toEqual([
+      "buildDatabaseConfigured",
       "withAdminContext",
       "withDbContext",
       "withSystemContext",
@@ -439,6 +442,20 @@ describe("the build-phase client (spec 012b AC-4)", () => {
       expect(statements).toEqual([]);
     },
   );
+
+  it("answers whether the build login is configured, as a boolean, without connecting", async () => {
+    const { buildDatabaseConfigured } = await freshDb({});
+    expect(buildDatabaseConfigured({ DATABASE_BUILD_URL: BUILD_URL })).toBe(
+      true,
+    );
+    expect(buildDatabaseConfigured({})).toBe(false);
+    expect(
+      buildDatabaseConfigured({
+        DATABASE_BUILD_URL: "https://db.example.test",
+      }),
+    ).toBe(false);
+    expect(poolUrls).toEqual([]);
+  });
 
   it("leaves db.ts the only module under src/ that reads DATABASE_BUILD_URL (railway.ts only allows the name)", () => {
     const srcDir = resolve(__dirname, "../../src");

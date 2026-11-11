@@ -13,6 +13,10 @@
  *    `production`, `staging` and `preview` it reads `dbCountryRegistry` and installs it; a failed
  *    read throws, and with no registry installed every `countryConfig()` read throws too, so a
  *    build or a server never serves the file's registry by accident (§2.0 item 2: no fallback);
+ *  - **no build login yet**: in those environments without the build login
+ *    (`BUILD_DATABASE_URL_KEY`; `cmsSourceFor()`, the staging fallback of TASK-294) it installs the file's registry on purpose and logs one
+ *    warning line naming the missing variable, so the build passes and the log says which source
+ *    the deployment serves;
  *  - **change**: a `before-invalidate` hook (`src/lib/cache.ts`) re-reads and re-installs the
  *    registry before `invalidate()` revalidates any page, whenever its tags include a
  *    `country:{iso2}` tag (spec 012b §5.4: a status flip and the fiscal fields carry one), so the
@@ -23,8 +27,11 @@
  */
 import { appEnvironment } from "@/lib/env.schema";
 import { onBeforeInvalidate } from "@/lib/cache";
+import { BUILD_DATABASE_URL_KEY, buildDatabaseConfigured } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import {
   type CountryConfig,
+  DATABASE_REGISTRY_ENVIRONMENTS,
   installCountryRegistry,
   uninstallCountryRegistry,
 } from "@/config/countries";
@@ -33,6 +40,7 @@ import {
   type CountryRegistryProvider,
   type CountryRegistrySource,
   countryRegistrySourceFor,
+  staticCountryRegistry,
 } from "../registry";
 import { dbCountryRegistry } from "./registry";
 
@@ -58,8 +66,26 @@ export async function primeCountryRegistry(
   environment: Readonly<Record<string, string | undefined>> = process.env,
   provider: CountryRegistryProvider = dbCountryRegistry,
 ): Promise<CountryRegistrySource> {
-  const source = countryRegistrySourceFor(appEnvironment(environment));
-  if (source === "static") return source;
+  const app = appEnvironment(environment);
+  const source = countryRegistrySourceFor(
+    app,
+    buildDatabaseConfigured(environment),
+  );
+  if (source === "static") {
+    if ((DATABASE_REGISTRY_ENVIRONMENTS as readonly string[]).includes(app)) {
+      // The staging fallback (TASK-294): the file's registry, installed on purpose, and said.
+      await refreshCountryRegistry(staticCountryRegistry);
+      logger.warn(
+        {
+          event: "catalogue.source_fallback",
+          environment: app,
+          missingVariable: BUILD_DATABASE_URL_KEY,
+        },
+        "the catalogue, prices and countries are served from the repository files: this deployment has no build database login (spec 012b §12 founder action 4)",
+      );
+    }
+    return source;
+  }
   await refreshCountryRegistry(provider);
   unhook?.();
   unhook = onBeforeInvalidate(async (tags) => {

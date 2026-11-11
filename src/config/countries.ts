@@ -439,6 +439,33 @@ export const DATABASE_REGISTRY_ENVIRONMENTS = [
   "preview",
 ] as const;
 
+/** Where a deployment's catalogue, prices and destination registry come from (spec 012b AC-3). */
+export type CmsSource = "static" | "database";
+
+/**
+ * The cutover's one rule, shared by the catalogue, price, saleability and country composition
+ * roots so that a deployment never prices from one source and lists destinations from the other.
+ *
+ * The database in `DATABASE_REGISTRY_ENVIRONMENTS`, **while the deployment carries the build's
+ * database login** (`BUILD_DATABASE_URL_KEY`, spec 012b §12 founder action 4;
+ * `buildDatabaseConfigured()` in `src/lib/db.ts`, the only module that reads the key). Without it the deployment, build and
+ * server alike, keeps serving this file and the authored dataset, and says so in its log
+ * (`src/modules/geo/db/runtime.ts`). That is the staging fallback the orchestrator ordered on
+ * 2026-11-11 so a build without the variable still passes; it departs from §2.0 item 2's "no
+ * fallback" and is recorded in `docs/tasks/TASK-294.md` (Escalations). Build and server decide on
+ * the same variable, so the pages a build prerendered and the prices checkout charges come from
+ * one source in either state.
+ */
+export function cmsSourceFor(
+  environment: string,
+  buildDatabaseConfigured: boolean,
+): CmsSource {
+  return buildDatabaseConfigured &&
+    (DATABASE_REGISTRY_ENVIRONMENTS as readonly string[]).includes(environment)
+    ? "database"
+    : "static";
+}
+
 /**
  * The slot the database registry is installed in, on `globalThis` so that every bundle of one
  * server process (Next compiles `instrumentation.ts`, route handlers and pages separately) reads

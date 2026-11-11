@@ -2,8 +2,12 @@
  * T-03 (spec 012b AC-3; TASK-294): the cutover's composition roots and the source scan.
  *
  *  - the catalogue and price providers are the database's in `production`, `staging` and
- *    `preview`, the repository's in `development` and `test`; FX and flags stay the committed
- *    ones until TASK-071 and spec 012's admin own them;
+ *    `preview` while the deployment carries `DATABASE_BUILD_URL`, the repository's in
+ *    `development` and `test`; FX and flags stay the committed ones until TASK-071 and spec 012's
+ *    admin own them;
+ *  - the staging fallback (TASK-294, ordered by the orchestrator 2026-11-11): without
+ *    `DATABASE_BUILD_URL` every composition root serves the files, boot installs the file's
+ *    registry and logs one warning, and no saleability term is composed;
  *  - the saleability term (AC-39) is composed in `production` and `staging` only;
  *  - the country registry follows the same rule: an installed database registry answers every
  *    `countryConfig()` read, and in a database environment an absent one throws, never the file;
@@ -28,6 +32,7 @@ import {
   uninstallCountryRegistry,
 } from "../../src/config/countries.ts";
 import { invalidate, noopCache } from "../../src/lib/cache.ts";
+import { logger } from "../../src/lib/logger.ts";
 import {
   dbCatalogueProvider,
   dbPriceProvider,
@@ -56,6 +61,9 @@ import {
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 
 const DATABASE_ENVIRONMENTS = ["production", "staging", "preview"] as const;
+
+/** A build login of the shape `src/lib/db.ts` accepts (never connected to here). */
+const BUILD_LOGIN = "postgres://app_build:secret@db.example.test:5432/fo";
 const FILE_ENVIRONMENTS = ["development", "test"] as const;
 
 afterEach(() => {
@@ -81,8 +89,8 @@ describe("T-03: the catalogue composition root", () => {
   it.each(DATABASE_ENVIRONMENTS)(
     "%s reads products, tiers and prices from the database",
     (environment) => {
-      expect(catalogSourceFor(environment)).toBe("database");
-      const providers = providersFor(environment);
+      expect(catalogSourceFor(environment, true)).toBe("database");
+      const providers = providersFor(environment, true);
       expect(providers.catalogue).toBe(dbCatalogueProvider);
       expect(providers.price).toBe(dbPriceProvider);
       expect(providers.fx).toBe(staticFxRateProvider);
@@ -93,19 +101,43 @@ describe("T-03: the catalogue composition root", () => {
   it.each(FILE_ENVIRONMENTS)(
     "%s reads the repository's providers",
     (environment) => {
-      expect(catalogSourceFor(environment)).toBe("static");
-      const providers = providersFor(environment);
+      expect(catalogSourceFor(environment, true)).toBe("static");
+      const providers = providersFor(environment, true);
       expect(providers.catalogue).toBe(staticCatalogueProvider);
       expect(providers.price).toBe(staticPriceProvider);
     },
   );
 
+  it.each(DATABASE_ENVIRONMENTS)(
+    "%s without DATABASE_BUILD_URL falls back to the repository's providers (the staging fallback)",
+    (environment) => {
+      expect(catalogSourceFor(environment, false)).toBe("static");
+      const providers = providersFor(environment, false);
+      expect(providers.catalogue).toBe(staticCatalogueProvider);
+      expect(providers.price).toBe(staticPriceProvider);
+    },
+  );
+
+  it("decides on DATABASE_BUILD_URL as the process carries it, valid connection strings only", () => {
+    vi.stubEnv("DATABASE_BUILD_URL", BUILD_LOGIN);
+    expect(catalogSourceFor("staging")).toBe("database");
+    vi.stubEnv("DATABASE_BUILD_URL", "https://db.example.test");
+    expect(catalogSourceFor("staging")).toBe("static");
+    vi.stubEnv("DATABASE_BUILD_URL", "");
+    expect(catalogSourceFor("staging")).toBe("static");
+  });
+
   it("AC-39: the saleability term is composed in production and staging only", () => {
-    expect(saleabilityFor("production")).toBe(dbSaleabilityProvider);
-    expect(saleabilityFor("staging")).toBe(dbSaleabilityProvider);
+    expect(saleabilityFor("production", true)).toBe(dbSaleabilityProvider);
+    expect(saleabilityFor("staging", true)).toBe(dbSaleabilityProvider);
     for (const environment of ["preview", "development", "test"]) {
-      expect(saleabilityFor(environment), environment).toBeUndefined();
+      expect(saleabilityFor(environment, true), environment).toBeUndefined();
     }
+  });
+
+  it("composes no saleability term on the file catalogue (no DATABASE_BUILD_URL)", () => {
+    expect(saleabilityFor("production", false)).toBeUndefined();
+    expect(saleabilityFor("staging", false)).toBeUndefined();
   });
 });
 
@@ -113,12 +145,13 @@ describe("T-03: the country registry composition root", () => {
   it.each(DATABASE_ENVIRONMENTS)(
     "%s serves the database's registry",
     (environment) => {
-      expect(countryRegistrySourceFor(environment)).toBe("database");
+      expect(countryRegistrySourceFor(environment, true)).toBe("database");
+      expect(countryRegistrySourceFor(environment, false)).toBe("static");
     },
   );
 
   it.each(FILE_ENVIRONMENTS)("%s serves the file's registry", (environment) => {
-    expect(countryRegistrySourceFor(environment)).toBe("static");
+    expect(countryRegistrySourceFor(environment, true)).toBe("static");
     vi.stubEnv("APP_ENV", environment);
     expect(activeCountries()).toBe(COUNTRIES);
   });
@@ -164,7 +197,10 @@ describe("T-03: the country registry composition root", () => {
     expect(countryConfig("PL")).toBe(COUNTRIES.find((c) => c.iso2 === "PL"));
 
     expect(
-      await primeCountryRegistry({ APP_ENV: "production" }, provider),
+      await primeCountryRegistry(
+        { APP_ENV: "production", DATABASE_BUILD_URL: BUILD_LOGIN },
+        provider,
+      ),
     ).toBe("database");
     expect(reads).toHaveBeenCalledTimes(1);
     expect(countryConfig("PL").status).not.toBe(
@@ -172,10 +208,38 @@ describe("T-03: the country registry composition root", () => {
     );
   });
 
+  it.each(["production", "staging"])(
+    "%s without DATABASE_BUILD_URL installs the file's registry, reads no database and logs one warning",
+    async (environment) => {
+      const reads = vi.fn(() => Promise.resolve(flipped()));
+      const warn = vi.spyOn(logger, "warn").mockImplementation(() => undefined);
+      expect(
+        await primeCountryRegistry(
+          { APP_ENV: environment },
+          { countries: reads },
+        ),
+      ).toBe("static");
+      expect(reads).not.toHaveBeenCalled();
+      vi.stubEnv("APP_ENV", environment);
+      expect(activeCountries()).toBe(COUNTRIES);
+      expect(countryConfig("PL")).toBe(COUNTRIES.find((c) => c.iso2 === "PL"));
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0]?.[0]).toEqual({
+        event: "catalogue.source_fallback",
+        environment,
+        missingVariable: "DATABASE_BUILD_URL",
+      });
+      warn.mockRestore();
+    },
+  );
+
   it("a country: invalidation re-reads the registry before revalidating; other tags do not", async () => {
     let answer = flipped();
     const reads = vi.fn(() => Promise.resolve(answer));
-    await primeCountryRegistry({ APP_ENV: "production" }, { countries: reads });
+    await primeCountryRegistry(
+      { APP_ENV: "production", DATABASE_BUILD_URL: BUILD_LOGIN },
+      { countries: reads },
+    );
     expect(reads).toHaveBeenCalledTimes(1);
 
     const seenAtRevalidate: string[] = [];
