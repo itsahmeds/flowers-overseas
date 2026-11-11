@@ -8,6 +8,14 @@ export {
 } from "./permissions";
 export { type GuardDeps, requireAdminPage, requirePermission } from "./guard";
 export {
+  BACKUP_WARNING_MAX_AGE_HOURS,
+  BACKUP_WARNING_SECTIONS,
+  type BackupWarningDeps,
+  backupWarningDue,
+  catalogueBackupWarning,
+  lastBackupVerifiedAt,
+} from "./backup";
+export {
   type AdminGrant,
   AdminDeactivateSchema,
   AdminGrantSchema,

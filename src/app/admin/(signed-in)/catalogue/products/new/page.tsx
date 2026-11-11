@@ -12,6 +12,7 @@ import {
   adminRequestId,
   adminT,
   can,
+  catalogueBackupWarning,
   catalogueSuppliers,
   requireAdminPage,
 } from "@/modules/admin";
@@ -40,7 +41,11 @@ export default async function NewProductPage({
       })
     : [];
   return (
-    <AdminFrame session={session} current="catalogue">
+    <AdminFrame
+      session={session}
+      current="catalogue"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[20px]">
         <AdminBackLink href="/admin/catalogue/products">
           {adminT("admin.catalogue.back")}

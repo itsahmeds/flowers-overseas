@@ -23,6 +23,7 @@ import {
   adminRequestId,
   adminT,
   can,
+  catalogueBackupWarning,
   mediaDetail,
   requireAdminPage,
   zoneCity,
@@ -294,7 +295,11 @@ export default async function MediaReviewPage({
   ];
 
   return (
-    <AdminFrame session={session} current="media">
+    <AdminFrame
+      session={session}
+      current="media"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[16px]">
         <AdminBackLink href="/admin/media">
           {adminT("admin.media.back")}

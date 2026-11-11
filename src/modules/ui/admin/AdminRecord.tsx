@@ -267,17 +267,26 @@ export function AdminKeyValues({
   );
 }
 
-/** A quiet sentence in place of a block (`.ad-banner`): hidden by role, no payment, no actions. */
+/**
+ * A quiet sentence in place of a block (`.ad-banner`): hidden by role, no payment, no actions.
+ * `warn` is `.ad-banner.warn` (butter on the warning rule), e.g. spec 012b's backup warning.
+ */
 export function AdminBanner({
   children,
   small = false,
+  tone = "plain",
 }: {
   readonly children: ReactNode;
   readonly small?: boolean;
+  readonly tone?: "plain" | "warn";
 }): ReactElement {
+  const surface =
+    tone === "warn"
+      ? "bg-butter shadow-[inset_0_0_0_1px_var(--color-warning)]"
+      : "bg-paper-2 shadow-[inset_0_0_0_1px_var(--color-rule)]";
   return (
     <p
-      className={`bg-paper-2 flex flex-wrap items-center gap-x-[12px] gap-y-[6px] rounded-[10px] px-[14px] py-[10px] shadow-[inset_0_0_0_1px_var(--color-rule)] ${
+      className={`${surface} flex flex-wrap items-center gap-x-[12px] gap-y-[6px] rounded-[10px] px-[14px] py-[10px] ${
         small ? "text-[13px]" : "text-[14px]"
       }`}
     >

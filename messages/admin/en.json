@@ -2983,6 +2983,10 @@
           "forbidden_locale": "You can edit alt text only in the languages you review. Nothing changed.",
           "alt_file_name": "Alt text says what the photo shows; a file name is not alt text. Nothing changed."
         }
+      },
+      "backupWarning": {
+        "title": "No checked backup in the last 48 hours.",
+        "body": "The database is the only copy of the catalogue. Check the nightly backup before you edit."
       }
     },
     "countries": {

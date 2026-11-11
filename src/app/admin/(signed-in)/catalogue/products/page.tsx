@@ -15,6 +15,7 @@ import {
   adminRequestId,
   adminT,
   can,
+  catalogueBackupWarning,
   catalogueList,
   requireAdminPage,
 } from "@/modules/admin";
@@ -70,7 +71,11 @@ export default async function CatalogueProductsPage({
   const n = (value: number): string => formatNumber(value, "en");
 
   return (
-    <AdminFrame session={session} current="catalogue">
+    <AdminFrame
+      session={session}
+      current="catalogue"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[20px]">
         <header className="flex flex-wrap items-end justify-between gap-[12px]">
           <div>

@@ -13,6 +13,7 @@ import {
   type CountryListRow,
   adminRequestId,
   adminT,
+  catalogueBackupWarning,
   listCountries,
   requireAdminPage,
 } from "@/modules/admin";
@@ -67,7 +68,11 @@ export default async function CountriesPage(): Promise<ReactElement> {
       : adminT("admin.countries.notPublished");
 
   return (
-    <AdminFrame session={session} current="countries">
+    <AdminFrame
+      session={session}
+      current="countries"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[24px]">
         <header className="grid gap-[6px]">
           <AdminPageTitle>{adminT("admin.countries.title")}</AdminPageTitle>
