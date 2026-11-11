@@ -2,7 +2,7 @@
  * The photo commands and reads of admin (spec 012b §2.7, §5.2, §5.3; AC-22, AC-23; TASK-299).
  *
  *  - `uploadPhoto` (`MediaUploadSchema` + `MediaProvenanceSchema`, discriminated on `source`):
- *    every refusal happens **before** anything is stored — the fields (a `delivery` photo, a
+ *    every refusal happens **before** anything is stored: the fields (a `delivery` photo, a
  *    florist photo with no florist, a missing provenance field), then the bytes (`media-image.ts`:
  *    15 MiB, JPEG, PNG or WebP by magic bytes, 40 megapixels from the header, re-encoded with no
  *    EXIF, GPS, XMP or IPTC block), then the florist and the product named. Only then is the
