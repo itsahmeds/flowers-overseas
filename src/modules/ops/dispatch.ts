@@ -103,7 +103,7 @@ export interface DispatchDeps extends OpsDeps {
   readonly mailer?: AlertMailer;
   /** `OPS_ALERT_EMAIL`; throws when unset in a deployed environment. */
   readonly opsEmail?: () => string;
-  /** `FO-XXXX-XXXX` of an order (the orders module's rule, handed in by the worker). */
+  /** An order's reference, `FO-` and two groups of four (the orders module's rule, handed in by the worker). */
   readonly reference?: (orderId: string) => string;
   /** The site origin. Default: `NEXT_PUBLIC_SITE_URL` at call time. */
   readonly baseUrl?: () => string;

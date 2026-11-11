@@ -568,13 +568,15 @@ function flattenMessages(
  * every JSX text node and every quoted literal that contains whitespace — see the exemptions above
  * for why whitespace is the identifier test.
  */
-export function proseStrings(source: string): string[] {
+export function proseStrings(source: string, jsx = true): string[] {
   const code = source
     .replaceAll(/\/\*[\s\S]*?\*\//g, " ")
     .replaceAll(/^[^\n"'`]*\/\/.*$/gm, " ");
-  const jsxText = [...code.matchAll(/>([^<>{}][^<>{}]*)</g)].map(
-    (match) => match[1] ?? "",
-  );
+  // JSX text exists only in a `.tsx` file; in a `.ts` file `>…<` spans two generics
+  // (`ReadonlySet<string> = new Set([…]); … ReadonlySet<`, TASK-522), never a text node.
+  const jsxText = jsx
+    ? [...code.matchAll(/>([^<>{}][^<>{}]*)</g)].map((match) => match[1] ?? "")
+    : [];
   const literals = [...code.matchAll(/"([^"\\\n]*)"|'([^'\\\n]*)'/g)].map(
     (match) => match[1] ?? match[2] ?? "",
   );
@@ -617,6 +619,7 @@ describe("the shipped copy speaks in the first person too (spec 004 §14 A5; TAS
     const found = sourceFiles.flatMap((file) => {
       const strings = proseStrings(
         readFileSync(resolve(repoRoot, file), "utf8"),
+        file.endsWith(".tsx"),
       );
       return strings.flatMap((value) => {
         const words = bannedWordsIn(value);

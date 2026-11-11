@@ -38,7 +38,7 @@ export interface AlertFacts {
   readonly severity: Severity;
   readonly mode: "test" | "live" | null;
   readonly component: string | null;
-  /** `FO-XXXX-XXXX` for an order alert, else null. */
+  /** The order reference (`FO-` and two groups of four) for an order alert, else null. */
   readonly reference: string | null;
   /** The destination's IANA zone for an order alert, when known. */
   readonly destinationZone: string | null;

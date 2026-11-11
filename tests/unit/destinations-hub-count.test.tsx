@@ -139,8 +139,15 @@ async function withRegistry(
     // The fixture is read at call time, after every module has loaded: the catalogue's own
     // import-time check (prices.data.ts: one price row per destination) runs against the
     // committed set, and `hubView()` (which reads `COUNTRIES` per call) sees the fixture.
+    const base = extra ? aliased(actual) : actual;
+    // Since TASK-294 `hubView()` reads `activeCountries()` (the served registry, else the file's
+    // `COUNTRIES` binding inside the module), so the fixture replaces that reader too (TASK-522).
     return Object.defineProperty(
-      { ...(extra ? aliased(actual) : actual) },
+      {
+        ...base,
+        activeCountries: () =>
+          fixtureActive ? fixture : base.activeCountries(),
+      },
       "COUNTRIES",
       {
         enumerable: true,
