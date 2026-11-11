@@ -214,6 +214,10 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       // spec 018 §6, AC-12: the tracking page, `noindex, nofollow` by header and meta, never in a
       // sitemap (TASK-338).
       trackOrder: "never",
+      // spec 022a §6 (TASK-373): the reviews page by rule (exists with one published review,
+      // indexable with ten with text), and its policy as every legal page.
+      reviewsPage: "byRule",
+      "review-policy": "byRule",
       // spec 041 §6, AC-17 (TASK-182): the ten info pages, by page id.
       "how-it-works": "byRule",
       guarantee: "byRule",

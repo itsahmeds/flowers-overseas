@@ -211,6 +211,9 @@ describe("src/config/site-links.ts", () => {
       "privacy",
       "cookies",
       "withdrawal-and-refunds",
+      // Spec 022a §5.3 "Footer" (TASK-373): published; drawn only while the page exists (data).
+      "reviews",
+      "review-policy",
       "corridor-pl",
       "corridor-de",
       "corridor-fr",
@@ -406,6 +409,8 @@ describe("src/config/site-links.ts", () => {
       "how-it-works",
       "for-florists",
       "help-and-contact",
+      // Spec 022a (TASK-373; `chrome-*`): after "Help and contact".
+      "reviews",
       "imprint",
     ]);
     expect(groupLinks("legal").map((link) => link.id)).toEqual([
@@ -413,6 +418,8 @@ describe("src/config/site-links.ts", () => {
       "privacy",
       "cookies",
       "withdrawal-and-refunds",
+      // Spec 022a (TASK-373; `chrome-*`): after "Withdrawal and refunds".
+      "review-policy",
     ]);
     for (const group of SITE_LINK_GROUPS) {
       expect(typeof messageAt(group.headingKey), group.id).toBe("string");
@@ -558,6 +565,12 @@ describe("src/config/site-links.ts", () => {
       // that carries it is drawn on the tracking boards.
       if (link.id === "track-order") {
         expect(trackBoard).toContain(`>${label}<`);
+        continue;
+      }
+      // Spec 022a's two review links (TASK-373) postdate the homepage canvas: the footer that
+      // carries them is drawn on the chrome boards (PR 338).
+      if (link.id === "reviews" || link.id === "review-policy") {
+        expect(chromeCanvas, link.id).toContain(`>${label}<`);
         continue;
       }
       // Spec 041 §2 "Links" relabels "Delivery times and cutoffs" as "Delivery and payment"
