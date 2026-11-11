@@ -31,6 +31,7 @@ import { adminT } from "../modules/admin/messages";
 import { orderDetailHref } from "../modules/admin/orders";
 import { registerAnalyticsOutbox } from "../modules/analytics";
 import { alertDetailHref, alertsListHref } from "../modules/admin/alerts";
+import { partnerContractsHref } from "../modules/admin/partners";
 import { payoutDetailHref, payoutsListHref } from "../modules/admin/payouts";
 import {
   registerNotificationsOutbox,
@@ -222,8 +223,7 @@ registerOpsEmailTemplates({
   // Spec 030a §2.7: F2's link to the payouts list (TASK-364; TASK-367 builds the page).
   payoutsHref: payoutsListHref,
   // Spec 030b §14.4: C1 and C2's link to the florist's Contracts tab (TASK-442).
-  contractsHref: (partnerCode) =>
-    `/admin/partners/${encodeURIComponent(partnerCode)}/contracts`,
+  contractsHref: partnerContractsHref,
 });
 
 // Spec 016 §5.2 (TASK-333): the buyer emails B1 to B6 and B8. The refunds come through spec 013's

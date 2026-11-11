@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11: `admin-scans` green again (3 reds on main): `partnerContractsHref` in `src/modules/admin/partners.ts` replaces the literal in `src/jobs/handlers.ts`; `src/jobs/basket-reminders.ts` allowed as an admin importer (worker only); 168 `admin.orderActions.*` meta rows added `reviewed: false` (TASK-361 shipped none), 2 obsolete rows dropped; the format scan gains the 32 missing values. Next: EFW handling.
 
 ## Result
 

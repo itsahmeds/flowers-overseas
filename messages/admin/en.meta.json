@@ -3019,16 +3019,6 @@
     "reviewed": false,
     "sourceHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed"
   },
-  "admin.orderActions.noPermission.reroute": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "fa2544ecd1aa957d3ac166426280f8725b1345f074014f012ef6f682e951f6d6"
-  },
-  "admin.orderActions.noPermission.cancel": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "557a81638797abb9ac881c867560740419d54d4bc0dd998a692d3af97b79dd1b"
-  },
   "admin.orderActions.reroute.open": {
     "source": "human",
     "reviewed": false,
@@ -9078,5 +9068,845 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "8d9ad4169c8b3370a99dd64e748c2df16845155950548f9f59b3b47dd1398b93"
+  },
+  "admin.orderActions.refund.openFull": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5242982502249673174e6d89d41f456f9bff01e0014b96e84af6867de69933f9"
+  },
+  "admin.orderActions.refund.openRetry": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1ebd560c0ee9c643f9e49d99308471bdd3fd467f8a9147e11c64e95e7b19654"
+  },
+  "admin.orderActions.refund.openPartial": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0f25a745f004ca0d20919f089c8c078b4fe9ce44a2b48ebaee37188ea8e48719"
+  },
+  "admin.orderActions.refund.titleFull": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "141291b772e3f7138efc027e64cdf60896413b9c685d8439c19411fc8c36eebc"
+  },
+  "admin.orderActions.refund.titleRetry": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3c7e3bb523823a76f82f5d4c7bdf82a833cdf35415dd460cc545c28c0ce5af9"
+  },
+  "admin.orderActions.refund.titlePartial": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0f25a745f004ca0d20919f089c8c078b4fe9ce44a2b48ebaee37188ea8e48719"
+  },
+  "admin.orderActions.refund.failedAutomatic": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "094209119a15266035b8121c593ee18f578819774e7be2828eb1c6eee9a19034"
+  },
+  "admin.orderActions.refund.now": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aaf23c47c851713f35b83fab2a9b562e5869f736b79038d72140a27e5dc434ae"
+  },
+  "admin.orderActions.refund.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "admin.orderActions.refund.amountName": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4b3cc7da28f24441cec11c6950899742d7e56011094b3bfb63243c6aff853461"
+  },
+  "admin.orderActions.refund.amountPlaceholder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "561b2814d3c09e62a92442c946307918f7f63f833c84876c08bd4c406767e53b"
+  },
+  "admin.orderActions.refund.amountHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31f86d13b96ddfdc53fea746dfdbaa76680edec73f2bdfe6f9b30b4063b16e57"
+  },
+  "admin.orderActions.refund.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "760779605196fdfd0a36782b917b3343c9158b105cc6499f190337c72ea8877f"
+  },
+  "admin.orderActions.refund.exceeds": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "709a2955c2fc423b5aa04f61ca6619b7848557f0ca7d351e52287da55e33f5ba"
+  },
+  "admin.orderActions.refund.whole": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bb36bebfbd8055e5ed3587de7ccd6b5cef567ec74adb27c0046a54508f7669a2"
+  },
+  "admin.orderActions.refund.suggested": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "93b63bab4c3a28d73a8bb83bcdfdcc5f6ddecfc8fc702296ca159d94c5dc6e53"
+  },
+  "admin.orderActions.refund.suggestedAddon": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "59f69c1dda41651dfde32b40a3beec8cf5d6c5548331a2928977d5004174cefc"
+  },
+  "admin.orderActions.refund.suggestedHint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "940c325a908c1ebbf8db8f43fd86fa277a920ff674fd983d56c05993551457c8"
+  },
+  "admin.orderActions.refund.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.orderActions.refund.fixedReason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e0f79c26a058cc951011e56e0ec47f8fe3b456627e552e04131fcf154888f1a7"
+  },
+  "admin.orderActions.refund.reasonRequired": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "afb1e2e2d695ea361de584f87164e3d3da0fdf994357dec196c5a87e57cce28b"
+  },
+  "admin.orderActions.refund.goesBack": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dedbf44bdde00842007dec6bd7b12c581e644e7a345f4d83ba4073cd05003397"
+  },
+  "admin.orderActions.refund.buyerGets": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec0ae06d65a62fe9dd54b8ecfc49e070eb9e1a764971b1f2617cea5ce43e6783"
+  },
+  "admin.orderActions.refund.keep": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "183f00f483d3844e875d26eac74c676054383aef38ed5a8e4d1505ef21008585"
+  },
+  "admin.orderActions.refund.submit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ec32967b41214649fa2995d8b5c681590b27b6cfaa41507dac5f3c9b91bc71f6"
+  },
+  "admin.orderActions.refund.submitBare": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b37bd35081fcbc6676dcfdfa7a7389f70be9ed70f7d50f5163708e2fafe65f8"
+  },
+  "admin.orderActions.refund.refunding": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c26319ee8cb6d9d1b0f9b027360cb3f9bab0ae989cfff9f1175c050e7fd20227"
+  },
+  "admin.orderActions.refund.done": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a0f0187f7fc9390ddabd028e7cf61d98fb0c851861ea07ba7357b2d3ae7e11d"
+  },
+  "admin.orderActions.refused.RESEND_NOT_ALLOWED": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "22f0e78118908fff67610e639891687163d4d6aedbd10b55af5d422522dce517"
+  },
+  "admin.orderActions.refused.RESEND_RATE_LIMITED": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8225516c492d325ceaaeeb20b35041367d9c9c4b3649ab02521654e6229dafbc"
+  },
+  "admin.orderActions.refused.NOT_REFUNDABLE": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b57644a8af18cee0c2c81f43e41f324012c3a70ff8b3dddd85a1dae91b629436"
+  },
+  "admin.orderActions.refused.CURRENCY_MISMATCH": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3de1ab094aadb7501776769af7c118bdc71bb33cb20982cb78b845618444a5c"
+  },
+  "admin.orderActions.refused.PROVIDER_NOT_CONFIGURED": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7bb32cb5c51336e000211f4dde24ea0062aec9a6d7d2cc731f12527a4dee9d56"
+  },
+  "admin.orderActions.refused.REFUND_ORDER_CHANGED": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f393ed1d2cc395d0bd5585675d8a5e0f512d4f8dde7fefdf59941b4b3481eaa0"
+  },
+  "admin.orderActions.notAvailable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "67a926f7008e2b0e7f2b3f7a4b37597834830110be1d51138f425d6f3449bc09"
+  },
+  "admin.orderActions.control.reroute": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5745d279192648a18774cd4f251c1b7d565aeb3ef9696544f34153896672f049"
+  },
+  "admin.orderActions.control.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3c635c80d5324950a95b1e9615277664e7cd30b40c229ce64bb6294fd007c066"
+  },
+  "admin.orderActions.control.refundFull": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "141291b772e3f7138efc027e64cdf60896413b9c685d8439c19411fc8c36eebc"
+  },
+  "admin.orderActions.control.refundPartial": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0f25a745f004ca0d20919f089c8c078b4fe9ce44a2b48ebaee37188ea8e48719"
+  },
+  "admin.orderActions.control.retryFull": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3c7e3bb523823a76f82f5d4c7bdf82a833cdf35415dd460cc545c28c0ce5af9"
+  },
+  "admin.orderActions.unavailable.reroute.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f0d07398e4a534e1caef08c899826505ea66f5e772f9d1acce6fb78ad1e9ad2e"
+  },
+  "admin.orderActions.unavailable.reroute.permission": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "798aaa757a0b5c641e09034dd928148cbf24c72932adbd1f28dce7cfa2d2dc54"
+  },
+  "admin.orderActions.unavailable.cancel.notPaid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "194cb64cec562f5c546c7109b23501b5ea6d0c1936cca6f7b8ccfaefba08bfd8"
+  },
+  "admin.orderActions.unavailable.cancel.made": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "64a4498ddfc318df38e35964e3abdbb9e6076b1d87f9ac3feb1dc943a7c50c4a"
+  },
+  "admin.orderActions.unavailable.cancel.ended": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d052ec648698c32d87e875b39498254f8b0282737ed19f1ed1be95c3c2f4c3e9"
+  },
+  "admin.orderActions.unavailable.cancel.permission": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "04c1d4d5e8920fb96a552c7cf580598c2f138834288dc9a900f04f1a8f8aa624"
+  },
+  "admin.orderActions.unavailable.refund.notPaid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "194cb64cec562f5c546c7109b23501b5ea6d0c1936cca6f7b8ccfaefba08bfd8"
+  },
+  "admin.orderActions.unavailable.refund.cancelInstead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a8430a8de1bd2a0c7e07ad3e28b8136972d767edbb698a238990f7739356d2c0"
+  },
+  "admin.orderActions.unavailable.refund.refundedFull": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e5e9b8a9b0c5c37f8b23dea5148d2d2055e27bf590f492a8ed8f1dce993be2fe"
+  },
+  "admin.orderActions.unavailable.refund.closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "480b3b29a801bf4144f4a1dabc65fd5fcfc84d4ea368d6fb87fcd0893f37fb01"
+  },
+  "admin.orderActions.unavailable.refund.chargeback": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e149957979e4824fe7f4396bd9baba42ecb13cb80fb03525a4876c1b9d305dfc"
+  },
+  "admin.orderActions.unavailable.refund.cancelledFullOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "744ded107d2a7bf9bdfb829cbb1e2597c791adb274ccc112c09ffcfb6c4e8a50"
+  },
+  "admin.orderActions.unavailable.refund.anomalyFullOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d232d16ef5e3cc63acd89c337968e713cb23eb61287c6eb8d3c0003305fb1c66"
+  },
+  "admin.orderActions.unavailable.refund.inFlight": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7fa0eee0ca27108c4a69e475cbc5008cc826c713a94e12833743eb16d86b4865"
+  },
+  "admin.orderActions.unavailable.refund.noCapture": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "232d1d455c7dba307b498b3bb3c959c2487c5f6e426fbab419ff4e6d464e3c3c"
+  },
+  "admin.orderActions.unavailable.refund.nothingLeft": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3b56f2a08b888c38cd60f06311ecb2e5e77e26004863288d6eb027c105e3b6d3"
+  },
+  "admin.orderActions.unavailable.refund.belowTwo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4dfb9ffd66ff8f181bf4398f389f389b45d094833b85897d5c222ebdf088789a"
+  },
+  "admin.orderActions.unavailable.refund.permission": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "04c1d4d5e8920fb96a552c7cf580598c2f138834288dc9a900f04f1a8f8aa624"
+  },
+  "admin.orderActions.unavailable.refund.provider": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4740f124e94bcb29a78ea6251377cb466de38a970d64889b1bbd41bd7366208d"
+  },
+  "admin.orderActions.emails.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "373197624e9dd57819641599726081cb4c7ba6389c176616690684218688035d"
+  },
+  "admin.orderActions.emails.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4bb00617a17495dc00b48ec53713c36f7327b914cdc6722e83f14d667c27e196"
+  },
+  "admin.orderActions.emails.email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "admin.orderActions.emails.to": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4b06ef6d3c81436f60a318c81c42f8f7e2d774d45a22f3b9b5f3b6980d28146"
+  },
+  "admin.orderActions.emails.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.orderActions.emails.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cf9c7aa24a26aac4f0ec4b6395cbfdcc055677c3dac87bd6af898bccd66d4e17"
+  },
+  "admin.orderActions.emails.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "956cfef777e2aede377d6673a8f76d5e13ec071adcc23b779ec1bb6a11e5073e"
+  },
+  "admin.orderActions.emails.resend": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1f94843777aed85111a1ef102b3c34d911ce10b281cd1cd43bed2be7efc1fe62"
+  },
+  "admin.orderActions.emails.resending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ddc12b6bbcadf7d061a32bd839f5e8554a5ad47e8f8a73b0c7086c5aefad3b33"
+  },
+  "admin.orderActions.emails.resendThis": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "10a8eb419e91531ec6bea0bffc7fde4ad1b330bc57d8bd84e0fcd6687d4a3df9"
+  },
+  "admin.orderActions.emails.resent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a77895bc50d48a2b90d6c92d3ac42bea05319a4e881811fe9f50763b4046c82d"
+  },
+  "admin.orderActions.emails.audience.buyer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a2a54d668c45a20d0b4367e954c70654928409f6c569b0991afdbe66b70e6628"
+  },
+  "admin.orderActions.emails.audience.ops": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "23ae45f425f70190f749315697c51cea6da1e32d0d4da8ae9fd079aa25edbf19"
+  },
+  "admin.orderActions.emails.audience.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "admin.orderActions.emails.template.order-received": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6365a806e819bf01285e5b545625170d7a171de9430771090babf837f69f91b8"
+  },
+  "admin.orderActions.emails.template.being-made": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0bbd09f250bdeb17ffc3866c999e5152d75558a61420f49ff599c6299258c750"
+  },
+  "admin.orderActions.emails.template.out-for-delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c5d0f5f4b8b8dced4ee0da7564b8beb791395e724dd8fb2837f4b29c04fbb612"
+  },
+  "admin.orderActions.emails.template.delivered-photo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "245d57c04c2cdb64540f07090543036b4919eda3d37b3e29a6cbc0e458ba5d5d"
+  },
+  "admin.orderActions.emails.template.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "admin.orderActions.emails.template.refund": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b37bd35081fcbc6676dcfdfa7a7389f70be9ed70f7d50f5163708e2fafe65f8"
+  },
+  "admin.orderActions.emails.template.credit-note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c204aa17e8f609334cca014ba68d7eacc1d6295b6dba0b47a002c89c9bb610ae"
+  },
+  "admin.orderActions.emails.template.offer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0cf57c63eb976556a273198f34e8816a586471aefa434f80dab8b77667c0a981"
+  },
+  "admin.orderActions.emails.template.offer-reminder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31757bbfa17e6e3d1550ca435f418c0a14be83151541246516cc14ce89867a19"
+  },
+  "admin.orderActions.emails.template.order-confirmed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "582ee1e295c2a0ec0d561c2f3bfd22d9d909371d6bf5da298b0117635143a9eb"
+  },
+  "admin.orderActions.emails.template.offer-withdrawn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5e092b95c55836f6b381ce690a10d25966ad26b0e572c298ba3923c6273ce7a2"
+  },
+  "admin.orderActions.emails.template.photo-reminder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a3b24822ed5ac93803e739ddedc0545e840c19d1b98180fa08769d9654803f8e"
+  },
+  "admin.orderActions.emails.template.alert-no-partner": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "854edea847a80684400012bd901702a0563bd5fd41a15696b05d282fc63bbae7"
+  },
+  "admin.orderActions.emails.template.whatsapp-copy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3b7727e1f8eff74b6be9688a8a99b34f20be84da0a818a99805e2b7b2fac7b6"
+  },
+  "admin.orderActions.emails.template.payout-prepaid-ready": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51ce3af1f38d2b6f8f4dbd63d630194cde576bde78ba396611d2bd32214ec6f5"
+  },
+  "admin.orderActions.emails.template.payouts-ready": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cc5b5290b67ff1a5b25b30803aebca9e800d4e51e6f252d352d97468f960a72e"
+  },
+  "admin.orderActions.emails.template.payout-line-missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5799018cb539e0c9b872bfa610dd89f3b269167e5a098c6d30a0f4e96557764"
+  },
+  "admin.orderActions.emails.template.florist-payout-statement": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db5406825fe18a3c47f15b52203c7852e1aaeffb9cbfca294097424c043f48bf"
+  },
+  "admin.orderActions.emails.deliveryStatus.queued": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "661ff40a07e037bbd5f7d4ec97a4df1503096ca910e7c9e2d7a4e9abd4e4e1a0"
+  },
+  "admin.orderActions.emails.deliveryStatus.sent": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c16bc82bf1f04ede04d1bc0bdf714b1a2e523ac5fa06fee7b9466c6d2d54af1e"
+  },
+  "admin.orderActions.emails.deliveryStatus.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "906115657390f3675639f46a572eee069155214169a45be4046933527a95c67b"
+  },
+  "admin.orderActions.emails.deliveryStatus.delivery_delayed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a5c19c9f134a8c6a0ff56bdc403e25beee52747a6bd76c89b161b027cf476e49"
+  },
+  "admin.orderActions.emails.deliveryStatus.bounced": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b23b4c7368391d50ebd0b1781345d5a2bba58a9b4d7fa080cc549ba90938d890"
+  },
+  "admin.orderActions.emails.deliveryStatus.complained": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d1f5e253f251abfcb4b8b01f539bea84691ebf498d679fdbb1733af42103c47d"
+  },
+  "admin.orderActions.emails.deliveryStatus.failed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "admin.orderActions.emails.deliveryStatus.held": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "85cd61f8c3c8a01e655e88062f7f60a33127b6947903765e9a2a41037d24936e"
+  },
+  "admin.orderActions.emails.cause.demo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c0b73827db9b15de16311ea7146a5316bf95a0efed1f9d3b54b9a29913b77590"
+  },
+  "admin.orderActions.emails.cause.reminder": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8eb3ecbadbfa8ecda7883d25a35589ae04bac23d0dca9dc50a13971fa153c9b5"
+  },
+  "admin.orderActions.emails.cause.own_alert": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "082a06a2d3a75bddaedcb267cae20db27f4d33a5d35457e09d1d2a36d37472ab"
+  },
+  "admin.orderActions.emails.cause.test_order": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cae6c1c5f83082585a23b005a38c80e66726631c712fceaa5d37ee452a89c8d2"
+  },
+  "admin.orderActions.emails.cause.queued": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7cfee5ee06ab9745c82da07e307dbf98ff485b17aa7623e596eda9e16127a640"
+  },
+  "admin.orderActions.emails.cause.held": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "78d8d38718135c7250af0d3e21625d6b89cc7a9c24cb8dbd5b95ff7f34b7ac1a"
+  },
+  "admin.orderActions.emails.cause.context_missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2af2960a69a07f6c10b4133fd691727573a6598148f60f0e3ab428bf858f3891"
+  },
+  "admin.orderActions.emails.cause.not_being_made": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0cdaee1e430cb904d90193367ca395622eab2b141b7231f8f7edfbe9ca88faa6"
+  },
+  "admin.orderActions.emails.cause.not_on_its_way": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5afdbf8a1ec4e684216bba254e13851344b59114f0e57294f86127fa59b9b39"
+  },
+  "admin.orderActions.emails.cause.not_cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "297b6cf0cabc1d8b3d8d06a21975bf09de1f94e020a4df469d306aeaa9c27d44"
+  },
+  "admin.orderActions.emails.cause.answered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7c8ec7600abe6d560073ae28892922c3df89c15de025f1d7ea18ff0284a298bf"
+  },
+  "admin.orderActions.emails.cause.timed_out": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "72912e5fa97c08195489274709937be5fb0a3183af6c89bdae75bc06a6b9d5c7"
+  },
+  "admin.orderActions.emails.cause.withdrawn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "30e664276ca08f7cbe561128d29bd4dff436196f9889323f90169f45930e7945"
+  },
+  "admin.orderActions.emails.cause.not_accepted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6f8ff8c8c4c570128f7adaa8636441ea49fdf1fd00f7524dd7fd937f629caa0a"
+  },
+  "admin.orderActions.emails.cause.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0df6703e0a133ee24cbd20ebbd09bbaecadf29b1ff87a618cd36c9c802740cba"
+  },
+  "admin.orderActions.emails.cause.not_withdrawn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dacd9da200ee42ec000bd70b34d8f669a5ddb5d36f5af97e0f06a2077ba505c7"
+  },
+  "admin.orderActions.emails.cause.date_passed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b0bfe75b950fca978b6de5d3fd8e2d7413bb51e91c9b4c39c978291003f3dd6e"
+  },
+  "admin.orderActions.emails.cause.recipient_gone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a2ccc3673c879cd6cb0a296ee5c2627cc74edfff8dd7f0427ec808cbc89fd50d"
+  },
+  "admin.orderActions.emails.cause.rate_limited": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a72ea0babf90bad71c33ffa5c8744d4fe6a974817e73cd55e9c665f229411e5f"
+  },
+  "admin.orderActions.emails.cause.permission": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "798aaa757a0b5c641e09034dd928148cbf24c72932adbd1f28dce7cfa2d2dc54"
+  },
+  "admin.orderActions.emails.done": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48451f4839a554a1ead0a3fda903960b6085628ebeb90c6a2462ad4e182ed2bb"
+  },
+  "admin.orderActions.emails.doneShort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f104d9cdff967e8e04e7064b257776fe3d5244dc07083ddea1dda32f82d6467"
+  },
+  "admin.orderActions.refunds.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.orderActions.refunds.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "admin.orderActions.refunds.reasonColumn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.orderActions.refunds.reason.buyer_cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ba518d2350e0f34800b3cf0a2b13185de7c0a489b4e92569aa00ba1d39d743ab"
+  },
+  "admin.orderActions.refunds.reason.no_partner": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "df9940f7de0a7a1571162f1841bd51d4b150e0dec762f06c399850d997736470"
+  },
+  "admin.orderActions.refunds.reason.authorisation_lapsing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3d9dd99b28ba8d2c9e8c26fe3f547b6b2f22dbc521330bbe50fd625e59674912"
+  },
+  "admin.orderActions.refunds.reason.redelivery_failed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "034b8e0a7605ef4b19164aef882bad7c326f8db307b2d4ecd3a7a9b84a7eb505"
+  },
+  "admin.orderActions.refunds.reason.addon_missing": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "223e1e0a17b72126fba1044a7b7a670901bd86103fb528910e3bc5a3a8a63062"
+  },
+  "admin.orderActions.refunds.reason.late_delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e05e86436224546ba4c0eead1343ccbc3f7506ee74b882304a6e4ec756fe9b94"
+  },
+  "admin.orderActions.refunds.reason.substitution_complaint": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5bad5dff1e30032290c3f565aa1e681a7465091933f61ff32250373495f6757"
+  },
+  "admin.orderActions.refunds.reason.quality": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1b2c08a8733d7ff1d06e726107a977124929c975066a3a606d19055dfd4e3dbd"
+  },
+  "admin.orderActions.refunds.reason.goodwill": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1202ac7e4b7531e920e5bfba2876dc5b130a38705ba2db0ec381927a440f9a32"
+  },
+  "admin.orderActions.refunds.reason.duplicate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fa3f81df85ce8a32e62e3be436994025aaa0456c6a718e2aeedf4bf2033108ba"
+  },
+  "admin.orderActions.refunds.reason.other": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
+  },
+  "admin.orderActions.refunds.askedBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2931d4b0626e3e495d9423d3e55afd8b763827cf4b75ec457eb5df0f86db5bd9"
+  },
+  "admin.orderActions.refunds.requested": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2d9e28289facab94b41f9592b7f55bc4fc10fed54e789669468e8da31c9a5caf"
+  },
+  "admin.orderActions.refunds.settled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cc9bec8d2f506b8ec6b679c33495f0848e57bcdda08c7ecca3ae950b5b5f724a"
+  },
+  "admin.orderActions.refunds.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f0ae149eceaa905a822871c76ffe4552b5a32d827879e5663b1dbdb9ded4ec90"
+  },
+  "admin.orderActions.refunds.charged": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4d640df4f7ceace249320ffad873a96f153259d917ede64c0ac3d99f26f4fdf5"
+  },
+  "admin.orderActions.refunds.onItsWay": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e086e5588faf10b68667740b601878bb5a38260ab43930bff3c32a4047671ad9"
+  },
+  "admin.orderActions.refunds.left": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01f67173287dc1663854b2855b28df319cfabaedfb4316e8fbb6792d1c2707a7"
+  },
+  "admin.orderActions.refunds.state.requested": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2d9e28289facab94b41f9592b7f55bc4fc10fed54e789669468e8da31c9a5caf"
+  },
+  "admin.orderActions.refunds.state.pending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "331551b0de4157c9abc7b72b61b96a2a928fd6db3cdf029c1fc44b08ad633aa6"
+  },
+  "admin.orderActions.refunds.state.succeeded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d9a6f97a5fdaf3b90a0cf02e0b43d8b7ec1d05c0e4718e02ddd1c5b450e5b39"
+  },
+  "admin.orderActions.refunds.state.failed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "admin.orderActions.refunds.state.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "admin.orderActions.refunds.settledLine.requested": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a9549d7d06368d83960c3a2e8172032a860f86e3e840a467cff021759e0e1ba0"
+  },
+  "admin.orderActions.refunds.settledLine.pending": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "efcef152124ab95dc01a15e451cd1f6fe7110d72766a46335455cc4d41b8ee46"
+  },
+  "admin.orderActions.refunds.settledLine.failed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "269ffe327ffc242418a0f60cfdd9739d6ae2ddf1595634616b8e689f1fdb42ec"
+  },
+  "admin.orderActions.refunds.settledLine.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "333c8cf06fa1bf8609119ec7fd2db04fbc4ea2fff768793c6d55d51c2dfa9652"
+  },
+  "admin.orderActions.refunds.automatic": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d461a493a3753877c9486cffa3444265a33370af8a7fff242fb119b71750839c"
+  },
+  "admin.orderActions.refunds.unknownAdmin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1acf7f6b47857fdde64ea540cb833d2c553bdde7e8edf9a4b6f8191051e7aa5f"
+  },
+  "admin.orderActions.history.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4b4c83c64e71df1de244d7d129bf7accb43be9ce41199121883a2107c584815e"
+  },
+  "admin.orderActions.history.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d52eaa52b90d0b26cfad35dfcfa1102febcc3637c531324f09eb53cc852cf5cd"
+  },
+  "admin.orderActions.history.who": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c17b94b8c9394d40151ba4078f384f0bfe77936d258bc2029bd8b857685cd3f1"
+  },
+  "admin.orderActions.history.what": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f8cf83a76a98df2dd4799b4d0d4f6ffc9af9a3a72d8648f94ca7cdea4b52fde7"
+  },
+  "admin.orderActions.history.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cf9c7aa24a26aac4f0ec4b6395cbfdcc055677c3dac87bd6af898bccd66d4e17"
+  },
+  "admin.orderActions.history.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.orderActions.history.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "admin.orderActions.history.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.orderActions.history.kind.reroute": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5745d279192648a18774cd4f251c1b7d565aeb3ef9696544f34153896672f049"
+  },
+  "admin.orderActions.history.kind.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.orderActions.history.kind.refund_full": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "141291b772e3f7138efc027e64cdf60896413b9c685d8439c19411fc8c36eebc"
+  },
+  "admin.orderActions.history.kind.refund_partial": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0f25a745f004ca0d20919f089c8c078b4fe9ce44a2b48ebaee37188ea8e48719"
+  },
+  "admin.orderActions.history.kind.resend": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1f94843777aed85111a1ef102b3c34d911ce10b281cd1cd43bed2be7efc1fe62"
+  },
+  "admin.orderActions.history.resendWhat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a2020c68a2751304e52f38d80b01e08a16b5bd0cabce3a368daf5d4f6cf99873"
+  },
+  "admin.orderActions.bar.count": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2e6510342c8f9b4d547959dde225d2f47ad2ef9f35e3f41ee9f6f41191fe2f44"
   }
 }
