@@ -57,6 +57,8 @@ export const adminPermissions = [
   "price.edit",
   // spec 012b §5.2 (TASK-300): the go-live flip and the two go-live fiscal fields.
   "country.status",
+  // spec 012b §5.2 (TASK-299): the photo upload.
+  "media.upload",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -107,6 +109,8 @@ export const ADMIN_PERMISSIONS: Readonly<
   "price.edit": ["admin", "finance"],
   // spec 012b §5.2: the go-live flip is admin only.
   "country.status": ["admin"],
+  // spec 012b §5.2: photos are uploaded by admin and content, like they are reviewed.
+  "media.upload": ["admin", "content"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11: upload route, `src/modules/admin/media.ts` commands (upload, review through `attest()`, attach, alt), the metadata strip (`media-image.ts`), `/admin/media`, `/admin/media/[id]`, the photos tab, 143 admin texts; typecheck green. Next: tests (unit for the strip, integration T-22/T-23 on a scratch PG16), lint.
 
 ## Result
 

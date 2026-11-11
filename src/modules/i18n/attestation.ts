@@ -410,6 +410,11 @@ export const ATTEST_REFUSALS = {
   unknown_subject: 404,
   /** The submitted hash is not the hash served now: the text changed after it was read. */
   stale_hash: 409,
+  /**
+   * Approving a florist's photo whose florist has no recorded `terms_version`: the florist
+   * agreement is what licenses the photo (spec 012b §2.7, §13 Q11, AC-23; TASK-299).
+   */
+  no_supplier_terms: 409,
   /** A change request without a note. */
   note_required: 422,
 } as const;

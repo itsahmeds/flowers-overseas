@@ -35,7 +35,8 @@
       "catalogue": "Catalogue",
       "publish": "Publish",
       "reviews": "Reviews",
-      "countries": "Countries"
+      "countries": "Countries",
+      "media": "Photos"
     },
     "roles": {
       "admin": "admin",
@@ -2767,7 +2768,8 @@
         "sizes": "Sizes",
         "text": "Text",
         "prices": "Prices",
-        "margin": "Margin"
+        "margin": "Margin",
+        "photos": "Photos"
       },
       "details": {
         "sku": "SKU",
@@ -2946,6 +2948,41 @@
           "competitor": "Names another flower company.",
           "description_words": "Outside 60 to 90 words."
         }
+      },
+      "photos": {
+        "empty": "No photos on this product yet. Attach one below.",
+        "main": "Main photo",
+        "order": "Photo {order}",
+        "language": "Language",
+        "alt": "Alt text (part of that language's reviewed text)",
+        "altFor": "Alt text in {language}",
+        "shown": "On the site",
+        "shows": "Shown",
+        "hidden": "Not shown",
+        "saveAlt": "Save",
+        "note": "One main photo per product. A photo shows in a language only once it is approved and that language has alt text that is not a file name. Changing alt text makes that language's text unreviewed.",
+        "attach": "Attach a photo",
+        "photo": "Photo",
+        "option": "{id}… · {state}",
+        "makeMain": "Make it the main photo (approved photos only)",
+        "attachSubmit": "Attach",
+        "mainTaken": "This product has its main photo. Other photos are added after it.",
+        "noneAttachable": "No photo is waiting to be attached.",
+        "allPhotos": "All photos",
+        "result": {
+          "attached": "Photo attached.",
+          "altSaved": "Alt text saved. That language's text now needs review again."
+        },
+        "refused": {
+          "invalid": "Something in the form was not valid. Nothing changed.",
+          "not_found": "That photo or product was not found. Nothing changed.",
+          "conflict": "Someone changed this product after you opened it. Nothing changed: reload and try again.",
+          "not_approved": "Only an approved photo can be the main photo. Nothing changed.",
+          "primary_taken": "This product already has a main photo. Nothing changed.",
+          "already_attached": "This photo is already on this product. Nothing changed.",
+          "forbidden_locale": "You can edit alt text only in the languages you review. Nothing changed.",
+          "alt_file_name": "Alt text says what the photo shows; a file name is not alt text. Nothing changed."
+        }
       }
     },
     "countries": {
@@ -3095,6 +3132,148 @@
         "conflict": "The status changed since this page was opened. Nothing changed.",
         "preflight": "The go-live check is not clear any more. Nothing changed.",
         "refused": "That change is not allowed. Nothing changed."
+      }
+    },
+    "media": {
+      "title": "Photos",
+      "summary": "{total, plural, one {# photo} other {# photos}} · {waiting} waiting for review",
+      "readOnly": "You can see the photos. Uploading needs the content role.",
+      "notAttached": "not attached",
+      "imported": "Imported, not re-read",
+      "state": {
+        "pending": "Waiting for review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "source": {
+        "partner": "From a florist",
+        "ai": "AI image",
+        "photo": "Stock photo"
+      },
+      "filters": {
+        "label": "Filter photos",
+        "state": "Review",
+        "anyState": "Any state",
+        "source": "Source",
+        "anySource": "Florist, AI or stock",
+        "apply": "Apply",
+        "clear": "Clear"
+      },
+      "empty": {
+        "title": "No photos yet"
+      },
+      "filteredEmpty": {
+        "title": "No photo matches these filters"
+      },
+      "upload": {
+        "open": "Upload a photo",
+        "title": "Upload a photo",
+        "file": "Photo",
+        "fileHint": "JPEG, PNG or WebP, up to 15 MB and 40 megapixels. We remove location, camera and every other detail stored in the file before it is saved.",
+        "source": "Where is it from?",
+        "sourceOption": {
+          "partner": "A florist",
+          "ai": "AI image",
+          "photo": "Stock photo"
+        },
+        "florist": "Florist",
+        "floristHint": "Licence: their signed terms, version recorded with the photo.",
+        "chooseFlorist": "Choose the florist",
+        "generator": "Made with",
+        "generatorModel": "Model",
+        "promptHash": "Prompt fingerprint",
+        "generatorSeed": "Seed",
+        "credit": "Credit",
+        "creditHint": "Photographer and library",
+        "licence": "Licence",
+        "depicts": "It shows",
+        "depictsOption": {
+          "product": "A product",
+          "brand": "Our brand",
+          "context": "A setting, no product"
+        },
+        "deliveryNote": "Delivery photos come with the order, never through this page.",
+        "product": "Product",
+        "productHint": "Optional: the SKU, such as FO-BQ-046. The photo is attached to it, not as the main photo.",
+        "checksTitle": "Before you upload",
+        "checksNote": "The same four lines are checked again at review.",
+        "submit": "Upload",
+        "cancel": "Cancel",
+        "progress": "Uploading: {percent}"
+      },
+      "checks": {
+        "people": "No people in the photo",
+        "address": "No address, phone number or shop sign",
+        "brand": "No other brand",
+        "matches": "It is the bouquet the florist will make"
+      },
+      "refusedNote": "Nothing is stored when an upload is refused.",
+      "refused": {
+        "empty": "Choose a photo to upload.",
+        "too_large": "The file is larger than 15 MB.",
+        "type": "JPEG, PNG or WebP only. On an iPhone, share the photo as JPEG.",
+        "too_many_pixels": "The photo has more than 40 megapixels.",
+        "undecodable": "This file could not be read as a photo.",
+        "delivery": "Delivery photos are not uploaded here.",
+        "supplier_required": "Choose the florist the photo is from.",
+        "provenance": "Fill in every field about where the photo is from.",
+        "supplier_unknown": "That florist is not one we work with.",
+        "product_unknown": "No product has that SKU.",
+        "duplicate": "This photo is already stored.",
+        "storage_unconfigured": "Photo storage is not set up yet.",
+        "failed": "The upload did not finish. Try again."
+      },
+      "back": "All photos",
+      "when": "{date} ({timeZone})",
+      "result": {
+        "uploaded": "Saved, with location and camera details removed. It is ready for review.",
+        "approved": "Approved. Your name, the time and this exact image are recorded.",
+        "rejected": "Rejected, with your note."
+      },
+      "review": {
+        "title": "Photo {id}…",
+        "imageAlt": "The uploaded photo, with every detail stored in the file removed",
+        "decision": "Review",
+        "checks": "The four checks",
+        "approveHint": "Approve when all four are true. Approving records your name, the time and this exact image.",
+        "approve": "Approve",
+        "approveAgain": "Approve again",
+        "reject": "Reject",
+        "note": "Why (needed to reject)",
+        "noteHint": "For example: a person's face is visible",
+        "noteShown": "Note: {note}",
+        "noPermission": "Approving and rejecting photos needs the content role.",
+        "noTerms": "{florist} has no signed terms recorded. Their terms grant us the right to use their photos, so this photo cannot be approved yet.",
+        "recordTerms": "Record their terms",
+        "approvedBy": "Approved by {name}, {when}.",
+        "rejectedBy": "Rejected by {name}, {when}.",
+        "importedBody": "Approved as written in the old file. It counts as approved until someone approves it again.",
+        "deriving": "Still making the sizes the site needs. They are ready in a minute.",
+        "provenance": "Where it is from",
+        "privateNote": "The florist's name and code stay in admin. They never appear on the site."
+      },
+      "reviewRefused": {
+        "invalid": "Tick all four checks to approve, or write a note to reject. Nothing was recorded.",
+        "not_a_reviewer": "Only a signed-in admin can review photos. Nothing was recorded.",
+        "no_display_name": "Add your name in Users before you review. Nothing was recorded.",
+        "permission_denied": "Reviewing photos needs the content role. Nothing was recorded.",
+        "unknown_subject": "This photo was not found. Nothing was recorded.",
+        "stale_hash": "The photo changed after you opened it. Nothing was recorded: reload and look again.",
+        "no_supplier_terms": "The florist has no signed terms recorded, so their photo cannot be approved. Nothing was recorded.",
+        "note_required": "Write a note to reject. Nothing was recorded."
+      },
+      "facts": {
+        "source": "Source",
+        "florist": "Florist",
+        "licence": "Licence",
+        "termsVersion": "Their terms, version {version}",
+        "noTerms": "No terms recorded",
+        "credit": "Credit",
+        "uploaded": "Uploaded",
+        "file": "File",
+        "fileValue": "{width} × {height} · {mime} · details removed",
+        "fingerprint": "Fingerprint",
+        "usedOn": "Used on"
       }
     }
   },

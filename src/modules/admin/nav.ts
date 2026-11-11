@@ -23,6 +23,7 @@ export interface AdminNavItem {
     | "finance"
     | "basketReminders"
     | "catalogue"
+    | "media"
     | "countries"
     | "publish"
     | "flags"
@@ -103,6 +104,14 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "catalogue",
     href: "/admin/catalogue/products",
     permissions: ["catalogue.edit", "price.edit"],
+    built: true,
+  },
+  // Spec 012b §2.7 (TASK-299): every photo, the upload and the review. Upload is `media.upload`,
+  // review `media.review` (both admin and content).
+  {
+    key: "media",
+    href: "/admin/media",
+    permissions: ["media.upload", "media.review"],
     built: true,
   },
   // Spec 012b §2.8 (TASK-300): every destination and its go-live check; any admin role reads

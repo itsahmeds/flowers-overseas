@@ -7,8 +7,10 @@
  * `admin-price-change-*`. The form on two thirds, the status card on the last third. Every
  * signed-in role reads; a control the user cannot use is absent with the reason as text (spec 004
  * §14 A20). The price confirmation is this page with `country`, `tier` and `amount` in the query:
- * the server computes the preview, the Confirm form posts it. Photos are spec 012b's task 7.
+ * the server computes the preview, the Confirm form posts it. The photos tab (spec 012b §2.7,
+ * TASK-299) attaches photos, marks the main one and edits the alt text per language.
  */
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactElement } from "react";
 import { z } from "zod";
@@ -18,17 +20,25 @@ import { launchLocales, localeConfig } from "@/config/locales";
 import {
   type ActivationCondition,
   type CatalogueActor,
+  type MediaActor,
   type ProductEditorView,
   adminRequestId,
   adminT,
   can,
   marginTab,
+  photoRendersIn,
   previewPriceChange,
   productEditorView,
+  productPhotos,
   requireAdminPage,
 } from "@/modules/admin";
 import { formatMoney, formatNumber, formatPercentBp } from "@/modules/i18n";
-import { AdminButton, AdminRefusal } from "@/modules/ui/admin/AdminControls";
+import {
+  AdminButton,
+  AdminRefusal,
+  AdminToast,
+  adminButtonClass,
+} from "@/modules/ui/admin/AdminControls";
 import {
   AdminCell,
   AdminChip,
@@ -52,8 +62,10 @@ import {
 } from "@/modules/ui/admin/AdminRecord";
 import { AdminFrame } from "../../../frame";
 import {
+  attachPhotoAction,
   confirmPriceAction,
   removeFromCountryAction,
+  savePhotoAltAction,
   saveCopyAction,
   saveProductAction,
   saveTiersAction,
@@ -72,7 +84,24 @@ import {
 export const dynamic = "force-dynamic";
 
 const BASE = "/admin/catalogue/products";
-const TABS = ["details", "sizes", "text", "prices", "margin"] as const;
+const TABS = [
+  "details",
+  "sizes",
+  "text",
+  "photos",
+  "prices",
+  "margin",
+] as const;
+const PHOTO_REFUSALS = [
+  "invalid",
+  "not_found",
+  "conflict",
+  "not_approved",
+  "primary_taken",
+  "already_attached",
+  "forbidden_locale",
+  "alt_file_name",
+] as const;
 type Tab = (typeof TABS)[number];
 const CONDITIONS: readonly ActivationCondition[] = [
   "en_copy",
@@ -99,6 +128,11 @@ const QuerySchema = z
       .optional()
       .catch(undefined),
     amount: z.string().max(32).optional().catch(undefined),
+    photoResult: z
+      .enum(["attached", "altSaved", "refused"])
+      .optional()
+      .catch(undefined),
+    photoReason: z.enum(PHOTO_REFUSALS).optional().catch(undefined),
   })
   .catch({ tab: "details", locale: "en" });
 
@@ -481,6 +515,203 @@ function TextTab({
           </div>
         ) : null}
       </form>
+    </div>
+  );
+}
+
+async function PhotosTab({
+  view,
+  actor,
+  query,
+  mayEdit,
+  maySaveLocale,
+}: {
+  readonly view: ProductEditorView;
+  readonly actor: MediaActor;
+  readonly query: z.infer<typeof QuerySchema>;
+  readonly mayEdit: boolean;
+  readonly maySaveLocale: (locale: string) => boolean;
+}): Promise<ReactElement> {
+  const photos = await productPhotos(actor, view.id);
+  const hasPrimary = photos.photos.some((photo) => photo.primary);
+  return (
+    <div className="grid gap-[16px]">
+      {query.photoResult === undefined ? null : query.photoResult ===
+        "refused" ? (
+        <AdminRefusal>
+          {adminT(
+            `admin.catalogue.photos.refused.${query.photoReason ?? "invalid"}`,
+          )}
+        </AdminRefusal>
+      ) : (
+        <AdminToast>
+          {adminT(`admin.catalogue.photos.result.${query.photoResult}`)}
+        </AdminToast>
+      )}
+      {photos.photos.length === 0 ? (
+        <AdminNote>{adminT("admin.catalogue.photos.empty")}</AdminNote>
+      ) : (
+        photos.photos.map((photo) => (
+          <AdminSection
+            key={photo.productMediaId}
+            title={adminT(
+              photo.primary
+                ? "admin.catalogue.photos.main"
+                : "admin.catalogue.photos.order",
+              { order: formatNumber(photo.sort + 1, "en") },
+            )}
+          >
+            <p className="flex flex-wrap items-center gap-[8px] text-[14px]">
+              <Link
+                href={`/admin/media/${photo.assetId}`}
+                className="underline"
+              >
+                <AdminCode>{photo.keyId.slice(0, 18)}</AdminCode>
+              </Link>
+              <AdminChip
+                tone={
+                  photo.state === "approved"
+                    ? "ok"
+                    : photo.state === "rejected"
+                      ? "bad"
+                      : "warn"
+                }
+              >
+                {adminT(
+                  `admin.media.state.${photo.state === "approved" ? "approved" : photo.state === "rejected" ? "rejected" : "pending"}`,
+                )}
+              </AdminChip>
+              {photo.imported ? (
+                <AdminChip tone="demo">
+                  {adminT("admin.media.imported")}
+                </AdminChip>
+              ) : null}
+            </p>
+            <AdminTable
+              columns={[
+                {
+                  key: "language",
+                  label: adminT("admin.catalogue.photos.language"),
+                },
+                { key: "alt", label: adminT("admin.catalogue.photos.alt") },
+                { key: "shown", label: adminT("admin.catalogue.photos.shown") },
+              ]}
+            >
+              {launchLocales.map((locale) => {
+                const alt = photo.alts[locale];
+                const id = `alt-${photo.productMediaId}-${locale}`;
+                const shows = photoRendersIn(photo.state, alt, [photo.keyId]);
+                return (
+                  <AdminRow key={locale}>
+                    <AdminCell nowrap>
+                      <AdminCode>{locale}</AdminCode>
+                    </AdminCell>
+                    <AdminCell>
+                      <form
+                        action={savePhotoAltAction}
+                        className="flex flex-wrap items-center gap-[8px]"
+                      >
+                        <Hidden view={view} />
+                        <input
+                          type="hidden"
+                          name="productMediaId"
+                          value={photo.productMediaId}
+                        />
+                        <input type="hidden" name="locale" value={locale} />
+                        <label htmlFor={id} className="sr-only">
+                          {adminT("admin.catalogue.photos.altFor", {
+                            language: localeConfig(locale).nativeName,
+                          })}
+                        </label>
+                        <input
+                          id={id}
+                          name="alt"
+                          defaultValue={alt ?? ""}
+                          maxLength={300}
+                          readOnly={!mayEdit || !maySaveLocale(locale)}
+                          className={`${adminControlClass(false)} min-w-[16rem] flex-1`}
+                        />
+                        {mayEdit && maySaveLocale(locale) ? (
+                          <AdminButton tone="ghost">
+                            {adminT("admin.catalogue.photos.saveAlt")}
+                          </AdminButton>
+                        ) : null}
+                      </form>
+                    </AdminCell>
+                    <AdminCell nowrap>
+                      <AdminChip tone={shows ? "ok" : "plain"}>
+                        {adminT(
+                          shows
+                            ? "admin.catalogue.photos.shows"
+                            : "admin.catalogue.photos.hidden",
+                        )}
+                      </AdminChip>
+                    </AdminCell>
+                  </AdminRow>
+                );
+              })}
+            </AdminTable>
+          </AdminSection>
+        ))
+      )}
+      <AdminNote>{adminT("admin.catalogue.photos.note")}</AdminNote>
+      {mayEdit ? (
+        <AdminSection title={adminT("admin.catalogue.photos.attach")}>
+          {photos.attachable.length === 0 ? (
+            <p className="text-[14px]">
+              {adminT("admin.catalogue.photos.noneAttachable")}{" "}
+              <Link href="/admin/media?upload=1" className="underline">
+                {adminT("admin.media.upload.open")}
+              </Link>
+            </p>
+          ) : (
+            <form
+              action={attachPhotoAction}
+              className="flex flex-wrap items-end gap-[12px]"
+            >
+              <Hidden view={view} />
+              <AdminField
+                id="attach-asset"
+                label={adminT("admin.catalogue.photos.photo")}
+              >
+                <select
+                  id="attach-asset"
+                  name="assetId"
+                  className={adminControlClass(false)}
+                >
+                  {photos.attachable.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {adminT("admin.catalogue.photos.option", {
+                        id: asset.shortId,
+                        state: adminT(
+                          `admin.media.state.${asset.state === "approved" ? "approved" : "pending"}`,
+                        ),
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </AdminField>
+              {hasPrimary ? null : (
+                <label className="flex min-h-[24px] items-center gap-[8px] text-[14px]">
+                  <input type="checkbox" name="primary" value="yes" />
+                  {adminT("admin.catalogue.photos.makeMain")}
+                </label>
+              )}
+              <AdminButton tone="primary">
+                {adminT("admin.catalogue.photos.attachSubmit")}
+              </AdminButton>
+            </form>
+          )}
+          {hasPrimary ? (
+            <AdminNote>{adminT("admin.catalogue.photos.mainTaken")}</AdminNote>
+          ) : null}
+        </AdminSection>
+      ) : null}
+      <div>
+        <Link href="/admin/media" className={adminButtonClass("ghost")}>
+          {adminT("admin.catalogue.photos.allPhotos")}
+        </Link>
+      </div>
     </div>
   );
 }
@@ -992,6 +1223,17 @@ export default async function ProductEditorPage({
         maySaveLocale={
           session.roles.includes("admin") ||
           view.reviewerLocales.includes(query.locale)
+        }
+      />
+    ) : tab === "photos" ? (
+      <PhotosTab
+        view={view}
+        actor={{ ...actor, userId: session.userId }}
+        query={query}
+        mayEdit={mayEdit}
+        maySaveLocale={(locale) =>
+          session.roles.includes("admin") ||
+          view.reviewerLocales.includes(locale)
         }
       />
     ) : tab === "prices" ? (

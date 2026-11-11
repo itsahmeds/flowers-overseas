@@ -37,9 +37,11 @@
  * seed manifest. The key's id segment of the original (`originals/{kind}/{id}`, `objectKey()`) is
  * the asset's stable name — the seed id for seeded imagery, so its variant keys do not change when
  * a database is re-seeded and its uuids with it — and the slot is read from
- * `seed/data/media.json` by that id. An asset the manifest does not know is refused
- * `slot_unknown`; uploads outside the seed (spec 012b's admin photos, spec 011's delivery photos)
- * name their slot in their own tasks (recorded in `docs/tasks/TASK-082.md`).
+ * `seed/data/media.json` by that id. An admin upload (spec 012b §2.7, TASK-299) is keyed by its
+ * row's uuid, which no seed id can be, and takes the ladder of its `depicts` (`uploadSlotFor`):
+ * a bouquet the product hero's, the widest a product photo is shown at. Any other id the manifest
+ * does not know is refused `slot_unknown` (`docs/tasks/TASK-082.md`'s open question, settled in
+ * `docs/tasks/TASK-299.md`).
  *
  * ## Refusals and logging
  *
@@ -168,6 +170,30 @@ export function seedSlotOf(keyId: string): MediaSlot | undefined {
   return seedSlots.get(keyId);
 }
 
+const UUID_KEY_ID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u;
+
+/**
+ * The ladder of an admin upload (spec 012b §2.7): by `depicts`, for an original keyed by a uuid
+ * only. A seed id is never a uuid, so a seeded asset keeps its manifest slot.
+ */
+export function uploadSlotFor(
+  keyId: string,
+  depicts: string,
+): MediaSlot | undefined {
+  if (!UUID_KEY_ID.test(keyId)) return undefined;
+  switch (depicts) {
+    case "product":
+      return "productHero";
+    case "brand":
+      return "hero";
+    case "context":
+      return "context";
+    default:
+      return undefined;
+  }
+}
+
 /** `originals/{kind}/{id}` → `id`, only for the asset's own kind; anything else is `undefined`. */
 export function originalKeyId(kind: string, key: string): string | undefined {
   const match = /^originals\/([a-z_]+)\/([a-z0-9]+(?:-[a-z0-9]+)*)$/u.exec(key);
@@ -230,7 +256,8 @@ export async function deriveAssetVariants(
   }
   const target = published ? deps.publicBucket : deps.privateBucket;
   if (target === undefined) return refused("private_bucket_unconfigured");
-  const slot = (deps.slotOf ?? seedSlotOf)(keyId);
+  const slot =
+    (deps.slotOf ?? seedSlotOf)(keyId) ?? uploadSlotFor(keyId, asset.depicts);
   if (slot === undefined) return refused("slot_unknown");
 
   const missing = ladderFor(slot, pipeline).filter(
