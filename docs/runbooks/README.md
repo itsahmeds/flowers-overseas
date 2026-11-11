@@ -35,3 +35,6 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [host-failover](host-failover.md) | Moving off Vercel to the Railway + Cloudflare fallback (ADR-0012) |
 | [data-breach](data-breach.md) | Personal-data breach: containment, assessment, 72-hour notification |
 | [dsar](dsar.md) | Data-subject access, deletion or portability request |
+| [basket-reminders](basket-reminders.md) | Basket reminder emails (spec 034): the founder checklist before production, the automatic pause, a buyer asking to stop, rotating `CONTACT_HMAC_SECRET` |
+| [fraud-review](fraud-review.md) | Fraud pre-checks and review (spec 021): the pay-step checks, the card-testing pause, the gate before routing and the review queue |
+| [reviews](reviews.md) | Reviews (spec 022a): moderating a review, the review alerts and takedown requests |

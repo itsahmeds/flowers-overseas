@@ -117,6 +117,17 @@ export interface ImportClosure {
   readonly json: ReadonlySet<string>;
 }
 
+/**
+ * A module whose first statement is the `"use server"` directive: a client file that imports it
+ * receives server-action references, never the module's code or its imports, so the walk records
+ * the file and stops there (React's server functions; the `/admin/discounts` form, TASK-445).
+ * Only the module-level directive counts: comments may precede it, a statement may not.
+ */
+export function isServerActionModule(source: string): boolean {
+  const body = source.replace(/^(?:\s+|\/\/[^\n]*|\/\*[\s\S]*?\*\/)*/u, "");
+  return /^["']use server["']/u.test(body);
+}
+
 /** Every repository file reachable from `entry`, plus the packages and JSON files it reaches. */
 export function importClosure(entry: string): ImportClosure {
   const files = new Set<string>();
@@ -128,6 +139,7 @@ export function importClosure(entry: string): ImportClosure {
     if (file === undefined || files.has(file)) continue;
     files.add(file);
     const source = readFileSync(file, "utf8");
+    if (file !== entry && isServerActionModule(source)) continue;
     for (const match of [
       ...source.matchAll(SPECIFIER),
       ...source.matchAll(DYNAMIC_SPECIFIER),
