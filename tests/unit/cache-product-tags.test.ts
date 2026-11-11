@@ -146,7 +146,7 @@ describe("`urlsForTag()` learns the product page's tags (A10)", () => {
     expect(germany).toStrictEqual([]);
   });
 
-  it("still resolves `catalog:{iso2}` to the destination's listings and product pages, and `sitemap` to nothing", async () => {
+  it("still resolves `catalog:{iso2}` to the destination's listings and product pages, and `sitemap` to no page", async () => {
     const listings = (await listingPages())
       .filter((page) => page.countryIso === "PL")
       .map((page) => page.path);
@@ -161,6 +161,11 @@ describe("`urlsForTag()` learns the product page's tags (A10)", () => {
     expect(await urlsForTag("catalog:PL", { baseUrl: BASE })).toStrictEqual(
       absolute([...listings, ...products, ...prices]),
     );
-    expect(await urlsForTag("sitemap", { baseUrl: BASE })).toStrictEqual([]);
+    // `sitemap` names the sitemap documents only (spec 012b §5.2, TASK-296), never a page.
+    const sitemap = await urlsForTag("sitemap", { baseUrl: BASE });
+    expect(
+      sitemap.filter((url) => !/\/sitemaps?[./]/u.test(url)),
+    ).toStrictEqual([]);
+    expect(sitemap).toContain(`${BASE}/sitemap.xml`);
   });
 });

@@ -339,6 +339,15 @@ const REGISTRY = [
     risk: "high",
     dirties: [],
   },
+  // Spec 012b §12 "Feature flags" (migration `0046_placeholder_window`, TASK-295): one way.
+  {
+    key: "catalogue.placeholder_window",
+    scopeKinds: ["global"],
+    description:
+      "Placeholder products may be retired, removed from a country and renamed freely while on, and a publish may remove their URLs (spec 012b). Admin only, one way: turned off when the site opens to search engines, never on again.",
+    risk: "high",
+    dirties: [],
+  },
 ] as const satisfies readonly FeatureFlagDefinition[];
 
 /** Every registered key. */

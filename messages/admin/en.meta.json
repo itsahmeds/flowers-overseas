@@ -834,6 +834,11 @@
     "reviewed": false,
     "sourceHash": "1239736b7e995480c178e84db349c1824d01227ac547a393c176a7ce4b7a4ee6"
   },
+  "admin.flags.description.catalogue.placeholder_window": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ed130021d74e06d5820c87efeb330e41f2f11f2ed7ceb57b879342eed808637a"
+  },
   "admin.flags.description.checkout.demo_guard": {
     "source": "human",
     "reviewed": false,
@@ -9068,6 +9073,291 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "8d9ad4169c8b3370a99dd64e748c2df16845155950548f9f59b3b47dd1398b93"
+  },
+  "admin.nav.publish": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "859390eb495b2ead7f05f0f799546c71435b2db31dbe082adecc3426fffc3391"
+  },
+  "admin.home.waitingToPublish": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6527b4c66274c9a9a45dca54002d3564c05e4a72a7e80ec06d7874c339542091"
+  },
+  "admin.home.publishOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "649ff58fe7bf7a33844a8a0ca9c5b2efd41c7d5a4c7532b9889f7761d09e4bd9"
+  },
+  "admin.home.nothingToPublish": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a05adbbd25b9aa5cbf566de913c4e569a4e919014a336b894e78cf42dc3acf4b"
+  },
+  "admin.home.awaitingReview": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5dd9c48b2d55e14f6f1fccce7b2322ef928c7fe97e5e1702972bdbd18ca037a"
+  },
+  "admin.home.photosAwaiting": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5e3147ab51e0084c3c817707f1aed1510260c13f45697bfe380dc51f6c179151"
+  },
+  "admin.home.noReviewLocales": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eb047f6780274e99e2764e69f24a53806d79380b87e26be97f602d5dbf32a764"
+  },
+  "admin.publish.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "859390eb495b2ead7f05f0f799546c71435b2db31dbe082adecc3426fffc3391"
+  },
+  "admin.publish.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b1c20e5e248fae2cd533fcac2feaeda30f079065b98843eb7e5a43ae814ba75e"
+  },
+  "admin.publish.button": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5ee09fb60faca399d7f4e38a155171ba73561ac2959bc718245e00e0040593ed"
+  },
+  "admin.publish.waitingTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6e54c2b65b4eb5b56e745c83131c66b331bf43a74e39f99a256bf8d3b987494f"
+  },
+  "admin.publish.waitingIntro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "279d017bd79db8450c8e691b9864d54ea995d2191c89d66c3c14d16a288fbde4"
+  },
+  "admin.publish.colLanguage": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "admin.publish.colAdded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3db96a4cdcf1810214e412cca057f5fe42989c0cf030fe312ec8a57eecc19a7b"
+  },
+  "admin.publish.colRemoved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "600f66852d0b28c5b43f616228607118c6545311ae2dde1898d6430aaab10694"
+  },
+  "admin.publish.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "admin.publish.listAdded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6cfb6cb932990afa1f823fe25c56d0771c1681fa7f5347ff1e9d785ad892d0f4"
+  },
+  "admin.publish.listRemoved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "42525313d81a96901bb3e099cf38313f65c4ee81597e354ebbeffb80bd875ee2"
+  },
+  "admin.publish.today": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cc414e4f9f0f8cbd29eb1753dca7643d7ffcc0fa12dc0904995ee2952bbd28f5"
+  },
+  "admin.publish.liveTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "96436bc476ca1f65c9dc37a27a8968e7cfbe55c47ae0b338d5115a7924013d75"
+  },
+  "admin.publish.version": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dd167905de0defcaf72de673ee44c07431770d129ccffab286bd2edfdaf62396"
+  },
+  "admin.publish.pageList": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9f1ac8f24168e5d406a1eb641680f858d20492a42a76c0996807184b35faffe4"
+  },
+  "admin.publish.pageListNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "13dce3d93d26c82452572e22abf47149640ff51fd7873bfc7ee6168bb3e68c6c"
+  },
+  "admin.publish.built": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cfe0e6cbcf5cdd1aab44a39ab4d39713561bafab51fa7ff4654c980d5578ee5f"
+  },
+  "admin.publish.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.publish.historyTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8fa05e96c304802c8c91ee3c2cec84cff0075e1f75b4605e505271a8ff35a31e"
+  },
+  "admin.publish.historyZone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b5c5f6aa49ea35a71ac3e71fe768f7ecd2f2cad44c27ea1604f7047eded49854"
+  },
+  "admin.publish.colAsked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "821c038b7a771ead0558b3113faeef905440e63c94858860a5032c4f96f9e119"
+  },
+  "admin.publish.colResult": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6e7d50e84f4731ef74187cf8cfa2672184eed8866b0b0074a772f4a64e0f4ba2"
+  },
+  "admin.publish.colBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "125466b821c6448a68d22c6ddbdbbc921f6b174a620f0fcbc3d219afd7d22b47"
+  },
+  "admin.publish.colPages": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
+  },
+  "admin.publish.colVersion": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dd167905de0defcaf72de673ee44c07431770d129ccffab286bd2edfdaf62396"
+  },
+  "admin.publish.byRelease": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e020e3c67bd0c31227720bd8eb2c3a777d162e0987e8fd8438b007c170266476"
+  },
+  "admin.publish.byAdmin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c1c224b03cd9bc7b6a86d77f5dace40191766c485cd55dc48caf9ac873335d6f"
+  },
+  "admin.publish.status.requested": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "821c038b7a771ead0558b3113faeef905440e63c94858860a5032c4f96f9e119"
+  },
+  "admin.publish.status.building": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "87c5912f2cefdf9d7d1913611187fa8ab653a89a8d4b65f574812f899834e8b1"
+  },
+  "admin.publish.status.deployed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a5dc3fe9452f54e9140575e16cc208b86c8a8855446e76834345cf4d057cc32c"
+  },
+  "admin.publish.status.verified": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9cac25ee4e16e70e3db7159b03cfad708aba842c29e755971b286b71a647d9e3"
+  },
+  "admin.publish.status.failed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "admin.publish.status.timed_out": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9718cc761cfd5810041ef007ae258fa1308b8487d0f30c5f36a442f8fe5f76c5"
+  },
+  "admin.publish.runTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1a4430b0daac0263988fcae50fb23a8fcce21b53cdff02034d677fbb370a3cec"
+  },
+  "admin.publish.runOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "de2a360993dec63e9d2682503923d7187e459cd8ed5c1972d72ee8d3c1aecb75"
+  },
+  "admin.publish.checking": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e98be03e4728497509f862df948d535584676e285791f69fcd3095f65ddf983"
+  },
+  "admin.publish.verifiedBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fcdf9a9f74e732ca19611b6e9aa642216b76293c144f83af867635a39ad04fa2"
+  },
+  "admin.publish.failedTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2fe0dacea20c8780c4f5ae9b06c2a9d8d6a6b9f596b53af1c47476d4c38d6e4e"
+  },
+  "admin.publish.failedBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "df6d05a7842e7bc0567574af56da8f1bd6b01b44f683dc295c3b4669e43d2312"
+  },
+  "admin.publish.timedOutBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1e5b5360f51594d58080998703dde43515e1a012659df63aa587223a12a2632"
+  },
+  "admin.publish.nothingTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a8672cf9c35e3a96ebb8be272949b00fa0d879e08103a66fdbcc898c1fc505c5"
+  },
+  "admin.publish.nothingBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0f1db156e9c42cb3bebb02d74d0a1ed5b8e343d74f40c5ec8555abc8afd7f6fe"
+  },
+  "admin.publish.limitTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eb7ac13c19b4f644c7d20d8648d67b36860ecdaad670e603f85d5af0611b5bac"
+  },
+  "admin.publish.limitBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "25b1deddbaf334d7983855a1f73138b8419ebf6fff5d5663a7048847b39bdb67"
+  },
+  "admin.publish.refused": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ada46ca8e34ada17fb480224a70d7b2d9ceb4be12de8362045ba75179c0e7041"
+  },
+  "admin.publish.noTarget": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9c34eb3cccfbd3ba4b5cd428afeeb7c1692ddaa8d231669208e5ffc0211fe51f"
+  },
+  "admin.publish.noManifest": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "55512f42edd6eeec33180772e762e537cc6ec3bdb4a9efe002251988372d47ba"
+  },
+  "admin.publish.noPermission": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fd02f3bdfd7db63b7b183f04eb1c8639679a7c3540fa81e55c54de962cfc143e"
+  },
+  "admin.publish.asked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "04f4695c16ab83131c86da7c3b61cd4882977e2370dd9069d66b707a80b0254b"
+  },
+  "admin.publish.couldNotStart": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7cd4da6cea41bc892475d42822c2a26a268f33b39eaaff5e17f25f4468db7c9"
   },
   "admin.orderActions.refund.openFull": {
     "source": "human",

@@ -46,6 +46,14 @@ export {
 } from "./orders";
 export * from "./order-actions";
 export { adminRequestId } from "./request";
+// Spec 012b §2.3 (TASK-295): the publish page's reads and the home's two counters.
+export {
+  PUBLISH_ACTIONS,
+  type PublishHomeCounts,
+  type PublishPageView,
+  publishHomeCounts,
+  publishPageView,
+} from "./publish";
 export {
   AUDIT_ENTITIES,
   AUDIT_MASK,

@@ -14,7 +14,13 @@
  */
 import { z } from "zod";
 
+import { invalidate } from "../lib/cache";
 import { withSystemContext } from "../lib/db";
+import {
+  PUBLISH_POLL_SECONDS,
+  invalidateChangedSinceJob,
+  runPublishJob,
+} from "../lib/publish-runtime";
 import { logger } from "../lib/logger";
 import {
   createNbpRateProvider,
@@ -565,6 +571,28 @@ export const JOB_HANDLERS: JobHandlers = {
   "basket-reminders.send": async (payload, context) => {
     const { runBasketReminderSend } = await import("./basket-reminders");
     await runBasketReminderSend(payload.reminderId, context.retryCount ?? 0);
+  },
+  // Spec 012b §2.3 (TASK-295): one step of a publish run; while it is open, the next step is
+  // enqueued a minute later. Idempotent by run id (`advancePublishRun()`).
+  "catalogue.publish": async (payload) => {
+    const done = await runPublishJob(payload);
+    if (done) return;
+    const { enqueue, withBoss } = await import("./runtime");
+    await withBoss((boss) =>
+      enqueue(boss, "catalogue.publish", payload, {
+        requestId: "system:catalogue.publish",
+        startAfter: new Date(Date.now() + PUBLISH_POLL_SECONDS * 1_000),
+      }),
+    );
+  },
+  // Spec 012b §2.3 F1 (TASK-295): a command's tags, or a deployment's `dataAsOf` read and its
+  // rows' tags purged once, inside the tick.
+  "cache.invalidate": async (payload) => {
+    if ("tags" in payload) {
+      await invalidate(payload.tags);
+      return;
+    }
+    await invalidateChangedSinceJob(payload.changedSince);
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay. Spec

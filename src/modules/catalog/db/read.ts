@@ -13,8 +13,9 @@
  * costs the same one (AC-28: "one batched query per (product, country) rather than one per tier").
  * A cached ISR page renders nothing, so it reads nothing (spec 002 §5.4).
  *
- * Outside a server request (a script, a job, a test) React's `cache()` memoises nothing, so every
- * read queries afresh: nothing here is a process-wide cache that could hold a superseded price past
+ * Outside a server render (a route handler, a script, a job, a test) React's `cache()` memoises
+ * nothing, so every read queries afresh unless the caller opened `withCatalogReadScope()`
+ * (`../read-scope.ts`), which a route handler that lists many products does: nothing here is a process-wide cache that could hold a superseded price past
  * an admin edit. A rejected read is dropped from the scope, so one failed query is not replayed to
  * the rest of the request.
  *
@@ -27,6 +28,7 @@ import { cache } from "react";
 import { type DbTransaction, withDbContext } from "@/lib/db";
 
 import { deepFrozenCopy } from "../frozen";
+import { activeCatalogReadScope } from "../read-scope";
 
 /** Runs one read in one transaction and hands back its result. */
 export type CatalogDbRead = <T>(
@@ -50,10 +52,17 @@ export interface CatalogDbOptions {
 export const publicCatalogRead: CatalogDbRead = (query) =>
   withDbContext({ role: "public", requestId: randomUUID() }, query);
 
-/** One `Map` per server request (React's `cache()`); a fresh one per call anywhere else. */
-export const requestReadScope: CatalogReadScope = cache(
+/** One `Map` per server render (React's `cache()`); a fresh one per call anywhere else. */
+const renderReadScope: CatalogReadScope = cache(
   () => new Map<string, Promise<unknown>>(),
 );
+
+/**
+ * The current request's scope: the one `withCatalogReadScope()` opened around this call when there
+ * is one (a route handler, a job, a script: `../read-scope.ts`), otherwise the server render's.
+ */
+export const requestReadScope: CatalogReadScope = () =>
+  activeCatalogReadScope() ?? renderReadScope();
 
 /** The production wiring: the public context and the request's scope. */
 export const DEFAULT_CATALOG_DB_OPTIONS: CatalogDbOptions = {

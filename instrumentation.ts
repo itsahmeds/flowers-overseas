@@ -38,6 +38,15 @@ export async function register(): Promise<void> {
     const { primeCountryRegistry } =
       await import("./src/modules/geo/db/runtime");
     await primeCountryRegistry();
+    // Spec 012b §2.3 (TASK-295): load this build's existence manifest, then verify the open
+    // publish run against this deployment and purge what changed while it built. Never during the build, and never blocking the boot.
+    if (!isBuildPhase()) {
+      const { loadExistenceManifest } =
+        await import("./src/lib/existence-load");
+      loadExistenceManifest();
+      const { bootPublish } = await import("./src/lib/publish-boot");
+      void bootPublish();
+    }
   }
   if (process.env.NEXT_RUNTIME === "edge") {
     await import("./sentry.edge.config");

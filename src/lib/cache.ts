@@ -34,7 +34,14 @@ import {
   pickerState,
 } from "@/modules/geo";
 import { localePath, routableLocaleCodes } from "@/modules/i18n";
-import { absoluteUrl, deploymentDescriptor } from "@/modules/seo";
+import {
+  SITEMAP_CHILDREN,
+  SITEMAP_INDEX_PATH,
+  absoluteUrl,
+  deploymentDescriptor,
+  localeSitemapIndexPath,
+  sitemapChildPath,
+} from "@/modules/seo";
 
 import {
   createCloudflareCacheAdapter,
@@ -141,13 +148,35 @@ function taggedDocuments(): TaggedDocument[] {
 export const SITEMAP_CACHE_TAG = "sitemap";
 
 /**
- * Tags `urlsForTag()` deliberately leaves unresolved. `sitemap` is carried by the corridor pages
- * and the hubs (their builders above), by spec 008's listing pages and — per the sitemap routes —
- * by the sitemap documents themselves, and no spec says which of those a `sitemap` purge means.
- * TASK-102's brief records the question; until it is answered the tag resolves to nothing and
- * the adapter names it in its log line (`unresolved_tags`), rather than guessing a URL set.
+ * The documents `sitemap` names (spec 012b §5.2 "`src/lib/cache.ts`": "the sitemap index plus
+ * every locale child"; TASK-296): `/sitemap.xml`, and for every routable locale its index and each
+ * child of the registry, whether or not the index announces it today, because a purge of a URL
+ * nobody cached is harmless and a child that was announced before a publish must lose its copy.
+ * Not the pages that also declare `sitemap` (corridors, hubs, listings, products): a publish
+ * changes which URLs the sitemaps list, not those pages, which carry their own tags.
  */
-const UNRESOLVED_TAGS: readonly string[] = [SITEMAP_CACHE_TAG];
+function sitemapDocumentPaths(): string[] {
+  const paths = [SITEMAP_INDEX_PATH];
+  for (const locale of routableLocaleCodes()) {
+    paths.push(localeSitemapIndexPath(locale));
+    for (const child of SITEMAP_CHILDREN) {
+      paths.push(sitemapChildPath(locale, child));
+    }
+  }
+  return paths;
+}
+
+/** `country:{iso2}`, spelled by spec 005's `cacheTagsFor()`, for a destination of the registry. */
+function countryTagIso2(tag: string): CountryIso2 | undefined {
+  for (const code of COUNTRY_CODES) {
+    if (!isCountryIso2(code)) continue;
+    const tags = cacheTagsFor(
+      CacheEntitySchema.parse({ kind: "country", countryIso: code }),
+    );
+    if (tags.includes(tag) && tag !== catalogTag(code)) return code;
+  }
+  return undefined;
+}
 
 /** `catalog:{iso2}`, spelled by spec 005's `cacheTagsFor()`, its only builder. */
 function catalogTag(iso2: CountryIso2): string {
@@ -218,7 +247,18 @@ async function catalogueDocuments(): Promise<TaggedDocument[]> {
  * `product:{sku}`, `cutoff:{iso2}`).
  */
 export async function pathsForTag(tag: string): Promise<string[]> {
-  if (UNRESOLVED_TAGS.includes(tag)) return [];
+  if (tag === SITEMAP_CACHE_TAG) return sitemapDocumentPaths();
+  // `country:{iso2}` (spec 012b §5.2, §5.4; TASK-296): the destination's corridor pages and its
+  // catalogue documents, everything keyed on the country's row.
+  const country = countryTagIso2(tag);
+  if (country !== undefined) {
+    return [
+      ...new Set([
+        ...(await pathsForTag(corridorCacheTag(country))),
+        ...(await pathsForTag(catalogTag(country))),
+      ]),
+    ];
+  }
   const carrying = (documents: readonly TaggedDocument[]): string[] => [
     ...new Set(
       documents
@@ -450,7 +490,16 @@ export function corridorCacheTags(
   iso2: string,
   locale: string,
 ): readonly string[] {
-  return [`corridor:${iso2}`, `corridor:${iso2}:${locale}`, SITEMAP_CACHE_TAG];
+  return [
+    corridorCacheTag(iso2),
+    `corridor:${iso2}:${locale}`,
+    SITEMAP_CACHE_TAG,
+  ];
+}
+
+/** `corridor:{iso2}`: a destination's corridor pages in every locale (spec 012b §5.4). */
+export function corridorCacheTag(iso2: string): string {
+  return `corridor:${iso2}`;
 }
 
 /**
@@ -464,7 +513,12 @@ export function corridorCacheTags(
  * the route revalidates on time instead.
  */
 export function hubCacheTags(locale: string): readonly string[] {
-  return [`hub:${locale}`, SITEMAP_CACHE_TAG];
+  return [hubCacheTag(locale), SITEMAP_CACHE_TAG];
+}
+
+/** `hub:{locale}`: the all-destinations hub of one locale (spec 012b §5.4). */
+export function hubCacheTag(locale: string): string {
+  return `hub:${locale}`;
 }
 
 /**

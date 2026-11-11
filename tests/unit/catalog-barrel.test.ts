@@ -228,9 +228,14 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "QuoteSchema",
         "TierKeySchema",
         "availability",
+        // spec 012b §2.3 (TASK-295): existence now, and a publish's diff.
+        "existenceDiff",
+        "existsNow",
         "isProductIndexable",
         // spec 012b §5.2 (AC-39; TASK-294): the saleability term, for spec 010's placement.
         "isSaleable",
+        // spec 012b §2.3 (TASK-295): the publish diff's family test.
+        "isStructuralPath",
         "lowestPriceInLast30Days",
         "quote",
         "verifyQuote",
@@ -283,6 +288,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "listingDatedSources",
         "listingPageIndexability",
         "productCardView",
+        // spec 012b AC-5 (TASK-296): a grid's half of "the database AND the running manifest".
+        "productPageAdmitted",
         // spec 043 §5.2 (TASK-290): photographed products first, re-exported from the design system.
         "photoFirst",
         "publishedCountries",
@@ -446,6 +453,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/db/read.ts`,
       // The `saleable_offer` view (spec 012b AC-39; TASK-294).
       `${moduleDir}/db/saleable.ts`,
+      // Existence now and the publish diff (spec 012b §2.3; TASK-295).
+      `${moduleDir}/existence.ts`,
       `${moduleDir}/flags.ts`,
       // Deep-frozen provider values, shared by `static/` and `db/` (TASK-148, TASK-070).
       `${moduleDir}/frozen.ts`,
@@ -478,6 +487,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       // The PDP's JSON-LD over its view (spec 009 AC-18; TASK-130).
       `${moduleDir}/productSchema.ts`,
       `${moduleDir}/providers.ts`,
+      // One catalogue read scope outside a render (TASK-294 carry-forward 1; TASK-295).
+      `${moduleDir}/read-scope.ts`,
       `${moduleDir}/read.ts`,
       // The remembered country's prices document (spec 004 item 3, AC-80; TASK-391).
       `${moduleDir}/remembered-prices.ts`,

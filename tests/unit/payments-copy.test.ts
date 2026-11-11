@@ -69,6 +69,33 @@ const SPEC_KEYS = [
   "payments.confirmation.notDeliveredRefunded",
 ];
 
+/**
+ * Keys the pay step and the pre-contract summary added to `payments.*` after spec 013 §7
+ * (main's catalogue as of 2026-11-11). They are listed so the key set stays exact; their
+ * wording is owned by the tasks that added them, so only Appendix A's keys are compared verbatim.
+ */
+const LATER_KEYS = [
+  "payments.confirmation.yourOrder",
+  "payments.step.cancelling",
+  "payments.step.delivery",
+  "payments.step.deliveryItem",
+  "payments.step.deliveryWhen",
+  "payments.step.draftLabel",
+  "payments.step.item",
+  "payments.step.notPaidYet",
+  "payments.step.payTitle",
+  "payments.step.preContractTitle",
+  "payments.step.printedCard",
+  "payments.step.processedBy",
+  "payments.step.seller",
+  "payments.step.total",
+  "payments.step.totalIncluded",
+  "payments.step.whatYouBuy",
+];
+
+/** Every `payments.*` key main's catalogues hold. */
+const ALL_KEYS = [...SPEC_KEYS, ...LATER_KEYS];
+
 /** Spec 013 Appendix A, verbatim. */
 const APPENDIX_A: Readonly<Record<string, string>> = {
   "payments.error.cardDeclined":
@@ -107,6 +134,14 @@ const APPENDIX_A: Readonly<Record<string, string>> = {
   "payments.confirmation.notDeliveredRefunded":
     "We could not deliver this order. We have refunded {amount}.",
 };
+
+/** The entries of `values` whose key is in `keys`. */
+function pick(
+  values: Record<string, unknown>,
+  keys: readonly string[],
+): Record<string, unknown> {
+  return Object.fromEntries(keys.map((key) => [key, values[key]]));
+}
 
 /** `locale › key › pattern` for every relay match in the `payments` namespace of `catalogue`. */
 function relayFindings(locale: Locale, catalogue: Catalogue): string[] {
@@ -191,8 +226,8 @@ describe("the payments catalogue (spec 013 AC-35, T-35)", () => {
     const en = Object.fromEntries(
       leaves({ payments: readJson("en.json")["payments"] }),
     );
-    expect(Object.keys(en).sort()).toEqual([...SPEC_KEYS].sort());
-    expect(en).toEqual(APPENDIX_A);
+    expect(Object.keys(en).sort()).toEqual([...ALL_KEYS].sort());
+    expect(pick(en, SPEC_KEYS)).toEqual(APPENDIX_A);
   });
 
   it.each(["de", "pl"] as const)(
@@ -201,7 +236,7 @@ describe("the payments catalogue (spec 013 AC-35, T-35)", () => {
       const values = Object.fromEntries(
         leaves({ payments: readJson(`${locale}.json`)["payments"] }),
       );
-      expect(Object.keys(values).sort()).toEqual([...SPEC_KEYS].sort());
+      expect(Object.keys(values).sort()).toEqual([...ALL_KEYS].sort());
       const meta = readJson(`${locale}.meta.json`) as Record<
         string,
         { source: string; reviewed: boolean }
@@ -224,7 +259,9 @@ describe("the payments catalogue (spec 013 AC-35, T-35)", () => {
   });
 
   it("en-gb renders the en text through its fallback", () => {
-    expect(Object.fromEntries(leaves(paymentsOf("en-gb")))).toEqual(APPENDIX_A);
+    const enGb = Object.fromEntries(leaves(paymentsOf("en-gb")));
+    expect(Object.keys(enGb).sort()).toEqual([...ALL_KEYS].sort());
+    expect(pick(enGb, SPEC_KEYS)).toEqual(APPENDIX_A);
   });
 
   it("no catalogue holds a retired key (payments.confirmation.held, .paidNow)", () => {
@@ -267,7 +304,7 @@ describe("relay language in the payments copy (spec 013 AC-41 catalogue half, T-
     "%s: zero relayMatches over every payments.* value",
     (locale) => {
       const catalogue = paymentsOf(locale);
-      expect(leaves(catalogue).length).toBe(SPEC_KEYS.length);
+      expect(leaves(catalogue).length).toBe(ALL_KEYS.length);
       expect(relayFindings(locale, catalogue)).toEqual([]);
     },
   );

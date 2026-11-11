@@ -33,6 +33,7 @@ import {
 } from "./chooser";
 import { listingPages, productCardView } from "./listing";
 import { listProducts } from "./read";
+import { withCatalogReadScope } from "./read-scope";
 import { coreRange, shopCountries } from "./shop";
 
 export interface RememberedPricesView {
@@ -52,7 +53,17 @@ export interface RememberedPricesView {
  * The view for `locale` and `iso2`, or `undefined` when `iso2` is not one of the locale's shop
  * countries (the route answers that with a 404, and the island leaves the page as served).
  */
-export async function rememberedPricesView(
+export function rememberedPricesView(
+  locale: LocaleCode,
+  iso2: string,
+  now: Date,
+): Promise<RememberedPricesView | undefined> {
+  // One read scope for the whole document: a route handler has no render scope, and without it
+  // every card re-read the whole price table (TASK-294 carry-forward 1).
+  return withCatalogReadScope(() => pricesView(locale, iso2, now));
+}
+
+async function pricesView(
   locale: LocaleCode,
   iso2: string,
   now: Date,
@@ -124,7 +135,11 @@ export interface PricesDocument {
  * `generateStaticParams` and the cache registry's `catalog:{iso2}` documents (`src/lib/cache.ts`)
  * both read this list, so a document is prebuilt exactly where an invalidation reaches it.
  */
-export async function pricesDocuments(): Promise<readonly PricesDocument[]> {
+export function pricesDocuments(): Promise<readonly PricesDocument[]> {
+  return withCatalogReadScope(listPricesDocuments);
+}
+
+async function listPricesDocuments(): Promise<readonly PricesDocument[]> {
   const documents: PricesDocument[] = [];
   for (const { code, isLaunch } of LOCALES) {
     if (!isLaunch || !isLocaleCode(code)) continue;
