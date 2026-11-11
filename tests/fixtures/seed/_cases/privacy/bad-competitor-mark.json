@@ -3,11 +3,14 @@
   "rule": "competitor-mark",
   "replaces": "copy/en/products.json",
   "expect": "a competitor mark from",
-  "why": "AC-9's third-party-mark half, from the list in `docs/research/competitors-*.md`. Our copy is our own (`plan/10` §2.2); a competitor's mark in a product description is both borrowed wording and a mark we have no right to put on a page.",
+  "alsoFamilies": ["copy"],
+  "why": "AC-9's third-party-mark half, from the list in `docs/research/competitors-*.md`. Our copy is our own (`plan/10` §2.2); a competitor's mark in a product description is both borrowed wording and a mark we have no right to put on a page. It also trips family 6 under the shared id `copy.competitor`, the rule the product editor refuses the same title with (spec 012b AC-15).",
   "ops": [
     {
       "op": "setRow",
-      "match": { "key": "FO-BQ-001" },
+      "match": {
+        "key": "FO-BQ-001"
+      },
       "set": {
         "seoTitle": "Amber Hour: better value than Interflora"
       }
