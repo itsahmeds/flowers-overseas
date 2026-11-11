@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 (PR 542): `/{locale}/review/{token}` (read-only GET, server action), `/stop` opt-out, `StarRadioGroup`, `reviewHeaderRules()`, `Disallow: /*/review/`, scope entries. No client island: a refused submission comes back with `?error=` and the count, the text is not kept (artboard E1 decided for the spec's "no island"). Tests: `tests/integration/reviews-form.test.ts`, `tests/unit/reviews-form.test.tsx`. Next: TASK-372.
 
 ## Result
 

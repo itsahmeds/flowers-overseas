@@ -41,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 (feature PR 542, branch `task/TASK-370-reviews`): `reviews` outbox target (live only), `review_invite` rows, `review.request` job on the minute tick, B9 through the pipeline (`sendReviewInviteNotification`, Mailer `bcc` from env), the HMAC token, the florist scan (`rate us` added to the rating claim pattern). Tests: `tests/integration/reviews-invite.test.ts`, `tests/unit/reviews-invite-email.test.ts`. Next: TASK-371.
 
 ## Result
 
