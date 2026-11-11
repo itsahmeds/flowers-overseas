@@ -405,6 +405,23 @@ describe("A11: the freshness-claim scan's own fixture case", () => {
     }
   });
 
+  it('exempts a look-back window, "the last N days/weeks", only with no freshness word near it (TASK-522)', () => {
+    for (const text of [
+      "Lowest price in the last 30 days",
+      "Nothing paid in the last 8 weeks.",
+      "Decided in the last 7 days (3)",
+    ]) {
+      expect(freshnessClaims(text), text).toEqual([]);
+    }
+    for (const text of [
+      "Flowers that last 7 days.",
+      "Fresh in the last 7 days.",
+      "They last 7 days.",
+    ]) {
+      expect(freshnessClaims(text).length, text).toBeGreaterThan(0);
+    }
+  });
+
   it('exempts "N days a week" in all four locales, only with no freshness or guarantee word near it', () => {
     for (const text of [
       "We answer 7 days a week.",

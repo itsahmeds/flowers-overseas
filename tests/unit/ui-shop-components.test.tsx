@@ -220,7 +220,8 @@ describe("ListingGrid: a named list, 2-up to 4-up", () => {
   it("is a <ul> of <li> with an accessible name carrying the count", () => {
     const html = render(<ListingGrid cards={cards(4)} locale="en" />);
     expect(html).toContain("<ul");
-    expect([...html.matchAll(/<li>/gu)]).toHaveLength(4);
+    // Each `<li>` carries its `view_item_list` position since spec 023 (TASK-492).
+    expect([...html.matchAll(/<li data-fo-item="\d+">/gu)]).toHaveLength(4);
     expect(html).toContain('aria-label="4 bouquets on this page"');
     expect(html).toContain("grid-cols-2 md:grid-cols-4");
   });

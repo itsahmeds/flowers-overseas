@@ -17,7 +17,6 @@
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { runInNewContext } from "node:vm";
 
 import { NextRequest } from "next/server";
 import { NextIntlClientProvider } from "next-intl";
@@ -25,10 +24,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { LocaleCode } from "../../src/config/locales.ts";
-import {
-  CONSENT_BOOTSTRAP_SCRIPT,
-  GA4_ID_ATTRIBUTE,
-} from "../../src/lib/consent-bootstrap.ts";
 import { searchLocationPattern } from "../../src/lib/search-routes.ts";
 import { beforeBreadcrumb, beforeSend } from "../../src/lib/sentry.ts";
 import {
@@ -37,6 +32,7 @@ import {
   searchEvent,
   sendPageAnalytics,
 } from "../../src/modules/analytics/index.ts";
+import { sanitisePageLocation } from "../../src/modules/analytics/location.ts";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import { loadMessages } from "../../src/modules/i18n/index.ts";
 import {
@@ -367,25 +363,13 @@ describe("GA4 (AC-23)", () => {
     expect(gtag).not.toHaveBeenCalled();
   });
 
-  /** Runs the bootstrap as a page at `href` with a measurement id; returns `page_location`. */
+  /**
+   * The `page_location` the GA4 loader sends for a page at `href`. Since spec 023 (TASK-492) the
+   * consent bootstrap queues no `config`; the deferred loader sends `sanitisePageLocation()` of
+   * the page's address, which absorbed the bootstrap's search rewrite (TASK-522).
+   */
   function pageLocation(href: string): unknown {
-    const window: { dataLayer?: unknown[] } = {};
-    runInNewContext(CONSENT_BOOTSTRAP_SCRIPT, {
-      window,
-      location: { href },
-      document: {
-        currentScript: {
-          getAttribute: (name: string) =>
-            name === GA4_ID_ATTRIBUTE ? "G-TESTID1234" : null,
-        },
-      },
-      Date,
-    });
-    const config = (window.dataLayer ?? [])
-      .map((entry) => Array.from(entry as ArrayLike<unknown>))
-      .find((entry) => entry[0] === "config");
-    return (config?.[2] as { page_location?: unknown } | undefined)
-      ?.page_location;
+    return sanitisePageLocation(href);
   }
 
   it.each([
@@ -395,7 +379,8 @@ describe("GA4 (AC-23)", () => {
     ["/pl/szukaj/?q=anna", "/pl/szukaj/"],
     ["/en/-search?q=anna", "/en/-search"],
     ["/en/poland/flowers?utm_source=x", "/en/poland/flowers?utm_source=x"],
-    ["/en/searching?q=x", "/en/searching?q=x"],
+    // Spec 023 AC-7: only `step` and the `utm_*` keys survive, on any path (TASK-492).
+    ["/en/searching?q=x", "/en/searching"],
   ])("page_location for %s is %s", (path, expected) => {
     expect(pageLocation(`${ORIGIN}${path}`)).toBe(`${ORIGIN}${expected}`);
   });
