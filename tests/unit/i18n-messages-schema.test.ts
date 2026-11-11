@@ -259,6 +259,8 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-373 (spec 022a §5.3, §7, §8 "Checkout notice"): the reviews page, the blocks, the two
+    // footer links and the pay step's notice, sorted in below, until record-approval-373.py.
     // TASK-353 (spec 018 C.7.4, C.13, C.15; the account-reminders-* and email-account-* slots):
     // the reminders page, the stop page and T18, until record-approval-353.py.
     // TASK-352 (spec 018 C.13, C.15; the account-details-* and account-recipients-* slots): the

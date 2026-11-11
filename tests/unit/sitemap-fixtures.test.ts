@@ -101,7 +101,9 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
     const declined = declinedUrls;
     // Seven spec 041 pages exist per locale before registration, none reviewed yet, plus spec 011's
     // florists' pages (TASK-210): the landing in every locale and the `de`/`pl` walkthrough drafts.
-    expect(info).toHaveLength(34);
+    // Spec 022a's review policy (TASK-373), a legal document `noindex` until a lawyer signs it,
+    // adds one per launch locale: never in a sitemap, whether or not its data condition holds.
+    expect(info).toHaveLength(38);
     for (const url of [
       "https://flowersoverseas.com/de/hilfe",
       "https://flowersoverseas.com/de/rechtliches/widerruf",

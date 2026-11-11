@@ -28,6 +28,8 @@ One dated bullet per `/review`, newest last.
 
 - 2026-10-24 (from TASK-368, PR 408): `0029` dropped the public `review_read` but left `0018`\'s `review_build_read` for `app_build`; when the reviews page and blocks are built, grant `app_build` `SELECT` on `public_review` and drop `review_build_read` (and its row in `BUILD_ROLE_FILTERED_TABLES`), so the build reads no private column either.
 
+- 2026-11-11 (TASK-373 finisher, PR 547): left for a later task: (1) a refused review-form submit still loses the typed text (TASK-371 carry-forward; keeping it needs state the no-island form cannot hold without putting text in a URL or cookie); (2) `reviews:product:{id}` resolves to no URL in `pathsForTag` (no SKU without the database), so a PDP block refreshes on its own revalidate; (3) the e2e/visual/a11y halves of T-24 to T-27 and T-31 need a CI fixture with published reviews (CI's seed has none); (4) the retention redaction's `invalidate` call has no dedicated test; (5) migration `0047` waits for 0047 to 0050 (`db:check` contiguity); (6) `@switcher` uses its default (locale homes) on the reviews page; (7) copy: 32 new texts, record with `.claude/state/record-approval-373.py`.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -42,9 +44,11 @@ here.
 
 - 2026-11-11 (PR 542, partial): only the data reads are built: `reviewSummary` and `listPublicReviews` over `public_review` (`src/modules/reviews/public.ts`), newest first, `?stars` filter, 20 per page, asserted in T-18 of `tests/integration/reviews-moderation.test.ts`. Not built: the review policy page in spec 041's registry, `/{locale}/reviews` (existence, index threshold, `?page=1` 301, `?stars` noindex), PDP and corridor blocks, `aggregateRating` on the PDP `Product` node, footer links, the `[data-fo-reviews]` gate, `checkout.reviewNotice`, RoPA rows and the Trustpilot processor entry, and the `app_build` grant carry-forward. A finisher starts from `public.ts` and the PR 338 artboards.
 
+- 2026-11-11 (PR 547): built the display: migration 0047 (view `withheld_reason`, build reads the view), `src/modules/reviews/display.ts`, UI `ReviewDisplay`/`ReviewsPageView`, `/{locale}/reviews` (ISR, `?page`/`?stars` per request, `?page=1` 301), policy in spec 041's registry (en, en-gb, de, pl; noindex, data-gated), PDP line, block and `aggregateRating`, corridor block, footer links, `checkout.reviewNotice`, RoPA rows 25 to 27, Trustpilot in the privacy notice, cache paths for review tags, retention invalidation.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-Partial in PR 542 (data reads only); the row stays `in_progress` for a finisher. AC-23 to AC-28, AC-31's page half, AC-32 and AC-33's records half are open.
+PR 542 (data reads) and PR 547 (display). Unit: `tests/unit/reviews-display.test.tsx` (28 tests: T-23 to T-28, T-32); integration: `reviews-moderation.test.ts` (view by SKU and country, `withheld_reason`, build grants), `reviews-migration.test.ts`, round-trip; e2e: served AC-28 checks in `honesty.spec.ts` (CI). Clean-env build passed in the build slot; local `next start` smoke: `/en/reviews` 404, `?page=1` 301, policy 404 on the seed. Carry-forwards above.

@@ -98,6 +98,14 @@ export interface ProductPageProps {
     readonly entry: "none" | "demo" | "continue";
     readonly action: string;
   };
+  /**
+   * Spec 022a's line by the title and its block (§5.3, AC-26; TASK-373): the route renders both
+   * only with three or more published reviews of this product, and hands them in because this
+   * module may not read the reviews. The line sits between the `<h1>` and the price; the block
+   * below the price, before the related row.
+   */
+  readonly reviewsLine?: ReactNode;
+  readonly reviews?: ReactNode;
 }
 
 /** The related row's full length, which the approved heading names in words ("Six more"). */
@@ -137,6 +145,8 @@ export function ProductPage({
   breadcrumb,
   guaranteeHref,
   checkout,
+  reviewsLine,
+  reviews,
 }: ProductPageProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -279,6 +289,9 @@ export function ProductPage({
                 <bdi>{view.h1.name}</bdi>
               </Display>
             </div>
+            {reviewsLine === undefined ? null : (
+              <div className="col-span-full">{reviewsLine}</div>
+            )}
             {/* The all-in price of the selected size and its inclusive text, and nothing else: no
                 equivalents here (A12 move 2, AC-31). Price shown = price charged. */}
             {selectedPrice === undefined ? null : (
@@ -556,6 +569,8 @@ export function ProductPage({
             <PriceSummary view={view} />
           </div>
         </div>
+
+        {reviews}
 
         {view.related.length === 0 ? null : (
           <section

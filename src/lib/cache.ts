@@ -34,6 +34,7 @@ import {
   pickerState,
 } from "@/modules/geo";
 import { localePath, routableLocaleCodes } from "@/modules/i18n";
+import { reviewPolicyLeaf } from "@/modules/reviews/policy";
 import {
   SITEMAP_CHILDREN,
   SITEMAP_INDEX_PATH,
@@ -51,6 +52,7 @@ import {
 import { runBeforeInvalidateHooks } from "./invalidate-hooks.ts";
 import { type Logger, logger as processLogger } from "./logger.ts";
 import { productRoutePathFor } from "./product-rewrites.ts";
+import { reviewsRoutePathFor } from "./reviews-routes.ts";
 import { captureWarning } from "./sentry.ts";
 
 /** What an edge purge says about itself. It never rejects; `ok: false` is a purge that did not land. */
@@ -248,6 +250,20 @@ async function catalogueDocuments(): Promise<TaggedDocument[]> {
  */
 export async function pathsForTag(tag: string): Promise<string[]> {
   if (tag === SITEMAP_CACHE_TAG) return sitemapDocumentPaths();
+  // Spec 022a §5.4 (TASK-373): `reviews` and `info:reviews` are the reviews page and the review
+  // policy in every routable locale; `reviews:country:{iso2}` is that country's corridor pages.
+  // `reviews:product:{id}` names a product by id, which no registry here resolves without the
+  // database: the product page refreshes on its own revalidate (a carry-forward in the brief).
+  if (tag === REVIEWS_CACHE_TAG || tag === REVIEWS_INFO_CACHE_TAG) {
+    return routableLocaleCodes().flatMap((locale) => [
+      localePath(locale, "reviews"),
+      localePath(locale, "legal", reviewPolicyLeaf(locale)),
+    ]);
+  }
+  const reviewsCountry = /^reviews:country:([A-Z]{2})$/u.exec(tag)?.[1];
+  if (reviewsCountry !== undefined) {
+    return pathsForTag(corridorCacheTag(reviewsCountry));
+  }
   // `country:{iso2}` (spec 012b §5.2, §5.4; TASK-296): the destination's corridor pages and its
   // catalogue documents, everything keyed on the country's row.
   const country = countryTagIso2(tag);
@@ -418,7 +434,11 @@ export async function invalidate(
     origin = "failed";
   }
   for (const path of documents) {
-    for (const entry of [path, productRoutePathFor(path)]) {
+    for (const entry of [
+      path,
+      productRoutePathFor(path),
+      reviewsRoutePathFor(path),
+    ]) {
       if (entry === null) continue;
       try {
         deps.revalidate(entry);
@@ -466,6 +486,10 @@ export async function invalidate(
  * documents why Phase 0 attaches no tag to the cache entry yet (Next 16 needs `cacheComponents`
  * for `cacheTag()`, which the first data-fetching spec owns) and revalidates on time instead.
  */
+/** The reviews page's two tags (spec 022a §5.4; TASK-373). */
+export const REVIEWS_CACHE_TAG = "reviews";
+export const REVIEWS_INFO_CACHE_TAG = "info:reviews";
+
 export function homeCacheTag(locale: string): string {
   return `home:${locale}`;
 }

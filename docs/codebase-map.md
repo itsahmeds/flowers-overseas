@@ -27,7 +27,7 @@ task actually touches.
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026, 030 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +31 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +19 |
-| `reviews` | Spec 022a §2, §5.2: the `review.created`… | 022 | `unit/reviews-data.test.ts` |
+| `reviews` | Spec 022a §2, §5.2: the `review.created`… | 022 | `unit/reviews-data.test.ts`, `unit/site-footer.test.tsx` |
 | `risk` | Public barrel for `risk`: fraud pre-checks… | 021 | `unit/risk-core.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/existence.test.ts`, `unit/search-config.test.ts` +12 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
@@ -84,6 +84,7 @@ task actually touches.
 | `payment-methods.ts` | Payment-method registry (spec 004 §2… | 004 |
 | `payments.ts` | Payment lifecycle timings: the unpaid-purchase… | 013 |
 | `payouts.ts` | Florist payout settings: prepaid default, alert… | 030 |
+| `review-rating.ts` | The one rounding of a review average, shared by… | 022 |
 | `reviews.ts` | Review constants: invite timing, text cap,… | 022 |
 | `risk.ts` | The fraud pre-checks' numbers (spec 021 §5.2… | 021 |
 | `risk/card-message-patterns.ts` | The card-message patterns of signal S15 (spec… | 021 |
@@ -114,6 +115,8 @@ task actually touches.
 | `(dev)/dev/components/trader-identity/[segment]/page.tsx` | `/dev/components/trader-identity/{imprint\|terms… | 041 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group —… | 004 |
 | `[locale]/%5Fquery/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/-product/{segment}/{child}/{gr… | 009 |
+| `[locale]/%5Fquery/-reviews/first/route.ts` | `/{locale}/{reviews}?page=1`: a 301 to the bare… | 022 |
+| `[locale]/%5Fquery/-reviews/page.tsx` | `/{locale}/{reviews}?page=N` and `?stars=n`:… | 022 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the… | 008 |
 | `[locale]/(account)/account/_parts/AccountShell.tsx` | The signed-in account's frame… | 018 |
@@ -178,6 +181,7 @@ task actually touches.
 | `[locale]/(track)/track/page.tsx` | Tracking lookup page | 018 |
 | `[locale]/-choose/-next/[[...rest]]/page.tsx` | The country chooser page (noindex, uncached) | 004 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchil… | 009 |
+| `[locale]/-reviews/page.tsx` | `/{locale}/{reviews}` (`/en/reviews`,… | 022 |
 | `[locale]/-search/limited/page.tsx` | The search page's rate-limited state (429/503) | 045 |
 | `[locale]/-search/page.tsx` | The search results page (SSR, noindex) | 045 |
 | `[locale]/-search/search-locale.ts` | The search routes' locale or 404 | 045 |
@@ -244,6 +248,8 @@ task actually touches.
 | `[locale]/page-analytics.tsx` | The localised pages' GA4 payload elements (spec… | 023 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3,… | 003 |
 | `[locale]/product-route.tsx` | The product page's head and body, once, for the… | 009 |
+| `[locale]/reviews-blocks.tsx` | Spec 022a's PDP and corridor blocks, composed… | 009 |
+| `[locale]/reviews-route.tsx` | The reviews page's head and body, once, for its… | 022 |
 | `[locale]/route-header.tsx` | The search page's language links: each launch… | 045 |
 | `admin/(signed-in)/applications/[id]/page.tsx` | GET /admin/applications/[id]: one application,… | 012 |
 | `admin/(signed-in)/applications/actions.ts` | /admin/applications actions, each guarded first… | 012 |
@@ -473,7 +479,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 553 |
+| `tests/unit/` | 554 |
 | `tests/integration/` | 128 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |

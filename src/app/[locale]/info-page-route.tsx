@@ -12,6 +12,7 @@ import {
   legalDocumentView,
 } from "@/modules/content";
 import { LanguageAlternates } from "@/modules/i18n";
+import { reviewPolicyLive } from "@/modules/reviews/display";
 import {
   type BreadcrumbLabel,
   JsonLd,
@@ -34,14 +35,24 @@ import {
  * `src/modules/seo`'s, built from the same view models the page renders (AC-17 to AC-19). Nothing
  * here reads a cookie or a header, so every visitor gets one byte-identical document (AC-24).
  */
-export function infoPageRouteMetadata(
+export async function infoPageRouteMetadata(
   pageId: InfoPageId,
   locale: string,
-): Metadata {
+): Promise<Metadata> {
+  await requireLiveReviewPolicy(pageId);
   return (
     infoPageMetadata(pageId, locale, deploymentDescriptor(process.env)) ??
     notFound()
   );
+}
+
+/**
+ * Spec 022a's review policy exists only once `reviews.invite` is on or a review is published
+ * (AC-23; TASK-373): its content file is committed in every locale, so the data condition is the
+ * one gate the content module cannot answer. Every other page is unaffected.
+ */
+async function requireLiveReviewPolicy(pageId: InfoPageId): Promise<void> {
+  if (pageId === "review-policy" && !(await reviewPolicyLive())) notFound();
 }
 
 /** The breadcrumb's labels, with the route's own translator; values pass through (AC-19). */
@@ -58,6 +69,7 @@ export async function InfoPageRoute({
   readonly locale: string;
 }) {
   setRequestLocale(locale);
+  await requireLiveReviewPolicy(pageId);
   const legal = legalDocumentView(pageId, locale);
   const trust = legal === undefined ? infoPageView(pageId, locale) : undefined;
   if (legal === undefined && trust === undefined) notFound();

@@ -15,13 +15,20 @@ export const REVIEWS_PAGE_SIZE = 20;
 
 /** What a read covers: every review, a product's, or the orders to one country. */
 export type ReviewScopeFilter =
-  "all" | { readonly productId: string } | { readonly countryIso2: string };
+  | "all"
+  | { readonly productId: string }
+  | { readonly productSku: string }
+  | { readonly countryIso2: string };
 
 function where(scope: ReviewScopeFilter, stars?: number) {
   const star = stars === undefined ? sql`` : sql`AND v.rating = ${stars}`;
   if (scope === "all") return sql`WHERE true ${star}`;
   if ("productId" in scope)
     return sql`WHERE v.product_id = ${scope.productId} ${star}`;
+  // The PDP knows its product by SKU (TASK-373); `product` is public reference data.
+  if ("productSku" in scope) {
+    return sql`WHERE v.product_id = (SELECT p.id FROM product p WHERE p.sku = ${scope.productSku}) ${star}`;
+  }
   return sql`WHERE c.iso2 = ${scope.countryIso2} ${star}`;
 }
 
@@ -88,6 +95,8 @@ const CardRow = z.object({
   iso2: z.string().nullable(),
   response_text: z.string().nullable(),
   response_at: z.coerce.date().nullable(),
+  /** `0047` (TASK-373): why the text was withheld, `NULL` unless it was. */
+  withheld_reason: z.enum(["personal_data", "abuse", "illegal"]).nullable(),
 });
 export type PublicReview = z.infer<typeof CardRow>;
 
@@ -102,7 +111,7 @@ export async function listPublicReviews(
   const offset = Math.max(0, page - 1) * size;
   const rows = await executor.execute(sql`
     SELECT v.id, v.rating, v.text, v.display_name, v.locale_code, v.published_at,
-           v.delivered_month, c.iso2, v.response_text, v.response_at
+           v.delivered_month, c.iso2, v.response_text, v.response_at, v.withheld_reason
     FROM public_review v LEFT JOIN country c ON c.id = v.destination_country_id
     ${where(scope, options.stars)}
     ORDER BY v.published_at DESC, v.id

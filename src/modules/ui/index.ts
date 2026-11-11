@@ -613,3 +613,25 @@ export { RatingStars } from "./reviews/RatingStars.tsx";
 export type { RatingStarsProps } from "./reviews/RatingStars.tsx";
 export { StarRadioGroup } from "./reviews/StarRadioGroup.tsx";
 export type { StarRadioGroupProps } from "./reviews/StarRadioGroup.tsx";
+export {
+  RatingSummary,
+  ReviewCard,
+  ReviewList,
+  ReviewsBlock,
+  ReviewsTitleLine,
+  reportHref,
+  visibleAverage,
+} from "./reviews/ReviewDisplay.tsx";
+export type {
+  RatingSummaryData,
+  RatingSummaryProps,
+  ReviewCardData,
+  ReviewCardProps,
+  ReviewsBlockProps,
+  WithheldReason,
+} from "./reviews/ReviewDisplay.tsx";
+export {
+  ReviewsPageView,
+  reviewsPageHref,
+} from "./reviews/ReviewsPageView.tsx";
+export type { ReviewsPageViewProps } from "./reviews/ReviewsPageView.tsx";

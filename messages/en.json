@@ -209,7 +209,11 @@
       "consent": "Consent is asked in the email we send first; nothing is stored until you confirm."
     },
     "cookieSettings": "Cookie settings",
-    "signoff": "With love, from wherever you are."
+    "signoff": "With love, from wherever you are.",
+    "reviewLinks": {
+      "reviews": "Reviews",
+      "policy": "Review policy"
+    }
   },
   "company": {
     "description": "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
@@ -1196,7 +1200,8 @@
       "attemptsExhausted": "This payment did not go through and nothing was charged. Please start again, or call or message us and we will help you place your order.",
       "emailLasting": "Please use an email address you will keep. We send your order confirmation and updates to it.",
       "startAgain": "Start again"
-    }
+    },
+    "reviewNotice": "After delivery we will email you once to ask how we did. You can stop these emails at any time."
   },
   "confirmation": {
     "recap": {
@@ -2022,6 +2027,49 @@
       "button": "Stop review emails",
       "doneTitle": "Done. We will not ask you for a review again.",
       "doneBody": "Your order and its tracking page stay as they are."
+    },
+    "page": {
+      "title": "Reviews from our customers",
+      "h1": "Reviews from our customers",
+      "crumb": "Reviews",
+      "verify": "Every review here comes from someone who ordered from us and whose flowers were delivered."
+    },
+    "policyLink": "How we check reviews",
+    "count": "{count, plural, one {# review} other {# reviews}}",
+    "stars": "{count, plural, one {# star} other {# stars}}",
+    "summary": {
+      "rated": "Average rating {average} out of 5",
+      "bar": "{stars, plural, one {# star} other {# stars}}: {count, plural, one {# review} other {# reviews}}"
+    },
+    "filter": {
+      "label": "Filter by stars",
+      "all": "All"
+    },
+    "pages": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {n}"
+    },
+    "card": {
+      "rated": "Rated {n} out of 5",
+      "verifiedBuyer": "Verified buyer",
+      "delivered": "Delivered {month} · {country}",
+      "deliveredMonth": "Delivered {month}",
+      "reply": "Reply from Flowers Overseas",
+      "withheld": "This review’s comment was withheld: {reason}",
+      "withheldReason": {
+        "personalData": "personal details",
+        "abuse": "abusive language",
+        "illegal": "unlawful content"
+      },
+      "report": "Report",
+      "reportMessage": "I would like to report review {number}."
+    },
+    "block": {
+      "heading": "What our customers <em>say</em>",
+      "seeAll": "See all reviews",
+      "country": "Reviews of orders we delivered in {country}."
     }
   }
 }

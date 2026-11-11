@@ -21,6 +21,10 @@
  * The parts that need a browser — the control re-opening the banner after TASK-051 wires it, the
  * form posting, the four locales — are `tests/e2e/footer.spec.ts`.
  */
+import {
+  REVIEW_POLICY_LINK_ID,
+  REVIEWS_LINK_ID,
+} from "../../src/modules/reviews/display.ts";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -90,10 +94,18 @@ function render(node: React.ReactElement, locale = "en"): string {
 
 /**
  * The footer as the locale layout composes it: every info page that does not exist in the locale
- * is `unavailable` (spec 041 AC-21; the imprint, terms and privacy wait for the company).
+ * is `unavailable` (spec 041 AC-21; the imprint, terms and privacy wait for the company), and so
+ * are spec 022a's two review links while no review is published and `reviews.invite` is off, the
+ * seed's state (`missingReviewLinkIds()` with no database; TASK-373).
  */
 function layoutView(locale: string) {
-  return footerView(locale, { unavailable: missingInfoPageLinkIds(locale) });
+  return footerView(locale, {
+    unavailable: [
+      ...missingInfoPageLinkIds(locale),
+      REVIEWS_LINK_ID,
+      REVIEW_POLICY_LINK_ID,
+    ],
+  });
 }
 
 const phase0 = render(<SiteFooter locale="en" view={layoutView("en")} />);
@@ -252,6 +264,9 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       "privacy",
       "cookies",
       "withdrawal-and-refunds",
+      // Spec 022a §5.3 "Footer" (TASK-373): drawn only while the page exists (data).
+      "reviews",
+      "review-policy",
     ]);
   });
 

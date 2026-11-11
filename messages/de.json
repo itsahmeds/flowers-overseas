@@ -516,7 +516,8 @@
       "total": "You pay",
       "vat": "VAT {rate}",
       "vatOf": "Of which VAT {rate}"
-    }
+    },
+    "reviewNotice": "Nach der Lieferung schreiben wir Ihnen einmal eine E-Mail und fragen, wie es war. Sie können diese E-Mails jederzeit abbestellen."
   },
   "common": {
     "beta": "Beta",
@@ -1212,7 +1213,11 @@
       "heading": "Occasion reminders",
       "submit": "Remind me"
     },
-    "signoff": "Mit Liebe, von wo auch immer Sie sind."
+    "signoff": "Mit Liebe, von wo auch immer Sie sind.",
+    "reviewLinks": {
+      "reviews": "Bewertungen",
+      "policy": "Bewertungsrichtlinie"
+    }
   },
   "forFlorists": {
     "apply": {
@@ -1770,6 +1775,49 @@
       "doneBody": "Ihre Bestellung und ihre Sendungsseite bleiben, wie sie sind.",
       "doneTitle": "Erledigt. Wir fragen Sie nicht mehr nach einer Bewertung.",
       "title": "Keine Bewertungs-E-Mails mehr?"
+    },
+    "page": {
+      "title": "Bewertungen unserer Kundinnen und Kunden",
+      "h1": "Bewertungen unserer Kundinnen und Kunden",
+      "crumb": "Bewertungen",
+      "verify": "Jede Bewertung hier stammt von jemandem, der bei uns bestellt hat und dessen Blumen geliefert wurden."
+    },
+    "policyLink": "So prüfen wir Bewertungen",
+    "count": "{count, plural, one {# Bewertung} other {# Bewertungen}}",
+    "stars": "{count, plural, one {# Stern} other {# Sterne}}",
+    "summary": {
+      "rated": "Durchschnittliche Bewertung {average} von 5",
+      "bar": "{stars, plural, one {# Stern} other {# Sterne}}: {count, plural, one {# Bewertung} other {# Bewertungen}}"
+    },
+    "filter": {
+      "label": "Nach Sternen filtern",
+      "all": "Alle"
+    },
+    "pages": {
+      "label": "Seiten",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "page": "Seite {n}"
+    },
+    "card": {
+      "rated": "Bewertet mit {n} von 5",
+      "verifiedBuyer": "Verifizierter Kauf",
+      "delivered": "Geliefert {month} · {country}",
+      "deliveredMonth": "Geliefert {month}",
+      "reply": "Antwort von Flowers Overseas",
+      "withheld": "Der Kommentar dieser Bewertung wurde zurückgehalten: {reason}",
+      "withheldReason": {
+        "personalData": "persönliche Daten",
+        "abuse": "beleidigende Sprache",
+        "illegal": "rechtswidrige Inhalte"
+      },
+      "report": "Melden",
+      "reportMessage": "Ich möchte die Bewertung {number} melden."
+    },
+    "block": {
+      "heading": "Was unsere Kundinnen und Kunden <em>sagen</em>",
+      "seeAll": "Alle Bewertungen ansehen",
+      "country": "Bewertungen von Bestellungen, die wir in {country} geliefert haben."
     }
   },
   "search": {

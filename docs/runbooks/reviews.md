@@ -43,3 +43,13 @@ the review, decide within the takedown runbook's times, and use **Publish withou
 
 Spec 018's erasure calls `reviews.redactForCustomer`: the text and the first name are removed, the
 rating stays as an anonymous verified rating shown as "Verified buyer".
+
+## Where reviews show (TASK-373)
+
+Data decides, no flag: the reviews page (`/en/reviews`, `/de/bewertungen`, `/pl/opinie`) exists
+from the first published review and may be indexed from 10 with visible text; a product page and a
+country page show their block from 3 published reviews of that product or country; the footer
+links "Reviews" while the page exists and "Review policy" once `reviews.invite` is on or a review
+is published. Only the product page's `Product` markup carries the rating. A report's message
+names the review's full id: open `/admin/reviews/{id}`. A moderation write refreshes the reviews
+page; the product and country pages follow within their hour.

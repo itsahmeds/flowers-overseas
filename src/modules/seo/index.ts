@@ -189,5 +189,10 @@ export {
   productOffer,
 } from "./schema/productOffer.ts";
 
+export {
+  PRODUCT_REVIEW_ENTRIES_MAX,
+  type ProductReviewMarkupInput,
+  withProductReviews,
+} from "./schema/productReviews.ts";
 export { webPage } from "./schema/webPage.ts";
 export { webSite } from "./schema/webSite.ts";

@@ -37,6 +37,9 @@ export const INFO_PAGE_IDS = [
   "how-orders-work",
   "florist-apply",
   "florist-apply-sent",
+  // Spec 022a §2 "Display", §8 "Consumer information" (TASK-373): the review policy, a legal
+  // document that exists once `reviews.invite` is on or a review is published.
+  "review-policy",
 ] as const;
 
 export const InfoPageIdSchema = z.enum(INFO_PAGE_IDS);
@@ -305,6 +308,19 @@ const infoPages: readonly z.input<typeof InfoPageEntrySchema>[] = [
     parent: "florist-apply",
     leafSlugs: leaves("sent", "gesendet", "wyslano"),
     prose: false,
+    schemaTypes: ["BreadcrumbList"],
+    requiresRegistration: false,
+  },
+  // Spec 022a §6 "URLs" (TASK-373): `/{locale}/legal/reviews`, `/de/rechtliches/bewertungsrichtlinie`,
+  // `/pl/informacje-prawne/zasady-opinii` (`REVIEW_POLICY_LEAVES` in `src/modules/reviews/policy.ts`,
+  // which `tests/unit/reviews-display.test.tsx` holds equal to these). Its content file exists in
+  // every locale; whether the page exists is also the data condition the route asks
+  // (`reviewPolicyLive()`), which this file, having no database, cannot.
+  {
+    id: "review-policy",
+    family: "legal",
+    leafSlugs: leaves("reviews", "bewertungsrichtlinie", "zasady-opinii"),
+    siteLinkId: "review-policy",
     schemaTypes: ["BreadcrumbList"],
     requiresRegistration: false,
   },

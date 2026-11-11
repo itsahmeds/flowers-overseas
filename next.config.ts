@@ -15,6 +15,10 @@ import {
 import { floristHeaderRules } from "./src/lib/florist-headers";
 import { chooserHeaderRules } from "./src/lib/chooser-routes";
 import { searchHeaderRules, searchRewriteRules } from "./src/lib/search-routes";
+import {
+  reviewsHeaderRules,
+  reviewsRewriteRules,
+} from "./src/lib/reviews-routes";
 import { checkoutHeaderRules } from "./src/modules/seo/transactional";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
@@ -160,6 +164,8 @@ const headerRules = [
   ...basketReminderHeaderRules(),
   // Spec 022a (TASK-371): the review form and its opt-out page, no referrer, no store, noindex.
   ...reviewHeaderRules(),
+  // Spec 022a (TASK-373): the reviews page's internal routes, requested directly, say `noindex`.
+  ...reviewsHeaderRules(),
   // The buyer account (spec 018 §14 C.13, AC-51; TASK-344): `noindex, nofollow`, `private,
   // no-store`, `no-referrer` on `/{locale}/account` and below (`src/lib/transactional-headers.ts`).
   ...accountHeaderRules(),
@@ -252,6 +258,10 @@ const nextConfig: NextConfig = {
         // (spec 045 §5.2; TASK-402; `src/lib/search-routes.ts`). Disjoint from every rule below:
         // no listing or product address has two segments.
         ...searchRewriteRules(),
+        // `/{locale}/{reviews}` to the reviews page's own routes (spec 022a §6; TASK-373;
+        // `src/lib/reviews-routes.ts`): `?page=1` a 301, `?page`/`?stars` per request, else ISR.
+        // Disjoint from every rule below: no listing or product address has two segments.
+        ...reviewsRewriteRules(),
         ...listingRewriteRules(),
         ...productParameterRewriteRules(),
         ...productRewriteRules(),

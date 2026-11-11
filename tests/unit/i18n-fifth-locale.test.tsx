@@ -121,6 +121,7 @@ const FRENCH: LocaleConfig = {
     delivery: "livraison-et-paiement",
     imprint: "mentions",
     search: "recherche",
+    reviews: "avis",
   },
 };
 

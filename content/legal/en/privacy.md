@@ -2,13 +2,16 @@
 seoTitle: "Privacy notice"
 seoDescription: "Who is responsible for your personal data on this website, what we process today and once orders open, who handles it, and your rights."
 h1: "Privacy notice"
-version: "0.1.0"
+version: "0.2.0"
 effectiveFrom: "2026-10-24"
 inForce: true
 lawyerReviewed: false
 lawyerReviewedAt: null
 regime: eu
 changeLog:
+  - version: "0.2.0"
+    date: "2026-11-11"
+    summary: "Named Trustpilot, which would send its own invitation to review us; switched off."
   - version: "0.1.0"
     date: "2026-10-24"
     summary: "First version, published before a lawyer has reviewed it."
@@ -21,7 +24,7 @@ links:
     label: "Imprint"
 source: human
 reviewed: false
-updatedAt: "2026-10-24"
+updatedAt: "2026-11-11"
 ---
 
 ## Who is responsible {#who-is-responsible}
@@ -83,6 +86,7 @@ You can ask us what we keep about you, or ask us to delete it, using the contact
 - **Sentry** receives error reports, in its European Union region.
 - **Neon** runs our database in Frankfurt.
 - **Google** would run Google Analytics, which is switched off.
+- **Trustpilot** would send its own invitation to review us, which is switched off.
 
 ## Transfers outside the European Union {#transfers}
 

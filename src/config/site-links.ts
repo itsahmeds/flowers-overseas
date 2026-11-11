@@ -510,6 +510,27 @@ const siteLinks = [
     owningSpec: "041",
     surfaces: ["footer"],
   },
+  // Spec 022a §5.3 "Footer" (TASK-373; artboard `chrome-*`): published, and drawn only while the
+  // page exists, which is data the layout hands in as `unavailable` (`missingReviewLinkIds()`):
+  // the reviews page with one published review, the policy once `reviews.invite` is on or a review
+  // is published. Their labels sit under `footer.reviewLinks.*`, the one footer prefix the honesty
+  // gates admit review words in (AC-28).
+  {
+    id: "reviews",
+    labelKey: "footer.reviewLinks.reviews",
+    target: { kind: "route", pageType: "reviews" },
+    published: true,
+    owningSpec: "022",
+    surfaces: ["footer"],
+  },
+  {
+    id: "review-policy",
+    labelKey: "footer.reviewLinks.policy",
+    target: { kind: "infoPage", page: "review-policy" },
+    published: true,
+    owningSpec: "022",
+    surfaces: ["footer"],
+  },
   // The seven corridor country pages (spec 007 §2 "Internal links", AC-17, AC-20; TASK-092), in
   // the registry's own order. Published means "this destination may be linked"; whether a link is
   // actually rendered in a given locale is `src/modules/geo`'s existence rule — `/de` and `/pl`
@@ -838,13 +859,25 @@ const siteLinkGroups = [
     id: "company",
     headingKey: "footer.group.company",
     surface: "footer",
-    linkIds: ["how-it-works", "for-florists", "help-and-contact", "imprint"],
+    linkIds: [
+      "how-it-works",
+      "for-florists",
+      "help-and-contact",
+      "reviews",
+      "imprint",
+    ],
   },
   {
     id: "legal",
     headingKey: "footer.group.legal",
     surface: "footer",
-    linkIds: ["terms", "privacy", "cookies", "withdrawal-and-refunds"],
+    linkIds: [
+      "terms",
+      "privacy",
+      "cookies",
+      "withdrawal-and-refunds",
+      "review-policy",
+    ],
   },
 ] as const;
 

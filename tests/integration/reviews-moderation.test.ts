@@ -348,6 +348,9 @@ describe.skipIf(server.url === undefined)(
         expect(cards.map((card) => [card.id, card.text])).toEqual([
           [withheld.reviewId, null],
         ]);
+        // The card's withheld line (AC-18 page half; `0047`, TASK-373): the reason is public only
+        // for a withheld text; the removal reason and the note never are.
+        expect(cards[0]?.withheld_reason).toBe("abuse");
         const [refresh] = await refreshPartnerRatings(
           runnerOf(tx),
           NOW,
@@ -355,6 +358,77 @@ describe.skipIf(server.url === undefined)(
         );
         // [2, 5, 5] counted (the removed 1 is not): round(2000 × 4) = 8000.
         expect(refresh?.ratingBp).toBe(8000);
+      });
+    });
+
+    it("T-24/T-26 data (TASK-373): `0047`'s view reads by product SKU and country, a visible text has no withheld reason, and the build reads the view only", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const admin = await adminUser(tx);
+        const parents = await orderParents(tx);
+        const sku = `SKU-${randomUUID().slice(0, 8)}`;
+        const [product] = await tx<{ id: string }[]>`
+          INSERT INTO product (sku, product_type, primary_flower, colour_primary, style, price_tier,
+                               substitution_class, freshness_days)
+          VALUES (${sku}, 'bouquet', 'roses', 'red', 'classic', 'classic', 'main_flower', 5)
+          RETURNING id`;
+        const made = [
+          await review(tx, { rating: 5, ageMs: 2 * HOUR, name: "Anna" }),
+          await review(tx, { rating: 4, ageMs: 3 * HOUR }),
+          await review(tx, { rating: 1, ageMs: 4 * HOUR }),
+        ];
+        await tx`UPDATE review SET product_id = ${product?.id ?? ""}
+                 WHERE id IN (${made[0]?.reviewId ?? ""}, ${made[1]?.reviewId ?? ""})`;
+        await asAdmin(tx, "reviews.publish", admin, async () => {
+          for (const { reviewId } of made) {
+            await moderateReview(
+              runnerOf(tx),
+              reviewId,
+              { action: "publish" },
+              admin,
+              NOW,
+            );
+          }
+        });
+        const bySku = await reviewSummary(runnerOf(tx), { productSku: sku });
+        expect(bySku).toMatchObject({ count: 2, average: 4.5, withText: 2 });
+        const listed = await listPublicReviews(
+          runnerOf(tx),
+          { productSku: sku },
+          1,
+        );
+        // Published in one instant, so the order is the id tie-break; compare as sets.
+        const byId = (a: readonly unknown[], b: readonly unknown[]) =>
+          String(a[0]).localeCompare(String(b[0]));
+        expect(
+          listed
+            .map((card) => [card.id, card.display_name, card.withheld_reason])
+            .sort(byId),
+        ).toEqual(
+          [
+            [made[0]?.reviewId, "Anna", null],
+            [made[1]?.reviewId, null, null],
+          ].sort(byId),
+        );
+        expect(
+          (await reviewSummary(runnerOf(tx), { productSku: "NO-SUCH-SKU" }))
+            .count,
+        ).toBe(0);
+        const [iso] = await tx<{ iso2: string }[]>`
+          SELECT iso2 FROM country WHERE id = ${parents.countryId}`;
+        const country = await reviewSummary(runnerOf(tx), {
+          countryIso2: iso?.iso2 ?? "",
+        });
+        expect(country.count).toBeGreaterThanOrEqual(3);
+        expect(country.distribution[1]).toBeGreaterThanOrEqual(1);
+        // The build role: the view, never the table (TASK-368's carry-forward).
+        const [grants] = await tx<
+          { view: boolean; table: boolean; policy: number }[]
+        >`
+          SELECT has_table_privilege('app_build', 'public.public_review', 'SELECT') AS view,
+                 has_table_privilege('app_build', 'public.review', 'SELECT') AS table,
+                 (SELECT count(*)::int FROM pg_policies
+                  WHERE tablename = 'review' AND policyname = 'review_build_read') AS policy`;
+        expect(grants).toEqual({ view: true, table: false, policy: 0 });
       });
     });
 

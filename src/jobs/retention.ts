@@ -111,7 +111,7 @@ import { sql, type SQL } from "drizzle-orm";
 
 import type { Logger } from "../lib/logger";
 import type { RawRow } from "../modules/orders";
-import { redactForCustomer } from "../modules/reviews";
+import { redactForCustomer, reviewTags } from "../modules/reviews";
 import type { Storage } from "../lib/storage";
 
 /** Order statuses in which a dispute is open (`0007`'s `order_status`). */
@@ -251,6 +251,12 @@ export interface RetentionSweepOptions {
     alert: string,
     fields: Readonly<Record<string, string>>,
   ) => void;
+  /**
+   * Told the cache tags of every review the buyer redaction touched (spec 022a AC-30, §5.4;
+   * TASK-372's carry-forward, fixed by TASK-373). The caller invalidates them once the sweep's
+   * transaction has committed, so a public page never shows a redacted name for its hour.
+   */
+  readonly onReviewsRedacted?: (tags: readonly string[]) => void;
   readonly log?: Logger;
 }
 
@@ -273,6 +279,7 @@ interface PolicyContext {
   readonly storage: Storage | undefined;
   readonly contractStorage?: Storage | undefined;
   readonly alert?: RetentionSweepOptions["alert"];
+  readonly onReviewsRedacted?: RetentionSweepOptions["onReviewsRedacted"];
 }
 
 type PolicyHandler = (
@@ -451,7 +458,13 @@ const deliveryPhoto: PolicyHandler = async ({
   };
 };
 
-const buyerPersonal: PolicyHandler = async ({ db, now, cutoff, dryRun }) => {
+const buyerPersonal: PolicyHandler = async ({
+  db,
+  now,
+  cutoff,
+  dryRun,
+  onReviewsRedacted,
+}) => {
   const candidates = await rows<{
     id: string;
     dispute: boolean;
@@ -498,7 +511,7 @@ const buyerPersonal: PolicyHandler = async ({ db, now, cutoff, dryRun }) => {
       );
       // Spec 022a §8 "Erasure", AC-29 (TASK-372): the buyer's reviews lose their text and first
       // name; each rating stays as an anonymous verified rating.
-      await redactForCustomer(
+      const redacted = await redactForCustomer(
         {
           execute: async (query) =>
             (await db.execute(query)) as unknown as readonly RawRow[],
@@ -506,6 +519,9 @@ const buyerPersonal: PolicyHandler = async ({ db, now, cutoff, dryRun }) => {
         id,
         now,
       );
+      if (redacted.length > 0) {
+        onReviewsRedacted?.([...new Set(redacted.flatMap(reviewTags))]);
+      }
     }
     if (ids.length > 0) {
       await db.execute(
@@ -1297,6 +1313,7 @@ export async function runRetentionSweep(
           storage: options.storage,
           contractStorage: options.contractStorage,
           alert: options.alert,
+          onReviewsRedacted: options.onReviewsRedacted,
         })),
       };
     }
