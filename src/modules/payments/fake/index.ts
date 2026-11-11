@@ -26,6 +26,7 @@ import {
   type PaymentProvider,
   type ProviderBalanceFact,
   type ProviderDispute,
+  type ProviderEarlyFraudWarning,
   type ProviderEvent,
   type ProviderFailure,
   type ProviderIntent,
@@ -116,6 +117,7 @@ function objectTypeOf(ref: string, namespace: string): string {
   if (ref.startsWith(`${namespace}_re`)) return "refund";
   if (ref.startsWith(`${namespace}_dp`)) return "dispute";
   if (ref.startsWith(`${namespace}_ch`)) return "charge";
+  if (ref.startsWith(`${namespace}_issfr`)) return "radar.early_fraud_warning";
   return "payment_intent";
 }
 
@@ -167,6 +169,8 @@ export class FakePaymentProvider implements PaymentProvider {
   private readonly events: StoredEvent[] = [];
   private readonly refunds = new Map<string, ProviderRefund>();
   private readonly disputes = new Map<string, FakeDisputeState>();
+  /** Spec 021 (TASK-495): early fraud warnings, by reference (`simulateEarlyFraudWarning`). */
+  private readonly warnings = new Map<string, ProviderEarlyFraudWarning>();
   private counter = 0;
   private readonly namespace: string;
   private readonly refundMode: "sync" | "async";
@@ -385,6 +389,27 @@ export class FakePaymentProvider implements PaymentProvider {
       reason: dispute.reason,
       openedAt: dispute.openedAt,
     });
+  }
+
+  retrieveEarlyFraudWarning(
+    ref: string,
+  ): Promise<ProviderEarlyFraudWarning | ProviderFailure> {
+    this.calls.push({ method: "retrieveEarlyFraudWarning", ref });
+    const warning = this.warnings.get(ref);
+    return Promise.resolve(
+      warning === undefined ? providerFailure("not_found") : { ...warning },
+    );
+  }
+
+  listEarlyFraudWarnings(
+    intentRef: string,
+  ): Promise<readonly ProviderEarlyFraudWarning[] | ProviderFailure> {
+    this.calls.push({ method: "listEarlyFraudWarnings", ref: intentRef });
+    return Promise.resolve(
+      [...this.warnings.values()]
+        .filter((warning) => warning.intentRef === intentRef)
+        .map((warning) => ({ ...warning })),
+    );
   }
 
   verifyAndParseWebhook(
@@ -653,6 +678,27 @@ export class FakePaymentProvider implements PaymentProvider {
       amount: { ...state.amount },
       reason,
       openedAt: this.clock(),
+    });
+    return Promise.resolve(ref);
+  }
+
+  simulateEarlyFraudWarning(
+    intentRef: string,
+    fraudType: string,
+  ): Promise<string> {
+    const state = this.state(intentRef);
+    if (state.status !== "succeeded" || state.chargeRef === undefined) {
+      throw new Error(`fake intent ${intentRef} is unpaid`);
+    }
+    const ref = this.next(`${this.namespace}_issfr`);
+    this.warnings.set(ref, {
+      ref,
+      chargeRef: state.chargeRef,
+      intentRef,
+      fraudType,
+      actionable: true,
+      livemode: this.livemode,
+      createdAt: this.clock(),
     });
     return Promise.resolve(ref);
   }

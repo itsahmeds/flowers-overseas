@@ -301,6 +301,7 @@ describe.skipIf(server.url === undefined)(
         invoices: () => Promise.resolve(),
         notifications: () => Promise.resolve(),
         "analytics.ga4": () => Promise.resolve(),
+        risk: () => Promise.resolve(),
         payouts: () => Promise.resolve(),
       };
       for (let run = 0; run < 10; run += 1) {
@@ -629,6 +630,10 @@ describe.skipIf(server.url === undefined)(
           retrieveRefund: (ref) => paid.fake.retrieveRefund(ref),
           listChargeRefunds: (ref) => paid.fake.listChargeRefunds(ref),
           retrieveDispute: (ref) => paid.fake.retrieveDispute(ref),
+          retrieveEarlyFraudWarning: (ref) =>
+            paid.fake.retrieveEarlyFraudWarning(ref),
+          listEarlyFraudWarnings: (ref) =>
+            paid.fake.listEarlyFraudWarnings(ref),
           balanceFacts: (source) => paid.fake.balanceFacts(source),
         };
         await cancel(orderId, "buyer", "buyer_cancel");

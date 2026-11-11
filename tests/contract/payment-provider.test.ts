@@ -35,6 +35,8 @@ describePaymentProviderContract(
       simulateDispute: (ref, reason) => fake.simulateDispute(ref, reason),
       simulateDisputeOutcome: (ref, outcome) =>
         fake.simulateDisputeOutcome(ref, outcome),
+      simulateEarlyFraudWarning: (ref, fraudType) =>
+        fake.simulateEarlyFraudWarning(ref, fraudType),
       simulateEvent: (type, ref, at) => fake.simulateEvent(type, ref, at),
       eventBodyOf: (event) => fake.eventBodyOf(event),
       sign: (rawBody, at) => fake.sign(rawBody, at),
@@ -73,6 +75,8 @@ describe("the Stripe adapter against recorded responses", () => {
       simulateDispute: (ref, reason) => emulator.simulateDispute(ref, reason),
       simulateDisputeOutcome: (ref, outcome) =>
         emulator.simulateDisputeOutcome(ref, outcome),
+      simulateEarlyFraudWarning: (ref, fraudType) =>
+        emulator.simulateEarlyFraudWarning(ref, fraudType),
       simulateEvent: (type, ref, at) =>
         Promise.resolve(emulator.simulateEvent(type, ref, at)),
       eventBodyOf: (event) => emulator.eventBodyOf(event.id),
@@ -101,6 +105,8 @@ describe("the contract suite itself", () => {
         "refund",
         "refund lookup",
         "dispute lookup",
+        // Spec 021 (TASK-495): `retrieveEarlyFraudWarning` and `listEarlyFraudWarnings`.
+        "early fraud warning lookup",
         "webhook",
         "events",
         "balance",

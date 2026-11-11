@@ -123,6 +123,31 @@ export const StripeDisputeSchema = z.object({
 });
 export type StripeDispute = z.infer<typeof StripeDisputeSchema>;
 
+/**
+ * `StripeEarlyFraudWarningSchema` (spec 021 §5.2 `EarlyFraudWarningV1`: `{ id, charge, fraud_type,
+ * actionable, livemode, created }`, plus `payment_intent` when Stripe names it; TASK-495). The
+ * object holds no personal field.
+ */
+export const StripeEarlyFraudWarningSchema = z.object({
+  id: z.string().min(1),
+  object: z.literal("radar.early_fraud_warning"),
+  charge: expandable,
+  payment_intent: expandable.nullish(),
+  fraud_type: z.string().regex(/^[a-z_]{1,64}$/u),
+  actionable: z.boolean(),
+  livemode: z.boolean(),
+  created: unixSeconds,
+});
+export type StripeEarlyFraudWarning = z.infer<
+  typeof StripeEarlyFraudWarningSchema
+>;
+
+export const StripeEarlyFraudWarningListSchema = z.object({
+  object: z.literal("list"),
+  has_more: z.boolean(),
+  data: z.array(StripeEarlyFraudWarningSchema),
+});
+
 /** `StripeEventSchema`: the envelope of a webhook or an `events.list` item (spec 013 §5.2). */
 export const StripeEventSchema = z.object({
   id: z.string().min(1),

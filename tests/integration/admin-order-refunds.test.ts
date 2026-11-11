@@ -116,6 +116,8 @@ function refundingWith(
     retrieveRefund: (ref) => fake.retrieveRefund(ref),
     listChargeRefunds: (ref) => fake.listChargeRefunds(ref),
     retrieveDispute: (ref) => fake.retrieveDispute(ref),
+    retrieveEarlyFraudWarning: (ref) => fake.retrieveEarlyFraudWarning(ref),
+    listEarlyFraudWarnings: (ref) => fake.listEarlyFraudWarnings(ref),
     balanceFacts: (source) => fake.balanceFacts(source),
     verifyAndParseWebhook: (body, headers) =>
       fake.verifyAndParseWebhook(body, headers),

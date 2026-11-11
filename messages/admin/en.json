@@ -2332,7 +2332,9 @@
         "deliveryValue": "{date} (local)",
         "city": "City",
         "total": "Total",
-        "openOrder": "Open the order and its timeline"
+        "openOrder": "Open the order and its timeline",
+        "leftRefund": "{left} · refund in full at the deadline",
+        "defaultRefund": "At the deadline with no decision: refund in full, and tell Stripe the payment was fraudulent."
       },
       "action": {
         "approve": "Approve",
@@ -2341,8 +2343,12 @@
         "pending": {
           "approve": "Approving…",
           "cancel": "Cancelling…",
-          "cancel_block": "Cancelling…"
-        }
+          "cancel_block": "Cancelling…",
+          "keep": "Keeping…",
+          "refundFull": "Refunding…"
+        },
+        "keep": "Keep the order",
+        "refundFull": "Refund in full"
       },
       "dialog": {
         "why": "Why",
@@ -2356,7 +2362,9 @@
         "buyerEmail": "The buyer receives the cancellation email:",
         "buyerLine": "We could not deliver this order. We have refunded {amount}.",
         "notBlocked": "Nothing is offered to a florist. The email and card are not blocked.",
-        "blocked": "This email and this card go on our blocklist for 12 months: a later order with either is refused at the pay step, with no payment taken."
+        "blocked": "This email and this card go on our blocklist for 12 months: a later order with either is refused at the pay step, with no payment taken.",
+        "keepGo": "The order goes on as planned and nothing is refunded. Keep the evidence pack ready in case the bank opens a dispute.",
+        "refundStops": "The florist is told to stop, and the buyer receives the refund email."
       },
       "result": {
         "approved": "Approved. The order goes to florists now.",
@@ -2364,7 +2372,8 @@
         "cancelled_blocked": "Cancelled and blocked. A refund of {amount} is on its way.",
         "already_decided": "This review was already decided. Nothing was done.",
         "superseded": "The order changed while you were deciding. The review is closed and nothing else was done.",
-        "refused": "That did not go through. Nothing was done."
+        "refused": "That did not go through. Nothing was done.",
+        "refunded": "Refunded. A refund of {amount} is on its way."
       },
       "panel": {
         "title": "Risk",
@@ -2385,7 +2394,9 @@
         "reviewOpenNoDeadline": "Open: no deadline",
         "reviewDecided": "{outcome}, {date}",
         "notChecked": "Not checked yet: the order is not paid",
-        "demo": "Demo order: never checked"
+        "demo": "Demo order: never checked",
+        "evidence": "Download evidence pack",
+        "evidenceAdminsOnly": "Admins can download the evidence pack."
       },
       "signal": {
         "S1": {
@@ -2463,6 +2474,66 @@
         "D2": {
           "label": "Card network warning",
           "why": "The card's issuer reported this payment as possible fraud."
+        }
+      },
+      "evidence": {
+        "title": "Chargeback evidence: order {reference}",
+        "intro": "Prepared for the card issuer from our order records. Each time is shown in UTC and in the delivery destination's time zone.",
+        "line": "{label}: {value}",
+        "notReported": "Not reported",
+        "page": "Page {page} of {pages}",
+        "summary": {
+          "title": "1. Summary",
+          "caption": "The order as it was placed, and how it ended.",
+          "reference": "Order reference",
+          "amount": "Amount charged",
+          "product": "Product",
+          "tier": "Size",
+          "ordered": "Order date (UTC)",
+          "delivery": "Delivery date",
+          "outcome": "Outcome",
+          "delivered": "Delivered on {date} at {time} ({zone})",
+          "notDelivered": "Not delivered yet"
+        },
+        "auth": {
+          "title": "2. Proof of authorisation",
+          "caption": "How the card payment was authenticated, as Stripe reported it.",
+          "threeDs": "3D Secure result",
+          "shift": "Liability shift",
+          "yes": "Yes",
+          "no": "No",
+          "card": "Card",
+          "cardValue": "{brand} ending {last4}",
+          "country": "Buyer's declared country"
+        },
+        "timeline": {
+          "title": "3. Timeline",
+          "caption": "Each step from the order's event log, which is never edited. Local times are in {zone}.",
+          "when": "{utc} UTC, {local} {zone}",
+          "step": {
+            "placed": "Order placed",
+            "paid": "Payment taken",
+            "in_production": "Being made",
+            "out_for_delivery": "Out for delivery",
+            "delivered": "Delivered",
+            "photo_uploaded": "Delivery photo uploaded"
+          },
+          "confirmation": "Order confirmation email sent"
+        },
+        "delivery": {
+          "title": "4. Delivery",
+          "caption": "Where the order was delivered, and the photo taken at delivery.",
+          "recipient": "Recipient",
+          "address": "Delivery address:",
+          "photoAt": "Photo uploaded: {when}",
+          "photoAlt": "The delivery photo",
+          "noPhoto": "No delivery photo was uploaded."
+        },
+        "terms": {
+          "title": "5. What the buyer agreed to",
+          "caption": "The cancellation sentence shown at checkout, in the buyer's language.",
+          "version": "Terms version: {version}",
+          "noVersion": "Terms version: not recorded"
         }
       }
     }

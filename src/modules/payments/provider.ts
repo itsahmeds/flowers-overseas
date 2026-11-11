@@ -160,6 +160,24 @@ export interface ProviderDispute {
   readonly openedAt: Date;
 }
 
+/**
+ * An early fraud warning from the card network (spec 021 §5.2 "After routing: early fraud
+ * warnings", §12 requirement (e) on spec 013; TASK-495), reduced to `EarlyFraudWarningV1`'s
+ * fields plus the intent its charge paid. No personal field exists on the object.
+ */
+export interface ProviderEarlyFraudWarning {
+  readonly ref: string;
+  /** The charge the warning is about (`ch_…`). */
+  readonly chargeRef: string;
+  /** The intent the charge paid: how the warning finds its payment. */
+  readonly intentRef: string;
+  /** The network's fraud type code (`misc`, `unauthorized_use_of_card`), never free text. */
+  readonly fraudType: string;
+  readonly actionable: boolean;
+  readonly livemode: boolean;
+  readonly createdAt: Date;
+}
+
 /** Refund metadata: ids and a reason, never personal data (spec 013 §5.2 "Refunds"). */
 export interface RefundMetadataInput {
   readonly orderId: string;
@@ -356,6 +374,17 @@ export interface PaymentProvider {
   ): Promise<readonly ProviderRefund[] | ProviderFailure>;
   /** One dispute as the provider holds it now (`charge.dispute.*`; spec 013 §5.2). */
   retrieveDispute(ref: string): Promise<ProviderDispute | ProviderFailure>;
+  /** One early fraud warning (`radar.early_fraud_warning.created`; spec 021 §5.2, TASK-495). */
+  retrieveEarlyFraudWarning(
+    ref: string,
+  ): Promise<ProviderEarlyFraudWarning | ProviderFailure>;
+  /**
+   * The early fraud warnings on the charges of one intent, oldest first (spec 021's D2: the gate
+   * reads `efwReceived` from it through `riskFactsFor`).
+   */
+  listEarlyFraudWarnings(
+    intentRef: string,
+  ): Promise<readonly ProviderEarlyFraudWarning[] | ProviderFailure>;
   verifyAndParseWebhook(
     rawBody: string,
     headers: WebhookHeaders,
@@ -403,6 +432,11 @@ export interface PaymentProviderHarness {
   simulateDispute(intentRef: string, reason: string): Promise<string>;
   /** The bank decides an open dispute. */
   simulateDisputeOutcome(ref: string, outcome: "won" | "lost"): Promise<void>;
+  /** The card network reports the paid intent's charge as fraud; returns the warning's reference. */
+  simulateEarlyFraudWarning(
+    intentRef: string,
+    fraudType: string,
+  ): Promise<string>;
   /** The provider emits an event of `type` about `objectRef` at `createdAt`. */
   simulateEvent(
     type: string,
@@ -861,6 +895,60 @@ export const PAYMENT_PROVIDER_CONTRACT: readonly PaymentProviderContractCase[] =
             "retrieveDispute unknown",
           );
         }
+      },
+    },
+    {
+      name: "early fraud warning lookup: a warning reads back with its charge, intent and fraud type, and is listed by its intent; an unknown one is not_found (spec 021, TASK-495)",
+      async run(harness) {
+        const paid = await createdIntent(harness, {
+          amount: { amountMinor: 6100, currency: "EUR" },
+          idempotencyKey: freshKey("pi:create"),
+        });
+        await harness.simulateSuccess(paid.ref);
+        const none = await harness.provider.listEarlyFraudWarnings(paid.ref);
+        check(
+          !isProviderFailure(none),
+          "listEarlyFraudWarnings: not a failure",
+        );
+        same(none.length, 0, "listEarlyFraudWarnings: none before");
+        const ref = await harness.simulateEarlyFraudWarning(
+          paid.ref,
+          "unauthorized_use_of_card",
+        );
+        const read = await harness.provider.retrieveEarlyFraudWarning(ref);
+        check(
+          !isProviderFailure(read),
+          "retrieveEarlyFraudWarning: not a failure",
+        );
+        same(read.ref, ref, "retrieveEarlyFraudWarning: ref");
+        same(read.intentRef, paid.ref, "retrieveEarlyFraudWarning: intent");
+        same(
+          read.chargeRef,
+          await harness.chargeRefOf(paid.ref),
+          "retrieveEarlyFraudWarning: charge",
+        );
+        same(
+          read.fraudType,
+          "unauthorized_use_of_card",
+          "retrieveEarlyFraudWarning: fraud type",
+        );
+        same(
+          read.livemode,
+          harness.livemode,
+          "retrieveEarlyFraudWarning: livemode",
+        );
+        const listed = await harness.provider.listEarlyFraudWarnings(paid.ref);
+        check(!isProviderFailure(listed), "listed: not a failure");
+        same(
+          listed.map((warning) => warning.ref),
+          [ref],
+          "listEarlyFraudWarnings: the one warning",
+        );
+        failureOf(
+          await harness.provider.retrieveEarlyFraudWarning(`${ref}_missing`),
+          "not_found",
+          "retrieveEarlyFraudWarning unknown",
+        );
       },
     },
     {

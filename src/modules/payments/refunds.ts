@@ -761,6 +761,46 @@ export async function requestRefund(
   };
 }
 
+/**
+ * The order's remaining captured balance as one refund (spec 021 §5.2 "cancel" for a
+ * `post_routing` review, the EFW deadline default; A6 row 31 → `refunded_full`; TASK-495), on the
+ * caller's transaction: `requestRefund` with the order's total less its counted refunds. The
+ * caller commits, then calls `submitRefund(refundId)`; `payments.sweep` (d) recovers a crash in
+ * between. Nothing left to refund is `NOT_REFUNDABLE`, with no row written.
+ */
+export async function requestBalanceRefund(
+  orderId: string,
+  actor: string,
+  reason: RefundReason,
+  executor: OrderExecutor,
+): Promise<RefundRequest> {
+  const id = z.uuid().parse(orderId);
+  const [orderRaw] = await executor.execute(sql`
+    SELECT status, mode, buyer_total_minor, buyer_currency_code
+    FROM "order" WHERE id = ${id}`);
+  if (orderRaw === undefined) {
+    return { kind: "refused", code: "NOT_REFUNDABLE" };
+  }
+  const order = OrderRow.parse(orderRaw);
+  const [asked] = await executor.execute(sql`
+    SELECT coalesce(sum(amount_minor), 0) AS total FROM refund
+    WHERE order_id = ${id} AND status IN ${counted}`);
+  const remaining = order.buyer_total_minor - sumOf(asked);
+  const currency = order.buyer_currency_code;
+  if (remaining <= 0 || !isCurrencyCode(currency)) {
+    return { kind: "refused", code: "NOT_REFUNDABLE", status: order.status };
+  }
+  return requestRefund(
+    {
+      orderId: id,
+      amount: { amountMinor: remaining, currency },
+      reason,
+      actor,
+    },
+    executor,
+  );
+}
+
 // ---------------------------------------------------------------------------------------------
 // Webhook settlement (`refund.*`, `charge.refunded`; AC-24, AC-29)
 // ---------------------------------------------------------------------------------------------

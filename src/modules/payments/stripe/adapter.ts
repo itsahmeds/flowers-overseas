@@ -32,6 +32,7 @@ import {
   type PaymentProvider,
   type ProviderBalanceFact,
   type ProviderDispute,
+  type ProviderEarlyFraudWarning,
   type ProviderEvent,
   type ProviderFailure,
   type ProviderIntent,
@@ -48,6 +49,8 @@ import {
   StripeBalanceTransactionListSchema,
   StripeChargeSchema,
   StripeDisputeSchema,
+  StripeEarlyFraudWarningListSchema,
+  StripeEarlyFraudWarningSchema,
   StripeErrorSchema,
   StripeEventListSchema,
   StripePaymentIntentSchema,
@@ -56,6 +59,7 @@ import {
   type StripeBalanceTransaction,
   type StripeCharge,
   type StripeDispute,
+  type StripeEarlyFraudWarning,
   type StripePaymentIntent,
   type StripeRefund,
 } from "./schemas.ts";
@@ -183,6 +187,21 @@ function toProviderDispute(
     reason: dispute.reason,
     ...(typeof due === "number" ? { evidenceDueBy: new Date(due * 1000) } : {}),
     openedAt: new Date(dispute.created * 1000),
+  };
+}
+
+function toProviderEarlyFraudWarning(
+  warning: StripeEarlyFraudWarning,
+  intentRef: string,
+): ProviderEarlyFraudWarning {
+  return {
+    ref: warning.id,
+    chargeRef: idOf(warning.charge) ?? "",
+    intentRef,
+    fraudType: warning.fraud_type,
+    actionable: warning.actionable,
+    livemode: warning.livemode,
+    createdAt: new Date(warning.created * 1000),
   };
 }
 
@@ -473,6 +492,56 @@ export function createStripeProvider(
         return providerFailure("not_found", "dispute_without_intent");
       }
       return toProviderDispute(dispute, intentRef);
+    },
+
+    /**
+     * Spec 021 §5.2 (TASK-495): `GET /v1/radar/early_fraud_warnings/{id}`; a warning that names
+     * no intent finds it through its charge, as a dispute does.
+     */
+    async retrieveEarlyFraudWarning(
+      ref: string,
+    ): Promise<ProviderEarlyFraudWarning | ProviderFailure> {
+      const warning = await request(
+        "GET",
+        `/radar/early_fraud_warnings/${encodeURIComponent(ref)}`,
+        new URLSearchParams(),
+        StripeEarlyFraudWarningSchema,
+      );
+      if (isProviderFailure(warning)) return warning;
+      let intentRef = idOf(warning.payment_intent);
+      if (intentRef === null) {
+        const charge = await request(
+          "GET",
+          `/charges/${encodeURIComponent(idOf(warning.charge) ?? "")}`,
+          new URLSearchParams(),
+          StripeChargeSchema,
+        );
+        if (isProviderFailure(charge)) return charge;
+        intentRef = idOf(charge.payment_intent);
+      }
+      if (intentRef === null) {
+        return providerFailure("not_found", "warning_without_intent");
+      }
+      return toProviderEarlyFraudWarning(warning, intentRef);
+    },
+
+    /** `GET /v1/radar/early_fraud_warnings?payment_intent=…` (one page: a charge has few). */
+    async listEarlyFraudWarnings(
+      intentRef: string,
+    ): Promise<readonly ProviderEarlyFraudWarning[] | ProviderFailure> {
+      const page = await request(
+        "GET",
+        "/radar/early_fraud_warnings",
+        new URLSearchParams([
+          ["payment_intent", intentRef],
+          ["limit", "100"],
+        ]),
+        StripeEarlyFraudWarningListSchema,
+      );
+      if (isProviderFailure(page)) return page;
+      return page.data
+        .map((warning) => toProviderEarlyFraudWarning(warning, intentRef))
+        .reverse();
     },
 
     verifyAndParseWebhook(

@@ -62,6 +62,7 @@ const complete: HandlerRegistry = {
   routing: noop,
   notifications: noop,
   "analytics.ga4": noop,
+  risk: noop,
   payouts: noop,
 };
 
@@ -83,6 +84,7 @@ describe("HandlerRegistry (AC-20, type half)", () => {
       "notifications",
       "payments",
       "payouts",
+      "risk",
       "routing",
     ]);
     expect(Object.keys(complete).sort()).toEqual(

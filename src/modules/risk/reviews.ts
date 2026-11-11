@@ -19,8 +19,12 @@
  *    score under `HIGH_SCORE` is released (`auto_released`); anything else is cancelled with
  *    `risk_cancel` (`auto_cancelled`), never blocked. `risk.review_auto_decided` once.
  *
- * A post-routing review (opened by an early fraud warning, TASK-495) has no admin close action
- * here: the founder refunds from the order page (orchestrator ruling on the boards, PR 529).
+ * A post-routing review (opened by an early fraud warning, TASK-495) on a `paid` order reads
+ * "Keep the order" (approve: `approved`, nothing else) and "Refund in full" (cancel: the order's
+ * remaining captured balance through spec 013's refund path with `risk_cancel`, A6 row 31,
+ * `cancelled`); its deadline default (`productionStartAt − 60 min`) refunds in full with
+ * `fraud_confirmed` (`auto_refunded`). One on an order already being made has no close action:
+ * the founder refunds from the order page (orchestrator ruling on the boards, PR 529).
  * Status changes only through spec 013's `cancelOrder` (ADR-0009); this module never calls
  * `transition` and never writes `orders.status` (AC-23).
  */
@@ -50,6 +54,21 @@ export type RiskCancel = (
   options: { readonly executor: OrderExecutor },
 ) => Promise<
   | { readonly kind: "cancelled" }
+  | { readonly kind: "refused"; readonly code: string }
+>;
+
+/**
+ * Spec 013's `requestBalanceRefund` (handed in; never imported): the order's remaining captured
+ * balance as one `requested` refund on the caller's transaction. The caller submits it after
+ * commit (`submitRefund`); `payments.sweep` (d) recovers a crash in between.
+ */
+export type RiskRefund = (
+  orderId: string,
+  actor: string,
+  reason: "risk_cancel" | "fraud_confirmed",
+  executor: OrderExecutor,
+) => Promise<
+  | { readonly kind: "requested"; readonly refundId: string }
   | { readonly kind: "refused"; readonly code: string }
 >;
 
@@ -121,6 +140,12 @@ export type ReviewDecisionResult =
       readonly orderId: string;
     }
   | {
+      /** A post-routing "Refund in full": the refund row to submit after commit. */
+      readonly kind: "refunded";
+      readonly orderId: string;
+      readonly refundId: string;
+    }
+  | {
       readonly kind: "already_decided";
       readonly orderId: string;
       readonly status: ReviewStatus;
@@ -138,7 +163,8 @@ export type ReviewDecisionResult =
         | "REVIEW_NOT_FOUND"
         | "REASON_NOT_ALLOWED"
         | "POST_ROUTING_NO_ACTION"
-        | "CANCEL_REFUSED";
+        | "CANCEL_REFUSED"
+        | "REFUND_REFUSED";
     };
 
 const ReviewRow = z.object({
@@ -203,7 +229,8 @@ async function lockReview(
   };
 }
 
-async function close(
+/** Closes an open review (no-op when it is no longer open). */
+export async function closeReview(
   executor: OrderExecutor,
   reviewId: string,
   status: Exclude<ReviewStatus, "open">,
@@ -237,10 +264,85 @@ async function release(
 export interface DeadlineDefaultDeps {
   readonly cancelOrder: RiskCancel;
   readonly alert: AlertRaiser;
+  /** Spec 013's balance refund, for a post-routing deadline (TASK-495). */
+  readonly refundBalance?: RiskRefund;
 }
 
 export type DeadlineOutcome =
-  "auto_released" | "auto_cancelled" | "superseded" | "not_due" | "not_open";
+  | "auto_released"
+  | "auto_cancelled"
+  | "auto_refunded"
+  | "superseded"
+  | "not_due"
+  | "not_open";
+
+/**
+ * The deadline default for one `post_routing` review on a `paid` order (§5.2 "After routing",
+ * AC-26; TASK-495): one full refund of the remaining captured balance with `fraud_confirmed`
+ * (A6 row 31 → `refunded_full`), status `auto_refunded`. An order that has left `paid`, or a
+ * refund the engine refuses, supersedes the review. Returns the refund row to submit after commit.
+ */
+export async function applyPostRoutingDefault(
+  executor: OrderExecutor,
+  reviewId: string,
+  now: Date,
+  deps: DeadlineDefaultDeps,
+): Promise<{ readonly outcome: DeadlineOutcome; readonly refundId?: string }> {
+  const locked = await lockReview(executor, reviewId);
+  if (locked === null) return { outcome: "not_open" };
+  const { review, order } = locked;
+  if (review.status !== "open" || review.kind !== "post_routing") {
+    return { outcome: "not_open" };
+  }
+  if (review.deadline_at === null || review.deadline_at > now) {
+    return { outcome: "not_due" };
+  }
+  const refunded =
+    order.status === "paid" &&
+    order.mode !== "demo" &&
+    deps.refundBalance !== undefined
+      ? await deps.refundBalance(
+          review.order_id,
+          RISK_DEADLINE_ACTOR,
+          "fraud_confirmed",
+          executor,
+        )
+      : null;
+  if (refunded === null || refunded.kind !== "requested") {
+    await closeReview(
+      executor,
+      review.id,
+      "superseded",
+      RISK_DEADLINE_ACTOR,
+      "superseded",
+      now,
+    );
+    return { outcome: "superseded" };
+  }
+  await closeReview(
+    executor,
+    review.id,
+    "auto_refunded",
+    RISK_DEADLINE_ACTOR,
+    "deadline_default",
+    now,
+  );
+  deps.alert("risk.review_auto_decided", {
+    order_id: review.order_id,
+    review_id: review.id,
+    outcome: "auto_refunded",
+    score: review.score,
+  });
+  logger.info(
+    {
+      order_id: review.order_id,
+      review_id: review.id,
+      outcome: "auto_refunded",
+    },
+    "risk.review_auto_decided",
+  );
+  return { outcome: "auto_refunded", refundId: refunded.refundId };
+}
 
 /**
  * The deadline default for one `pre_routing` review (§5.2, §13 Q2), on the caller's transaction:
@@ -263,7 +365,7 @@ export async function applyDeadlineDefault(
     !ALLOWED_STATES.pre_routing.includes(order.status) ||
     order.mode === "demo"
   ) {
-    await close(
+    await closeReview(
       executor,
       review.id,
       "superseded",
@@ -275,7 +377,7 @@ export async function applyDeadlineDefault(
   }
   let outcome: DeadlineOutcome;
   if (review.liability_shift === true && review.score < HIGH_SCORE) {
-    await close(
+    await closeReview(
       executor,
       review.id,
       "auto_released",
@@ -299,7 +401,7 @@ export async function applyDeadlineDefault(
       { executor },
     );
     if (result.kind !== "cancelled") {
-      await close(
+      await closeReview(
         executor,
         review.id,
         "superseded",
@@ -309,7 +411,7 @@ export async function applyDeadlineDefault(
       );
       return "superseded";
     }
-    await close(
+    await closeReview(
       executor,
       review.id,
       "auto_cancelled",
@@ -338,6 +440,10 @@ export interface DecideReviewDeps {
   /** The admin-context transaction (`withAdminContext` with `risk.review.<decision>`). */
   readonly transaction: RiskTransaction;
   readonly cancelOrder: RiskCancel;
+  /** Spec 013's balance refund, for a post-routing "Refund in full" (TASK-495). */
+  readonly refundBalance?: RiskRefund;
+  /** Spec 013's `submitRefund`, called after the decision has committed. */
+  readonly submitRefund?: (refundId: string) => Promise<void>;
   readonly now?: () => Date;
 }
 
@@ -373,7 +479,7 @@ export async function decideReview(
         !ALLOWED_STATES[review.kind].includes(order.status) ||
         order.mode === "demo"
       ) {
-        await close(
+        await closeReview(
           executor,
           review.id,
           "superseded",
@@ -388,14 +494,56 @@ export async function decideReview(
         };
       }
       if (review.kind === "post_routing") {
-        if (decision !== "approve") {
+        if (decision === "approve") {
+          await closeReview(
+            executor,
+            review.id,
+            "approved",
+            deps.actor,
+            reason,
+            now,
+          );
+          return { kind: "approved", orderId: review.order_id };
+        }
+        if (
+          decision !== "cancel" ||
+          order.status !== "paid" ||
+          deps.refundBalance === undefined
+        ) {
           return { kind: "refused", code: "POST_ROUTING_NO_ACTION" };
         }
-        await close(executor, review.id, "approved", deps.actor, reason, now);
-        return { kind: "approved", orderId: review.order_id };
+        const refunded = await deps.refundBalance(
+          review.order_id,
+          deps.actor,
+          "risk_cancel",
+          executor,
+        );
+        if (refunded.kind !== "requested") {
+          return { kind: "refused", code: "REFUND_REFUSED" };
+        }
+        await closeReview(
+          executor,
+          review.id,
+          "cancelled",
+          deps.actor,
+          reason,
+          now,
+        );
+        return {
+          kind: "refunded",
+          orderId: review.order_id,
+          refundId: refunded.refundId,
+        };
       }
       if (decision === "approve") {
-        await close(executor, review.id, "approved", deps.actor, reason, now);
+        await closeReview(
+          executor,
+          review.id,
+          "approved",
+          deps.actor,
+          reason,
+          now,
+        );
         await release(executor, review, order.mode, deps.actor, "approved");
         return { kind: "approved", orderId: review.order_id };
       }
@@ -408,7 +556,14 @@ export async function decideReview(
       if (cancelled.kind !== "cancelled") {
         return { kind: "refused", code: "CANCEL_REFUSED" };
       }
-      await close(executor, review.id, "cancelled", deps.actor, reason, now);
+      await closeReview(
+        executor,
+        review.id,
+        "cancelled",
+        deps.actor,
+        reason,
+        now,
+      );
       if (decision === "cancel_block") {
         await addToBlocklist(
           executor,
@@ -421,6 +576,9 @@ export async function decideReview(
       return { kind: "cancelled", orderId: review.order_id };
     },
   );
+  if (result.kind === "refunded" && deps.submitRefund !== undefined) {
+    await deps.submitRefund(result.refundId);
+  }
   logger.info(
     {
       review_id: reviewId,

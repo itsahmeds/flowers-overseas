@@ -17,6 +17,8 @@ export const SUBSCRIBED_STRIPE_EVENT_TYPES = [
   "charge.dispute.created",
   "charge.dispute.updated",
   "charge.dispute.closed",
+  // Spec 021 §12 requirement (e) on spec 013 (TASK-495): routed to `risk.handleEarlyFraudWarning`.
+  "radar.early_fraud_warning.created",
 ] as const;
 
 export type SubscribedStripeEventType =

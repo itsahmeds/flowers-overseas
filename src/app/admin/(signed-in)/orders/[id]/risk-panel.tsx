@@ -7,13 +7,15 @@
  * `risk.review`. Reads the order's latest `risk_assessment` and its open or last `risk_review`
  * through the risk module, on an admin-context read. States: held with a review open, passed,
  * decided by a person or at the deadline, recorded only (shadow mode), not checked yet, demo.
- * The evidence pack button joins it with the evidence route (TASK-495).
+ * The evidence pack button (TASK-495, AC-28) is a plain link to `GET /admin/risk/evidence/{orderId}`
+ * for a paid order; without `risk.evidence` a sentence replaces it.
  */
 import type { ReactElement } from "react";
 
 import type { AdminSession } from "@/lib/auth/admin";
 import { adminT, can } from "@/modules/admin";
 import { adminRiskTransaction, riskPanelFor } from "@/modules/risk";
+import { adminButtonClass } from "@/modules/ui/admin/AdminControls";
 import { AdminKeyValues, AdminCard } from "@/modules/ui/admin/AdminRecord";
 import { RiskScore } from "@/modules/ui/admin/RiskReview";
 
@@ -33,6 +35,24 @@ export async function OrderRiskPanel({
   readonly requestId: string;
 }): Promise<ReactElement> {
   const title = adminT("admin.risk.panel.title");
+  const unpaid =
+    status === "placed" ||
+    status === "authorised" ||
+    status === "payment_failed" ||
+    status === "abandoned";
+  // Spec 021 §5.2 "Evidence pack" (TASK-495): the download, or the sentence without the permission.
+  const evidence = unpaid ? null : can(session.roles, "risk.evidence") ? (
+    <a
+      className={adminButtonClass("ink")}
+      href={`/admin/risk/evidence/${orderId}`}
+    >
+      {adminT("admin.risk.panel.evidence")}
+    </a>
+  ) : (
+    <p className="text-ink-3 text-[13px]">
+      {adminT("admin.risk.panel.evidenceAdminsOnly")}
+    </p>
+  );
   const lastCheck = adminT("admin.risk.panel.lastCheck");
   if (mode === "demo") {
     return (
@@ -65,15 +85,13 @@ export async function OrderRiskPanel({
             {
               key: "check",
               label: lastCheck,
-              value:
-                status === "placed" ||
-                status === "payment_failed" ||
-                status === "abandoned"
-                  ? adminT("admin.risk.panel.notChecked")
-                  : adminT("admin.risk.panel.reviewNone"),
+              value: unpaid
+                ? adminT("admin.risk.panel.notChecked")
+                : adminT("admin.risk.panel.reviewNone"),
             },
           ]}
         />
+        {evidence}
       </AdminCard>
     );
   }
@@ -138,6 +156,7 @@ export async function OrderRiskPanel({
             : []),
         ]}
       />
+      {evidence}
     </AdminCard>
   );
 }
