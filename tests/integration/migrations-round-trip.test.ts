@@ -101,6 +101,8 @@ const FUNCTIONS = [
   "invoice_immutable",
   "media_asset_delivery_proof_guard",
   "media_asset_partner_application_guard",
+  // 0045 (TASK-352): at most N occasion reminders and saved recipients per buyer (spec 018).
+  "occasion_reminder_limit",
   "order_assignment_mode_check",
   "order_event_append_only",
   "order_insert_guard",
@@ -147,6 +149,8 @@ const FUNCTIONS = [
   "review_row_is_own",
   "review_subject_hash",
   "review_write_guard",
+  // 0045 (TASK-352).
+  "saved_recipient_limit",
   "set_updated_at",
   "status_flip_guard",
 ];
