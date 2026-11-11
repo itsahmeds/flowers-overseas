@@ -8618,17 +8618,23 @@
   },
   "checkout.risk.attemptsExhausted": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-493.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 021 section 7 (TASK-493); the founder did not read this text",
+    "reviewedAt": "2026-11-11T14:13:11Z",
     "sourceHash": "752f7305d7b1935ccf6f601154516fde4a8a98edec4b98509c642ba5a5b451a9"
   },
   "checkout.risk.emailLasting": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-493.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 021 section 7 (TASK-493); the founder did not read this text",
+    "reviewedAt": "2026-11-11T14:13:11Z",
     "sourceHash": "31a1af72849587d98d36b5a34f891c92c8aca3c099b50be761875f5eb71ff2f5"
   },
   "checkout.risk.startAgain": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-493.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 021 section 7 (TASK-493); the founder did not read this text",
+    "reviewedAt": "2026-11-11T14:13:11Z",
     "sourceHash": "962e64b761961fe056e96cdc9641daaf786022d8c32cec531c6da20c71218c24"
   }
 }
