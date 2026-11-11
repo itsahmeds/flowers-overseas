@@ -61,7 +61,7 @@ vi.mock("@/lib/sentry", () => ({
   },
 }));
 
-/** The tables `0033_catalogue_cms` puts under `audit_row_change()` (spec 012b §5.1 item 3). */
+/** The tables `0044_catalogue_cms` puts under `audit_row_change()` (spec 012b §5.1 item 3). */
 const CATALOGUE_CMS_AUDITED_TABLES = [
   "country_price",
   "media_asset",

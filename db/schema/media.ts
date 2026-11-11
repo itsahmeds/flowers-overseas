@@ -121,7 +121,7 @@ export const mediaAsset = pgTable(
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
     /**
      * The florist a `source = 'partner'` bouquet photo (`kind = 'product'`) came from
-     * (`0033_catalogue_cms`, spec 012b §2.7); delivery proofs and application photos have none.
+     * (`0044_catalogue_cms`, spec 012b §2.7); delivery proofs and application photos have none.
      * The foreign key to `fulfillment_partner` is the migration's: `partners.ts` imports this
      * module's neighbour `catalog.ts`, and a reference here would close the cycle.
      */

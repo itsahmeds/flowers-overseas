@@ -1,6 +1,6 @@
--- Rollback of 0033_catalogue_cms (TASK-294): detach the triggers, drop `saleable_offer`, drop
+-- Rollback of 0044_catalogue_cms (TASK-294): detach the triggers, drop `saleable_offer`, drop
 -- `publish_run`, drop the three columns and the functions, restore the mask list
--- `0029_reviews_close` left.
+-- `0041_partner_contracts` left.
 
 SET LOCAL ROLE app_owner;
 
@@ -11,11 +11,17 @@ CREATE OR REPLACE FUNCTION public.audit_mask_columns(p_table text) RETURNS text[
 AS $fn$
   SELECT CASE p_table
     WHEN 'fulfillment_partner' THEN
-      ARRAY['legal_name', 'contact_email', 'contact_phone']
+      ARRAY['legal_name', 'contact_email', 'contact_phone', 'contact_name']
     WHEN 'partner_application' THEN
       ARRAY['business_name', 'contact_name', 'contact_email', 'contact_phone', 'registration_number']
     WHEN 'review' THEN
       ARRAY['text', 'display_name']
+    WHEN 'partner_note' THEN
+      ARRAY['body']
+    WHEN 'partner_contact_log' THEN
+      ARRAY['summary']
+    WHEN 'partner_contract' THEN
+      ARRAY['note']
     ELSE ARRAY[]::text[]
   END;
 $fn$;

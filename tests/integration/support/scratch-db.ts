@@ -272,7 +272,7 @@ export async function asApp(
 /**
  * Run `body` in one transaction with row triggers off (`session_replication_role = replica`, the
  * server's own superuser only). For fixtures that stand for a state the application cannot write
- * any more, such as a drifted price on a product that has been active, which `0033`'s guard
+ * any more, such as a drifted price on a product that has been active, which `0044`'s guard
  * refuses (spec 012b §2.6, F2; TASK-294). Never for the statement a test asserts on.
  */
 export async function withoutTriggers(

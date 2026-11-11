@@ -203,7 +203,7 @@ export const product = pgTable(
     source: text("source").notNull().default("seed"),
     /**
      * Set once by a trigger at the first `draft → active`, never cleared (migration
-     * `0033_catalogue_cms`, spec 012b §2.6 F2): from then on a price is only superseded.
+     * `0044_catalogue_cms`, spec 012b §2.6 F2): from then on a price is only superseded.
      */
     firstActiveAt: timestamp("first_active_at", { withTimezone: true }),
     /**

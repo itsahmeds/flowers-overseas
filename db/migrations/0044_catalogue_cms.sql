@@ -1,4 +1,4 @@
--- 0033_catalogue_cms — the catalogue CMS cutover's schema (spec 012b §5.1 item 3, §2.3, §2.5,
+-- 0044_catalogue_cms — the catalogue CMS cutover's schema (spec 012b §5.1 item 3, §2.3, §2.5,
 -- §2.6, §2.7; AC-7, AC-19, AC-39; TASK-294).
 --
 --   * `country.first_live_at`   set once by a trigger when `status` becomes `live`, never cleared,
@@ -21,7 +21,7 @@
 --   * the audit trigger on the twelve tables §5.1 names (`country` has it from `0016`), and the
 --     attester's name masked in `audit_log` (`review_attestation` is personal data, AC-28).
 --
--- Rollback: `0033_catalogue_cms.down.sql`.
+-- Rollback: `0044_catalogue_cms.down.sql`.
 
 SET LOCAL ROLE app_owner;
 
@@ -250,7 +250,7 @@ CREATE TRIGGER country_price_audit_source
   FOR EACH ROW EXECUTE FUNCTION public.audit_mark_real();
 
 -- The attester's name is personal data with its own retention (AC-28): `audit_log` keeps the
--- mask, never the name. Every other table keeps its list exactly as `0029_reviews_close` left it.
+-- mask, never the name. Every other table keeps its list exactly as `0041_partner_contracts` left it.
 CREATE OR REPLACE FUNCTION public.audit_mask_columns(p_table text) RETURNS text[]
   LANGUAGE sql
   IMMUTABLE
@@ -258,11 +258,17 @@ CREATE OR REPLACE FUNCTION public.audit_mask_columns(p_table text) RETURNS text[
 AS $fn$
   SELECT CASE p_table
     WHEN 'fulfillment_partner' THEN
-      ARRAY['legal_name', 'contact_email', 'contact_phone']
+      ARRAY['legal_name', 'contact_email', 'contact_phone', 'contact_name']
     WHEN 'partner_application' THEN
       ARRAY['business_name', 'contact_name', 'contact_email', 'contact_phone', 'registration_number']
     WHEN 'review' THEN
       ARRAY['text', 'display_name']
+    WHEN 'partner_note' THEN
+      ARRAY['body']
+    WHEN 'partner_contact_log' THEN
+      ARRAY['summary']
+    WHEN 'partner_contract' THEN
+      ARRAY['note']
     WHEN 'review_attestation' THEN
       ARRAY['attester_name']
     ELSE ARRAY[]::text[]

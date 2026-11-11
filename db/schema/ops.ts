@@ -248,7 +248,7 @@ export const publishEnvironments = [
 ] as const;
 
 /**
- * `publish_run` (migration `0033_catalogue_cms`, spec 012b §2.3, AC-6, AC-7; TASK-295): one
+ * `publish_run` (migration `0044_catalogue_cms`, spec 012b §2.3, AC-6, AC-7; TASK-295): one
  * rebuild of the environment's tracked branch head, at most one open per environment.
  */
 export const publishRun = pgTable(

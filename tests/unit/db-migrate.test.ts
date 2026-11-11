@@ -166,7 +166,8 @@ describe("the committed migration set", () => {
   // TASK-292 0018, TASK-347 0019, TASK-348 0020, TASK-337 0021, TASK-211 0022, TASK-293 0023, TASK-321 0024,
   // TASK-070 0025, TASK-350 0026, TASK-258 0027,
   // TASK-261 0028, TASK-368 0029, TASK-327 0030, TASK-359 0031, TASK-331 0032, TASK-221 0033,
-  // TASK-355 0034, TASK-363 0035, TASK-344 0036, TASK-445 0037).
+  // TASK-355 0034, TASK-363 0035, TASK-344 0036, TASK-445 0037, TASK-488 0038, TASK-439 0039,
+  // TASK-449 0040, TASK-442 0041, TASK-491 0042, TASK-493 0043, TASK-294 0044).
   it("reads each committed migration and its rollback from db/migrations", () => {
     expect(readMigrations(migrationsDir).map((m) => m.file)).toEqual([
       "0001_roles_grants_updated_at.sql",
@@ -206,6 +207,13 @@ describe("the committed migration set", () => {
       "0035_payouts_030a.sql",
       "0036_buyer_sign_in.sql",
       "0037_discount_codes.sql",
+      "0038_ops_alerts.sql",
+      "0039_finance_crm_030b.sql",
+      "0040_basket_reminder.sql",
+      "0041_partner_contracts.sql",
+      "0042_analytics_ga4.sql",
+      "0043_risk_021.sql",
+      "0044_catalogue_cms.sql",
     ]);
   });
 });

@@ -167,7 +167,7 @@ describe.skipIf(server.url === undefined)(
       await scratch.sql`UPDATE city_translation SET name = 'Edited'
         WHERE slug = 'rome' AND locale_code = 'en'`;
       await scratch.sql`UPDATE country SET vat_rate_bp = 2300 WHERE iso2 = 'ES'`;
-      // Not `retail_minor`: a plain seed writes a price amount on insert only (`0033`, F2).
+      // Not `retail_minor`: a plain seed writes a price amount on insert only (`0044`, F2).
       await scratch.sql`UPDATE country_price SET vat_rate_bp = vat_rate_bp + 100
         WHERE id = (SELECT cp.id FROM country_price cp JOIN product p ON p.id = cp.product_id
                     WHERE p.sku = 'FO-BQ-005' ORDER BY cp.tier_key, cp.country_id LIMIT 1)`;

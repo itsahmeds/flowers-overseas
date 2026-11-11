@@ -1,5 +1,5 @@
 /**
- * Migration `0033_catalogue_cms` against a migrated and seeded Postgres 16 (spec 012b §5.1 item 3;
+ * Migration `0044_catalogue_cms` against a migrated and seeded Postgres 16 (spec 012b §5.1 item 3;
  * AC-39's database half, T-41's view and role cases; the F2 price-row guard; `first_live_at`;
  * `publish_run`'s one-open-run index; TASK-294).
  *
@@ -69,7 +69,7 @@ interface Fixture {
 }
 
 describe.skipIf(server.url === undefined)(
-  `0033_catalogue_cms — saleable_offer, first_active_at, the price guard, publish_run${server.url === undefined ? ` (skipped: ${server.reason})` : ""}`,
+  `0044_catalogue_cms — saleable_offer, first_active_at, the price guard, publish_run${server.url === undefined ? ` (skipped: ${server.reason})` : ""}`,
   () => {
     let scratch: ScratchDatabase;
     let build: Sql;

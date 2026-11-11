@@ -89,6 +89,8 @@ export const SDK_ADAPTERS = [
     // the recorded approvals into the review ledger over the direct URL (TASK-293).
     // `scripts/orders-rotate-tracking.ts` is spec 018 §5.2's `pnpm orders:rotate-tracking`, one
     // transaction over the direct URL that bumps a token version and audits it (TASK-338).
+    // `scripts/catalogue-parity-catalogue.ts` is the parity's catalogue and price half, inside the
+    // same read-only transaction as `scripts/catalogue-parity.ts` (TASK-294).
     // `scripts/florists-demo-member.ts` is spec 011 §2's `pnpm florists:demo-member`, one
     // transaction over the direct URL that links or unlinks a demo florist member (TASK-214).
     files: [
@@ -102,6 +104,7 @@ export const SDK_ADAPTERS = [
       "scripts/attestations-import.ts",
       "scripts/orders-rotate-tracking.ts",
       "scripts/florists-demo-member.ts",
+      "scripts/catalogue-parity-catalogue.ts",
     ],
     use: "src/lib/db.ts",
   },
