@@ -28,6 +28,12 @@ vi.mock("../../src/config/countries.ts", async (importOriginal) => {
   } as const;
   return {
     ...actual,
+    // Since TASK-294 the price dataset reads the file registry (`COUNTRIES`) to decide whether a
+    // live destination emits its Sunday rows (`emitsSundaySurcharge`), so the fixture gives PL its
+    // operations there too; `countryConfig` stays for the delivery window (TASK-522).
+    COUNTRIES: actual.COUNTRIES.map((country) =>
+      country.iso2 === "PL" ? { ...country, operations } : country,
+    ),
     countryConfig: (iso2: string) =>
       iso2 === "PL"
         ? { ...actual.countryConfig(iso2 as never), operations }
@@ -44,6 +50,7 @@ const { withActivePartnersProvider } =
   await import("../../src/modules/geo/partners.ts");
 const { DeliveryWindowSchema } =
   await import("../../src/modules/geo/delivery/schemas.ts");
+const { deriveQuote } = await import("../../src/modules/checkout/pricing.ts");
 
 /** Wednesday 9 September 2026, 09:00 Europe/Warsaw. */
 const MORNING = new Date("2026-09-09T07:00:00Z");
@@ -109,6 +116,40 @@ function row(base: number, sunday: number): Record<string, number> {
   }
   return out;
 }
+
+/**
+ * **Price shown = price charged on a surcharged date** (TASK-522, the money check of the main reds
+ * sweep). The product page's total for a date and the checkout's signed quote for the same
+ * selection are the same minor units: one Sunday (+18 zł) and one plain weekday, in the
+ * destination's own currency and in a converted one.
+ */
+describe("the page's total for a date is the checkout quote's total (price shown = price charged)", () => {
+  it.each([
+    ["pl", "2026-09-13", 25_700, "PLN"],
+    ["pl", "2026-09-14", 23_900, "PLN"],
+    ["en-gb", "2026-09-13", 5290, "GBP"],
+    ["en-gb", "2026-09-14", 4890, "GBP"],
+  ] as const)(
+    "%s, stems_15 on %s: the page shows %i and the quote signs %i %s",
+    async (locale, date, total, currency) => {
+      const view = await live(locale);
+      expect(view.totals?.stems_15?.[date]).toBe(total);
+      const signed = await deriveQuote(
+        {
+          locale,
+          countryIso: "PL",
+          sku: AMBER,
+          tierKey: "stems_15",
+          deliveryDate: date,
+          addonKeys: [],
+        },
+        MORNING,
+      );
+      expect(signed.totalMinor).toBe(total);
+      expect(signed.currency).toBe(currency);
+    },
+  );
+});
 
 describe("`dateTotals`: the all-in total of every tier on every selectable date (§5.2)", () => {
   it("prices fourteen selectable days per tier in PLN, the Sundays 18 zł dearer (pl, native)", async () => {
