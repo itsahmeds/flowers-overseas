@@ -138,10 +138,11 @@ function columnsOf(table: string): [string, string][] {
 }
 
 function checkList(constraint: string): readonly string[] | undefined {
-  const match = new RegExp(
-    `CONSTRAINT\\s+${constraint}\\s+CHECK\\s*\\(\\s*\\w+\\s+IN\\s*\\(([^)]*)\\)`,
-    "i",
-  ).exec(both);
+  const pattern = `CONSTRAINT\\s+${constraint}\\s+CHECK\\s*\\(\\s*\\w+\\s+IN\\s*\\(([^)]*)\\)`;
+  // A later migration may drop and re-add the check with a longer list (0040's `contact`
+  // subject, TASK-449); the last definition is the database's (TASK-522).
+  const later = [...LATER.matchAll(new RegExp(pattern, "gi"))].at(-1);
+  const match = later ?? new RegExp(pattern, "i").exec(both);
   if (match?.[1] === undefined) return undefined;
   return [...match[1].matchAll(/'([^']*)'/g)].map((value) => value[1] ?? "");
 }
@@ -546,20 +547,30 @@ describe("mirror parity beyond names and nullability (breaker hole 4)", () => {
       (m) => m[1] ?? "",
     ),
   );
-  const sqlNames = (table: string, kind: string): string[] =>
-    [
-      ...tableBody(table).matchAll(
-        new RegExp(`CONSTRAINT (\\w+) ${kind}`, "g"),
-      ),
-      ...LATER.matchAll(
-        new RegExp(
-          `ALTER TABLE public\\.${table}\\s+ADD CONSTRAINT (\\w+)\\s+${kind}`,
-          "g",
+  // In migration order: a constraint a later file drops and then adds again (0040 re-adds
+  // `consent_log_subject_kind_check` and `consent_log_subject_check`, TASK-449) exists.
+  const sqlNames = (table: string, kind: string): string[] => {
+    const names = new Set(
+      [
+        ...tableBody(table).matchAll(
+          new RegExp(`CONSTRAINT (\\w+) ${kind}`, "g"),
         ),
+      ]
+        .map((m) => m[1] ?? "")
+        .filter((name) => !droppedConstraints(table).has(name)),
+    );
+    for (const m of LATER.matchAll(
+      new RegExp(
+        `ALTER TABLE public\\.${table}\\s+(DROP|ADD) CONSTRAINT (?:IF EXISTS )?(\\w+)(\\s+${kind})?`,
+        "g",
       ),
-    ]
-      .map((m) => m[1] ?? "")
-      .filter((name) => !droppedConstraints(table).has(name));
+    )) {
+      const name = m[2] ?? "";
+      if (m[1] === "DROP") names.delete(name);
+      else if (m[3] !== undefined) names.add(name);
+    }
+    return [...names];
+  };
   const indexNames = (table: string, unique: boolean): string[] =>
     [
       ...`${both}\n${LATER}`.matchAll(

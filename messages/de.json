@@ -9,6 +9,116 @@
     },
     "skipToContent": "Skip to content"
   },
+  "account": {
+    "detail": {
+      "back": "Orders",
+      "card": "Card",
+      "creditNote": "Credit note",
+      "date": "Date",
+      "documentsTitle": "Documents",
+      "eyebrow": "Order {reference}",
+      "invoice": "Invoice",
+      "orderTitle": "Your order",
+      "paid": "You paid",
+      "pdf": "PDF",
+      "placed": "Order {reference} · placed {date}",
+      "recipient": "Recipient",
+      "recipientTitle": "Who it is for",
+      "removed": "We removed the recipient's details on {date}."
+    },
+    "details": {
+      "currency": "Currency",
+      "currencyOption": "{code} · {name}",
+      "emailNote": "To change your email, message us.",
+      "language": "Language for our emails",
+      "save": "Save",
+      "saved": "Saved.",
+      "signOutEverywhere": "Sign out on all devices",
+      "signOutEverywhereNote": "Signs you out here and on every other phone or computer. Your orders stay.",
+      "title": "Your details"
+    },
+    "nav": {
+      "details": "Your details",
+      "orders": "Orders",
+      "recipients": "Saved recipients",
+      "reminders": "Reminders",
+      "signOut": "Sign out"
+    },
+    "orders": {
+      "choose": "Choose flowers",
+      "details": "Details",
+      "empty": "No orders yet with this email.",
+      "groupCount": "{count, plural, one {# delivery} other {# deliveries, paid together}}",
+      "groupHeading": "Ordered on {date}",
+      "invoice": "Invoice",
+      "line": "Order {reference} · {city} · {date}",
+      "lineNoCity": "Order {reference} · {date}",
+      "stems": "{count, plural, one {# stem} other {# stems}}",
+      "title": "Your orders",
+      "track": "Track"
+    },
+    "recipients": {
+      "empty": "No saved recipients yet. You can save one from an order.",
+      "keep": "Keep",
+      "limit": "You have saved 20 recipients, the most we keep. Remove one to save another.",
+      "place": "{city}, {country}",
+      "remove": "Remove",
+      "removeBody": "We delete these details. Your orders are not changed.",
+      "removeLabel": "Remove {name}",
+      "removeTitle": "Remove {name}?",
+      "removed": "Removed. We have deleted these details.",
+      "save": "Save {name}'s details for next time",
+      "saveHint": "Only if they would be happy for you to. We keep them until you remove them, or for 2 years after you last use them.",
+      "saveSubmit": "Save",
+      "saved": "Saved to your recipients."
+    },
+    "reminders": {
+      "addTitle": "Add a date",
+      "consent": "Email me reminders before the dates I save. I can stop at any time.",
+      "dayLabel": "Day",
+      "empty": "No dates saved yet.",
+      "errorConsent": "Tick the box so we may email you reminders.",
+      "errorDate": "That date does not exist. Choose another day or month.",
+      "forLabel": "For",
+      "forNone": "No saved recipient",
+      "intro": "We email you before each date you save, so there is time to send flowers.",
+      "keep": "Keep them",
+      "lead": "{days, plural, other {# days before}}",
+      "leadLabel": "How early",
+      "limit": "You have saved 50 dates, the most we keep. Remove one to add another.",
+      "line": "{occasion} · {date}",
+      "lineFor": "{lead} · <bdi>{name}</bdi>",
+      "monthLabel": "Month",
+      "occasion": "{key, select, birthday {Birthday} anniversary {Anniversary} name_day {Name day} other {Other occasion}}",
+      "occasionLabel": "Occasion",
+      "off": "Turn off reminders",
+      "offConfirm": "Turning reminders off deletes your saved dates.",
+      "offTitle": "Turn off reminders?",
+      "optional": "optional",
+      "remove": "Remove",
+      "removeLabel": "Remove {occasion} on {date}",
+      "save": "Save this date",
+      "saved": "Saved.",
+      "unsubscribeButton": "Stop reminders",
+      "unsubscribeDone": "Reminders are off. We have deleted your saved dates.",
+      "unsubscribeDoneTitle": "Reminders are off.",
+      "unsubscribeTitle": "Stop reminders?"
+    }
+  },
+  "auth": {
+    "account": {
+      "confirmSubmit": "Continue",
+      "email": "Email",
+      "emailInvalid": "Please enter an email address in the form name@example.com.",
+      "expired": "That link has expired or was already used. Enter your email for a new one.",
+      "guestNote": "You never need an account to order.",
+      "intro": "Enter your email and we will send you a link to sign in. No password needed.",
+      "sent": "Check your inbox. If the address is right, your link is on its way. It works once, for one hour.",
+      "signedOut": "You are signed out.",
+      "submit": "Email me a link",
+      "title": "Your account"
+    }
+  },
   "breadcrumb": {
     "destinations": "Send flowers to",
     "entity": "{name}",
@@ -233,14 +343,29 @@
       "otherMode": "This bouquet cannot go in this basket. Please check out or empty your basket first.",
       "remove": "Remove",
       "removeLabel": "Remove {product} from your basket",
+      "restored": "Willkommen zurück. Ihr Warenkorb ist so, wie Sie ihn verlassen haben.",
+      "restoredDetails": "Willkommen zurück. Ihre Auswahl liegt im Warenkorb. Zum Schutz Ihrer Daten fragen wir die Lieferdaten erneut ab.",
       "title": "Your <em>basket</em>",
       "to": "To {country}",
       "total": "Total",
       "unavailable": "This bouquet is no longer available. Please remove it to continue.",
       "unavailableSummary": "{count, plural, one {One bouquet in your basket is no longer available.} other {# bouquets in your basket are no longer available.}} Please remove {count, plural, one {it} other {them}} to continue.",
-      "useNext": "Use {next}",
-      "restored": "Willkommen zurück. Ihr Warenkorb ist so, wie Sie ihn verlassen haben.",
-      "restoredDetails": "Willkommen zurück. Ihre Blumen liegen im Warenkorb. Zum Schutz Ihrer Daten fragen wir die Lieferdaten erneut ab."
+      "useNext": "Use {next}"
+    },
+    "basketReminder": {
+      "hint": "Eine E-Mail, etwa 2 Stunden später. Keine Angebote. Mit einem Klick abbestellbar.",
+      "label": "Wenn ich meine Bestellung nicht abschließe, schickt mir einmal eine E-Mail mit einem Link zurück zu meinem Warenkorb.",
+      "linkEnded": {
+        "body": "Ihr Warenkorb-Link ist abgelaufen, aber unsere Sträuße sind noch da. Wählen Sie einen Strauß, um neu zu beginnen.",
+        "cta": "Strauß wählen",
+        "title": "Dieser Link ist nicht mehr aktiv"
+      },
+      "unsubscribe": {
+        "body": "Wir schreiben Ihnen nicht mehr zu nicht abgeschlossenen Warenkörben.",
+        "button": "Warenkorb-E-Mails abbestellen",
+        "done": "Erledigt. Wir senden Ihnen keine Warenkorb-E-Mails mehr, außer Sie bitten erneut darum.",
+        "title": "Warenkorb-E-Mails abbestellen?"
+      }
     },
     "buyer": {
       "country": "Country you live in",
@@ -278,6 +403,28 @@
       "placing": "Placing your demo order…",
       "useSample": "Use sample details"
     },
+    "discount": {
+      "applied": "Code {code} applied. You save {amount}.",
+      "apply": "Apply",
+      "changedAtPlacement": "Your code {code} can no longer be used, so your total is now {new} instead of {old}. Please check it before you continue.",
+      "error": {
+        "alreadyUsed": "You have already used this code.",
+        "belowMinimum": "This code needs an order of at least {amount}.",
+        "ended": "This code has ended.",
+        "locked": "Too many tries. Please wait {minutes, plural, one {# minute} other {# minutes}} and try again.",
+        "notStarted": "This code starts on {date}.",
+        "unknown": "This code does not work. Please check it and try again.",
+        "usedUp": "This code has been used as many times as it can be.",
+        "wrongCurrency": "This code does not work for payments in {currency}.",
+        "wrongDestination": "This code does not work for deliveries to {country}.",
+        "wrongProduct": "This code does not work for this bouquet."
+      },
+      "label": "Discount code",
+      "line": "Discount ({code})",
+      "open": "Add a discount code",
+      "remove": "Remove",
+      "replaced": "One code per order. We replaced {old} with {new}."
+    },
     "error": {
       "addonUnavailable": "This extra is not available for this delivery. Please remove it.",
       "countryInvalid": "Please choose a country from the list.",
@@ -301,6 +448,10 @@
       "namePlaceholder": "First and last name",
       "optional": "optional"
     },
+    "legal": {
+      "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that.",
+      "payButton": "Pay {amount} and place order"
+    },
     "placeKind": {
       "cemetery": "A cemetery",
       "church": "A church",
@@ -321,8 +472,8 @@
     },
     "progress": {
       "card": "Your card",
-      "details": "Your details",
       "compact": "Step {current} of {total} · {name}",
+      "details": "Your details",
       "label": "Checkout steps",
       "recipient": "Recipient",
       "review": "Check"
@@ -344,10 +495,15 @@
       "none": "None",
       "recipient": "Recipient"
     },
+    "risk": {
+      "attemptsExhausted": "This payment did not go through and nothing was charged. Please start again, or call or message us and we will help you place your order.",
+      "emailLasting": "Please use an email address you will keep. We send your order confirmation and updates to it.",
+      "startAgain": "Start again"
+    },
     "step": {
       "card": "Your <em>card</em>",
-      "details": "Your <em>details</em>",
       "deliveryOf": "Delivery {n} of {total}",
+      "details": "Your <em>details</em>",
       "recipient": "Who are the flowers <em>for?</em>",
       "review": "Check and place <em>your order</em>"
     },
@@ -360,52 +516,6 @@
       "total": "You pay",
       "vat": "VAT {rate}",
       "vatOf": "Of which VAT {rate}"
-    },
-    "legal": {
-      "cancellation": "You can cancel for free until we start preparing your order. Flowers are fresh, so the 14-day cancellation right does not apply after that.",
-      "payButton": "Pay {amount} and place order"
-    },
-    "discount": {
-      "open": "Add a discount code",
-      "label": "Discount code",
-      "apply": "Apply",
-      "remove": "Remove",
-      "applied": "Code {code} applied. You save {amount}.",
-      "line": "Discount ({code})",
-      "replaced": "One code per order. We replaced {old} with {new}.",
-      "error": {
-        "unknown": "This code does not work. Please check it and try again.",
-        "notStarted": "This code starts on {date}.",
-        "ended": "This code has ended.",
-        "wrongDestination": "This code does not work for deliveries to {country}.",
-        "wrongProduct": "This code does not work for this bouquet.",
-        "wrongCurrency": "This code does not work for payments in {currency}.",
-        "belowMinimum": "This code needs an order of at least {amount}.",
-        "usedUp": "This code has been used as many times as it can be.",
-        "alreadyUsed": "You have already used this code.",
-        "locked": "Too many tries. Please wait {minutes, plural, one {# minute} other {# minutes}} and try again."
-      },
-      "changedAtPlacement": "Your code {code} can no longer be used, so your total is now {new} instead of {old}. Please check it before you continue."
-    },
-    "basketReminder": {
-      "label": "Wenn ich meine Bestellung nicht abschließe, schickt mir einmal eine E-Mail mit einem Link zurück zu meinem Warenkorb.",
-      "hint": "Eine E-Mail, etwa 2 Stunden später. Keine Angebote. Mit einem Klick abbestellbar.",
-      "linkEnded": {
-        "title": "Dieser Link ist nicht mehr aktiv",
-        "body": "Ihr Warenkorb-Link ist abgelaufen, aber unsere Blumen sind noch da. Wählen Sie einen Strauß, um neu zu beginnen.",
-        "cta": "Blumen wählen"
-      },
-      "unsubscribe": {
-        "title": "Warenkorb-E-Mails abbestellen?",
-        "body": "Wir schreiben Ihnen nicht mehr zu nicht abgeschlossenen Warenkörben.",
-        "button": "Warenkorb-E-Mails abbestellen",
-        "done": "Erledigt. Wir senden Ihnen keine Warenkorb-E-Mails mehr, außer Sie bitten erneut darum."
-      }
-    },
-    "risk": {
-      "attemptsExhausted": "This payment did not go through and nothing was charged. Please start again, or call or message us and we will help you place your order.",
-      "emailLasting": "Please use an email address you will keep. We send your order confirmation and updates to it.",
-      "startAgain": "Start again"
     }
   },
   "common": {
@@ -435,32 +545,32 @@
       "gone": "This confirmation is no longer available.",
       "promise": "Our fresh-flower promise covers the flowers when they arrive."
     },
+    "postPurchase": {
+      "cancelConfirmBody": "We refund {amount} in full.",
+      "cancelConfirmNo": "Keep my order",
+      "cancelConfirmTitle": "Cancel this order?",
+      "cancelConfirmYes": "Yes, cancel it",
+      "cancelLine": "Plans changed? <cancel>You can cancel for free</cancel> until we start preparing your order.",
+      "cancelRefused": "We have started preparing your order, so it can no longer be cancelled. Message us on WhatsApp if something is wrong.",
+      "emailSent": "A confirmation is on its way to <b>{email}</b>.",
+      "invoiceIssued": "We have emailed it to you.",
+      "invoicePending": "We will email your invoice shortly.",
+      "invoiceTitle": "Invoice",
+      "nextTitle": "What happens next",
+      "steps": {
+        "beingMade": "Being made",
+        "delivered": "Delivered, with a photo",
+        "onItsWay": "On its way",
+        "order": "We have your order and your payment"
+      },
+      "trackBody": "One link for every step. Keep it, or share it.",
+      "trackTitle": "Track this order"
+    },
     "recap": {
       "card": "Card",
       "date": "Date",
       "nothingCharged": "Nothing was charged.",
       "recipient": "Recipient"
-    },
-    "postPurchase": {
-      "emailSent": "A confirmation is on its way to <b>{email}</b>.",
-      "nextTitle": "What happens next",
-      "steps": {
-        "order": "We have your order and your payment",
-        "beingMade": "Being made",
-        "onItsWay": "On its way",
-        "delivered": "Delivered, with a photo"
-      },
-      "trackTitle": "Track this order",
-      "trackBody": "One link for every step. Keep it, or share it.",
-      "invoiceTitle": "Invoice",
-      "invoicePending": "We will email your invoice shortly.",
-      "invoiceIssued": "We have emailed it to you.",
-      "cancelLine": "Plans changed? <cancel>You can cancel for free</cancel> until we start preparing your order.",
-      "cancelConfirmTitle": "Cancel this order?",
-      "cancelConfirmBody": "We refund {amount} in full.",
-      "cancelConfirmYes": "Yes, cancel it",
-      "cancelConfirmNo": "Keep my order",
-      "cancelRefused": "We have started preparing your order, so it can no longer be cancelled. Message us on WhatsApp if something is wrong."
     }
   },
   "consent": {
@@ -703,9 +813,164 @@
     "seoTitle": "Where we can send flowers"
   },
   "emails": {
-    "floristSignIn": {
-      "body": "Öffnen Sie Ihre Aufträge: {link}. Der Link funktioniert einmal, eine Stunde lang. Wenn Sie ihn nicht angefordert haben, können Sie diese E-Mail ignorieren.",
-      "subject": "Ihr Anmeldelink für Flowers Overseas"
+    "account": {
+      "reminder": {
+        "body": "{name, select, none {Your {occasion} reminder: {date}.} other {{name}'s {occasion} is on {date}.}}",
+        "button": "Choose flowers",
+        "occasion": "{key, select, birthday {birthday} anniversary {anniversary} name_day {name day} other {occasion}}",
+        "occasionTitle": "{key, select, birthday {Birthday} anniversary {Anniversary} name_day {Name day} other {Other occasion}}",
+        "stop": "Stop reminders",
+        "subject": "{occasion} on {date}",
+        "time": "There is still time to send flowers for the day.",
+        "why": "You get this email because you asked us for reminders."
+      },
+      "signIn": {
+        "body": "Here is your link to your Flowers Overseas account. It works once, for one hour.",
+        "button": "Sign in",
+        "ignore": "If you did not ask for this, you can ignore this email.",
+        "paste": "Or paste this link into your browser:",
+        "preheader": "It works once, for one hour.",
+        "subject": "Your sign-in link",
+        "why": "You receive this email because someone asked to sign in with this address."
+      },
+      "trackingLink": {
+        "body": "Here is the link to follow order {reference}, as you asked.",
+        "button": "Track your order",
+        "heading": "Your tracking link",
+        "ignore": "If you did not ask for this link, you can ignore this email.",
+        "paste": "Or paste this link into your browser:",
+        "preheader": "Follow your order step by step, from today to the door.",
+        "subject": "Your tracking link for order {reference}"
+      }
+    },
+    "basketReminder": {
+      "button": "Meinen Warenkorb öffnen",
+      "dateKept": "Lieferung am {date}",
+      "dateMoved": "Der früheste Liefertermin ist jetzt der {date}.",
+      "dateOpen": "Wählen Sie einen Liefertermin, wenn Sie zurückkommen.",
+      "heading": "Ihr Warenkorb ist gespeichert",
+      "help": "Fragen? Wir helfen gern: {helpLink}",
+      "helpLink": "Hilfe und Kontakt",
+      "intro": "Sie haben eine Bestellung bei uns begonnen. Alles, was Sie ausgewählt haben, liegt noch in Ihrem Warenkorb.",
+      "preheader": "Machen Sie weiter, wo Sie aufgehört haben, wann es Ihnen passt.",
+      "privacy": "Datenschutz",
+      "stop": "Warenkorb-E-Mails abbestellen",
+      "subject": "Ihr Warenkorb ist gespeichert",
+      "to": "Nach {country}",
+      "total": "Ihr Warenkorb zeigt den Gesamtpreis inklusive MwSt. und Lieferung, bevor Sie bezahlen.",
+      "why": "Sie erhalten diese E-Mail, weil Sie uns beim Start Ihrer Bestellung darum gebeten haben. Es ist die einzige, die wir zu diesem Warenkorb senden."
+    },
+    "buyer": {
+      "beingMade": {
+        "body": "Our florist is making your order. It arrives on {date}.",
+        "heading": "Your bouquet is being made.",
+        "subject": "Your bouquet is being made"
+      },
+      "cancelled": {
+        "byBuyer": "You cancelled this order.",
+        "byUs": "We could not deliver this order.",
+        "help": "If you need flowers there in time, message us and we will help.",
+        "otherFlowers": "Choose other flowers",
+        "refunded": "We have refunded {amount}.",
+        "sorry": "We are sorry. The refund goes back to your original payment method. Most banks show it within 5 to 10 working days.",
+        "subject": "Order {reference} is cancelled and refunded",
+        "timing": "The refund goes back to your original payment method. Most banks show it within 5 to 10 working days."
+      },
+      "creditNote": {
+        "bodyCreditNote": "Your credit note for this order is attached as a PDF.",
+        "bodyInvoice": "Your invoice for this order is attached as a PDF.",
+        "headingCreditNote": "Your credit note",
+        "headingInvoice": "Your invoice",
+        "preheader": "Order {reference}. The PDF is attached.",
+        "subjectCreditNote": "Your credit note {number}",
+        "subjectInvoice": "Your invoice {number}"
+      },
+      "delivered": {
+        "body": "Your flowers reached {city} at {time} on {date}.",
+        "caption": "Delivered to {recipientFirstName}",
+        "headline": "Delivered.",
+        "photoAttached": "Your photo is attached: {filename}",
+        "subject": "Delivered in {city}. Here is your photo."
+      },
+      "deliveryLine": "Order {reference} to {city}, {date}",
+      "label": {
+        "amount": "Amount",
+        "creditNote": "Credit note",
+        "date": "Date",
+        "invoice": "Invoice",
+        "order": "Order",
+        "pdf": "PDF",
+        "recipient": "Recipient",
+        "status": "Status",
+        "yourOrder": "Your order"
+      },
+      "orderReceived": {
+        "account": "You can see and manage this order in your account.",
+        "arrival": "Your flowers arrive in {city} on {date}.",
+        "arrivalMany": "Your flowers arrive on the dates below.",
+        "cancelHow": "To cancel, message us on WhatsApp or call us with your order number.",
+        "hero": "Thank you, {firstName}.",
+        "next": "We email you when your bouquet is being made, and again when it is delivered.",
+        "subject": "We have your order {reference}",
+        "termsAttached": "{invoices, plural, =0 {Our terms are attached.} one {Our terms and your invoice are attached.} other {Our terms and your invoices are attached.}}",
+        "termsHeading": "Your order terms",
+        "totalPaid": "Total paid {amount}",
+        "trackDelivery": "Track this delivery"
+      },
+      "outForDelivery": {
+        "body": "They arrive today, {date}.",
+        "heading": "Your flowers are on their way.",
+        "subject": "Your flowers are on their way"
+      },
+      "paid": "You paid",
+      "recipientPlace": "{name}, {city}",
+      "refund": {
+        "heading": "We have sent you a refund.",
+        "method": "It goes back to your original payment method. Most banks show it within 5 to 10 working days.",
+        "subject": "Refund for order {reference}"
+      },
+      "trackOrder": "Track this order"
+    },
+    "florist": {
+      "confirmed": {
+        "body": "Öffnen Sie den Auftrag für Name, Adresse und Telefon der empfangenden Person und den Kartentext zum Drucken.",
+        "heading": "Bestätigt. Bitte fertigen Sie diesen Auftrag.",
+        "preheader": "Öffnen Sie den Auftrag für die Angaben zur empfangenden Person und den Kartentext.",
+        "subject": "Bestätigt: Bitte fertigen Sie den Auftrag für {date}"
+      },
+      "label": {
+        "addOns": "Extras",
+        "bouquet": "Strauß",
+        "town": "Ort",
+        "youReceive": "Sie erhalten"
+      },
+      "offer": {
+        "heading": "Ein neuer Auftrag für Sie",
+        "recipientLater": "Name, Adresse und Telefon der empfangenden Person sehen Sie im Auftrag, sobald Sie ihn annehmen.",
+        "subject": "Neuer Auftrag für {date} · antworten bis {time}"
+      },
+      "oneTap": "Die Schaltfläche meldet Sie an und öffnet diesen Auftrag. Sie funktioniert einmal, eine Stunde lang.",
+      "oneTapText": "Der Link meldet Sie an und öffnet diesen Auftrag. Er funktioniert einmal, eine Stunde lang.",
+      "openOrder": "Auftrag öffnen",
+      "photoReminder": {
+        "body": "Danke für die Lieferung von {product} heute. Bitte fügen Sie ein Foto des Straußes hinzu, wie Sie ihn übergeben haben.",
+        "preheader": "Ein Foto des Straußes, wie Sie ihn übergeben haben.",
+        "subject": "Fügen Sie das Foto zum Auftrag für {date} hinzu"
+      },
+      "reminder": {
+        "heading": "Dieser Auftrag wartet noch auf Ihre Antwort.",
+        "preheader": "Ein Auftrag für {date} wartet noch auf Ihre Antwort.",
+        "subject": "Erinnerung: antworten bis {time}"
+      },
+      "timedOut": {
+        "subject": "Die Zeit für eine Antwort auf den Auftrag für {date} ist abgelaufen"
+      },
+      "withdrawn": {
+        "body": "Bitte fertigen Sie ihn nicht.",
+        "heading": "Dieser Auftrag ist nicht mehr Ihrer.",
+        "started": "Wenn Sie schon begonnen haben, rufen Sie uns an: {phone}.",
+        "subject": "Bitte fertigen Sie den Auftrag für {date} nicht"
+      }
     },
     "floristApplicationAlert": {
       "field": {
@@ -728,218 +993,63 @@
       "none": "Not given",
       "subject": "New florist application: {businessName}"
     },
-    "layout": {
-      "audience": {
-        "florist": "Für unsere Floristen"
-      },
-      "floristHelp": "Rufen Sie uns an, wenn an einem Auftrag etwas unklar ist.",
-      "floristWhy": "Sie erhalten diese E-Mail, weil Ihr Geschäft Aufträge von Flowers Overseas annimmt.",
-      "buyerHours": "Schreiben Sie uns jederzeit, rund um die Uhr. Wir antworten innerhalb weniger Stunden.",
-      "buyerWhy": "Sie erhalten diese E-Mail, weil Sie bei uns die Bestellung {reference} aufgegeben haben."
-    },
-    "florist": {
-      "openOrder": "Auftrag öffnen",
-      "oneTap": "Die Schaltfläche meldet Sie an und öffnet diesen Auftrag. Sie funktioniert einmal, eine Stunde lang.",
-      "oneTapText": "Der Link meldet Sie an und öffnet diesen Auftrag. Er funktioniert einmal, eine Stunde lang.",
-      "label": {
-        "bouquet": "Strauß",
-        "addOns": "Extras",
-        "town": "Ort",
-        "youReceive": "Sie erhalten"
-      },
-      "offer": {
-        "subject": "Neuer Auftrag für {date} · antworten bis {time}",
-        "heading": "Ein neuer Auftrag für Sie",
-        "recipientLater": "Name, Adresse und Telefon der empfangenden Person sehen Sie im Auftrag, sobald Sie ihn annehmen."
-      },
-      "reminder": {
-        "subject": "Erinnerung: antworten bis {time}",
-        "preheader": "Ein Auftrag für {date} wartet noch auf Ihre Antwort.",
-        "heading": "Dieser Auftrag wartet noch auf Ihre Antwort."
-      },
-      "confirmed": {
-        "subject": "Bestätigt: Bitte fertigen Sie den Auftrag für {date}",
-        "preheader": "Öffnen Sie den Auftrag für die Angaben zur empfangenden Person und den Kartentext.",
-        "heading": "Bestätigt. Bitte fertigen Sie diesen Auftrag.",
-        "body": "Öffnen Sie den Auftrag für Name, Adresse und Telefon der empfangenden Person und den Kartentext zum Drucken."
-      },
-      "withdrawn": {
-        "subject": "Bitte fertigen Sie den Auftrag für {date} nicht",
-        "heading": "Dieser Auftrag ist nicht mehr Ihrer.",
-        "body": "Bitte fertigen Sie ihn nicht.",
-        "started": "Wenn Sie schon begonnen haben, rufen Sie uns an: {phone}."
-      },
-      "timedOut": {
-        "subject": "Die Zeit für eine Antwort auf den Auftrag für {date} ist abgelaufen"
-      },
-      "photoReminder": {
-        "subject": "Fügen Sie das Foto zum Auftrag für {date} hinzu",
-        "preheader": "Ein Foto des Straußes, wie Sie ihn übergeben haben.",
-        "body": "Danke für die Lieferung von {product} heute. Bitte fügen Sie ein Foto des Straußes hinzu, wie Sie ihn übergeben haben."
-      }
-    },
-    "account": {
-      "trackingLink": {
-        "subject": "Your tracking link for order {reference}",
-        "preheader": "Follow your order step by step, from today to the door.",
-        "heading": "Your tracking link",
-        "body": "Here is the link to follow order {reference}, as you asked.",
-        "button": "Track your order",
-        "paste": "Or paste this link into your browser:",
-        "ignore": "If you did not ask for this link, you can ignore this email."
-      },
-      "signIn": {
-        "subject": "Your sign-in link",
-        "preheader": "It works once, for one hour.",
-        "body": "Here is your link to your Flowers Overseas account. It works once, for one hour.",
-        "button": "Sign in",
-        "paste": "Or paste this link into your browser:",
-        "ignore": "If you did not ask for this, you can ignore this email.",
-        "why": "You receive this email because someone asked to sign in with this address."
-      },
-      "reminder": {
-        "subject": "{occasion} on {date}",
-        "occasionTitle": "{key, select, birthday {Birthday} anniversary {Anniversary} name_day {Name day} other {Other occasion}}",
-        "occasion": "{key, select, birthday {birthday} anniversary {anniversary} name_day {name day} other {occasion}}",
-        "body": "{name, select, none {Your {occasion} reminder: {date}.} other {{name}'s {occasion} is on {date}.}}",
-        "time": "There is still time to send flowers for the day.",
-        "button": "Choose flowers",
-        "why": "You get this email because you asked us for reminders.",
-        "stop": "Stop reminders"
-      }
-    },
     "floristPayoutStatement": {
-      "subject": "Auszahlungsübersicht {number} · {total}",
-      "preheader": "Für {period}. Wir überweisen über Wise, in {currency}.",
-      "documentTitle": "Auszahlungsübersicht",
-      "title": "Ihre Auszahlungsübersicht",
-      "numberLabel": "Übersicht {number}",
-      "statementNumber": "Übersichtsnummer",
-      "periodLabel": "Zeitraum",
-      "singleDateLabel": "Datum",
-      "sentLabel": "Gesendet am",
+      "attached": "Anhang: {filename}",
       "currencyLabel": "Währung",
-      "fromLabel": "Von",
+      "deleteReminder": "Bitte löschen Sie Name, Adresse und Telefon der empfangenden Person für die obigen Aufträge, wie es unsere Vereinbarung mit Ihnen vorsieht.",
+      "documentTitle": "Auszahlungsübersicht",
       "forLabel": "Für",
-      "ordersLabel": "Aufträge",
-      "linesCaption": "Aufträge in dieser Übersicht",
-      "table": {
-        "order": "Auftrag",
-        "date": "Lieferdatum",
-        "bouquet": "Strauß",
-        "amount": "Betrag"
-      },
+      "fromLabel": "Von",
       "item": "{product} · {tier}",
-      "quantity": "{item} × {quantity}",
+      "linesCaption": "Aufträge in dieser Übersicht",
       "manualLine": {
         "adjustment": "Korrektur",
         "goodwill": "Kulanz"
       },
-      "totalLabel": "Summe",
+      "notInvoice": "Dies ist eine Auszahlungsübersicht, keine Rechnung.",
+      "numberLabel": "Übersicht {number}",
+      "ordersLabel": "Aufträge",
+      "page": "Seite {page} von {pages}",
       "paymentLabel": "Zahlung",
       "paymentMethod": "Wir überweisen diesen Betrag über Wise auf Ihr Bankkonto, in {currency}.",
-      "notInvoice": "Dies ist eine Auszahlungsübersicht, keine Rechnung.",
-      "deleteReminder": "Bitte löschen Sie Name, Adresse und Telefon der empfangenden Person für die obigen Aufträge, wie es unsere Vereinbarung mit Ihnen vorsieht.",
-      "attached": "Anhang: {filename}",
-      "page": "Seite {page} von {pages}"
+      "periodLabel": "Zeitraum",
+      "preheader": "Für {period}. Wir überweisen über Wise, in {currency}.",
+      "quantity": "{item} × {quantity}",
+      "sentLabel": "Gesendet am",
+      "singleDateLabel": "Datum",
+      "statementNumber": "Übersichtsnummer",
+      "subject": "Auszahlungsübersicht {number} · {total}",
+      "table": {
+        "amount": "Betrag",
+        "bouquet": "Strauß",
+        "date": "Lieferdatum",
+        "order": "Auftrag"
+      },
+      "title": "Ihre Auszahlungsübersicht",
+      "totalLabel": "Summe"
     },
-    "buyer": {
-      "label": {
-        "order": "Order",
-        "yourOrder": "Your order",
-        "recipient": "Recipient",
-        "date": "Date",
-        "status": "Status",
-        "amount": "Amount",
-        "invoice": "Invoice",
-        "creditNote": "Credit note",
-        "pdf": "PDF"
-      },
-      "paid": "You paid",
-      "recipientPlace": "{name}, {city}",
-      "trackOrder": "Track this order",
-      "deliveryLine": "Order {reference} to {city}, {date}",
-      "orderReceived": {
-        "subject": "We have your order {reference}",
-        "hero": "Thank you, {firstName}.",
-        "arrival": "Your flowers arrive in {city} on {date}.",
-        "arrivalMany": "Your flowers arrive on the dates below.",
-        "next": "We email you when your bouquet is being made, and again when it is delivered.",
-        "trackDelivery": "Track this delivery",
-        "totalPaid": "Total paid {amount}",
-        "termsHeading": "Your order terms",
-        "cancelHow": "To cancel, message us on WhatsApp or call us with your order number.",
-        "account": "You can see and manage this order in your account.",
-        "termsAttached": "{invoices, plural, =0 {Our terms are attached.} one {Our terms and your invoice are attached.} other {Our terms and your invoices are attached.}}"
-      },
-      "beingMade": {
-        "subject": "Your bouquet is being made",
-        "heading": "Your bouquet is being made.",
-        "body": "Our florist is making your order. It arrives on {date}."
-      },
-      "outForDelivery": {
-        "subject": "Your flowers are on their way",
-        "heading": "Your flowers are on their way.",
-        "body": "They arrive today, {date}."
-      },
-      "delivered": {
-        "subject": "Delivered in {city}. Here is your photo.",
-        "headline": "Delivered.",
-        "body": "Your flowers reached {city} at {time} on {date}.",
-        "caption": "Delivered to {recipientFirstName}",
-        "photoAttached": "Your photo is attached: {filename}"
-      },
-      "cancelled": {
-        "subject": "Order {reference} is cancelled and refunded",
-        "byUs": "We could not deliver this order.",
-        "byBuyer": "You cancelled this order.",
-        "refunded": "We have refunded {amount}.",
-        "sorry": "We are sorry. The refund goes back to your original payment method. Most banks show it within 5 to 10 working days.",
-        "timing": "The refund goes back to your original payment method. Most banks show it within 5 to 10 working days.",
-        "otherFlowers": "Choose other flowers",
-        "help": "If you need flowers there in time, message us and we will help."
-      },
-      "refund": {
-        "subject": "Refund for order {reference}",
-        "heading": "We have sent you a refund.",
-        "method": "It goes back to your original payment method. Most banks show it within 5 to 10 working days."
-      },
-      "creditNote": {
-        "subjectInvoice": "Your invoice {number}",
-        "subjectCreditNote": "Your credit note {number}",
-        "headingInvoice": "Your invoice",
-        "headingCreditNote": "Your credit note",
-        "bodyInvoice": "Your invoice for this order is attached as a PDF.",
-        "bodyCreditNote": "Your credit note for this order is attached as a PDF.",
-        "preheader": "Order {reference}. The PDF is attached."
-      }
+    "floristSignIn": {
+      "body": "Öffnen Sie Ihre Aufträge: {link}. Der Link funktioniert einmal, eine Stunde lang. Wenn Sie ihn nicht angefordert haben, können Sie diese E-Mail ignorieren.",
+      "subject": "Ihr Anmeldelink für Flowers Overseas"
     },
-    "basketReminder": {
-      "subject": "Ihr Warenkorb ist gespeichert",
-      "preheader": "Machen Sie weiter, wo Sie aufgehört haben, wann es Ihnen passt.",
-      "heading": "Ihr Warenkorb ist gespeichert",
-      "intro": "Sie haben eine Bestellung bei uns begonnen. Alles, was Sie ausgewählt haben, liegt noch in Ihrem Warenkorb.",
-      "to": "Nach {country}",
-      "dateKept": "Lieferung am {date}",
-      "dateMoved": "Der früheste Liefertermin ist jetzt der {date}.",
-      "dateOpen": "Wählen Sie einen Liefertermin, wenn Sie zurückkommen.",
-      "button": "Meinen Warenkorb öffnen",
-      "total": "Ihr Warenkorb zeigt den Gesamtpreis inklusive MwSt. und Lieferung, bevor Sie bezahlen.",
-      "help": "Fragen? Wir helfen gern: {helpLink}",
-      "why": "Sie erhalten diese E-Mail, weil Sie uns beim Start Ihrer Bestellung darum gebeten haben. Es ist die einzige, die wir zu diesem Warenkorb senden.",
-      "stop": "Warenkorb-E-Mails abbestellen",
-      "helpLink": "Hilfe und Kontakt",
-      "privacy": "Datenschutz"
+    "layout": {
+      "audience": {
+        "florist": "Für unsere Floristen"
+      },
+      "buyerHours": "Schreiben Sie uns jederzeit, rund um die Uhr. Wir antworten innerhalb weniger Stunden.",
+      "buyerWhy": "Sie erhalten diese E-Mail, weil Sie bei uns die Bestellung {reference} aufgegeben haben.",
+      "floristHelp": "Rufen Sie uns an, wenn an einem Auftrag etwas unklar ist.",
+      "floristWhy": "Sie erhalten diese E-Mail, weil Ihr Geschäft Aufträge von Flowers Overseas annimmt."
     },
     "reviewInvite": {
-      "subject": "Wie war es?",
       "lede": "Tippen Sie auf einen Stern und erzählen Sie uns von Ihrer Bestellung.",
+      "minute": "Es dauert weniger als eine Minute.",
+      "optOutLead": "Lieber nicht gefragt werden?",
+      "optOutLink": "Diese E-Mails abbestellen.",
+      "policy": "Wie wir Bewertungen prüfen",
       "starLabel": "{n} von 5",
       "starText": "{n, plural, one {# Stern} other {# Sterne}}",
-      "minute": "Es dauert weniger als eine Minute.",
-      "policy": "Wie wir Bewertungen prüfen",
-      "optOutLead": "Lieber nicht gefragt werden?",
-      "optOutLink": "Diese E-Mails abbestellen."
+      "subject": "Wie war es?"
     }
   },
   "errors": {
@@ -980,94 +1090,94 @@
   },
   "floristAuth": {
     "confirmSubmit": "Weiter zu Ihren Aufträgen",
+    "demoNotice": "<b>Demo:</b> Das sind Beispielaufträge. Niemand zahlt und nichts wird geliefert.",
     "email": "E-Mail",
     "expiredBody": "Dieser Link ist abgelaufen oder wurde schon verwendet. Fordern Sie einen neuen an.",
+    "homeLabel": "Flowers Overseas, Ihre Aufträge",
+    "language": "Sprache",
+    "menu": "Menü",
     "sentBody": "Wenn diese Adresse zu einem unserer Floristen gehört, haben wir einen Link an sie gesendet. Der Link funktioniert einmal, eine Stunde lang.",
     "sentTitle": "Prüfen Sie Ihr Postfach",
-    "submit": "Link senden",
-    "title": "Melden Sie sich an, um Ihre Aufträge zu sehen",
-    "homeLabel": "Flowers Overseas, Ihre Aufträge",
-    "menu": "Menü",
-    "language": "Sprache",
     "signOut": "Abmelden",
-    "demoNotice": "<b>Demo:</b> Das sind Beispielaufträge. Niemand zahlt und nichts wird geliefert."
+    "submit": "Link senden",
+    "title": "Melden Sie sich an, um Ihre Aufträge zu sehen"
   },
   "floristInbox": {
-    "orders": "Aufträge",
     "accept": "Annehmen",
     "address": "Adresse",
     "answerBy": "Antworten bis {time}",
+    "bouquets": {
+      "askChange": "Änderung anfragen",
+      "changeSubject": "Change request: {sku}, size {size}",
+      "empty": "Noch keine Sträuße. Wir fügen sie hier hinzu, sobald wir sie mit Ihnen vereinbart haben.",
+      "intro": "Das sind die Sträuße, die Sie für uns binden, und der Betrag, den Sie für jede Größe erhalten.",
+      "navLabel": "Bereiche",
+      "sku": "Code {sku}",
+      "state": {
+        "notYet": "Noch nicht im Verkauf",
+        "onSale": "Im Verkauf",
+        "paused": "Pausiert",
+        "withdrawn": "Nicht mehr im Verkauf"
+      },
+      "stems": "{count, plural, one {# Stiel} other {# Stiele}}",
+      "supportLine": "Für eine Änderung kontaktieren Sie uns: {support}",
+      "title": "Meine Sträuße",
+      "youReceive": "Sie erhalten {amount}"
+    },
     "cardMessage": "Kartentext zum Ausdrucken",
     "decline": "Ablehnen",
+    "declineReason": {
+      "capacity": "Wir sind an dem Tag ausgebucht",
+      "closed": "Wir haben an dem Tag geschlossen",
+      "other": "Ein anderer Grund",
+      "outOfArea": "Wir liefern nicht dorthin",
+      "productUnavailable": "Wir bekommen diese Blumensorte nicht"
+    },
+    "declineSubmit": "Auftrag ablehnen",
+    "declineWhy": "Warum lehnen Sie ab?",
+    "deliveredAddPhoto": "Zugestellt, Foto hinzufügen",
     "deliveryDate": "Liefertag",
     "deliveryNote": "Hinweis zur Zustellung",
     "forDate": "Für {date}",
+    "notice": {
+      "answered": "Dieser Auftrag wurde bereits beantwortet.",
+      "changed": "Dieser Auftrag hat sich geändert, seit Sie ihn geöffnet haben."
+    },
+    "orders": "Aufträge",
     "outForDelivery": "Unterwegs zur Zustellung",
+    "page": {
+      "addPhoto": "Foto hinzufügen",
+      "beingMade": "Wird gebunden",
+      "empty": "Im Moment gibt es keine Aufträge. Wir schreiben Ihnen eine E-Mail, sobald einer eingeht.",
+      "expired": "Die Zeit für eine Antwort ist abgelaufen.",
+      "groupDelivered": "Zugestellt",
+      "notFoundLine": "Dieser Auftrag ist nicht mehr in Ihrer Liste.",
+      "notFoundTitle": "Auftrag nicht gefunden",
+      "photoReceived": "Foto erhalten. Vielen Dank.",
+      "refresh": "Aktualisieren",
+      "refreshStopped": "Die Aktualisierung ist pausiert, solange Sie nicht da sind.",
+      "testOrder": "Testauftrag senden"
+    },
+    "paused": {
+      "notice": "Ihr Geschäft ist pausiert. Sie können die Aufträge abschließen, die Sie bereits angenommen haben. Neue Aufträge erhalten Sie wieder, sobald Ihr Geschäft aktiv ist."
+    },
     "photo": {
+      "alt": "Ihr Foto des zugestellten Straußes",
       "choose": "Foto des zugestellten Straußes aufnehmen oder auswählen",
       "send": "Foto senden",
-      "wrongType": "Diese Datei können wir nicht verwenden. Bitte senden Sie ein JPEG-, PNG- oder WebP-Bild.",
       "tooLarge": "Dieses Foto ist zu groß. Bitte senden Sie eines unter 15 MB.",
-      "alt": "Ihr Foto des zugestellten Straußes"
+      "wrongType": "Diese Datei können wir nicht verwenden. Bitte senden Sie ein JPEG-, PNG- oder WebP-Bild."
     },
     "recipient": "Empfänger",
     "stage": {
       "inProgress": "In Arbeit",
       "waiting": "Wartet auf Ihre Antwort"
     },
-    "youReceive": "Sie erhalten <strong>{payout}</strong>",
-    "page": {
-      "groupDelivered": "Zugestellt",
-      "empty": "Im Moment gibt es keine Aufträge. Wir schreiben Ihnen eine E-Mail, sobald einer eingeht.",
-      "expired": "Die Zeit für eine Antwort ist abgelaufen.",
-      "beingMade": "Wird gebunden",
-      "addPhoto": "Foto hinzufügen",
-      "photoReceived": "Foto erhalten. Vielen Dank.",
-      "testOrder": "Testauftrag senden",
-      "refresh": "Aktualisieren",
-      "refreshStopped": "Die Aktualisierung ist pausiert, solange Sie nicht da sind.",
-      "notFoundTitle": "Auftrag nicht gefunden",
-      "notFoundLine": "Dieser Auftrag ist nicht mehr in Ihrer Liste."
-    },
-    "declineWhy": "Warum lehnen Sie ab?",
-    "declineReason": {
-      "capacity": "Wir sind an dem Tag ausgebucht",
-      "outOfArea": "Wir liefern nicht dorthin",
-      "productUnavailable": "Wir bekommen diese Blumen nicht",
-      "closed": "Wir haben an dem Tag geschlossen",
-      "other": "Ein anderer Grund"
-    },
-    "declineSubmit": "Auftrag ablehnen",
-    "deliveredAddPhoto": "Zugestellt, Foto hinzufügen",
-    "notice": {
-      "answered": "Dieser Auftrag wurde bereits beantwortet.",
-      "changed": "Dieser Auftrag hat sich geändert, seit Sie ihn geöffnet haben."
-    },
     "withdrawn": {
-      "title": "Dieser Auftrag ist nicht mehr Ihrer.",
-      "body": "Bitte fertigen Sie ihn nicht."
+      "body": "Bitte fertigen Sie ihn nicht.",
+      "title": "Dieser Auftrag ist nicht mehr Ihrer."
     },
-    "paused": {
-      "notice": "Ihr Geschäft ist pausiert. Sie können die Aufträge abschließen, die Sie bereits angenommen haben. Neue Aufträge erhalten Sie wieder, sobald Ihr Geschäft aktiv ist."
-    },
-    "bouquets": {
-      "title": "Meine Sträuße",
-      "intro": "Das sind die Sträuße, die Sie für uns binden, und der Betrag, den Sie für jede Größe erhalten.",
-      "youReceive": "Sie erhalten {amount}",
-      "sku": "Code {sku}",
-      "stems": "{count, plural, one {# Stiel} other {# Stiele}}",
-      "state": {
-        "onSale": "Im Verkauf",
-        "notYet": "Noch nicht im Verkauf",
-        "paused": "Pausiert",
-        "withdrawn": "Nicht mehr im Verkauf"
-      },
-      "askChange": "Änderung anfragen",
-      "changeSubject": "Change request: {sku}, size {size}",
-      "supportLine": "Für eine Änderung kontaktieren Sie uns: {support}",
-      "empty": "Noch keine Sträuße. Wir fügen sie hier hinzu, sobald wir sie mit Ihnen vereinbart haben.",
-      "navLabel": "Bereiche"
-    }
+    "youReceive": "Sie erhalten <strong>{payout}</strong>"
   },
   "footer": {
     "cookieSettings": "Cookie-Einstellungen",
@@ -1087,8 +1197,8 @@
       "occasions": "Anlässe",
       "privacy": "Datenschutz",
       "terms": "AGB",
-      "withdrawal": "Widerruf und Erstattung",
-      "trackOrder": "Track an order"
+      "trackOrder": "Track an order",
+      "withdrawal": "Widerruf und Erstattung"
     },
     "payment": {
       "heading": "Zahlung",
@@ -1104,7 +1214,115 @@
     },
     "signoff": "Mit Liebe, von wo auch immer Sie sind."
   },
+  "forFlorists": {
+    "apply": {
+      "crumb": "Bewerben",
+      "error": {
+        "area": "Bitte sagen Sie uns, wohin Sie liefern.",
+        "capacity": "Bitte geben Sie eine ganze Zahl von 1 bis 500 ein.",
+        "contactBy": "Please choose how we should contact you.",
+        "contactName": "Bitte nennen Sie uns Ihren Namen.",
+        "country": "Bitte wählen Sie ein Land.",
+        "email": "Bitte geben Sie eine E-Mail-Adresse wie name@example.com ein.",
+        "language": "Please choose a language.",
+        "phone": "Bitte geben Sie eine Telefonnummer ein, unter der wir Sie erreichen.",
+        "registration": "Please keep the registration number to 100 characters.",
+        "shopName": "Bitte nennen Sie uns den Namen Ihres Geschäfts.",
+        "town": "Bitte nennen Sie uns Ihren Ort.",
+        "website": "Bitte geben Sie eine vollständige Webadresse ein, die mit https:// beginnt.",
+        "weekends": "Please tell us whether you deliver at weekends."
+      },
+      "errorSummary": "Bitte prüfen Sie diese Angaben",
+      "failed": "Wir konnten Ihre Bewerbung nicht senden. Ihre Angaben sind noch hier. Versuchen Sie es erneut, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+      "field": {
+        "area": {
+          "help": "Stadtteile, Postleitzahlen oder eine Entfernung von Ihrem Geschäft",
+          "label": "Wohin Sie liefern"
+        },
+        "capacity": {
+          "help": "Eine ehrliche Zahl. Wir schicken Ihnen lieber weniger, und jeder Auftrag wird zugestellt.",
+          "label": "Aufträge pro Tag, die Sie übernehmen könnten"
+        },
+        "contactBy": {
+          "email": "E-Mail",
+          "label": "Wie sollen wir Sie kontaktieren?",
+          "phone": "Telefon",
+          "whatsapp": "WhatsApp"
+        },
+        "contactName": {
+          "label": "Ihr Name"
+        },
+        "country": {
+          "choose": "Land wählen",
+          "label": "Land"
+        },
+        "email": {
+          "label": "E-Mail"
+        },
+        "language": {
+          "de": "Deutsch",
+          "en": "English",
+          "label": "Sprache",
+          "pl": "Polski"
+        },
+        "phone": {
+          "help": "Die Nummer, die wir anrufen und an die wir Aufträge schicken",
+          "label": "Telefon oder WhatsApp"
+        },
+        "registration": {
+          "help": "NIP, KRS, Handelsregister oder das Gegenstück in Ihrem Land",
+          "label": "Registernummer"
+        },
+        "shopName": {
+          "help": "So wie er an Ihrem Geschäft steht",
+          "label": "Name Ihres Geschäfts"
+        },
+        "town": {
+          "label": "Ort"
+        },
+        "website": {
+          "label": "Instagram oder Website"
+        },
+        "weekends": {
+          "label": "Liefern Sie am Wochenende?",
+          "no": "Nein",
+          "sometimes": "Manchmal",
+          "yes": "Ja"
+        }
+      },
+      "formOff": "Rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}, dann besprechen wir alles mit Ihnen. Wir hören lieber von Ihnen selbst, wie Ihr Geschäft arbeitet.",
+      "h1": "Bewerben Sie sich bei uns",
+      "honeypot": "Dieses Feld leer lassen",
+      "intro": "Erzählen Sie uns von Ihrem Geschäft. Es dauert ein paar Minuten, und nach Bankdaten fragen wir nicht.",
+      "next": {
+        "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn sie Ja lautet, rufen wir Sie an, vereinbaren, was Sie pro Strauß erhalten, und schicken Ihnen einen Testauftrag vor dem ersten echten. Sie fangen an, wenn wir uns beide einig sind, nicht weil Sie dieses Formular geschickt haben.",
+        "heading": "Wie es weitergeht"
+      },
+      "notice": {
+        "body": "Wir nutzen diese Angaben, um Ihre Bewerbung zu prüfen und Sie wegen einer Zusammenarbeit zu kontaktieren. Rechtsgrundlage sind Schritte, um die Sie vor einem Vertrag gebeten haben (DSGVO Art. 6 Abs. 1 lit. b). Wir bewahren sie 12 Monate nach unserem letzten Kontakt auf und löschen sie dann, es sei denn, wir beginnen eine Zusammenarbeit. Gespeichert werden sie bei unseren Anbietern für Hosting, Datenbank und E-Mail, darunter US-Unternehmen, die unter den EU-Garantien für Datenübermittlungen arbeiten. Wir verkaufen sie nicht und zeigen sie keinem Käufer. Um sie einzusehen, zu berichtigen oder zu löschen, rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+        "controller": "Diese Website wird von {name} betrieben. Bei Fragen zu Ihren personenbezogenen Daten rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+        "heading": "Was wir mit Ihren Angaben tun",
+        "privacyLink": "Unsere Datenschutzerklärung"
+      },
+      "optional": "optional",
+      "submit": "Bewerbung senden",
+      "title": "Bewerben Sie sich bei uns | Für Floristen",
+      "tooMany": "Gerade kommen zu viele Bewerbungen auf einmal an. Bitte versuchen Sie es gleich noch einmal, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}."
+    },
+    "sent": {
+      "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn Sie früher sprechen möchten, rufen Sie uns an oder schreiben Sie uns unter <phone>{phoneDisplay}</phone>.",
+      "h1": "Danke. Wir haben Ihre Bewerbung.",
+      "title": "Danke | Für Floristen",
+      "walkthrough": "So kommt ein Auftrag zu Ihnen"
+    },
+    "status": {
+      "choosingFirst": "Wir nehmen noch keine Bestellungen an."
+    }
+  },
   "home": {
+    "comingUp": {
+      "more": "and {count} more"
+    },
     "dates": {
       "heading": "Dates worth <em>sending for</em>"
     },
@@ -1178,9 +1396,6 @@
     },
     "trending": {
       "heading": "Beliebte <em>Auswahl</em>"
-    },
-    "comingUp": {
-      "more": "and {count} more"
     }
   },
   "infoPages": {
@@ -1216,6 +1431,46 @@
     "status": {
       "notYetOpen": "Wir nehmen noch keine Bestellungen an. Diese Seite beschreibt, wie das Bestellen funktioniert, sobald wir öffnen.",
       "untranslated": "Diese Übersetzung wurde noch nicht geprüft. Weicht sie von der englischen Fassung ab, gilt die englische Fassung."
+    }
+  },
+  "invoice": {
+    "label": {
+      "buyer": "Käufer",
+      "corrects": "Korrigiert Rechnung",
+      "currency": "Währung",
+      "description": "Beschreibung",
+      "gross": "Brutto",
+      "issueDate": "Rechnungsdatum",
+      "lineNo": "Nr.",
+      "net": "Netto",
+      "number": "Nummer",
+      "order": "Bestellung",
+      "outsideVat": "Nicht steuerbar",
+      "page": "Seite {page} von {pages}",
+      "paid": "Bezahlt",
+      "pricesInclude": "Preise inklusive USt. und Lieferung.",
+      "rateSource": "NBP-Kurs, Tabelle A Nr. {table}, {date}: 1 {from} = {rate} {to}",
+      "refunded": "Erstattet",
+      "registryCode": "Registernummer",
+      "seller": "Verkäufer",
+      "supplyDate": "Lieferdatum",
+      "totalAtRate": "Summe {rate}",
+      "totalDue": "Gesamtbetrag",
+      "totalRefunded": "Erstattet",
+      "vat": "USt.",
+      "vatAtRate": "{rate}: USt. {amount}",
+      "vatId": "USt-IdNr. {country}",
+      "vatInCurrency": "USt. in {currency}",
+      "vatRate": "USt.-Satz"
+    },
+    "line": {
+      "quantity": "{name} × {qty}",
+      "surcharge": "Lieferzuschlag"
+    },
+    "title": {
+      "creditNote": "Rechnungskorrektur",
+      "receiptOnBehalf": "Quittung",
+      "vatInvoice": "Rechnung"
     }
   },
   "languagePopup": {
@@ -1260,30 +1515,17 @@
       "label": "Categories"
     },
     "category": {
+      "addOns": "Add-ons",
       "destinations": "Destinations",
       "occasions": "Occasions",
       "ourSelection": "Our selection",
       "roses": "Roses",
-      "sympathy": "Sympathy",
-      "addOns": "Add-ons"
+      "sympathy": "Sympathy"
     },
     "currency": {
       "label": "Prices shown in {currency}"
     },
     "forFlorists": "For florists",
-    "menu": {
-      "label": "Menu"
-    },
-    "search": {
-      "label": "Search bouquets, occasions, countries and help",
-      "submit": "Search"
-    },
-    "utility": {
-      "cutoff": "Order by 14:00 in Warsaw for delivery today",
-      "cutoffShort": "Order by 14:00 in Warsaw · today",
-      "guarantee": "Frische-Versprechen",
-      "pricesInclude": "Preise inkl. MwSt. und Versand"
-    },
     "mega": {
       "allDestinations": "All destinations",
       "allFlowers": "All flowers",
@@ -1307,6 +1549,19 @@
         "partner": "For someone you love"
       },
       "soon": "Opening soon"
+    },
+    "menu": {
+      "label": "Menu"
+    },
+    "search": {
+      "label": "Search bouquets, occasions, countries and help",
+      "submit": "Search"
+    },
+    "utility": {
+      "cutoff": "Order by 14:00 in Warsaw for delivery today",
+      "cutoffShort": "Order by 14:00 in Warsaw · today",
+      "guarantee": "Frische-Versprechen",
+      "pricesInclude": "Preise inkl. MwSt. und Versand"
     }
   },
   "occasionHub": {
@@ -1413,24 +1668,24 @@
       "unavailable": "Payments are not available right now. Nothing was charged. Please try again in a few minutes."
     },
     "step": {
+      "cancelling": "Cancelling",
+      "delivery": "Delivery",
+      "deliveryItem": "Delivery {n} of {total}: {item} · {date}, {city}",
+      "deliveryWhen": "{date}, {city}",
+      "draftLabel": "Draft, not in force",
+      "item": "{name}, {details}",
       "noScript": "Paying needs JavaScript. Turn it on, or call or message us and we will help you order.",
-      "submitting": "Processing your payment…",
-      "testLabel": "Test mode. Use a test card. No real money moves.",
+      "notPaidYet": "Not paid yet. Nothing was charged.",
       "payTitle": "Payment",
       "preContractTitle": "Before you pay",
-      "draftLabel": "Draft, not in force",
-      "whatYouBuy": "What you buy",
-      "item": "{name}, {details}",
       "printedCard": "with a printed card",
+      "processedBy": "Card payments are processed by Stripe. We never store card numbers.",
+      "seller": "Seller",
+      "submitting": "Processing your payment…",
+      "testLabel": "Test mode. Use a test card. No real money moves.",
       "total": "Total",
       "totalIncluded": "{amount}, VAT and delivery included",
-      "delivery": "Delivery",
-      "deliveryWhen": "{date}, {city}",
-      "deliveryItem": "Delivery {n} of {total}: {item} · {date}, {city}",
-      "cancelling": "Cancelling",
-      "seller": "Seller",
-      "processedBy": "Card payments are processed by Stripe. We never store card numbers.",
-      "notPaidYet": "Not paid yet. Nothing was charged."
+      "whatYouBuy": "What you buy"
     }
   },
   "product": {
@@ -1483,6 +1738,81 @@
     },
     "vat": "VAT {rate}"
   },
+  "reviews": {
+    "form": {
+      "delivered": "Geliefert am {date} in {city}",
+      "deliveredNoCity": "Geliefert am {date}",
+      "errorLong": "Ihr Text hat {count, number} Zeichen. Bitte bleiben Sie bei {max, number}.",
+      "errorRating": "Wählen Sie 1 bis 5 Sterne.",
+      "errorSummary": "Wählen Sie eine Bewertung, um sie zu senden",
+      "goneBody": "Bewertungslinks gelten {days, number} Tage nach der Lieferung. Wenn Sie uns etwas sagen möchten, schreiben Sie uns auf WhatsApp.",
+      "goneTitle": "Dieser Bewertungslink ist nicht mehr aktiv.",
+      "heading": "Wie war es?",
+      "home": "Zurück zu Flowers Overseas",
+      "legend": "Ihre Bewertung",
+      "notice": "Wir prüfen jede Bewertung vor der Veröffentlichung, innerhalb von 3 Werktagen. Sie erscheint mit dem Liefermonat und dem Land, nie mit Ihrem Nachnamen oder Ihrer E-Mail-Adresse.",
+      "policyLink": "Wie wir Bewertungen prüfen",
+      "send": "Senden",
+      "showName": "Meinen Vornamen mit meiner Bewertung zeigen",
+      "showNameHint": "Ohne Häkchen zeigen wir „Verifizierter Käufer“.",
+      "starLabel": "{n} von 5",
+      "textHint": "Bis zu {max, number} Zeichen. Wir veröffentlichen Ihre Worte so, wie Sie sie schreiben.",
+      "textLabel": "Erzählen Sie uns mehr (optional)",
+      "thanksBody": "Wir prüfen sie und veröffentlichen sie innerhalb von 3 Werktagen.",
+      "thanksTitle": "Danke. Wir lesen jede Bewertung.",
+      "usedBody": "Danke, dass Sie sie geschickt haben.",
+      "usedTitle": "Wir haben Ihre Bewertung für diese Bestellung bereits.",
+      "whatsapp": "WhatsApp"
+    },
+    "stop": {
+      "body": "Wir fragen Sie nicht mehr nach einer Bewertung. Sonst ändert sich nichts.",
+      "button": "Bewertungs-E-Mails abbestellen",
+      "doneBody": "Ihre Bestellung und ihre Sendungsseite bleiben, wie sie sind.",
+      "doneTitle": "Erledigt. Wir fragen Sie nicht mehr nach einer Bewertung.",
+      "title": "Keine Bewertungs-E-Mails mehr?"
+    }
+  },
+  "search": {
+    "anyDate": "Show every date",
+    "browseOccasions": "Browse by occasion",
+    "chip": {
+      "choose": "Choose a country",
+      "remove": "Show all countries"
+    },
+    "didYouMean": "Did you mean {suggestion}?",
+    "groups": {
+      "bouquets": "Bouquets",
+      "categories": "Flowers",
+      "destinations": "Countries",
+      "help": "Help and information",
+      "occasions": "Occasions"
+    },
+    "heading": "Search",
+    "hiddenByDate": "{count, plural, one {# more bouquet matches but cannot arrive on {date}.} other {# more bouquets match but cannot arrive on {date}.}}",
+    "meta": {
+      "title": "Search"
+    },
+    "next": "Next page",
+    "noResults": "We found nothing for “{query}”. Try a flower, a colour or an occasion.",
+    "previous": "Previous page",
+    "ranking": {
+      "disclosure": "Bouquets that match your words most closely come first. Among equally close matches, those we can send to the destination you chose come first, then those with a photograph, then our own order. Nobody pays us to place a bouquet higher, and the order does not depend on who you are or where you are."
+    },
+    "rateLimited": "Too many searches in a short time. Please wait a moment and try again.",
+    "resultsHeading": "Results for “{query}”",
+    "suggest": {
+      "all": "See all results for “{query}”",
+      "count": "{count, plural, one {# suggestion} other {# suggestions}}",
+      "kind": {
+        "category": "Flowers",
+        "destination": "Country",
+        "occasion": "Occasion",
+        "page": "Help",
+        "product": "Bouquet"
+      }
+    },
+    "tooShort": "Type at least two letters."
+  },
   "shop": {
     "card": {
       "localSpecial": "Only in {country}"
@@ -1502,6 +1832,12 @@
       "continue": "Continue to {country}",
       "noMatch": "We could not find “{query}”.",
       "remember": "We will remember this country on this device. Change it any time under Sending to."
+    },
+    "chosen": {
+      "line": "Versand nach {country}"
+    },
+    "cta": {
+      "chooseCountry": "Choose where to send"
     },
     "empty": {
       "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
@@ -1539,6 +1875,19 @@
       "previous": "Previous",
       "titleSuffix": "{title} · Page {page}"
     },
+    "price": {
+      "band": {
+        "between": "{from} bis {to}",
+        "over": "{amount} und mehr",
+        "under": "Unter {amount}"
+      },
+      "bandWord": {
+        "high": "Higher prices",
+        "low": "Lower prices",
+        "mid": "Middle prices"
+      },
+      "choose": "Choose a country to see the price"
+    },
     "root": {
       "dateColumn": "Date",
       "demoNotice": "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
@@ -1558,6 +1907,7 @@
       "tilesHeading": "By what it is",
       "tilesSubheading": "Narrow it down"
     },
+    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}",
     "sort": {
       "default": "Our order",
       "priceAsc": "Price: low to high",
@@ -1570,81 +1920,20 @@
       "sortLabel": "Sort by",
       "submit": "Sort",
       "summary": "{count, plural, one {# Strauß} other {# Sträuße}} · Seite {page} von {pageCount}"
-    },
-    "cta": {
-      "chooseCountry": "Choose where to send"
-    },
-    "price": {
-      "bandWord": {
-        "high": "Higher prices",
-        "low": "Lower prices",
-        "mid": "Middle prices"
-      },
-      "choose": "Choose a country to see the price",
-      "band": {
-        "under": "Unter {amount}",
-        "between": "{from} bis {to}",
-        "over": "{amount} und mehr"
-      }
-    },
-    "seeAll": "{count, plural, one {See the one bouquet} other {See all #}}",
-    "chosen": {
-      "line": "Versand nach {country}"
-    }
-  },
-  "search": {
-    "meta": {
-      "title": "Search"
-    },
-    "heading": "Search",
-    "resultsHeading": "Results for “{query}”",
-    "browseOccasions": "Browse by occasion",
-    "tooShort": "Type at least two letters.",
-    "noResults": "We found nothing for “{query}”. Try a flower, a colour or an occasion.",
-    "didYouMean": "Did you mean {suggestion}?",
-    "hiddenByDate": "{count, plural, one {# more bouquet matches but cannot arrive on {date}.} other {# more bouquets match but cannot arrive on {date}.}}",
-    "anyDate": "Show every date",
-    "previous": "Previous page",
-    "next": "Next page",
-    "rateLimited": "Too many searches in a short time. Please wait a moment and try again.",
-    "ranking": {
-      "disclosure": "Bouquets that match your words most closely come first. Among equally close matches, those we can send to the destination you chose come first, then those with a photograph, then our own order. Nobody pays us to place a bouquet higher, and the order does not depend on who you are or where you are."
-    },
-    "groups": {
-      "destinations": "Countries",
-      "occasions": "Occasions",
-      "categories": "Flowers",
-      "help": "Help and information",
-      "bouquets": "Bouquets"
-    },
-    "chip": {
-      "remove": "Show all countries",
-      "choose": "Choose a country"
-    },
-    "suggest": {
-      "kind": {
-        "product": "Bouquet",
-        "occasion": "Occasion",
-        "category": "Flowers",
-        "destination": "Country",
-        "page": "Help"
-      },
-      "count": "{count, plural, one {# suggestion} other {# suggestions}}",
-      "all": "See all results for “{query}”"
     }
   },
   "trackLookup": {
+    "body": "Enter your order reference and the email you ordered with. We email you the tracking link.",
     "email": "Email you ordered with",
     "emailPlaceholder": "name@example.com",
-    "reference": "Order reference",
-    "referencePlaceholder": "FO-XXXX-XXXX",
-    "submit": "Send me the link",
     "meta": {
       "title": "Find your order"
     },
-    "title": "Find your order",
-    "body": "Enter your order reference and the email you ordered with. We email you the tracking link.",
-    "sent": "If that order exists, we have emailed its link to the address it was placed with."
+    "reference": "Order reference",
+    "referencePlaceholder": "FO-XXXX-XXXX",
+    "sent": "If that order exists, we have emailed its link to the address it was placed with.",
+    "submit": "Send me the link",
+    "title": "Find your order"
   },
   "tracking": {
     "calendar": {
@@ -1652,6 +1941,11 @@
       "summaryNoCity": "Flowers delivered",
       "title": "Add to calendar",
       "when": "{date}, all day"
+    },
+    "cancelled": {
+      "byBuyer": "You cancelled this order.",
+      "byUs": "We could not deliver this order.",
+      "refundPending": "We are refunding {amount} to your original payment method."
     },
     "demo": {
       "body": "Nothing is charged and nothing is delivered. It shows how ordering works.",
@@ -1693,20 +1987,15 @@
     "photoAlt": "Photo of your delivered flowers, taken on {date}",
     "photoCaption": "Taken {time}.",
     "photoDeleted": "The delivery photo was deleted on {date} under our privacy policy.",
+    "refundLine": "Refunded {amount} on {date}",
+    "refundsLabel": "Refunds",
     "share": {
       "body": "Opens your phone's share sheet, or copies the link.",
       "copied": "Link copied.",
       "title": "Share the tracking link"
     },
     "substitution": "We made a small change to your bouquet: {note}",
-    "timelineLabel": "Your order, step by step",
-    "refundLine": "Refunded {amount} on {date}",
-    "refundsLabel": "Refunds",
-    "cancelled": {
-      "byBuyer": "You cancelled this order.",
-      "byUs": "We could not deliver this order.",
-      "refundPending": "We are refunding {amount} to your original payment method."
-    }
+    "timelineLabel": "Your order, step by step"
   },
   "trust": {
     "guarantee": {
@@ -1723,305 +2012,16 @@
       "name": "The price includes delivery and VAT"
     }
   },
-  "forFlorists": {
-    "apply": {
-      "crumb": "Bewerben",
-      "error": {
-        "area": "Bitte sagen Sie uns, wohin Sie liefern.",
-        "capacity": "Bitte geben Sie eine ganze Zahl von 1 bis 500 ein.",
-        "contactName": "Bitte nennen Sie uns Ihren Namen.",
-        "country": "Bitte wählen Sie ein Land.",
-        "email": "Bitte geben Sie eine E-Mail-Adresse wie name@example.com ein.",
-        "phone": "Bitte geben Sie eine Telefonnummer ein, unter der wir Sie erreichen.",
-        "shopName": "Bitte nennen Sie uns den Namen Ihres Geschäfts.",
-        "town": "Bitte nennen Sie uns Ihren Ort.",
-        "website": "Bitte geben Sie eine vollständige Webadresse ein, die mit https:// beginnt.",
-        "contactBy": "Please choose how we should contact you.",
-        "language": "Please choose a language.",
-        "registration": "Please keep the registration number to 100 characters.",
-        "weekends": "Please tell us whether you deliver at weekends."
-      },
-      "errorSummary": "Bitte prüfen Sie diese Angaben",
-      "failed": "Wir konnten Ihre Bewerbung nicht senden. Ihre Angaben sind noch hier. Versuchen Sie es erneut, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
-      "field": {
-        "area": {
-          "help": "Stadtteile, Postleitzahlen oder eine Entfernung von Ihrem Geschäft",
-          "label": "Wohin Sie liefern"
-        },
-        "capacity": {
-          "help": "Eine ehrliche Zahl. Wir schicken Ihnen lieber weniger, und jeder Auftrag wird zugestellt.",
-          "label": "Aufträge pro Tag, die Sie übernehmen könnten"
-        },
-        "contactBy": {
-          "email": "E-Mail",
-          "label": "Wie sollen wir Sie kontaktieren?",
-          "phone": "Telefon",
-          "whatsapp": "WhatsApp"
-        },
-        "contactName": {
-          "label": "Ihr Name"
-        },
-        "country": {
-          "choose": "Land wählen",
-          "label": "Land"
-        },
-        "email": {
-          "label": "E-Mail"
-        },
-        "language": {
-          "de": "Deutsch",
-          "en": "English",
-          "label": "Sprache",
-          "pl": "Polski"
-        },
-        "phone": {
-          "help": "Die Nummer, die wir anrufen und an die wir Aufträge schicken",
-          "label": "Telefon oder WhatsApp"
-        },
-        "registration": {
-          "help": "NIP, KRS, Handelsregister oder das Gegenstück in Ihrem Land",
-          "label": "Registernummer"
-        },
-        "shopName": {
-          "help": "So wie er an Ihrem Geschäft steht",
-          "label": "Name Ihres Geschäfts"
-        },
-        "town": {
-          "label": "Ort"
-        },
-        "website": {
-          "label": "Instagram oder Website"
-        },
-        "weekends": {
-          "label": "Liefern Sie am Wochenende?",
-          "no": "Nein",
-          "sometimes": "Manchmal",
-          "yes": "Ja"
-        }
-      },
-      "formOff": "Rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}, dann besprechen wir alles mit Ihnen. Wir hören lieber von Ihnen selbst, wie Ihr Geschäft arbeitet.",
-      "h1": "Bewerben Sie sich bei uns",
-      "honeypot": "Dieses Feld leer lassen",
-      "intro": "Erzählen Sie uns von Ihrem Geschäft. Es dauert ein paar Minuten, und nach Bankdaten fragen wir nicht.",
-      "next": {
-        "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn sie Ja lautet, rufen wir Sie an, vereinbaren, was Sie pro Strauß erhalten, und schicken Ihnen einen Testauftrag vor dem ersten echten. Sie fangen an, wenn wir uns beide einig sind, nicht weil Sie dieses Formular geschickt haben.",
-        "heading": "Wie es weitergeht"
-      },
-      "notice": {
-        "body": "Wir nutzen diese Angaben, um Ihre Bewerbung zu prüfen und Sie wegen einer Zusammenarbeit zu kontaktieren. Rechtsgrundlage sind Schritte, um die Sie vor einem Vertrag gebeten haben (DSGVO Art. 6 Abs. 1 lit. b). Wir bewahren sie 12 Monate nach unserem letzten Kontakt auf und löschen sie dann, es sei denn, wir beginnen eine Zusammenarbeit. Gespeichert werden sie bei unseren Anbietern für Hosting, Datenbank und E-Mail, darunter US-Unternehmen, die unter den EU-Garantien für Datenübermittlungen arbeiten. Wir verkaufen sie nicht und zeigen sie keinem Käufer. Um sie einzusehen, zu berichtigen oder zu löschen, rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
-        "controller": "Diese Website wird von {name} betrieben. Bei Fragen zu Ihren personenbezogenen Daten rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
-        "heading": "Was wir mit Ihren Angaben tun",
-        "privacyLink": "Unsere Datenschutzerklärung"
-      },
-      "optional": "optional",
-      "submit": "Bewerbung senden",
-      "title": "Bewerben Sie sich bei uns | Für Floristen",
-      "tooMany": "Gerade kommen zu viele Bewerbungen auf einmal an. Bitte versuchen Sie es gleich noch einmal, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}."
-    },
-    "sent": {
-      "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn Sie früher sprechen möchten, rufen Sie uns an oder schreiben Sie uns unter <phone>{phoneDisplay}</phone>.",
-      "h1": "Danke. Wir haben Ihre Bewerbung.",
-      "title": "Danke | Für Floristen",
-      "walkthrough": "So kommt ein Auftrag zu Ihnen"
-    },
-    "status": {
-      "choosingFirst": "Wir nehmen noch keine Bestellungen an."
-    }
-  },
   "whatsapp": {
     "florist": {
       "offer": {
-        "title": "Neuer Auftrag von Flowers Overseas",
+        "alsoEmail": "Wir haben Ihnen diesen Auftrag auch per E-Mail geschickt.",
         "open": "Auftrag öffnen: {url}",
-        "alsoEmail": "Wir haben Ihnen diesen Auftrag auch per E-Mail geschickt."
+        "title": "Neuer Auftrag von Flowers Overseas"
       },
       "stop": {
         "body": "Dieser Auftrag ist nicht mehr Ihrer. Bitte fertigen Sie ihn nicht."
       }
-    }
-  },
-  "invoice": {
-    "title": {
-      "vatInvoice": "Rechnung",
-      "receiptOnBehalf": "Quittung",
-      "creditNote": "Rechnungskorrektur"
-    },
-    "label": {
-      "number": "Nummer",
-      "issueDate": "Rechnungsdatum",
-      "supplyDate": "Lieferdatum",
-      "order": "Bestellung",
-      "currency": "Währung",
-      "corrects": "Korrigiert Rechnung",
-      "seller": "Verkäufer",
-      "buyer": "Käufer",
-      "registryCode": "Registernummer",
-      "vatId": "USt-IdNr. {country}",
-      "lineNo": "Nr.",
-      "description": "Beschreibung",
-      "vatRate": "USt.-Satz",
-      "net": "Netto",
-      "vat": "USt.",
-      "gross": "Brutto",
-      "totalAtRate": "Summe {rate}",
-      "outsideVat": "Nicht steuerbar",
-      "totalDue": "Gesamtbetrag",
-      "totalRefunded": "Erstattet",
-      "vatInCurrency": "USt. in {currency}",
-      "rateSource": "NBP-Kurs, Tabelle A Nr. {table}, {date}: 1 {from} = {rate} {to}",
-      "vatAtRate": "{rate}: USt. {amount}",
-      "paid": "Bezahlt",
-      "refunded": "Erstattet",
-      "pricesInclude": "Preise inklusive USt. und Lieferung.",
-      "page": "Seite {page} von {pages}"
-    },
-    "line": {
-      "surcharge": "Lieferzuschlag",
-      "quantity": "{name} × {qty}"
-    }
-  },
-  "auth": {
-    "account": {
-      "title": "Your account",
-      "intro": "Enter your email and we will send you a link to sign in. No password needed.",
-      "email": "Email",
-      "emailInvalid": "Please enter an email address in the form name@example.com.",
-      "submit": "Email me a link",
-      "guestNote": "You never need an account to order.",
-      "sent": "Check your inbox. If the address is right, your link is on its way. It works once, for one hour.",
-      "expired": "That link has expired or was already used. Enter your email for a new one.",
-      "signedOut": "You are signed out.",
-      "confirmSubmit": "Continue"
-    }
-  },
-  "account": {
-    "nav": {
-      "orders": "Orders",
-      "signOut": "Sign out",
-      "details": "Your details",
-      "recipients": "Saved recipients",
-      "reminders": "Reminders"
-    },
-    "orders": {
-      "title": "Your orders",
-      "empty": "No orders yet with this email.",
-      "choose": "Choose flowers",
-      "groupHeading": "Ordered on {date}",
-      "groupCount": "{count, plural, one {# delivery} other {# deliveries, paid together}}",
-      "line": "Order {reference} · {city} · {date}",
-      "lineNoCity": "Order {reference} · {date}",
-      "stems": "{count, plural, one {# stem} other {# stems}}",
-      "details": "Details",
-      "track": "Track",
-      "invoice": "Invoice"
-    },
-    "detail": {
-      "back": "Orders",
-      "eyebrow": "Order {reference}",
-      "recipientTitle": "Who it is for",
-      "recipient": "Recipient",
-      "date": "Date",
-      "card": "Card",
-      "removed": "We removed the recipient's details on {date}.",
-      "orderTitle": "Your order",
-      "placed": "Order {reference} · placed {date}",
-      "paid": "You paid",
-      "documentsTitle": "Documents",
-      "invoice": "Invoice",
-      "creditNote": "Credit note",
-      "pdf": "PDF"
-    },
-    "details": {
-      "title": "Your details",
-      "emailNote": "To change your email, message us.",
-      "language": "Language for our emails",
-      "currency": "Currency",
-      "currencyOption": "{code} · {name}",
-      "save": "Save",
-      "saved": "Saved.",
-      "signOutEverywhere": "Sign out on all devices",
-      "signOutEverywhereNote": "Signs you out here and on every other phone or computer. Your orders stay."
-    },
-    "recipients": {
-      "save": "Save {name}'s details for next time",
-      "saveHint": "Only if they would be happy for you to. We keep them until you remove them, or for 2 years after you last use them.",
-      "saveSubmit": "Save",
-      "saved": "Saved to your recipients.",
-      "empty": "No saved recipients yet. You can save one from an order.",
-      "place": "{city}, {country}",
-      "remove": "Remove",
-      "removeLabel": "Remove {name}",
-      "removeTitle": "Remove {name}?",
-      "removeBody": "We delete these details. Your orders are not changed.",
-      "keep": "Keep",
-      "removed": "Removed. We have deleted these details.",
-      "limit": "You have saved 20 recipients, the most we keep. Remove one to save another."
-    },
-    "reminders": {
-      "intro": "We email you before each date you save, so there is time to send flowers.",
-      "consent": "Email me reminders before the dates I save. I can stop at any time.",
-      "occasion": "{key, select, birthday {Birthday} anniversary {Anniversary} name_day {Name day} other {Other occasion}}",
-      "lead": "{days, plural, other {# days before}}",
-      "off": "Turn off reminders",
-      "offConfirm": "Turning reminders off deletes your saved dates.",
-      "unsubscribeDone": "Reminders are off. We have deleted your saved dates.",
-      "addTitle": "Add a date",
-      "occasionLabel": "Occasion",
-      "forLabel": "For",
-      "optional": "optional",
-      "forNone": "No saved recipient",
-      "dayLabel": "Day",
-      "monthLabel": "Month",
-      "leadLabel": "How early",
-      "save": "Save this date",
-      "saved": "Saved.",
-      "empty": "No dates saved yet.",
-      "line": "{occasion} · {date}",
-      "lineFor": "{lead} · <bdi>{name}</bdi>",
-      "remove": "Remove",
-      "removeLabel": "Remove {occasion} on {date}",
-      "offTitle": "Turn off reminders?",
-      "keep": "Keep them",
-      "errorConsent": "Tick the box so we may email you reminders.",
-      "errorDate": "That date does not exist. Choose another day or month.",
-      "limit": "You have saved 50 dates, the most we keep. Remove one to add another.",
-      "unsubscribeTitle": "Stop reminders?",
-      "unsubscribeButton": "Stop reminders",
-      "unsubscribeDoneTitle": "Reminders are off."
-    }
-  },
-  "reviews": {
-    "form": {
-      "heading": "Wie war es?",
-      "delivered": "Geliefert am {date} in {city}",
-      "deliveredNoCity": "Geliefert am {date}",
-      "legend": "Ihre Bewertung",
-      "starLabel": "{n} von 5",
-      "textLabel": "Erzählen Sie uns mehr (optional)",
-      "textHint": "Bis zu {max, number} Zeichen. Wir veröffentlichen Ihre Worte so, wie Sie sie schreiben.",
-      "showName": "Meinen Vornamen mit meiner Bewertung zeigen",
-      "showNameHint": "Ohne Häkchen zeigen wir „Verifizierter Käufer“.",
-      "notice": "Wir prüfen jede Bewertung vor der Veröffentlichung, innerhalb von 3 Werktagen. Sie erscheint mit dem Liefermonat und dem Land, nie mit Ihrem Nachnamen oder Ihrer E-Mail-Adresse.",
-      "policyLink": "Wie wir Bewertungen prüfen",
-      "send": "Senden",
-      "errorSummary": "Wählen Sie eine Bewertung, um sie zu senden",
-      "errorRating": "Wählen Sie 1 bis 5 Sterne.",
-      "errorLong": "Ihr Text hat {count, number} Zeichen. Bitte bleiben Sie bei {max, number}.",
-      "thanksTitle": "Danke. Wir lesen jede Bewertung.",
-      "thanksBody": "Wir prüfen sie und veröffentlichen sie innerhalb von 3 Werktagen.",
-      "home": "Zurück zu Flowers Overseas",
-      "usedTitle": "Wir haben Ihre Bewertung für diese Bestellung bereits.",
-      "usedBody": "Danke, dass Sie sie geschickt haben.",
-      "goneTitle": "Dieser Bewertungslink ist nicht mehr aktiv.",
-      "goneBody": "Bewertungslinks gelten {days, number} Tage nach der Lieferung. Wenn Sie uns etwas sagen möchten, schreiben Sie uns auf WhatsApp.",
-      "whatsapp": "WhatsApp"
-    },
-    "stop": {
-      "title": "Keine Bewertungs-E-Mails mehr?",
-      "body": "Wir fragen Sie nicht mehr nach einer Bewertung. Sonst ändert sich nichts.",
-      "button": "Bewertungs-E-Mails abbestellen",
-      "doneTitle": "Erledigt. Wir fragen Sie nicht mehr nach einer Bewertung.",
-      "doneBody": "Ihre Bestellung und ihre Sendungsseite bleiben, wie sie sind."
     }
   }
 }

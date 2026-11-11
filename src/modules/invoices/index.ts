@@ -1,7 +1,8 @@
 /**
  * Public barrel for `invoices` (invoice and credit-note issuing, numbering, VAT per rate, the
- * snapshot). Owned by: spec 018 (§5.2 `modules/invoices`; TASK-341 issuing, TASK-342 the PDF, its
- * storage and delivery).
+ * snapshot).
+ * Owned by: spec 018 (TASK-341 issuing, TASK-342 the PDF, its storage and delivery).
+ * Spec 018 §5.2 `modules/invoices`.
  */
 export { issueCreditNote } from "./credit";
 export {

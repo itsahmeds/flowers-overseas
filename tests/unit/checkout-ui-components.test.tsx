@@ -715,7 +715,11 @@ describe("spec 003 A17: the primitives name no checkout key", () => {
   const dir = fileURLToPath(
     new URL("../../src/modules/ui/checkout/", import.meta.url),
   );
-  for (const file of readdirSync(dir)) {
+  // Recursive since spec 013's pay step put its primitives in `payment/` (TASK-262; TASK-522).
+  for (const file of readdirSync(dir, {
+    recursive: true,
+    encoding: "utf8",
+  }).filter((entry) => /\.tsx?$/.test(entry))) {
     it(`${file} names no checkout or confirmation key and imports no next-intl`, () => {
       const source = readFileSync(`${dir}${file}`, "utf8");
       // The usage scan of `i18n:check` (and A17's check 11) matches a fully-qualified key

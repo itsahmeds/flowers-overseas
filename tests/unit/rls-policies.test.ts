@@ -133,9 +133,26 @@ const BUILD_POLICIES: Policy[] = [
  * The policies in force after every migration: a later migration that drops and re-creates a
  * policy (`0026_payment_purchase`'s `payment_customer`, TASK-350) replaces the earlier text.
  */
+/**
+ * The policies alive after every migration, in migration order: a `DROP POLICY` with no later
+ * `CREATE POLICY` of the same name removes it (`0029_reviews_close` drops `review_read`, so the
+ * table is staff only and `public_review` is the public's read; TASK-368, TASK-522).
+ */
+const LIVE_POLICIES: ReadonlySet<string> = (() => {
+  const live = new Set<string>();
+  for (const m of up.matchAll(
+    /(CREATE|DROP) POLICY (?:IF EXISTS )?(\w+) ON public\."?(\w+)"?/g,
+  )) {
+    const key = `${m[3] ?? ""}.${m[2] ?? ""}`;
+    if (m[1] === "CREATE") live.add(key);
+    else live.delete(key);
+  }
+  return live;
+})();
+
 const EFFECTIVE_POLICIES: Policy[] = [
   ...new Map(POLICIES.map((p) => [`${p.table}.${p.name}`, p])).values(),
-];
+].filter((p) => LIVE_POLICIES.has(`${p.table}.${p.name}`));
 
 const policiesOf = (table: string): Policy[] =>
   EFFECTIVE_POLICIES.filter((p) => p.table === table);
@@ -149,7 +166,9 @@ const anyPolicyNamesOf = (table: string): string[] =>
         "g",
       ),
     ),
-  ].map((m) => m[1] ?? "");
+  ]
+    .map((m) => m[1] ?? "")
+    .filter((name) => LIVE_POLICIES.has(`${table}.${name}`));
 
 /** `0022`'s insert-only policies: `FOR INSERT TO app_web WITH CHECK (…)` (spec 011 §5.1). */
 const INSERT_POLICIES: Policy[] = [
@@ -406,7 +425,9 @@ describe("migration 0011 — each class gets exactly its policies", () => {
         (match?.[1] ?? "").split(/,(?![^(]*\))/).map((c) =>
           c
             .trim()
-            .replace(/^\w\./, "")
+            // `0044`'s `saleable_offer` reads `SELECT DISTINCT m.product_id, …, ci.country_id`.
+            .replace(/^DISTINCT\s+/, "")
+            .replace(/^\w+\./, "")
             .replace(/^[\s\S]* AS (\w+)$/, "$1"),
         ),
         view,

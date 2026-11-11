@@ -5,7 +5,7 @@
  *
  * **No email, card fingerprint, address or name column** (AC-31): an identity is the keyed hash
  * `identityHash` returns (HMAC-SHA-256 under `RISK_HASH_KEY`), 64 lower-case hex characters. Spec
- * 021 writes `bytea`; spec 002 AC-22 bans `bytea` in `public`, so the 32 bytes are hex text.
+ * 021 writes a binary column; spec 002 AC-22 bans binary columns in `public`, so the 32 bytes are hex text.
  */
 import { sql } from "drizzle-orm";
 import {

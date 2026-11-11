@@ -74,6 +74,8 @@ const PINNED_EXPORTS = [
   "launchLocaleCodes",
   "launchLocales",
   "countGraphemes",
+  // TASK-447 (spec 019): a currency's name in the locale, for the discount summary.
+  "formatCurrencyName",
   "formatDate",
   // Added by TASK-187 (spec 008 A15, the country occasion's date): the parts of one
   // `formatDate` value, so the artboard's day, month, weekday and year come from one formatter.
@@ -94,6 +96,12 @@ const PINNED_EXPORTS = [
   "formatRegionName",
   "formatRelativeTime",
   "formatTimeInZone",
+  // TASK-445 (spec 019): an admin wall-clock date-time to and from an instant in a zone.
+  "instantToWallClock",
+  "wallClockToInstant",
+  // TASK-449: the reminder email's source hash and per-locale reviewed check.
+  "messageSourceHash",
+  "messagesReviewedFor",
   "loadMessages",
   // TASK-119: the language popup's gate attribute, rendered on `<html>` by the layout.
   "localeGateDocumentAttributes",

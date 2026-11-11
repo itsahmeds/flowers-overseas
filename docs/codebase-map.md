@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +30 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012, 030 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +30 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +134 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
@@ -25,7 +25,7 @@ task actually touches.
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/admin-order-buyer-renders.test.ts` +25 |
 | `ops` | Public barrel for `ops`: founder alerts, their… | 025 | `contract/ops-pushover.test.ts`, `integration/ops-alerts.test.ts` +5 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +31 |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026, 030 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +31 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +19 |
 | `reviews` | Spec 022a §2, §5.2: the `review.created`… | 022 | `unit/reviews-data.test.ts` |
 | `risk` | Public barrel for `risk`: fraud pre-checks… | 021 | `unit/risk-core.test.ts` |
@@ -467,7 +467,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 551 |
+| `tests/unit/` | 552 |
 | `tests/integration/` | 127 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |

@@ -227,7 +227,7 @@ describe("AC-37: every product address is served by the product route", () => {
     // The product parameter rules (TASK-128) sit between the two, so a `?tier=` / `?date=`
     // request reaches the parameter route before the unconditional product rule takes it.
     expect(config).toMatch(
-      /beforeFiles: \[\s*\.\.\.listingRewriteRules\(\),\s*\.\.\.productParameterRewriteRules\(\),\s*\.\.\.productRewriteRules\(\),\s*\]/u,
+      /beforeFiles: \[(?:\s*\/\/[^\n]*)*\s*\.\.\.searchRewriteRules\(\),\s*\.\.\.listingRewriteRules\(\),\s*\.\.\.productParameterRewriteRules\(\),\s*\.\.\.productRewriteRules\(\),\s*\]/u,
     );
     expect(config).toContain("...productRouteHeaderRules(),");
     expect(productRouteHeaderRules()).toEqual([

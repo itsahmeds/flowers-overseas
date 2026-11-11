@@ -330,6 +330,9 @@ export const STAFF_ONLY_TABLES = [
   // log on a florist, and the provider's balance facts. Admin and system only: a florist never
   // reads our notes or our money.
   "partner_contact_log",
+  // spec 030b §14.5 (migration `0041_partner_contracts`, TASK-442): the signed florist contracts.
+  // Staff only, no build grant (classified here by TASK-522, whose sweep found it unlisted).
+  "partner_contract",
   "partner_note",
   "payment_balance_txn",
   "outbox",

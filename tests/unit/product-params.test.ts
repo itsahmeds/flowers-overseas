@@ -39,6 +39,7 @@ import {
   listingRewriteRules,
 } from "../../src/lib/listing-rewrites";
 import { isRedactedKey } from "../../src/lib/logger";
+import { searchRewriteRules } from "../../src/lib/search-routes";
 import {
   PRODUCT_PARAMETER_ROUTE_PREFIX,
   productParameterCacheHeaderRules,
@@ -215,6 +216,8 @@ interface Rule {
 
 /** `next.config.ts`'s `beforeFiles`, in its order (pinned from source below). */
 const BEFORE_FILES: readonly Rule[] = [
+  // The search results rule (spec 045, TASK-402) comes first; two segments, so disjoint.
+  ...searchRewriteRules(),
   ...listingRewriteRules(),
   ...productParameterRewriteRules(),
   ...productRewriteRules(),
@@ -402,7 +405,7 @@ describe("the shared-cache header on a parameterised product response (AC-24)", 
     const config = read("next.config.ts");
     expect(config).toContain("...productParameterCacheHeaderRules(),");
     expect(config).toMatch(
-      /beforeFiles: \[\s*\.\.\.listingRewriteRules\(\),\s*\.\.\.productParameterRewriteRules\(\),\s*\.\.\.productRewriteRules\(\),\s*\]/u,
+      /beforeFiles: \[(?:\s*\/\/[^\n]*)*\s*\.\.\.searchRewriteRules\(\),\s*\.\.\.listingRewriteRules\(\),\s*\.\.\.productParameterRewriteRules\(\),\s*\.\.\.productRewriteRules\(\),\s*\]/u,
     );
   });
 });

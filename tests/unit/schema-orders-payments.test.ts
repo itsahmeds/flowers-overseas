@@ -67,9 +67,10 @@ const a8 = readMigration(
  * `payment.purchase_id` and its keys, `payment.order_id` dropped, `refund.order_id` and
  * `refund.purchase_id` with their keys, `"order" UNIQUE (id, purchase_id)`. `0029` (spec 022a
  * §5.1, TASK-368) adds `review`'s moderation, display and routing columns. `0037` (spec 047
- * §5.1, TASK-445) adds `order_line.discount_minor` and its check.
+ * §5.1, TASK-445) adds `order_line.discount_minor` and its check. `0039` (spec 030b §5.1,
+ * TASK-439) adds `payment_captured_at_idx`.
  */
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0026_payment_purchase.sql")}\n${readMigration("0029_reviews_close.sql")}\n${readMigration("0030_routing_notifications.sql")}\n${readMigration("0037_discount_codes.sql")}`;
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}\n${readMigration("0026_payment_purchase.sql")}\n${readMigration("0029_reviews_close.sql")}\n${readMigration("0030_routing_notifications.sql")}\n${readMigration("0037_discount_codes.sql")}\n${readMigration("0039_finance_crm_030b.sql")}`;
 
 const TABLES = [
   "order_status",

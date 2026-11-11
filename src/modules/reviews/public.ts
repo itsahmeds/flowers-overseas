@@ -15,14 +15,13 @@ export const REVIEWS_PAGE_SIZE = 20;
 
 /** What a read covers: every review, a product's, or the orders to one country. */
 export type ReviewScopeFilter =
-  | "all"
-  | { readonly productId: string }
-  | { readonly countryIso2: string };
+  "all" | { readonly productId: string } | { readonly countryIso2: string };
 
 function where(scope: ReviewScopeFilter, stars?: number) {
   const star = stars === undefined ? sql`` : sql`AND v.rating = ${stars}`;
   if (scope === "all") return sql`WHERE true ${star}`;
-  if ("productId" in scope) return sql`WHERE v.product_id = ${scope.productId} ${star}`;
+  if ("productId" in scope)
+    return sql`WHERE v.product_id = ${scope.productId} ${star}`;
   return sql`WHERE c.iso2 = ${scope.countryIso2} ${star}`;
 }
 

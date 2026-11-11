@@ -1,4 +1,4 @@
-/** Public barrel for `admin` (admin queries and actions). Owned by: spec 012. */
+/** Public barrel for `admin` (admin queries and actions). Owned by: spec 012, spec 030b (finance). */
 export {
   ADMIN_PERMISSIONS,
   type AdminPermission,
