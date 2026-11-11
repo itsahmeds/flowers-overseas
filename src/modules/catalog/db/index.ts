@@ -47,5 +47,3 @@ export const dbSaleabilityProvider = createDbSaleabilityProvider(
   DEFAULT_CATALOG_DB_OPTIONS,
 );
 export { createDbSaleabilityProvider } from "./saleable";
-/** Whether the deployment carries the build's database login (the cutover's switch; TASK-294). */
-export { buildDatabaseConfigured } from "@/lib/db";

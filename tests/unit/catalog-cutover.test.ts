@@ -170,10 +170,21 @@ describe("T-03: the country registry composition root", () => {
     "%s with no registry installed throws rather than answering from the file",
     (environment) => {
       vi.stubEnv("APP_ENV", environment);
+      vi.stubEnv("DATABASE_BUILD_URL", BUILD_LOGIN);
       expect(() => countryConfig("PL")).toThrow(
         /^COUNTRY_REGISTRY_NOT_LOADED/u,
       );
       expect(() => activeCountries()).toThrow(/^COUNTRY_REGISTRY_NOT_LOADED/u);
+    },
+  );
+
+  it.each(DATABASE_ENVIRONMENTS)(
+    "%s without DATABASE_BUILD_URL answers from the file with nothing installed (a build's page-data worker)",
+    (environment) => {
+      vi.stubEnv("APP_ENV", environment);
+      vi.stubEnv("DATABASE_BUILD_URL", "");
+      expect(activeCountries()).toBe(COUNTRIES);
+      expect(countryConfig("PL")).toBe(COUNTRIES.find((c) => c.iso2 === "PL"));
     },
   );
 

@@ -87,10 +87,7 @@ describe("the exported surface (AC-3)", () => {
       .map(([name]) => name)
       .sort();
 
-    // `buildDatabaseConfigured` answers a boolean about the build login, never a client or a
-    // value: the cutover's switch (spec 012b AC-3, TASK-294's staging fallback).
     expect(functions).toEqual([
-      "buildDatabaseConfigured",
       "withAdminContext",
       "withDbContext",
       "withSystemContext",
@@ -444,7 +441,9 @@ describe("the build-phase client (spec 012b AC-4)", () => {
   );
 
   it("answers whether the build login is configured, as a boolean, without connecting", async () => {
-    const { buildDatabaseConfigured } = await freshDb({});
+    await freshDb({});
+    const { buildDatabaseConfigured } =
+      await import("../../src/lib/build-login");
     expect(buildDatabaseConfigured({ DATABASE_BUILD_URL: BUILD_URL })).toBe(
       true,
     );
@@ -457,7 +456,7 @@ describe("the build-phase client (spec 012b AC-4)", () => {
     expect(poolUrls).toEqual([]);
   });
 
-  it("leaves db.ts the only module under src/ that reads DATABASE_BUILD_URL (railway.ts only allows the name)", () => {
+  it("leaves db.ts the only module under src/ that connects with DATABASE_BUILD_URL (build-login.ts answers whether it is set, railway.ts only allows the name)", () => {
     const srcDir = resolve(__dirname, "../../src");
     const files = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -470,7 +469,16 @@ describe("the build-phase client (spec 012b AC-4)", () => {
         readFileSync(path, "utf8").includes("DATABASE_BUILD_URL"),
       )
       .map((path) => relative(srcDir, path));
-    expect(readers).toEqual([join("lib", "db.ts"), join("lib", "railway.ts")]);
+    expect(readers).toEqual([
+      join("lib", "build-login.ts"),
+      join("lib", "db.ts"),
+      join("lib", "railway.ts"),
+    ]);
+    // build-login.ts names the key once and answers a boolean (TASK-294's staging fallback); it
+    // imports nothing, so it can open no connection.
+    const login = readFileSync(join(srcDir, "lib", "build-login.ts"), "utf8");
+    expect(login.match(/"DATABASE_BUILD_URL"/gu)).toHaveLength(1);
+    expect(login).not.toMatch(/^import /mu);
     // railway.ts names the key once, as an optional Railway variable, and reads no environment.
     const railway = readFileSync(join(srcDir, "lib", "railway.ts"), "utf8");
     expect(railway.match(/"DATABASE_BUILD_URL"/gu)).toHaveLength(1);

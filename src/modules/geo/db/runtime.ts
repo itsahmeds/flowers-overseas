@@ -17,8 +17,8 @@
  *    (`BUILD_DATABASE_URL_KEY`; `cmsSourceFor()`, the staging fallback of TASK-294) it installs the file's registry on purpose and logs one
  *    warning line naming the missing variable, so the build passes and the log says which source
  *    the deployment serves;
- *  - **change**: a `before-invalidate` hook (`src/lib/cache.ts`) re-reads and re-installs the
- *    registry before `invalidate()` revalidates any page, whenever its tags include a
+ *  - **change**: a `before-invalidate` hook (`src/lib/invalidate-hooks.ts`, run by
+ *    `invalidate()`) re-reads and re-installs the registry before `invalidate()` revalidates any page, whenever its tags include a
  *    `country:{iso2}` tag (spec 012b §5.4: a status flip and the fiscal fields carry one), so the
  *    page Next regenerates next is rendered from the new row. Single replica (spec 040), so the
  *    process that saved the change is the process that serves it.
@@ -26,8 +26,11 @@
  * In `development` and `test` nothing is installed and the file registry answers, as before.
  */
 import { appEnvironment } from "@/lib/env.schema";
-import { onBeforeInvalidate } from "@/lib/cache";
-import { BUILD_DATABASE_URL_KEY, buildDatabaseConfigured } from "@/lib/db";
+import { onBeforeInvalidate } from "@/lib/invalidate-hooks";
+import {
+  BUILD_DATABASE_URL_KEY,
+  buildDatabaseConfigured,
+} from "@/lib/build-login";
 import { logger } from "@/lib/logger";
 import {
   type CountryConfig,

@@ -33,12 +33,12 @@ import type {
   ProductTierRecord as ProductTierDataRecord,
 } from "@/config/catalogue/schemas";
 
+import { buildDatabaseConfigured } from "@/lib/build-login";
 import { appEnvironment } from "@/lib/env.schema";
 
 import { type CmsSource, cmsSourceFor } from "@/config/countries";
 
 import {
-  buildDatabaseConfigured,
   dbCatalogueProvider,
   dbPriceProvider,
   dbSaleabilityProvider,
