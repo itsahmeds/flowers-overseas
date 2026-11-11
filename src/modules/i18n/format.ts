@@ -465,7 +465,9 @@ export type DateStyle =
   | "time"
   | "stepTime"
   | "weekdayDayMonth"
-  | "monthName";
+  | "monthName"
+  // Spec 022a §7 (TASK-372, TASK-373): a review's "Delivered {month year}", month long.
+  | "monthYear";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
@@ -514,6 +516,7 @@ const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
     timeZoneName: "short",
   },
   weekdayDayMonth: { weekday: "long", day: "numeric", month: "long" },
+  monthYear: { month: "long", year: "numeric" },
 };
 
 /**

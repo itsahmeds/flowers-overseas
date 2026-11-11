@@ -56,3 +56,30 @@ export type {
   ReviewSubmissionInput,
   SubmitOutcome,
 } from "./submit";
+export {
+  MODERATION_ACTIONS,
+  MODERATION_REASONS,
+  ModerationActionSchema,
+  QUEUE_STATUSES,
+  QueueFilterSchema,
+  REMOVE_REASONS,
+  WITHHOLD_REASONS,
+  exitMetric,
+  moderateReview,
+  overduePendingReviews,
+  queueCounts,
+  redactForCustomer,
+  reviewDetail,
+  reviewQueue,
+  reviewTags,
+} from "./moderate";
+export type {
+  ModerateOutcome,
+  ModerationAction,
+  ModerationReason,
+  QueueFilter,
+  QueueItem,
+  QueueStatus,
+  ReviewDetail,
+  ReviewScope,
+} from "./moderate";

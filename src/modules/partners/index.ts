@@ -211,3 +211,11 @@ export type {
   PayoutTermsFieldErrors,
   PayoutTermsResult,
 } from "./payouts/terms.ts";
+// Spec 022a §2, §5.2 (TASK-372): the florist's 90-day rating and acceptance rate.
+export {
+  RATING_LOW_BP,
+  acceptanceRateBp,
+  partnerRatingBp,
+  refreshPartnerRatings,
+} from "./rating";
+export type { OfferInput, RatingInput, RatingRefresh } from "./rating";

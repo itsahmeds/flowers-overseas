@@ -56,6 +56,8 @@ const MATRIX: Record<string, readonly string[]> = {
   "risk.evidence": ["admin"],
   // spec 012b §5.2 "Permission rows" (TASK-295): Publish.
   "catalogue.publish": ["admin", "content"],
+  // Spec 022a §2 (TASK-372): moderation is admin and ops.
+  "reviews.moderate": ["admin", "ops"],
 };
 
 describe("T-05 — ADMIN_PERMISSIONS (spec 012 §5.2)", () => {

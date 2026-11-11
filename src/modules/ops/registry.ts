@@ -375,6 +375,24 @@ export const ALERT_REGISTRY = {
     actBy: "none",
     runbook: rb("payouts", "payouts-line-missing"),
   },
+  // Spec 022a §11 (TASK-372): a review pending more than 72 hours (one alert per review, its id
+  // the subject's sub-key), and an active florist's 90-day rating under 4.20 (weekly, its id).
+  "reviews.pending_overdue": {
+    severity: "P3",
+    scope: "component",
+    component: "site",
+    resolve: "manual",
+    actBy: "none",
+    runbook: rb("reviews", "reviews-pending-overdue"),
+  },
+  "partners.rating_low": {
+    severity: "P3",
+    scope: "component",
+    component: "site",
+    resolve: "manual",
+    actBy: "none",
+    runbook: rb("reviews", "partners-rating-low"),
+  },
   "orders.close_backlog": {
     severity: "P3",
     scope: "component",

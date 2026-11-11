@@ -66,6 +66,7 @@ import {
 import { fxSnapshotStatus } from "../modules/catalog";
 import {
   dispatchAlert,
+  raiseAlert,
   runDailySummary,
   raiseLegacyAlert,
   runEscalation,
@@ -127,6 +128,7 @@ import {
 import { appEnvironment } from "../lib/env.schema";
 import { reviewTokenSecret, trustpilotAfsAddress } from "../lib/env.reviews";
 import {
+  overduePendingReviews,
   REVIEWS_INVITE_FLAG,
   REVIEWS_TRUSTPILOT_FLAG,
   reviewPolicyPath,
@@ -299,6 +301,47 @@ async function runReviewRequestJob(): Promise<void> {
     secret: () => reviewTokenSecret(process.env),
     send: (executor, input) => sendReviewInviteNotification(executor, input),
   });
+  // Spec 022a §11 (TASK-372): a review pending more than 72 hours raises one alert, its id the
+  // subject's sub-key, so a later run finds the alert open and adds none.
+  const overdue = await withExecutor(undefined, "review.request", (executor) =>
+    overduePendingReviews(executor, new Date()),
+  );
+  for (const reviewId of overdue) {
+    await raiseAlert("reviews.pending_overdue", {
+      component: "site",
+      subKey: reviewId,
+    });
+  }
+}
+
+/** Spec 022a §5.2 (TASK-372): one florist's rating, or every non-demo florist's (nightly). */
+async function runRatingRefreshJob(
+  partnerId: string | undefined,
+): Promise<void> {
+  const { withExecutor } = await import("../modules/orders");
+  const { refreshPartnerRatings } = await import("../modules/partners");
+  const results = await withExecutor(
+    undefined,
+    "partners.rating_refresh",
+    (executor) => refreshPartnerRatings(executor, new Date(), partnerId),
+  );
+  for (const result of results) {
+    logger.info(
+      {
+        partner_id: result.partnerId,
+        rating_bp: result.ratingBp,
+        acceptance_bp: result.acceptanceBp,
+      },
+      "partner.rating",
+    );
+    // The ops alert of §11, on the nightly run only; pausing stays manual.
+    if (partnerId === undefined && result.low) {
+      await raiseAlert("partners.rating_low", {
+        component: "site",
+        subKey: result.partnerId,
+      });
+    }
+  }
 }
 
 // Spec 016 §5.3 (TASK-332): the florist emails V1 to V5 and the founder's A1 and W. Until a
@@ -450,6 +493,11 @@ export const JOB_HANDLERS: JobHandlers = {
   // re-read, a sent or skipped one is passed over, and the delivery is keyed by invite.
   "review.request": async () => {
     await runReviewRequestJob();
+  },
+  // Spec 022a §5.2 (TASK-372): writes two columns from the reviews and offers; re-running it
+  // writes the same values.
+  "partners.rating_refresh": async (payload) => {
+    await runRatingRefreshJob(payload.partnerId);
   },
   // Spec 030a §5.2 (TASK-363): F1 for one prepaid payout. Idempotent: the pipeline's
   // `notification_delivery` key sends it once per payout; a gone payout sends nothing.

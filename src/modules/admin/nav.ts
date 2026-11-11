@@ -15,6 +15,7 @@ export interface AdminNavItem {
     | "home"
     | "orders"
     | "risk"
+    | "reviews"
     | "applications"
     | "partners"
     | "payouts"
@@ -44,6 +45,13 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "risk",
     href: "/admin/risk",
     permissions: ["risk.review"],
+    built: true,
+  },
+  {
+    // Spec 022a §5.3 (TASK-372): the reviews queue, for `reviews.moderate` (admin, ops).
+    key: "reviews",
+    href: "/admin/reviews",
+    permissions: ["reviews.moderate"],
     built: true,
   },
   {

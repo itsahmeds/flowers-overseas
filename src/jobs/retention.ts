@@ -30,7 +30,8 @@
  *    `phone_e164` → null, `email_normalised` → a non-deliverable placeholder (frees the address,
  *    `customer_email_normalised_idx` is partial on `redacted = false`), `marketing_consent` off,
  *    `redacted` set; billing `address` rows lose `lines` and `postal_code`; each order's
- *    `buyer_snapshot` keeps initials and country. Skipped: a buyer with a dispute-open order, and
+ *    `buyer_snapshot` keeps initials and country; the buyer's reviews lose text and first name
+ *    (`reviews.redactForCustomer`, spec 022a AC-29). Skipped: a buyer with a dispute-open order, and
  *    a buyer with an account (`user_id` set), whose erasure is account deletion (spec 018/019).
  *  - `fraud_signals` (12 months, delete): `webhook_inbox` rows received before the cut-off
  *    (§8: the 12-month row covers `webhook_inbox.raw`, which is `NOT NULL`, so the row goes).
@@ -109,6 +110,8 @@
 import { sql, type SQL } from "drizzle-orm";
 
 import type { Logger } from "../lib/logger";
+import type { RawRow } from "../modules/orders";
+import { redactForCustomer } from "../modules/reviews";
 import type { Storage } from "../lib/storage";
 
 /** Order statuses in which a dispute is open (`0007`'s `order_status`). */
@@ -492,6 +495,16 @@ const buyerPersonal: PolicyHandler = async ({ db, now, cutoff, dryRun }) => {
             SET name = NULL, phone_e164 = NULL, email_normalised = ${redactedEmail(id)},
                 marketing_consent = false, redacted = true, redacted_at = ${ts(now)}
             WHERE id = ${id}::uuid`,
+      );
+      // Spec 022a §8 "Erasure", AC-29 (TASK-372): the buyer's reviews lose their text and first
+      // name; each rating stays as an anonymous verified rating.
+      await redactForCustomer(
+        {
+          execute: async (query) =>
+            (await db.execute(query)) as unknown as readonly RawRow[],
+        },
+        id,
+        now,
       );
     }
     if (ids.length > 0) {
