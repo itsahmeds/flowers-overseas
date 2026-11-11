@@ -13,9 +13,9 @@ task actually touches.
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +25 |
-| `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/checkout-discounts.test.tsx` +3 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +126 |
-| `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +18 |
+| `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +127 |
+| `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
 | `content` | The only import path into the content module:… | 041 | `contract/info-pages-seo-fixtures.test.ts`, `e2e/info-pages.spec.ts` +19 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `discounts` | Spec 047 §5.2: the only import path into the… | 047 | `integration/discounts.test.ts`, `unit/checkout-discounts.test.tsx` +2 |
@@ -38,6 +38,7 @@ task actually touches.
 |---|---|---|
 | `address-formats.ts` | Address formats per destination country | 003 |
 | `alerts.ts` | The founder alerts' numbers: quiet hours, storm… | 025 |
+| `analytics.ts` | The GA4 client's closed lists (spec 023 §5.2… | 023 |
 | `auth.ts` | The buyer sign-in's limits and session length | 018 |
 | `basket-reminders.ts` | The basket reminder's timings, limits and… | 034 |
 | `basket.ts` | The basket's two numbers | 010 |
@@ -209,6 +210,7 @@ task actually touches.
 | `[locale]/info-page-route.tsx` | One spec 041 info page's head and body, once,… | 041 |
 | `[locale]/layout.tsx` | The document layout for every localised URL… | 003 |
 | `[locale]/listing-json-ld.tsx` | The listing pages' JSON-LD, mounted once per… | 008 |
+| `[locale]/page-analytics.tsx` | The localised pages' GA4 payload elements (spec… | 023 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3,… | 003 |
 | `[locale]/product-route.tsx` | The product page's head and body, once, for the… | 009 |
 | `[locale]/route-header.tsx` | The search page's language links: each launch… | 045 |
@@ -409,7 +411,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 527 |
+| `tests/unit/` | 529 |
 | `tests/integration/` | 115 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
