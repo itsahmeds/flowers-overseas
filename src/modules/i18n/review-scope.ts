@@ -202,6 +202,16 @@ const EMAIL_PATHS = ["src/modules/notifications/emails/**"];
 /** Spec 011's inbox lines that the florist emails reuse verbatim (spec 016 §7; TASK-332). */
 const FLORIST_INBOX_PAGE_PATHS = [...FLORIST_PATHS, ...EMAIL_PATHS];
 
+/**
+ * Spec 022a's review form and its opt-out page (TASK-371): `noindex, nofollow`, `no-store`, a
+ * bearer link like the tracking page, under `(review)` with its header slot. The public reviews
+ * page (`/{locale}/reviews`, TASK-373) is indexable by rule and is not here: its keys count.
+ */
+const REVIEW_FORM_PATHS = [
+  "src/app/[locale]/(review)/**",
+  "src/app/[locale]/@header/(review)/**",
+];
+
 const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   // Spec 018 §14 C.7.2 (TASK-352): the account's details form prints step 3's labels, the
   // "optional" mark and the field errors verbatim (`account-details-*`, "Copy: verbatim").
@@ -282,6 +292,19 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     paths: [...EMAIL_PATHS, ...TRACK_PATHS, ...ACCOUNT_PATHS],
   },
   { match: "whatsapp.florist.*", surface: "email", paths: EMAIL_PATHS },
+  // Spec 022a §5.2 (TASK-370): B9, the review invitation.
+  { match: "emails.reviewInvite.*", surface: "email", paths: EMAIL_PATHS },
+  // Spec 022a §5.3 (TASK-371): the review form, its states and the opt-out page.
+  {
+    match: "reviews.form.*",
+    surface: "orderTracking",
+    paths: REVIEW_FORM_PATHS,
+  },
+  {
+    match: "reviews.stop.*",
+    surface: "orderTracking",
+    paths: REVIEW_FORM_PATHS,
+  },
   // Spec 011 §5.3 (TASK-214): the inbox pages' own lines (groups, empty state, stage leads, the
   // test-order control, the refresh line, not found) render only under `FLORIST_BASE_PATH`; the
   // walkthrough prints none of them, so they reach no indexable page.

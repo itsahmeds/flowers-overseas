@@ -48,3 +48,6 @@ export const RATING_BP_PER_STAR = 2000;
 /** The ratings a buyer can give. */
 export const REVIEW_RATING_MIN = 1;
 export const REVIEW_RATING_MAX = 5;
+
+/** `partners.rating_refresh` runs for every non-demo florist in this UTC hour, once a day (§5.2). */
+export const RATING_REFRESH_HOUR_UTC = 3;

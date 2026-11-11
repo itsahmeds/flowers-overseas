@@ -72,6 +72,7 @@ Disallow: /*/checkout
 Disallow: /track/
 Disallow: /*/track/
 Disallow: /*/account/
+Disallow: /*/review/
 Disallow: /search
 Disallow: /dev/
 Disallow: /*?*sort=

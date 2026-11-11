@@ -33,7 +33,7 @@
  *    `partners.contract_reminders` (§14.5, TASK-442: hourly, from the minute tick);
  *  - **declared only** — the name is reserved for the spec that implements it
  *    (`notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
- *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
+ *    `occasion.reminders`, `payout.accrue`). No queue, no schema: the
  *    implementing spec writes the payload, so nothing here guesses its shape, and `enqueue`
  *    refuses the name until then.
  *
@@ -122,6 +122,22 @@ export const NotificationsResendPayload = z
  * `singletonKey`.
  */
 export const OrderCloseSweepPayload = z.object({}).strict();
+
+/**
+ * `review.request` (spec 022a §5.2, AC-7, AC-8; TASK-370): one run of the review invitation, which
+ * sends B9 for every due invite (at most 50) while `reviews.invite` is on, and marks the expired.
+ * Takes nothing; the minute tick enqueues one run under a `singletonKey`.
+ */
+export const ReviewRequestPayload = z.object({}).strict();
+
+/**
+ * `partners.rating_refresh` (spec 022a §5.2, AC-22; TASK-372): writes `rating_90d_bp` and
+ * `acceptance_rate_bp` for one florist (after a submission or a moderation touching it), or for
+ * every non-demo florist (the nightly run at 03:00 UTC, no `partnerId`). Never writes `status`.
+ */
+export const PartnersRatingRefreshPayload = z
+  .object({ partnerId: z.uuid().optional() })
+  .strict();
 
 /**
  * `order.route` (spec 016 §5.2 "Jobs", AC-1, TASK-328): offer the order to its next florist, or
@@ -367,6 +383,11 @@ export const REGISTERED_JOBS = {
     retryLimit: 7,
   },
   "order.close_sweep": { version: 1, payload: OrderCloseSweepPayload },
+  "review.request": { version: 1, payload: ReviewRequestPayload },
+  "partners.rating_refresh": {
+    version: 1,
+    payload: PartnersRatingRefreshPayload,
+  },
   "order.route": { version: 1, payload: OrderRoutePayload, policy: "short" },
   "assignment.remind": {
     version: 1,
@@ -459,7 +480,6 @@ export const DECLARED_JOBS = [
   "fx.refresh",
   "sitemap.regenerate",
   "occasion.reminders",
-  "review.request",
   "payout.accrue",
 ] as const;
 

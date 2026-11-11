@@ -197,3 +197,18 @@ export {
   renderOccasionReminderEmail,
   reminderDayMonth,
 } from "./occasion-reminder";
+// Spec 022a's B9, the review invitation (TASK-370); the worker registers it with the policy URL.
+export {
+  type ReviewInviteEmailProps,
+  ReviewInviteEmailPropsSchema,
+  type ReviewInviteSources,
+  STAR_VALUES,
+  TRUSTPILOT_SCRIPT_TYPE,
+  type TrustpilotSnippet,
+  optOutUrl,
+  registerReviewInviteTemplate,
+  renderReviewInvite,
+  renderReviewInviteNotification,
+  starUrl,
+  trustpilotScript,
+} from "./review-invite";

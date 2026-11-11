@@ -676,7 +676,12 @@ export const CLAIM_PATTERNS: readonly ClaimPattern[] = [
   },
   // `star[- ]rated` first: after `stars?` it could never be the branch that matched, because
   // "star" already ends on the hyphen's word boundary (TASK-184, `/break 270` HOLE 10).
-  { label: "rating", pattern: /\b(?:star[- ]rated|ratings?|stars?)\b/iu },
+  // "rate us" (spec 022a AC-11, TASK-370): a request to rate is a rating claim's twin, and no
+  // florist template or trust page may make it.
+  {
+    label: "rating",
+    pattern: /\b(?:star[- ]rated|ratings?|rate (?:us|our|your)|stars?)\b/iu,
+  },
   { label: "review", pattern: /\b(?:reviews?|testimonials?|trustpilot)\b/iu },
   {
     label: "delivery photo",

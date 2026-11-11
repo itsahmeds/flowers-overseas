@@ -1143,6 +1143,7 @@ describe.skipIf(server.url === undefined)(
           payouts: noop,
           "analytics.ga4": noop,
           risk: noop,
+          reviews: noop,
         },
         transaction: savepoints,
         orderId: options.orderId,

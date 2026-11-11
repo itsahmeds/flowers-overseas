@@ -660,6 +660,9 @@ describe("the shipped catalogues and manifests", () => {
       // the order detail, under `(account)` only.
       "auth",
       "account",
+      // Spec 022a §7's namespace (TASK-371, TASK-373): the review form, its opt-out page, the
+      // reviews page and the PDP and corridor blocks. Server Components only.
+      "reviews",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

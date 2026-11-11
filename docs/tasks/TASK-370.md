@@ -41,11 +41,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 (feature PR 542, branch `task/TASK-370-reviews`): `reviews` outbox target (live only), `review_invite` rows, `review.request` job on the minute tick, B9 through the pipeline (`sendReviewInviteNotification`, Mailer `bcc` from env), the HMAC token, the florist scan (`rate us` added to the rating claim pattern). Tests: `tests/integration/reviews-invite.test.ts`, `tests/unit/reviews-invite-email.test.ts`. Next: TASK-371.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 542 (feature PR for TASK-370 to TASK-373). AC-6 to AC-11: outbox target `reviews` (`src/modules/orders/outbox/routes.ts`), `createReviewInvite` / `runReviewRequest` (`src/modules/reviews/invite.ts`), B9 renderer (`src/modules/notifications/emails/review-invite.ts`), token (`src/modules/reviews/token.ts`), Mailer `bcc`. Tests: integration `tests/integration/reviews-invite.test.ts` (5), unit `tests/unit/reviews-invite-email.test.ts`. Copy `emails.reviewInvite.*` (8 keys, en/de/pl) `reviewed: false`, queued for the founder's batch (`.claude/state/record-approval-370.py`).

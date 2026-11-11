@@ -43,6 +43,7 @@ import {
   registerNotificationsOutbox,
   runResendNotificationJob,
   runResendWebhookJob,
+  sendReviewInviteNotification,
 } from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
 import {
@@ -51,6 +52,7 @@ import {
   registerOpsEmailTemplates,
   payoutStatementPdf,
   registerPayoutStatementTemplate,
+  registerReviewInviteTemplate,
   runInvoiceEmailJob,
 } from "../modules/notifications/emails";
 // Spec 018 §5.2 (TASK-339): the succeeded refunds, outside the `orders` barrel (it reads `payments`).
@@ -64,6 +66,7 @@ import {
 import { fxSnapshotStatus } from "../modules/catalog";
 import {
   dispatchAlert,
+  raiseAlert,
   runDailySummary,
   raiseLegacyAlert,
   runEscalation,
@@ -123,6 +126,15 @@ import {
   runReviewDeadlines,
 } from "../modules/risk";
 import { appEnvironment } from "../lib/env.schema";
+import { reviewTokenSecret, trustpilotAfsAddress } from "../lib/env.reviews";
+import {
+  overduePendingReviews,
+  REVIEWS_INVITE_FLAG,
+  REVIEWS_TRUSTPILOT_FLAG,
+  reviewPolicyPath,
+  reviewsOutboxHandler,
+  runReviewRequest,
+} from "../modules/reviews";
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
 
@@ -262,6 +274,75 @@ registerNotificationsOutbox({
     return createSignInLink(floristAuth, userId, { callbackPath });
   },
 });
+
+// Spec 022a §5.2 (TASK-370): the `reviews` target writes one `review_invite` per `live` delivery
+// photo; B9 leaves from `review.request`. The HMAC key is read at the first invite, never at load.
+registerOutboxHandler(
+  "reviews",
+  reviewsOutboxHandler({ secret: () => reviewTokenSecret(process.env) }),
+);
+registerReviewInviteTemplate({
+  policyUrl: (locale) =>
+    new URL(
+      reviewPolicyPath(locale),
+      process.env["NEXT_PUBLIC_SITE_URL"] ?? "http://localhost:3000",
+    ).toString(),
+});
+
+/** Spec 022a §5.2 (TASK-370): one `review.request` run, each invite in its own `system` transaction. */
+async function runReviewRequestJob(): Promise<void> {
+  const { isEnabled } = await import("../lib/flags");
+  const { withExecutor } = await import("../modules/orders");
+  await runReviewRequest({
+    transaction: (fn) => withExecutor(undefined, "review.request", fn),
+    inviteEnabled: () => isEnabled(REVIEWS_INVITE_FLAG),
+    trustpilotEnabled: () => isEnabled(REVIEWS_TRUSTPILOT_FLAG),
+    trustpilotAddress: () => trustpilotAfsAddress(process.env),
+    secret: () => reviewTokenSecret(process.env),
+    send: (executor, input) => sendReviewInviteNotification(executor, input),
+  });
+  // Spec 022a §11 (TASK-372): a review pending more than 72 hours raises one alert, its id the
+  // subject's sub-key, so a later run finds the alert open and adds none.
+  const overdue = await withExecutor(undefined, "review.request", (executor) =>
+    overduePendingReviews(executor, new Date()),
+  );
+  for (const reviewId of overdue) {
+    await raiseAlert("reviews.pending_overdue", {
+      component: "site",
+      subKey: reviewId,
+    });
+  }
+}
+
+/** Spec 022a §5.2 (TASK-372): one florist's rating, or every non-demo florist's (nightly). */
+async function runRatingRefreshJob(
+  partnerId: string | undefined,
+): Promise<void> {
+  const { withExecutor } = await import("../modules/orders");
+  const { refreshPartnerRatings } = await import("../modules/partners");
+  const results = await withExecutor(
+    undefined,
+    "partners.rating_refresh",
+    (executor) => refreshPartnerRatings(executor, new Date(), partnerId),
+  );
+  for (const result of results) {
+    logger.info(
+      {
+        partner_id: result.partnerId,
+        rating_bp: result.ratingBp,
+        acceptance_bp: result.acceptanceBp,
+      },
+      "partner.rating",
+    );
+    // The ops alert of §11, on the nightly run only; pausing stays manual.
+    if (partnerId === undefined && result.low) {
+      await raiseAlert("partners.rating_low", {
+        component: "site",
+        subKey: result.partnerId,
+      });
+    }
+  }
+}
 
 // Spec 016 §5.3 (TASK-332): the florist emails V1 to V5 and the founder's A1 and W. Until a
 // template is registered, a delivery that needs it throws `TEMPLATE_NOT_BUILT` and is retried.
@@ -407,6 +488,16 @@ export const JOB_HANDLERS: JobHandlers = {
   // `closed` and skips it.
   "order.close_sweep": async () => {
     await runCloseSweep();
+  },
+  // Spec 022a §5.2 (TASK-370): B9 for every due invite. Idempotent: an invite is locked and
+  // re-read, a sent or skipped one is passed over, and the delivery is keyed by invite.
+  "review.request": async () => {
+    await runReviewRequestJob();
+  },
+  // Spec 022a §5.2 (TASK-372): writes two columns from the reviews and offers; re-running it
+  // writes the same values.
+  "partners.rating_refresh": async (payload) => {
+    await runRatingRefreshJob(payload.partnerId);
   },
   // Spec 030a §5.2 (TASK-363): F1 for one prepaid payout. Idempotent: the pipeline's
   // `notification_delivery` key sends it once per payout; a gone payout sends nothing.

@@ -32,7 +32,8 @@
       "finance": "Finance",
       "basketReminders": "Basket emails",
       "risk": "Risk",
-      "publish": "Publish"
+      "publish": "Publish",
+      "reviews": "Reviews"
     },
     "roles": {
       "admin": "admin",
@@ -1925,6 +1926,12 @@
         "analytics": {
           "value_mismatch": "Order lines do not add up to the amount charged",
           "rejected": "Google Analytics refused a purchase or refund"
+        },
+        "reviews": {
+          "pending_overdue": "A review waiting more than 72 hours"
+        },
+        "partners": {
+          "rating_low": "A florist's rating under 4.2"
         }
       },
       "component": {
@@ -2600,6 +2607,95 @@
       "noPermission": "Only an admin or a content editor can publish.",
       "asked": "Publish asked. The new version is being built.",
       "couldNotStart": "The publish did not start ({code})."
+    },
+    "reviews": {
+      "title": "Reviews",
+      "intro": "Every review comes from a delivered order. Publish it, withhold its text for a stated reason, remove only what is not genuine, or reply. Ratings and words are never edited.",
+      "tab": {
+        "pending": "Pending {count}",
+        "published": "Published {count}",
+        "withheld": "Text withheld {count}",
+        "removed": "Removed {count}",
+        "all": "All {count}"
+      },
+      "filter": {
+        "rating": "Rating",
+        "country": "Country",
+        "any": "Any",
+        "apply": "Apply"
+      },
+      "column": {
+        "received": "Received ({zone})",
+        "rating": "Rating",
+        "comment": "Comment · name shown · country",
+        "order": "Order"
+      },
+      "overdue": "Over 72 hours",
+      "waiting": "{hours, plural, one {# hour} other {# hours}}",
+      "hasComment": "Comment",
+      "noComment": "No comment",
+      "firstName": "First name",
+      "verifiedBuyer": "Verified buyer",
+      "queueNote": "Oldest first. A review waiting more than 72 hours raises an alert once.",
+      "metric": {
+        "title": "Average rating · the Phase 1 exit reading",
+        "body": "{count, plural, one {# rating} other {# ratings}}: every first-party rating that is not removed, withheld text included.",
+        "none": "No ratings yet."
+      },
+      "empty": {
+        "title": "No reviews waiting",
+        "body": "New reviews appear here, oldest first, after a buyer sends one."
+      },
+      "detail": {
+        "title": "Review of {reference}",
+        "received": "Received {at}",
+        "rating": "{rating} out of 5",
+        "words": "The buyer's words, exactly as sent, in their language. Rating and text cannot be edited.",
+        "noText": "No comment.",
+        "nameShown": "Name shown",
+        "delivered": "Delivered",
+        "bouquet": "Bouquet",
+        "florist": "Florist",
+        "order": "Order",
+        "language": "Language",
+        "status": "Status",
+        "reply": "Reply from Flowers Overseas",
+        "redacted": "Redacted {at} · erasure request. Text and name removed at the buyer's request; the rating stays as an anonymous verified rating.",
+        "moderated": "Moderated {at} by {by}.",
+        "note": "Note: {note}",
+        "auditNote": "Each action is in the audit log and updates the public pages at once."
+      },
+      "status": {
+        "pending": "Pending",
+        "published": "Published",
+        "withheld": "Published · text withheld · {reason}",
+        "removed": "Removed · {reason}"
+      },
+      "reason": {
+        "personal_data": "Personal data",
+        "abuse": "Abuse",
+        "illegal": "Illegal content",
+        "not_genuine": "Not genuine",
+        "duplicate": "Duplicate",
+        "test_order": "Test order"
+      },
+      "action": {
+        "publish": "Publish",
+        "withhold": "Publish without text",
+        "withholdBody": "The stars are published and counted; the comment is replaced by a line naming the reason. Choose why.",
+        "remove": "Remove",
+        "removeBody": "Only for a review that is not genuine. A removed review appears nowhere public and counts nowhere. A low rating is never a reason.",
+        "note": "Note",
+        "noteHint": "Write a note: what makes this not genuine.",
+        "reason": "Reason",
+        "reply": "Publish reply",
+        "replyBody": "Shown under the review as “Reply from Flowers Overseas”, in the page's language. Thank the buyer; never argue."
+      },
+      "result": {
+        "done": "Saved. The public pages are updated.",
+        "refused": "Not saved: choose a reason from the list, and write a note for a removal.",
+        "not_found": "This review no longer exists."
+      }
     }
   },
   "emails": {

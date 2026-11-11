@@ -113,3 +113,21 @@ export function basketReminderHeaderRules(): TransactionalHeaderRule[] {
     { source: "/api/basket-reminders/unsubscribe/:token", headers },
   ];
 }
+
+/**
+ * The review form and its opt-out page (spec 022a §5.4, §6, AC-12; TASK-371): `X-Robots-Tag:
+ * noindex, nofollow`, `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer`, so the
+ * token in the path never leaves in a `Referer`. After `securityHeaderRules()` in
+ * `next.config.ts`, so this referrer policy wins.
+ */
+export function reviewHeaderRules(): TransactionalHeaderRule[] {
+  const headers = [
+    { ...BASKET_ROBOTS_HEADER },
+    { ...TRACK_CACHE_HEADER },
+    { ...TRACK_REFERRER_HEADER },
+  ];
+  return [
+    { source: "/:locale/review/:token", headers },
+    { source: "/:locale/review/:token/stop", headers },
+  ];
+}

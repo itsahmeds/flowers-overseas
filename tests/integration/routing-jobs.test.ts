@@ -374,6 +374,7 @@ describe.skipIf(server.url === undefined)(
         notifications: noop,
         "analytics.ga4": noop,
         risk: noop,
+        reviews: noop,
         payouts: noop,
       };
     }

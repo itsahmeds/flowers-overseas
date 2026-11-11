@@ -49,6 +49,8 @@ export const adminPermissions = [
   "risk.evidence",
   // spec 012b §5.2 (TASK-295): Publish, the rebuild of the tracked branch head.
   "catalogue.publish",
+  // spec 022a §2 "Moderation" (TASK-372): the reviews queue, a review, and the four actions.
+  "reviews.moderate",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -90,6 +92,8 @@ export const ADMIN_PERMISSIONS: Readonly<
   "risk.blocklist": ["admin"],
   "risk.evidence": ["admin"],
   "catalogue.publish": ["admin", "content"],
+  // spec 022a §2: moderation is admin and ops; the order link inside it still needs `orders.view`.
+  "reviews.moderate": ["admin", "ops"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

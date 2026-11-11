@@ -1265,6 +1265,7 @@ describe.skipIf(server.url === undefined)(
         payouts: noop,
         "analytics.ga4": noop,
         risk: noop,
+        reviews: noop,
       };
       for (let round = 0; round < 2; round += 1) {
         await scratch.sql`

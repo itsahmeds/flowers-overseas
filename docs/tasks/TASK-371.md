@@ -26,7 +26,7 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-11 (self, PR 542): a refused submission (too long, no star) returns `?error=` with the count but does not keep the typed text, because the spec allows no client island and the text must not go in a URL. If the founder wants it kept, a short-lived server-side draft keyed by the invite is the way; not built.
 
 ## Escalations
 
@@ -40,11 +40,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 (PR 542): `/{locale}/review/{token}` (read-only GET, server action), `/stop` opt-out, `StarRadioGroup`, `reviewHeaderRules()`, `Disallow: /*/review/`, scope entries. No client island: a refused submission comes back with `?error=` and the count, the text is not kept (artboard E1 decided for the spec's "no island"). Tests: `tests/integration/reviews-form.test.ts`, `tests/unit/reviews-form.test.tsx`. Next: TASK-372.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 542. AC-12 to AC-15: `src/app/[locale]/(review)/review/[token]/` (page, actions, stop), `submitReview` / `reviewFormState` / `optOutOfReviewInvites` (`src/modules/reviews/submit.ts`), `StarRadioGroup` (`src/modules/ui/reviews/`), robots and header rules. Tests: integration `tests/integration/reviews-form.test.ts` (4), unit `tests/unit/reviews-form.test.tsx`. Copy `reviews.form.*`, `reviews.stop.*` (28 keys) `reviewed: false`, in the founder's batch.

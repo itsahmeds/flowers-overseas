@@ -77,6 +77,7 @@ import {
   NotificationTemplateMissing,
   type NotificationRenderer,
   notificationTemplate,
+  type ReviewInviteRenderInput,
 } from "./templates";
 
 /** The florist templates that carry a one-tap link (§5.2: offer, reminder, confirmed, photo). */
@@ -476,6 +477,10 @@ export type SendRequest = Pick<
    * 030a's statement PDF, rendered and stored in the same transaction as the send.
    */
   readonly attachments?: () => Promise<readonly MailAttachment[]>;
+  /** B9 (spec 022a, TASK-370): the review link and the snippet's switch, for the template. */
+  readonly reviewInvite?: ReviewInviteRenderInput;
+  /** B9 only: Trustpilot's AFS address from env; no other message carries a BCC. */
+  readonly bcc?: string;
 };
 
 export async function sendOne(
@@ -528,6 +533,9 @@ export async function sendOne(
     invoiceId: request.invoiceId,
     jobId: request.jobId ?? null,
     payoutId: request.payoutId ?? null,
+    ...(request.reviewInvite === undefined
+      ? {}
+      : { reviewInvite: request.reviewInvite }),
     link,
     inboxUrl: rule.whatsappCopyOf === undefined ? null : inboxUrl,
     whatsappCopyOf: rule.whatsappCopyOf ?? null,
@@ -549,6 +557,7 @@ export async function sendOne(
       await deps.mailer().send({
         tag: TAG_OF[rule.audience],
         to: recipient.address,
+        ...(request.bcc === undefined ? {} : { bcc: request.bcc }),
         subject: rendered.subject,
         text: rendered.text,
         html: rendered.html,
@@ -834,6 +843,71 @@ export async function sendPayoutStatementNotification(
       locale: parsed.locale,
       sourceKey: `job:${job}:${parsed.payoutId}`,
       orderId: null,
+      purchaseId: null,
+      assignment: null,
+    },
+    resolved,
+  );
+}
+
+/**
+ * B9 `review-invite` (spec 022a §5.2, AC-7, AC-10; TASK-370): one message to the order's buyer at
+ * `order.buyer_snapshot`'s address (resolved now, never stored), in `order.locale_code`, keyed
+ * `job:review.request:{inviteId}` with `recipient_ref` = `buyer`, so a re-run finds the row `sent`
+ * and sends nothing more. `live` only (the rule's modes). The link is built from the token handed
+ * in, which is deterministic, so a retried send renders a byte-identical body. `bcc` is
+ * Trustpilot's address from env, or absent. Held (throws `NOTIFICATIONS_HELD`) while
+ * `notifications.email` is off. The input has no rating field (AC-10).
+ */
+export const ReviewInviteNotificationInputSchema = z
+  .object({
+    inviteId: z.uuid(),
+    orderId: z.uuid(),
+    token: z.string().regex(/^[A-Za-z0-9_-]{43}$/u),
+    bcc: z.email().optional(),
+  })
+  .strict();
+export type ReviewInviteNotificationInput = z.input<
+  typeof ReviewInviteNotificationInputSchema
+>;
+
+export async function sendReviewInviteNotification(
+  executor: OrderExecutor,
+  input: ReviewInviteNotificationInput,
+  deps: NotificationDeps = {},
+): Promise<"sent" | "skipped"> {
+  const parsed = ReviewInviteNotificationInputSchema.parse(input);
+  const resolved = resolveDeps(deps);
+  if (!(await resolved.emailEnabled())) throw new NotificationsHeld();
+  const facts = await orderFacts(executor, parsed.orderId);
+  const job: NotificationJob = "review.request";
+  const [rule] = notificationsFor(job, null, facts.mode);
+  if (rule === undefined) return "skipped";
+  if (facts.buyer_email === null) {
+    throw new NotificationRecipientMissing("the order has no buyer address");
+  }
+  const reviewUrl = new URL(
+    `/${facts.locale_code}/review/${parsed.token}`,
+    resolved.siteOrigin(),
+  ).toString();
+  return sendOne(
+    executor,
+    {
+      trigger: job,
+      fromStatus: null,
+      invoiceId: null,
+      orderId: parsed.orderId,
+      jobId: parsed.inviteId,
+      reviewInvite: { reviewUrl, trustpilot: parsed.bcc !== undefined },
+      ...(parsed.bcc === undefined ? {} : { bcc: parsed.bcc }),
+    },
+    {
+      rule,
+      ref: "buyer",
+      address: facts.buyer_email,
+      locale: facts.locale_code,
+      sourceKey: `job:${job}:${parsed.inviteId}`,
+      orderId: parsed.orderId,
       purchaseId: null,
       assignment: null,
     },

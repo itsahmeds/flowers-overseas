@@ -930,6 +930,16 @@
       "stop": "Wyłącz e-maile o koszyku",
       "helpLink": "Pomoc i kontakt",
       "privacy": "Prywatność"
+    },
+    "reviewInvite": {
+      "subject": "Jak nam poszło?",
+      "lede": "Stuknij gwiazdkę i opowiedz nam o swoim zamówieniu.",
+      "starLabel": "{n} na 5",
+      "starText": "{n, plural, one {# gwiazdka} few {# gwiazdki} many {# gwiazdek} other {# gwiazdki}}",
+      "minute": "To zajmie mniej niż minutę.",
+      "policy": "Jak sprawdzamy opinie",
+      "optOutLead": "Wolisz, żebyśmy nie pytali?",
+      "optOutLink": "Wyłącz te e-maile."
     }
   },
   "errors": {
@@ -1978,6 +1988,40 @@
       "unsubscribeTitle": "Stop reminders?",
       "unsubscribeButton": "Stop reminders",
       "unsubscribeDoneTitle": "Reminders are off."
+    }
+  },
+  "reviews": {
+    "form": {
+      "heading": "Jak nam poszło?",
+      "delivered": "Dostarczono {date} w {city}",
+      "deliveredNoCity": "Dostarczono {date}",
+      "legend": "Twoja ocena",
+      "starLabel": "{n} na 5",
+      "textLabel": "Napisz coś więcej (opcjonalnie)",
+      "textHint": "Do {max, number} znaków. Publikujemy Twoje słowa tak, jak je napiszesz.",
+      "showName": "Pokaż moje imię przy opinii",
+      "showNameHint": "Bez zaznaczenia pokazujemy „Zweryfikowany kupujący”.",
+      "notice": "Sprawdzamy każdą opinię przed publikacją, w ciągu 3 dni roboczych. Pojawia się z miesiącem dostawy i krajem, nigdy z Twoim nazwiskiem ani adresem e-mail.",
+      "policyLink": "Jak sprawdzamy opinie",
+      "send": "Wyślij",
+      "errorSummary": "Wybierz ocenę, aby wysłać opinię",
+      "errorRating": "Wybierz od 1 do 5 gwiazdek.",
+      "errorLong": "Twój tekst ma {count, number} znaków. Zmieść się w {max, number}.",
+      "thanksTitle": "Dziękujemy. Czytamy każdą opinię.",
+      "thanksBody": "Sprawdzimy ją i opublikujemy w ciągu 3 dni roboczych.",
+      "home": "Wróć do Flowers Overseas",
+      "usedTitle": "Mamy już Twoją opinię o tym zamówieniu.",
+      "usedBody": "Dziękujemy za jej przesłanie.",
+      "goneTitle": "Ten link do opinii nie jest już aktywny.",
+      "goneBody": "Linki do opinii działają przez {days, number} dni po dostawie. Jeśli chcesz nam coś powiedzieć, napisz do nas na WhatsAppie.",
+      "whatsapp": "WhatsApp"
+    },
+    "stop": {
+      "title": "Wyłączyć e-maile z prośbą o opinię?",
+      "body": "Nie poprosimy Cię już o opinię. Nic innego się nie zmienia.",
+      "button": "Wyłącz e-maile z prośbą o opinię",
+      "doneTitle": "Gotowe. Nie poprosimy Cię już o opinię.",
+      "doneBody": "Twoje zamówienie i jego strona śledzenia pozostają bez zmian."
     }
   }
 }

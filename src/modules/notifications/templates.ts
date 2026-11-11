@@ -46,6 +46,11 @@ export interface NotificationRenderInput {
   /** Spec 030a's payout statement (TASK-365): the payout it states; absent or null otherwise. */
   readonly payoutId?: string | null;
   /**
+   * B9 (spec 022a §5.2, TASK-370): the review link without a star (`/{locale}/review/{token}`)
+   * and whether the Trustpilot snippet goes in. Absent for every other template. No rating.
+   */
+  readonly reviewInvite?: ReviewInviteRenderInput;
+  /**
    * V1, V2, V3 and V5: the one-tap link minted for this member (a fresh single-use token through
    * spec 012's core), or the plain inbox address when the member cannot be sent a link now.
    */
@@ -63,6 +68,12 @@ export interface NotificationRenderInput {
    * null on its last attempt; absent for a job.
    */
   readonly retryDueAt?: Date | null;
+}
+
+/** B9's per-send values: the deterministic link, and the Trustpilot snippet's switch (AC-10). */
+export interface ReviewInviteRenderInput {
+  readonly reviewUrl: string;
+  readonly trustpilot: boolean;
 }
 
 /** A rendered message: both parts, and a subject with no name, address or phone in it. */

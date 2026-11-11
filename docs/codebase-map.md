@@ -27,7 +27,7 @@ task actually touches.
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `integration/discounts.test.ts`, `integration/email-buyer.test.ts` +19 |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `contract/wise-batch-csv.test.ts` +31 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-balance.test.ts`, `contract/payment-provider.test.ts` +19 |
-| `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
+| `reviews` | Spec 022a §2, §5.2: the `review.created`… | 022 | `unit/reviews-data.test.ts` |
 | `risk` | Public barrel for `risk`: fraud pre-checks… | 021 | `unit/risk-core.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/existence.test.ts`, `unit/search-config.test.ts` +12 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/info-pages-seo-fixtures.test.ts` +42 |
@@ -159,6 +159,10 @@ task actually touches.
 | `[locale]/(checkout)/checkout/page.tsx` | `/{locale}/checkout` (spec 010 §2 "The… | 010 |
 | `[locale]/(checkout)/checkout/pay-actions.ts` | Step 3's two payment actions for the… | 013 |
 | `[locale]/(checkout)/checkout/return/route.ts` | GET: the 3DS and bank-redirect return;… | 013 |
+| `[locale]/(review)/review/[token]/actions.ts` | The review form's two server actions (spec 022a… | 022 |
+| `[locale]/(review)/review/[token]/page.tsx` | Review form: the buyer's one review of a… | 022 |
+| `[locale]/(review)/review/[token]/review-routes.ts` | The review pages' fixed segments: where the two… | 022 |
+| `[locale]/(review)/review/[token]/stop/page.tsx` | Review emails opt-out page | 022 |
 | `[locale]/(track)/track/LookupForm.tsx` | Tracking lookup page body and form | 018 |
 | `[locale]/(track)/track/[token]/ShareTile.tsx` | Share-link island | 018 |
 | `[locale]/(track)/track/[token]/TrackingPageView.tsx` | Tracking and not-working page bodies | 018 |
@@ -190,6 +194,8 @@ task actually touches.
 | `[locale]/@header/(checkout)/basket/unsubscribe/[token]/page.tsx` | The header of spec 034's basket reminder page… | 034 |
 | `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header | 010 |
 | `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header | 010 |
+| `[locale]/@header/(review)/review/[token]/page.tsx` | The header of spec 022a's review form (artboard… | 022 |
+| `[locale]/@header/(review)/review/[token]/stop/page.tsx` | The header of spec 022a's review form (artboard… | 022 |
 | `[locale]/@header/(track)/track/[token]/page.tsx` | Tracking page header | 018 |
 | `[locale]/@header/(track)/track/page.tsx` | Tracking lookup header | 018 |
 | `[locale]/@header/-choose/-next/[[...rest]]/page.tsx` | The chooser page's header, out of context | 004 |
@@ -299,6 +305,10 @@ task actually touches.
 | `admin/(signed-in)/payouts/view.tsx` | The payout pages' shared view pieces: money,… | 030 |
 | `admin/(signed-in)/publish/actions.ts` | POST /admin/publish: the Publish button's… | 012 |
 | `admin/(signed-in)/publish/page.tsx` | GET /admin/publish: what a publish would add… | 012 |
+| `admin/(signed-in)/reviews/[id]/page.tsx` | GET /admin/reviews/[id]: one review, its facts… | 022 |
+| `admin/(signed-in)/reviews/actions.ts` | /admin/reviews actions: publish, publish… | 022 |
+| `admin/(signed-in)/reviews/page.tsx` | GET /admin/reviews: the reviews queue, oldest… | 022 |
+| `admin/(signed-in)/reviews/view.tsx` | The shared pieces of `/admin/reviews` and… | 022 |
 | `admin/(signed-in)/risk/[reviewId]/page.tsx` | GET /admin/risk/[reviewId]: one review, its… | 021 |
 | `admin/(signed-in)/risk/actions.ts` | /admin/risk decisions: approve, cancel and… | 021 |
 | `admin/(signed-in)/risk/evidence/[orderId]/route.ts` | GET /admin/risk/evidence/[orderId]: the… | 021 |
@@ -447,8 +457,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 543 |
-| `tests/integration/` | 122 |
+| `tests/unit/` | 546 |
+| `tests/integration/` | 125 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

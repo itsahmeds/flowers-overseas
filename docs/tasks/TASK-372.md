@@ -25,7 +25,8 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size L
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-11-11 (self, PR 542): the retention job's redaction (`src/jobs/retention.ts` calling `redactForCustomer`) does not call `invalidate(reviewTags(...))`, so a cached reviews page may show the redacted text until its next revalidation; wire it when TASK-373's pages exist.
+- 2026-11-11 (self): pre-existing failures on main, not from this PR: `tests/unit/home-honesty.test.ts` de/pl partner-name offences and `tests/unit/ops-registry.test.ts` "finds no raised name" (risk, basket, payments names).
 
 ## Escalations
 
@@ -39,11 +40,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 (PR 542): `/admin/reviews` queue, detail and four actions (`src/modules/reviews/moderate.ts`, `src/app/admin/(signed-in)/reviews/`), exit metric, `refreshPartnerRatings` (`src/modules/partners/rating.ts`) on submit, moderation and nightly at 03:00 UTC, alerts `reviews.pending_overdue` and `partners.rating_low`, runbook `docs/runbooks/reviews.md`, redaction in the retention job. Tests: `tests/integration/reviews-moderation.test.ts` (6), `tests/unit/reviews-rating.test.ts`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 542. AC-16 to AC-22 and AC-29: see Progress. Admin copy 68 `admin.reviews.*` keys plus two alert names, `reviewed: false`.

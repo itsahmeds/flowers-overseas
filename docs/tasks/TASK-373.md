@@ -40,11 +40,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 (PR 542, partial): only the data reads are built: `reviewSummary` and `listPublicReviews` over `public_review` (`src/modules/reviews/public.ts`), newest first, `?stars` filter, 20 per page, asserted in T-18 of `tests/integration/reviews-moderation.test.ts`. Not built: the review policy page in spec 041's registry, `/{locale}/reviews` (existence, index threshold, `?page=1` 301, `?stars` noindex), PDP and corridor blocks, `aggregateRating` on the PDP `Product` node, footer links, the `[data-fo-reviews]` gate, `checkout.reviewNotice`, RoPA rows and the Trustpilot processor entry, and the `app_build` grant carry-forward. A finisher starts from `public.ts` and the PR 338 artboards.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Partial in PR 542 (data reads only); the row stays `in_progress` for a finisher. AC-23 to AC-28, AC-31's page half, AC-32 and AC-33's records half are open.

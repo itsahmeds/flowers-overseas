@@ -178,6 +178,7 @@ describe("src/config/reviews.ts (spec 022a §5.2 'Constants')", () => {
       RATING_BP_PER_STAR: 2000,
       REVIEW_RATING_MIN: 1,
       REVIEW_RATING_MAX: 5,
+      RATING_REFRESH_HOUR_UTC: 3,
     });
   });
 
