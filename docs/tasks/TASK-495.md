@@ -60,6 +60,9 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-11-11: `admin-scans` green again (3 reds on main): `partnerContractsHref` in `src/modules/admin/partners.ts` replaces the literal in `src/jobs/handlers.ts`; `src/jobs/basket-reminders.ts` allowed as an admin importer (worker only); 168 `admin.orderActions.*` meta rows added `reviewed: false` (TASK-361 shipped none), 2 obsolete rows dropped; the format scan gains the 32 missing values. Next: EFW handling.
+- 2026-11-11: payments plumbing (provider EFW methods in the fake, the Stripe adapter, the emulator and a recorded fixture; `radar.early_fraud_warning.created` subscribed and routed by `processWebhook`; `disputesFor`; `requestBalanceRefund`), risk `efw.ts`, `disputes.ts` (`risk` target), post-routing decisions and the deadline refund, the evidence pack and its route, the Risk card button.
+- 2026-11-11: integration suite `risk-after-routing` (24) green; stale reds fixed in `admin-unauthenticated` (route context) and `outbox-dispatcher` (analytics.ga4 rows); site velocity alert and daily counter line; runbook, LIA, RoPA rows 23 and 24, records unit tests.
+- 2026-11-11: rebased on main (TASK-352), map regenerated; typecheck, touched unit, contract and integration suites green; clean-env build green in the build slot (exit 0). Ready.
 
 ## Result
 
