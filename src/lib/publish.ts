@@ -419,7 +419,7 @@ export interface RemovalContext {
   /** `catalogue.placeholder_window`: on from the cutover until indexing opens. */
   readonly placeholderWindowOpen: boolean;
   /** Whether `url` is indexable in the running deployment. */
-  readonly indexable: (url: string) => boolean;
+  readonly isIndexable: (url: string) => boolean;
   /**
    * Exemptions a later spec registers without editing the guard (spec 044 §2.6: an unpublished
    * blog post with a reason and its audit row). Until one is registered, none applies.
@@ -437,7 +437,7 @@ export function isRemovalRefused(
   context: RemovalContext,
 ): boolean {
   if (context.placeholderWindowOpen) return false;
-  if (!context.indexable(url)) return false;
+  if (!context.isIndexable(url)) return false;
   return !(context.exemptions ?? []).some((exempt) => exempt(url));
 }
 

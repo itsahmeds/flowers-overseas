@@ -85,7 +85,7 @@ function memoryStore(): PublishStore & { rows: PublishRun[] } {
 
 const WINDOW_OPEN: RemovalContext = {
   placeholderWindowOpen: true,
-  indexable: () => true,
+  isIndexable: () => true,
 };
 
 function request(
@@ -208,7 +208,7 @@ describe("T-08: the indexable-removal refusal", () => {
   const indexable = new Set(["/en/poland/shop/roses", "/pl/polska/sklep/roze"]);
   const closed: RemovalContext = {
     placeholderWindowOpen: false,
-    indexable: (url) => indexable.has(url),
+    isIndexable: (url) => indexable.has(url),
   };
 
   it("window off: a removal list with indexable URLs is refused and names every one", async () => {

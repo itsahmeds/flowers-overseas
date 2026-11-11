@@ -174,8 +174,28 @@ describe("urlsForTag — hub:{locale} and the rest of the vocabulary", () => {
     },
   );
 
-  it("leaves `sitemap` unresolved until the escalation in the brief is answered", async () => {
-    expect(await urlsForTag(SITEMAP_CACHE_TAG, options)).toEqual([]);
+  it("resolves `sitemap` to the sitemap index and every locale's index and children, and nothing else (spec 012b §5.2, TASK-296)", async () => {
+    const children = ["static", "corridors", "categories", "occasions"];
+    expect(await urlsForTag(SITEMAP_CACHE_TAG, options)).toEqual([
+      `${BASE_URL}/sitemap.xml`,
+      ...routableLocaleCodes().flatMap((locale) => [
+        `${BASE_URL}/sitemaps/${locale}/index.xml`,
+        ...children.map(
+          (child) => `${BASE_URL}/sitemaps/${locale}/${child}.xml`,
+        ),
+      ]),
+    ]);
+  });
+
+  it("resolves `country:{iso2}` to the destination's corridor pages and catalogue documents (spec 012b §5.2, TASK-296)", async () => {
+    const corridor = await urlsForTag("corridor:PL", options);
+    const catalogue = await urlsForTag("catalog:PL", options);
+    expect(corridor.length).toBeGreaterThan(0);
+    expect(await urlsForTag("country:PL", options)).toEqual([
+      ...new Set([...corridor, ...catalogue]),
+    ]);
+    expect(await urlsForTag("country:ZZ", options)).toEqual([]);
+    expect(await urlsForTag("country:pl", options)).toEqual([]);
   });
 
   it("resolves a tag nobody declares to nothing (never a guess)", async () => {

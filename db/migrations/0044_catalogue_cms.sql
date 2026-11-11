@@ -16,7 +16,7 @@
 --                               it and coverage in the country (advisor F3, AC-39). Owned by
 --                               `app_owner` and run with its rights, ids only, so `app_web` and
 --                               `app_build` read it without reading a partner table.
---   * `media_asset.supplier_partner_id`  a florist photo names its florist (§2.7).
+--   * `media_asset.supplier_partner_id`  a florist's bouquet photo names its florist (§2.7).
 --   * `publish_run`             one structural publish (§2.3), at most one open per environment.
 --   * the audit trigger on the twelve tables §5.1 names (`country` has it from `0016`), and the
 --     attester's name masked in `audit_log` (`review_attestation` is personal data, AC-28).

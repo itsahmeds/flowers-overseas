@@ -152,9 +152,43 @@ describe("/admin/users is bound to users.manage (AC-4)", () => {
       "src/app/admin/(signed-in)/partners/[code]/page.tsx",
       "src/app/admin/(signed-in)/partners/new/page.tsx",
       "src/app/admin/(signed-in)/partners/page.tsx",
+      "src/app/admin/(signed-in)/publish/page.tsx",
       "src/app/admin/(signed-in)/users/page.tsx",
     ]);
   });
+});
+
+describe("/admin/publish is bound to catalogue.publish (spec 012b §5.2, AC-6; TASK-295)", () => {
+  it.each(["ops", "finance"] as const)(
+    "the page and the Publish action answer 403 to %s",
+    async (role) => {
+      session.current = as(role);
+      const page =
+        await import("../../src/app/admin/(signed-in)/publish/page.tsx");
+      expect(
+        await digestOf(() =>
+          page.default({ searchParams: Promise.resolve({}) }),
+        ),
+      ).toBe(FORBIDDEN);
+      const actions =
+        await import("../../src/app/admin/(signed-in)/publish/actions.ts");
+      expect(await digestOf(() => actions.publishAction())).toBe(FORBIDDEN);
+    },
+  );
+
+  it.each(["admin", "content"] as const)(
+    "lets %s past the page's guard",
+    async (role) => {
+      session.current = as(role);
+      const page =
+        await import("../../src/app/admin/(signed-in)/publish/page.tsx");
+      const digest = await digestOf(() =>
+        page.default({ searchParams: Promise.resolve({}) }),
+      );
+      expect(digest).not.toBe(FORBIDDEN);
+      expect(digest).not.toMatch(/;401$/u);
+    },
+  );
 });
 
 describe("/admin/audit is bound to audit.read (AC-4; TASK-218)", () => {

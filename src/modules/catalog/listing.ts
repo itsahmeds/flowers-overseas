@@ -59,7 +59,7 @@
  * too. Making it synchronous would mean re-reading the dataset outside the provider seam, which
  * is the one thing spec 005 §5.2 forbids. `pnpm check:no-db` covers this file.
  */
-import { manifestAdmits } from "@/lib/existence";
+import { manifestAdmits, manifestInForce } from "@/lib/existence";
 import { z } from "zod";
 
 import {
@@ -1322,7 +1322,13 @@ export async function listingDatedSources(
 
   const now = options.now ?? new Date();
   const days: (string | undefined)[] = [];
-  for (const product of await productsFor(pageType, entityKey, kind, iso2)) {
+  for (const product of await productsFor(
+    pageType,
+    entityKey,
+    kind,
+    iso2,
+    locale,
+  )) {
     const tier = await defaultTier(product.sku);
     const query = {
       productId: product.sku,
@@ -1583,7 +1589,8 @@ async function hubTagged(
   if (entityKey === undefined) return undefined;
   const kind = pageType === "categoryHub" ? "category" : "occasion";
   const products =
-    tagged ?? (await productsFor(pageType, entityKey, kind, undefined));
+    tagged ??
+    (await productsFor(pageType, entityKey, kind, undefined, identity.locale));
   const statesTerm =
     pageType === "categoryHub"
       ? UNSTOCKED_NOINDEX_CATEGORY_KINDS.includes(
@@ -1670,10 +1677,12 @@ export async function categoryTileView(
   const slug = slugFor("category", category.key, locale);
   if (slug === undefined) return undefined;
 
-  const products = await listProducts({
-    facets: { [category.kind]: [category.key] },
-    countryIso: iso2,
-  });
+  const products = (
+    await listProducts({
+      facets: { [category.kind]: [category.key] },
+      countryIso: iso2,
+    })
+  ).filter((product) => productPageAdmitted(product.sku, iso2, locale));
   if (products.length === 0) return undefined;
 
   // One clock for every candidate: two `new Date()`s could straddle a rate's validity bound and
@@ -2094,7 +2103,7 @@ export async function listingView(
    * the whole set below.
    */
   const sort: ListingSort = hub ? "default" : (options.sort ?? "default");
-  const products = await productsFor(pageType, entityKey, kind, iso2);
+  const products = await productsFor(pageType, entityKey, kind, iso2, locale);
   const ordered = await inDefaultOrder(products, locale, iso2);
   /*
    * **The facets** (spec 008 §14 A-founder-2026-10-24a "Facets", AC-90; TASK-390): on the shop
@@ -2539,26 +2548,52 @@ function resolveEntityKey(
   return undefined;
 }
 
+/**
+ * Whether `sku`'s page in `iso2` and `locale` is one the running build emitted (spec 012b §2.3,
+ * AC-5; TASK-296): a bouquet made active after the build is in no grid until a publish, because its
+ * card would stand for a page that answers 404. Without a manifest (a laptop, the tests, the build
+ * itself, `databaseOnly()`) every product is admitted, exactly as before publishing.
+ */
+export function productPageAdmitted(
+  sku: string,
+  iso2: CountryIso2,
+  locale: LocaleCode,
+): boolean {
+  if (!manifestInForce()) return true;
+  const slug = slugFor("product", sku, locale);
+  if (slug === undefined) return false;
+  return manifestAdmits(productPath(locale, corridorSlug(iso2, locale), slug));
+}
+
 /** Which products a page lists (§2, §5.3). A hub lists the entity's products across destinations. */
 async function productsFor(
   pageType: ListingPageType,
   entityKey: string | undefined,
   kind: "category" | "occasion" | undefined,
   iso2: CountryIso2 | undefined,
+  locale: LocaleCode,
 ): Promise<readonly Product[]> {
   if (pageType === "occasionsIndex") return [];
+  // The database AND the running manifest (spec 012b AC-5, TASK-296).
+  const admitted = (products: readonly Product[], country: CountryIso2) =>
+    products.filter((product) =>
+      productPageAdmitted(product.sku, country, locale),
+    );
   if (pageType === "countryShopRoot" && iso2 !== undefined) {
-    return listProducts({ countryIso: iso2 });
+    return admitted(await listProducts({ countryIso: iso2 }), iso2);
   }
   if (entityKey === undefined || kind === undefined) return [];
 
   const facets = await facetsFor(kind, entityKey);
   if (facets === undefined) return [];
-  if (iso2 !== undefined) return listProducts({ facets, countryIso: iso2 });
+  if (iso2 !== undefined) {
+    return admitted(await listProducts({ facets, countryIso: iso2 }), iso2);
+  }
 
   const seen = new Map<string, Product>();
   for (const country of publishedCountries()) {
-    for (const product of await listProducts({ facets, countryIso: country })) {
+    const listed = await listProducts({ facets, countryIso: country });
+    for (const product of admitted(listed, country)) {
       seen.set(product.sku, product);
     }
   }

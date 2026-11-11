@@ -14,12 +14,13 @@
  * build itself, which is what makes the manifest) it admits everything, which is exactly the
  * behaviour before publishing existed.
  *
- * Node-runnable (relative imports only): the build wrapper imports the pure half.
+ * Node-runnable (relative imports only): the build wrapper imports the pure half. No file is read
+ * here, so nothing on a render path imports `node:fs` (`tests/unit/corridor-corpus-index.test.ts`):
+ * the server's boot reads the file once (`./existence-load.ts`, from `instrumentation.ts`) and puts
+ * it in place with `installExistenceManifest()`.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 
 import { z } from "zod";
 
@@ -108,27 +109,12 @@ interface Loaded {
 const SLOT = Symbol.for("flowers-overseas.existence-manifest");
 type Holder = { [SLOT]?: Loaded };
 
-/** True while `next build` runs: the build is what makes the manifest, so it has none. */
-function isBuildPhase(): boolean {
-  return process.env["NEXT_PHASE"] === "phase-production-build";
-}
+/** No manifest in place: before the boot has loaded one, on a laptop, in the tests, in the build. */
+const NONE: Loaded = { manifest: null, urls: new Set() };
 
-/** Read `.next/existence-manifest.json` once per process; absent → `null`. */
+/** The manifest the boot put in place, shared by every bundle of the process (`globalThis`). */
 function loaded(): Loaded {
-  const holder = globalThis as Holder;
-  if (holder[SLOT] !== undefined) return holder[SLOT];
-  let manifest: ExistenceManifest | null = null;
-  if (!isBuildPhase()) {
-    const file = join(process.cwd(), ".next", EXISTENCE_MANIFEST_FILE);
-    if (existsSync(file)) {
-      manifest = ExistenceManifestSchema.parse(
-        JSON.parse(readFileSync(file, "utf8")),
-      );
-    }
-  }
-  const value: Loaded = { manifest, urls: new Set(manifest?.urls ?? []) };
-  holder[SLOT] = value;
-  return value;
+  return (globalThis as Holder)[SLOT] ?? NONE;
 }
 
 /** The running deployment's manifest, or `null` where there is none. */
@@ -147,6 +133,16 @@ export function manifestAdmits(path: string): boolean {
   return manifest === null || urls.has(path);
 }
 
+/**
+ * Whether the manifest half applies here: a manifest is running and this async context is not
+ * inside `databaseOnly()`. A caller that must build a path to ask `manifestAdmits()` asks this
+ * first, so that without a manifest nothing changes, not even for a page with no path.
+ */
+export function manifestInForce(): boolean {
+  if (databaseOnlyScope.getStore() === true) return false;
+  return loaded().manifest !== null;
+}
+
 const databaseOnlyScope = new AsyncLocalStorage<boolean>();
 
 /**
@@ -159,7 +155,9 @@ export function databaseOnly<T>(body: () => Promise<T>): Promise<T> {
 }
 
 /** Put `manifest` in place as the running one (`null` for none); the test seam. */
-export function useExistenceManifest(manifest: ExistenceManifest | null): void {
+export function installExistenceManifest(
+  manifest: ExistenceManifest | null,
+): void {
   (globalThis as Holder)[SLOT] = {
     manifest,
     urls: new Set(manifest?.urls ?? []),

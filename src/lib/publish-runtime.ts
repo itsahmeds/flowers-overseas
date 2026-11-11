@@ -17,6 +17,7 @@ import { existenceDiff, isStructuralPath } from "@/modules/catalog";
 
 import { appEnvironment, commitSha } from "./env.schema";
 import { invalidate } from "./cache";
+import { type WarmOutcome, warmUrls as warmPaths } from "./cache-warm";
 import { unionTags, type AdminCommand } from "./command-tags";
 import { type DbTransaction, withAdminContext, withSystemContext } from "./db";
 import { runningManifest } from "./existence";
@@ -45,25 +46,12 @@ function environmentNow(): string {
 }
 
 /** Request each URL once, through the public origin (`cache:warm`'s function). */
-export async function warmUrls(
+export function warmUrls(
   paths: readonly string[],
   fetchImpl: typeof fetch = fetch,
   baseUrl: string = process.env["NEXT_PUBLIC_SITE_URL"] ?? "",
-): Promise<{ ok: number; failed: number }> {
-  let ok = 0;
-  let failed = 0;
-  for (const path of paths) {
-    try {
-      const response = await fetchImpl(new URL(path, baseUrl), {
-        method: "GET",
-      });
-      if (response.ok) ok += 1;
-      else failed += 1;
-    } catch {
-      failed += 1;
-    }
-  }
-  return { ok, failed };
+): Promise<WarmOutcome> {
+  return warmPaths(paths, fetchImpl, baseUrl);
 }
 
 /** The admin's Publish (AC-6, AC-8). Throws `PublishError` on a refusal; nothing is written then. */
@@ -95,7 +83,7 @@ export async function requestPublishFromAdmin(input: {
             // Conservative: once the window is closed, every structural URL the running build
             // serves in production counts as indexable (spec 012b §2.3: the window closes when
             // indexing opens).
-            indexable: (url) =>
+            isIndexable: (url) =>
               indexingEnvironment && running.has(url) && isStructuralPath(url),
           },
         },
