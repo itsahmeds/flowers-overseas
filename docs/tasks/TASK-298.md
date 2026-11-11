@@ -24,7 +24,7 @@ Spec 012b §12 slice A task 6. Founder approval 2026-10-20, "all defaults, keep 
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- **2026-11-11 (implementer, self-review):** (1) T-19's contract half (after a change, the PDP's visible price, JSON-LD `Offer.price` and `quote()` are one integer) is not asserted here: `supersedePrice` writes the rows spec 005's one database price provider reads, and the integration suite proves the 30-day lowest includes the superseded amount on those rows; the provider-level equality is owed to the e2e or a provider contract test. (2) T-20's e2e and T-39's `admin-price-change-*` visual are owed; the confirmation is server-rendered from the query (`country`, `tier`, `amount`), not a client island. (3) The margin view uses the newest EUR-based `fx_rate` day on or before today, at the mid rate (no FX buffer); a payout currency with no rate that day is named as unconverted rather than guessed. (4) `removeFromCountry` reads today in the country's zone through the price context, which needs a VAT row in that country (it answers `no_vat_rate` in a country with no price at all, where there is nothing to remove).
 
 ## Escalations
 
@@ -38,11 +38,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 implementer (with TASK-297, PR #543): `parseMinorInput`, `pricePreview`, `marginView`, `suggestedPrice` (pure, `src/modules/catalog/cms/`); `supersedePrice`, `replaceDraftPrice`, `previewPriceChange`, `marginTab` in `src/modules/admin/catalogue.ts`; the prices and margin tabs with the confirmation.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#543](https://github.com/itsahmeds/flowers-overseas/pull/543), with TASK-297. AC-18: `parseMinorInput(text, currency)` (`src/modules/catalog/cms/money-input.ts`) parses by character codes against the currency's exponent; `tests/unit/catalog-cms-prices.test.ts` pins AC-18's examples, a round trip for all eleven configured currencies over 212 integers each (dot and comma), and a source scan for `parseFloat`, `Number(` and float literals; the repo's `fo/no-float-money` lint covers the file. AC-19: `supersedePrice` closes the open row with `active_to` = today in the country's zone (23:30 UTC on 10 November is 11 November in Warsaw in the fixture) and inserts a new open row; the audit row of its one `UPDATE` names `active_to` and not `retail_minor`; a same-day second change is refused; `replaceDraftPrice` replaces a draft's price three times in a day and is refused once `first_active_at` is set, when a raw `DELETE` and `UPDATE … retail_minor` both raise (0044's guard). AC-20: `pricePreview` renders old and new in `en`, `en-gb`, `de`, `pl`, the change in basis points, the warning beyond 30 % (31 % warns, 29 % and 30 % do not) and the 30-day lowest; `PriceChangeSchema` is strict with no net or buyer-country key. AC-21: `marginView` gives the fixture's exact integers (22900 PLN at 8 %: VAT 1696, net 21204, payouts 12750 from EUR 30.00 at 4.25 and 12900, margin 8304, share 6084 bp), `suggestedPrice` 23900; a 66 % share needs a reason; a net equal to the highest payout is refused, one minor unit above is not. Tests: unit `catalog-cms-prices` (T-18, T-20, T-21, 33 cases); integration `catalog-cms` (T-19 and the margin refusal and reason).
