@@ -45,7 +45,4 @@ here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR #531. Bootstrap without `js`/`config`, no tag element; first-load loader gated on the build-time id, the `data-fo-ga4` id and `fo_consent`; deferred chunk (gtag inject, the one `config`, manual `page_view`, payload events, delegated listeners, `web-vitals` 5.1.0 pinned, withdrawal, `window.__foAnalytics`); payloads from the listing, product and checkout view models plus home, tracking and done; Pay tracks `add_payment_info`; consent-active CSP per AC-31; `budget:client-js` measures the deferred chunk. Unit tests: `analytics-client` 17, `analytics-page-payload` 22, updated bootstrap, app-shell, pay-step CSP and budget tests. Clean-env build (local, load 24 after reboot): first load 120 978 B Brotli on 15 URLs and 121 958 B on the product page, +61 B against main at 12e535a80; no GA4 chunk in a build without an id. Deferred chunk 3 666 B Brotli (budget 4 096 B) in a build with the loader.
