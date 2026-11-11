@@ -18,6 +18,7 @@ import chargeFixture from "../fixtures/stripe/2026-09-30.endive/charge.json" wit
 import disputeFixture from "../fixtures/stripe/2026-09-30.endive/dispute.json" with { type: "json" };
 import eventFixture from "../fixtures/stripe/2026-09-30.endive/event.json" with { type: "json" };
 import intentFixture from "../fixtures/stripe/2026-09-30.endive/payment_intent.json" with { type: "json" };
+import warningFixture from "../fixtures/stripe/2026-09-30.endive/radar.early_fraud_warning.json" with { type: "json" };
 import refundFixture from "../fixtures/stripe/2026-09-30.endive/refund.json" with { type: "json" };
 import {
   STRIPE_API_BASE,
@@ -114,6 +115,8 @@ export class StripeEmulator {
   private readonly refunded = new Map<string, number>();
   private readonly refunds = new Map<string, Json>();
   private readonly disputes = new Map<string, Json>();
+  /** Spec 021 (TASK-495): early fraud warnings, in the fixture's shape (no `payment_intent`). */
+  private readonly warnings = new Map<string, Json>();
   /** Balance transactions by their `source` (`ch_…`, `re_…`, `dp_…`), oldest first. */
   private readonly balance = new Map<string, Json[]>();
   private readonly events: Json[] = [];
@@ -413,6 +416,32 @@ export class StripeEmulator {
           : HttpResponse.json(clone(dispute));
       }),
 
+      http.get(
+        `${base}/radar/early_fraud_warnings/:id`,
+        async ({ request, params }) => {
+          await this.read(request);
+          const warning = this.warnings.get(String(params["id"]));
+          return warning === undefined
+            ? this.missing()
+            : HttpResponse.json(clone(warning));
+        },
+      ),
+
+      http.get(`${base}/radar/early_fraud_warnings`, async ({ request }) => {
+        const recorded = await this.read(request);
+        const intentRef = String(recorded.params["payment_intent"] ?? "");
+        const charge = this.intents.get(intentRef)?.["latest_charge"];
+        const newestFirst = [...this.warnings.values()]
+          .filter((warning) => warning["charge"] === charge)
+          .reverse();
+        return HttpResponse.json({
+          object: "list",
+          url: "/v1/radar/early_fraud_warnings",
+          has_more: false,
+          data: clone(newestFirst),
+        });
+      }),
+
       http.get(`${base}/charges/:id`, async ({ request, params }) => {
         await this.read(request);
         const charge = this.charges.get(String(params["id"]));
@@ -637,6 +666,23 @@ export class StripeEmulator {
       status: "needs_response",
     });
     this.addBalance(id, "dispute", -Number(intent["amount"]), 1500);
+    return Promise.resolve(id);
+  }
+
+  simulateEarlyFraudWarning(
+    intentRef: string,
+    fraudType: string,
+  ): Promise<string> {
+    const intent = this.intent(intentRef);
+    const id = this.id("issfr");
+    this.warnings.set(id, {
+      ...clone(warningFixture),
+      id,
+      charge: intent["latest_charge"],
+      created: this.seconds(),
+      livemode: this.options.livemode ?? false,
+      fraud_type: fraudType,
+    });
     return Promise.resolve(id);
   }
 

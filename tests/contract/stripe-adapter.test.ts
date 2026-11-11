@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import chargeFixture from "./fixtures/stripe/2026-09-30.endive/charge.json" with { type: "json" };
 import disputeFixture from "./fixtures/stripe/2026-09-30.endive/dispute.json" with { type: "json" };
+import warningFixture from "./fixtures/stripe/2026-09-30.endive/radar.early_fraud_warning.json" with { type: "json" };
 import eventFixture from "./fixtures/stripe/2026-09-30.endive/event.json" with { type: "json" };
 import intentFixture from "./fixtures/stripe/2026-09-30.endive/payment_intent.json" with { type: "json" };
 import refundFixture from "./fixtures/stripe/2026-09-30.endive/refund.json" with { type: "json" };
@@ -29,6 +30,7 @@ import { INTENT_METADATA_KEYS } from "../../src/modules/payments/stripe/params.t
 import {
   StripeChargeSchema,
   StripeDisputeSchema,
+  StripeEarlyFraudWarningSchema,
   StripeEventSchema,
   StripePaymentIntentSchema,
   StripeRefundSchema,
@@ -414,6 +416,42 @@ describe("refund and dispute lookups: what the adapter reads (TASK-261)", () => 
   });
 });
 
+describe("early fraud warnings: what the adapter reads (spec 021 T-26 contract half, TASK-495)", () => {
+  it("finds a warning's intent through its charge, reads the fraud type, and lists by intent", async () => {
+    const stripe = provider();
+    const intent = (await stripe.createIntent(input())) as ProviderIntent;
+    await emulator.simulateSuccess(intent.ref);
+    const ref = await emulator.simulateEarlyFraudWarning(
+      intent.ref,
+      "unauthorized_use_of_card",
+    );
+    const read = await stripe.retrieveEarlyFraudWarning(ref);
+    const charge = await emulator.chargeRefOf(intent.ref);
+    expect(read).toEqual({
+      ref,
+      chargeRef: charge,
+      intentRef: intent.ref,
+      fraudType: "unauthorized_use_of_card",
+      actionable: true,
+      livemode: false,
+      createdAt: new Date(Math.floor(NOW.getTime() / 1000) * 1000),
+    });
+    expect(
+      emulator.requests
+        .filter((request) => request.method === "GET")
+        .map((request) => request.path),
+    ).toEqual([`/radar/early_fraud_warnings/${ref}`, `/charges/${charge}`]);
+    const listed = await stripe.listEarlyFraudWarnings(intent.ref);
+    expect(isProviderFailure(listed)).toBe(false);
+    expect((listed as readonly { ref: string }[]).map((w) => w.ref)).toEqual([
+      ref,
+    ]);
+    expect(SUBSCRIBED_STRIPE_EVENT_TYPES).toContain(
+      "radar.early_fraud_warning.created",
+    );
+  });
+});
+
 describe("listEventsSince: the subscribed types, every page, oldest first", () => {
   it("asks for exactly the subscribed types from the instant, and follows has_more", async () => {
     const stripe = provider();
@@ -458,6 +496,11 @@ describe("Stripe's published fixtures parse with the schemas the adapter reads t
     ["charge", StripeChargeSchema, chargeFixture],
     ["refund", StripeRefundSchema, refundFixture],
     ["dispute", StripeDisputeSchema, disputeFixture],
+    [
+      "radar.early_fraud_warning",
+      StripeEarlyFraudWarningSchema,
+      warningFixture,
+    ],
     ["event", StripeEventSchema, eventFixture],
   ] as const)("%s", (_name, schema, fixture) => {
     expect(schema.safeParse(fixture).success).toBe(true);

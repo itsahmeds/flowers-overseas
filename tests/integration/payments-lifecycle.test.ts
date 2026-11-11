@@ -226,6 +226,9 @@ describe.skipIf(server.url === undefined)(
         const spy: PaymentProvider = {
           ...fake,
           name: fake.name,
+          retrieveEarlyFraudWarning: (ref) =>
+            fake.retrieveEarlyFraudWarning(ref),
+          listEarlyFraudWarnings: (ref) => fake.listEarlyFraudWarnings(ref),
           createIntent: async (input) => {
             const [row] = await scratch.sql<{ n: number }[]>`
               SELECT count(*)::int AS n FROM payment

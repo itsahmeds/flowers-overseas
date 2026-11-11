@@ -6,8 +6,9 @@
  *
  * Liability shift: 3D Secure `authenticated` or `attempt_acknowledged` shifts it; any other
  * result, or none (a wallet payment Stripe reports no 3DS for), counts as not shifted (§8 "3DS
- * and SCA policy", S3). `efwReceived` is false until spec 021's early-fraud-warning handling
- * stores the warnings (TASK-495). The card fingerprint is returned only to be hashed by the
+ * and SCA policy", S3). `efwReceived` is whether the provider lists an early fraud warning on
+ * the intent's charges (D2; TASK-495): the provider is the record, so a warning processed while
+ * the order was still `placed` reaches the gate. The card fingerprint is returned only to be hashed by the
  * caller: it is never logged here.
  */
 import { sql } from "drizzle-orm";
@@ -82,6 +83,12 @@ export async function riskFactsFor(
   if (!payment.success) throw new RiskFactsUnavailable("no_captured_payment");
   const intent = await deps.provider.retrieveIntent(payment.data.provider_ref);
   if (isProviderFailure(intent)) throw new RiskFactsUnavailable(intent.failure);
+  const warnings = await deps.provider.listEarlyFraudWarnings(
+    payment.data.provider_ref,
+  );
+  if (isProviderFailure(warnings)) {
+    throw new RiskFactsUnavailable(warnings.failure);
+  }
   const threeDs = intent.threeDsOutcome ?? null;
   return {
     riskLevel: Level.parse(intent.riskLevel ?? null),
@@ -92,6 +99,6 @@ export async function riskFactsFor(
     cardCountry: Iso2.parse(intent.cardCountry ?? null),
     cardFingerprint: intent.cardFingerprint ?? null,
     wallet: intent.wallet ?? null,
-    efwReceived: false,
+    efwReceived: warnings.length > 0,
   };
 }
