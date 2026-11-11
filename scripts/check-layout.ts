@@ -28,6 +28,9 @@ export const MODULES = [
   // are rendered by every route group. Registered here and in `docs/architecture.md` §3 in the
   // same PR, as the rule above requires.
   "ui",
+  // spec 047 §5.2 (TASK-445): admin-made discount codes. `plan/01` §5 names no module for
+  // promotions; registered in `docs/architecture.md` §3 by TASK-445 and here by TASK-522.
+  "discounts",
   // spec 010 §5.2 (TASK-200): the checkout. It orchestrates `catalog`, `geo`, `customers` and
   // `orders` through their barrels and owns the one decision of whether a checkout is closed, a
   // demo, a test or live (`checkoutMode()`); registered here and in `docs/architecture.md` §3 in
@@ -56,6 +59,10 @@ export const MODULES = [
   // and `orders`); registered here and in `docs/architecture.md` §3 in the same PR, as the rule
   // above requires.
   "risk",
+  // spec 018 §5.2 (TASK-341, TASK-342): invoice and credit-note issuing, numbering, VAT per rate
+  // and the PDF. `plan/01` §5 names no module for invoicing; registered here and in
+  // `docs/architecture.md` §3 by TASK-522.
+  "invoices",
 ] as const;
 
 export const REQUIRED_DIRS = [

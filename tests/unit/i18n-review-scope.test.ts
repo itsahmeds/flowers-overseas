@@ -239,6 +239,15 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
       "src/modules/checkout/**",
       "src/config/checkout.ts",
     ];
+    // Spec 018 §14 C.13 (TASK-344): the buyer account's routes and its auth surface.
+    const account = [
+      "src/app/[locale]/(account)/**",
+      "src/app/[locale]/@header/(account)/**",
+      "src/app/api/auth/buyer/**",
+      "src/lib/auth/buyer.ts",
+    ];
+    // Spec 018 §14 C.7.2 (TASK-352): the account's details form prints these subtrees verbatim.
+    const accountShared = ["buyer", "error", "field"];
     expect(NON_INDEXABLE_SCOPE).toEqual([
       ...[
         "action",
@@ -265,9 +274,14 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
       ].map((subtree) => ({
         match: `checkout.${subtree}.*`,
         surface: "checkout",
-        paths,
+        paths: accountShared.includes(subtree) ? [...paths, ...account] : paths,
       })),
-      { match: "confirmation", surface: "orderConfirmation", paths },
+      // TASK-344: the account's order detail prints the confirmation's cancel line and dialog.
+      {
+        match: "confirmation",
+        surface: "orderConfirmation",
+        paths: [...paths, ...account],
+      },
       // Spec 018 §7 (TASK-338): the tracking routes read the tracking copy; TASK-333's buyer
       // emails print its labels, refund line, photo alt text and eyebrow verbatim; TASK-340's
       // post-purchase block prints its contact line, calendar and share tiles on the confirmation.
@@ -278,7 +292,16 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
           "src/app/[locale]/(track)/**",
           "src/modules/notifications/emails/**",
           ...paths,
+          ...account,
         ],
+      },
+      // TASK-344: the account's sign-in page, order list and order detail; TASK-353's one-click
+      // reminder stop answers the done sentence as plain text.
+      { match: "auth", surface: "orderTracking", paths: account },
+      {
+        match: "account",
+        surface: "orderTracking",
+        paths: [...account, "src/modules/customers/reminder-http.ts"],
       },
       {
         match: "trackLookup",
@@ -308,6 +331,8 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         paths: [
           ...paths,
           "src/modules/payments/**",
+          // Spec 021's pre-pay risk checks (TASK-493, TASK-521).
+          "src/modules/risk/**",
           "src/app/api/webhooks/**",
           "src/app/api/internal/payments/**",
           "src/app/api/internal/jobs/**",
@@ -346,6 +371,7 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         paths: [
           "src/modules/notifications/emails/**",
           "src/app/[locale]/(track)/**",
+          ...account,
         ],
       },
       {
@@ -353,6 +379,20 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         surface: "email",
         paths: ["src/modules/notifications/emails/**"],
       },
+      // Spec 022a (TASK-370, TASK-371): B9, and the review form with its opt-out page.
+      {
+        match: "emails.reviewInvite.*",
+        surface: "email",
+        paths: ["src/modules/notifications/emails/**"],
+      },
+      ...["reviews.form.*", "reviews.stop.*"].map((match) => ({
+        match,
+        surface: "orderTracking",
+        paths: [
+          "src/app/[locale]/(review)/**",
+          "src/app/[locale]/@header/(review)/**",
+        ],
+      })),
       // TASK-214: the inbox pages' own lines; TASK-332's florist emails reuse them verbatim.
       {
         match: "floristInbox.page.*",
