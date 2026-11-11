@@ -1989,5 +1989,39 @@
       "unsubscribeButton": "Stop reminders",
       "unsubscribeDoneTitle": "Reminders are off."
     }
+  },
+  "reviews": {
+    "form": {
+      "heading": "Wie war es?",
+      "delivered": "Geliefert am {date} in {city}",
+      "deliveredNoCity": "Geliefert am {date}",
+      "legend": "Ihre Bewertung",
+      "starLabel": "{n} von 5",
+      "textLabel": "Erzählen Sie uns mehr (optional)",
+      "textHint": "Bis zu {max, number} Zeichen. Wir veröffentlichen Ihre Worte so, wie Sie sie schreiben.",
+      "showName": "Meinen Vornamen mit meiner Bewertung zeigen",
+      "showNameHint": "Ohne Häkchen zeigen wir „Verifizierter Käufer“.",
+      "notice": "Wir prüfen jede Bewertung vor der Veröffentlichung, innerhalb von 3 Werktagen. Sie erscheint mit dem Liefermonat und dem Land, nie mit Ihrem Nachnamen oder Ihrer E-Mail-Adresse.",
+      "policyLink": "Wie wir Bewertungen prüfen",
+      "send": "Senden",
+      "errorSummary": "Wählen Sie eine Bewertung, um sie zu senden",
+      "errorRating": "Wählen Sie 1 bis 5 Sterne.",
+      "errorLong": "Ihr Text hat {count, number} Zeichen. Bitte bleiben Sie bei {max, number}.",
+      "thanksTitle": "Danke. Wir lesen jede Bewertung.",
+      "thanksBody": "Wir prüfen sie und veröffentlichen sie innerhalb von 3 Werktagen.",
+      "home": "Zurück zu Flowers Overseas",
+      "usedTitle": "Wir haben Ihre Bewertung für diese Bestellung bereits.",
+      "usedBody": "Danke, dass Sie sie geschickt haben.",
+      "goneTitle": "Dieser Bewertungslink ist nicht mehr aktiv.",
+      "goneBody": "Bewertungslinks gelten {days, number} Tage nach der Lieferung. Wenn Sie uns etwas sagen möchten, schreiben Sie uns auf WhatsApp.",
+      "whatsapp": "WhatsApp"
+    },
+    "stop": {
+      "title": "Keine Bewertungs-E-Mails mehr?",
+      "body": "Wir fragen Sie nicht mehr nach einer Bewertung. Sonst ändert sich nichts.",
+      "button": "Bewertungs-E-Mails abbestellen",
+      "doneTitle": "Erledigt. Wir fragen Sie nicht mehr nach einer Bewertung.",
+      "doneBody": "Ihre Bestellung und ihre Sendungsseite bleiben, wie sie sind."
+    }
   }
 }

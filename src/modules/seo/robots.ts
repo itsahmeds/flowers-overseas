@@ -80,6 +80,9 @@ export const DISALLOWED_PATHS: readonly string[] = [
   // 303 to sign-in) stay fetchable, so a crawler sees their `noindex`.
   "/*/track/",
   "/*/account/",
+  // Spec 022a §6, AC-12 (TASK-371): the review form and its opt-out page under every locale. The
+  // trailing slash is the point: `/{locale}/reviews` (the public reviews page) stays crawlable.
+  "/*/review/",
   "/search",
   "/dev/",
   "/*?*sort=",

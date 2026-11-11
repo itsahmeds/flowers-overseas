@@ -1989,5 +1989,39 @@
       "unsubscribeButton": "Stop reminders",
       "unsubscribeDoneTitle": "Reminders are off."
     }
+  },
+  "reviews": {
+    "form": {
+      "heading": "How did we do?",
+      "delivered": "Delivered on {date} in {city}",
+      "deliveredNoCity": "Delivered on {date}",
+      "legend": "Your rating",
+      "starLabel": "{n} out of 5",
+      "textLabel": "Tell us more (optional)",
+      "textHint": "Up to {max, number} characters. We publish your words as you write them.",
+      "showName": "Show my first name with my review",
+      "showNameHint": "Left unticked, we show “Verified buyer”.",
+      "notice": "We check every review before we publish it, within 3 working days. It appears with the month of delivery and the country, never with your surname or email.",
+      "policyLink": "How we check reviews",
+      "send": "Send",
+      "errorSummary": "Choose a rating to send your review",
+      "errorRating": "Choose from 1 to 5 stars.",
+      "errorLong": "Your text is {count, number} characters. Please keep it to {max, number}.",
+      "thanksTitle": "Thank you. We read every review.",
+      "thanksBody": "We check it and publish it within 3 working days.",
+      "home": "Back to Flowers Overseas",
+      "usedTitle": "We already have your review for this order.",
+      "usedBody": "Thank you for sending it.",
+      "goneTitle": "This review link is no longer active.",
+      "goneBody": "Review links work for {days, number} days after delivery. If you would like to tell us something, message us on WhatsApp.",
+      "whatsapp": "WhatsApp"
+    },
+    "stop": {
+      "title": "Stop review emails?",
+      "body": "We will not ask you for a review again. Nothing else changes.",
+      "button": "Stop review emails",
+      "doneTitle": "Done. We will not ask you for a review again.",
+      "doneBody": "Your order and its tracking page stay as they are."
+    }
   }
 }

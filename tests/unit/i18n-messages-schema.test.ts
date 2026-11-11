@@ -519,6 +519,35 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-449 (spec 034 Appendix A): the basket reminder box, the two basket notices, the two
     // basket pages and the reminder email (`emails.basketReminder.*`), sorted in above.
     // TASK-493 (spec 021 §7): the three `checkout.risk.*` texts, sorted in above, until record-approval-493.py.
+
+    "reviews.form.delivered",
+    "reviews.form.deliveredNoCity",
+    "reviews.form.errorLong",
+    "reviews.form.errorRating",
+    "reviews.form.errorSummary",
+    "reviews.form.goneBody",
+    "reviews.form.goneTitle",
+    "reviews.form.heading",
+    "reviews.form.home",
+    "reviews.form.legend",
+    "reviews.form.notice",
+    "reviews.form.policyLink",
+    "reviews.form.send",
+    "reviews.form.showName",
+    "reviews.form.showNameHint",
+    "reviews.form.starLabel",
+    "reviews.form.textHint",
+    "reviews.form.textLabel",
+    "reviews.form.thanksBody",
+    "reviews.form.thanksTitle",
+    "reviews.form.usedBody",
+    "reviews.form.usedTitle",
+    "reviews.form.whatsapp",
+    "reviews.stop.body",
+    "reviews.stop.button",
+    "reviews.stop.doneBody",
+    "reviews.stop.doneTitle",
+    "reviews.stop.title",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
@@ -668,6 +697,9 @@ describe("the shipped catalogues and manifests", () => {
       // the order detail, under `(account)` only.
       "auth",
       "account",
+      // Spec 022a §7's namespace (TASK-371, TASK-373): the review form, its opt-out page, the
+      // reviews page and the PDP and corridor blocks. Server Components only.
+      "reviews",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

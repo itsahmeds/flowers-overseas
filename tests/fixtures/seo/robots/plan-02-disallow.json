@@ -47,6 +47,10 @@
       "because": "plan/02 §7, same row; spec 018 §2 and AC-13: the locale-prefixed account pages below /{locale}/account, which stays fetchable for its noindex"
     },
     {
+      "path": "/*/review/",
+      "because": "spec 022a §6 'Indexability' (TASK-371): the review form and its opt-out page, a bearer link like the tracking page; the trailing slash keeps /*/reviews crawlable"
+    },
+    {
       "path": "/search",
       "because": "plan/02 §7 'Search: noindex'; it generates unbounded URLs and ranks for nothing"
     },
@@ -135,6 +139,14 @@
     {
       "url": "/en-gb/poland/product/amber-hour?tier=stems_15&date=2026-11-03",
       "because": "spec 009 §6 (b), the form's combined shape (TASK-128)"
+    },
+    {
+      "url": "/en/reviews",
+      "because": "spec 022a §6: the public reviews page carries its own robots"
+    },
+    {
+      "url": "/de/bewertungen",
+      "because": "spec 022a §6: the public reviews page carries its own robots"
     }
   ],
   "stillDisallowed": [

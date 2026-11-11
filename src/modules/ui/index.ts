@@ -608,3 +608,8 @@ export { AddonPriceList } from "./product/AddonPriceList.tsx";
 export type { AddonPriceListProps } from "./product/AddonPriceList.tsx";
 export { PriceSummary } from "./product/PriceSummary.tsx";
 export type { PriceSummaryProps } from "./product/PriceSummary.tsx";
+// Spec 022a §5.3 (TASK-371, TASK-373): the review components, server-rendered, inline SVG stars.
+export { RatingStars } from "./reviews/RatingStars.tsx";
+export type { RatingStarsProps } from "./reviews/RatingStars.tsx";
+export { StarRadioGroup } from "./reviews/StarRadioGroup.tsx";
+export type { StarRadioGroupProps } from "./reviews/StarRadioGroup.tsx";

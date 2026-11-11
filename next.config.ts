@@ -9,6 +9,7 @@ import {
   accountHeaderRules,
   basketHeaderRules,
   basketReminderHeaderRules,
+  reviewHeaderRules,
   trackHeaderRules,
 } from "./src/lib/transactional-headers";
 import { floristHeaderRules } from "./src/lib/florist-headers";
@@ -157,6 +158,8 @@ const headerRules = [
   ...trackHeaderRules(),
   // Spec 034 (TASK-451): the basket reminder's token routes, no referrer.
   ...basketReminderHeaderRules(),
+  // Spec 022a (TASK-371): the review form and its opt-out page, no referrer, no store, noindex.
+  ...reviewHeaderRules(),
   // The buyer account (spec 018 §14 C.13, AC-51; TASK-344): `noindex, nofollow`, `private,
   // no-store`, `no-referrer` on `/{locale}/account` and below (`src/lib/transactional-headers.ts`).
   ...accountHeaderRules(),

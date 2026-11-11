@@ -6624,5 +6624,145 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "b0208ce3b15302adff3d7dadb03fd4283b65addff89df966b7dc295e9f888922"
+  },
+  "reviews.form.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "88ef690be9982b68efa621d7fa8492ab2a5344042bcb25f00df215d9ee43acfc"
+  },
+  "reviews.form.delivered": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3a1f54265d927997a4e4b16e735c7b00a0c7f7c62a79bcafdd2410b8c57488d0"
+  },
+  "reviews.form.deliveredNoCity": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "64dca3a3d4ac0586299925993c54216ef7887af8ea076bf6dde59f0bac1334e9"
+  },
+  "reviews.form.legend": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "68548b47e72ee1a5dfe74c1618518bd1dba9232703da81536f59551b5619389f"
+  },
+  "reviews.form.starLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "836a82e75bf688fd67caac06a4ede1c931d79e01f1676f6b18ae7494ca4d0491"
+  },
+  "reviews.form.textLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4efd51c74141f73d0cbf960bf42de8bd8bd2dc14bff7009a127b085f4225910e"
+  },
+  "reviews.form.textHint": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "392d9cf092efa0bcf5f5ae6eecb26d451884694bf5b9270cd586dee31fe3cdda"
+  },
+  "reviews.form.showName": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "892c2d54c03e1f7a6d7c62b96b17dd8b69e53ba545340f01bdac9cd6f43add96"
+  },
+  "reviews.form.showNameHint": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "da6acda58111cba08337888fa7a170df786cdb0025450f1a5f225438f9f8cec7"
+  },
+  "reviews.form.notice": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ecd3edc1813cd54e9f2adad8714be2abeef45dda2032cc8076ec1a5dd8aee71c"
+  },
+  "reviews.form.policyLink": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "acbe1ece6482d0020c2646108a5446f18e9aee981989e6481c183cada163b2c0"
+  },
+  "reviews.form.send": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f6f4688ff23d50c67053963c251fa0ce64a925cf283537cf066b1f362cb9b778"
+  },
+  "reviews.form.errorSummary": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "432d4e903e806d91ca90f896b8829376dae7e433246c39dda49157f14f344be8"
+  },
+  "reviews.form.errorRating": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bd5182417dbf70278ab55003610d9c3761cb624f6e65ee3f5318cc4225f202b0"
+  },
+  "reviews.form.errorLong": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b83fd1494719fea9ea5098d2d18de3c59061f9e4ddde5447c096d9a9863b1405"
+  },
+  "reviews.form.thanksTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c770bba86fb9e45a4dd6e1426dc674437792b7f6fede0a8e6c00d5401076920f"
+  },
+  "reviews.form.thanksBody": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0c831d61c9fad57636c657664d1b81bc2a59a94bf3983d146dfb53d2aff459a8"
+  },
+  "reviews.form.home": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "918febe6bc4071c4d6b87935cd06175bae58eef4aec496d302f8ca5545c2afa0"
+  },
+  "reviews.form.usedTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "625bd82a1714c1da9caa608252f8a23d0eff5784ee71dd4c3dbff04204f0e09e"
+  },
+  "reviews.form.usedBody": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9e42774f26825c93f6e7f1a56970ed6b31e2b201e1b710ea342649f77fcbfacd"
+  },
+  "reviews.form.goneTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "167fdae557af7abd734b0014db72dc498c365e0dcf55c3e056e18df2a098583f"
+  },
+  "reviews.form.goneBody": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5a93d00385d0ecd445a32eca79ac9c53beb1e483fd47a9f588d394103de1839c"
+  },
+  "reviews.form.whatsapp": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3"
+  },
+  "reviews.stop.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b12363cb1d46a8cdc81dede2ba768723d33473e4d7858a32cdc260494312d14e"
+  },
+  "reviews.stop.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7441907cca91067f74db155bb257b7996cca7140923532b8fb645b667ab90929"
+  },
+  "reviews.stop.button": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b30244dd734b825a2adcacc909401b402f36c661c274b9ba9fa30488f0befb01"
+  },
+  "reviews.stop.doneTitle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "14d70a11405b0a6e41f6bc86a774484696baec411ae603a9e8b66e22f71a2703"
+  },
+  "reviews.stop.doneBody": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "37c43914c638d4ed736c6840c73abe4358f91a9d0562523af8071074071c2de9"
   }
 }
