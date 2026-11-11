@@ -133,6 +133,11 @@ task actually touches.
 | `[locale]/(account)/account/recipients/RecipientsView.tsx` | `account-recipients-*` | 018 |
 | `[locale]/(account)/account/recipients/actions.ts` | The saved-recipients page's one server action:… | 018 |
 | `[locale]/(account)/account/recipients/page.tsx` | The buyer's saved recipients: the list and… | 018 |
+| `[locale]/(account)/account/reminders/RemindersView.tsx` | `account-reminders-*` (spec 018 §14… | 018 |
+| `[locale]/(account)/account/reminders/actions.ts` | The reminders page's three server actions (spec… | 018 |
+| `[locale]/(account)/account/reminders/page.tsx` | The buyer's occasion reminders: consent, list,… | 018 |
+| `[locale]/(account)/account/reminders/unsubscribe/actions.ts` | The unsubscribe page's one server action (spec… | 018 |
+| `[locale]/(account)/account/reminders/unsubscribe/page.tsx` | The occasion reminder's stop page: confirm,… | 018 |
 | `[locale]/(account)/account/sign-in/confirm/page.tsx` | The buyer sign-in link's page: one Continue… | 018 |
 | `[locale]/(checkout)/_views/CheckoutHeader.tsx` | The checkout's header | 010 |
 | `[locale]/(checkout)/_views/CheckoutView.tsx` | `/{locale}/checkout`, drawn (spec 010 §2 "The… | 010 |
@@ -177,6 +182,8 @@ task actually touches.
 | `[locale]/@header/(account)/account/orders/[reference]/page.tsx` | Account order detail header | 018 |
 | `[locale]/@header/(account)/account/page.tsx` | Account header | 018 |
 | `[locale]/@header/(account)/account/recipients/page.tsx` | Account saved recipients header | 018 |
+| `[locale]/@header/(account)/account/reminders/page.tsx` | Account reminders header | 018 |
+| `[locale]/@header/(account)/account/reminders/unsubscribe/page.tsx` | Account reminders unsubscribe header | 018 |
 | `[locale]/@header/(account)/account/sign-in/confirm/page.tsx` | Account sign-in confirm header | 018 |
 | `[locale]/@header/(checkout)/basket/link-ended/page.tsx` | The header of spec 034's basket reminder page… | 034 |
 | `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
@@ -330,6 +337,7 @@ task actually touches.
 | `api/internal/payments/replay-webhooks/route.ts` | POST: secret-gated replay of missed Stripe… | 013 |
 | `api/prices/[locale]/[iso2]/route.ts` | The cached prices document the deferred island… | 004 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
+| `api/reminders/unsubscribe/route.ts` | POST: the occasion reminder's one-click stop… | 018 |
 | `api/search/suggest/route.ts` | The search suggestions endpoint (POST only,… | 045 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
 | `api/webhooks/resend/route.ts` | POST: Resend webhook endpoint, Svix verify,… | 016 |
@@ -439,8 +447,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 542 |
-| `tests/integration/` | 121 |
+| `tests/unit/` | 543 |
+| `tests/integration/` | 122 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

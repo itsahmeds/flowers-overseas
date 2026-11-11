@@ -235,7 +235,12 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   // Spec 018 §14 C.13, C.15 (TASK-344): the account's sign-in page, order list and order detail.
   // The account is the buyer's view of their orders: the tracking surface's other face.
   { match: "auth", surface: "orderTracking", paths: ACCOUNT_PATHS },
-  { match: "account", surface: "orderTracking", paths: ACCOUNT_PATHS },
+  // Spec 018 §14 C.7.4 (TASK-353): the one-click stop answers the done sentence as plain text.
+  {
+    match: "account",
+    surface: "orderTracking",
+    paths: [...ACCOUNT_PATHS, "src/modules/customers/reminder-http.ts"],
+  },
   { match: "trackLookup", surface: "orderTracking", paths: TRACK_PATHS },
   // Spec 013 §7 (TASK-255): the pay step's errors and labels render on step 3 only, and the
   // payment lines of the confirmation states on the confirmation page only; both are `no-store`,
