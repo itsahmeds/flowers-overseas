@@ -171,7 +171,7 @@ describe("the registry holds spec 013's schemas (AC-19)", () => {
   });
 
   it("accepts every A7.4 reason for a cancellation and for each refund event", () => {
-    expect(REFUND_REASONS).toHaveLength(11);
+    expect(REFUND_REASONS).toHaveLength(13);
     for (const reason of REFUND_REASONS) {
       for (const type of [
         "order.cancelled",

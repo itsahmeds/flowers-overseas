@@ -95,6 +95,16 @@ export interface ProviderIntent {
   readonly cardLast4?: string;
   readonly threeDsOutcome?: string;
   readonly riskScore?: number;
+  /**
+   * Spec 021 §12 (c) (TASK-494): the provider's own fraud facts on the latest charge, read by
+   * `riskFactsFor`. Each is absent when the provider reports none. Never logged or stored raw:
+   * the card fingerprint reaches the risk module only to be hashed.
+   */
+  readonly riskLevel?: string;
+  readonly outcomeType?: string;
+  readonly cardCountry?: string;
+  readonly cardFingerprint?: string;
+  readonly wallet?: string;
   readonly livemode: boolean;
   readonly captureBefore?: Date;
   readonly lastDecline?: ProviderDecline;
@@ -155,6 +165,15 @@ export interface RefundMetadataInput {
   readonly orderId: string;
   readonly refundId: string;
   readonly reason: string;
+}
+
+/**
+ * The provider-level refund reason for one of ours (spec 021 §5.1 A11 (b)): `fraud_confirmed` is
+ * `fraudulent`, which Stripe documents adds the card and email to Radar's block lists; every other
+ * reason sends none. Shared by the adapter and the fake, so the suites see what Stripe would.
+ */
+export function providerRefundReason(reason: string): "fraudulent" | null {
+  return reason === "fraud_confirmed" ? "fraudulent" : null;
 }
 
 /** A verified provider event, reduced to the fields this spec reads. */

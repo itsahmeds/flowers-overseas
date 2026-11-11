@@ -44,6 +44,7 @@ export {
   registerRoutingOutbox,
   ROUTING_STEPS,
   routingOutboxHandler,
+  startRouting,
 } from "./handler";
 export type {
   RoutingHandlerDeps,

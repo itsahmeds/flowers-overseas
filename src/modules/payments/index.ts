@@ -206,3 +206,12 @@ export {
   endPaymentAttempts,
 } from "./lifecycle.ts";
 export { type AttemptStatsResult, attemptStats } from "./attempt-stats.ts";
+// Spec 021 §12 requirement (c) on spec 013 (TASK-494): Radar's facts for the risk gate, and the
+// provider built from the environment the worker hands it.
+export {
+  LIABILITY_SHIFT_RESULTS,
+  type PaymentRiskFacts,
+  RiskFactsUnavailable,
+  riskFactsFor,
+} from "./risk-facts.ts";
+export { stripeProviderFromEnv } from "./provider-env.ts";

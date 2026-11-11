@@ -60,7 +60,9 @@ export const TRANSITION_EVENTS = [
 
 /**
  * A6.6: the status-preserving events, which have no row: A6.6's 8, plus A7.2's
- * `order.payment_attempt_failed` (spec 013: a declined attempt never changes a status), 9 in all.
+ * `order.payment_attempt_failed` (spec 013: a declined attempt never changes a status), plus
+ * A11 (a)'s `order.risk_held` and `order.risk_released` (spec 021: the risk gate holds and
+ * releases a paid order before routing), 11 in all.
  */
 export const STATUS_PRESERVING_EVENTS = [
   "order.placed",
@@ -72,6 +74,8 @@ export const STATUS_PRESERVING_EVENTS = [
   "partner.status_changed",
   "country.status_changed",
   "order.payment_attempt_failed",
+  "order.risk_held",
+  "order.risk_released",
 ] as const;
 
 export const ORDER_EVENT_TYPES = [
@@ -170,6 +174,10 @@ export const STATUS_PRESERVING_ACTORS: Readonly<
   // Spec 022a §5.2 "Events" (TASK-368): a review is written by the buyer who holds the invite's
   // link, and by nobody else; its schema is registered by the `reviews` module.
   "review.created": ["buyer"],
+  // Spec 021 §5.2 (TASK-494): the gate holds by `system:risk`; a release is the gate's deadline
+  // default (`system:risk.deadline`) or an admin's approval. Schemas registered by `risk`.
+  "order.risk_held": ["system"],
+  "order.risk_released": ["system", "admin"],
 };
 
 /** What the engine needs of a payload schema: it parses to an object that names its mode. */

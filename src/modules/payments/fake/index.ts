@@ -20,6 +20,7 @@ import {
   UnsupportedCurrency,
   minorUnitsForProvider,
   providerFailure,
+  providerRefundReason,
   type BalanceSource,
   type CreateIntentInput,
   type PaymentProvider,
@@ -58,7 +59,20 @@ interface FakeIntentState {
   lastDecline?: { code: string; ref: string };
   refundedMinor: number;
   chargeRef?: string;
+  /** Spec 021 (TASK-494): Radar's facts on the charge, planted by `simulateRiskFacts`. */
+  risk?: FakeRiskFacts;
   input: CreateIntentInput;
+}
+
+/** The fraud facts the fake reports on a paid intent (spec 021 §12 (c)). */
+export interface FakeRiskFacts {
+  readonly riskLevel?: string;
+  readonly riskScore?: number;
+  readonly outcomeType?: string;
+  readonly threeDsOutcome?: string;
+  readonly cardCountry?: string;
+  readonly cardFingerprint?: string;
+  readonly wallet?: string;
 }
 
 interface FakeDisputeState {
@@ -160,8 +174,13 @@ export class FakePaymentProvider implements PaymentProvider {
   private readonly balancePending = new Set<string>();
   /** Facts planted on a source beside the generated ones (`simulateBalanceFact`). */
   private readonly extraFacts = new Map<string, ProviderBalanceFact[]>();
-  /** Every call, in order, for tests that assert what the lifecycle asked for. */
-  readonly calls: { method: string; ref?: string; key?: string }[] = [];
+  /** Every call, in order; a refund also records the provider-level reason it would send. */
+  readonly calls: {
+    method: string;
+    ref?: string;
+    key?: string;
+    reason?: string;
+  }[] = [];
 
   constructor(options: FakePaymentProviderOptions = {}) {
     this.clock = options.now ?? (() => new Date());
@@ -185,6 +204,7 @@ export class FakePaymentProvider implements PaymentProvider {
       methodType: state.methodType,
       livemode: this.livemode,
       ...(state.lastDecline ? { lastDecline: { ...state.lastDecline } } : {}),
+      ...(state.risk ?? {}),
       clientSecret: `${state.ref}_secret_fake`,
     };
   }
@@ -285,7 +305,13 @@ export class FakePaymentProvider implements PaymentProvider {
     idempotencyKey: string,
     metadata: RefundMetadataInput,
   ): Promise<ProviderRefund | ProviderFailure> {
-    this.calls.push({ method: "refund", ref, key: idempotencyKey });
+    const providerReason = providerRefundReason(metadata.reason);
+    this.calls.push({
+      method: "refund",
+      ref,
+      key: idempotencyKey,
+      ...(providerReason === null ? {} : { reason: providerReason }),
+    });
     const replayed = this.replay(idempotencyKey);
     if (replayed !== undefined)
       return Promise.resolve(replayed as ProviderRefund);
@@ -574,6 +600,15 @@ export class FakePaymentProvider implements PaymentProvider {
     state.status = "succeeded";
     state.methodType = "card";
     state.chargeRef ??= this.next(`${this.namespace}_ch`);
+    return Promise.resolve();
+  }
+
+  /**
+   * Plants Radar's facts on an intent's charge (spec 021 §12 (c)): what `retrieveIntent` then
+   * reports, as Stripe's `latest_charge.outcome` and `payment_method_details.card` would.
+   */
+  simulateRiskFacts(ref: string, facts: FakeRiskFacts): Promise<void> {
+    this.state(ref).risk = { ...facts };
     return Promise.resolve();
   }
 

@@ -210,6 +210,8 @@ export const ROUTING_OUTBOX_ROUTES: ModeOutboxRoutes = {
   "order.refunded_full": PAID_MODES_ROUTING,
   "order.chargeback_opened": PAID_MODES_ROUTING,
   "order.cancelled_refunded": PAID_MODES_ROUTING,
+  // Spec 021 §5.2 "The risk gate" (TASK-494): a released hold starts routing through the gate.
+  "order.risk_released": PAID_MODES_ROUTING,
 };
 
 /** The targets spec 016's routing rows give `event` for an order in `mode`. Pure. */
