@@ -120,8 +120,26 @@ export const SCANNED_PATHS = [
   // a database for a per-tenant host is the day the no-database render is over.
   "src/lib/media-origin.ts",
   // spec 004 §2 "Analytics": the gated GA4 loader. It reads one env variable and renders two
-  // script elements; a database import here would be a surprise of the worst kind.
-  "src/modules/analytics",
+  // script elements; a database import here would be a surprise of the worst kind. Named file by
+  // file since spec 023 (TASK-491) gave the module its two server-side database halves, which
+  // stay outside the set: `record.ts` (the order-context insert) and `outbox/` (the Measurement
+  // Protocol job handler).
+  "src/modules/analytics/client",
+  "src/modules/analytics/client.ts",
+  "src/modules/analytics/consent-sources.ts",
+  "src/modules/analytics/context.ts",
+  "src/modules/analytics/discount-events.ts",
+  "src/modules/analytics/events.ts",
+  "src/modules/analytics/ga4.ts",
+  "src/modules/analytics/index.ts",
+  "src/modules/analytics/items.ts",
+  "src/modules/analytics/location.ts",
+  "src/modules/analytics/money.ts",
+  "src/modules/analytics/mp",
+  "src/modules/analytics/page.ts",
+  "src/modules/analytics/search-event.ts",
+  "src/modules/analytics/ui",
+  "src/modules/analytics/views.ts",
   // spec 007 AC-1 (TASK-087): the corridor content model, its provider seam and its gate. The
   // whole of spec 007's Phase 0 is buildable and testable with no database — the corpus is
   // committed markdown read at build time — and `dbCountryContentProvider` arrives as a *second*

@@ -17,11 +17,13 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { defaultLocale } from "@/config/locales";
 import {
   REVIEW_RATING_MAX,
   REVIEW_RATING_MIN,
   REVIEW_TEXT_MAX_GRAPHEMES,
 } from "@/config/reviews";
+import { countGraphemes } from "@/modules/i18n";
 import {
   appendEvent,
   BUYER_ACTOR,
@@ -32,15 +34,13 @@ import {
 import "./events";
 import { tokenHashOf } from "./token";
 
-/** Graphemes as a reader counts them: an emoji or "ż" is one (`Intl.Segmenter`). */
+/**
+ * Graphemes as a reader counts them: an emoji or "ż" is one. Counted by the formatter module's
+ * `countGraphemes` (`fo/no-adhoc-intl`: `Intl.Segmenter` is constructed there and nowhere else);
+ * grapheme boundaries do not depend on the locale, so the default locale's segmenter serves.
+ */
 export function graphemeCount(text: string): number {
-  let count = 0;
-  for (const _segment of new Intl.Segmenter(undefined, {
-    granularity: "grapheme",
-  }).segment(text)) {
-    count += 1;
-  }
-  return count;
+  return countGraphemes(text, defaultLocale);
 }
 
 /** A form checkbox: present ("on", "true") is true, absent is false. */

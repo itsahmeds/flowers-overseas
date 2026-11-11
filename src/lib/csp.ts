@@ -196,7 +196,9 @@ function staticDirectives(
         GOOGLE_TAG_MANAGER_ORIGIN,
       ]
     : [];
-  const pixels = ga4 ? [GOOGLE_ANALYTICS_ORIGIN, GOOGLE_TAG_MANAGER_ORIGIN] : [];
+  const pixels = ga4
+    ? [GOOGLE_ANALYTICS_ORIGIN, GOOGLE_TAG_MANAGER_ORIGIN]
+    : [];
 
   return [
     ["default-src", ["'self'"]],
