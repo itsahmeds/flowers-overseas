@@ -94,6 +94,11 @@ export const MailMessageSchema = z
     subject: z.string().trim().min(1).max(200),
     text: z.string().min(1),
     html: z.string().min(1),
+    /**
+     * One blind copy (spec 022a §5.2, §12's request on spec 012; TASK-370): Trustpilot's automatic
+     * feedback address on B9, taken only from env (`TRUSTPILOT_AFS_ADDRESS`), never from a request.
+     */
+    bcc: z.email().optional(),
     /** Sent as `Idempotency-Key` (spec 016 §5.2): `{source_key}:{template_key}:{recipient_ref}`. */
     idempotencyKey: z.string().min(1).max(256).optional(),
     /**
@@ -202,6 +207,7 @@ export function resendMailer(
           body: JSON.stringify({
             from,
             to: [message.to],
+            ...(message.bcc === undefined ? {} : { bcc: [message.bcc] }),
             subject: message.subject,
             text: message.text,
             html: message.html,
@@ -280,6 +286,7 @@ function bodyOf(message: MailMessage): string {
   return JSON.stringify([
     message.tag,
     message.to,
+    message.bcc ?? null,
     message.subject,
     message.text,
     message.html,

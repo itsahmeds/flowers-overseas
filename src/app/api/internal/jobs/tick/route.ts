@@ -18,6 +18,7 @@
  * reached the database pings the heartbeat (AC-27).
  */
 import { SCAN_EVERY_MINUTES } from "@/config/basket-reminders";
+import { RATING_REFRESH_HOUR_UTC } from "@/config/reviews";
 import { JOB_HANDLERS } from "@/jobs/handlers";
 import { tickResponse } from "@/jobs/internal";
 import { enqueue, ensureQueues, runTick, withBoss } from "@/jobs/runtime";
@@ -30,6 +31,8 @@ export const revalidate = 0;
 
 /** spec 030a's hourly jobs: one run per clock hour. */
 const HOURLY_SECONDS = 3600;
+/** One throttle slot per UTC day (pg-boss aligns `singletonSeconds` slots to the epoch). */
+const DAILY_SECONDS = 86_400;
 /** Spec 034 §5.2: the basket reminder scan's period, `SCAN_EVERY_MINUTES` in seconds. */
 const BASKET_REMINDER_SCAN_SECONDS = SCAN_EVERY_MINUTES * 60;
 
@@ -91,6 +94,29 @@ export function POST(request: Request): Promise<Response> {
             singletonKey: "order.close_sweep",
           },
         );
+        // Spec 022a §5.2 (TASK-370): the review invitation, once a minute, one at a time.
+        await enqueue(
+          boss,
+          "review.request",
+          {},
+          {
+            requestId: "system:jobs.tick",
+            singletonKey: "review.request",
+          },
+        );
+        // Spec 022a §5.2 (TASK-372): every florist's rating, nightly at 03:00 UTC, once a day.
+        if (new Date().getUTCHours() === RATING_REFRESH_HOUR_UTC) {
+          await enqueue(
+            boss,
+            "partners.rating_refresh",
+            {},
+            {
+              requestId: "system:jobs.tick",
+              singletonKey: "partners.rating_refresh:nightly",
+              singletonSeconds: DAILY_SECONDS,
+            },
+          );
+        }
         // Spec 016 §5.2 (TASK-328): the overdue-offer watch, once a minute.
         await enqueue(
           boss,

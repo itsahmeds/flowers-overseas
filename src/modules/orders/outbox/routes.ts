@@ -55,6 +55,13 @@
  * | Event                     | `test`, `live` | Step                                              |
  * |---------------------------|----------------|---------------------------------------------------|
  * | `order.chargeback_opened` | `risk`         | a `fraudulent` dispute blocklists the email and card hashes |
+ *
+ * Spec 022a §2 "The invitation", §5.2 (TASK-370) adds `reviews` (audience `system`: the handler
+ * writes one `review_invite` row; B9 leaves later, from the `review.request` job), `live` only:
+ *
+ * | Event                  | `live`    | Step                                                     |
+ * |------------------------|-----------|----------------------------------------------------------|
+ * | `order.photo_uploaded` | `reviews` | one `review_invite`: photo + 24 h to send, + 30 days to expire |
  */
 import type { OrderEventType, OrderMode } from "../service/events";
 import type { OutboxTarget } from "../service/outbox";
@@ -71,6 +78,7 @@ export const OUTBOX_TARGET_NAMES = [
   "payouts",
   "analytics.ga4",
   "risk",
+  "reviews",
 ] as const;
 
 export type OutboxTargetName = (typeof OUTBOX_TARGET_NAMES)[number];
@@ -294,4 +302,23 @@ export function riskOutboxTargets(
   mode: OrderMode,
 ): readonly OutboxTarget[] {
   return RISK_OUTBOX_ROUTES[event]?.[mode] ?? [];
+}
+
+/** The `reviews` target: spec 022a's invitation row (`src/modules/reviews`). */
+export const REVIEWS_TARGET = {
+  name: "reviews",
+  audience: "system",
+} as const satisfies OutboxTarget & { name: OutboxTargetName };
+
+/** Spec 022a §5.2's row, exactly: `live` only (a `test` or `demo` order is never invited, AC-6). */
+export const REVIEW_OUTBOX_ROUTES: ModeOutboxRoutes = {
+  "order.photo_uploaded": { live: [REVIEWS_TARGET] },
+};
+
+/** The targets spec 022a's row gives `event` for an order in `mode`. Pure. */
+export function reviewOutboxTargets(
+  event: OrderEventType,
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  return REVIEW_OUTBOX_ROUTES[event]?.[mode] ?? [];
 }

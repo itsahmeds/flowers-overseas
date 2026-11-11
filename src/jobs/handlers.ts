@@ -43,6 +43,7 @@ import {
   registerNotificationsOutbox,
   runResendNotificationJob,
   runResendWebhookJob,
+  sendReviewInviteNotification,
 } from "../modules/notifications";
 // The email templates are not in the notifications barrel: no page may reach their copy.
 import {
@@ -51,6 +52,7 @@ import {
   registerOpsEmailTemplates,
   payoutStatementPdf,
   registerPayoutStatementTemplate,
+  registerReviewInviteTemplate,
   runInvoiceEmailJob,
 } from "../modules/notifications/emails";
 // Spec 018 §5.2 (TASK-339): the succeeded refunds, outside the `orders` barrel (it reads `payments`).
@@ -123,6 +125,14 @@ import {
   runReviewDeadlines,
 } from "../modules/risk";
 import { appEnvironment } from "../lib/env.schema";
+import { reviewTokenSecret, trustpilotAfsAddress } from "../lib/env.reviews";
+import {
+  REVIEWS_INVITE_FLAG,
+  REVIEWS_TRUSTPILOT_FLAG,
+  reviewPolicyPath,
+  reviewsOutboxHandler,
+  runReviewRequest,
+} from "../modules/reviews";
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
 
@@ -262,6 +272,34 @@ registerNotificationsOutbox({
     return createSignInLink(floristAuth, userId, { callbackPath });
   },
 });
+
+// Spec 022a §5.2 (TASK-370): the `reviews` target writes one `review_invite` per `live` delivery
+// photo; B9 leaves from `review.request`. The HMAC key is read at the first invite, never at load.
+registerOutboxHandler(
+  "reviews",
+  reviewsOutboxHandler({ secret: () => reviewTokenSecret(process.env) }),
+);
+registerReviewInviteTemplate({
+  policyUrl: (locale) =>
+    new URL(
+      reviewPolicyPath(locale),
+      process.env["NEXT_PUBLIC_SITE_URL"] ?? "http://localhost:3000",
+    ).toString(),
+});
+
+/** Spec 022a §5.2 (TASK-370): one `review.request` run, each invite in its own `system` transaction. */
+async function runReviewRequestJob(): Promise<void> {
+  const { isEnabled } = await import("../lib/flags");
+  const { withExecutor } = await import("../modules/orders");
+  await runReviewRequest({
+    transaction: (fn) => withExecutor(undefined, "review.request", fn),
+    inviteEnabled: () => isEnabled(REVIEWS_INVITE_FLAG),
+    trustpilotEnabled: () => isEnabled(REVIEWS_TRUSTPILOT_FLAG),
+    trustpilotAddress: () => trustpilotAfsAddress(process.env),
+    secret: () => reviewTokenSecret(process.env),
+    send: (executor, input) => sendReviewInviteNotification(executor, input),
+  });
+}
 
 // Spec 016 §5.3 (TASK-332): the florist emails V1 to V5 and the founder's A1 and W. Until a
 // template is registered, a delivery that needs it throws `TEMPLATE_NOT_BUILT` and is retried.
@@ -407,6 +445,11 @@ export const JOB_HANDLERS: JobHandlers = {
   // `closed` and skips it.
   "order.close_sweep": async () => {
     await runCloseSweep();
+  },
+  // Spec 022a §5.2 (TASK-370): B9 for every due invite. Idempotent: an invite is locked and
+  // re-read, a sent or skipped one is passed over, and the delivery is keyed by invite.
+  "review.request": async () => {
+    await runReviewRequestJob();
   },
   // Spec 030a §5.2 (TASK-363): F1 for one prepaid payout. Idempotent: the pipeline's
   // `notification_delivery` key sends it once per payout; a gone payout sends nothing.

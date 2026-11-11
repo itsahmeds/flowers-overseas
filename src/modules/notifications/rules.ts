@@ -54,6 +54,8 @@ export const NOTIFICATION_TEMPLATE_KEYS = [
   // spec 030b §14.5 (TASK-442): the founder's two contract review emails.
   "contract-review-due",
   "contract-review-passed",
+  // spec 022a §5.2 (TASK-370): B9, the review invitation, a day after the delivery photo.
+  "review-invite",
 ] as const;
 export type NotificationTemplateKey =
   (typeof NOTIFICATION_TEMPLATE_KEYS)[number];
@@ -67,7 +69,8 @@ export type NotificationAudience = (typeof NOTIFICATION_AUDIENCES)[number];
  * jobs, TASK-328), B8 (`invoice.email`, TASK-334) and spec 030a's F1 (`payouts.prepaid_ready`,
  * TASK-363), F2 (`payouts.close`, about no order) and F3 (`payouts.watch`, TASK-364), and the
  * florist's payout statement (`payouts.statement_email`, about one payout, TASK-365), and spec
- * 030b's contract reviews (`partners.contract_reminders`, about one contract, TASK-442). None of
+ * 030b's contract reviews (`partners.contract_reminders`, about one contract, TASK-442), and spec
+ * 022a's B9 (`review.request`, about one invite of one order, TASK-370). None of
  * them is an event name.
  */
 export const NOTIFICATION_JOBS = [
@@ -79,6 +82,7 @@ export const NOTIFICATION_JOBS = [
   "payouts.watch",
   "payouts.statement_email",
   "partners.contract_reminders",
+  "review.request",
 ] as const;
 export type NotificationJob = (typeof NOTIFICATION_JOBS)[number];
 
@@ -194,6 +198,9 @@ export const NOTIFICATION_RULES: readonly NotificationRule[] = Object.freeze([
     statuses: ["cancelled"],
   }),
   buyer("B8", "credit-note", "invoice.email"),
+  // B9 (spec 022a §5.2, TASK-370): the review invitation, from the `review.request` job, `live`
+  // only. Every delivered `live` order gets one, whatever happened after the photo (§8).
+  buyer("B9", "review-invite", "review.request"),
   // Florist: each member of the florist the assignment names.
   florist("V1", "offer", "assignment.offered"),
   florist("V2", "offer-reminder", "assignment.remind"),

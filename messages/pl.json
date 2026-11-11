@@ -930,6 +930,16 @@
       "stop": "Wyłącz e-maile o koszyku",
       "helpLink": "Pomoc i kontakt",
       "privacy": "Prywatność"
+    },
+    "reviewInvite": {
+      "subject": "Jak nam poszło?",
+      "lede": "Stuknij gwiazdkę i opowiedz nam o swoim zamówieniu.",
+      "starLabel": "{n} na 5",
+      "starText": "{n, plural, one {# gwiazdka} few {# gwiazdki} many {# gwiazdek} other {# gwiazdki}}",
+      "minute": "To zajmie mniej niż minutę.",
+      "policy": "Jak sprawdzamy opinie",
+      "optOutLead": "Wolisz, żebyśmy nie pytali?",
+      "optOutLink": "Wyłącz te e-maile."
     }
   },
   "errors": {

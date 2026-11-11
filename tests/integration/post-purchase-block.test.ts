@@ -357,6 +357,7 @@ describe.skipIf(server.url === undefined)(
         notifications: () => Promise.resolve(),
         "analytics.ga4": () => Promise.resolve(),
         risk: () => Promise.resolve(),
+        reviews: () => Promise.resolve(),
         payouts: () => Promise.resolve(),
       };
       for (let run = 0; run < 10; run += 1) {

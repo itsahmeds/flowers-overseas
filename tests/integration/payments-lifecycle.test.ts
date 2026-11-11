@@ -312,6 +312,7 @@ describe.skipIf(server.url === undefined)(
           notifications: () => Promise.resolve(),
           "analytics.ga4": () => Promise.resolve(),
           risk: () => Promise.resolve(),
+          reviews: () => Promise.resolve(),
           payouts: () => Promise.resolve(),
         };
         await dispatchOutbox({
@@ -695,6 +696,7 @@ describe.skipIf(server.url === undefined)(
             notifications: () => Promise.resolve(),
             "analytics.ga4": () => Promise.resolve(),
             risk: () => Promise.resolve(),
+            reviews: () => Promise.resolve(),
             payouts: () => Promise.resolve(),
           },
           transaction: transactionOf(),
@@ -711,6 +713,7 @@ describe.skipIf(server.url === undefined)(
               notifications: () => Promise.resolve(),
               "analytics.ga4": () => Promise.resolve(),
               risk: () => Promise.resolve(),
+              reviews: () => Promise.resolve(),
               payouts: () => Promise.resolve(),
             },
             transaction: transactionOf(),

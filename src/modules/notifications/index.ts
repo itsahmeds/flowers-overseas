@@ -46,12 +46,14 @@ export {
   NotificationsHeld,
   OpsJobNotificationInputSchema,
   PayoutStatementNotificationInputSchema,
+  ReviewInviteNotificationInputSchema,
   deliverNotifications,
   notificationsOutboxHandler,
   registerNotificationsOutbox,
   sendJobNotifications,
   sendOpsJobNotification,
   sendPayoutStatementNotification,
+  sendReviewInviteNotification,
 } from "./pipeline";
 export type {
   NotificationDeps,
@@ -59,6 +61,7 @@ export type {
   NotificationRequest,
   OpsJobNotificationInput,
   PayoutStatementNotificationInput,
+  ReviewInviteNotificationInput,
 } from "./pipeline";
 export {
   RESEND_CAUSES,

@@ -63,6 +63,7 @@ const complete: HandlerRegistry = {
   notifications: noop,
   "analytics.ga4": noop,
   risk: noop,
+  reviews: noop,
   payouts: noop,
 };
 

@@ -1636,6 +1636,16 @@
       "stop": "Stop basket emails",
       "helpLink": "Help and contact",
       "privacy": "Privacy"
+    },
+    "reviewInvite": {
+      "subject": "How did we do?",
+      "lede": "Tap a star to tell us about your order.",
+      "starLabel": "{n} out of 5",
+      "starText": "{n, plural, one {# star} other {# stars}}",
+      "minute": "It takes less than a minute.",
+      "policy": "How we check reviews",
+      "optOutLead": "Prefer not to be asked?",
+      "optOutLink": "Stop these emails."
     }
   },
   "tracking": {

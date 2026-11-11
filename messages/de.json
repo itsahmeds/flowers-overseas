@@ -930,6 +930,16 @@
       "stop": "Warenkorb-E-Mails abbestellen",
       "helpLink": "Hilfe und Kontakt",
       "privacy": "Datenschutz"
+    },
+    "reviewInvite": {
+      "subject": "Wie war es?",
+      "lede": "Tippen Sie auf einen Stern und erzählen Sie uns von Ihrer Bestellung.",
+      "starLabel": "{n} von 5",
+      "starText": "{n, plural, one {# Stern} other {# Sterne}}",
+      "minute": "Es dauert weniger als eine Minute.",
+      "policy": "Wie wir Bewertungen prüfen",
+      "optOutLead": "Lieber nicht gefragt werden?",
+      "optOutLink": "Diese E-Mails abbestellen."
     }
   },
   "errors": {

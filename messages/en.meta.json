@@ -9070,5 +9070,45 @@
     "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-353.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 018 A-founder-2026-10-22 C.15 (TASK-353); the founder did not read this text",
     "reviewedAt": "2026-11-11T16:18:56Z",
     "sourceHash": "bd85a452f89c450ad5b001f8daefce9f8d39ac5f5762b6b3cc4bc655385281d1"
+  },
+  "emails.reviewInvite.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "88ef690be9982b68efa621d7fa8492ab2a5344042bcb25f00df215d9ee43acfc"
+  },
+  "emails.reviewInvite.lede": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f75e4617eb52473efba8ea291e94158787d0747d23562749c79c89224c7beb93"
+  },
+  "emails.reviewInvite.starLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "836a82e75bf688fd67caac06a4ede1c931d79e01f1676f6b18ae7494ca4d0491"
+  },
+  "emails.reviewInvite.starText": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5f48bfa55a963d10283cbb30b97b0c44d2a570f9f2d2374cf90cfbb8bf559bf9"
+  },
+  "emails.reviewInvite.minute": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4a4486df336b119cd088b14330d25370901904e9e74b1ed0228a6c0bd2e4e935"
+  },
+  "emails.reviewInvite.policy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "acbe1ece6482d0020c2646108a5446f18e9aee981989e6481c183cada163b2c0"
+  },
+  "emails.reviewInvite.optOutLead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0aa1fcaf95a8f039c5ae1be3d7a9a42f0c7c023472dd9970a7b137b0ffb1c066"
+  },
+  "emails.reviewInvite.optOutLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b0208ce3b15302adff3d7dadb03fd4283b65addff89df966b7dc295e9f888922"
   }
 }

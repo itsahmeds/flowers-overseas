@@ -338,6 +338,7 @@ describe.skipIf(server.url === undefined)(
         notifications: () => Promise.resolve(),
         "analytics.ga4": () => Promise.resolve(),
         payouts: () => Promise.resolve(),
+        reviews: () => Promise.resolve(),
         risk: riskOutboxHandler({
           disputesFor: (executor, id) => disputesFor(executor, id),
         }),
