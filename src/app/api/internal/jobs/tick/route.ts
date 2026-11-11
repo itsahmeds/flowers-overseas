@@ -31,8 +31,6 @@ export const revalidate = 0;
 
 /** spec 030a's hourly jobs: one run per clock hour. */
 const HOURLY_SECONDS = 3600;
-/** One throttle slot per UTC day (pg-boss aligns `singletonSeconds` slots to the epoch). */
-const DAILY_SECONDS = 86_400;
 /** Spec 034 §5.2: the basket reminder scan's period, `SCAN_EVERY_MINUTES` in seconds. */
 const BASKET_REMINDER_SCAN_SECONDS = SCAN_EVERY_MINUTES * 60;
 
