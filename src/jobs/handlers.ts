@@ -64,9 +64,15 @@ import {
   runMonitor,
 } from "../modules/ops";
 import {
+  adminRefundDeps,
   attemptStats,
   cancelOrder,
+  disputesFor,
+  productionStartAt,
+  requestBalanceRefund,
   riskFactsFor,
+  submitRefund,
+  type EarlyFraudWarningHandler,
   stripeProviderFromEnv,
   balanceFetchKey,
   balanceProviderFromEnv,
@@ -102,7 +108,10 @@ import {
 import {
   detectCardTesting,
   type GateDeps,
+  handleEarlyFraudWarning,
   riskGatedRouting,
+  riskOutboxHandler,
+  type RiskRefund,
   runReviewDeadlines,
 } from "../modules/risk";
 import { appEnvironment } from "../lib/env.schema";
@@ -186,6 +195,45 @@ const riskGateDeps: GateDeps = {
     cancelOrder(orderId, actor, reason, options),
   alert: raiseLegacyAlert,
 };
+
+/** Spec 021 §5.2 (TASK-495): the order's remaining balance as one refund, on the caller's transaction. */
+const riskRefundBalance: RiskRefund = (orderId, actor, reason, executor) =>
+  requestBalanceRefund(orderId, actor, reason, executor);
+
+/**
+ * Sends a risk refund after its transaction committed. Without Stripe keys it stays `requested`
+ * and `payments.sweep` (d) sends it once they exist.
+ */
+async function submitRiskRefund(refundId: string): Promise<void> {
+  const deps = adminRefundDeps();
+  if (deps !== null) await submitRefund(refundId, deps);
+}
+
+/**
+ * Spec 021 §5.2 (TASK-495): `risk.handleEarlyFraudWarning`, for `webhook.process` to hand to spec
+ * 013's `processWebhook` as `earlyFraudWarning` when TASK-266 wires that job with the production
+ * provider. A `decide_now` refund it requests is sent by `payments.sweep` (d).
+ */
+export const earlyFraudWarningHandler: EarlyFraudWarningHandler = async (
+  input,
+  executor,
+) => {
+  await handleEarlyFraudWarning(input, executor, {
+    cancelOrder: riskGateDeps.cancelOrder,
+    refundBalance: riskRefundBalance,
+    productionStartAt: (timing) => productionStartAt(timing),
+    alert: raiseLegacyAlert,
+  });
+};
+
+// Spec 021 §5.2 "Chargebacks" (TASK-495): the `risk` target. A `fraudulent` dispute puts the
+// order's email and card hashes on the blocklist (`source = 'dispute'`) and supersedes open reviews.
+registerOutboxHandler(
+  "risk",
+  riskOutboxHandler({
+    disputesFor: (executor, orderId) => disputesFor(executor, orderId),
+  }),
+);
 
 // Spec 016 §5.2 (TASK-328): the `routing` target, for `test` and `live` orders: a secured
 // payment enqueues `order.route`, a delivery the photo reminder. Replaces the stand-in that made
@@ -435,8 +483,11 @@ export const JOB_HANDLERS: JobHandlers = {
     });
     // Spec 021 §5.2 (TASK-494): deadline defaults and due-soon alerts. Each review is decided in
     // its own transaction under the order's lock, so a re-run finds it decided.
+    // Spec 021 §5.2 (TASK-495): a post-routing review's deadline refunds in full, sent after commit.
     await runReviewDeadlines({
       cancelOrder: riskGateDeps.cancelOrder,
+      refundBalance: riskRefundBalance,
+      submitRefund: submitRiskRefund,
       alert: raiseLegacyAlert,
     });
   },

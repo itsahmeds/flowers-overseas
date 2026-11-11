@@ -1028,6 +1028,7 @@ describe.skipIf(server.url === undefined)(
             routing: () => Promise.resolve(),
             notifications: () => Promise.resolve(),
             "analytics.ga4": () => Promise.resolve(),
+            risk: () => Promise.resolve(),
             payouts: payoutsOutboxHandler({
               now: () => now,
               schedulePrepaidReady: () => Promise.resolve(),
@@ -1130,6 +1131,7 @@ describe.skipIf(server.url === undefined)(
           routing: noop,
           notifications: noop,
           "analytics.ga4": () => Promise.resolve(),
+          risk: () => Promise.resolve(),
           payouts: payoutsOutboxHandler({ now: () => now, log: quiet }),
         },
         transaction: savepoints,

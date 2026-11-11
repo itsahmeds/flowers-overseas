@@ -25,7 +25,11 @@ import {
 
 import { type RiskDeps, resolveRiskDeps } from "./context.ts";
 import { activePause } from "./prepay.ts";
-import { applyDeadlineDefault, type DeadlineDefaultDeps } from "./reviews.ts";
+import {
+  applyDeadlineDefault,
+  applyPostRoutingDefault,
+  type DeadlineDefaultDeps,
+} from "./reviews.ts";
 
 /** Declined and succeeded payment attempts in a window (spec 013's `attemptStats`). */
 export interface AttemptStats {
@@ -105,7 +109,10 @@ export async function detectCardTesting(
   return { suspected: true, alerted, paused };
 }
 
-export interface ReviewDeadlineDeps extends RiskDeps, DeadlineDefaultDeps {}
+export interface ReviewDeadlineDeps extends RiskDeps, DeadlineDefaultDeps {
+  /** Spec 013's `submitRefund`, after a post-routing default's transaction commits (TASK-495). */
+  readonly submitRefund?: (refundId: string) => Promise<void>;
+}
 
 export interface ReviewDeadlineCounts {
   readonly dueSoon: number;
@@ -113,10 +120,14 @@ export interface ReviewDeadlineCounts {
 }
 
 const ReviewIdRow = z.object({ id: z.uuid(), order_id: z.uuid() });
+const DueReviewRow = ReviewIdRow.extend({
+  kind: z.enum(["pre_routing", "post_routing"]),
+});
 
 /**
  * `risk.monitor`'s deadline half (spec 021 §5.2 "Deadline default", §11; AC-18; TASK-494): every
- * open `pre_routing` review whose deadline has passed gets the default, each in its own
+ * open `pre_routing` review whose deadline has passed gets the default (and every open
+ * `post_routing` one with a deadline its full refund, AC-26, TASK-495, submitted after commit), each in its own
  * transaction (`applyDeadlineDefault` locks and re-reads, so a re-run or a concurrent admin
  * decision finds it decided); every open review within `REVIEW_DUE_SOON_MS` of its deadline
  * raises `risk.review_due_soon` once (`due_soon_alerted_at`). Idempotent.
@@ -147,14 +158,23 @@ export async function runReviewDeadlines(
   const due = await d.transaction(async (executor) =>
     (
       await executor.execute(sql`
-        SELECT id, order_id FROM risk_review
-        WHERE status = 'open' AND kind = 'pre_routing'
-          AND deadline_at <= ${at}::timestamptz
+        SELECT id, order_id, kind FROM risk_review
+        WHERE status = 'open' AND deadline_at <= ${at}::timestamptz
         ORDER BY deadline_at, id`)
-    ).map((row) => ReviewIdRow.parse(row)),
+    ).map((row) => DueReviewRow.parse(row)),
   );
   let decided = 0;
   for (const review of due) {
+    if (review.kind === "post_routing") {
+      const result = await d.transaction((executor) =>
+        applyPostRoutingDefault(executor, review.id, now, deps),
+      );
+      if (result.refundId !== undefined) {
+        decided += 1;
+        await deps.submitRefund?.(result.refundId);
+      }
+      continue;
+    }
     const outcome = await d.transaction((executor) =>
       applyDeadlineDefault(executor, review.id, now, deps),
     );

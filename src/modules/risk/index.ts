@@ -1,7 +1,7 @@
 /**
  * Public barrel for `risk`: fraud pre-checks before money moves, the scoring core and the copy
- * guard (spec 021; TASK-493), the gate before routing and the review queue (TASK-494). Early
- * fraud warnings and the evidence pack join it in TASK-495.
+ * guard (spec 021; TASK-493), the gate before routing and the review queue (TASK-494), early
+ * fraud warnings, the `risk` outbox target and the evidence pack (TASK-495).
  *
  * `risk` imports only the public barrels of `orders`, `geo` and `ops`; it never imports
  * `payments` (spec 013's pay step calls `prePayCheck` and owns `endPaymentAttempts`; the job layer
@@ -33,6 +33,25 @@ export {
   isPeakDay,
 } from "./assess.ts";
 export { addToBlocklist, orderHashes } from "./blocklist.ts";
+export {
+  FRAUD_DISPUTE_REASON,
+  type RiskDispute,
+  type RiskOutboxDeps,
+  blocklistFraudDispute,
+  riskOutboxHandler,
+} from "./disputes.ts";
+export {
+  EFW_AFTER_PRODUCTION_STATES,
+  EFW_CANCEL_STATES,
+  EFW_DEFER_STATES,
+  type EarlyFraudWarning,
+  EarlyFraudWarningV1,
+  type EfwDeps,
+  type EfwOutcome,
+  type EfwResult,
+  OrderInHandover,
+  handleEarlyFraudWarning,
+} from "./efw.ts";
 export {
   OrderRiskHeldV1,
   OrderRiskReleasedV1,
@@ -67,17 +86,38 @@ export {
   ReviewDecisionSchema,
   type ReviewStatus,
   type RiskCancel,
+  type RiskRefund,
   applyDeadlineDefault,
+  applyPostRoutingDefault,
+  closeReview,
   decideReview,
   openReviewFor,
   releasedAt,
 } from "./reviews.ts";
 export {
+  EVIDENCE_MAX_BYTES,
+  EVIDENCE_MAX_PAGES,
+  EVIDENCE_STEPS,
+  type EvidenceAuthorisation,
+  type EvidenceFacts,
+  type EvidencePackDeps,
+  EvidencePackTooLarge,
+  type EvidenceTranslate,
+  buildEvidencePack,
+  cancellationSentence,
+  evidenceFacts,
+  renderEvidencePack,
+} from "./evidence/index.ts";
+export {
   type IdentityHashes,
   recordIdentities,
   velocityCounts,
 } from "./velocity.ts";
-export { type DeadlineOrder, reviewDeadline } from "./deadline.ts";
+export {
+  type DeadlineOrder,
+  postRoutingDeadline,
+  reviewDeadline,
+} from "./deadline.ts";
 export { type DisposableLists, isDisposableEmail } from "./disposable.ts";
 export {
   type AttemptStats,

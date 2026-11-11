@@ -38,6 +38,9 @@ export interface PaymentRiskFacts {
   readonly cardFingerprint: string | null;
   readonly wallet: string | null;
   readonly efwReceived: boolean;
+  /** The evidence pack's proof of authorisation (§5.2 "Evidence pack" 2; TASK-495). */
+  readonly cardBrand: string | null;
+  readonly cardLast4: string | null;
 }
 
 /** Thrown when the facts cannot be read (no captured payment, or the provider failed). */
@@ -100,5 +103,7 @@ export async function riskFactsFor(
     cardFingerprint: intent.cardFingerprint ?? null,
     wallet: intent.wallet ?? null,
     efwReceived: warnings.length > 0,
+    cardBrand: intent.cardBrand ?? null,
+    cardLast4: intent.cardLast4 ?? null,
   };
 }

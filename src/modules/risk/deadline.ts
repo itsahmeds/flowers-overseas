@@ -12,6 +12,7 @@
  */
 import { type RoutingDestination, routingDeadline } from "@/modules/orders";
 import {
+  POST_ROUTING_MARGIN_MS,
   REVIEW_MAX_HOLD_MS,
   REVIEW_MIN_WINDOW_MS,
   REVIEW_ROUTING_MARGIN_MS,
@@ -39,5 +40,18 @@ export function reviewDeadline(
     latestSafeOfferAt,
   );
   if (deadline - heldAt.getTime() < REVIEW_MIN_WINDOW_MS) return "decide_now";
+  return new Date(deadline);
+}
+
+/**
+ * A `post_routing` review's deadline on a `paid` order (§5.2 "After routing", AC-26; TASK-495):
+ * `productionStartAt − 60 min`, or `decide_now` when that is under 30 minutes after `openedAt`.
+ */
+export function postRoutingDeadline(
+  productionStart: Date,
+  openedAt: Date,
+): Date | "decide_now" {
+  const deadline = productionStart.getTime() - POST_ROUTING_MARGIN_MS;
+  if (deadline - openedAt.getTime() < REVIEW_MIN_WINDOW_MS) return "decide_now";
   return new Date(deadline);
 }

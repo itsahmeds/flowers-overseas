@@ -9908,5 +9908,290 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "2e6510342c8f9b4d547959dde225d2f47ad2ef9f35e3f41ee9f6f41191fe2f44"
+  },
+  "admin.risk.action.keep": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d3c628a891d19d6f188392c15c62cda3e6b5c5149ff46308657a3053318308e8"
+  },
+  "admin.risk.action.refundFull": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "141291b772e3f7138efc027e64cdf60896413b9c685d8439c19411fc8c36eebc"
+  },
+  "admin.risk.action.pending.keep": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d8e8b5888c625b1496455b3597ce8a2e7c6c00b64b6530f29ea962b1ed3a5793"
+  },
+  "admin.risk.action.pending.refundFull": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c26319ee8cb6d9d1b0f9b027360cb3f9bab0ae989cfff9f1175c050e7fd20227"
+  },
+  "admin.risk.dialog.keepGo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a85a9aa283ffd3115ac1443625b2e143b8fd519f5e162f8facbe08186703734e"
+  },
+  "admin.risk.dialog.refundStops": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d79b9d476483291329914fc1f9ac0a17a9610d36bb679b2f4dc77cbda200aab4"
+  },
+  "admin.risk.detail.leftRefund": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a05e93840b7e5a7f4b726221b767e595522e5ba076158d97e1a0e62cf299bd5b"
+  },
+  "admin.risk.detail.defaultRefund": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2643794ddded13b223dba147b47bc371253637e2f9ef14a8a8031334bdd629f0"
+  },
+  "admin.risk.result.refunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "50b5e1a4b5fe0ded0faff5545da9afd07b81a091f0eed916e23eb6a2f3a0f6f3"
+  },
+  "admin.risk.panel.evidence": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8b3182eefc82c80c052a8a7ef8b5a26a34508f3105cf3204b99959cda070013a"
+  },
+  "admin.risk.panel.evidenceAdminsOnly": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c24b591d5941a2294c595f647be370e213b52e3c886c06d676c8a7abeafadc74"
+  },
+  "admin.risk.evidence.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dfa0414d233591a741da0f28076104f7a5ce58d53114350269a90e4928bb21ca"
+  },
+  "admin.risk.evidence.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "435b669b80d32368c6a7ebfac86967bbc6c7c0ecaba3f544d685591a9b45d834"
+  },
+  "admin.risk.evidence.line": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "228959acecadf2e1bbb428ff3b98a8f7549ad658fa455925a1b10356ab2b4572"
+  },
+  "admin.risk.evidence.notReported": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "adadface0166af24b309d83f8a85dd9a597127650808f7627cf8cf90e9b8a019"
+  },
+  "admin.risk.evidence.page": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "240ab6d8dc2cbb5ede8e1e708f5812d1129644348c3a28d3aaf8d5b97a4cfaef"
+  },
+  "admin.risk.evidence.summary.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "98fe79e4878617a00d2f3e53892ede1f91e296d0b9eff5cbcd01f197cd73c30e"
+  },
+  "admin.risk.evidence.summary.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1bc8661c52028b6ea398dc2f92d8527d5578eead125fe25c8a51747952e65287"
+  },
+  "admin.risk.evidence.summary.reference": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "04db5ae332e5dc58d8750474869f7727947fff4d17e4cd46e58acd14a76b018c"
+  },
+  "admin.risk.evidence.summary.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "11397f1ef86238f3f82630fa49d6f6191cd2d9c5e6d15c15e8470fb9edf3c636"
+  },
+  "admin.risk.evidence.summary.product": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fb9ef894175c327470f768d95ca7bee65e19853a0eaace3805f8a7b8a12270da"
+  },
+  "admin.risk.evidence.summary.tier": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1af851907331c0ed99e7c63b4e55df808bc5fc4c990a1cf80ca8c0f76daf1f3b"
+  },
+  "admin.risk.evidence.summary.ordered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "de18232ee1474a5b235fe6c23047abcdf08c5d496c323524b3c19b331082f97c"
+  },
+  "admin.risk.evidence.summary.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
+  },
+  "admin.risk.evidence.summary.outcome": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e80abb5b14656d4eed8fd93705fd4c774d7653b05162763770bd23f1755db1a"
+  },
+  "admin.risk.evidence.summary.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e80065e0a96925c2bc36ed8f0a315b07cfdbe55da046138af5a34c800ce93f9"
+  },
+  "admin.risk.evidence.summary.notDelivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "870dc9247852427ad084d3d56efd1dcfce31c8ca8ec331e2e8b4018938a45140"
+  },
+  "admin.risk.evidence.auth.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6c6219e570e94075a178c15a63485ad43e7af3b37cc691a69a29bfcb15eb8c0b"
+  },
+  "admin.risk.evidence.auth.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6899d07361b93916920a1802f37a44711edd4cb580d59864b6605cf34c6c8962"
+  },
+  "admin.risk.evidence.auth.threeDs": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e53c1c943917e3e591e3b7ad24975ee8ca3264bbdb44548c3f20690c3835603f"
+  },
+  "admin.risk.evidence.auth.shift": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f9c0ac963df7a3ed0f51bc9a5b7e1d12d8cfea211cfad3f12c139e642749cd54"
+  },
+  "admin.risk.evidence.auth.yes": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e"
+  },
+  "admin.risk.evidence.auth.no": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "admin.risk.evidence.auth.card": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "be3702e3f1af559a8df03568294283934a2558521fd8895f68eda09e3ce4f8a3"
+  },
+  "admin.risk.evidence.auth.cardValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7970a04a15696835ec9c21b1b2c1017e761102f1e526992b81355eee3c11d29c"
+  },
+  "admin.risk.evidence.auth.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cc51d458bbf3b9f44f5cf832e4f7e99e45e1e20903b564f9359c4ed64127e7b9"
+  },
+  "admin.risk.evidence.timeline.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "84570d9c9e3b644927101e2ac90f91281fd0dcc0578e485c33e3a6797de8b90f"
+  },
+  "admin.risk.evidence.timeline.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "864df3c54e2e2f46d43b069a233c65f23fe7f3189ba06d16c4603709f722a5c4"
+  },
+  "admin.risk.evidence.timeline.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5435dbf7843967d9053670763123309178b8858bed2af3dea09d3e4020498c30"
+  },
+  "admin.risk.evidence.timeline.step.placed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "494c28566f1e426eef6806ddea0fcd295bb764ea04e6c685350d3da690a7f917"
+  },
+  "admin.risk.evidence.timeline.step.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c8b8d6579fd74151ffcf40d112eb8fde110d296d9560ed2819a379f814f7b6a0"
+  },
+  "admin.risk.evidence.timeline.step.in_production": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0bbd09f250bdeb17ffc3866c999e5152d75558a61420f49ff599c6299258c750"
+  },
+  "admin.risk.evidence.timeline.step.out_for_delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1b8faad0f548636d4a3215c30dd32e9c39c212dbf751c27b9715064b405114aa"
+  },
+  "admin.risk.evidence.timeline.step.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "906115657390f3675639f46a572eee069155214169a45be4046933527a95c67b"
+  },
+  "admin.risk.evidence.timeline.step.photo_uploaded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "73f17686296cbe745e5a39574db0d19c1d2827bddcbef02ea5eed8b936def236"
+  },
+  "admin.risk.evidence.timeline.confirmation": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "17f9db8cb45d4821c15fb91f603e62ea0833da7434b030fa83a5b7e83d21f991"
+  },
+  "admin.risk.evidence.delivery.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d387a047b1354a6e5f376230e53451f82f5984d15e6c52b94f6cc32ef3375d7d"
+  },
+  "admin.risk.evidence.delivery.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d9936c3214087af412bea3ca30a5975f4b46f675b58f8c6203a14905fe39f2f"
+  },
+  "admin.risk.evidence.delivery.recipient": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
+  },
+  "admin.risk.evidence.delivery.address": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "75c3ad3a345242270f9253c9f511b8bbea7085a507a3d97166c7edb4ffaa7a9c"
+  },
+  "admin.risk.evidence.delivery.photoAt": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e14c8301da64a9890a0a5db5efe3885475c1d7a0d42b0efde531fb4ebafa11a9"
+  },
+  "admin.risk.evidence.delivery.photoAlt": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1800d196d2aa513015673dbd3929ca680a579d1a8c4ee22c09a8f75a1677cdaa"
+  },
+  "admin.risk.evidence.delivery.noPhoto": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "360c854aa6ed3ab3ea6b6633463f7151ddd1f5b6005527728543e11ce1eb68d2"
+  },
+  "admin.risk.evidence.terms.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8abda6ac6d5e5cab684f8215bb9582f252eb64c1770f4ed47ce52ac339f5c690"
+  },
+  "admin.risk.evidence.terms.caption": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "683a3e53cb3cb54d81200008cfaea3c7a7e695cf7459e36b8b61eb0f30b80e3b"
+  },
+  "admin.risk.evidence.terms.version": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "869d7bbaca729ff044ddb7f84385507f8c6b85e54b75354c2737d010f45bb648"
+  },
+  "admin.risk.evidence.terms.noVersion": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f09ddc7c8593261d5f67bd5489139e7199016ff3729e6369b50fa591a3031e0a"
   }
 }

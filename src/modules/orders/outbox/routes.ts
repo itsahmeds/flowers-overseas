@@ -49,6 +49,12 @@
  * |-------------------------------------------------|-----------------|------------------------------|
  * | `order.captured`                                | `analytics.ga4` | `purchase`, row 2 only       |
  * | `order.refunded_partial`, `order.refunded_full` | `analytics.ga4` | `refund`, one per refund     |
+ *
+ * Spec 021 §5.2 "Chargebacks" (TASK-495) adds `risk` (audience `system`), for `test` and `live`:
+ *
+ * | Event                     | `test`, `live` | Step                                              |
+ * |---------------------------|----------------|---------------------------------------------------|
+ * | `order.chargeback_opened` | `risk`         | a `fraudulent` dispute blocklists the email and card hashes |
  */
 import type { OrderEventType, OrderMode } from "../service/events";
 import type { OutboxTarget } from "../service/outbox";
@@ -64,6 +70,7 @@ export const OUTBOX_TARGET_NAMES = [
   "notifications",
   "payouts",
   "analytics.ga4",
+  "risk",
 ] as const;
 
 export type OutboxTargetName = (typeof OUTBOX_TARGET_NAMES)[number];
@@ -268,4 +275,23 @@ export function payoutOutboxTargets(
   mode: OrderMode,
 ): readonly OutboxTarget[] {
   return PAYOUT_OUTBOX_ROUTES[event]?.[mode] ?? [];
+}
+
+/** The `risk` target: spec 021's dispute blocklisting (`riskOutboxHandler`). */
+export const RISK_TARGET = {
+  name: "risk",
+  audience: "system",
+} as const satisfies OutboxTarget & { name: OutboxTargetName };
+
+/** Spec 021 §5.2's row, exactly: `test` and `live`, none in `demo`. */
+export const RISK_OUTBOX_ROUTES: ModeOutboxRoutes = {
+  "order.chargeback_opened": { test: [RISK_TARGET], live: [RISK_TARGET] },
+};
+
+/** The targets spec 021's row gives `event` for an order in `mode`. Pure. */
+export function riskOutboxTargets(
+  event: OrderEventType,
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  return RISK_OUTBOX_ROUTES[event]?.[mode] ?? [];
 }

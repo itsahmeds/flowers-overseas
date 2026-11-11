@@ -131,6 +131,7 @@ async function dispatch(
       notifications: noop,
       payouts: noop,
       "analytics.ga4": noop,
+      risk: noop,
     },
     transaction: savepoints(tx),
     orderId,
