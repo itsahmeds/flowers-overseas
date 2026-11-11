@@ -13,9 +13,9 @@ import {
   GA4_API_SECRET_KEY,
   GA4_MP_VALIDATE_KEY,
   appEnvironment,
-  ga4MeasurementId,
   serverEnvSchema,
 } from "./env.schema";
+import { consentSources } from "../modules/analytics/consent-sources.ts";
 
 /** What the Measurement Protocol path needs, or why it cannot send. */
 export type Ga4ServerConfig =
@@ -42,7 +42,8 @@ export function ga4ServerConfig(source: EnvSource): Ga4ServerConfig {
     // not send", and the most careful reading of an unknown environment is production.
     return { configured: false, environment: "production" };
   }
-  const measurementId = ga4MeasurementId(source);
+  // The one reader (spec 004 AC-21): the id the tag loads with is the id the server sends to.
+  const { ga4MeasurementId: measurementId } = consentSources(source);
   const secret = serverEnvSchema.shape[GA4_API_SECRET_KEY].safeParse(
     source[GA4_API_SECRET_KEY],
   );
