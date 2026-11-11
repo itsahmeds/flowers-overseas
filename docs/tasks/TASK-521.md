@@ -40,9 +40,10 @@ _None recorded._
    file-scoped list of POST-body keys exempt from rule (b), or (b) have the Pushover adapter send
    JSON (a TASK-488 follow-up in app code). `url-pii.test.ts` stays red on exactly that one line
    until then.
-2. **`pnpm i18n:check` still exits 1 with 16 findings that are not the API-route or type-only
+2. **`pnpm i18n:check` still exits 1 with 17 findings that are not the API-route or type-only
    kind**: 6 unused keys (`nav.send`, `search.suggest.kind.{product,occasion,category,destination,page}`);
-   5 key reads from outside their entry's `paths` (`src/modules/ui/checkout/payment/PaymentPanel.tsx`
+   6 key reads from outside their entry's `paths` (`src/modules/risk/prepay.ts`
+   `payments.error.generic`, new with TASK-493;`src/modules/ui/checkout/payment/PaymentPanel.tsx`
    `checkout.error.unable` and `payments.error.generic`, `controller.ts` `payments.error.unavailable`,
    `PayButton.tsx` `checkout.legal.payButton`, `PreContractBlock.tsx` `checkout.legal.cancellation`);
    5 import-rule findings for `src/modules/notifications/emails/{basket-reminder,copy,html,layout,theme}.ts`
@@ -61,7 +62,7 @@ _None recorded._
 
 - Part 1: `scripts/i18n-check-scope.ts` adds `src/app/api/` to `NON_INDEXABLE_APP_DIRECTORIES` and
   drops type-only imports (`import type`, `export type ... from`, all-`type` named imports) from the
-  import graph. `pnpm i18n:check`: 49 -> 16 findings, none of the fixed kinds (Escalation 2).
+  import graph. `pnpm i18n:check`: 49 -> 17 findings (16, plus one TASK-493 brought), none of the fixed kinds (Escalation 2).
   Tests: `tests/unit/i18n-scope-admin-roots.test.ts` (6, green).
 - Part 2: `tests/unit/url-pii.test.ts` pins the new keys and segments; 11 of 15 green, the 4 red
   ones fail only on `pushover.ts:135 message` (Escalation 1). No personal field found in any URL.
