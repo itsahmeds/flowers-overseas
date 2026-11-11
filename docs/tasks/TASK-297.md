@@ -41,6 +41,10 @@ here.
 
 - 2026-11-11 implementer (TASK-297 and TASK-298 as one feature PR, #543): main's red `migrations-round-trip` fixed (0045's two functions); after the rebase on #541 and #542, `admin-scans` also knows TASK-370's `at` and `note` params; shared rules in `src/modules/catalog/validate/` read by `catalogue:check`, `seed:check` and the admin save; the commands in `src/modules/admin/catalogue.ts`; the one-way placeholder window; `/admin/catalogue/products`, `/new`, `/[sku]`; integration suite `catalog-cms` green on a local PG16; clean-env staging build green.
 
+## Copy approval
+
+- founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-297.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 012b (TASK-297, TASK-298); the founder did not read this text: the 200 admin texts of spec 012b's product editor (`admin.catalogue.*`, the nav entry and the placeholder window flag's confirmation, refusal and one-way note), exactly as printed.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
