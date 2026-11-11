@@ -28,12 +28,34 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the implementer (2026-11-11), left for TASK-495 (after routing and records):**
+  `efwReceived` is always false until EFWs are stored (D2 cannot fire yet); the post-routing
+  review on a `paid` order ("Keep the order" and "Refund in full", the deadline refund
+  `auto_refunded`); the evidence pack button on the Risk card; the site velocity alert
+  `risk.velocity_site` and the daily counter line in `risk.monitor`; the fraud-dispute
+  blocklisting and the `risk` target.
+- **Not built here (design polish, no AC):** the navigation's open-review count badge ("Risk 3")
+  and the queue's 15-minute polling with its paused state (spec 012's pattern); the queue
+  refreshes on load.
+- **Not run locally:** T-11 and T-19 (e2e on staging), T-38 (visual and axe of the admin pages at
+  desktop and 390 px), AC-29's rendered-page equality of a held and an unheld order (the routing
+  and notification halves are unit-tested), AC-21's buyer confirmation keys after a risk cancel
+  (spec 013's confirmation suites cover the cancelled states).
+- **Pre-existing reds on main, not touched:** `admin-scans` (a `/admin/partners/` literal in
+  `src/jobs/handlers.ts`, `basket-reminders.ts` reading admin copy, 166 admin keys with no meta
+  row), `admin-unauthenticated` (the two contract routes), `pnpm i18n:check` (50 scope problems,
+  TASK-521), `pnpm check:no-db` (`src/modules/analytics`).
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **Orchestrator rulings on the boards (PR 529), under the founder's delegation, given in the
+  work order of 2026-11-11:** (1) a review opened after routing on an order already being made
+  has no close action, only the link to refund from the order page (as drawn); (2) the reason
+  sets per action are as the designer drew them: Approve offers `looks_genuine`,
+  `buyer_contacted`, `other`; both cancels offer `stolen_card_suspected`, `card_testing`,
+  `blocklist_match`, `efw`, `buyer_contacted`, `other` (`REASONS_BY_DECISION`).
 
 ## Progress
 
@@ -41,11 +63,41 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11: spec 013 plumbing (refund reasons `risk_cancel`, `fraud_confirmed` with Stripe
+  `fraudulent`; `riskFactsFor` and the intent's Radar fields, the fake's `simulateRiskFacts`; the
+  paid-not-routed monitor's hold and release rule), the two status-preserving events, the
+  `order.risk_released` routing route, spec 016's `startRouting`.
+- 2026-11-11: the gate (`assess`, velocity, identities, `riskGatedRouting`), decisions and
+  deadlines, the admin queue, detail, dialogs, action and the order page's Risk card; permissions,
+  nav, flag confirmations, 186 admin keys; unit and integration suites green; clean-env build
+  green. PR 536.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 536. No migration (0043's tables, refund reasons and flags suffice). The worker composes
+`routing: riskGatedRouting(routingOutboxHandler)`; a row 2 `order.captured` is assessed on the
+delivery's transaction (identities, velocity S7 to S11, first order, blocklist, Radar facts with
+one retry and S16), then passes to spec 016, holds (one `pre_routing` review, `order.risk_held`
+by `system:risk`, `risk.review_opened`; `decide_now` applies the default at once) or cancels on a
+decisive signal through spec 013's `cancelOrder` with `fraud_confirmed`; `risk.gate` off records
+with `enforced = false` and always routes. `risk.monitor` now also raises `risk.review_due_soon`
+once and applies the deadline default (`system:risk.deadline`: release with liability shift and a
+score under 70, else cancel with `risk_cancel`, no block). `/admin/risk` (open by deadline,
+decided in 7 days, empty and shadow states, desktop table and phone cards) and
+`/admin/risk/[reviewId]` (signals, Radar, buyer only with `orders.view_pii` plus one audit read
+row, deadline and default, three dialogs, decided and superseded states, post-routing link);
+`decideReviewAction` guards `risk.review` first and `risk.blocklist` for a block; every decision
+locks the order then the review and re-reads both. The order page gains the Risk card. Tests:
+unit `risk-gate` (31: dispatch, permission matrix and guards, source scan, notification and
+route rows, B5 sentence in four locales, schema), integration `risk-gate` (21, including the
+three 50-run races), plus count updates in `order-engine`, `tracking-page`, `payments-events`,
+`payments-types`, `admin-permissions`, `pay-step`, `admin-scans`. Deviations: "first order"
+compares with earlier delivered orders of the **same mode** (so a staging `test` order of AC-11
+can hold on S5 alone); the paid-not-routed monitor applies the hold and release rule in its own
+SQL (same rule as `openReviewFor` and `releasedAt`, which are exported too); `startRouting` is
+reached through spec 016's own handler (`order.risk_released` takes row 2's step), so the gate
+passes the release to `inner` unchanged. Admin copy: 186 keys, `reviewed: false`, recorded with
+`.claude/state/record-approval-494.py` (passes `--check`).
