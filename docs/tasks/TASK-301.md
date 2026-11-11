@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11 implementer: branch `task/TASK-301-cms-gates` from main `3e5773b50`; row `in_progress`. Next: env declarations, permission suites, backup warning, records.
 
 ## Result
 
