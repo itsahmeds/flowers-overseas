@@ -73,3 +73,19 @@ export function reviewsHeaderRules(): HeaderRule[] {
     },
   ];
 }
+
+/**
+ * The internal route a public reviews address is rewritten to, for `invalidate()`'s
+ * `revalidatePath` (the entry Next caches), as `productRoutePathFor()` is for the PDP; `null` for
+ * any other path.
+ */
+export function reviewsRoutePathFor(path: string): string | null {
+  const parts = path.replace(/\/+$/u, "").split("/").filter(Boolean);
+  if (parts.length !== 2) return null;
+  const [code, segment] = parts;
+  const locale = LOCALES.find((entry) => entry.code === code);
+  if (locale === undefined || segment !== locale.pathSegments.reviews) {
+    return null;
+  }
+  return `/${locale.code}/${REVIEWS_ROUTE_SEGMENT}`;
+}

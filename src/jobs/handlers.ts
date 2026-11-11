@@ -698,6 +698,9 @@ export const JOB_HANDLERS: JobHandlers = {
   "retention.sweep": async (payload) => {
     const contractStorage = await optionalContractStorage();
     const { captureAlert } = await import("../lib/sentry");
+    // Spec 022a AC-30 (TASK-373): the reviews the buyer redaction touched, invalidated after the
+    // sweep's transaction commits.
+    const reviewTagsRedacted = new Set<string>();
     await withSystemContext("retention.sweep", (db) =>
       runRetentionSweep(db, {
         now: new Date(),
@@ -707,7 +710,11 @@ export const JOB_HANDLERS: JobHandlers = {
         alert: (alert, fields) => {
           captureAlert(alert, fields);
         },
+        onReviewsRedacted: (tags) => {
+          for (const tag of tags) reviewTagsRedacted.add(tag);
+        },
       }),
     );
+    if (reviewTagsRedacted.size > 0) await invalidate([...reviewTagsRedacted]);
   },
 };
