@@ -373,14 +373,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the
     // scoped namespace, when the walkthrough made `floristInbox` counted; `floristInbox.orders` is
     // the walkthrough's "Orders" and left this queue with record-approval-210.py.
-    "emails.reviewInvite.lede",
-    "emails.reviewInvite.minute",
-    "emails.reviewInvite.optOutLead",
-    "emails.reviewInvite.optOutLink",
-    "emails.reviewInvite.policy",
-    "emails.reviewInvite.starLabel",
-    "emails.reviewInvite.starText",
-    "emails.reviewInvite.subject",
     "floristAuth.confirmSubmit",
     "floristAuth.demoNotice",
     "floristAuth.email",
@@ -519,35 +511,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-449 (spec 034 Appendix A): the basket reminder box, the two basket notices, the two
     // basket pages and the reminder email (`emails.basketReminder.*`), sorted in above.
     // TASK-493 (spec 021 §7): the three `checkout.risk.*` texts, sorted in above, until record-approval-493.py.
-
-    "reviews.form.delivered",
-    "reviews.form.deliveredNoCity",
-    "reviews.form.errorLong",
-    "reviews.form.errorRating",
-    "reviews.form.errorSummary",
-    "reviews.form.goneBody",
-    "reviews.form.goneTitle",
-    "reviews.form.heading",
-    "reviews.form.home",
-    "reviews.form.legend",
-    "reviews.form.notice",
-    "reviews.form.policyLink",
-    "reviews.form.send",
-    "reviews.form.showName",
-    "reviews.form.showNameHint",
-    "reviews.form.starLabel",
-    "reviews.form.textHint",
-    "reviews.form.textLabel",
-    "reviews.form.thanksBody",
-    "reviews.form.thanksTitle",
-    "reviews.form.usedBody",
-    "reviews.form.usedTitle",
-    "reviews.form.whatsapp",
-    "reviews.stop.body",
-    "reviews.stop.button",
-    "reviews.stop.doneBody",
-    "reviews.stop.doneTitle",
-    "reviews.stop.title",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
