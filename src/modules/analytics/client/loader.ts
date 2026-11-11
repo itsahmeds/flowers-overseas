@@ -36,14 +36,14 @@ export function analyticsGranted(name: string, version: number): boolean {
 
 /**
  * Start GA4 when the document has an id and the visitor granted analytics. The build without a
- * measurement id compiles the body away (`NEXT_PUBLIC_*` is inlined), so it ships no loader and
- * no `import()` at all; the same build-time value decides the CSP sources (`next.config.ts`).
+ * measurement id compiles the body away (`next.config.ts` inlines the id, empty when unset), so it
+ * ships no loader and no `import()` at all; the same build-time value decides the CSP sources.
  */
 export function startAnalyticsIfGranted(
   cookieName: string,
   policyVersion: number,
 ): void {
-  if (process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID === undefined) return;
+  if (!process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID) return;
   const id = document
     .getElementById("fo-consent-mode")
     ?.getAttribute("data-fo-ga4");
