@@ -546,6 +546,12 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       basis: "paid",
       mode: "live",
       paid: "100.00 zł",
+      // TASK-495's `admin.risk.evidence.*` (`label`, `local`, `pages`, `version`, `when` serve it too).
+      value: "FO-7K2M-9QXA",
+      page: "1",
+      utc: "24 Dec 2027, 09:02",
+      brand: "visa",
+      last4: "4242",
     };
     // `code` is a discount code's plain value everywhere but this one key, where it is a tag.
     const plain: Record<string, Record<string, unknown>> = {

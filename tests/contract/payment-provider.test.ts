@@ -105,6 +105,8 @@ describe("the contract suite itself", () => {
         "refund",
         "refund lookup",
         "dispute lookup",
+        // Spec 021 (TASK-495): `retrieveEarlyFraudWarning` and `listEarlyFraudWarnings`.
+        "early fraud warning lookup",
         "webhook",
         "events",
         "balance",

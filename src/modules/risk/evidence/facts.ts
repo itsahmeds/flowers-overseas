@@ -153,7 +153,7 @@ export async function evidenceFacts(
     order.purchase_id === null
       ? []
       : await executor.execute(sql`
-          SELECT min(coalesce(status_at, created_at)) AS at FROM notification_delivery
+          SELECT min(created_at) AS at FROM notification_delivery
           WHERE purchase_id = ${order.purchase_id} AND template_key = 'order-received'
             AND status IN ('sent', 'delivered', 'delivery_delayed')`);
   const sent = sentRaw === undefined ? null : SentRow.parse(sentRaw).at;
