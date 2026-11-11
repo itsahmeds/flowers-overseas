@@ -3,7 +3,7 @@
  * against a recorded `fetch`.
  *
  *  - a P1 push is one POST to `/1/messages.json` with `priority=2`, `retry=120`, `expire=3600`,
- *    `tags=<alertId>`, the token and user key in the body only; the receipt comes back as the ref;
+ *    `tags=<alertId>`, the token and user key in the JSON body only; the receipt comes back as the ref;
  *  - a 400 is one call and not retryable; a 500 is retried 3 times at least 5 s apart on the
  *    injected sleep (4 calls), then reported failed;
  *  - `X-Limit-App-Remaining` is read; cancel-by-tag posts to the receipts endpoint;
@@ -26,14 +26,22 @@ const USER = "uQiRzpo4DXghDmr9QzzfQu27cmVRsG";
 const ALERT_ID = "0f6f1d8e-6a40-4c55-9f0e-2d7c1b3a4e59";
 
 function recorder(responses: Response[]) {
-  const calls: { url: string; body: URLSearchParams | null; method: string }[] =
-    [];
+  const calls: {
+    url: string;
+    body: Record<string, unknown> | null;
+    contentType: string | null;
+    method: string;
+  }[] = [];
   const fetchImpl = vi.fn(
     async (url: string | URL | Request, init?: RequestInit) => {
       calls.push({
         url: String(url),
         method: init?.method ?? "GET",
-        body: init?.body instanceof URLSearchParams ? init.body : null,
+        contentType: new Headers(init?.headers).get("content-type"),
+        body:
+          typeof init?.body === "string"
+            ? (JSON.parse(init.body) as Record<string, unknown>)
+            : null,
       });
       const next = responses.shift();
       if (next === undefined) throw new Error("no response scripted");
@@ -95,7 +103,8 @@ describe("T-5 (AC-5) · a P1 push", () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]?.url).toBe(`${PUSHOVER_API}/messages.json`);
     expect(calls[0]?.method).toBe("POST");
-    const body = Object.fromEntries(calls[0]?.body ?? []);
+    expect(calls[0]?.contentType).toBe("application/json");
+    const body = calls[0]?.body ?? {};
     expect(body).toMatchObject({
       token: TOKEN,
       user: USER,
@@ -201,7 +210,8 @@ describe("AC-14 · cancel by tag", () => {
     expect(calls[0]?.url).toBe(
       `${PUSHOVER_API}/receipts/cancel_by_tag/${ALERT_ID}.json`,
     );
-    expect(Object.fromEntries(calls[0]?.body ?? [])).toEqual({ token: TOKEN });
+    expect(calls[0]?.contentType).toBe("application/json");
+    expect(calls[0]?.body).toEqual({ token: TOKEN });
   });
 
   it("reads an acknowledged receipt", async () => {

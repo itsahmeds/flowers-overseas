@@ -23,6 +23,7 @@ import {
   createPaymentController,
   type DeclineAnswer,
   loadStripeJs,
+  type PanelMessageKeys,
   type PanelPreparation,
   type PayAnswer,
   type StripeLoader,
@@ -37,8 +38,14 @@ export interface PaymentPanelProps {
   readonly payLabel: string;
   readonly pendingLabel: string;
   readonly processedBy: string;
-  /** Our `payments.error.*` (and `checkout.error.unable`) messages in the page locale, by key. */
+  /** Our payment error messages in the page locale, by catalogue key (the pay step resolves them). */
   readonly messages: Readonly<Record<string, string>>;
+  /**
+   * The keys of `messages` the panel falls back on: `generic` for a key it has no message for,
+   * `unavailable` when Stripe.js cannot load. Handed in by the pay step, so this shared file names
+   * no checkout-only key (spec 003 A17, TASK-521).
+   */
+  readonly messageKeys: PanelMessageKeys;
   /** The total step 3 showed (spec 010's `seenTotalMinor`), for the placement's check. */
   readonly seenTotal: {
     readonly amountMinor: number;
@@ -62,6 +69,7 @@ export function PaymentPanel({
   pendingLabel,
   processedBy,
   messages,
+  messageKeys,
   seenTotal,
   pay,
   declined,
@@ -72,26 +80,28 @@ export function PaymentPanel({
   const [pending, setPending] = useState(false);
   const [messageKey, setMessageKey] = useState<string | null>(null);
   const element = useRef<HTMLDivElement>(null);
+  const unavailableKey = messageKeys.unavailable;
   const controller = useMemo(
     () =>
       createPaymentController({
         preparation,
         locale,
         origin: typeof window === "undefined" ? "" : window.location.origin,
+        unavailableKey,
         load,
         pay: (form) => pay(locale, form),
         declined: () => declined(locale),
       }),
-    [preparation, locale, load, pay, declined],
+    [preparation, locale, unavailableKey, load, pay, declined],
   );
   useEffect(() => {
     const target = element.current;
     if (target === null) return;
     void controller.mount(target).then((mounted) => {
       if (mounted) setReady(true);
-      else setMessageKey("payments.error.unavailable");
+      else setMessageKey(unavailableKey);
     });
-  }, [controller]);
+  }, [controller, unavailableKey]);
 
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -126,9 +136,7 @@ export function PaymentPanel({
         message={
           messageKey === null
             ? null
-            : (messages[messageKey] ??
-              messages["payments.error.generic"] ??
-              null)
+            : (messages[messageKey] ?? messages[messageKeys.generic] ?? null)
         }
       />
       <div

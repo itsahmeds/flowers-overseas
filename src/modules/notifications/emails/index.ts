@@ -179,3 +179,13 @@ export {
   renderBuyerNotification,
 } from "./buyer-register";
 export { firstNameOf } from "./first-name";
+// Spec 034's R1, the basket reminder (TASK-450); the job worker hands it to `sendBasketReminder`.
+export {
+  type BasketReminderEmailProps,
+  BasketReminderEmailPropsSchema,
+  type ReminderEmailLine,
+  ReminderEmailLineSchema,
+  type RenderedBasketReminderEmail,
+  renderBasketReminderEmail,
+  reminderDate,
+} from "./basket-reminder";

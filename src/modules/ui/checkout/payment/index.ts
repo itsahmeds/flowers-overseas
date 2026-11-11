@@ -9,6 +9,7 @@ export {
 } from "./controller.ts";
 export type {
   DeclineAnswer,
+  PanelMessageKeys,
   PanelPreparation,
   PanelResult,
   PayAnswer,

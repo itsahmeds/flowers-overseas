@@ -248,6 +248,174 @@ const EXTERNAL_QUERY_KEYS: readonly {
   {
     entry: "src/app/vendor/sign-in/confirm/page.tsx#hl",
     reason: "the florist confirm page's language links (spec 011 §7)",
+  }, // TASK-521: the keys added since TASK-449, TASK-488 and TASK-492 merged. Each is a fixed word,
+  // a uuid, a signed token, a code or a third party's API parameter; none is personal data.
+  {
+    entry: "src/modules/catalog/chooser-choice.ts#q",
+    reason:
+      "the search words the buyer typed, carried through the country chooser to the results page (spec 045 §2.7, AC-13; TASK-402); never logged",
+  },
+  {
+    entry: "src/modules/ops/pushover.ts#token",
+    reason:
+      "Pushover's API app token on the receipt lookup URL Pushover defines (TASK-488); a secret, not personal data. Sends go as a JSON body (TASK-521)",
+  },
+  {
+    entry: "src/lib/auth/buyer.ts#return",
+    reason:
+      "the account sign-in's return path, checked by `isBuyerReturnPath` (our own path only)",
+  },
+  {
+    entry: "src/lib/auth/buyer.ts#state",
+    reason: "the account sign-in page's fixed state word after an invalid link",
+  },
+  {
+    entry: "src/modules/payments/stripe/adapter.ts#source",
+    reason:
+      "Stripe's events list filter, a Stripe object id, server to Stripe only",
+  },
+  {
+    entry: "src/modules/invoices/nbp.ts#format",
+    reason: "the NBP exchange-rate API's `?format=json`",
+  },
+  {
+    entry: "src/lib/storage.ts#download",
+    reason:
+      "the in-memory storage fake's signed download name (`contract-{code}-{kind}-v{n}.pdf`); R2 uses its own header",
+  },
+  {
+    entry: "src/modules/invoices/download.ts#t",
+    reason:
+      "a signed, expiring invoice link token over the invoice uuid (no personal value)",
+  },
+  {
+    entry: "src/app/[locale]/(account)/account/invoices/[invoiceId]/route.ts#t",
+    reason: "the same signed invoice token, read back by the signed-in route",
+  },
+  {
+    entry:
+      "src/app/[locale]/(account)/account/orders/[reference]/actions.ts#cancel",
+    reason: "the order page's fixed state word after a buyer cancel (`review`)",
+  },
+  {
+    entry: "src/modules/analytics/mp/client.ts#measurement_id",
+    reason:
+      "GA4 Measurement Protocol's measurement id, server to Google (spec 023; TASK-492)",
+  },
+  {
+    entry: "src/modules/analytics/mp/client.ts#api_secret",
+    reason:
+      "GA4 Measurement Protocol's API secret in the URL Google defines, server to Google only (TASK-492)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/applications/actions.ts#result",
+    reason: "the admin applications page's fixed outcome word",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/discounts/actions.ts#result",
+    reason: "the admin discounts page's fixed outcome word (TASK-444)",
+  },
+  {
+    entry: "src/modules/admin/finance/range.ts#from",
+    reason: "the admin finance range's ISO start date",
+  },
+  {
+    entry: "src/modules/admin/finance/range.ts#basis",
+    reason: "the admin finance range's fixed basis word",
+  },
+  {
+    entry: "src/modules/admin/finance/range.ts#mode",
+    reason: "the admin finance range's fixed mode word",
+  },
+  {
+    entry: "src/modules/admin/finance/range.ts#country",
+    reason: "the admin finance filter's ISO country code",
+  },
+  {
+    entry: "src/modules/admin/finance/range.ts#partner",
+    reason: "the admin finance filter's partner code (a business slug)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/finance/export/route.ts#kind",
+    reason: "the admin finance export's fixed kind word",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/orders/[id]/actions.ts#ref",
+    reason: "a resend's delivery row or a refund row uuid (TASK-361)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/partners/actions.ts#form",
+    reason: "which admin partner form answered, a fixed word",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/partners/actions.ts#result",
+    reason: "the admin partner form's fixed outcome word",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/partners/actions.ts#err",
+    reason: "the refused fields as `field:code` pairs, never the typed values",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#form",
+    reason: "which contract form answered, a fixed word (TASK-442)",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#result",
+    reason: "the contract form's fixed outcome word (TASK-442)",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#entry",
+    reason: "the edited contract's uuid (TASK-442)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#err",
+    reason: "the refused contract fields as `field:code` pairs (TASK-442)",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/contracts/upload/route.ts#form",
+    reason: "which contract form answered, a fixed word (TASK-442)",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#result",
+    reason: "the relationship form's fixed outcome word",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#form",
+    reason: "which relationship form answered, a fixed word",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#entry",
+    reason: "the edited relationship row's uuid",
+  },
+  {
+    entry:
+      "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#err",
+    reason: "the refused fields as `field:code` pairs",
+  },
+  {
+    entry: "src/modules/partners/portal/view.ts#subject",
+    reason:
+      "the florist portal's `mailto:` to our support address; the subject names the bouquet (spec 030b AC-55; TASK-444)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/applications/page.tsx#status",
+    reason: "the admin applications filter's fixed status word",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/basket-reminders/page.tsx#range",
+    reason:
+      "the admin basket-reminder report's range (`7d`, `30d`, `90d`; TASK-449)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/finance/page.tsx#kind",
+    reason: "the admin finance export link's fixed kind word",
   },
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
@@ -697,6 +865,43 @@ describe("the real tree (T-59)", () => {
         "src/app/vendor/sign-in/page.tsx#hl",
         "src/app/vendor/sign-in/confirm/page.tsx#t",
         "src/app/vendor/sign-in/confirm/page.tsx#hl",
+        "src/modules/catalog/chooser-choice.ts#q",
+        "src/modules/ops/pushover.ts#token",
+        "src/lib/auth/buyer.ts#return",
+        "src/lib/auth/buyer.ts#state",
+        "src/modules/payments/stripe/adapter.ts#source",
+        "src/modules/invoices/nbp.ts#format",
+        "src/lib/storage.ts#download",
+        "src/modules/invoices/download.ts#t",
+        "src/app/[locale]/(account)/account/invoices/[invoiceId]/route.ts#t",
+        "src/app/[locale]/(account)/account/orders/[reference]/actions.ts#cancel",
+        "src/modules/analytics/mp/client.ts#measurement_id",
+        "src/modules/analytics/mp/client.ts#api_secret",
+        "src/app/admin/(signed-in)/applications/actions.ts#result",
+        "src/app/admin/(signed-in)/discounts/actions.ts#result",
+        "src/modules/admin/finance/range.ts#from",
+        "src/modules/admin/finance/range.ts#basis",
+        "src/modules/admin/finance/range.ts#mode",
+        "src/modules/admin/finance/range.ts#country",
+        "src/modules/admin/finance/range.ts#partner",
+        "src/app/admin/(signed-in)/finance/export/route.ts#kind",
+        "src/app/admin/(signed-in)/orders/[id]/actions.ts#ref",
+        "src/app/admin/(signed-in)/partners/actions.ts#form",
+        "src/app/admin/(signed-in)/partners/actions.ts#result",
+        "src/app/admin/(signed-in)/partners/actions.ts#err",
+        "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#form",
+        "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#result",
+        "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#entry",
+        "src/app/admin/(signed-in)/partners/[code]/contracts/actions.ts#err",
+        "src/app/admin/(signed-in)/partners/[code]/contracts/upload/route.ts#form",
+        "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#result",
+        "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#form",
+        "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#entry",
+        "src/app/admin/(signed-in)/partners/[code]/relationship/actions.ts#err",
+        "src/modules/partners/portal/view.ts#subject",
+        "src/app/admin/(signed-in)/applications/page.tsx#status",
+        "src/app/admin/(signed-in)/basket-reminders/page.tsx#range",
+        "src/app/admin/(signed-in)/finance/page.tsx#kind",
       ]);
       expect(urlPiiViolations(repoRoot)).toEqual([]);
     },
@@ -718,7 +923,7 @@ describe("the real tree (T-59)", () => {
   );
 
   it(
-    "keeps today's eight dynamic segments, none a PII key",
+    "keeps today's fifteen dynamic segments, none a PII key",
     () => {
       const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
         const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
@@ -729,17 +934,34 @@ describe("the real tree (T-59)", () => {
         // never an order reference, a name or an address.
         "assignmentId",
         "child",
+        // `/admin/partners/[code]` (TASK-442): a partner's admin-chosen business slug
+        // (`PARTNER_CODE_PATTERN`), admin only and `noindex`; never a person's name field.
+        "code",
+        // `/admin/api/payouts/exports/[exportId]`: a payout export's uuid.
+        "exportId",
         "grandchild",
         // `/admin/orders/[id]` (TASK-222): an order's uuid.
         "id",
+        // `/{locale}/account/invoices/[invoiceId]`: an invoice's uuid (`z.uuid()`), signed-in
+        // and with a signed `t` token.
+        "invoiceId",
+        // `/api/prices/[locale]/[iso2]`: an ISO 3166-1 country code.
+        "iso2",
         "locale",
         "nextauth",
+        // `/admin/api/payouts/[payoutId]`: a payout's uuid.
+        "payoutId",
+        // `/{locale}/account/orders/[reference]` (spec 018): the random `FO-XXXX-XXXX` order
+        // code, behind the buyer's sign-in and shown only to the order's owner.
+        "reference",
         // `/api/choose/[locale]/[[...rest]]` and `/[locale]/-choose/-next/[[...rest]]` (TASK-385):
         // the chooser's country code and `next` path, slugs and fixed words only.
         "rest",
         "segment",
         // `/{locale}/track/[token]` (spec 018 AC-2; TASK-338): a signed `{ publicToken, version }`,
-        // no order id, reference, date or personal value.
+        // no order id, reference, date or personal value. `/{locale}/basket/restore/[token]`,
+        // `/{locale}/basket/unsubscribe/[token]` and `/api/basket-reminders/unsubscribe/[token]`
+        // (spec 034; TASK-449): the basket reminder's random restore and unsubscribe tokens.
         "token",
       ]);
     },
@@ -904,7 +1126,7 @@ describe("scratch trees (T-59)", () => {
     const violations = (): string[] =>
       urlPiiViolations(scratchTree(files), {
         external: EXTERNAL.filter((entry) =>
-          entry.startsWith("src/modules/analytics/"),
+          entry.startsWith("src/modules/analytics/ga4.ts#"),
         ),
       });
 

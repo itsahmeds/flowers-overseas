@@ -270,15 +270,14 @@ export function SiteHeader({
     label: t("nav.search.label"),
     submit: t("nav.search.submit"),
   };
-  const searchKind = (key: string): string =>
-    registryLabel(t, `search.suggest.kind.${key}`);
+  // Whole keys, so `pnpm i18n:check`'s usage scan reads each one (TASK-521).
   const suggestLabels = {
     kinds: {
-      product: searchKind("product"),
-      occasion: searchKind("occasion"),
-      category: searchKind("category"),
-      destination: searchKind("destination"),
-      page: searchKind("page"),
+      product: registryLabel(t, "search.suggest.kind.product"),
+      occasion: registryLabel(t, "search.suggest.kind.occasion"),
+      category: registryLabel(t, "search.suggest.kind.category"),
+      destination: registryLabel(t, "search.suggest.kind.destination"),
+      page: registryLabel(t, "search.suggest.kind.page"),
     },
     counts: Array.from({ length: 7 }, (_, count) =>
       t("search.suggest.count", { count }),

@@ -113,10 +113,13 @@ export function pushoverChannel(
   credentials: PushoverCredentials,
   fetchImpl: typeof fetch = fetch,
 ): PushChannel {
-  const post = async (path: string, body: URLSearchParams) =>
+  // A JSON body (Pushover's API takes JSON as well as form fields), so the token, the user key and
+  // the alert text are plainly a request body and never look like URL query keys (TASK-521).
+  const post = async (path: string, body: Readonly<Record<string, string>>) =>
     fetchImpl(`${PUSHOVER_API}${path}`, {
       method: "POST",
-      body,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(PUSHOVER_TIMEOUT_MS),
     });
 
@@ -128,19 +131,19 @@ export function pushoverChannel(
           ? credentials.backupUserKey
           : credentials.userKey;
       if (user === undefined) return failure("NotConfigured", 400);
-      const body = new URLSearchParams({
+      const body: Record<string, string> = {
         token: credentials.appToken,
         user,
         title: message.title,
         message: message.message,
         priority: String(message.priority),
-      });
-      if (message.url !== undefined) body.set("url", message.url);
+      };
+      if (message.url !== undefined) body["url"] = message.url;
       if (message.priority === 2) {
-        body.set("retry", String(message.retry));
-        body.set("expire", String(message.expire ?? EMERGENCY_EXPIRE_SECONDS));
+        body["retry"] = String(message.retry);
+        body["expire"] = String(message.expire ?? EMERGENCY_EXPIRE_SECONDS);
       }
-      if (message.tags !== undefined) body.set("tags", message.tags);
+      if (message.tags !== undefined) body["tags"] = message.tags;
       let response: Response;
       try {
         response = await post("/messages.json", body);
@@ -207,10 +210,9 @@ export function pushoverChannel(
     async cancelByTag(tag) {
       if (!/^[A-Za-z0-9-]{1,100}$/u.test(tag)) return false;
       try {
-        const response = await post(
-          `/receipts/cancel_by_tag/${tag}.json`,
-          new URLSearchParams({ token: credentials.appToken }),
-        );
+        const response = await post(`/receipts/cancel_by_tag/${tag}.json`, {
+          token: credentials.appToken,
+        });
         return response.ok;
       } catch {
         return false;

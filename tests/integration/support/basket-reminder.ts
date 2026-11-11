@@ -8,6 +8,7 @@ import { TEST_CONTACT_HMAC_SECRET } from "@/lib/env.basket-reminders";
 import { createLogger } from "@/lib/logger";
 import type { SendDeps } from "@/modules/checkout";
 import type { MailMessage, Mailer } from "@/modules/notifications";
+import { renderBasketReminderEmail } from "@/modules/notifications/emails";
 
 import { country } from "./rows.ts";
 import type { Tx } from "./scratch-db.ts";
@@ -112,6 +113,7 @@ export function sendDeps(
   return {
     executor: runnerOf(tx),
     mailer,
+    render: renderBasketReminderEmail,
     readFlag: async () => true,
     env: ENV,
     window: () => ({

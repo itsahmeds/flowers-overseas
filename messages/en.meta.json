@@ -3654,13 +3654,6 @@
     "sourceHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9",
     "retained": true
   },
-  "nav.send": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "e3be5078f2ccbc19c3787792fca859fba0ab68e95b0030b11ff3f21e28222e52"
-  },
   "nav.utility.cutoff": {
     "source": "human",
     "reviewed": true,
