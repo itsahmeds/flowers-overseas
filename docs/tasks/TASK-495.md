@@ -27,12 +27,31 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From TASK-494 (2026-11-11), taken here:** EFW storage for D2 (read from the provider, below),
+  the post-routing review on a `paid` order ("Keep the order", "Refund in full", the deadline
+  refund `auto_refunded`), the evidence pack button on the Risk card, the site velocity alert and
+  the daily counter line, fraud-dispute blocklisting and the `risk` target. All built.
+- **Left by TASK-495 (2026-11-11):**
+  - `webhook.process` has no job handler yet (TASK-266 wires it with the production provider);
+    it must pass `earlyFraudWarning: earlyFraudWarningHandler` (exported by `src/jobs/handlers.ts`)
+    to `processWebhook`. Until then an EFW row waits in the inbox like every other webhook.
+  - Spec 041's privacy page (TASK-183 is `done`): the paragraph below needs a new task row.
+  - Pre-pay refusals are logged (`risk.prepay_refused`) but not stored, so the daily counter line
+    counts assessments, reviews and pauses only.
+  - Not run locally: the evidence route's rendered download in a browser, T-38 visual and axe of
+    the "Keep the order" and "Refund in full" dialogs and the Risk card button.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **Deviations (2026-11-11, implementer, no question needed):** (1) `efwReceived` (D2) is read from
+  the provider (`listEarlyFraudWarnings` on the intent) rather than a stored copy, so no migration;
+  (2) the evidence read is audited as `order_evidence.viewed` (the database's view function accepts
+  only `*.viewed` actions; spec text says `order.evidence`); (3) AC-37 checks rule metadata against
+  spec 013's current intent keys (`INTENT_METADATA_KEYS`, seven since the basket amendment; R8's
+  `is_first_order` is in both); (4) R10 is two rules, R10a and R10b, entered only once spec 013
+  sends the buyer's email on a Customer object.
 
 ## Progress
 
@@ -47,4 +66,35 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR #539. No migration. **After routing:** `handleEarlyFraudWarning` acts by order state through
+`webhook.process` (cancel with `fraud_confirmed` and blocklist `efw` before acceptance;
+`ORDER_IN_HANDOVER` retry while `accepted`; a `post_routing` review with deadline
+`productionStartAt − 60 min` on `paid`, refunded in full with `fraud_confirmed` at the deadline or
+at once under 30 minutes; a review with no deadline and `risk.efw_after_routing` from
+`in_production`; nothing on chargeback, cancelled or refunded orders). The gate's D2 reads the
+provider's warnings. The `risk` outbox target blocklists a `fraudulent` dispute's email and card
+(`source = 'dispute'`) and supersedes open reviews; other reasons write nothing. A post-routing
+review on a `paid` order shows "Keep the order" and "Refund in full" (balance refund, `risk_cancel`).
+`buildEvidencePack` (A4, Noto Sans, tagged, 12 pt, from immutable records) behind
+`GET /admin/risk/evidence/[orderId]` (`risk.evidence`, `no-store, private`, attachment, one
+`order_evidence.viewed` audit row, nothing stored), linked from the Risk card. `risk.monitor` adds
+`risk.velocity_site` (once per burst) and the `risk.daily` lines. **Records:** runbook with R1 to
+R10 between the markers, LIA, RoPA rows 23 and 24, `.env.example` already holds `RISK_HASH_KEY`.
+**Tests:** integration `risk-after-routing` 24 (T-26, T-27, T-28 data half, T-32, velocity, daily);
+contract: the provider suite's EFW case (fake and Stripe emulator) and the adapter's EFW lookup and
+fixture parse; unit `risk-radar-rules` 6 (T-34, T-37 with mutations), `risk-evidence-route` (403,
+headers, one read row); count updates in `outbox-dispatcher`, `admin-scans`, `payment-provider`.
+**First commit:** `admin-scans` was red on main (3 cases): fixed as in Progress. Admin copy: 57 new
+keys `reviewed: false`, recorded with `.claude/state/record-approval-495.py`.
+
+### Requirement on spec 041 (privacy page)
+
+Spec 021 §8 and §12 (AC-34): the privacy page gains (1) a fraud-prevention paragraph: card payments
+are checked for fraud using keyed hashes of the email, the card and the delivery address, kept 12
+months (the address 90 days); some orders are checked by a person before a florist is asked; an
+order may be cancelled and refunded in full automatically when the bank reports the card as stolen
+or the email or card disputed a payment with us before; anyone can ask a person to look at the
+decision by phone or WhatsApp (Art. 13(2)(f)); and (2) in the recipient section, the sentence that
+in a card dispute the recipient's name, delivery address and delivery photo go to Stripe and,
+through it, to the card network and the issuing bank. TASK-183 is `done`, so this needs a new task
+row; the text goes through spec 041's legal-draft and lawyer path (§13 Q12).
