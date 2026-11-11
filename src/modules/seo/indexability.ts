@@ -89,6 +89,10 @@ export type SeoPageType =
   // Spec 018 §6 (AC-12; TASK-338): the buyer's tracking page and its not-working page, a
   // transactional page whose URL carries a credential. `"never"` below, as the basket.
   | "trackOrder"
+  // Spec 022a §6 (TASK-373): the reviews page, which exists with one published review and may be
+  // indexed with ten with visible text (its owner states that term as `exists`'s twin below, in
+  // `reviewed`: see `src/app/[locale]/reviews-route.tsx`).
+  | "reviewsPage"
   // Spec 041 §2's ten info pages, by page id (§11: GA4's `page_type` is the page id), registered
   // here rather than branching there (AC-17; TASK-182). A trust page is indexable iff it exists,
   // its content is reviewed, the locale is indexable and this is the indexing environment; a
@@ -152,6 +156,9 @@ export const PAGE_TYPE_POLICY: Readonly<
   "how-orders-work": "byRule",
   "florist-apply": "never",
   "florist-apply-sent": "never",
+  // Spec 022a §6 (TASK-373): the reviews page by rule, the policy as every legal page.
+  reviewsPage: "byRule",
+  "review-policy": "byRule",
 };
 
 /**

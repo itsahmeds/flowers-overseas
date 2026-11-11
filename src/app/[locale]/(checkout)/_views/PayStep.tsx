@@ -232,6 +232,11 @@ async function Panel({
             : {})}
         />
       </PaymentPanel>
+      {/* Spec 022a §8 "Checkout notice", §13 Q3 (AC-32; TASK-373): the one line that tells the
+          buyer about the review email before they pay. Information, not a choice: no tick box. */}
+      <p className="text-ink-2 m-0 text-sm" data-fo-review-notice="">
+        {all("checkout.reviewNotice")}
+      </p>
       <noscript>
         <div
           className="bg-card rounded-field text-ui grid gap-[10px] px-[18px] py-[16px] shadow-[inset_0_0_0_1.5px_var(--color-ink)]"

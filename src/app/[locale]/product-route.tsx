@@ -32,6 +32,7 @@ import {
 import { ProductPage } from "@/modules/ui/product/ProductPage";
 
 import { ProductAnalytics } from "./page-analytics";
+import { productReviews, withReviewMarkup } from "./reviews-blocks";
 
 /**
  * The product page's head and body, **once**, for the two route files that render it (spec 009
@@ -166,7 +167,10 @@ export async function productRouteBody(
   const label = t as unknown as BreadcrumbLabel;
   // The popup's options go to this product in each locale that has it (TASK-197, owed from
   // the TASK-179 review); nothing here touches the head.
-  const productAlternates = (
+  // Spec 022a's line, block and `Product` review markup (AC-26, AC-27; TASK-373): one read of
+  // this product's published reviews, so the three cannot disagree; absent under three.
+  const reviews = await productReviews(match.locale, match.sku);
+    const productAlternates = (
     <LanguageAlternates
       paths={await productAlternatePaths({
         sku: match.sku,
@@ -194,6 +198,8 @@ export async function productRouteBody(
         // The fresh-flower promise links to the guarantee page where this locale has one (spec
         // 009 §14 A11 bullet 1, spec 041 §6; TASK-287): `infoPageExists()`'s answer, asked here
         // because `modules/ui` may not read the content module.
+        reviews={reviews?.block}
+        reviewsLine={reviews?.line}
         guaranteeHref={
           infoPageExists("guarantee", match.locale)
             ? infoPagePath("guarantee", match.locale)
@@ -207,7 +213,12 @@ export async function productRouteBody(
           AC-18; TASK-130): one `productView()` in, so the markup cannot disagree with the page. */}
       <JsonLd
         nodes={
-          options === undefined ? [] : productJsonLd(product, label, options)
+          options === undefined
+            ? []
+            : withReviewMarkup(
+                productJsonLd(product, label, options),
+                reviews,
+              )
         }
       />
     </>

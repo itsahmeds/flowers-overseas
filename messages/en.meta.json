@@ -9322,5 +9322,165 @@
     "reviewedBy": "founder (delegated), 2026-11-11: recorded by the orchestrator with record-approval-370.py under the founder's blanket approval of 2026-10-31 (spec 003 A-founder-2026-10-31a), after reading the exact text it printed; spec 022a B9 and the review form (TASK-370, TASK-371, PR 542); the founder did not read this text",
     "reviewedAt": "2026-11-11T16:30:40Z",
     "sourceHash": "37c43914c638d4ed736c6840c73abe4358f91a9d0562523af8071074071c2de9"
+  },
+  "reviews.page.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1fe7ca9caaaffde6e7d418901359cbaadbb9e27c1483a394be1007c48ad31bf"
+  },
+  "reviews.page.h1": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1fe7ca9caaaffde6e7d418901359cbaadbb9e27c1483a394be1007c48ad31bf"
+  },
+  "reviews.page.crumb": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "84cb7871b741c32eb14f0a65e5e7e4db53ffae1a952ea8e2f1c2c48b1d134a9b"
+  },
+  "reviews.page.verify": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b3a0100f49db0560e20c28f90af4f362551680f75026031ee9c94f2b50071038"
+  },
+  "reviews.policyLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "acbe1ece6482d0020c2646108a5446f18e9aee981989e6481c183cada163b2c0"
+  },
+  "reviews.count": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2b5301f0b526ade54361cbc4a1cfdbcdc4ca4f1c8c63bb69d45ffe8a7e0bd5ea"
+  },
+  "reviews.stars": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "39326df75632388486281af2cb809aa838cd664f9e6306bca7742dcf56f54dc6"
+  },
+  "reviews.summary.rated": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ecfd491f0724176bae444a69fb34979ecf11425a6083f2868d63bdf8a94c3117"
+  },
+  "reviews.summary.bar": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "00c03187477aed8493c01d8fc08698bbb5859c320349c62ced123b83baeeff20"
+  },
+  "reviews.filter.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2c36ceb73ae1b4a782bb4c2646966dad4d282e19f8da0a55845450bbccb40f6d"
+  },
+  "reviews.filter.all": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "reviews.pages.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
+  },
+  "reviews.pages.previous": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a57b08a480b822a0a572b993391c292ede593bf8000b406675b180bbb16260fa"
+  },
+  "reviews.pages.next": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
+  },
+  "reviews.pages.page": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a456627ace382cd7eac7c2e266b2ae8b326f7f1bc8579b15af3c009ce2ba0923"
+  },
+  "reviews.card.rated": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e1eb95bd470268d2c9dc46ed8afddd77b5810c6e257d18f653b21d2cb3a2974f"
+  },
+  "reviews.card.verifiedBuyer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "50966d9fd79187aef1e9389a45a106553576d17acf3aa5bada636e53a019abff"
+  },
+  "reviews.card.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c685e830945045b8b8823f73be808eecc3939ea5e9f826b6262ad5e0c4234c96"
+  },
+  "reviews.card.deliveredMonth": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0d628db6391a1d0f1d9a16de2dae86cad2e320ffade5b6fb77ae3211a6215c95"
+  },
+  "reviews.card.reply": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b3eea00e0805585662ad7f65728ead0c4d6c7adea50f227a4393b94480fdf3e3"
+  },
+  "reviews.card.withheld": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cf195fa40391360b8528f223ebed2e7c0d49a7932e598b7d5123501d842e38f0"
+  },
+  "reviews.card.withheldReason.personalData": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f8d486cfee5121aa0d49a799af07f258ccbc8036af683ec25d3411198192f7ec"
+  },
+  "reviews.card.withheldReason.abuse": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8abb31868a20439b51e66c600263dcbff33398d389162f2b220708d5f7cc9990"
+  },
+  "reviews.card.withheldReason.illegal": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3999c4fa9cdeed156b56790fd336357ff7a7f6ab2fbf17e09cf8485d6e4c91b"
+  },
+  "reviews.card.report": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b6ce788d9786917c9d19adaa0d904213365607c7f683d7277f508dcf142b4cc2"
+  },
+  "reviews.card.reportMessage": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f094c22b1414b6a1706b4d28b38551670f70411610d4aceaf9f3141a108e0de3"
+  },
+  "reviews.block.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d83da2ff2a3a5bf82cac9297786c57f5b7dad0adbb28415de7412357c5ef95c"
+  },
+  "reviews.block.seeAll": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8c756e7b6689eccb1d195f6007e3850107f4e42fce2c29a6ae26163a9f76b552"
+  },
+  "reviews.block.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "114556e2d1a1bb84f3af0c0f599b9e95b164a7e50b8a86b79404e96b13eb2770"
+  },
+  "footer.reviewLinks.reviews": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "84cb7871b741c32eb14f0a65e5e7e4db53ffae1a952ea8e2f1c2c48b1d134a9b"
+  },
+  "footer.reviewLinks.policy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c90ffcecbed02ef0ac5641e880c96ab1e8fb0df5d20ce0d26645c62eb9299d45"
+  },
+  "checkout.reviewNotice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4a2c5e442597f00e80f9f10a94ae13a728b69b5a2eedf152fd85167ab1eb0852"
   }
 }

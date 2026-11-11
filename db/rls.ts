@@ -102,15 +102,13 @@ export const BUILD_ROLE_READ_TABLES = [
 
 /**
  * The build role's filtered reads granted by `0018`: the same rows a public render sees
- * (`PUBLIC_FILTERED_TABLES`, without the blog's, which `0024` grants), and `0018`'s
- * `review_build_read` on published reviews, which `0029` leaves in place although the public's
- * `review_read` is gone (moving the build to `public_review` is spec 022a's display task,
- * TASK-373).
+ * (`PUBLIC_FILTERED_TABLES`, without the blog's, which `0024` grants). `0018`'s
+ * `review_build_read` is gone since `0051` (spec 022a's display task, TASK-373): the build reads
+ * published reviews through `public_review` (`PUBLIC_VIEWS`), as every public render does.
  */
 export const BUILD_ROLE_FILTERED_TABLES = {
   media_asset: PUBLIC_FILTERED_TABLES.media_asset,
   media_variant: PUBLIC_FILTERED_TABLES.media_variant,
-  review: "moderation_status = 'published'",
 } as const;
 
 /**
@@ -232,6 +230,8 @@ export const PUBLIC_VIEWS = {
     "product_id",
     "response_text",
     "response_at",
+    // `0051` (TASK-373): the reason of a review published without its text, else `NULL`.
+    "withheld_reason",
   ],
   // spec 012b §5.1 item 3 (migration `0044_catalogue_cms`, TASK-294, advisor F3): what a real
   // florist can make, ids only, so neither public role reads a partner table (AC-39).

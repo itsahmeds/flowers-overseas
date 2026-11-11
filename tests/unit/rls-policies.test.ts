@@ -117,7 +117,7 @@ const POLICIES: Policy[] = CREATED_POLICIES.filter(
 );
 
 /** `0018`'s `TO app_build` read policies (spec 012b §5.1 item 1; TASK-292). */
-const BUILD_POLICIES: Policy[] = [
+const BUILD_POLICIES_WRITTEN: Policy[] = [
   ...up.matchAll(
     /CREATE POLICY (\w+) ON public\.(\w+) FOR (\w+) TO app_build\s+USING \(([\s\S]*?)\);/g,
   ),
@@ -128,6 +128,10 @@ const BUILD_POLICIES: Policy[] = [
   using: (m[4] ?? "").replace(/\s+/g, " "),
   check: "",
 }));
+/** In force: `0051` (TASK-373) drops `0018`'s `review_build_read`; the build reads `public_review`. */
+const BUILD_POLICIES = BUILD_POLICIES_WRITTEN.filter(
+  (policy) => !DROPPED.has(`${policy.table}.${policy.name}`),
+);
 
 /**
  * The policies in force after every migration: a later migration that drops and re-creates a
@@ -177,7 +181,9 @@ describe("migration 0011 — coverage", () => {
     // The build role's policies (`0018`, spec 012b) and the insert-only ones (`0022`, spec 011)
     // are read by their own blocks below.
     expect(
-      CREATED_POLICIES.length + BUILD_POLICIES.length + INSERT_POLICIES.length,
+      CREATED_POLICIES.length +
+        BUILD_POLICIES_WRITTEN.length +
+        INSERT_POLICIES.length,
     ).toBe([...up.matchAll(/CREATE POLICY/g)].length);
   });
 
@@ -398,9 +404,16 @@ describe("migration 0011 — each class gets exactly its policies", () => {
       ...CUSTOMER_VIEWS,
       ...PUBLIC_VIEWS,
     })) {
-      const match = new RegExp(
-        `CREATE VIEW public\\.${view} WITH \\(security_barrier = true\\) AS\\s+SELECT ([\\s\\S]*?)\\s+FROM`,
-      ).exec(up);
+      // The view as the last migration that (re)creates it wrote it: `0051` (TASK-373) replaces
+      // `0029`'s `public_review` with one more column.
+      const match = [
+        ...up.matchAll(
+          new RegExp(
+            `CREATE (?:OR REPLACE )?VIEW public\\.${view} WITH \\(security_barrier = true\\) AS\\s+SELECT ([\\s\\S]*?)\\s+FROM`,
+            "g",
+          ),
+        ),
+      ].at(-1);
       expect(match, view).not.toBeNull();
       expect(
         (match?.[1] ?? "").split(/,(?![^(]*\))/).map((c) =>
@@ -511,6 +524,8 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
       [
         ...BUILD_ROLE_READ_TABLES,
         ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
+        // Granted by `0018`, revoked by `0051` (TASK-373): the build reads `public_review`.
+        "review",
       ].sort(),
     );
     expect(up0018).not.toMatch(/GRANT (?:INSERT|UPDATE|DELETE|TRUNCATE|ALL)/u);

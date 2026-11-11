@@ -475,6 +475,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       delivery: "/en/delivery",
       imprint: "/en/imprint",
       search: "/en/search",
+      reviews: "/en/reviews",
     },
     "en-gb": {
       home: "/en-gb",
@@ -492,6 +493,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       delivery: "/en-gb/delivery",
       imprint: "/en-gb/imprint",
       search: "/en-gb/search",
+      reviews: "/en-gb/reviews",
     },
     de: {
       home: "/de",
@@ -509,6 +511,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       delivery: "/de/lieferung-und-zahlung",
       imprint: "/de/impressum",
       search: "/de/suche",
+      reviews: "/de/bewertungen",
     },
     pl: {
       home: "/pl",
@@ -526,6 +529,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       delivery: "/pl/dostawa-i-platnosc",
       imprint: "/pl/dane-firmy",
       search: "/pl/szukaj",
+      reviews: "/pl/opinie",
     },
   };
 

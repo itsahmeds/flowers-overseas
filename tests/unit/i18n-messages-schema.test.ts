@@ -259,6 +259,8 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-373 (spec 022a §5.3, §7, §8 "Checkout notice"): the reviews page, the blocks, the two
+    // footer links and the pay step's notice, sorted in below, until record-approval-373.py.
     // TASK-353 (spec 018 C.7.4, C.13, C.15; the account-reminders-* and email-account-* slots):
     // the reminders page, the stop page and T18, until record-approval-353.py.
     // TASK-352 (spec 018 C.13, C.15; the account-details-* and account-recipients-* slots): the
@@ -367,6 +369,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-365's florist payout statement keys (PR 475) left this queue under the delegation, all
     // but the lawyer-gated `deleteReminder` (spec 030a §13 Q12; TASK-436).
     // TASK-431's three `destinationsHub.*` count lines (spec 007 AC-37) left this queue under the delegation.
+    "checkout.reviewNotice",
     "emails.floristPayoutStatement.deleteReminder",
     "emails.floristSignIn.body",
     "emails.floristSignIn.subject",
@@ -389,6 +392,8 @@ describe("the shipped catalogues and manifests", () => {
     // the delegation (spec 003 A-founder-2026-10-31a, TASK-433), 2026-11-02.
     // TASK-329's withdrawn inbox stage and spec 041's chrome left this queue under the delegation (TASK-436).
     // Spec 030b §14.10 Appendix A (TASK-444): My bouquets, awaiting the delegated copy record.
+    "footer.reviewLinks.policy",
+    "footer.reviewLinks.reviews",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
     "forFlorists.apply.error.capacity",
@@ -501,6 +506,35 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+    "reviews.block.country",
+    "reviews.block.heading",
+    "reviews.block.seeAll",
+    "reviews.card.delivered",
+    "reviews.card.deliveredMonth",
+    "reviews.card.rated",
+    "reviews.card.reply",
+    "reviews.card.report",
+    "reviews.card.reportMessage",
+    "reviews.card.verifiedBuyer",
+    "reviews.card.withheld",
+    "reviews.card.withheldReason.abuse",
+    "reviews.card.withheldReason.illegal",
+    "reviews.card.withheldReason.personalData",
+    "reviews.count",
+    "reviews.filter.all",
+    "reviews.filter.label",
+    "reviews.page.crumb",
+    "reviews.page.h1",
+    "reviews.page.title",
+    "reviews.page.verify",
+    "reviews.pages.label",
+    "reviews.pages.next",
+    "reviews.pages.page",
+    "reviews.pages.previous",
+    "reviews.policyLink",
+    "reviews.stars",
+    "reviews.summary.bar",
+    "reviews.summary.rated",
     // TASK-390's three `shop.price.band.*` texts and TASK-391's `shop.chosen.line` left this queue under the delegation.
     // TASK-402's 14 `search.*` keys (spec 045 Appendix A) left this queue under the delegation.
     // TASK-389's `shop.card.localSpecial` left this queue under the delegation (record-approval-389.py).

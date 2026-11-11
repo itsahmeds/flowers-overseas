@@ -66,6 +66,9 @@ export const PATH_SEGMENT_KEYS = [
   // sitemap. Routed by spec 045's own route (TASK-402); until then the segment builds a URL and
   // nothing answers it, exactly like a reserved site-link target.
   "search",
+  // Spec 022a §6 "URLs" (TASK-373): the reviews page, which exists with at least one published
+  // review. Routed by its own route (`src/lib/reviews-routes.ts`), never by the depth files.
+  "reviews",
 ] as const;
 export type PathSegmentKey = (typeof PATH_SEGMENT_KEYS)[number];
 
@@ -152,6 +155,7 @@ export const LAUNCH_LOCALE_DATA = [
       delivery: "delivery",
       imprint: "imprint",
       search: "search",
+      reviews: "reviews",
     },
   },
   {
@@ -184,6 +188,7 @@ export const LAUNCH_LOCALE_DATA = [
       delivery: "delivery",
       imprint: "imprint",
       search: "search",
+      reviews: "reviews",
     },
   },
   {
@@ -217,6 +222,7 @@ export const LAUNCH_LOCALE_DATA = [
       delivery: "lieferung-und-zahlung",
       imprint: "impressum",
       search: "suche",
+      reviews: "bewertungen",
     },
   },
   {
@@ -250,6 +256,7 @@ export const LAUNCH_LOCALE_DATA = [
       delivery: "dostawa-i-platnosc",
       imprint: "dane-firmy",
       search: "szukaj",
+      reviews: "opinie",
     },
   },
 ] as const satisfies readonly LocaleData[];
@@ -303,6 +310,7 @@ export const PSEUDO_LOCALE_DATA = [
       delivery: "delivery",
       imprint: "imprint",
       search: "search",
+      reviews: "reviews",
     },
   },
   {
@@ -337,6 +345,7 @@ export const PSEUDO_LOCALE_DATA = [
       delivery: "delivery",
       imprint: "imprint",
       search: "search",
+      reviews: "reviews",
     },
   },
 ] as const satisfies readonly LocaleData[];

@@ -41,6 +41,7 @@ import {
   countryShopRootMetadata,
   windowStart,
 } from "../../country-shop-root";
+import { corridorReviews } from "../../reviews-blocks";
 import { InfoPageRoute, infoPageRouteMetadata } from "../../info-page-route";
 import { ListingJsonLd } from "../../listing-json-ld";
 
@@ -319,7 +320,10 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
 
     return (
       <>
-        <CorridorPage view={view} />
+        <CorridorPage
+          reviews={await corridorReviews(match.locale, match.iso2)}
+          view={view}
+        />
         <LanguageAlternates paths={corridorAlternatePaths(view.iso2)} />
         <JsonLd
           nodes={

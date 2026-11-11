@@ -14,6 +14,7 @@ import {
   consentSources,
 } from "@/modules/analytics";
 import { missingInfoPageLinkIds } from "@/modules/content";
+import { missingReviewLinkIds } from "@/modules/reviews/display";
 import {
   LanguagePopup,
   languageOffer,
@@ -213,6 +214,10 @@ export default async function LocaleLayout({
               // Spec 041's info pages that do not exist here (TASK-182): no content file in this
               // locale, or the company is not registered yet (imprint, terms, privacy).
               ...missingInfoPageLinkIds(locale.code),
+              // Spec 022a §5.3 "Footer" (TASK-373): "Reviews" while a review is published,
+              // "Review policy" once `reviews.invite` is on or a review is published. Where there
+              // is no database (a laptop, CI's seed, the clean build) both are absent.
+              ...(await missingReviewLinkIds()),
             ],
           })}
         />

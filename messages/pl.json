@@ -406,7 +406,8 @@
       "attemptsExhausted": "This payment did not go through and nothing was charged. Please start again, or call or message us and we will help you place your order.",
       "emailLasting": "Please use an email address you will keep. We send your order confirmation and updates to it.",
       "startAgain": "Start again"
-    }
+    },
+    "reviewNotice": "Po dostawie wyślemy Ci jeden e-mail z pytaniem, jak nam poszło. Możesz zrezygnować z tych e-maili w każdej chwili."
   },
   "common": {
     "beta": "Beta",
@@ -1102,7 +1103,11 @@
       "heading": "Occasion reminders",
       "submit": "Remind me"
     },
-    "signoff": "Z miłością, skądkolwiek jesteś."
+    "signoff": "Z miłością, skądkolwiek jesteś.",
+    "reviewLinks": {
+      "reviews": "Opinie",
+      "policy": "Zasady opinii"
+    }
   },
   "home": {
     "dates": {
@@ -2022,6 +2027,49 @@
       "button": "Wyłącz e-maile z prośbą o opinię",
       "doneTitle": "Gotowe. Nie poprosimy Cię już o opinię.",
       "doneBody": "Twoje zamówienie i jego strona śledzenia pozostają bez zmian."
+    },
+    "page": {
+      "title": "Opinie naszych klientów",
+      "h1": "Opinie naszych klientów",
+      "crumb": "Opinie",
+      "verify": "Każda opinia tutaj pochodzi od osoby, która u nas zamówiła i której kwiaty zostały dostarczone."
+    },
+    "policyLink": "Jak sprawdzamy opinie",
+    "count": "{count, plural, one {# opinia} few {# opinie} many {# opinii} other {# opinii}}",
+    "stars": "{count, plural, one {# gwiazdka} few {# gwiazdki} many {# gwiazdek} other {# gwiazdki}}",
+    "summary": {
+      "rated": "Średnia ocena {average} na 5",
+      "bar": "{stars, plural, one {# gwiazdka} few {# gwiazdki} many {# gwiazdek} other {# gwiazdki}}: {count, plural, one {# opinia} few {# opinie} many {# opinii} other {# opinii}}"
+    },
+    "filter": {
+      "label": "Filtruj według gwiazdek",
+      "all": "Wszystkie"
+    },
+    "pages": {
+      "label": "Strony",
+      "previous": "Poprzednia",
+      "next": "Następna",
+      "page": "Strona {n}"
+    },
+    "card": {
+      "rated": "Ocena {n} na 5",
+      "verifiedBuyer": "Zweryfikowany zakup",
+      "delivered": "Dostarczono {month} · {country}",
+      "deliveredMonth": "Dostarczono {month}",
+      "reply": "Odpowiedź Flowers Overseas",
+      "withheld": "Komentarz tej opinii został wstrzymany: {reason}",
+      "withheldReason": {
+        "personalData": "dane osobowe",
+        "abuse": "obraźliwe słowa",
+        "illegal": "treści niezgodne z prawem"
+      },
+      "report": "Zgłoś",
+      "reportMessage": "Chcę zgłosić opinię {number}."
+    },
+    "block": {
+      "heading": "Co <em>mówią</em> nasi klienci",
+      "seeAll": "Zobacz wszystkie opinie",
+      "country": "Opinie o zamówieniach dostarczonych przez nas, kraj: {country}."
     }
   }
 }

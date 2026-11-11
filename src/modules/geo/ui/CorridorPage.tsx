@@ -25,7 +25,7 @@
  *    to an action the page cannot yet take.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { PAGE_FRAME } from "../../ui/index.ts";
 import type { CorridorView } from "../corridor.ts";
@@ -61,9 +61,18 @@ const STEP_KEYS = {
 
 export interface CorridorPageProps {
   readonly view: CorridorView;
+  /**
+   * Spec 022a's corridor block (§5.3, AC-26; TASK-373), placed before the questions: the route
+   * renders it only with three or more published reviews of orders to this country, and hands it
+   * in because this module may not read the reviews. No markup of any kind (AC-27).
+   */
+  readonly reviews?: ReactNode;
 }
 
-export function CorridorPage({ view }: CorridorPageProps): ReactElement {
+export function CorridorPage({
+  view,
+  reviews,
+}: CorridorPageProps): ReactElement {
   const t = useTranslations();
   const c = useTranslations("corridor");
   const country = countryName(t, view.nameKey);
@@ -204,6 +213,8 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
             : registryLabel(t, view.facts.citiesKey)}
         </p>
       </CorridorSection>
+
+      {reviews}
 
       <CorridorFaq country={country} faq={view.faq} />
 

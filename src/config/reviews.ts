@@ -51,3 +51,12 @@ export const REVIEW_RATING_MAX = 5;
 
 /** `partners.rating_refresh` runs for every non-demo florist in this UTC hour, once a day (§5.2). */
 export const RATING_REFRESH_HOUR_UTC = 3;
+
+/**
+ * The average as the page prints it and the PDP's `aggregateRating` carries it: one decimal
+ * (§6 "Schema", AC-25, AC-27; TASK-373). One function, so the visible value and the markup
+ * cannot round differently: 4.25 → 4.3.
+ */
+export function ratingValueOf(average: number): number {
+  return Math.round(average * 10) / 10;
+}
