@@ -478,6 +478,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       // The PDP's JSON-LD over its view (spec 009 AC-18; TASK-130).
       `${moduleDir}/productSchema.ts`,
       `${moduleDir}/providers.ts`,
+      // One catalogue read scope outside a render (TASK-294 carry-forward 1; TASK-295).
+      `${moduleDir}/read-scope.ts`,
       `${moduleDir}/read.ts`,
       // The remembered country's prices document (spec 004 item 3, AC-80; TASK-391).
       `${moduleDir}/remembered-prices.ts`,
