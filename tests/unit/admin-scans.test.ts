@@ -504,6 +504,11 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       quantity: 2,
       stems: 18,
       codes: "pl-waw-02",
+      // TASK-494's `admin.risk.*`.
+      left: "8 h 25 min left",
+      local: "8 Oct, 07:13",
+      destZone: "Europe/Warsaw",
+      outcome: "Approved",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

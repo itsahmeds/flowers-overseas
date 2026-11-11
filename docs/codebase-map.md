@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +25 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +26 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +129 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
@@ -250,6 +250,7 @@ task actually touches.
 | `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only,… | 012 |
 | `admin/(signed-in)/orders/[id]/panel-reasons.ts` | The Actions card's "Not available" reason per… | 020 |
 | `admin/(signed-in)/orders/[id]/refund-form.tsx` | The refund dialog's form island: amount,… | 020 |
+| `admin/(signed-in)/orders/[id]/risk-panel.tsx` | The order page's Risk card: the last check, the… | 021 |
 | `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue… | 012 |
 | `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
@@ -278,6 +279,10 @@ task actually touches.
 | `admin/(signed-in)/payouts/outcome.ts` | The payouts pages' outcome in the query string:… | 030 |
 | `admin/(signed-in)/payouts/page.tsx` | GET /admin/payouts: five payout groups, open… | 030 |
 | `admin/(signed-in)/payouts/view.tsx` | The payout pages' shared view pieces: money,… | 030 |
+| `admin/(signed-in)/risk/[reviewId]/page.tsx` | GET /admin/risk/[reviewId]: one review, its… | 021 |
+| `admin/(signed-in)/risk/actions.ts` | /admin/risk decisions: approve, cancel and… | 021 |
+| `admin/(signed-in)/risk/page.tsx` | GET /admin/risk: open risk reviews by deadline,… | 021 |
+| `admin/(signed-in)/risk/view.tsx` | The risk pages' shared pieces: signal labels,… | 021 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3,… | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
 | `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint answers 404 | 012 |
@@ -418,8 +423,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 533 |
-| `tests/integration/` | 117 |
+| `tests/unit/` | 534 |
+| `tests/integration/` | 118 |
 | `tests/contract/` | 44 |
 | `tests/e2e/` | 81 |
 | `tests/a11y/` | 16 |

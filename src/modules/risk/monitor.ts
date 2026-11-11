@@ -7,10 +7,11 @@
  * `live` only, writes a `risk_pause` of `CARD_TESTING_PAUSE_MINUTES` (`cause = 'card_testing'`)
  * unless one is active. In `test` it alerts only. Nine declines, or 10 out of 25, do nothing.
  *
- * The deadline defaults, the due-soon alerts and the site velocity alert join this job with the
- * gate (TASK-494). Logs carry counts only.
+ * The deadline defaults and the due-soon alerts join this job with the gate (TASK-494,
+ * `runReviewDeadlines` below). Logs carry counts only.
  */
 import { sql } from "drizzle-orm";
+import { z } from "zod";
 
 import { logger } from "@/lib/logger";
 import type { AlertRaiser } from "@/modules/orders";
@@ -19,10 +20,12 @@ import {
   CARD_TESTING_MIN_DECLINES,
   CARD_TESTING_PAUSE_MINUTES,
   CARD_TESTING_WINDOW_MINUTES,
+  REVIEW_DUE_SOON_MS,
 } from "@/config/risk";
 
 import { type RiskDeps, resolveRiskDeps } from "./context.ts";
 import { activePause } from "./prepay.ts";
+import { applyDeadlineDefault, type DeadlineDefaultDeps } from "./reviews.ts";
 
 /** Declined and succeeded payment attempts in a window (spec 013's `attemptStats`). */
 export interface AttemptStats {
@@ -100,4 +103,70 @@ export async function detectCardTesting(
     "risk.card_testing",
   );
   return { suspected: true, alerted, paused };
+}
+
+export interface ReviewDeadlineDeps extends RiskDeps, DeadlineDefaultDeps {}
+
+export interface ReviewDeadlineCounts {
+  readonly dueSoon: number;
+  readonly decided: number;
+}
+
+const ReviewIdRow = z.object({ id: z.uuid(), order_id: z.uuid() });
+
+/**
+ * `risk.monitor`'s deadline half (spec 021 §5.2 "Deadline default", §11; AC-18; TASK-494): every
+ * open `pre_routing` review whose deadline has passed gets the default, each in its own
+ * transaction (`applyDeadlineDefault` locks and re-reads, so a re-run or a concurrent admin
+ * decision finds it decided); every open review within `REVIEW_DUE_SOON_MS` of its deadline
+ * raises `risk.review_due_soon` once (`due_soon_alerted_at`). Idempotent.
+ */
+export async function runReviewDeadlines(
+  deps: ReviewDeadlineDeps,
+): Promise<ReviewDeadlineCounts> {
+  const d = resolveRiskDeps(deps);
+  const now = d.now();
+  const at = now.toISOString();
+  const soon = new Date(now.getTime() + REVIEW_DUE_SOON_MS).toISOString();
+  const dueSoon = await d.transaction(async (executor) =>
+    (
+      await executor.execute(sql`
+        UPDATE risk_review SET due_soon_alerted_at = ${at}::timestamptz
+        WHERE status = 'open' AND due_soon_alerted_at IS NULL
+          AND deadline_at IS NOT NULL
+          AND deadline_at <= ${soon}::timestamptz AND deadline_at > ${at}::timestamptz
+        RETURNING id, order_id`)
+    ).map((row) => ReviewIdRow.parse(row)),
+  );
+  for (const review of dueSoon) {
+    deps.alert("risk.review_due_soon", {
+      order_id: review.order_id,
+      review_id: review.id,
+    });
+  }
+  const due = await d.transaction(async (executor) =>
+    (
+      await executor.execute(sql`
+        SELECT id, order_id FROM risk_review
+        WHERE status = 'open' AND kind = 'pre_routing'
+          AND deadline_at <= ${at}::timestamptz
+        ORDER BY deadline_at, id`)
+    ).map((row) => ReviewIdRow.parse(row)),
+  );
+  let decided = 0;
+  for (const review of due) {
+    const outcome = await d.transaction((executor) =>
+      applyDeadlineDefault(executor, review.id, now, deps),
+    );
+    if (outcome === "auto_released" || outcome === "auto_cancelled") {
+      decided += 1;
+    }
+  }
+  if (dueSoon.length > 0 || decided > 0) {
+    logger.info(
+      { job: "risk.monitor", count: decided, outcome: "deadlines" },
+      "risk.deadlines",
+    );
+  }
+  return { dueSoon: dueSoon.length, decided };
 }

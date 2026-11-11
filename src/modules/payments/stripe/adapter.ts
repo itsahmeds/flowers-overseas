@@ -26,6 +26,7 @@ import type { Money } from "@/modules/i18n";
 import {
   isProviderFailure,
   providerFailure,
+  providerRefundReason,
   type BalanceSource,
   type CreateIntentInput,
   type PaymentProvider,
@@ -116,6 +117,14 @@ function toProviderIntent(intent: StripePaymentIntent): ProviderIntent {
     ...(typeof charge?.outcome?.risk_score === "number"
       ? { riskScore: charge.outcome.risk_score }
       : {}),
+    // Spec 021 §12 (c): Radar's facts for `riskFactsFor`.
+    ...(charge?.outcome?.risk_level
+      ? { riskLevel: charge.outcome.risk_level }
+      : {}),
+    ...(charge?.outcome?.type ? { outcomeType: charge.outcome.type } : {}),
+    ...(card?.country ? { cardCountry: card.country.toUpperCase() } : {}),
+    ...(card?.fingerprint ? { cardFingerprint: card.fingerprint } : {}),
+    ...(card?.wallet?.type ? { wallet: card.wallet.type } : {}),
     livemode: intent.livemode,
     ...(typeof card?.capture_before === "number"
       ? { captureBefore: new Date(card.capture_before * 1000) }
@@ -365,9 +374,13 @@ export function createStripeProvider(
       idempotencyKey: string,
       metadata: RefundMetadataInput,
     ): Promise<ProviderRefund | ProviderFailure> {
+      // Spec 021 §5.1 A11 (b): a confirmed fraud is told to Stripe (`fraudulent`), which adds the
+      // card and email to Radar's block lists; every other reason sends none.
+      const providerReason = providerRefundReason(metadata.reason);
       const form = toStripeForm({
         payment_intent: ref,
         amount: toStripeAmount(amount),
+        ...(providerReason === null ? {} : { reason: providerReason }),
         metadata: {
           order_id: metadata.orderId,
           refund_id: metadata.refundId,

@@ -613,7 +613,7 @@ describe("A6 alignment and no assignment leakage (AC-35, AC-41)", () => {
         `${PAGE_DIR}/calendar.ics/route.ts`,
       ]),
     );
-    expect(names.size).toBe(37);
+    expect(names.size).toBe(39);
     expect(statuses.size).toBe(26);
   });
 

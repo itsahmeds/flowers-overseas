@@ -10,7 +10,10 @@
  *    left `placed` for one of those two states (its `order_event`); a night order is expected at
  *    the next 07:30 in the destination's zone, so it does not page at 23:05. A destination with
  *    no agreed operations (no zone or no same-day cutoff) falls back to AC-39's default, the
- *    secured instant itself. `demo` orders, and orders that reached `routed` or
+ *    secured instant itself. Spec 021 (AC-36, TASK-494): an order held by the risk gate (an open
+ *    `pre_routing` review before its deadline) is not selected, and a released one is measured
+ *    from its `order.risk_released` instant (`releasedAt`) instead of the payment's.
+ *    `demo` orders, and orders that reached `routed` or
  *    `no_partner_available` (spec 002 §14 A8), are never selected. Each alert is fingerprinted
  *    `[alert, order_id]`, so the same stuck order on every minute tick is one Sentry issue.
  *  - **`webhook.silent_24h`** (AC-40): `payments.stripe` is on, no `webhook_inbox` row with
@@ -211,7 +214,10 @@ export async function runPaymentsMonitor(
       JOIN country c ON c.id = o.destination_country_id
       LEFT JOIN city ci ON ci.id = o.destination_city_id
       CROSS JOIN LATERAL (
-        SELECT coalesce(min(e.occurred_at), o.created_at) AS secured_at
+        SELECT coalesce(
+                 (SELECT max(r.occurred_at) FROM order_event r
+                  WHERE r.order_id = o.id AND r.type = 'order.risk_released'),
+                 min(e.occurred_at), o.created_at) AS secured_at
         FROM order_event e
         WHERE e.order_id = o.id AND e.from_status = 'placed'
           AND e.to_status IN ('authorised', 'paid_unrouted')
@@ -219,6 +225,10 @@ export async function runPaymentsMonitor(
       WHERE o.status IN ('authorised', 'paid_unrouted')
         AND o.mode IN ('test', 'live')
         AND s.secured_at < ${securedBefore.toISOString()}::timestamptz
+        AND NOT EXISTS (
+          SELECT 1 FROM risk_review rr
+          WHERE rr.order_id = o.id AND rr.kind = 'pre_routing' AND rr.status = 'open'
+            AND rr.deadline_at > ${now.toISOString()}::timestamptz)
       ORDER BY s.secured_at, o.id
       LIMIT ${PAYMENTS_MONITOR_BATCH}`);
     const [silenceRow] = await executor.execute(sql`

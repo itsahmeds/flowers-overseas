@@ -13,6 +13,7 @@
  * |----------------------------|------------------------------|--------------------------------------|
  * | `order.captured`           | to `paid_unrouted` (row 2)   | enqueue `order.route`                |
  * | `order.captured`           | to `paid` (row 14)           | nothing: this handler writes no event (no `order.in_production`, spec 013's) |
+ * | `order.risk_released`      | spec 021's release of a hold | `startRouting`, as row 2             |
  * | `order.authorised`         | —                            | nothing (not written at launch)      |
  * | `order.delivered`          | —                            | enqueue `assignment.photo_remind` an hour after the event |
  * | `order.cancelled`, `order.refunded_full`, `order.chargeback_opened`, `order.cancelled_refunded` | from before delivery | withdraw the open or accepted assignment; `payout_adjustment` for a buyer cancel from `accepted` or `paid` (`./withdrawal`, TASK-330) |
@@ -84,33 +85,49 @@ const OccurredRow = z.object({
 });
 
 /**
- * Row 2: the payment is secured, so the order is routed — unless something already moved it, or
- * `routing.auto` is off for its destination, which sends it to the founder at once (TASK-329).
+ * `startRouting` (spec 021 §12's request on spec 016): route a `paid_unrouted` order now, unless
+ * something already moved it, or `routing.auto` is off for its destination, which sends it to the
+ * founder at once (TASK-329). Runs on the caller's transaction, under the order's row lock.
+ * Returns whether the order was still `paid_unrouted`.
+ */
+export async function startRouting(
+  orderId: string,
+  mode: OutboxDeliveryEvent["mode"],
+  executor: OutboxHandlerContext["executor"],
+  deps: RoutingStepDeps,
+): Promise<boolean> {
+  const [row] = await executor.execute(sql`
+    SELECT status FROM "order" WHERE id = ${orderId} FOR UPDATE`);
+  if (row === undefined || StatusRow.parse(row).status !== "paid_unrouted") {
+    return false;
+  }
+  if (await routingAutoOn(executor, orderId)) {
+    await deps.schedule([{ name: "order.route", orderId }]);
+    return true;
+  }
+  await transition(
+    orderId,
+    "order.no_partner_available",
+    ORDER_ROUTE_ACTOR,
+    { mode },
+    { executor },
+  );
+  await scheduleNoPartnerExpiry(executor, orderId, deps.schedule);
+  deps.alert("routing.no_partner", {
+    order_id: orderId,
+    reason: "routing_auto_off",
+  });
+  return true;
+}
+
+/**
+ * Row 2: the payment is secured, so the order is routed (`startRouting`). Spec 021's
+ * `order.risk_released` (status-preserving, `paid_unrouted` to `paid_unrouted`) takes the same
+ * step: a released hold is routed exactly as an unheld order (TASK-494).
  */
 const routeWhenSecured: RoutingStep = async (event, context, deps) => {
   if (event.toStatus !== "paid_unrouted") return;
-  const executor = context.executor;
-  const [row] = await executor.execute(sql`
-    SELECT status FROM "order" WHERE id = ${event.orderId} FOR UPDATE`);
-  if (row === undefined || StatusRow.parse(row).status !== "paid_unrouted") {
-    return;
-  }
-  if (await routingAutoOn(executor, event.orderId)) {
-    await deps.schedule([{ name: "order.route", orderId: event.orderId }]);
-    return;
-  }
-  await transition(
-    event.orderId,
-    "order.no_partner_available",
-    ORDER_ROUTE_ACTOR,
-    { mode: event.mode },
-    { executor },
-  );
-  await scheduleNoPartnerExpiry(executor, event.orderId, deps.schedule);
-  deps.alert("routing.no_partner", {
-    order_id: event.orderId,
-    reason: "routing_auto_off",
-  });
+  await startRouting(event.orderId, event.mode, context.executor, deps);
 };
 
 /** The four withdrawal events (TASK-330): stop the florist, record a cancel after acceptance. */
@@ -144,6 +161,7 @@ export const ROUTING_STEPS: Readonly<
   Partial<Record<OrderEventType, RoutingStep>>
 > = {
   "order.captured": routeWhenSecured,
+  "order.risk_released": routeWhenSecured,
   "order.delivered": remindPhotoAfterDelivery,
   "order.cancelled": withdrawWhenStopped,
   "order.refunded_full": withdrawWhenStopped,
@@ -167,7 +185,13 @@ export function routingOutboxHandler(
   };
 }
 
-/** Registers the handler with the dispatcher, once per process (the worker's job table). */
-export function registerRoutingOutbox(deps: RoutingHandlerDeps = {}): void {
-  registerOutboxHandler("routing", routingOutboxHandler(deps));
+/**
+ * Registers the handler with the dispatcher, once per process (the worker's job table). `wrap`
+ * composes spec 021's risk gate around it (`riskGatedRouting`), so this handler does not change.
+ */
+export function registerRoutingOutbox(
+  deps: RoutingHandlerDeps = {},
+  wrap: (inner: OutboxHandler) => OutboxHandler = (inner) => inner,
+): void {
+  registerOutboxHandler("routing", wrap(routingOutboxHandler(deps)));
 }

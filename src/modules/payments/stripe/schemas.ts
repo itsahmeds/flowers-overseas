@@ -23,7 +23,13 @@ export const StripeChargeSchema = z.object({
   id: z.string().min(1),
   object: z.literal("charge"),
   payment_intent: expandable.nullish(),
-  outcome: z.object({ risk_score: z.number().int().nullish() }).nullish(),
+  outcome: z
+    .object({
+      risk_score: z.number().int().nullish(),
+      risk_level: z.string().nullish(),
+      type: z.string().nullish(),
+    })
+    .nullish(),
   payment_method_details: z
     .object({
       type: z.string().min(1),
@@ -31,6 +37,8 @@ export const StripeChargeSchema = z.object({
         .object({
           brand: z.string().nullish(),
           last4: z.string().nullish(),
+          country: z.string().nullish(),
+          fingerprint: z.string().nullish(),
           capture_before: unixSeconds.nullish(),
           three_d_secure: z.object({ result: z.string().nullish() }).nullish(),
           wallet: z.object({ type: z.string().min(1) }).nullish(),

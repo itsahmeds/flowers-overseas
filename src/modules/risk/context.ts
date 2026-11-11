@@ -56,3 +56,33 @@ export function resolveRiskDeps(deps: RiskDeps = {}): ResolvedRiskDeps {
     hashKey: deps.hashKey ?? defaultHashKey,
   };
 }
+
+/** What an admin read or decision runs under (`withAdminContext`). */
+export interface AdminRiskContext {
+  readonly userId?: string;
+  readonly requestId?: string;
+  /** The audit action: `risk.review.<decision>` for a decision, `risk.read` for a read. */
+  readonly action: string;
+}
+
+/**
+ * An admin-context transaction for the review pages (TASK-494): `withAdminContext` with `context`,
+ * its handle wrapped for the engine. `@/lib/db` loads on the first call, never at import.
+ */
+export function adminRiskTransaction(
+  context: AdminRiskContext,
+): RiskTransaction {
+  return async (fn) => {
+    const { withAdminContext } = await import("@/lib/db");
+    return withAdminContext(
+      {
+        action: context.action,
+        ...(context.userId === undefined ? {} : { userId: context.userId }),
+        ...(context.requestId === undefined
+          ? {}
+          : { requestId: context.requestId }),
+      },
+      (db) => withExecutor({ db }, "risk.admin", fn),
+    );
+  };
+}

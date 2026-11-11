@@ -58,6 +58,10 @@ export const REFUND_REASONS = [
   "goodwill",
   "duplicate",
   "other",
+  // Spec 021 §5.1 A11 (b) (TASK-494): a precautionary risk cancel, and a confirmed fraud, which
+  // the provider is told (`reason: 'fraudulent'` at Stripe, `refundProviderReason`).
+  "risk_cancel",
+  "fraud_confirmed",
 ] as const;
 
 export const RefundReasonSchema = z.enum(REFUND_REASONS);
