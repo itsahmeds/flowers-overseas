@@ -9048,5 +9048,25 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "a238c5b4ab8a0b7fcfdfc6a70388970a2eb39d66a4c983821331a8bd258d0dbf"
+  },
+  "admin.flags.confirmBody.risk.gate.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e6791f6e034d75bcd0694a9ad0d413bc7e14121b964e83e2ef0c4e5f72d7bfe"
+  },
+  "admin.flags.confirmBody.risk.gate.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8208c9937a31b58fbdb71dd7999d313ffd41afe36f27ebd8dc346531983adbcd"
+  },
+  "admin.flags.confirmBody.risk.pay_pause.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fb786d8c17481541a480867bfccdc7f3581a279de24156cd2ae7de10366fb2ef"
+  },
+  "admin.flags.confirmBody.risk.pay_pause.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8d9ad4169c8b3370a99dd64e748c2df16845155950548f9f59b3b47dd1398b93"
   }
 }

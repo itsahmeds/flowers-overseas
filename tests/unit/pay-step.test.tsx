@@ -214,7 +214,10 @@ describe("registration (spec 013 §5.2: only with the router and the keys)", () 
 
   it("the worker's job table registers the routing handler unconditionally at load", () => {
     const table = source("src/jobs/handlers.ts");
-    expect(table).toMatch(/^registerRoutingOutbox\(\);$/mu);
+    // Spec 021 (TASK-494): composed with the risk gate, still unconditional, still at load.
+    expect(table).toMatch(
+      /^registerRoutingOutbox\(\{\}, \(inner\) =>\s+riskGatedRouting\(inner, riskGateDeps\),?\s*\);$/mu,
+    );
   });
 });
 

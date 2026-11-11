@@ -109,6 +109,15 @@ const CONFIRM_BODY = {
     on: "admin.flags.confirmBody.payouts.accrue.on",
     off: "admin.flags.confirmBody.payouts.accrue.off",
   },
+  // Spec 021 §12 (TASK-494): the risk gate (off is shadow mode) and the payment pause.
+  "risk.gate": {
+    on: "admin.flags.confirmBody.risk.gate.on",
+    off: "admin.flags.confirmBody.risk.gate.off",
+  },
+  "risk.pay_pause": {
+    on: "admin.flags.confirmBody.risk.pay_pause.on",
+    off: "admin.flags.confirmBody.risk.pay_pause.off",
+  },
 } as const satisfies Partial<
   Record<FlagKey, { readonly on: string; readonly off: string }>
 >;

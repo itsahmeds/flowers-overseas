@@ -50,7 +50,8 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
     // transaction (spec 020a §12 request 1, TASK-359): the same refund amount, the same checks.
     // Every other export takes no amount at all, spec 013 §11's monitors (TASK-264) included, and
     // spec 030b's balance facts (TASK-439): `recordBalanceFacts` stores provider facts, never a
-    // charge amount of ours.
+    // charge amount of ours. Spec 021's `attemptStats`, `endPaymentAttempts` (TASK-493) and
+    // `riskFactsFor` (TASK-494) take ids and instants only.
     expectTypeOf<AmountTakers<Barrel>>().toEqualTypeOf<
       "refund" | "requestRefund"
     >();
@@ -68,6 +69,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "CANCELLED_STATES",
       "DISPUTABLE_STATES",
       "FEES_MISSING_ALERT",
+      "LIABILITY_SHIFT_RESULTS",
       "PAID_NOT_ROUTED_ALERT",
       "PAYMENTS_ACTOR",
       "PAYMENTS_MONITOR_JOB",
@@ -77,7 +79,9 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "PaymentNotCaptured",
       "PaymentRecordSchema",
       "REFUNDABLE_STATES",
+      "RISK_ACTOR",
       "RefundReasonSchema",
+      "RiskFactsUnavailable",
       "SWEEP_ACTOR",
       "WEBHOOK_MAX_ATTEMPTS",
       "WEBHOOK_MAX_BYTES",
@@ -85,6 +89,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "adminCancel",
       "adminRefund",
       "adminRefundDeps",
+      "attemptStats",
       "balanceBackfillJobs",
       "balanceFetchKey",
       "balanceKindOf",
@@ -93,6 +98,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "createPaymentAcceptedOrderEffect",
       "declineMessageKey",
       "deliverAcceptance",
+      "endPaymentAttempts",
       "ingestStripeWebhook",
       "paidNotRoutedDue",
       "paymentAcceptedOrderEffect",
@@ -108,6 +114,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "replayStripeWebhooks",
       "replayWebhooks",
       "requestRefund",
+      "riskFactsFor",
       "runBalanceBackfill",
       "runBalanceFetch",
       "runBalanceSweep",
@@ -115,6 +122,7 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
       "runProductionStart",
       "startPayment",
       "startProduction",
+      "stripeProviderFromEnv",
       "submitRefund",
       "succeededRefunds",
       "sweepPayments",

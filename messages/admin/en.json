@@ -413,6 +413,16 @@
             "off": "Payout work will stop: no price is fixed when a florist accepts and no prepaid payout is made. The work waits and is done once this is on again. Type the flag's name to confirm.",
             "on": "Payout work that waited will be done now, then each time a florist accepts. Type the flag's name to confirm."
           }
+        },
+        "risk": {
+          "gate": {
+            "on": "Orders our checks hold will wait for your decision before any florist sees them, and a decisive signal cancels and refunds. Type the flag's name to confirm.",
+            "off": "Every order will go to florists whatever the checks say; they are still recorded, and open reviews stay open until decided. Type the flag's name to confirm."
+          },
+          "pay_pause": {
+            "on": "Every new payment will be refused until you turn this off. Nothing is charged. Type the flag's name to confirm.",
+            "off": "New payments will be taken again. Type the flag's name to confirm."
+          }
         }
       },
       "confirmField": "Flag name",
