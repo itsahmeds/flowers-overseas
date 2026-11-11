@@ -29,6 +29,7 @@ import {
   formatDateParts,
   loadMessages,
 } from "../../src/modules/i18n";
+import { unreviewedOrDelegated } from "./support/approval.ts";
 
 const FROM = "2026-09-15";
 
@@ -358,12 +359,13 @@ describe("T-40 (A11): the approved Rule-column strings (AC-38)", () => {
   } as const;
   const meta = readJson("en.meta.json") as Record<
     string,
-    { reviewed?: boolean; sourceHash?: string }
+    { reviewed?: boolean; reviewedBy?: string; sourceHash?: string }
   >;
 
   it.each(Object.entries(APPROVED))("`%s` is %j, unreviewed", (key, value) => {
     expect(at(EN, key)).toBe(value);
-    expect(meta[key]?.reviewed).toBe(false);
+    // Unreviewed, or approved since by the orchestrator's delegated record (TASK-522).
+    expect(unreviewedOrDelegated(meta[key])).toBe(true);
     expect(meta[key]?.sourceHash).toBe(
       createHash("sha256").update(value).digest("hex"),
     );
