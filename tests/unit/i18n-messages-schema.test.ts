@@ -373,6 +373,14 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-210: the florist chrome's five keys moved from `floristInbox` to `floristAuth`, the
     // scoped namespace, when the walkthrough made `floristInbox` counted; `floristInbox.orders` is
     // the walkthrough's "Orders" and left this queue with record-approval-210.py.
+    "emails.reviewInvite.lede",
+    "emails.reviewInvite.minute",
+    "emails.reviewInvite.optOutLead",
+    "emails.reviewInvite.optOutLink",
+    "emails.reviewInvite.policy",
+    "emails.reviewInvite.starLabel",
+    "emails.reviewInvite.starText",
+    "emails.reviewInvite.subject",
     "floristAuth.confirmSubmit",
     "floristAuth.demoNotice",
     "floristAuth.email",

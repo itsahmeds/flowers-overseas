@@ -112,6 +112,23 @@ const LEGAL_REVIEW_VERB: Readonly<Record<string, string>> = {
     "Draft, not in force. We are not taking orders yet, so these terms do not apply to anyone. A lawyer will review them before our first order, and the reviewed version will be published here with its date.",
 };
 
+/**
+ * **The fourth exception: spec 022a's own review words** (TASK-370 to TASK-373). Once reviews are
+ * real (a buyer's, from a delivered order), the review email, the review form, the reviews page,
+ * the PDP and corridor blocks and the review policy must say "review". Their keys live under these
+ * prefixes only, and what keeps AC-15 true is that **only data can make them render**: B9 needs
+ * `reviews.invite` on and a delivered `live` order; the form needs a token minted for one; the
+ * reviews page answers 404 with zero published reviews, a block needs three, the policy and the
+ * footer links exist only while the flag is on or a review is published. The DOM half is spec 022a
+ * AC-28's gate (`[data-fo-reviews]`, `tests/unit/reviews-display-gate.test.tsx`): a review word
+ * outside that region, or the region with zero published reviews, fails.
+ */
+const REVIEWS_022A_PREFIXES: readonly string[] = [
+  "emails.reviewInvite.",
+  "reviews.",
+  "footer.reviewLinks.",
+];
+
 function flat(
   tree: unknown,
   prefix = "",
@@ -142,6 +159,9 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
         if (key === RETAINED_UNRENDERED) continue;
         if (GATED_UNRENDERED.includes(key)) continue;
         if (LEGAL_REVIEW_VERB[key] === value) continue;
+        if (REVIEWS_022A_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+          continue;
+        }
         for (const { name, pattern } of FORBIDDEN) {
           if (pattern.test(value)) offences.push(`${key}: ${name} — ${value}`);
         }
@@ -400,7 +420,7 @@ describe("the verified-reviews copy is unreachable, which is why the grep excuse
     // No review **data** lives in `src/config`: a review can only arrive from a buyer, which is
     // what the founder's 2026-09-08 "real-only, never seeded" ruling requires. The one
     // `src/config/reviews.*` is spec 022a's constants file (TASK-368), and every export of it is a
-    // number (a delay, a cap, a threshold), never a review.
+    // number (a delay, a cap, a threshold, an hour), never a review.
     const { readdir } = await import("node:fs/promises");
     const config = await readdir(resolve(repoRoot, "src/config"));
     expect(config.filter((entry) => entry.startsWith("reviews"))).toEqual([

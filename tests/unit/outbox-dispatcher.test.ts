@@ -85,6 +85,7 @@ describe("HandlerRegistry (AC-20, type half)", () => {
       "notifications",
       "payments",
       "payouts",
+      "reviews",
       "risk",
       "routing",
     ]);

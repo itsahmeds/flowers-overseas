@@ -49,16 +49,5 @@ export const RATING_BP_PER_STAR = 2000;
 export const REVIEW_RATING_MIN = 1;
 export const REVIEW_RATING_MAX = 5;
 
-/**
- * The review policy's leaf under the `legal` segment (spec 022a §6 "URLs"): `/{locale}/legal/reviews`,
- * `/de/rechtliches/bewertungsrichtlinie`, `/pl/informacje-prawne/zasady-opinii`. `en`-language and
- * pseudo locales read the English leaf, as every legal document does.
- */
-export const REVIEW_POLICY_LEAVES = {
-  en: "reviews",
-  de: "bewertungsrichtlinie",
-  pl: "zasady-opinii",
-} as const;
-
 /** `partners.rating_refresh` runs for every non-demo florist in this UTC hour, once a day (§5.2). */
 export const RATING_REFRESH_HOUR_UTC = 3;

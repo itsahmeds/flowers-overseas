@@ -908,7 +908,7 @@ export async function sendReviewInviteNotification(
       locale: facts.locale_code,
       sourceKey: `job:${job}:${parsed.inviteId}`,
       orderId: parsed.orderId,
-      purchaseId: facts.purchase_id,
+      purchaseId: null,
       assignment: null,
     },
     resolved,
