@@ -39,7 +39,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-- 2026-11-11 implementer (TASK-297 and TASK-298 as one feature PR, #543): main's red `migrations-round-trip` fixed (0045's two functions); shared rules in `src/modules/catalog/validate/` read by `catalogue:check`, `seed:check` and the admin save; the commands in `src/modules/admin/catalogue.ts`; the one-way placeholder window; `/admin/catalogue/products`, `/new`, `/[sku]`; integration suite `catalog-cms` green on a local PG16; clean-env staging build green.
+- 2026-11-11 implementer (TASK-297 and TASK-298 as one feature PR, #543): main's red `migrations-round-trip` fixed (0045's two functions); after the rebase on #541 and #542, `admin-scans` also knows TASK-370's `at` and `note` params; shared rules in `src/modules/catalog/validate/` read by `catalogue:check`, `seed:check` and the admin save; the commands in `src/modules/admin/catalogue.ts`; the one-way placeholder window; `/admin/catalogue/products`, `/new`, `/[sku]`; integration suite `catalog-cms` green on a local PG16; clean-env staging build green.
 
 ## Result
 

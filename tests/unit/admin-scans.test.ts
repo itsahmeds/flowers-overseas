@@ -505,6 +505,9 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       florists: "pl-krk-pod-lipa",
       // TASK-295's `admin.publish.list*`.
       language: "English",
+      // TASK-370's `admin.reviews.detail.*`.
+      at: "5 Oct, 12:02",
+      note: "Checked with the florist",
       formatted: "45.00 zł",
       hours: 19,
       kind: "weekly",
