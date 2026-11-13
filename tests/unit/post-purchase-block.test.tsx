@@ -141,6 +141,8 @@ function placed(
         card: null,
         addonNameKeys: [],
         amount: { amountMinor: 4590, currency: "GBP" },
+        // Spec 047 (TASK-447): no discount on this delivery.
+        discount: null,
       },
     ],
   } as unknown as Confirmation;

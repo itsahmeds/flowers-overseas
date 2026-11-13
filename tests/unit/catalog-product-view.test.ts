@@ -670,8 +670,10 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
         row.deployment,
       );
       for (const term of INDEXABILITY_TERMS) {
+        // `coreStocked` is the hubs' rule 2 (spec 008 AC-94; TASK-438): a PDP never states it,
+        // so it is absent from the PDP's conjunction rather than left to an omission.
         expect(typeof verdict.terms[term], `${row.name}: ${term}`).toBe(
-          "boolean",
+          term === "coreStocked" ? "undefined" : "boolean",
         );
       }
     }

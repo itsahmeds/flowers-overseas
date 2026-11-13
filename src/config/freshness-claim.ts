@@ -339,6 +339,16 @@ export const DAYS_A_WEEK =
   /(?<![\p{L}\p{N}_])(?:\p{Nd}+|seven|sieben|siedem)\s*(?:days? (?:a|per) week|tage (?:die|pro|in der) woche|dni w tygodniu)(?![\p{L}\p{N}_])/gu;
 
 /**
+ * A look-back window, "the last N days" or "the last N weeks" ("in the last 30 days", the
+ * Omnibus lowest-price window; "decided in the last 7 days"): a period we count back over, not
+ * how long flowers last, so it is removed before the scan, **unless** a freshness or guarantee
+ * word sits within `FRESHNESS_WINDOW` words of it, as `DAYS_A_WEEK` is (TASK-522). Only with
+ * "the" before "last": "flowers that last 7 days" is still a claim.
+ */
+export const LOOKBACK_WINDOW =
+  /(?<![\p{L}\p{N}_])the last\s+\p{Nd}+\s*(?:days?|weeks?)(?![\p{L}\p{N}_])/gu;
+
+/**
  * The statutory cancellation right named as such ("the 14-day cancellation right", "the 14-day
  * right to cancel", "the 14-day right of withdrawal"): a legal right, not a duration of freshness,
  * so it is removed before the scan, as the header says that copy is meant to pass. Spec 010's
@@ -368,6 +378,9 @@ export function normaliseForScan(text: string): string {
     .replaceAll("ß", "ss");
   return folded
     .replaceAll(DAYS_A_WEEK, (phrase: string, offset: number) =>
+      claimWordNear(folded, offset, offset + phrase.length) ? phrase : " ",
+    )
+    .replaceAll(LOOKBACK_WINDOW, (phrase: string, offset: number) =>
       claimWordNear(folded, offset, offset + phrase.length) ? phrase : " ",
     )
     .replaceAll(STATUTORY_RIGHT, " ");

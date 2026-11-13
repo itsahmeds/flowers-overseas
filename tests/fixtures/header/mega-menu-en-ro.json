@@ -142,7 +142,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 26690,
+            "amountMinor": 23090,
             "currency": "RON"
           },
           "priceLabelKey": "catalog.price.inclusive",
@@ -313,7 +313,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 35490,
+            "amountMinor": 30590,
             "currency": "RON"
           },
           "priceLabelKey": "catalog.price.inclusive",
@@ -371,7 +371,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 35490,
+            "amountMinor": 30590,
             "currency": "RON"
           },
           "priceLabelKey": "catalog.price.inclusive",

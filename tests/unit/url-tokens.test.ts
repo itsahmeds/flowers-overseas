@@ -20,6 +20,7 @@ import {
 } from "../../src/lib/consent-bootstrap.ts";
 import { beforeSend } from "../../src/lib/sentry.ts";
 import { scrubUrlTokens } from "../../src/lib/url-tokens.ts";
+import { sanitisePageLocation } from "../../src/modules/analytics/location.ts";
 
 const TOKEN =
   "eyJwIjoiQWJDZEVmR2hJaktsTW5PcFFyU3RVdiIsInYiOjF9.Zm9vYmFyYmF6cXV4";
@@ -74,26 +75,30 @@ function bootstrapAt(href: string): unknown[][] {
 }
 
 describe("GA4 page_location (AC-14)", () => {
+  // Since spec 023 (TASK-492) the bootstrap queues no `config` before a grant; the deferred
+  // loader sends `sanitisePageLocation()` of the address, which absorbed the token rewrite
+  // (`src/modules/analytics/location.ts`; TASK-522).
   it.each([
     [TRACK, "https://flowersoverseas.com/en-gb/track/:token"],
     [`${TRACK}/photo`, "https://flowersoverseas.com/en-gb/track/:token/photo"],
-    [
-      INVOICE,
-      "https://flowersoverseas.com/en-gb/account/invoices/9f1c?t=:token&download=1",
-    ],
+    // Spec 023 AC-7 (TASK-492): the invoice id is a private segment, and only `step` and the
+    // `utm_*` keys survive in the query, so `t=` and `sent=` never leave the browser.
+    [INVOICE, "https://flowersoverseas.com/en-gb/account/invoices/:invoice"],
     [
       "https://flowersoverseas.com/en-gb/track?sent=1",
-      "https://flowersoverseas.com/en-gb/track?sent=1",
+      "https://flowersoverseas.com/en-gb/track",
     ],
-  ])("queues config for %s with page_location %s", (href, expected) => {
-    const config = bootstrapAt(href).find((entry) => entry[0] === "config");
-    expect(config).toEqual([
-      "config",
-      "G-TESTID1234",
-      { page_location: expected },
-    ]);
-    expect(JSON.stringify(bootstrapAt(href))).not.toContain(TOKEN);
-    expect(JSON.stringify(bootstrapAt(href))).not.toContain(INVOICE_TOKEN);
+  ])("sends %s as page_location %s", (href, expected) => {
+    expect(sanitisePageLocation(href)).toBe(expected);
+    expect(sanitisePageLocation(href)).not.toContain(TOKEN);
+    expect(sanitisePageLocation(href)).not.toContain(INVOICE_TOKEN);
+  });
+
+  it("queues no config, and so no address, before a grant", () => {
+    expect(bootstrapAt(TRACK).filter((entry) => entry[0] === "config")).toEqual(
+      [],
+    );
+    expect(JSON.stringify(bootstrapAt(TRACK))).not.toContain(TOKEN);
   });
 });
 

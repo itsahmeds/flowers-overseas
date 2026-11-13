@@ -26,8 +26,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
-import { ga4MeasurementId } from "@/lib/env.schema";
-import { readAnalyticsContext } from "@/modules/analytics";
+import { consentSources, readAnalyticsContext } from "@/modules/analytics";
 
 import {
   BASKET_COOKIE_ATTRIBUTES,
@@ -83,7 +82,10 @@ async function placingContext(locale: string): Promise<StepContext> {
   const jar = await cookies();
   return {
     ...(await context(locale)),
-    analytics: readAnalyticsContext(jar, ga4MeasurementId(process.env)),
+    analytics: readAnalyticsContext(
+      jar,
+      consentSources(process.env).ga4MeasurementId,
+    ),
   };
 }
 

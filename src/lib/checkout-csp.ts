@@ -30,12 +30,8 @@ import {
   payStepCspValue,
 } from "./csp";
 import { cspEnforced } from "./csp-response.ts";
-import {
-  type EnvSource,
-  appEnvironment,
-  ga4MeasurementId,
-  hostPlatform,
-} from "./env.schema";
+import { type EnvSource, appEnvironment, hostPlatform } from "./env.schema";
+import { consentSources } from "../modules/analytics/consent-sources.ts";
 import { parseLocaleFromPath } from "@/modules/i18n/routing";
 
 /** The checkout steps' address after the locale (spec 010 §2, "three steps on one URL"). */
@@ -78,7 +74,8 @@ export function checkoutCspHeaders(
   const value = payStepCspValue(appEnvironment(source), {
     nonce: makeNonce(),
     inlineHashes: [consentBootstrapHash()],
-    ga4: ga4MeasurementId(source) !== undefined,
+    // The one reader (spec 004 AC-21), so the CSP and the tag agree on whether GA4 loads.
+    ga4: consentSources(source).ga4MeasurementId !== undefined,
     platform: hostPlatform(source),
   });
   return cspEnforced(source)

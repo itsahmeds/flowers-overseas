@@ -468,6 +468,11 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       mark: "interflora",
       label: "review",
       line: 3,
+      // TASK-300's `admin.countries.*` (a day range of the delivery week).
+      first: "Mon",
+      last: "Sat",
+      floor: 24,
+      iso2: "PL",
       construct: "quote",
       // TASK-332's `emails.ops.*`.
       variable: "OPS_ALERT_EMAIL",

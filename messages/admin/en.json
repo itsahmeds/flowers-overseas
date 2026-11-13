@@ -1400,7 +1400,7 @@
         "ready": "Ready to send",
         "sent": "Sent, waiting for an export",
         "exported": "Exported, waiting for payment",
-        "paid": "Paid, last 8 weeks",
+        "paid": "Paid in the last 8 weeks",
         "adjustments": "Open adjustments",
         "waivers": "Delivered without a photo"
       },

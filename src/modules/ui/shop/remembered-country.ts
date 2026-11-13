@@ -31,6 +31,7 @@
  */
 
 import { PRICES_ROUTE_PREFIX } from "@/config/commerce";
+import { CHOOSER_LINK_REL } from "@/modules/seo/client";
 
 /** `fo_dest` as the chooser writes it (a lowercase ISO code), anywhere in `document.cookie`. */
 export const DEST_COOKIE = /(?:^|;\s*)fo_dest=([a-z]{2})(?:;|$)/;
@@ -119,7 +120,7 @@ export function applyPrices(d: Document, body: PricesDocumentBody): void {
   )) {
     const link = d.createElement("a");
     link.href = change;
-    link.rel = "nofollow";
+    link.rel = CHOOSER_LINK_REL;
     link.className =
       "text-link ms-[8px] font-bold underline underline-offset-4";
     link.setAttribute("data-fo-change", "");

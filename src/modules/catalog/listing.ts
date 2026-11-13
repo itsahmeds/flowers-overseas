@@ -1497,7 +1497,7 @@ async function hubCoreProducts(
  * A-orchestrator-2026-11-04a rule 2: "a flower type or product kind"). A category of kind
  * `occasion` is neither and takes rule 1 (Q-04a-1). Taxonomy values, never a category key.
  */
-const UNSTOCKED_NOINDEX_CATEGORY_KINDS: readonly CategoryKind[] = [
+const RULE2_CATEGORY_KINDS: readonly CategoryKind[] = [
   "productType",
   "flowerType",
 ];
@@ -1603,7 +1603,7 @@ async function hubTagged(
     (await productsFor(pageType, entityKey, kind, undefined, identity.locale));
   const statesTerm =
     pageType === "categoryHub"
-      ? UNSTOCKED_NOINDEX_CATEGORY_KINDS.includes(
+      ? RULE2_CATEGORY_KINDS.includes(
           (await getCategory(entityKey))?.kind ?? "occasion",
         )
       : products.length > 0 &&

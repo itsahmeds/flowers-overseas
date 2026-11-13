@@ -16,6 +16,7 @@
  * without a valid link); the `account` flag gates that half only, because the launch emails carry
  * these links while the account is off.
  */
+import { TRANSACTIONAL_ROBOTS_HEADERS } from "@/modules/seo";
 import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
@@ -34,7 +35,7 @@ export const INVOICE_LINK_QUERY_KEY = "t";
 /** The headers every answer carries (AC-12). */
 export const INVOICE_DOWNLOAD_HEADERS = {
   "Cache-Control": "private, no-store",
-  "X-Robots-Tag": "noindex, nofollow",
+  ...TRANSACTIONAL_ROBOTS_HEADERS,
   "Referrer-Policy": "no-referrer",
   "X-Content-Type-Options": "nosniff",
 } as const;

@@ -98,9 +98,14 @@ export function resolveImport(
   return undefined;
 }
 
-/** `import … from "x"`, `export … from "x"` and bare `import "x"`, single or double quoted. */
+/**
+ * `import … from "x"`, `export … from "x"` and bare `import "x"`, single or double quoted. A
+ * statement that is wholly `import type` / `export type` is erased by the compiler and puts no
+ * module in any graph, so it is not an edge (TASK-522: the corridor route's `import type` of a
+ * checkout view shape is not a runtime path to the checkout module).
+ */
 const SPECIFIER =
-  /(?:^|\n)\s*(?:import|export)\s(?:[^;'"]*?from\s*)?["']([^"']+)["']/g;
+  /(?:^|\n)\s*(?:import|export)\s(?!type\s)(?:[^;'"]*?from\s*)?["']([^"']+)["']/g;
 
 /**
  * A dynamic `import("x")` or a `require("x")`: a lazy chunk is still a client chunk a browser may

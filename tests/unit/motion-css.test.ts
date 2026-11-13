@@ -316,11 +316,25 @@ describe("A24 clause 9 (f): no route-level loading fallback", () => {
     });
   }
 
-  it("has no `loading.*` file anywhere under `src/app`", () => {
-    const loaders = files(resolve(repoRoot, "src/app")).filter((path) =>
-      /\/loading\.(t|j)sx?$/.test(path),
-    );
-    expect(loaders).toEqual([]);
+  // A24 aligns the specs to the round-2 *public* artboards; the staff-only admin is not drawn
+  // there, and spec 030b §5.3 (with the orchestrator's artboard ruling of 2026-10-23) gives five
+  // admin finance and partner pages a loading state that reads nothing. So the clause holds for
+  // every route outside `src/app/admin/`, and the admin's loaders are named, not ignored
+  // (TASK-522).
+  const ADMIN_LOADERS = [
+    "src/app/admin/(signed-in)/finance/loading.tsx",
+    "src/app/admin/(signed-in)/finance/orders/loading.tsx",
+    "src/app/admin/(signed-in)/partners/[code]/contracts/loading.tsx",
+    "src/app/admin/(signed-in)/partners/[code]/money/loading.tsx",
+    "src/app/admin/(signed-in)/partners/[code]/relationship/loading.tsx",
+  ];
+
+  it("has no `loading.*` file under `src/app` outside the five spec 030b admin pages", () => {
+    const loaders = files(resolve(repoRoot, "src/app"))
+      .filter((path) => /\/loading\.(t|j)sx?$/.test(path))
+      .map((path) => path.slice(repoRoot.length + 1))
+      .sort();
+    expect(loaders).toEqual([...ADMIN_LOADERS].sort());
   });
 });
 

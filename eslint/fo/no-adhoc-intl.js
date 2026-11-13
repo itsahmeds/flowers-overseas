@@ -56,6 +56,9 @@
 export const FORMATTER_MODULE_FILES = [
   "src/modules/i18n/format.ts",
   "src/modules/i18n/collate.ts",
+  // TASK-522: `formatMoney`'s import-free core, which `format.ts` delegates to and `client.ts`
+  // reaches without zod. Still one implementation of money formatting.
+  "src/modules/i18n/money-format.ts",
 ];
 
 /** `Intl` members that identify or enumerate locales instead of formatting a value. */

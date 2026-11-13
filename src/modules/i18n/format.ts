@@ -48,6 +48,11 @@ import {
   currencyConfig,
 } from "../../config/currencies.ts";
 
+import {
+  type FormatMoneyOptions,
+  decimalString,
+  formatMinorMoney,
+} from "./money-format.ts";
 import { type LocaleCode, getLocaleRegistry } from "./registry.ts";
 
 /* -------------------------------------------------------------------------- */
@@ -207,46 +212,11 @@ function tagFor(locale: LocaleCode): string {
 /* The integer → decimal-string path                                           */
 /* -------------------------------------------------------------------------- */
 
-/**
- * Shift `minorUnits` right by `exponent` digits, as text. This is the whole of the minor→major
- * conversion in the codebase (§5.3 "behavioural contracts"): string slicing on the decimal
- * digits of an integer, so the result is exact for every integer `bigint` can hold and for every
- * exponent, including 0 (HUF renders no fraction part at all).
- */
-function decimalString(
-  minorUnits: number | bigint,
-  exponent: number,
-): Intl.StringNumericLiteral {
-  const units = BigInt(minorUnits);
-  const negative = units < 0n;
-  const digits = (negative ? -units : units).toString();
-  const sign = negative ? "-" : "";
-  if (exponent === 0) {
-    return `${sign}${digits}` as Intl.StringNumericLiteral;
-  }
-  const padded = digits.padStart(exponent + 1, "0");
-  const split = padded.length - exponent;
-  const whole = padded.slice(0, split);
-  const fraction = padded.slice(split);
-  // The cast is the one place a built string meets `Intl`'s `${number}` template type; the
-  // string is a decimal literal by construction (sign, digits, `.`, digits).
-  return `${sign}${whole}.${fraction}` as Intl.StringNumericLiteral;
-}
-
 /* -------------------------------------------------------------------------- */
 /* Public formatters                                                           */
 /* -------------------------------------------------------------------------- */
 
-export interface FormatMoneyOptions {
-  /**
-   * Render the ISO code instead of the symbol (`45,00 EUR`), for the `title`/`aria-label` that
-   * `plan/03` §7 asks for "for clarity across currencies". `Intl` places the code per locale, so
-   * no caller concatenates one.
-   */
-  readonly withIsoCode?: boolean;
-  /** `always` for an explicit `+`, e.g. a refund line or an FX delta. Default: `auto`. */
-  readonly signDisplay?: "auto" | "always" | "exceptZero" | "never";
-}
+export type { FormatMoneyOptions } from "./money-format.ts";
 
 /**
  * The only price renderer in the application. Integer minor units in, localised currency string
@@ -259,12 +229,13 @@ export function formatMoney(
 ): string {
   const { amountMinor, currency } = MoneySchema.parse(money);
   const { minorUnitExponent } = currencyConfig(currency);
-  return numberFormat(tagFor(locale), {
-    style: "currency",
+  return formatMinorMoney(
+    tagFor(locale),
     currency,
-    currencyDisplay: opts.withIsoCode === true ? "code" : "symbol",
-    signDisplay: opts.signDisplay ?? "auto",
-  }).format(decimalString(amountMinor, minorUnitExponent));
+    amountMinor,
+    minorUnitExponent,
+    opts,
+  );
 }
 
 /**

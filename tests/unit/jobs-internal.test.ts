@@ -308,9 +308,19 @@ describe("the route files, as Next loads them", () => {
     // §11 (TASK-342) one invoice.render_sweep under its own, before it ticks, so the same tick
     // consumes them; spec 030a §5.2 (TASK-364) adds payouts.close and payouts.watch, each under a
     // key unique for an hour; spec 013 §11 (TASK-264) one payments.monitor under its own key.
-    // Spec 021 (TASK-493) adds one risk.monitor a minute.
-    expect(enqueue).toHaveBeenCalledTimes(15);
-    expect(enqueue.mock.calls.map((call) => call.slice(1))).toEqual([
+    // Spec 021 (TASK-493) adds one risk.monitor a minute; spec 022a (TASK-370) one review.request
+    // a minute, and (TASK-372) partners.rating_refresh only in the 03:00 UTC hour, which this
+    // real-clock test leaves out of the ordered list (TASK-522).
+    const nightly = enqueue.mock.calls.filter(
+      (call) => call[1] === "partners.rating_refresh",
+    );
+    expect(nightly).toHaveLength(new Date().getUTCHours() === 3 ? 1 : 0);
+    expect(enqueue).toHaveBeenCalledTimes(16 + nightly.length);
+    expect(
+      enqueue.mock.calls
+        .filter((call) => call[1] !== "partners.rating_refresh")
+        .map((call) => call.slice(1)),
+    ).toEqual([
       ["outbox.dispatch", {}, { requestId: "system:jobs.tick" }],
       ["payments.production_start", {}, { requestId: "system:jobs.tick" }],
       [
@@ -322,6 +332,11 @@ describe("the route files, as Next loads them", () => {
         "order.close_sweep",
         {},
         { requestId: "system:jobs.tick", singletonKey: "order.close_sweep" },
+      ],
+      [
+        "review.request",
+        {},
+        { requestId: "system:jobs.tick", singletonKey: "review.request" },
       ],
       [
         "routing.sla_watch",

@@ -142,7 +142,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 5390,
+            "amountMinor": 4690,
             "currency": "EUR"
           },
           "priceLabelKey": "catalog.price.inclusive",
@@ -313,7 +313,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 7090,
+            "amountMinor": 6190,
             "currency": "EUR"
           },
           "priceLabelKey": "catalog.price.inclusive",
@@ -371,7 +371,7 @@
             "slot": "grid"
           },
           "price": {
-            "amountMinor": 7090,
+            "amountMinor": 6190,
             "currency": "EUR"
           },
           "priceLabelKey": "catalog.price.inclusive",

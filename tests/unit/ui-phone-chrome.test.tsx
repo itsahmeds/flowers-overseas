@@ -332,7 +332,8 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
         "fixed",
         "hidden",
         "start-0",
-        "top-[65px]",
+        // TASK-520 put the search field's row under the 65 px header: 122 px in all.
+        "top-[122px]",
       ].sort(),
     );
     // Before the panel, so the panel paints over it.
@@ -352,7 +353,8 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
 
   it("is a panel that scrolls inside itself under the 65 px header", () => {
     const panel = classOf(tagWith(renderHeader("en"), "data-fo-menu-panel"));
-    expect(panel).toContain("max-h-[calc(100dvh-65px)]");
+    // Under the header and the search row TASK-520 added (122 px in all).
+    expect(panel).toContain("max-h-[calc(100dvh-122px)]");
     expect(panel).toContain("overflow-y-auto");
     expect(panel).toContain("top-full");
   });
