@@ -27,6 +27,7 @@ import {
   PSEUDO_LOCALES_KEY,
   pseudoLocalesEnabled,
   serverEnvSchema,
+  BUILD_CREDENTIAL_ENV_KEYS,
   BUILD_ENV_KEYS,
   RUNTIME_ENV_KEYS,
   assertRuntimeEnv,
@@ -597,7 +598,7 @@ const repoFile = (relative: string): string =>
  * here is what `validateEnv()` does with the answer.
  */
 describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
-  it("carries APP_ENV and NEXT_PUBLIC_APP_ENV, and 52 keys in total", () => {
+  it("carries APP_ENV and NEXT_PUBLIC_APP_ENV, and 55 keys in total", () => {
     expect(ENV_KEYS).toContain(APP_ENV_KEY);
     expect(ENV_KEYS).toContain(NEXT_PUBLIC_APP_ENV_KEY);
     // PR #62's 26-key contract plus the two spec 040 adds. The number is spelled out because
@@ -614,8 +615,9 @@ describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
     // and `GA4_MP_VALIDATE`;
     // spec 034 (TASK-449) the basket
     // reminder's two: `CONTACT_HMAC_SECRET`, `MARKETING_MAIL_FROM`; spec 021 (TASK-493) the risk
-    // hash key `RISK_HASH_KEY`.
-    expect(ENV_KEYS).toHaveLength(52);
+    // hash key `RISK_HASH_KEY`; spec 012b (TASK-301, AC-29) the build login `DATABASE_BUILD_URL`,
+    // `PUBLISH_TARGET` and `RAILWAY_PUBLISH_TOKEN`.
+    expect(ENV_KEYS).toHaveLength(55);
     expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
   });
 
@@ -830,9 +832,15 @@ describe("the build/runtime split (spec 001 §14 A17, TASK-135)", () => {
   });
 
   it("grades every other key at server start, losing none of them", () => {
-    expect([...BUILD_ENV_KEYS, ...RUNTIME_ENV_KEYS].sort()).toEqual([
-      ...ENV_KEYS,
-    ]);
+    // The build's one credential (spec 012b AC-4, AC-29) is graded by neither: it is a build-stage
+    // `ARG`, never inlined and never read at runtime.
+    expect(
+      [
+        ...BUILD_ENV_KEYS,
+        ...RUNTIME_ENV_KEYS,
+        ...BUILD_CREDENTIAL_ENV_KEYS,
+      ].sort(),
+    ).toEqual([...ENV_KEYS]);
     for (const key of RUNTIME_ENV_KEYS) {
       expect(BUILD_ENV_KEYS, key).not.toContain(key);
     }

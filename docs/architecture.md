@@ -537,6 +537,40 @@ Sentry is initialised from the repository root, and from **two** entrypoints rat
 `instrumentation.ts` loads `sentry.server.config.ts` (node) and `sentry.edge.config.ts` (edge).
 There is no `instrumentation-client.ts` and no `sentry.client.config.ts` — see §4.
 
+### The catalogue as data (spec 012b slice A)
+
+Since spec 012b slice A (TASK-292 to TASK-301) the **database is the master copy** of bouquets,
+sizes, product text, prices, photos and countries; the repository files that authored them
+(`src/config/catalogue/*.data.ts`, `seed/data/**`, `src/config/countries.ts`) fill fresh
+databases and the tests, and nothing in production reads them. UI strings, guides and legal pages
+stay in the repository. The proposed ADR-0021 and ADR-0022 of spec 012b's appendices are not yet
+written: ADR-0021 and ADR-0022 went to other decisions (2026-10-24 and later), so they are written through `/adr` with
+the next free numbers once the founder accepts them (spec 012b §12 founder action 2).
+
+- **Composition roots.** `src/modules/catalog` and `src/modules/geo` choose the database or the
+  repository providers by environment and by whether the deployment carries `DATABASE_BUILD_URL`
+  (TASK-294); no call site outside the two modules knows which.
+- **The build reads the database** through `DATABASE_BUILD_URL`, a login of the read-only
+  `app_build` role, in `src/lib/db.ts` only while `next build` runs. It is the env contract's one
+  build credential (`BUILD_CREDENTIAL_ENV_KEYS` in `src/lib/env.schema.ts`): a `Dockerfile` `ARG`
+  of the build stage, never an `ENV`, never inlined, never read at runtime.
+- **Existence is database AND manifest.** The build writes `.next/existence-manifest.json`;
+  `/api/health` reports its hash as `existenceHash`. A bouquet made active after the build has no
+  page and no link until a **publish**: `/admin/publish` asks the environment's publish target
+  (`src/lib/publish.ts`: `railway`, `fake`, `none`, chosen by `PUBLISH_TARGET`; the Railway
+  project token is `RAILWAY_PUBLISH_TOKEN`) to rebuild the tracked branch head, and the new
+  deployment verifies itself at boot (TASK-295, TASK-296). Content changes reach the edge through
+  `invalidate()` within 60 seconds, with no build.
+- **Review is a ledger.** `attest()` in `src/modules/i18n` is the only writer of
+  `review_attestation` and of the reviewed columns, enforced by `review_write_guard()` in
+  Postgres (TASK-293).
+- **Admin.** `/admin/catalogue/products`, `/admin/media`, `/admin/countries` and `/admin/publish`
+  (TASK-297 to TASK-300), each action guarded first by the §5.2 permission rows
+  (`tests/unit/catalogue-cms-permissions.test.ts`). In production these four sections show the
+  backup warning while no backup has been verified in 48 hours (`src/modules/admin/backup.ts`).
+- **Operations** are in `docs/runbooks/catalogue.md`; the two personal-data flows are rows 25
+  and 26 of `docs/compliance/ropa.md`.
+
 ## 4. Deferred decisions recorded here
 
 Spec 001 ships the gates, not the product, and it deliberately left three things undone; spec 003

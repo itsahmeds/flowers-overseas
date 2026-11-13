@@ -22,6 +22,7 @@ import {
   adminRequestId,
   adminT,
   can,
+  catalogueBackupWarning,
   countryDetail,
   requireAdminPage,
   zoneCity,
@@ -728,7 +729,11 @@ export default async function CountryPage({
   );
 
   return (
-    <AdminFrame session={session} current="countries">
+    <AdminFrame
+      session={session}
+      current="countries"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[20px]">
         <AdminBackLink href="/admin/countries">
           {adminT("admin.countries.back")}

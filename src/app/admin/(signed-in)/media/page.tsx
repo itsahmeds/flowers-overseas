@@ -20,6 +20,7 @@ import {
   adminRequestId,
   adminT,
   can,
+  catalogueBackupWarning,
   catalogueSuppliers,
   mediaList,
   requireAdminPage,
@@ -339,7 +340,11 @@ export default async function MediaPage({
     filter.sku !== undefined;
 
   return (
-    <AdminFrame session={session} current="media">
+    <AdminFrame
+      session={session}
+      current="media"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[20px]">
         <header className="flex flex-wrap items-end justify-between gap-[12px]">
           <div>

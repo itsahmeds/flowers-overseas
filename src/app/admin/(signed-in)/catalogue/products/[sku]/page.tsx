@@ -25,6 +25,7 @@ import {
   adminRequestId,
   adminT,
   can,
+  catalogueBackupWarning,
   marginTab,
   photoRendersIn,
   previewPriceChange,
@@ -1253,7 +1254,11 @@ export default async function ProductEditorPage({
     );
 
   return (
-    <AdminFrame session={session} current="catalogue">
+    <AdminFrame
+      session={session}
+      current="catalogue"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[16px]">
         <AdminBackLink href={BASE}>
           {adminT("admin.catalogue.back")}

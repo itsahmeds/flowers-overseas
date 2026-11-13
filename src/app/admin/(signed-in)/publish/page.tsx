@@ -18,6 +18,7 @@ import {
   adminRequestId,
   adminT,
   can,
+  catalogueBackupWarning,
   publishPageView,
   requireAdminPage,
 } from "@/modules/admin";
@@ -113,7 +114,11 @@ export default async function PublishPage({
   const run = view.openRun ?? view.lastRun;
 
   return (
-    <AdminFrame session={session} current="publish">
+    <AdminFrame
+      session={session}
+      current="publish"
+      backupWarning={await catalogueBackupWarning()}
+    >
       <div className="grid gap-[24px]">
         <header className="grid gap-[6px]">
           <AdminPageTitle>{adminT("admin.publish.title")}</AdminPageTitle>

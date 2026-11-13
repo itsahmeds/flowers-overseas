@@ -20,6 +20,7 @@ import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  BUILD_CREDENTIAL_ENV_KEYS,
   BUILD_ENV_KEYS,
   ENV_KEYS,
   hostPlatform,
@@ -252,12 +253,20 @@ describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
     }
   });
 
-  it("partitions the contract: every key is graded by exactly one of the two gates", () => {
-    expect([...BUILD_ENV_KEYS, ...RUNTIME_ENV_KEYS].sort()).toEqual([
-      ...ENV_KEYS,
-    ]);
+  it("partitions the contract: every key is graded by exactly one of the two gates, or is the build's credential", () => {
+    expect(
+      [
+        ...BUILD_ENV_KEYS,
+        ...RUNTIME_ENV_KEYS,
+        ...BUILD_CREDENTIAL_ENV_KEYS,
+      ].sort(),
+    ).toEqual([...ENV_KEYS]);
     for (const key of BUILD_ENV_KEYS)
       expect(RUNTIME_ENV_KEYS, key).not.toContain(key);
+    for (const key of BUILD_CREDENTIAL_ENV_KEYS) {
+      expect(BUILD_ENV_KEYS, key).not.toContain(key);
+      expect(RUNTIME_ENV_KEYS, key).not.toContain(key);
+    }
   });
 
   it("runs the build half from next.config.ts and the runtime half at server start", () => {
@@ -448,6 +457,11 @@ describe("the build's database login (spec 012b AC-4)", () => {
 
   it("is not a runtime key: the server never reads it", () => {
     expect(RUNTIME_ENV_KEYS).not.toContain(BUILD_DATABASE_KEY);
-    expect(ENV_KEYS).not.toContain(BUILD_DATABASE_KEY);
+    expect(BUILD_ENV_KEYS).not.toContain(BUILD_DATABASE_KEY);
+  });
+
+  it("is declared in the env contract as the build's one credential (spec 012b AC-29; TASK-301)", () => {
+    expect(BUILD_CREDENTIAL_ENV_KEYS).toEqual([BUILD_DATABASE_KEY]);
+    expect(ENV_KEYS).toContain(BUILD_DATABASE_KEY);
   });
 });

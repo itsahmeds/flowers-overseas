@@ -17,6 +17,10 @@
  */
 import { z } from "zod";
 
+// `.ts` extension: `pnpm railway:check` loads this module under plain `node` through
+// `src/lib/railway.ts`, whose ESM resolver does not guess extensions.
+import { BUILD_DATABASE_URL_KEY } from "./build-login.ts";
+
 /**
  * Deployment environment (spec 040 §5.2, AC-1; TASK-097). `APP_ENV` is the single signal, set by
  * whichever platform runs the app; `VERCEL_ENV` survives only as a compatibility fallback while
@@ -226,6 +230,9 @@ export const clientEnvSchema = z.object({
    */
   NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: optionalText,
 });
+
+/** `PUBLISH_TARGET`'s values (spec 012b §5.2 "env"); `src/lib/publish.ts` parses the same set. */
+export const PUBLISH_TARGET_KINDS = ["railway", "fake", "none"] as const;
 
 export const serverEnvSchema = z.object({
   /**
@@ -504,6 +511,27 @@ export const serverEnvSchema = z.object({
     emptyToUndefined,
     z.enum(["true", "false"]).optional(),
   ),
+  /**
+   * The environment's publish target (spec 012b §2.3, §5.2 "env", AC-29; TASK-295 reads it,
+   * TASK-301 declares it): `railway` in `staging` and `production` once the founder has created
+   * the environment's project token (§12 founder action 5), `none` on every PR environment and
+   * wherever Publish must be absent, `fake` in tests only (refused in `production` and `staging`
+   * below). **Optional, absent means `none`**: Publish is then absent with the reason shown, and
+   * structural catalogue changes wait for the next release. Not secret.
+   */
+  PUBLISH_TARGET: z.preprocess(
+    emptyToUndefined,
+    z.enum(PUBLISH_TARGET_KINDS).optional(),
+  ),
+  /**
+   * Railway's environment-scoped **project token** (spec 012b §2.3, §8 "Security", AC-29): sent
+   * in the `Project-Access-Token` header to deploy the environment's tracked branch head, and able
+   * to deploy only its own environment. SECRET: kept in the Railway variable store, never logged,
+   * never in the client bundle, never a build argument. **Optional**; accepted as configured only
+   * beside `PUBLISH_TARGET=railway` (`publishTargetIssues` below refuses `railway` without it in a
+   * deployed environment). Read at use by `selectPublishTarget()` in `src/lib/publish.ts`.
+   */
+  RAILWAY_PUBLISH_TOKEN: optionalText,
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
   /**
@@ -574,6 +602,22 @@ export const serverEnvSchema = z.object({
   ),
 });
 
+/**
+ * The build's one credential (spec 012b §2.0 item 2, §5.2 "env", AC-4, AC-29): `next build` reads
+ * the database through `DATABASE_BUILD_URL`, a login of the read-only `app_build` role. It is a
+ * Railway **build** variable of `web` in `staging` and `production` (§12 founder action 4) and the
+ * `Dockerfile`'s one credential `ARG`, so it is neither a public build key (`BUILD_ENV_KEYS`: it
+ * must never be inlined) nor a runtime key (`RUNTIME_ENV_KEYS`: the server never connects with
+ * it; `src/lib/db.ts` is the only module that does, and only while the build runs). Optional:
+ * unset, a deployment builds and serves the repository files (TASK-294's fallback). SECRET.
+ */
+export const buildCredentialEnvSchema = z.object({
+  [BUILD_DATABASE_URL_KEY]: z.preprocess(
+    emptyToUndefined,
+    postgresUrl.optional(),
+  ),
+});
+
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
@@ -581,7 +625,17 @@ export type ServerEnv = z.infer<typeof serverEnvSchema>;
 export const ENV_KEYS: readonly string[] = [
   ...Object.keys(clientEnvSchema.shape),
   ...Object.keys(serverEnvSchema.shape),
+  ...Object.keys(buildCredentialEnvSchema.shape),
 ].sort();
+
+/**
+ * The build's credential keys (above): graded by `validateBuildEnv()` for shape, declared in the
+ * `Dockerfile`'s build stage as an `ARG` (never an `ENV`), and in neither `BUILD_ENV_KEYS` nor
+ * `RUNTIME_ENV_KEYS` (`tests/unit/container.test.ts` pins the three-way partition).
+ */
+export const BUILD_CREDENTIAL_ENV_KEYS: readonly string[] = Object.keys(
+  buildCredentialEnvSchema.shape,
+).sort();
 
 /**
  * The keys a **build** consumes, and therefore the only keys `next build` may demand (spec 001
@@ -878,6 +932,12 @@ export function validateBuildEnv(source: EnvSource): {
   if (!clientResult.success)
     issues.push(...collect(clientResult.error, source));
 
+  // Spec 012b AC-4, AC-29: the build's database login, shape only (a `postgres://` string). The
+  // connection itself is `src/lib/db.ts`'s, which also refuses a malformed value at first read.
+  const credentialResult = buildCredentialEnvSchema.safeParse(source);
+  if (!credentialResult.success)
+    issues.push(...collect(credentialResult.error, source));
+
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
     // The origin is inlined into every canonical and every absolute URL in the bundle, so a
     // placeholder or an http origin is baked in at build time and must fail *the build*.
@@ -1025,6 +1085,7 @@ export function validateRuntimeEnv(source: EnvSource): {
 
   issues.push(...liveStripeKeyIssues(source, environment));
   issues.push(...ga4ServerKeyIssues(source, environment));
+  issues.push(...publishTargetIssues(source, environment));
 
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
     // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
@@ -1046,6 +1107,45 @@ export function validateRuntimeEnv(source: EnvSource): {
     issues,
     server: serverResult.success ? serverResult.data : undefined,
   };
+}
+
+/** The publish target (spec 012b §5.2 "env"). */
+export const PUBLISH_TARGET_KEY = "PUBLISH_TARGET" as const;
+
+/** The environment-scoped Railway project token (spec 012b §5.2 "env"). Server only. */
+export const RAILWAY_PUBLISH_TOKEN_KEY = "RAILWAY_PUBLISH_TOKEN" as const;
+
+/**
+ * Spec 012b §2.3, §8 "Security", AC-29 (TASK-301): `fake` never builds, so a Publish against it
+ * would wait out its 30 minutes and time out; it is a test target and is refused where florists
+ * and buyers are (`production`, `staging`). `railway` without its project token could only fail,
+ * so a deployed environment carrying it is refused at boot (the old deployment keeps serving).
+ * Every issue names the key, never the value.
+ */
+function publishTargetIssues(
+  source: EnvSource,
+  environment: DeploymentEnvironment,
+): EnvIssue[] {
+  const issues: EnvIssue[] = [];
+  const target = source[PUBLISH_TARGET_KEY]?.trim();
+  if (target === "fake" && PRODUCTION_LIKE_ENVIRONMENTS.includes(environment)) {
+    issues.push({
+      key: PUBLISH_TARGET_KEY,
+      message: `must not be \`fake\` in ${environment}: the fake target builds nothing (spec 012b §2.3). Set \`railway\` with its project token, or \`none\`.`,
+    });
+  }
+  const token = source[RAILWAY_PUBLISH_TOKEN_KEY];
+  if (
+    target === "railway" &&
+    DEPLOYED_ENVIRONMENTS.includes(environment) &&
+    (token === undefined || token.trim() === "")
+  ) {
+    issues.push({
+      key: RAILWAY_PUBLISH_TOKEN_KEY,
+      message: `is required in ${environment} while ${PUBLISH_TARGET_KEY} is \`railway\`: create the environment's project token in Railway (spec 012b §12 founder action 5), or set ${PUBLISH_TARGET_KEY} to \`none\`.`,
+    });
+  }
+  return issues;
 }
 
 /** The GA4 Measurement Protocol secret (spec 023 AC-27). Server only. */

@@ -30,6 +30,8 @@
  */
 import { z } from "zod";
 
+import { PUBLISH_TARGET_KINDS } from "./env.schema.ts";
+
 /* -------------------------------------------------------------------------- */
 /* Environments and refs.                                                     */
 /* -------------------------------------------------------------------------- */
@@ -305,8 +307,8 @@ export function railwayTarget(
   };
 }
 
-/** `PUBLISH_TARGET`'s values (spec 012b §5.2 env). */
-export const PublishTargetKindSchema = z.enum(["railway", "fake", "none"]);
+/** `PUBLISH_TARGET`'s values (spec 012b §5.2 env), declared once in the env contract. */
+export const PublishTargetKindSchema = z.enum(PUBLISH_TARGET_KINDS);
 
 /**
  * The environment's target, from `PUBLISH_TARGET` and Railway's own `RAILWAY_*` ids (read, never

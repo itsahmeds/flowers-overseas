@@ -13148,5 +13148,15 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "d5b46b2b59f2564d1804f12d1665efd7370bdd9f1c9c64ee3e3e310e0e37fda5"
+  },
+  "admin.catalogue.backupWarning.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0d5ae0b33a8db4c6e12fb842d4c705367b755a264134a77dbf89ada513fc8034"
+  },
+  "admin.catalogue.backupWarning.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "613d8e9194b843aef1ac5c9574bad51cefbb2f9b9c6659ce1717c1522b0e0115"
   }
 }
