@@ -28,6 +28,17 @@ export const X_DEFAULT_CLIENT_LOCALE: {
   readonly dir: ClientTextDirection;
 } = { code: "en", bcp47: "en", dir: "ltr" };
 
+/**
+ * Each launch locale's `formattingTag` (the `Intl` tag its money and numbers use), for the client
+ * `formatMoney` (`src/modules/i18n/client.ts`; TASK-522). A mirror like the rest of this file.
+ */
+export const FORMATTING_TAGS_CLIENT: Readonly<Record<string, string>> = {
+  en: "en-150",
+  "en-gb": "en-GB",
+  de: "de",
+  pl: "pl",
+};
+
 /** The launch locale codes, in registry order. */
 export const LAUNCH_LOCALE_CODES_CLIENT: readonly string[] = [
   "en",

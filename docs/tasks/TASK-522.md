@@ -15,7 +15,42 @@ Gates on main must be green: a builder may not inherit reds. Fix each red unit t
 
 ## Carry-forwards
 
-_None recorded._
+Part 2 (PR 549, branch `task/TASK-522-main-reds-2`) stopped at the 180-minute limit. Left:
+
+1. **i18n client split, in progress (last commit is WIP).** Done: `src/modules/i18n/money-format.ts`
+   (import-free money core; `format.ts` `formatMoney` delegates to it), `src/modules/i18n/client.ts`
+   now exports only `formatMoney` over two mirrors (`src/config/currencies-client.data.ts`,
+   `FORMATTING_TAGS_CLIENT` in `src/config/locales-client.data.ts`), `money-format.ts` added to
+   `FORMATTER_MODULE_FILES` in `eslint/fo/no-adhoc-intl.js`, mirror and parity test
+   `tests/unit/i18n-client-money.test.ts`. Still red, to finish:
+   - `client-message-graph`: `refund-form.tsx` still reaches zod through
+     `src/modules/admin/order-actions/money.ts:17` (`currencyConfig` from `@/config/currencies`,
+     which parses with zod). Use `CURRENCY_EXPONENTS_CLIENT` there, or move `parseMinorUnits` client-side.
+   - `tests/unit/i18n-format.test.ts` "does no float arithmetic" scans `format.ts` for
+     `decimalString`; point it at `money-format.ts`.
+   - `tests/unit/no-adhoc-intl.test.ts` pins the allowlist at two files; add `money-format.ts` (and
+     state why in the test).
+   - Run the suite on `i18n-client-money`, `client-server-graph`, `lint-fixtures`, then the build.
+2. **Not done, need a decision or a larger change:**
+   - `ops-registry` (21): later tasks raise alert names outside `ALERT_REGISTRY` and call
+     `captureAlert` outside `src/modules/ops` (`src/jobs/basket-reminders.ts`, `src/jobs/handlers.ts`,
+     `src/jobs/occasion-reminders.ts`, `src/jobs/retention.ts`,
+     `src/modules/partners/contracts/commands.ts`, `src/modules/payments/balance.ts`,
+     `src/modules/risk/{efw,gate,monitor,reviews}.ts`). Each name needs a registry row (severity,
+     scope, act-by, runbook anchor) and admin title copy: spec 025 decisions, not a stale list.
+   - `order-integrity` (24): integration tests switch a trigger off (`tests/integration/*` lines in
+     the test output, `tests/integration/support/scratch-db.ts:273,283`). Needs the integration
+     suite rewritten against a DB.
+   - `url-pii` (53 query keys outside `QUERY_KEYS`: `result`, `tab`, `state`, `t`, `r`, `code`...,
+     mostly admin and account actions) and `zod-boundaries` (99 unparsed server-action and
+     `searchParams` inputs). `QUERY_KEYS` may drive runtime stripping; registering keys is a spec 003
+     AC-55 decision; the zod gaps are real boundary defects in the listed actions.
+   - `codebase-map` size: 42,850 B against the 20,480 B cap. Not reachable while AC-33 requires
+     "one line per entry with its purpose" for every `src/app/**` route file: the 189 Next route
+     files alone are 18.6 KB, and the other sections are 14.3 KB. Grouping routes per directory
+     (depth 3: 92 rows, 3.7 KB) meets the cap but amends AC-33. Founder or spec ruling needed.
+   - Local-only 5 s timeouts (CI raises the limit): `i18n-check`, `i18n-check-scope`,
+     `jobs-runtime`; `jobs-internal` and `admin-permission-binding` under load.
 
 ## Escalations
 
@@ -80,3 +115,33 @@ codebase:map --check 0. Clean-env staging `pnpm build` 0 in the build slot (app 
 | codebase-map stale | regenerated | `pnpm codebase:map` |
 
 Still red: see Escalations.
+
+### Part 2 (PR 549)
+
+**Money check, verdict: no shown/charged mismatch.** `catalog-product-view-live` was a stale
+fixture. Since TASK-294 `prices.data.ts` decides a live destination's Sunday rows from the file
+registry `COUNTRIES` (`emitsSundaySurcharge`), not the mocked `countryConfig`, so the test's PL
+Sunday operations no longer reached the dataset. The page grid (`priceGrid` →
+`priceProjection` with the date) and the checkout (`checkout/pricing.ts` `derive` →
+`priceProjection` with the date → `quote()`) read the same projection. New test: the page total and
+the signed quote total are equal, in minor units, for a surcharged Sunday and a plain Monday, in PLN
+and GBP (`tests/unit/catalog-product-view-live.test.ts`, "price shown = price charged").
+
+| Red | Cause | Fix |
+|---|---|---|
+| catalog-product-view-live | fixture mocked `countryConfig`, dataset reads `COUNTRIES` | fixture gives PL operations in `COUNTRIES`; shown = charged test |
+| catalog-mega-menu | cards now price "from" the smallest size (`productCardView`) | pinned tables regenerated (amounts only) |
+| catalog-product-view-source | demo order prices through `priceProjection` | listed |
+| catalog-product-view | `coreStocked` is hubs only; robots words outside `modules/seo` in 7 files | test; `TRANSACTIONAL_ROBOTS_HEADERS`, `UNLISTED_ROBOTS_HEADERS`, `seo/client.ts` `CHOOSER_LINK_REL`; identifier renamed |
+| corridor-corpus-index | import walk followed `import type` | walk skips type-only statements |
+| design-docs | `>…<` between two TS generics read as JSX text in a `.ts` file | JSX text scanned in `.tsx` only |
+| destinations-hub-count | hub reads `activeCountries()` since TASK-294 | fixture replaces it |
+| order-reference | `FO-XXXX-XXXX` in two ops comments | comments reworded |
+| post-purchase-block | fixture lacked `discount` (TASK-447) | `discount: null` |
+| search-privacy, url-tokens | GA4 `config` moved from the bootstrap to the loader (TASK-492) | tests read `sanitisePageLocation`, assert the bootstrap queues no config |
+| ui-phone-chrome | header plus search row is 122 px (TASK-520) | pins |
+| ui-shop-components | `<li data-fo-item>` (TASK-492) | pin |
+| freshness-claim | admin "the last N days" windows read as claims | `LOOKBACK_WINDOW` exemption (with near-word guard) + tests; one admin draft reworded "Paid in the last 8 weeks" |
+| admin-scans, jobs-internal | TASK-300 params; `review.request` each tick, rating refresh at 03 UTC | params; list |
+| consent-sources | three `ga4MeasurementId` callers | read through `consentSources()` |
+| motion-css | five spec 030b admin loaders vs A24 (public artboards) | clause scoped outside `src/app/admin/`, the five named |
