@@ -43,6 +43,8 @@ export const adminPermissions = [
   // spec 030b §14.4 (TASK-442): the florist contract register, admin only (§13 Q15).
   "partner.contract.view",
   "partner.contract.write",
+  // spec 030b §14.4 (TASK-443): the Supply page (admin and ops; prices need `finance.view`).
+  "supply.view",
   // spec 021 §5.2 "Permissions" (TASK-494): the review queue, the blocklist, the evidence pack.
   "risk.review",
   "risk.blocklist",
@@ -95,6 +97,8 @@ export const ADMIN_PERMISSIONS: Readonly<
   // spec 030b §13 Q15: who sees and uploads contracts? Admin only.
   "partner.contract.view": ["admin"],
   "partner.contract.write": ["admin"],
+  // spec 030b §13 Q24: who sees the Supply page? Admin with money, ops without.
+  "supply.view": ["admin", "ops"],
   // spec 021 §5.2: ops may approve or cancel a held order; blocking and evidence are admin only.
   "risk.review": ["admin", "ops"],
   "risk.blocklist": ["admin"],

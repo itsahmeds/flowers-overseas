@@ -81,3 +81,10 @@ export {
   type PartnerOutcomes,
   partnersOwedNow,
 } from "./partner";
+export {
+  type MappingMarginFigures,
+  type MappingPrice,
+  mappingMarginRow,
+  type MappingRate,
+  type OpenRetailPrice,
+} from "./mapping-margin";
