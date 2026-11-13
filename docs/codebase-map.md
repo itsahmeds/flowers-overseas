@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and… | 012, 030 | `integration/admin-flags.test.ts`, `integration/admin-media.test.ts` +32 |
+| `admin` | Public barrel for `admin` (admin queries and… | 012, 030 | `integration/admin-flags.test.ts`, `integration/admin-media.test.ts` +34 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/analytics-client.test.ts`, `unit/analytics-page-payload.test.ts` +5 |
 | `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +134 |
 | `checkout` | Checkout's import path | 010 | `integration/basket-reminder-links.test.ts`, `integration/basket-reminder-step.test.ts` +19 |
@@ -281,7 +281,7 @@ task actually touches.
 | `admin/(signed-in)/finance/view.tsx` | The finance pages' shared pieces: the range… | 030 |
 | `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first… | 012 |
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles,… | 012 |
-| `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
+| `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out,… | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to… | 012 |
 | `admin/(signed-in)/media/[id]/page.tsx` | GET /admin/media/[id]: one photo at full size,… | 012 |
 | `admin/(signed-in)/media/actions.ts` | POST action of the photo review page: approve… | 012 |
@@ -479,7 +479,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 554 |
+| `tests/unit/` | 556 |
 | `tests/integration/` | 128 |
 | `tests/contract/` | 45 |
 | `tests/e2e/` | 81 |
