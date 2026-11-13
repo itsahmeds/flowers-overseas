@@ -454,6 +454,11 @@ export const partnerCatalogMapping = pgTable(
       table.productId,
       table.tierKey,
     ),
+    /** `0048_product_origin` (spec 030b §14.3): mappings read by product (Made by, Supply). */
+    index("partner_catalog_mapping_product_tier_idx").on(
+      table.productId,
+      table.tierKey,
+    ),
   ],
 );
 
@@ -1041,5 +1046,51 @@ export const partnerContract = pgTable(
       .on(table.reviewOn)
       .where(sql.raw(`superseded_at is null and review_on is not null`)),
     index("partner_contract_superseded_by_idx").on(table.supersededBy),
+  ],
+);
+
+/* -------------------------------------------------------------------------- */
+/* product_origin (spec 030b §14.3, `0048_product_origin`, TASK-443)          */
+/* -------------------------------------------------------------------------- */
+
+/** How a bouquet's florist was recorded (spec 030b §14.3). */
+export const productOriginSources = [
+  "backfill",
+  "supplier_save",
+  "import",
+  "admin",
+] as const;
+
+/**
+ * Which florist a bouquet **belongs to** (whose design it is): at most one per product, who must
+ * map it (`setProductOrigin`). Staff only, never readable by the public or build roles (spec 012b
+ * AC-17). Audited by `product_origin_audit` (ids only).
+ */
+export const productOrigin = pgTable(
+  "product_origin",
+  {
+    productId: uuid("product_id")
+      .primaryKey()
+      .references(() => product.id, { onDelete: "restrict" }),
+    partnerId: uuid("partner_id")
+      .notNull()
+      .references(() => fulfillmentPartner.id, { onDelete: "restrict" }),
+    source: text("source").notNull(),
+    setBy: uuid("set_by").references(() => users.id, { onDelete: "restrict" }),
+    setAt: timestamp("set_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "product_origin_source_check",
+      sql.raw(`source in ${valueList(productOriginSources)}`),
+    ),
+    check(
+      "product_origin_set_by_check",
+      sql.raw(`source = 'backfill' or set_by is not null`),
+    ),
+    index("product_origin_partner_id_idx").on(table.partnerId),
   ],
 );
