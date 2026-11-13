@@ -8,7 +8,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 Spec 012b §12 slice A task 9. Founder approval 2026-10-20, "all defaults, keep going" (every §13 default; Q16: C2 yes, C1 in part, C3 no).
 - **ACs owned:** AC-26, AC-27, AC-29; tests T-26, T-27, T-29 and T-38's AC-26 rows.
 - Spec 012b's one gates task for slice A: the a11y and visual runs for the admin pages run once here.
-- ADR-0021 and ADR-0022 are written through `/adr` only if the founder accepts Appendix A and B (§12 founder action 2); otherwise say so in `## Result`.
+- ADR-0021 and ADR-0022 are written through `/adr` only if the founder accepts Appendix A and B (§12 founder action 2); otherwise say so in `## Copy approval
+
+- founder (delegated), 2026-11-13: recorded by the orchestrator with record-approval-301.py under the founder's blanket approval of 2026-10-31, after reading the exact text it printed; spec 012b (TASK-301); the founder did not read this text: the 2 admin texts of spec 012b's backup warning (`admin.catalogue.backupWarning.*`), exactly as printed.
+
+## Result`.
 - Exit signal (§12): on staging, a bouquet created in admin is on the Polish shop after one publish with no code change.
 - **Review class: keeps the breaker** (CLAUDE.md DoD 4): auth, compliance records and env declarations.
 - New admin strings go in `messages/admin/en.json` only (the `admin` surface does not count toward spec 003 A17's share) and ship `reviewed: false`; the 012b artboards' `[slot]`s are proposed wording the founder approves as one batch. No public catalogue or meta file changes (AC-27).
