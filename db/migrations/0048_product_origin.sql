@@ -1,4 +1,4 @@
--- 0049_product_origin (spec 030b §14.3 `NNNN_product_origin`, AC-51, AC-57; TASK-443).
+-- 0048_product_origin (spec 030b §14.3 `NNNN_product_origin`, AC-51, AC-57; TASK-443).
 --
 -- Which florist a bouquet **belongs to** (whose design it is), distinct from every florist who can
 -- make it (`partner_catalog_mapping`). Kept off `product` so no public or build read can ever

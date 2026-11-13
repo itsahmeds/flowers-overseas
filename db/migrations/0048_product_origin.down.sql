@@ -1,4 +1,4 @@
--- Rollback of 0049_product_origin (spec 030b §14.3 "Down file, guard first", AC-57; TASK-443).
+-- Rollback of 0048_product_origin (spec 030b §14.3 "Down file, guard first", AC-57; TASK-443).
 --
 -- Guard first. An origin set by the supplier save, the import or an admin is a choice we cannot
 -- derive again: if any `product_origin` row has `source <> 'backfill'`, this file raises
@@ -10,7 +10,7 @@ SET LOCAL ROLE app_owner;
 DO $guard$
 BEGIN
   IF EXISTS (SELECT 1 FROM public.product_origin WHERE source <> 'backfill') THEN
-    RAISE EXCEPTION 'PRODUCT_ORIGIN_ROLLBACK_ROWS_IN_USE: a florist was chosen for a bouquet; 0049_product_origin is not rolled back'
+    RAISE EXCEPTION 'PRODUCT_ORIGIN_ROLLBACK_ROWS_IN_USE: a florist was chosen for a bouquet; 0048_product_origin is not rolled back'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END

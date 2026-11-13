@@ -454,7 +454,7 @@ export const partnerCatalogMapping = pgTable(
       table.productId,
       table.tierKey,
     ),
-    /** `0049_product_origin` (spec 030b §14.3): mappings read by product (Made by, Supply). */
+    /** `0048_product_origin` (spec 030b §14.3): mappings read by product (Made by, Supply). */
     index("partner_catalog_mapping_product_tier_idx").on(
       table.productId,
       table.tierKey,
@@ -1050,7 +1050,7 @@ export const partnerContract = pgTable(
 );
 
 /* -------------------------------------------------------------------------- */
-/* product_origin (spec 030b §14.3, `0049_product_origin`, TASK-443)          */
+/* product_origin (spec 030b §14.3, `0048_product_origin`, TASK-443)          */
 /* -------------------------------------------------------------------------- */
 
 /** How a bouquet's florist was recorded (spec 030b §14.3). */
