@@ -28,6 +28,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **2026-11-11, agent 1:** the import half of AC-51 (`import` origin for created rows) rides TASK-320 (not merged); carry it into TASK-320's brief when that task starts.
 
 ## Escalations
 
@@ -41,7 +42,10 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-11-11, agent 1 (partial; the 180-minute limit stopped the run). Draft PR #551, branch `task/TASK-443-partner-prices-tab`, worktree `../fo-wt-443`.
+  - **Done and committed:** migration `0049_product_origin` and its guarded down file, the Drizzle `productOrigin` schema, the index `partner_catalog_mapping_product_tier_idx` and the db-check snapshot. On a scratch PG16 it went migrate, rollback to 0047, migrate, and `db:check` passed against that database (RLS 117/117). The backfill reads "exactly one non-demo mapping" as **one non-demo florist** (a florist bouquet has one mapping row per size); that reading goes in the PR. Also done: `mappingMarginRow` in `src/modules/admin/finance/mapping-margin.ts`, which is `marginView` with that mapping as its only payout, plus the rate and `shareHigh` read from the exported `PAYOUT_SHARE_WARN_BP`. The catalog barrel now exports `convertPayout` and `PAYOUT_SHARE_WARN_BP`. The `supply.view` permission (admin, ops) is added, with its row in `tests/unit/admin-permissions.test.ts`.
+  - **Migration number:** 0048 is unused on main, and the migration runner refuses a gap. Before 0049 can merge, either TASK-301 lands 0048 first or this file is renumbered to 0048 (rename it, fix the header comment, re-run `--write-snapshot`). For local runs only, the worktree has untracked `db/migrations/0048_local_placeholder{,.down}.sql`. Delete them, and never commit them.
+  - **Next, as designed:** `src/modules/admin/supply/` will hold `core.ts` (pure: `indexFacts`, `saleReason` with reasons in the order demo, not active, cannot make, no coverage, no open price; `mappingFigures`; `supplyFlags(rows, {priceSpreadBp, money, rates})` with the money flags only when `money`, `price_spread` comparing `value × 10000 > lowest × (10000 + bp)` through `toReporting` when currencies differ; `buildMatrix` with columns = coverage in the country, not offboarded, demo only with includeDemo, and counts taken before the filter), `queries.ts` (6 statements: countries, product+tier+en name+origin, mappings, coverage with city names, open prices with `vat_rate_bp`, newest ECB rates), and `csv.ts` (`supplyCsv`, audit through `audit_record_view('supply_export', …)`). After that: `supply: { priceSpreadBp: 2500 }` plus the CSV header in `src/config/finance.ts` as a separate `SUPPLY_CONFIG`; `setProductOrigin` and the `supplier_save` hook in `writeSupplier` in `src/modules/admin/catalogue.ts`; the pages `partners/[code]/prices` (a tab entry `prices`, `finance.view`), `/admin/supply` with `export/route.ts`, and the Made by tab; the nav entry "Supply" after Florists; `admin.*` texts and `record-approval-443.py`; the two page rows in `tests/unit/admin-permission-binding.test.ts`; tests (unit `supplyFlags` and `mappingMarginRow`, integration for the migration, origin, matrix statement count and CSV); and the runbook section "Read the Supply page".
 
 ## Result
 
